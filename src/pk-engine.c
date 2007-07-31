@@ -37,18 +37,20 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "pk-job.h"
 #include "pk-task.h"
 #include "pk-engine.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
-static void     pk_engine_finalize	(GObject	 *object);
+static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
 struct PkEnginePrivate
 {
-	gboolean		 low_power;
+	GPtrArray		*array;
+	PkJob			*job_assignment;
 };
 
 enum {
@@ -110,13 +112,44 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 }
 
 /**
+ * pk_engine_add_task:
+ **/
+gboolean
+pk_engine_add_task (PkEngine *engine, PkTask *task)
+{
+	g_debug ("adding task %p", task);
+	g_ptr_array_add (engine->priv->array, task);
+	return TRUE;	
+}
+
+/**
  * pk_engine_update_system:
  **/
 gboolean
 pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
 {
+	guint i;
+	guint length;
+	PkTask *task;
+	PkTaskStatus status;
+	gboolean ret;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* check for existing job doing an update */
+	length = engine->priv->array->len;
+	for (i=0; i<length; i++) {
+		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
+		ret = pk_task_get_job_status (task, &status);
+		if (ret == TRUE && status == PK_TASK_STATUS_UPDATE) {
+			return FALSE;
+		}
+	}
+
+	task = pk_task_new ();
+	pk_task_update_system (task);
+	pk_engine_add_task (engine, task);
 
 	return TRUE;
 }
@@ -277,11 +310,9 @@ pk_engine_class_init (PkEngineClass *klass)
 static void
 pk_engine_init (PkEngine *engine)
 {
-	DBusGConnection *connection;
-	GError *error = NULL;
-
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	engine->priv->array = g_ptr_array_new ();
+	engine->priv->job_assignment = pk_job_new ();
 }
 
 /**
@@ -303,7 +334,8 @@ pk_engine_finalize (GObject *object)
 	g_return_if_fail (engine->priv != NULL);
 
 	/* compulsory gobjects */
-//	g_object_unref (engine->priv->conf);
+	g_ptr_array_free (engine->priv->array, TRUE);
+	g_object_unref (engine->priv->job_assignment);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

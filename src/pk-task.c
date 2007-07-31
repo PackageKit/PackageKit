@@ -34,6 +34,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "pk-job.h"
 #include "pk-task.h"
 
 static void     pk_task_class_init	(PkTaskClass *klass);
@@ -44,17 +45,82 @@ static void     pk_task_finalize	(GObject	 *object);
 
 struct PkTaskPrivate
 {
-	gboolean		 low_power;
+	gboolean		 assigned;
+	guint			 job;
+	PkTaskStatus		 status;
+	PkTaskExit		 exit;
 };
 
 enum {
-	JOB_LIST_CHANGED,
+	JOB_STATUS_CHANGED,
+	PERCENTAGE_COMPLETE_CHANGED,
+	PACKAGES,
+	FINISHED,
 	LAST_SIGNAL
 };
 
 static guint	     signals [LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
+
+/**
+ * pk_task_change_percentage_complete:
+ **/
+static gboolean
+pk_task_change_percentage_complete (PkTask *task, guint percentage)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_debug ("emit percentage-complete-changed %i", percentage);
+	g_signal_emit (task, signals [PERCENTAGE_COMPLETE_CHANGED], 0, percentage);
+	return TRUE;
+}
+
+/**
+ * pk_task_change_percentage_complete:
+ **/
+static gboolean
+pk_task_change_job_status (PkTask *task, PkTaskStatus status)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	task->priv->status = status;
+	g_debug ("emit job-status-changed %i", status);
+	g_signal_emit (task, signals [JOB_STATUS_CHANGED], 0, status);
+	return TRUE;
+}
+
+/**
+ * pk_task_finished:
+ **/
+static gboolean
+pk_task_finished (PkTask *task, PkTaskExit exit)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_debug ("emit finished %i", exit);
+	g_signal_emit (task, signals [FINISHED], 0, exit);
+	return TRUE;
+}
+
+/**
+ * pk_task_get_updates:
+ **/
+guint
+pk_task_get_job (PkTask *task)
+{
+	return task->priv->job;
+}
+
+/**
+ * pk_task_get_updates:
+ **/
+gboolean
+pk_task_set_job (PkTask *task, guint job)
+{
+	task->priv->job = job;
+	return TRUE;
+}
 
 /**
  * pk_task_get_updates:
@@ -64,6 +130,16 @@ pk_task_get_updates (PkTask *task)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+if (0)	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+if (0)	pk_task_change_percentage_complete (task, 0);
+if (0)	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }
@@ -77,6 +153,13 @@ pk_task_update_system (PkTask *task)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+
 	return TRUE;
 }
 
@@ -88,6 +171,13 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
 
 	return TRUE;
 }
@@ -101,6 +191,13 @@ pk_task_get_dependencies (PkTask *task, const gchar *package)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+
 	return TRUE;
 }
 
@@ -112,6 +209,13 @@ pk_task_remove_packages (PkTask *task, const gchar **packages)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
 
 	return TRUE;
 }
@@ -125,6 +229,13 @@ pk_task_remove_packages_with_dependencies (PkTask *task, const gchar **packages)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+
 	return TRUE;
 }
 
@@ -137,6 +248,13 @@ pk_task_install_packages (PkTask *task, const gchar **packages)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we already have an action */
+	if (task->priv->assigned == TRUE) {
+		g_warning ("Already assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+
 	return TRUE;
 }
 
@@ -144,11 +262,17 @@ pk_task_install_packages (PkTask *task, const gchar **packages)
  * pk_task_get_job_status:
  **/
 gboolean
-pk_task_get_job_status (PkTask *task, const gchar **status, const gchar **package)
+pk_task_get_job_status (PkTask *task, PkTaskStatus *status)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we have an action */
+	if (task->priv->assigned == FALSE) {
+		g_warning ("Not assigned");
+		return FALSE;
+	}
+	*status = task->priv->status;
 	return TRUE;
 }
 
@@ -161,10 +285,15 @@ pk_task_cancel_job_try (PkTask *task)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* check to see if we have an action */
+	if (task->priv->assigned == FALSE) {
+		g_warning ("Not assigned");
+		return FALSE;
+	}
+	task->priv->assigned = TRUE;
+
 	return TRUE;
 }
-
-//		g_signal_emit (task, signals [JOB_LIST_CHANGED], 0, FALSE);
 
 /**
  * pk_task_class_init:
@@ -177,12 +306,30 @@ pk_task_class_init (PkTaskClass *klass)
 
 	object_class->finalize = pk_task_finalize;
 
-	signals [JOB_LIST_CHANGED] =
-		g_signal_new ("job-list-changed",
+	signals [JOB_STATUS_CHANGED] =
+		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTaskClass, job_list_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+			      G_STRUCT_OFFSET (PkTaskClass, job_status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PERCENTAGE_COMPLETE_CHANGED] =
+		g_signal_new ("percentage-complete-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskClass, percentage_complete_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PACKAGES] =
+		g_signal_new ("packages",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskClass, packages),
+			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
+			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals [FINISHED] =
+		g_signal_new ("finished",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskClass, finished),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
 }
@@ -194,11 +341,17 @@ pk_task_class_init (PkTaskClass *klass)
 static void
 pk_task_init (PkTask *task)
 {
-	DBusGConnection *connection;
-	GError *error = NULL;
+	PkJob *job;
 
 	task->priv = PK_TASK_GET_PRIVATE (task);
-	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
+	task->priv->assigned = FALSE;
+	task->priv->status = PK_TASK_STATUS_INVALID;
+	task->priv->exit = PK_TASK_EXIT_UNKNOWN;
+
+	/* allocate a unique job number */
+	job = pk_job_new ();
+	task->priv->job = pk_job_get_unique (job);
+	g_object_unref (job);
 }
 
 /**

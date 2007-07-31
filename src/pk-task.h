@@ -37,17 +37,40 @@ G_BEGIN_DECLS
 
 typedef struct PkTaskPrivate PkTaskPrivate;
 
+typedef enum {
+	PK_TASK_STATUS_INVALID,
+	PK_TASK_STATUS_SETUP,
+	PK_TASK_STATUS_DOWNLOAD,
+	PK_TASK_STATUS_INSTALL,
+	PK_TASK_STATUS_UPDATE,
+	PK_TASK_STATUS_EXIT,
+	PK_TASK_STATUS_UNKNOWN
+} PkTaskStatus;
+
+typedef enum {
+	PK_TASK_EXIT_SUCCESS,
+	PK_TASK_EXIT_FAILED,
+	PK_TASK_EXIT_CANCELED,
+	PK_TASK_EXIT_UNKNOWN
+} PkTaskExit;
+
 typedef struct
 {
 	 GObject		 parent;
-	 PkTaskPrivate	*priv;
+	 PkTaskPrivate		*priv;
 } PkTask;
 
 typedef struct
 {
 	GObjectClass	parent_class;
-	void		(* job_list_changed)		(PkTask		*task,
-							 guint		*jobs);
+	void		(* job_status_changed)		(PkTask		*task,
+							 PkTaskStatus	 status);
+	void		(* percentage_complete_changed)	(PkTask		*task,
+							 guint		 percentage);
+	void		(* packages)			(PkTask		*task,
+							 GPtrArray	*packages);
+	void		(* finished)			(PkTask		*task,
+							 PkTaskExit	 completion);
 } PkTaskClass;
 
 typedef enum
@@ -75,9 +98,13 @@ gboolean	 pk_task_remove_packages_with_dependencies(PkTask	*task,
 gboolean	 pk_task_install_packages		(PkTask		*task,
 							 const gchar	**packages);
 gboolean	 pk_task_get_job_status			(PkTask		*task,
-							 const gchar	**status,
-							 const gchar	**package);
+							 PkTaskStatus	*status);
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);
+
+guint		 pk_task_get_job			(PkTask		*task);
+gboolean	 pk_task_set_job			(PkTask		*task,
+							 guint		 job);
+
 
 G_END_DECLS
 

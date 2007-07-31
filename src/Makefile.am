@@ -30,6 +30,8 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	pk-task.h					\
 	pk-task.c					\
+	pk-job.h					\
+	pk-job.c					\
 	$(NULL)
 
 packagekitd_LDADD =					\
@@ -45,10 +47,10 @@ BUILT_SOURCES = 					\
 
 pk-marshal.c: pk-marshal.list
 	echo "#include \"pk-marshal.h\"" > $@ && \
-	@GLIB_GENMARSHAL@ $< --prefix=gpm_marshal --body >> $@
+	glib-genmarshal $< --prefix=gpm_marshal --body >> $@
 
 pk-marshal.h: pk-marshal.list
-	@GLIB_GENMARSHAL@ $< --prefix=gpm_marshal --header > $@
+	glib-genmarshal $< --prefix=gpm_marshal --header > $@
 
 pk-interface.h: pk-interface.xml
 	libtool --mode=execute dbus-binding-tool	\

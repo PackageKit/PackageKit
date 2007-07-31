@@ -38,7 +38,7 @@
     </signal>
     <method name="GetJobStatus">
       <arg type="u" name="job" direction="in"/>
-      <arg type="s" name="status" direction="out"/> <!-- query,download,install,update,fail,succeed,cancel -->
+      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package" direction="out"/>
     </method>
     <method name="CancelJobTry">
@@ -48,7 +48,7 @@
     <!-- state has changed, we want to broadcast this to all jobs -->
     <signal name="JobStatusChanged">
       <arg type="u" name="job" direction="out"/>
-      <arg type="s" name="status" direction="out"/> <!-- setup,download,install,update,exit -->
+      <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
       <arg type="s" name="package" direction="out"/>
     </signal>
     <signal name="PercentageCompleteChanged">
