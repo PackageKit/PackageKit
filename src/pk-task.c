@@ -104,22 +104,12 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 }
 
 /**
- * pk_task_get_updates:
+ * pk_task_get_job:
  **/
 guint
 pk_task_get_job (PkTask *task)
 {
 	return task->priv->job;
-}
-
-/**
- * pk_task_get_updates:
- **/
-gboolean
-pk_task_set_job (PkTask *task, guint job)
-{
-	task->priv->job = job;
-	return TRUE;
 }
 
 /**

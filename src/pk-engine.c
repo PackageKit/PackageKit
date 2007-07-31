@@ -119,6 +119,7 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
 	g_debug ("adding task %p", task);
 	g_ptr_array_add (engine->priv->array, task);
+	/* TODO: connect up signals */
 	return TRUE;	
 }
 

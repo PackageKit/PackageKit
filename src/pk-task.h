@@ -102,8 +102,6 @@ gboolean	 pk_task_get_job_status			(PkTask		*task,
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);
 
 guint		 pk_task_get_job			(PkTask		*task);
-gboolean	 pk_task_set_job			(PkTask		*task,
-							 guint		 job);
 
 
 G_END_DECLS
