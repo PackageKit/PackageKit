@@ -51,8 +51,16 @@ typedef struct
 typedef struct
 {
 	GObjectClass	parent_class;
-	void		(* on_battery_changed)		(PkEngine	*engine,
-							 gboolean	 on_battery);
+	void		(* job_list_changed)		(PkEngine	*engine,
+							 guint		*jobs);
+	void		(* job_status_changed)		(PkEngine	*engine,
+							 guint		*jobs);
+	void		(* percentage_complete_changed)	(PkEngine	*engine,
+							 guint		*jobs);
+	void		(* packages)			(PkEngine	*engine,
+							 guint		*jobs);
+	void		(* finished)			(PkEngine	*engine,
+							 guint		*jobs);
 } PkEngineClass;
 
 typedef enum

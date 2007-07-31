@@ -51,7 +51,11 @@ struct PkEnginePrivate
 };
 
 enum {
-	ON_BATTERY_CHANGED,
+	JOB_LIST_CHANGED,
+	JOB_STATUS_CHANGED,
+	PERCENTAGE_COMPLETE_CHANGED,
+	PACKAGES,
+	FINISHED,
 	LAST_SIGNAL
 };
 
@@ -218,7 +222,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	return TRUE;
 }
 
-//		g_signal_emit (engine, signals [ON_BATTERY_CHANGED], 0, FALSE);
+//		g_signal_emit (engine, signals [JOB_LIST_CHANGED], 0, FALSE);
 
 /**
  * pk_engine_class_init:
@@ -231,10 +235,34 @@ pk_engine_class_init (PkEngineClass *klass)
 
 	object_class->finalize = pk_engine_finalize;
 
-	signals [ON_BATTERY_CHANGED] =
-		g_signal_new ("on-battery-changed",
+	signals [JOB_LIST_CHANGED] =
+		g_signal_new ("job-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkEngineClass, on_battery_changed),
+			      G_STRUCT_OFFSET (PkEngineClass, job_list_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [JOB_STATUS_CHANGED] =
+		g_signal_new ("job-status-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkEngineClass, job_status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PERCENTAGE_COMPLETE_CHANGED] =
+		g_signal_new ("percentage-complete-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkEngineClass, percentage_complete_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PACKAGES] =
+		g_signal_new ("packages",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkEngineClass, packages),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [FINISHED] =
+		g_signal_new ("finished",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkEngineClass, finished),
 			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 
