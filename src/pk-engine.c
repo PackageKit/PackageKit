@@ -186,10 +186,10 @@ pk_engine_install_packages (PkEngine *engine, const gchar **packages,
 }
 
 /**
- * pk_engine_get_jobs:
+ * pk_engine_get_job_list:
  **/
 gboolean
-pk_engine_get_jobs (PkEngine *engine, GArray *jobs, GError **error)
+pk_engine_get_job_list (PkEngine *engine, GArray *jobs, GError **error)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);

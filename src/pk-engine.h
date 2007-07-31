@@ -101,7 +101,7 @@ gboolean	 pk_engine_install_packages		(PkEngine	*engine,
 							 const gchar	**packages,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_get_jobs			(PkEngine	*engine,
+gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
 							 GArray		*jobs,
 							 GError		**error);
 gboolean	 pk_engine_get_job_status		(PkEngine	*engine,

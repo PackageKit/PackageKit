@@ -30,7 +30,7 @@
     </method>
 
     <!-- Job management -->
-    <method name="GetJobs">
+    <method name="GetJobList">
       <arg type="au" name="jobs" direction="out"/>
     </method>
     <signal name="JobListChanged">
