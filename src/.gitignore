@@ -1,7 +1,8 @@
+.deps
 *.o
 pk-marshal.h
 pk-marshal.c
-packagekitd
-.deps
 pk-interface.h
+packagekitd
+debug.log
 
