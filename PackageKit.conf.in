@@ -21,7 +21,7 @@
 
   <!-- This will not work if pam_console support is not enabled -->
   <policy at_console="true">
-    <allow send_interface="org.freedesktop.PackageKit/>
+    <allow send_interface="org.freedesktop.PackageKit"/>
   </policy>
 
   <!-- You can change this to a more suitable user, or make per-group -->
