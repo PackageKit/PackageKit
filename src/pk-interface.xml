@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+  <interface name="org.freedesktop.PackageKit">
+    <!-- Schedule new jobs -->
+    <method name="GetUpdates">
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="UpdateSystem">
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="FindPackages">
+      <arg type="s" name="search" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="GetDependencies">
+      <arg type="s" name="package" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="RemovePackages">
+      <arg type="as" name="packages" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="RemovePackagesWithDependencies">
+      <arg type="as" name="packages" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
+    <method name="InstallPackages">
+      <arg type="as" name="packages" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
+
+    <!-- Job management -->
+    <method name="GetJobs">
+      <arg type="au" name="jobs" direction="out"/>
+    </method>
+    <signal name="JobListChanged">
+      <arg type="au" name="jobs" direction="out"/>
+    </signal>
+    <method name="GetJobStatus">
+      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="status" direction="out"/> <!-- query,download,install,update,fail,succeed,cancel -->
+      <arg type="s" name="package" direction="out"/>
+    </method>
+    <method name="CancelJobTry">
+      <arg type="u" name="job" direction="in"/>
+    </method>
+
+    <!-- state has changed, we want to broadcast this to all jobs -->
+    <signal name="JobStatusChanged">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="status" direction="out"/> <!-- setup,download,install,update,exit -->
+      <arg type="s" name="package" direction="out"/>
+    </signal>
+    <signal name="PercentageCompleteChanged">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="u" name="percentage" direction="out"/>
+      <arg type="s" name="description" direction="out"/> <!--installing,downloading,<more>-->
+    </signal>
+    <signal name="Packages">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="a(bs)" name="flag_and_packages" direction="out"/> <!--flag can be "installed" or "security" -->
+    </signal>
+    <signal name="Finished">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="u" name="status" direction="out"/> <!-- 0=Success, 1=Failed, 2=Canceled -->
+    </signal>
+  </interface>
+</node>
+

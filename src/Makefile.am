@@ -4,7 +4,8 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 EXTRA_DIST =						\
-	pk-marshal.list				\
+	pk-marshal.list					\
+	pk-interface.xml				\
 	$(NULL)
 
 INCLUDES =						\
@@ -29,9 +30,15 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	$(NULL)
 
+packagekitd_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(NULL)
+
 BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-interface.h					\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -40,6 +47,13 @@ pk-marshal.c: pk-marshal.list
 
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=gpm_marshal --header > $@
+
+pk-interface.h: pk-interface.xml
+	libtool --mode=execute dbus-binding-tool	\
+		--prefix=pk_engine			\
+		--mode=glib-server			\
+		--output=pk-interface.h	\
+		$(srcdir)/pk-interface.xml
 
 clean-local:
 	rm -f *~
