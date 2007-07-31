@@ -28,7 +28,8 @@ intl
 macros
 INSTALL
 ChangeLog
-ConsoleKit-*.tar.gz
+PackageKit-*.tar.gz
+PackageKit.conf
 xml-i18n-extract.in
 xml-i18n-extract
 xml-i18n-merge.in

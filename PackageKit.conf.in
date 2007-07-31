@@ -1,0 +1,33 @@
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+
+  <!-- This configuration file specifies the required security policies
+       for the PackageKit to work. -->
+
+  <!-- Only root or user @PACKAGEKIT_USER@ can own the PackageKit service -->
+  <policy user="@PACKAGEKIT_USER@">
+    <allow own="org.freedesktop.PackageKit"/>
+  </policy>
+  <policy user="root">
+    <allow own="org.freedesktop.PackageKit"/>
+  </policy>
+
+  <!-- Allow anyone to invoke methods on the Manager and Device interfaces -->
+  <policy context="default">
+    <deny send_interface="org.freedesktop.PackageKit"/>
+  </policy>
+
+  <!-- This will not work if pam_console support is not enabled -->
+  <policy at_console="true">
+    <allow send_interface="org.freedesktop.PackageKit/>
+  </policy>
+
+  <!-- You can change this to a more suitable user, or make per-group -->
+  <policy user="0">
+    <allow send_interface="org.freedesktop.PackageKit"/>
+  </policy>
+
+</busconfig>
+

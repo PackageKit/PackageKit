@@ -12,7 +12,7 @@ AM_PROG_LIBTOOL
 GNOME_COMPILE_WARNINGS
 GNOME_DOC_INIT
 
-AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
+AC_PATH_PROG(GLIB_GENMARSPACKAGEKIT, glib-genmarshal)
 
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
@@ -68,6 +68,17 @@ if test x$enable_polkit = xyes ; then
 fi
 #AC_MSG_RESULT(yes)
 
+AC_ARG_WITH([packagekit_user],
+	    AS_HELP_STRING([--with-packagekit-user=<user>],
+	                   [User for running the PacakgeKit daemon (root)]))
+if test -z "$with_packagekit_user" ; then
+    PACKAGEKIT_USER=root
+else
+    PACKAGEKIT_USER=$with_packagekit_user
+fi
+AC_SUBST(PACKAGEKIT_USER)
+AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PacakgeKit daemon])
+
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
 dnl ---------------------------------------------------------------------------
@@ -86,6 +97,7 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 src/Makefile
+PackageKit.conf
 ])
 
 dnl ==========================================================================
