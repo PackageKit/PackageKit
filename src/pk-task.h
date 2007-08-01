@@ -32,8 +32,6 @@ G_BEGIN_DECLS
 #define PK_IS_TASK(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK))
 #define PK_IS_TASK_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK))
 #define PK_TASK_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK, PkTaskClass))
-#define PK_TASK_ERROR		(pk_task_error_quark ())
-#define PK_TASK_TYPE_ERROR	(pk_task_error_get_type ()) 
 
 typedef struct PkTaskPrivate PkTaskPrivate;
 
@@ -56,10 +54,23 @@ typedef enum {
 	PK_TASK_EXIT_UNKNOWN
 } PkTaskExit;
 
+typedef enum {
+	PK_TASK_JOB_STATUS_CHANGED,
+	PK_TASK_PERCENTAGE_COMPLETE_CHANGED,
+	PK_TASK_PACKAGES,
+	PK_TASK_FINISHED,
+	PK_TASK_LAST_SIGNAL
+} PkSignals;
+
 typedef struct
 {
-	 GObject		 parent;
-	 PkTaskPrivate		*priv;
+	GObject			 parent;
+	PkTaskPrivate		*priv;
+	gboolean		 assigned;
+	guint			 job;
+	PkTaskStatus		 status;
+	PkTaskExit		 exit;
+	guint			 *signals;
 } PkTask;
 
 typedef struct
@@ -75,15 +86,6 @@ typedef struct
 							 PkTaskExit	 completion);
 } PkTaskClass;
 
-typedef enum
-{
-	PK_TASK_ERROR_DENIED,
-	PK_TASK_ERROR_LAST
-} PkTaskError;
-
-
-GQuark		 pk_task_error_quark			(void);
-GType		 pk_task_error_get_type			(void);
 GType		 pk_task_get_type		  	(void);
 PkTask		*pk_task_new				(void);
 
@@ -99,14 +101,7 @@ gboolean	 pk_task_remove_packages_with_dependencies(PkTask	*task,
 							 const gchar	**packages);
 gboolean	 pk_task_install_packages		(PkTask		*task,
 							 const gchar	**packages);
-gboolean	 pk_task_get_job_status			(PkTask		*task,
-							 PkTaskStatus	*status);
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);
-
-guint		 pk_task_get_job			(PkTask		*task);
-gboolean	 pk_task_set_job			(PkTask		*task,
-							 guint		 job);
-
 
 G_END_DECLS
 

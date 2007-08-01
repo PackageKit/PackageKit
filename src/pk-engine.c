@@ -38,6 +38,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "pk-task.h"
+#include "pk-task-common.h"
 #include "pk-engine.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
@@ -212,6 +213,8 @@ pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
 		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
 		ret = pk_task_get_job_status (task, &status);
 		if (ret == TRUE && status == PK_TASK_STATUS_UPDATE) {
+			g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
+				     "system update already in progress");
 			return FALSE;
 		}
 	}

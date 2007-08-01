@@ -26,10 +26,12 @@ sbin_PROGRAMS =						\
 
 packagekitd_SOURCES =					\
 	pk-main.c					\
-	pk-engine.h					\
-	pk-engine.c					\
 	pk-task.h					\
 	pk-task.c					\
+	pk-task-common.h				\
+	pk-task-common.c				\
+	pk-engine.h					\
+	pk-engine.c					\
 	$(NULL)
 
 packagekitd_LDADD =					\
