@@ -39,7 +39,17 @@ packagekitd_SOURCES =					\
 
 if BACKEND_TYPE_DUMMY
 packagekitd_SOURCES +=					\
-	pk-task.c
+	pk-task-dummy.c
+endif
+
+if BACKEND_TYPE_APT
+packagekitd_SOURCES +=					\
+	pk-task-apt.c
+endif
+
+if BACKEND_TYPE_YUM
+packagekitd_SOURCES +=					\
+	pk-task-yum.c
 endif
 
 packagekitd_LDADD =					\
