@@ -37,7 +37,6 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "pk-job.h"
 #include "pk-task.h"
 #include "pk-engine.h"
 
@@ -98,28 +97,98 @@ pk_engine_error_get_type (void)
 	}
 	return etype;
 }
+
+/**
+ * pk_engine_create_job_list:
+ **/
+static GArray *
+pk_engine_create_job_list (PkEngine *engine)
+{
+	guint i;
+	guint length;
+	guint job;
+	PkTask *task;
+	GArray *job_list;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create new list */
+	job_list = g_array_new (FALSE, FALSE, sizeof (guint));
+
+	/* find all the jobs in progress */
+	length = engine->priv->array->len;
+	for (i=0; i<length; i++) {
+		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
+		job = pk_task_get_job (task);
+		job_list = g_array_append_val (job_list, job);
+	}
+	return job_list;
+}
+
+/**
+ * pk_engine_job_list_changed:
+ **/
+static gboolean
+pk_engine_job_list_changed (PkEngine *engine)
+{
+	GArray *job_list;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	job_list = pk_engine_create_job_list (engine);
+
+	g_debug ("emitting job-list-changed");
+	g_signal_emit (engine, signals [JOB_LIST_CHANGED], 0, job_list);
+	return TRUE;
+}
+
+/**
+ * pk_engine_new_task:
+ **/
+static PkTask *
+pk_engine_new_task (PkEngine *engine)
+{
+	PkTask *task;
+	static guint job = 0;
+
+	/* increment the job number - we never repeat an id */
+	job++;
+
+	/* allocate a new task */
+	task = pk_task_new ();
+	g_debug ("adding task %p", task);
+
+	/* set the job ID */
+	pk_task_set_job (task, job);
+
+	/* add to the array */
+	g_ptr_array_add (engine->priv->array, task);
+
+	/* emit a signal */
+	pk_engine_job_list_changed (engine);
+
+	return task;
+}
+
 /**
  * pk_engine_get_updates:
  **/
 gboolean
 pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	return TRUE;
-}
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_get_updates (task);
+	*job = pk_task_get_job (task);
 
-/**
- * pk_engine_add_task:
- **/
-gboolean
-pk_engine_add_task (PkEngine *engine, PkTask *task)
-{
-	g_debug ("adding task %p", task);
-	g_ptr_array_add (engine->priv->array, task);
-	/* TODO: connect up signals */
-	return TRUE;	
+	return TRUE;
 }
 
 /**
@@ -130,8 +199,8 @@ pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
 {
 	guint i;
 	guint length;
-	PkTask *task;
 	PkTaskStatus status;
+	PkTask *task;
 	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -147,9 +216,10 @@ pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
 		}
 	}
 
-	task = pk_task_new ();
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
 	pk_task_update_system (task);
-	pk_engine_add_task (engine, task);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -161,8 +231,15 @@ gboolean
 pk_engine_find_packages (PkEngine *engine, const gchar *search,
 			 guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_find_packages (task, search);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -174,8 +251,15 @@ gboolean
 pk_engine_get_dependencies (PkEngine *engine, const gchar *package,
 			    guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_get_dependencies (task, package);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -187,8 +271,15 @@ gboolean
 pk_engine_remove_packages (PkEngine *engine, const gchar **packages,
 			   guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_remove_packages (task, packages);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -200,8 +291,15 @@ gboolean
 pk_engine_remove_packages_with_dependencies (PkEngine *engine, const gchar **packages,
 					     guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_remove_packages_with_dependencies (task, packages);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -213,8 +311,15 @@ gboolean
 pk_engine_install_packages (PkEngine *engine, const gchar **packages,
 			    guint *job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_install_packages (task, packages);
+	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
@@ -223,10 +328,12 @@ pk_engine_install_packages (PkEngine *engine, const gchar **packages,
  * pk_engine_get_job_list:
  **/
 gboolean
-pk_engine_get_job_list (PkEngine *engine, GArray *jobs, GError **error)
+pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	*job_list = pk_engine_create_job_list (engine);
 
 	return TRUE;
 }
@@ -269,12 +376,28 @@ pk_engine_class_init (PkEngineClass *klass)
 
 	object_class->finalize = pk_engine_finalize;
 
+
+//dbus_g_type_get_array ("GArray", G_TYPE_UINT)
+
+	/* set up signal that emits 'au' */
 	signals [JOB_LIST_CHANGED] =
 		g_signal_new ("job-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkEngineClass, job_list_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+			      NULL, NULL, g_cclosure_marshal_VOID__BOXED,
+			      G_TYPE_NONE, 1, dbus_g_type_get_collection ("GArray", G_TYPE_UINT));
+
+#if 0
+  signals[ALIASES_CHANGED] =
+    g_signal_new ("aliases-changed",
+                  G_OBJECT_CLASS_TYPE (gabble_connection_class),
+                  G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+                  0,
+                  NULL, NULL,
+                  gabble_connection_marshal_VOID__BOXED,
+                  G_TYPE_NONE, 1, (dbus_g_type_get_collection ("GPtrArray", (dbus_g_type_get_struct ("GValueArray", G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID)))));
+#endif
+
 	signals [JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

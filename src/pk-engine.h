@@ -52,7 +52,7 @@ typedef struct
 {
 	GObjectClass	parent_class;
 	void		(* job_list_changed)		(PkEngine	*engine,
-							 guint		*jobs);
+							 GArray		*job_list);
 	void		(* job_status_changed)		(PkEngine	*engine,
 							 guint		*jobs);
 	void		(* percentage_complete_changed)	(PkEngine	*engine,
@@ -102,7 +102,7 @@ gboolean	 pk_engine_install_packages		(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
-							 GArray		*jobs,
+							 GArray		**job_list,
 							 GError		**error);
 gboolean	 pk_engine_get_job_status		(PkEngine	*engine,
 							 guint		 job,

@@ -108,7 +108,22 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 guint
 pk_task_get_job (PkTask *task)
 {
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 	return task->priv->job;
+}
+
+/**
+ * pk_task_set_job:
+ **/
+gboolean
+pk_task_set_job (PkTask *task, guint job)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_debug ("set job %p=%i", task, job);
+	task->priv->job = job;
+	return TRUE;
 }
 
 /**
