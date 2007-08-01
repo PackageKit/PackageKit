@@ -34,6 +34,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
 

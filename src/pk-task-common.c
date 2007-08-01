@@ -23,6 +23,7 @@
 
 #include <glib/gi18n.h>
 
+#include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
 
@@ -180,3 +181,37 @@ pk_task_clear (PkTask *task)
 	return TRUE;
 }
 
+/**
+ * pk_task_status_to_text:
+ **/
+const gchar *
+pk_task_status_to_text (PkTaskStatus status)
+{
+	const gchar *text = NULL;
+	switch (status) {
+	case PK_TASK_STATUS_SETUP:
+		text = "setup";
+		break;
+	case PK_TASK_STATUS_QUERY:
+		text = "query";
+		break;
+	case PK_TASK_STATUS_REMOVE:
+		text = "remove";
+		break;
+	case PK_TASK_STATUS_DOWNLOAD:
+		text = "download";
+		break;
+	case PK_TASK_STATUS_INSTALL:
+		text = "install";
+		break;
+	case PK_TASK_STATUS_UPDATE:
+		text = "update";
+		break;
+	case PK_TASK_STATUS_EXIT:
+		text = "exit";
+		break;
+	default:
+		text = "invalid";
+	}
+	return text;
+}

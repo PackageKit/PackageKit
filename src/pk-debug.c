@@ -1,0 +1,134 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ *
+ * Licensed under the GNU General Public License Version 2
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include <glib.h>
+#include <glib/gi18n.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <time.h>
+
+#include "pk-debug.h"
+
+static gboolean do_verbose = FALSE;	/* if we should print out debugging */
+static gchar va_args_buffer [1025];
+
+/**
+ * pk_print_line:
+ **/
+static void
+pk_print_line (const gchar *func,
+		const gchar *file,
+		const int    line,
+		const gchar *buffer)
+{
+	gchar   *str_time;
+	time_t  the_time;
+
+	time (&the_time);
+	str_time = g_new0 (gchar, 255);
+	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
+
+	fprintf (stderr, "[%s] %s:%d (%s):\t %s\n",
+		 func, file, line, str_time, buffer);
+	g_free (str_time);
+}
+
+/**
+ * pk_debug_real:
+ **/
+void
+pk_debug_real (const gchar *func,
+		const gchar *file,
+		const int    line,
+		const gchar *format, ...)
+{
+	va_list args;
+
+	if (do_verbose == FALSE) {
+		return;
+	}
+
+	va_start (args, format);
+	g_vsnprintf (va_args_buffer, 1024, format, args);
+	va_end (args);
+
+	pk_print_line (func, file, line, va_args_buffer);
+}
+
+/**
+ * pk_warning_real:
+ **/
+void
+pk_warning_real (const gchar *func,
+		  const gchar *file,
+		  const int    line,
+		  const gchar *format, ...)
+{
+	va_list args;
+
+	if (do_verbose == FALSE) {
+		return;
+	}
+
+	va_start (args, format);
+	g_vsnprintf (va_args_buffer, 1024, format, args);
+	va_end (args);
+
+	/* do extra stuff for a warning */
+	fprintf (stderr, "*** WARNING ***\n");
+	pk_print_line (func, file, line, va_args_buffer);
+}
+
+/**
+ * pk_error_real:
+ **/
+void
+pk_error_real (const gchar *func,
+		const gchar *file,
+		const int    line,
+		const gchar *format, ...)
+{
+	va_list args;
+
+	va_start (args, format);
+	g_vsnprintf (va_args_buffer, 1024, format, args);
+	va_end (args);
+
+	/* do extra stuff for a warning */
+	fprintf (stderr, "*** ERROR ***\n");
+	pk_print_line (func, file, line, va_args_buffer);
+	exit (0);
+}
+
+/**
+ * pk_debug_init:
+ * @debug: If we should print out verbose logging
+ **/
+void
+pk_debug_init (gboolean debug)
+{
+	do_verbose = debug;
+	pk_debug ("Verbose debugging %s", (do_verbose) ? "enabled" : "disabled");
+}
+

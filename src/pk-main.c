@@ -30,6 +30,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "pk-debug.h"
 #include "pk-engine.h"
 #include "pk-interface.h"
 
@@ -134,6 +135,7 @@ main (int argc, char *argv[])
 		{ NULL}
 	};
 
+	pk_debug_init (verbose);
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}

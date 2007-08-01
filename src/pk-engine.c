@@ -37,9 +37,11 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
 #include "pk-engine.h"
+#include "pk-marshal.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -146,6 +148,63 @@ pk_engine_job_list_changed (PkEngine *engine)
 }
 
 /**
+ * pk_engine_job_status_changed_cb:
+ **/
+static void
+pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *engine)
+{
+	guint job;
+	const gchar *status_text;
+	const gchar *package;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+	status_text = pk_task_status_to_text (status);
+	package = "foo";
+
+	g_debug ("emitting job-status-changed %i, '%s', '%s'", job, status_text, package);
+	g_signal_emit (engine, signals [JOB_STATUS_CHANGED], 0, job, status_text, package);
+}
+
+/**
+ * pk_engine_percentage_complete_changed_cb:
+ **/
+static void
+pk_engine_percentage_complete_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
+{
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	g_debug ("got percentage-complete-changed %i", percentage);
+}
+
+/**
+ * pk_engine_packages_cb:
+ **/
+static void
+pk_engine_packages_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
+{
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	g_debug ("got packages");
+}
+
+/**
+ * pk_engine_finished_cb:
+ **/
+static void
+pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
+{
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	g_debug ("got finished %i", exit);
+}
+
+/**
  * pk_engine_new_task:
  **/
 static PkTask *
@@ -160,6 +219,16 @@ pk_engine_new_task (PkEngine *engine)
 	/* allocate a new task */
 	task = pk_task_new ();
 	g_debug ("adding task %p", task);
+
+	/* connect up signals */
+	g_signal_connect (task, "job-status-changed",
+			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
+	g_signal_connect (task, "percentage-complete-changed",
+			  G_CALLBACK (pk_engine_percentage_complete_changed_cb), engine);
+	g_signal_connect (task, "packages",
+			  G_CALLBACK (pk_engine_packages_cb), engine);
+	g_signal_connect (task, "finished",
+			  G_CALLBACK (pk_engine_finished_cb), engine);
 
 	/* set the job ID */
 	pk_task_set_job (task, job);
@@ -389,24 +458,12 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_STRUCT_OFFSET (PkEngineClass, job_list_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, dbus_g_type_get_collection ("GArray", G_TYPE_UINT));
-
-#if 0
-  signals[ALIASES_CHANGED] =
-    g_signal_new ("aliases-changed",
-                  G_OBJECT_CLASS_TYPE (gabble_connection_class),
-                  G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
-                  0,
-                  NULL, NULL,
-                  gabble_connection_marshal_VOID__BOXED,
-                  G_TYPE_NONE, 1, (dbus_g_type_get_collection ("GPtrArray", (dbus_g_type_get_struct ("GValueArray", G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID)))));
-#endif
-
 	signals [JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkEngineClass, job_status_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PERCENTAGE_COMPLETE_CHANGED] =
 		g_signal_new ("percentage-complete-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
