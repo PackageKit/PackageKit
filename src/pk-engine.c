@@ -50,7 +50,6 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GPtrArray		*array;
-	PkJob			*job_assignment;
 };
 
 enum {
@@ -313,7 +312,6 @@ pk_engine_init (PkEngine *engine)
 {
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->array = g_ptr_array_new ();
-	engine->priv->job_assignment = pk_job_new ();
 }
 
 /**
@@ -336,7 +334,6 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_ptr_array_free (engine->priv->array, TRUE);
-	g_object_unref (engine->priv->job_assignment);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

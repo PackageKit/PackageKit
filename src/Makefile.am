@@ -30,8 +30,6 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	pk-task.h					\
 	pk-task.c					\
-	pk-job.h					\
-	pk-job.c					\
 	$(NULL)
 
 packagekitd_LDADD =					\

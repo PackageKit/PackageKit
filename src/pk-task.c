@@ -34,12 +34,11 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "pk-job.h"
 #include "pk-task.h"
 
 static void     pk_task_class_init	(PkTaskClass *klass);
 static void     pk_task_init		(PkTask      *task);
-static void     pk_task_finalize	(GObject	 *object);
+static void     pk_task_finalize	(GObject     *object);
 
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
 
@@ -127,7 +126,8 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
-if (0)	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	//dlopend_get_updates
 if (0)	pk_task_change_percentage_complete (task, 0);
 if (0)	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
@@ -149,6 +149,9 @@ pk_task_update_system (PkTask *task)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+
+	//pk_module_update()
 
 	return TRUE;
 }
@@ -168,6 +171,7 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 
 	return TRUE;
 }
@@ -187,6 +191,7 @@ pk_task_get_dependencies (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 
 	return TRUE;
 }
@@ -206,6 +211,7 @@ pk_task_remove_packages (PkTask *task, const gchar **packages)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
 
 	return TRUE;
 }
@@ -225,6 +231,7 @@ pk_task_remove_packages_with_dependencies (PkTask *task, const gchar **packages)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
 
 	return TRUE;
 }
@@ -244,6 +251,9 @@ pk_task_install_packages (PkTask *task, const gchar **packages)
 		return FALSE;
 	}
 	task->priv->assigned = TRUE;
+	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
+
+	//pk_backend_install (packages, FALSE);
 
 	return TRUE;
 }
@@ -280,7 +290,14 @@ pk_task_cancel_job_try (PkTask *task)
 		g_warning ("Not assigned");
 		return FALSE;
 	}
-	task->priv->assigned = TRUE;
+	/* try to cancel action */
+	if (task->priv->status != PK_TASK_STATUS_QUERY) {
+		g_warning ("cannot cancel as not query");
+		return FALSE;
+	}
+
+	/* close process */
+	//pk_backend_cancel ();
 
 	return TRUE;
 }
@@ -331,17 +348,13 @@ pk_task_class_init (PkTaskClass *klass)
 static void
 pk_task_init (PkTask *task)
 {
-	PkJob *job;
-
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->priv->assigned = FALSE;
 	task->priv->status = PK_TASK_STATUS_INVALID;
 	task->priv->exit = PK_TASK_EXIT_UNKNOWN;
 
 	/* allocate a unique job number */
-	job = pk_job_new ();
-	task->priv->job = pk_job_get_unique (job);
-	g_object_unref (job);
+	task->priv->job = 1;
 }
 
 /**
