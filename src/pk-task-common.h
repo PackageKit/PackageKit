@@ -42,8 +42,8 @@ gboolean	 pk_task_get_job_status			(PkTask		*task,
 gboolean	 pk_task_clear				(PkTask		*task);
 gboolean	 pk_task_setup_signals			(GObjectClass	*object_class,
 							 guint		*signals);
-const gchar *
-pk_task_status_to_text (PkTaskStatus status);
+const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
+const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
 
 G_END_DECLS
 

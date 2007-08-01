@@ -54,7 +54,6 @@
     <signal name="PercentageCompleteChanged">
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
-      <arg type="s" name="description" direction="out"/> <!--installing,downloading,<more>-->
     </signal>
     <signal name="Packages">
       <arg type="u" name="job" direction="out"/>

@@ -215,3 +215,27 @@ pk_task_status_to_text (PkTaskStatus status)
 	}
 	return text;
 }
+
+/**
+ * pk_task_exit_to_text:
+ **/
+const gchar *
+pk_task_exit_to_text (PkTaskExit exit)
+{
+	const gchar *text = NULL;
+	switch (exit) {
+	case PK_TASK_EXIT_SUCCESS:
+		text = "success";
+		break;
+	case PK_TASK_EXIT_FAILED:
+		text = "failed";
+		break;
+	case PK_TASK_EXIT_CANCELED:
+		text = "canceled";
+		break;
+	default:
+		text = "unknown";
+	}
+	return text;
+}
+
