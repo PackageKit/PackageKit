@@ -27,7 +27,6 @@ sbin_PROGRAMS =						\
 packagekitd_SOURCES =					\
 	pk-main.c					\
 	pk-task.h					\
-	pk-task.c					\
 	pk-task-common.h				\
 	pk-task-common.c				\
 	pk-marshal.c					\
@@ -37,6 +36,11 @@ packagekitd_SOURCES =					\
 	pk-engine.h					\
 	pk-engine.c					\
 	$(NULL)
+
+if BACKEND_TYPE_DUMMY
+packagekitd_SOURCES +=					\
+	pk-task.c
+endif
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\

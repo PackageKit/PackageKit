@@ -91,6 +91,22 @@ if test x$enable_tests = xyes ; then
 fi
 AM_CONDITIONAL([HAVE_TESTS], [test $have_tests = yes])
 
+
+dnl ---------------------------------------------------------------------------
+dnl - Compile time choice of backend
+dnl ---------------------------------------------------------------------------
+AC_ARG_WITH([backend],
+	    AS_HELP_STRING([--with-backend=<option>],
+			   [Backend to use dummy,apt,yum (dummy)]))
+# default to the dummy backend
+if test x$with_backend = x; then
+    with_backend=dummy
+fi
+AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using APT])
+AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xdummy], [using APT])
+
+
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
@@ -109,6 +125,7 @@ echo "
         datadir:                   ${datadir}
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
+        Backend:                   ${with_backend}
         PolicyKit support:         ${have_polkit}
         Self test support:         ${have_tests}
 "
