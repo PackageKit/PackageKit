@@ -19,6 +19,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/* DUMMY TARGET
+ *
+ * Upgrade takes 10 seconds and gives out 10% percentage points
+ * Get updates is instant and sends back a single package "kernel"
+ * Install of anything takes 20 seconds and spends 10 secs downloading and 10 secs installing with 1% percentage points
+ * Removal is instant
+ * Removal of dbus fails for deps
+ * Removal of evince passes with no deps
+ * Search is instant, returns 10 objects in two packages
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -47,6 +58,7 @@ static void     pk_task_finalize	(GObject     *object);
 struct PkTaskPrivate
 {
 	gboolean		 whatever_you_want;
+	guint			 system_update_percentage;
 };
 
 static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
@@ -67,12 +79,23 @@ pk_task_get_updates (PkTask *task)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	//dlopend_get_updates
-if (0)	pk_task_change_percentage_complete (task, 0);
-if (0)	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
 }
+
+gboolean
+pk_task_update_system_timeout (gpointer data)
+{
+	PkTask *task = (PkTask *) data;
+	if (task->priv->system_update_percentage == 100) {
+		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+		return FALSE;
+	}
+	task->priv->system_update_percentage += 10;
+	pk_task_change_percentage_complete (task, task->priv->system_update_percentage);
+	return TRUE;
+}
+
 
 /**
  * pk_task_update_system:
@@ -89,7 +112,8 @@ pk_task_update_system (PkTask *task)
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
 
-	//pk_module_update()
+	task->priv->system_update_percentage = 0;
+	g_timeout_add (1000, pk_task_update_system_timeout, task);
 
 	return TRUE;
 }
@@ -108,6 +132,7 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }
@@ -126,6 +151,7 @@ pk_task_get_dependencies (PkTask *task, const gchar *package)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }
@@ -144,6 +170,7 @@ pk_task_remove_packages (PkTask *task, const gchar **packages)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }
@@ -162,6 +189,7 @@ pk_task_remove_packages_with_dependencies (PkTask *task, const gchar **packages)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }
@@ -182,6 +210,7 @@ pk_task_install_packages (PkTask *task, const gchar **packages)
 	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
 
 	//pk_backend_install (packages, FALSE);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
 }

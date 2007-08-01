@@ -213,6 +213,11 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 
 	pk_debug ("emitting finished job:%i, '%s'", job, exit_text);
 	g_signal_emit (engine, signals [FINISHED], 0, job, exit_text);
+
+	/* remove from array and unref */
+	g_ptr_array_remove (engine->priv->array, task);
+	g_object_unref (task);
+	pk_debug ("removed task %p", task);
 }
 
 /**
