@@ -110,6 +110,18 @@ pk_task_get_job_status (PkTask *task, PkTaskStatus *status)
 }
 
 /**
+ * pk_task_finished_idle:
+ **/
+static gboolean
+pk_task_finished_idle (gpointer data)
+{
+	PkTask *task = (PkTask *) data;
+	pk_debug ("emit finished %i", task->exit);
+	g_signal_emit (task, task->signals [PK_TASK_FINISHED], 0, task->exit);
+	return FALSE;
+}
+
+/**
  * pk_task_finished:
  **/
 gboolean
@@ -117,8 +129,12 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	pk_debug ("emit finished %i", exit);
-	g_signal_emit (task, task->signals [PK_TASK_FINISHED], 0, exit);
+
+	/* we have to run this idle as the command may finish before the job
+	 * has been sent to the client. I love async... */
+	pk_debug ("adding finished %p to idle loop", task);
+	task->exit = exit;
+	g_idle_add (pk_task_finished_idle, task);
 	return TRUE;
 }
 
