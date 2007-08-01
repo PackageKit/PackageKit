@@ -65,12 +65,12 @@ pk_object_register (DBusGConnection *connection,
 				 G_TYPE_UINT, &request_name_result,
 				 G_TYPE_INVALID);
 	if (error) {
-		g_debug ("ERROR: %s", error->message);
+		pk_debug ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		g_warning ("RequestName failed!");
+		pk_warning ("RequestName failed!");
 		return FALSE;
 	}
 
@@ -135,7 +135,6 @@ main (int argc, char *argv[])
 		{ NULL}
 	};
 
-	pk_debug_init (verbose);
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
@@ -146,6 +145,7 @@ main (int argc, char *argv[])
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
+	pk_debug_init (verbose);
 
 	if (version == TRUE) {
 		g_print ("Version %s\n", VERSION);
@@ -164,7 +164,7 @@ main (int argc, char *argv[])
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		g_warning ("%s", error->message);
+		pk_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start "
 			   "the dbus system service.\n"

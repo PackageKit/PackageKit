@@ -142,7 +142,7 @@ pk_engine_job_list_changed (PkEngine *engine)
 
 	job_list = pk_engine_create_job_list (engine);
 
-	g_debug ("emitting job-list-changed");
+	pk_debug ("emitting job-list-changed");
 	g_signal_emit (engine, signals [JOB_LIST_CHANGED], 0, job_list);
 	return TRUE;
 }
@@ -164,7 +164,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 	status_text = pk_task_status_to_text (status);
 	package = "foo";
 
-	g_debug ("emitting job-status-changed %i, '%s', '%s'", job, status_text, package);
+	pk_debug ("emitting job-status-changed %i, '%s', '%s'", job, status_text, package);
 	g_signal_emit (engine, signals [JOB_STATUS_CHANGED], 0, job, status_text, package);
 }
 
@@ -177,7 +177,7 @@ pk_engine_percentage_complete_changed_cb (PkTask *task, guint percentage, PkEngi
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("got percentage-complete-changed %i", percentage);
+	pk_debug ("got percentage-complete-changed %i", percentage);
 }
 
 /**
@@ -189,7 +189,7 @@ pk_engine_packages_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("got packages");
+	pk_debug ("got packages");
 }
 
 /**
@@ -201,7 +201,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	g_debug ("got finished %i", exit);
+	pk_debug ("got finished %i", exit);
 }
 
 /**
@@ -218,7 +218,7 @@ pk_engine_new_task (PkEngine *engine)
 
 	/* allocate a new task */
 	task = pk_task_new ();
-	g_debug ("adding task %p", task);
+	pk_debug ("adding task %p", task);
 
 	/* connect up signals */
 	g_signal_connect (task, "job-status-changed",

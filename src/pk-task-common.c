@@ -71,7 +71,7 @@ pk_task_change_percentage_complete (PkTask *task, guint percentage)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	g_debug ("emit percentage-complete-changed %i", percentage);
+	pk_debug ("emit percentage-complete-changed %i", percentage);
 	g_signal_emit (task, task->signals [PK_TASK_PERCENTAGE_COMPLETE_CHANGED], 0, percentage);
 	return TRUE;
 }
@@ -85,7 +85,7 @@ pk_task_change_job_status (PkTask *task, PkTaskStatus status)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 	task->status = status;
-	g_debug ("emit job-status-changed %i", status);
+	pk_debug ("emiting job-status-changed %i", status);
 	g_signal_emit (task, task->signals [PK_TASK_JOB_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
@@ -102,7 +102,7 @@ pk_task_get_job_status (PkTask *task, PkTaskStatus *status)
 
 	/* check to see if we have an action */
 	if (task->assigned == FALSE) {
-		g_warning ("Not assigned");
+		pk_warning ("Not assigned");
 		return FALSE;
 	}
 	*status = task->status;
@@ -117,7 +117,7 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	g_debug ("emit finished %i", exit);
+	pk_debug ("emit finished %i", exit);
 	g_signal_emit (task, task->signals [PK_TASK_FINISHED], 0, exit);
 	return TRUE;
 }
@@ -133,7 +133,7 @@ pk_task_assign (PkTask *task)
 
 	/* check to see if we already have an action */
 	if (task->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	task->assigned = TRUE;
@@ -159,7 +159,7 @@ pk_task_set_job (PkTask *task, guint job)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	g_debug ("set job %p=%i", task, job);
+	pk_debug ("set job %p=%i", task, job);
 	task->job = job;
 	return TRUE;
 }

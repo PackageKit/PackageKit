@@ -197,12 +197,12 @@ pk_task_cancel_job_try (PkTask *task)
 
 	/* check to see if we have an action */
 	if (task->assigned == FALSE) {
-		g_warning ("Not assigned");
+		pk_warning ("Not assigned");
 		return FALSE;
 	}
 	/* try to cancel action */
 	if (task->status != PK_TASK_STATUS_QUERY) {
-		g_warning ("cannot cancel as not query");
+		pk_warning ("cannot cancel as not query");
 		return FALSE;
 	}
 
