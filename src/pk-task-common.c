@@ -38,41 +38,37 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 	signals [PK_TASK_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTaskClass, job_status_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PERCENTAGE_COMPLETE_CHANGED] =
+	signals [PK_TASK_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-complete-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTaskClass, percentage_complete_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PACKAGES] =
-		g_signal_new ("packages",
+	signals [PK_TASK_PACKAGE] =
+		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTaskClass, packages),
-			      NULL, NULL, g_cclosure_marshal_VOID__POINTER,
-			      G_TYPE_NONE, 1, G_TYPE_POINTER);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_TASK_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTaskClass, finished),
-			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	return TRUE;
 }
 
 /**
- * pk_task_change_percentage_complete:
+ * pk_task_change_percentage:
  **/
 gboolean
-pk_task_change_percentage_complete (PkTask *task, guint percentage)
+pk_task_change_percentage (PkTask *task, guint percentage)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 	pk_debug ("emit percentage-complete-changed %i", percentage);
-	g_signal_emit (task, task->signals [PK_TASK_PERCENTAGE_COMPLETE_CHANGED], 0, percentage);
+	g_signal_emit (task, task->signals [PK_TASK_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 
@@ -90,6 +86,34 @@ pk_task_change_job_status (PkTask *task, PkTaskStatus status)
 	return TRUE;
 }
 
+/**
+ * pk_task_package_idle:
+ **/
+static gboolean
+pk_task_package_idle (gpointer data)
+{
+	PkTask *task = (PkTask *) data;
+	pk_debug ("emit package %s", task->package);
+	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, g_strdup (task->package));
+	return FALSE;
+}
+
+/**
+ * pk_task_package:
+ **/
+gboolean
+pk_task_package (PkTask *task, const gchar *package)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* we have to run this idle as the command may finish before the job
+	 * has been sent to the client. I love async... */
+	pk_debug ("adding package %s to idle loop", package);
+	task->package = g_strdup (package);
+	g_idle_add (pk_task_package_idle, task);
+	return TRUE;
+}
 
 /**
  * pk_task_get_job_status:
@@ -193,6 +217,7 @@ pk_task_clear (PkTask *task)
 	task->status = PK_TASK_STATUS_INVALID;
 	task->exit = PK_TASK_EXIT_UNKNOWN;
 	task->job = 1;
+	task->package = NULL;
 
 	return TRUE;
 }

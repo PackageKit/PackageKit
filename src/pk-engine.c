@@ -55,15 +55,16 @@ struct PkEnginePrivate
 };
 
 enum {
-	JOB_LIST_CHANGED,
-	JOB_STATUS_CHANGED,
-	PERCENTAGE_COMPLETE_CHANGED,
-	PACKAGES,
-	FINISHED,
-	LAST_SIGNAL
+	PK_ENGINE_JOB_LIST_CHANGED,
+	PK_ENGINE_JOB_STATUS_CHANGED,
+	PK_ENGINE_PERCENTAGE_CHANGED,
+	PK_ENGINE_PACKAGE,
+	PK_ENGINE_FINISHED,
+	PK_ENGINE_DESCRIPTION,
+	PK_ENGINE_LAST_SIGNAL
 };
 
-static guint	     signals [LAST_SIGNAL] = { 0, };
+static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
 
@@ -143,7 +144,7 @@ pk_engine_job_list_changed (PkEngine *engine)
 	job_list = pk_engine_create_job_list (engine);
 
 	pk_debug ("emitting job-list-changed");
-	g_signal_emit (engine, signals [JOB_LIST_CHANGED], 0, job_list);
+	g_signal_emit (engine, signals [PK_ENGINE_JOB_LIST_CHANGED], 0, job_list);
 	return TRUE;
 }
 
@@ -165,14 +166,14 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 	package = "foo";
 
 	pk_debug ("emitting job-status-changed job:%i, '%s', '%s'", job, status_text, package);
-	g_signal_emit (engine, signals [JOB_STATUS_CHANGED], 0, job, status_text, package);
+	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text, package);
 }
 
 /**
- * pk_engine_percentage_complete_changed_cb:
+ * pk_engine_percentage_changed_cb:
  **/
 static void
-pk_engine_percentage_complete_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
+pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
 	guint job;
 
@@ -180,20 +181,24 @@ pk_engine_percentage_complete_changed_cb (PkTask *task, guint percentage, PkEngi
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	job = pk_task_get_job (task);
-	pk_debug ("emitting percentage-complete-changed job:%i %i", job, percentage);
-	g_signal_emit (engine, signals [PERCENTAGE_COMPLETE_CHANGED], 0, job, percentage);
+	pk_debug ("emitting percentage-changed job:%i %i", job, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, job, percentage);
 }
 
 /**
- * pk_engine_packages_cb:
+ * pk_engine_package_cb:
  **/
 static void
-pk_engine_packages_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
+pk_engine_package_cb (PkTask *task, const gchar *package, PkEngine *engine)
 {
+	guint job;
+
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("got packages");
+	job = pk_task_get_job (task);
+	pk_debug ("emitting package job:%i %s", job, package);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, package);
 }
 
 /**
@@ -212,7 +217,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	exit_text = pk_task_exit_to_text (exit);
 
 	pk_debug ("emitting finished job:%i, '%s'", job, exit_text);
-	g_signal_emit (engine, signals [FINISHED], 0, job, exit_text);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text);
 
 	/* remove from array and unref */
 	g_ptr_array_remove (engine->priv->array, task);
@@ -240,9 +245,9 @@ pk_engine_new_task (PkEngine *engine)
 	g_signal_connect (task, "job-status-changed",
 			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
 	g_signal_connect (task, "percentage-complete-changed",
-			  G_CALLBACK (pk_engine_percentage_complete_changed_cb), engine);
-	g_signal_connect (task, "packages",
-			  G_CALLBACK (pk_engine_packages_cb), engine);
+			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
+	g_signal_connect (task, "package",
+			  G_CALLBACK (pk_engine_package_cb), engine);
 	g_signal_connect (task, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 
@@ -333,11 +338,11 @@ pk_engine_find_packages (PkEngine *engine, const gchar *search,
 }
 
 /**
- * pk_engine_get_dependencies:
+ * pk_engine_get_deps:
  **/
 gboolean
-pk_engine_get_dependencies (PkEngine *engine, const gchar *package,
-			    guint *job, GError **error)
+pk_engine_get_deps (PkEngine *engine, const gchar *package,
+		    guint *job, GError **error)
 {
 	PkTask *task;
 
@@ -346,18 +351,18 @@ pk_engine_get_dependencies (PkEngine *engine, const gchar *package,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_task_get_dependencies (task, package);
+	pk_task_get_deps (task, package);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
 
 /**
- * pk_engine_remove_packages:
+ * pk_engine_remove_package:
  **/
 gboolean
-pk_engine_remove_packages (PkEngine *engine, const gchar **packages,
-			   guint *job, GError **error)
+pk_engine_remove_package (PkEngine *engine, const gchar *package,
+			  guint *job, GError **error)
 {
 	PkTask *task;
 
@@ -366,17 +371,17 @@ pk_engine_remove_packages (PkEngine *engine, const gchar **packages,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_task_remove_packages (task, packages);
+	pk_task_remove_package (task, package);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
 
 /**
- * pk_engine_remove_packages_with_dependencies:
+ * pk_engine_remove_package_with_deps:
  **/
 gboolean
-pk_engine_remove_packages_with_dependencies (PkEngine *engine, const gchar **packages,
+pk_engine_remove_package_with_deps (PkEngine *engine, const gchar *package,
 					     guint *job, GError **error)
 {
 	PkTask *task;
@@ -386,18 +391,18 @@ pk_engine_remove_packages_with_dependencies (PkEngine *engine, const gchar **pac
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_task_remove_packages_with_dependencies (task, packages);
+	pk_task_remove_package_with_deps (task, package);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
 }
 
 /**
- * pk_engine_install_packages:
+ * pk_engine_install_package:
  **/
 gboolean
-pk_engine_install_packages (PkEngine *engine, const gchar **packages,
-			    guint *job, GError **error)
+pk_engine_install_package (PkEngine *engine, const gchar *package,
+			   guint *job, GError **error)
 {
 	PkTask *task;
 
@@ -406,7 +411,7 @@ pk_engine_install_packages (PkEngine *engine, const gchar **packages,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_task_install_packages (task, packages);
+	pk_task_install_package (task, package);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -464,31 +469,33 @@ pk_engine_class_init (PkEngineClass *klass)
 
 	object_class->finalize = pk_engine_finalize;
 
-
-//dbus_g_type_get_array ("GArray", G_TYPE_UINT)
-
 	/* set up signal that emits 'au' */
-	signals [JOB_LIST_CHANGED] =
+	signals [PK_ENGINE_JOB_LIST_CHANGED] =
 		g_signal_new ("job-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, dbus_g_type_get_collection ("GArray", G_TYPE_UINT));
-	signals [JOB_STATUS_CHANGED] =
+	signals [PK_ENGINE_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PERCENTAGE_COMPLETE_CHANGED] =
-		g_signal_new ("percentage-complete-changed",
+	signals [PK_ENGINE_PERCENTAGE_CHANGED] =
+		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
-	signals [PACKAGES] =
-		g_signal_new ("packages",
+	signals [PK_ENGINE_PACKAGE] =
+		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals [FINISHED] =
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals [PK_ENGINE_DESCRIPTION] =
+		g_signal_new ("description",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
@@ -511,8 +518,6 @@ pk_engine_init (PkEngine *engine)
 /**
  * pk_engine_finalize:
  * @object: The object to finalize
- *
- * Finalise the engine, by unref'ing all the depending modules.
  **/
 static void
 pk_engine_finalize (GObject *object)

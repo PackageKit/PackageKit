@@ -56,8 +56,8 @@ typedef enum {
 
 typedef enum {
 	PK_TASK_JOB_STATUS_CHANGED,
-	PK_TASK_PERCENTAGE_COMPLETE_CHANGED,
-	PK_TASK_PACKAGES,
+	PK_TASK_PERCENTAGE_CHANGED,
+	PK_TASK_PACKAGE,
 	PK_TASK_FINISHED,
 	PK_TASK_LAST_SIGNAL
 } PkSignals;
@@ -70,20 +70,13 @@ typedef struct
 	guint			 job;
 	PkTaskStatus		 status;
 	PkTaskExit		 exit;
-	guint			 *signals;
+	gchar			*package;
+	guint			*signals;
 } PkTask;
 
 typedef struct
 {
 	GObjectClass	parent_class;
-	void		(* job_status_changed)		(PkTask		*task,
-							 PkTaskStatus	 status);
-	void		(* percentage_complete_changed)	(PkTask		*task,
-							 guint		 percentage);
-	void		(* packages)			(PkTask		*task,
-							 GPtrArray	*packages);
-	void		(* finished)			(PkTask		*task,
-							 PkTaskExit	 completion);
 } PkTaskClass;
 
 GType		 pk_task_get_type		  	(void);
@@ -93,14 +86,14 @@ gboolean	 pk_task_get_updates			(PkTask		*task);
 gboolean	 pk_task_update_system			(PkTask		*task);
 gboolean	 pk_task_find_packages			(PkTask		*task,
 							 const gchar	*search);
-gboolean	 pk_task_get_dependencies		(PkTask		*task,
+gboolean	 pk_task_get_deps			(PkTask		*task,
 							 const gchar	*package);
-gboolean	 pk_task_remove_packages		(PkTask		*task,
-							 const gchar	**packages);
-gboolean	 pk_task_remove_packages_with_dependencies(PkTask	*task,
-							 const gchar	**packages);
-gboolean	 pk_task_install_packages		(PkTask		*task,
-							 const gchar	**packages);
+gboolean	 pk_task_remove_package			(PkTask		*task,
+							 const gchar	*package);
+gboolean	 pk_task_remove_package_with_deps	(PkTask	*task,
+							 const gchar	*package);
+gboolean	 pk_task_install_package		(PkTask		*task,
+							 const gchar	*package);
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);
 
 G_END_DECLS

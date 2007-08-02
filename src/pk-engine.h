@@ -75,20 +75,20 @@ gboolean	 pk_engine_find_packages		(PkEngine	*engine,
 							 const gchar	*search,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_get_dependencies		(PkEngine	*engine,
+gboolean	 pk_engine_get_deps			(PkEngine	*engine,
 							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_remove_packages		(PkEngine	*engine,
-							 const gchar	**packages,
+gboolean	 pk_engine_remove_package		(PkEngine	*engine,
+							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_remove_packages_with_dependencies(PkEngine	*engine,
-							 const gchar	**packages,
+gboolean	 pk_engine_remove_package_with_deps	(PkEngine	*engine,
+							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_install_packages		(PkEngine	*engine,
-							 const gchar	**packages,
+gboolean	 pk_engine_install_package		(PkEngine	*engine,
+							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,

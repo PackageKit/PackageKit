@@ -30,12 +30,14 @@ G_BEGIN_DECLS
 guint		 pk_task_get_job			(PkTask		*task);
 gboolean	 pk_task_set_job			(PkTask		*task,
 							 guint		 job);
-gboolean	 pk_task_change_percentage_complete	(PkTask		*task,
+gboolean	 pk_task_change_percentage		(PkTask		*task,
 							 guint		 percentage);
 gboolean	 pk_task_change_job_status		(PkTask		*task,
 							 PkTaskStatus	 status);
 gboolean	 pk_task_finished			(PkTask		*task,
 							 PkTaskExit	 exit);
+gboolean	 pk_task_package			(PkTask		*task,
+							 const gchar	*package);
 gboolean	 pk_task_assign				(PkTask		*task);
 gboolean	 pk_task_get_job_status			(PkTask		*task,
 							 PkTaskStatus	*status);

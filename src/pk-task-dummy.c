@@ -27,7 +27,7 @@
  * Removal is instant
  * Removal of dbus fails for deps
  * Removal of evince passes with no deps
- * Search is instant, returns 10 objects in two packages
+ * Search takes two seconds, returns 5 packages with no percentage updates
  */
 
 #include "config.h"
@@ -92,7 +92,7 @@ pk_task_update_system_timeout (gpointer data)
 		return FALSE;
 	}
 	task->priv->system_update_percentage += 10;
-	pk_task_change_percentage_complete (task, task->priv->system_update_percentage);
+	pk_task_change_percentage (task, task->priv->system_update_percentage);
 	return TRUE;
 }
 
@@ -119,6 +119,21 @@ pk_task_update_system (PkTask *task)
 }
 
 /**
+ * pk_task_find_packages_timeout:
+ **/
+gboolean
+pk_task_find_packages_timeout (gpointer data)
+{
+	PkTask *task = (PkTask *) data;
+	pk_task_package (task, "evince");
+	pk_task_package (task, "evince-gnome");
+	pk_task_package (task, "evince-tools");
+	pk_task_package (task, "evince-debuginfo");
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	return FALSE;
+}
+
+/**
  * pk_task_find_packages:
  **/
 gboolean
@@ -131,17 +146,18 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 		return FALSE;
 	}
 
+	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
+	g_timeout_add (2000, pk_task_find_packages_timeout, task);
 	return TRUE;
 }
 
 /**
- * pk_task_get_dependencies:
+ * pk_task_get_deps:
  **/
 gboolean
-pk_task_get_dependencies (PkTask *task, const gchar *package)
+pk_task_get_deps (PkTask *task, const gchar *package)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -150,6 +166,7 @@ pk_task_get_dependencies (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
+	task->package = strdup (package);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
@@ -157,10 +174,10 @@ pk_task_get_dependencies (PkTask *task, const gchar *package)
 }
 
 /**
- * pk_task_remove_packages:
+ * pk_task_remove_package:
  **/
 gboolean
-pk_task_remove_packages (PkTask *task, const gchar **packages)
+pk_task_remove_package (PkTask *task, const gchar *package)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -176,10 +193,10 @@ pk_task_remove_packages (PkTask *task, const gchar **packages)
 }
 
 /**
- * pk_task_remove_packages_with_dependencies:
+ * pk_task_remove_package_with_deps:
  **/
 gboolean
-pk_task_remove_packages_with_dependencies (PkTask *task, const gchar **packages)
+pk_task_remove_package_with_deps (PkTask *task, const gchar *package)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -195,10 +212,10 @@ pk_task_remove_packages_with_dependencies (PkTask *task, const gchar **packages)
 }
 
 /**
- * pk_task_install_packages:
+ * pk_task_install_package:
  **/
 gboolean
-pk_task_install_packages (PkTask *task, const gchar **packages)
+pk_task_install_package (PkTask *task, const gchar *package)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -209,7 +226,7 @@ pk_task_install_packages (PkTask *task, const gchar **packages)
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
 
-	//pk_backend_install (packages, FALSE);
+	//pk_backend_install (package, FALSE);
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
@@ -276,6 +293,7 @@ pk_task_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TASK (object));
 	task = PK_TASK (object);
 	g_return_if_fail (task->priv != NULL);
+	g_free (task->package);
 	G_OBJECT_CLASS (pk_task_parent_class)->finalize (object);
 }
 

@@ -12,20 +12,20 @@
       <arg type="s" name="search" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
-    <method name="GetDependencies">
+    <method name="GetDeps">
       <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
-    <method name="RemovePackages">
-      <arg type="as" name="packages" direction="in"/>
+    <method name="RemovePackage">
+      <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
-    <method name="RemovePackagesWithDependencies">
-      <arg type="as" name="packages" direction="in"/>
+    <method name="RemovePackageWithDeps">
+      <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
-    <method name="InstallPackages">
-      <arg type="as" name="packages" direction="in"/>
+    <method name="InstallPackage">
+      <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
 
@@ -51,13 +51,19 @@
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
       <arg type="s" name="package" direction="out"/>
     </signal>
-    <signal name="PercentageCompleteChanged">
+    <signal name="PercentageChanged">
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
-    <signal name="Packages">
+    <signal name="Package">
       <arg type="u" name="job" direction="out"/>
-      <arg type="a(bs)" name="flag_and_packages" direction="out"/> <!--flag can be "installed" or "security" -->
+      <arg type="s" name="package" direction="out"/>
+    </signal>
+    <signal name="Description">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="package" direction="out"/>
+      <arg type="s" name="summary" direction="out"/>
+      <arg type="s" name="detail" direction="out"/>
     </signal>
     <signal name="Finished">
       <arg type="u" name="job" direction="out"/>
