@@ -491,8 +491,18 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 gboolean
 pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 {
+	PkTask *task;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	task = pk_get_task_from_job (engine, job);
+	if (task == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_task_cancel_job_try (task);
 
 	return TRUE;
 }
