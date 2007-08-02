@@ -95,6 +95,7 @@ pk_engine_error_get_type (void)
 		static const GEnumValue values[] =
 		{
 			ENUM_ENTRY (PK_ENGINE_ERROR_DENIED, "PermissionDenied"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -129,6 +130,33 @@ pk_engine_create_job_list (PkEngine *engine)
 	}
 	return job_list;
 }
+
+/**
+ * pk_get_task_from_job:
+ **/
+static PkTask *
+pk_get_task_from_job (PkEngine *engine, guint job)
+{
+	guint i;
+	guint length;
+	guint job_tmp;
+	PkTask *task;
+
+	g_return_val_if_fail (engine != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
+
+	/* find the task with the job ID */
+	length = engine->priv->array->len;
+	for (i=0; i<length; i++) {
+		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
+		job_tmp = pk_task_get_job (task);
+		if (job_tmp == job) {
+			return task;
+		}
+	}
+	return NULL;
+}
+
 
 /**
  * pk_engine_job_list_changed:
@@ -438,8 +466,21 @@ gboolean
 pk_engine_get_job_status (PkEngine *engine, guint job,
 			  const gchar **status, const gchar **package, GError **error)
 {
+	PkTask *task;
+	PkTaskStatus status_enum;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	task = pk_get_task_from_job (engine, job);
+	if (task == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_task_get_job_status (task, &status_enum);
+	*status = g_strdup (pk_task_status_to_text (status_enum));
+	*package = g_strdup ("foo");
 
 	return TRUE;
 }

@@ -56,6 +56,7 @@ typedef struct
 typedef enum
 {
 	PK_ENGINE_ERROR_DENIED,
+	PK_ENGINE_ERROR_NO_SUCH_JOB,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
