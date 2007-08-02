@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node name="/">
   <interface name="org.freedesktop.PackageKit">
+
+    <!-- ASYNCHRONOUS -->
+
     <!-- Schedule new jobs -->
     <method name="GetUpdates">
       <arg type="u" name="job" direction="out"/>
@@ -29,22 +32,6 @@
       <arg type="u" name="job" direction="out"/>
     </method>
 
-    <!-- Job management -->
-    <method name="GetJobList">
-      <arg type="au" name="jobs" direction="out"/>
-    </method>
-    <signal name="JobListChanged">
-      <arg type="au" name="jobs" direction="out"/>
-    </signal>
-    <method name="GetJobStatus">
-      <arg type="u" name="job" direction="in"/>
-      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
-      <arg type="s" name="package" direction="out"/>
-    </method>
-    <method name="CancelJobTry">
-      <arg type="u" name="job" direction="in"/>
-    </method>
-
     <!-- state has changed, we want to broadcast this to all jobs -->
     <signal name="JobStatusChanged">
       <arg type="u" name="job" direction="out"/>
@@ -69,6 +56,26 @@
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="status" direction="out"/> <!-- 0=Success, 1=Failed, 2=Canceled -->
     </signal>
+
+
+    <!-- SYNCHRONOUS -->
+
+    <!-- Job management -->
+    <method name="GetJobList">
+      <arg type="au" name="jobs" direction="out"/>
+    </method>
+    <signal name="JobListChanged">
+      <arg type="au" name="jobs" direction="out"/>
+    </signal>
+    <method name="GetJobStatus"> <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
+      <arg type="s" name="package" direction="out"/>
+    </method>
+    <method name="CancelJobTry"> <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+    </method>
+
   </interface>
 </node>
 
