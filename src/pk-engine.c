@@ -480,7 +480,7 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 	}
 	pk_task_get_job_status (task, &status_enum);
 	*status = g_strdup (pk_task_status_to_text (status_enum));
-	*package = g_strdup ("foo");
+	*package = pk_task_get_description (task);
 
 	return TRUE;
 }

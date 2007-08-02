@@ -268,3 +268,14 @@ pk_task_exit_to_text (PkTaskExit exit)
 	return text;
 }
 
+/**
+ * pk_task_get_description:
+ *
+ * Need to g_free
+ **/
+gchar *
+pk_task_get_description (PkTask *task)
+{
+	return g_strdup (task->package);
+}
+
