@@ -87,18 +87,6 @@ pk_task_change_job_status (PkTask *task, PkTaskStatus status)
 }
 
 /**
- * pk_task_package_idle:
- **/
-static gboolean
-pk_task_package_idle (gpointer data)
-{
-	PkTask *task = (PkTask *) data;
-	pk_debug ("emit package %s", task->package);
-	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, g_strdup (task->package));
-	return FALSE;
-}
-
-/**
  * pk_task_package:
  **/
 gboolean
@@ -109,9 +97,9 @@ pk_task_package (PkTask *task, const gchar *package)
 
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
-	pk_debug ("adding package %s to idle loop", package);
-	task->package = g_strdup (package);
-	g_idle_add (pk_task_package_idle, task);
+	pk_debug ("emit package %s", package);
+	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, package);
+
 	return TRUE;
 }
 

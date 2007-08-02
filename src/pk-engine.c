@@ -488,8 +488,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
