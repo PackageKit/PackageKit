@@ -25,6 +25,8 @@ bin_PROGRAMS =						\
 
 pk_console_SOURCES =					\
 	pk-console.c					\
+	pk-debug.c					\
+	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-task-client.c				\

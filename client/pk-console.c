@@ -28,6 +28,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-debug.h"
 #include "pk-task-client.h"
 
 /**
@@ -80,21 +81,22 @@ main (int argc, char *argv[])
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
+	pk_debug_init (verbose);
 
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		g_warning ("%s", error->message);
+		pk_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
 
-	g_debug ("mode = %s", mode);
-	g_debug ("value = %s", value);
-	g_debug ("async = %i", async);
+	pk_debug ("mode = %s", mode);
+	pk_debug ("value = %s", value);
+	pk_debug ("async = %i", async);
 
 	if (mode == NULL || value == NULL) {
-		g_debug ("invalid command line parameters");
+		pk_debug ("invalid command line parameters");
 		return 1;
 	}
 
@@ -107,7 +109,7 @@ main (int argc, char *argv[])
 		/* do search */
 		pk_task_client_find_packages (tclient, value);
 	} else {
-		g_debug ("not yet supported");
+		pk_debug ("not yet supported");
 	}
 	g_object_unref (tclient);
 

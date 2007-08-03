@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-task-client.h"
 
@@ -78,7 +79,7 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
-	g_debug ("starting loop");
+	pk_debug ("starting loop");
 	if (tclient->priv->is_sync == TRUE) {
 		tclient->priv->loop = g_main_loop_new (NULL, FALSE);
 		g_main_loop_run (tclient->priv->loop);
@@ -97,7 +98,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -116,7 +117,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -138,7 +139,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -150,12 +151,12 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		g_debug ("ERROR: %s", error->message);
+		pk_debug ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		g_warning ("FindPackages failed!");
+		pk_warning ("FindPackages failed!");
 		return FALSE;
 	}
 	pk_task_client_wait_if_sync (tclient);
@@ -174,7 +175,7 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -193,7 +194,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -212,7 +213,7 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -231,7 +232,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 
 	/* check to see if we already have an action */
 	if (tclient->priv->assigned == TRUE) {
-		g_warning ("Already assigned");
+		pk_warning ("Already assigned");
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
@@ -250,7 +251,7 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 
 	/* check to see if we have an action */
 	if (tclient->priv->assigned == FALSE) {
-		g_warning ("Not assigned");
+		pk_warning ("Not assigned");
 		return FALSE;
 	}
 
@@ -291,7 +292,7 @@ pk_task_client_finished_cb (DBusGProxy   *proxy,
 
 	if (job == tclient->priv->job) {
 		exit = pk_task_client_exit_from_text (exit_text);
-		g_debug ("emit finished %i", exit);
+		pk_debug ("emit finished %i", exit);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
 
 		/* if we are async, then cancel */
@@ -314,7 +315,7 @@ pk_task_client_percentage_changed_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	if (job == tclient->priv->job) {
-		g_debug ("emit percentage-changed %i", percentage);
+		pk_debug ("emit percentage-changed %i", percentage);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
 	}
 }
@@ -368,7 +369,7 @@ pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
 	status = pk_task_client_status_from_text (status_text);
 
 	if (job == tclient->priv->job) {
-		g_debug ("emit job-status-changed %i", status);
+		pk_debug ("emit job-status-changed %i", status);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
 	}
 }
@@ -387,7 +388,7 @@ pk_task_client_package_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	if (job == tclient->priv->job) {
-		g_debug ("emit package %s, %s", package, summary);
+		pk_debug ("emit package %s, %s", package, summary);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, package, summary);
 	}
 }
@@ -443,7 +444,7 @@ pk_task_client_init (PkTaskClient *tclient)
 	/* check dbus connections, exit if not valid */
 	tclient->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		g_warning ("%s", error->message);
+		pk_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
