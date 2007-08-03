@@ -25,6 +25,10 @@ bin_PROGRAMS =						\
 
 pk_console_SOURCES =					\
 	pk-console.c					\
+	pk-marshal.c					\
+	pk-marshal.h					\
+	pk-task-client.c				\
+	pk-task-client.h				\
 	$(NULL)
 
 pk_console_LDADD =					\
