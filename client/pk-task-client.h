@@ -58,14 +58,6 @@ typedef enum {
 	PK_TASK_CLIENT_EXIT_UNKNOWN
 } PkTaskClientExit;
 
-typedef enum {
-	PK_TASK_CLIENT_JOB_STATUS_CHANGED,
-	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
-	PK_TASK_CLIENT_PACKAGE,
-	PK_TASK_CLIENT_FINISHED,
-	PK_TASK_CLIENT_LAST_SIGNAL
-} PkSignals;
-
 typedef struct
 {
 	GObject			 parent;

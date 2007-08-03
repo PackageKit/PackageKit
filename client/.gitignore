@@ -3,4 +3,5 @@
 pk-marshal.h
 pk-marshal.c
 pk-console
+pk-update-icon
 

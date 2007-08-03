@@ -53,6 +53,15 @@ struct PkTaskClientPrivate
 	GMainLoop		*loop;
 };
 
+typedef enum {
+	PK_TASK_CLIENT_JOB_LIST_CHANGED,
+	PK_TASK_CLIENT_JOB_STATUS_CHANGED,
+	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
+	PK_TASK_CLIENT_PACKAGE,
+	PK_TASK_CLIENT_FINISHED,
+	PK_TASK_CLIENT_LAST_SIGNAL
+} PkSignals;
+
 static guint signals [PK_TASK_CLIENT_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkTaskClient, pk_task_client, G_TYPE_OBJECT)
@@ -521,6 +530,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 
 	object_class->finalize = pk_task_client_finalize;
 
+	signals [PK_TASK_CLIENT_JOB_LIST_CHANGED] =
+		g_signal_new ("job-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
+			      G_TYPE_NONE, 1, dbus_g_type_get_collection ("GArray", G_TYPE_UINT));
 	signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
