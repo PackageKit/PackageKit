@@ -31,6 +31,15 @@
 #include "pk-task-client.h"
 
 /**
+ * pk_console_package_cb:
+ **/
+static void
+pk_console_package_cb (PkTaskClient *tclient, const gchar *package, const gchar *summary, gpointer data)
+{
+	g_print ("%s\t%s\n", package, summary);
+}
+
+/**
  * main:
  **/
 int
@@ -90,6 +99,9 @@ main (int argc, char *argv[])
 	}
 
 	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "package",
+			  G_CALLBACK (pk_console_package_cb), NULL);
+
 	pk_task_client_set_sync (tclient, !async);
 	if (strcmp (mode, "search") == 0) {
 		/* do search */
