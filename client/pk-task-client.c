@@ -574,7 +574,6 @@ pk_task_client_init (PkTaskClient *tclient)
 		g_error ("Cannot connect to PackageKit.");
 	}
 	tclient->priv->proxy = proxy;
-	/* TODO: set up other callbacks */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
