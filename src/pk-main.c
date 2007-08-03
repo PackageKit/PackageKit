@@ -156,16 +156,6 @@ main (int argc, char *argv[])
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
 
-#if 0
-{
-const gchar *command;
-command = "/usr/bin/apt-cache search gnome-power-manager";
-//command = "/usr/bin/yum search gnome-power-manager";
-pk_task_fork_helper (NULL, command);
-g_warning ("we forked!!");
-}
-#endif
-
 	/* we need to daemonize before we get a system connection */
 	if (no_daemon == FALSE && daemon (0, 0)) {
 		g_error ("Could not daemonize: %s", g_strerror (errno));

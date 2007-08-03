@@ -192,7 +192,7 @@ gboolean
 pk_task_find_packages (PkTask *task, const gchar *search)
 {
 	PkSpawn *spawn;
-	const gchar *command;
+	gchar *command;
 	gboolean ret;
 
 	g_return_val_if_fail (task != NULL, FALSE);
@@ -205,8 +205,8 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 
-	command = "/usr/bin/apt-cache search gnome-power-manager";
-//	command = "/usr/bin/yum search gnome-power-manager";
+	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
+//	command = g_strdup_printf ("/usr/bin/yum search %s", search);
 
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
@@ -222,6 +222,7 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	}
 
 if (0)	g_timeout_add (2000, pk_task_find_packages_timeout, task);
+	g_free (command);
 	return TRUE;
 }
 
