@@ -106,18 +106,15 @@ main (int argc, char *argv[])
 
 	pk_task_client_set_sync (tclient, !async);
 	if (strcmp (mode, "search") == 0) {
-		/* do search */
 		pk_task_client_find_packages (tclient, value);
+	} else if (strcmp (mode, "install") == 0) {
+		pk_task_client_install_package (tclient, value);
+	} else if (strcmp (mode, "remove") == 0) {
+		pk_task_client_remove_package_with_deps (tclient, value);
 	} else {
 		pk_debug ("not yet supported");
 	}
 	g_object_unref (tclient);
-
-#if 0
-	if (0 && async == FALSE) {
-		g_main_loop_unref (loop);
-	}
-#endif
 
 	return 0;
 }
