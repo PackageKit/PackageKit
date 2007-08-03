@@ -65,8 +65,8 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 	signals [PK_TASK_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -107,15 +107,13 @@ pk_task_change_job_status (PkTask *task, PkTaskStatus status)
  * pk_task_package:
  **/
 gboolean
-pk_task_package (PkTask *task, const gchar *package)
+pk_task_package (PkTask *task, const gchar *package, const gchar *summary)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
-	/* we have to run this idle as the command may finish before the job
-	 * has been sent to the client. I love async... */
-	pk_debug ("emit package %s", package);
-	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, package);
+	pk_debug ("emit package %s, %s", package, summary);
+	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, package, summary);
 
 	return TRUE;
 }

@@ -45,6 +45,7 @@
     <signal name="Package">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="package" direction="out"/>
+      <arg type="s" name="summary" direction="out"/>
     </signal>
     <signal name="Description">
       <arg type="u" name="job" direction="out"/>

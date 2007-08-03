@@ -126,10 +126,10 @@ gboolean
 pk_task_find_packages_timeout (gpointer data)
 {
 	PkTask *task = (PkTask *) data;
-	pk_task_package (task, "evince");
-	pk_task_package (task, "evince-gnome");
-	pk_task_package (task, "evince-tools");
-	pk_task_package (task, "evince-debuginfo");
+	pk_task_package (task, "evince", "Document viewer");
+	pk_task_package (task, "evince-gnome", "Document viewer GNOME UI");
+	pk_task_package (task, "evince-tools", "Document viewer tools");
+	pk_task_package (task, "evince-debuginfo", "Document viewer debuginfo");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return FALSE;
 }
@@ -150,7 +150,7 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 	okay = pk_task_filter_package_name (NULL, sections[0]);
 	if (okay == TRUE) {
 		pk_debug ("package='%s' shortdesc='%s'", sections[0], sections[1]);
-		pk_task_package (task, sections[0]);
+		pk_task_package (task, sections[0], sections[1]);
 	}
 	g_strfreev (sections);
 }

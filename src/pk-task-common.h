@@ -37,7 +37,8 @@ gboolean	 pk_task_change_job_status		(PkTask		*task,
 gboolean	 pk_task_finished			(PkTask		*task,
 							 PkTaskExit	 exit);
 gboolean	 pk_task_package			(PkTask		*task,
-							 const gchar	*package);
+							 const gchar	*package,
+							 const gchar	*summary);
 gboolean	 pk_task_assign				(PkTask		*task);
 gboolean	 pk_task_get_job_status			(PkTask		*task,
 							 PkTaskStatus	*status);
