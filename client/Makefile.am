@@ -10,6 +10,7 @@ EXTRA_DIST =						\
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(GTK_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
@@ -21,6 +22,7 @@ INCLUDES =						\
 
 bin_PROGRAMS =						\
 	pk-console					\
+	pk-update-icon					\
 	$(NULL)
 
 pk_console_SOURCES =					\
@@ -36,6 +38,24 @@ pk_console_SOURCES =					\
 pk_console_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(NULL)
+
+pk_update_icon_SOURCES =				\
+	pk-update-icon.c				\
+	pk-debug.c					\
+	pk-debug.h					\
+	pk-marshal.c					\
+	pk-marshal.h					\
+	pk-task-client.c				\
+	pk-task-client.h				\
+	pk-notify.c					\
+	pk-notify.h					\
+	$(NULL)
+
+pk_update_icon_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(GTK_LIBS)					\
 	$(NULL)
 
 BUILT_SOURCES = 					\

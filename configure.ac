@@ -27,12 +27,14 @@ dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.6.0
 DBUS_REQUIRED=0.70
+GTK_REQUIRED=2.10.0
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
 dnl ---------------------------------------------------------------------------
 AC_SUBST(GLIB_REQUIRED)
 AC_SUBST(DBUS_REQUIRED)
+AC_SUBST(GTK_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
@@ -47,6 +49,11 @@ PKG_CHECK_MODULES(DBUS, \
  gthread-2.0)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
+
+PKG_CHECK_MODULES(GTK, \
+ gtk+-2.0 >= $GTK_REQUIRED)
+AC_SUBST(GTK_CFLAGS)
+AC_SUBST(GTK_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
