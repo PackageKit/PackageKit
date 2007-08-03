@@ -113,6 +113,7 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 src/Makefile
+client/Makefile
 PackageKit.conf
 ])
 

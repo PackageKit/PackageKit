@@ -1,0 +1,6 @@
+.deps
+*.o
+pk-marshal.h
+pk-marshal.c
+pk-console
+

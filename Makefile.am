@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS = src client
 
 EXTRA_DIST =						\
 	PackageKit.conf.in				\
