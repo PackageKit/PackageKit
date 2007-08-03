@@ -48,6 +48,7 @@
 #include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
+#include "pk-spawn.h"
 
 static void     pk_task_class_init	(PkTaskClass *klass);
 static void     pk_task_init		(PkTask      *task);
@@ -133,7 +134,6 @@ pk_task_find_packages_timeout (gpointer data)
 	return FALSE;
 }
 
-#if 0
 /**
  * pk_task_parse_data:
  **/
@@ -150,10 +150,40 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 	okay = pk_task_filter_package_name (NULL, sections[0]);
 	if (okay == TRUE) {
 		pk_debug ("package='%s' shortdesc='%s'", sections[0], sections[1]);
+		pk_task_package (task, sections[0]);
 	}
 	g_strfreev (sections);
 }
-#endif
+
+/**
+ * pk_spawn_finished_cb:
+ **/
+static void
+pk_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
+{
+	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
+	g_object_unref (spawn);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+}
+
+/**
+ * pk_spawn_stdout_cb:
+ **/
+static void
+pk_spawn_stdout_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
+{
+	pk_debug ("stdout from %p = '%s'", spawn, line);
+	pk_task_parse_data (task, line);
+}
+
+/**
+ * pk_spawn_stderr_cb:
+ **/
+static void
+pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
+{
+	pk_debug ("stderr from %p = '%s'", spawn, line);
+}
 
 /**
  * pk_task_find_packages:
@@ -161,6 +191,10 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 gboolean
 pk_task_find_packages (PkTask *task, const gchar *search)
 {
+	PkSpawn *spawn;
+	const gchar *command;
+	gboolean ret;
+
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -171,7 +205,23 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 
-	g_timeout_add (2000, pk_task_find_packages_timeout, task);
+	command = "/usr/bin/apt-cache search gnome-power-manager";
+//	command = "/usr/bin/yum search gnome-power-manager";
+
+	spawn = pk_spawn_new ();
+	g_signal_connect (spawn, "finished",
+			  G_CALLBACK (pk_spawn_finished_cb), task);
+	g_signal_connect (spawn, "stdout",
+			  G_CALLBACK (pk_spawn_stdout_cb), task);
+	g_signal_connect (spawn, "stderr",
+			  G_CALLBACK (pk_spawn_stderr_cb), task);
+	ret = pk_spawn_command (spawn, command);
+	if (ret == FALSE) {
+		g_warning ("spawn failed: '%s'", command);
+		g_object_unref (spawn);
+	}
+
+if (0)	g_timeout_add (2000, pk_task_find_packages_timeout, task);
 	return TRUE;
 }
 
