@@ -27,6 +27,7 @@
 #include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
+#include "pk-marshal.h"
 
 /**
  * pk_task_filter_package_name:

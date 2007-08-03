@@ -191,7 +191,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 
 	job = pk_task_get_job (task);
 	status_text = pk_task_status_to_text (status);
-	package = pk_task_get_description (status);
+	package = pk_task_get_description (task);
 
 	pk_debug ("emitting job-status-changed job:%i, '%s', '%s'", job, status_text, package);
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text, package);
