@@ -549,8 +549,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }

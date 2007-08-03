@@ -36,7 +36,6 @@
 int
 main (int argc, char *argv[])
 {
-	GMainLoop *loop;
 	DBusGConnection *system_connection;
 	gboolean verbose = FALSE;
 	gboolean async = FALSE;
@@ -91,6 +90,7 @@ main (int argc, char *argv[])
 	}
 
 	tclient = pk_task_client_new ();
+	pk_task_client_set_sync (tclient, !async);
 	if (strcmp (mode, "search") == 0) {
 		/* do search */
 		pk_task_client_find_packages (tclient, value);
@@ -99,11 +99,11 @@ main (int argc, char *argv[])
 	}
 	g_object_unref (tclient);
 
+#if 0
 	if (0 && async == FALSE) {
-		loop = g_main_loop_new (NULL, FALSE);
-		g_main_loop_run (loop);
 		g_main_loop_unref (loop);
 	}
+#endif
 
 	return 0;
 }

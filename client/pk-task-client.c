@@ -49,41 +49,12 @@ struct PkTaskClientPrivate
 	gboolean		 assigned;
 	gboolean		 is_sync;
 	guint			 job;
+	GMainLoop		*loop;
 };
 
 static guint signals [PK_TASK_CLIENT_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkTaskClient, pk_task_client, G_TYPE_OBJECT)
-
-#if 0
-/**
- * pk_task_client_change_percentage:
- **/
-static gboolean
-pk_task_client_change_percentage (PkTaskClient *tclient, guint percentage)
-{
-	g_return_val_if_fail (tclient != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
-	g_debug ("emit percentage-complete-changed %i", percentage);
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
-	return TRUE;
-}
-
-/**
- * pk_task_client_package:
- **/
-static gboolean
-pk_task_client_package (PkTaskClient *tclient, const gchar *package, const gchar *summary)
-{
-	g_return_val_if_fail (tclient != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
-
-	g_debug ("emit package %s, %s", package, summary);
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, package, summary);
-
-	return TRUE;
-}
-#endif
 
 /**
  * pk_task_client_set_sync:
@@ -107,8 +78,10 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
+	g_debug ("starting loop");
 	if (tclient->priv->is_sync == TRUE) {
-		g_warning ("sync not supported");
+		tclient->priv->loop = g_main_loop_new (NULL, FALSE);
+		g_main_loop_run (tclient->priv->loop);
 	}
 	return TRUE;
 }
@@ -157,7 +130,6 @@ pk_task_client_update_system (PkTaskClient *tclient)
 gboolean
 pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 {
-	guint job;
 	gboolean ret;
 	GError *error;
 
@@ -175,7 +147,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "FindPackages", &error,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &job,
+				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
 		g_debug ("ERROR: %s", error->message);
@@ -286,17 +258,137 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_exit_from_text:
+ */
+static PkTaskClientExit
+pk_task_client_exit_from_text (const gchar *exit)
+{
+	if (strcmp (exit, "success") == 0) {
+		return PK_TASK_CLIENT_EXIT_SUCCESS;
+	}
+	if (strcmp (exit, "failed") == 0) {
+		return PK_TASK_CLIENT_EXIT_FAILED;
+	}
+	if (strcmp (exit, "canceled") == 0) {
+		return PK_TASK_CLIENT_EXIT_CANCELED;
+	}
+	return PK_TASK_CLIENT_EXIT_UNKNOWN;
+}
+
+/**
  * pk_task_client_finished_cb:
  */
 static void
 pk_task_client_finished_cb (DBusGProxy   *proxy,
 			    guint	  job,
-			    guint	  status,
+			    const gchar	 *exit_text,
 			    PkTaskClient *tclient)
 {
+	PkTaskClientExit exit;
+
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
 	if (job == tclient->priv->job) {
-		g_debug ("emit finished %i", status);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, status);
+		exit = pk_task_client_exit_from_text (exit_text);
+		g_debug ("emit finished %i", exit);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
+
+		/* if we are async, then cancel */
+		if (tclient->priv->loop != NULL) {
+			g_main_loop_quit (tclient->priv->loop);
+		}
+	}
+}
+
+/**
+ * pk_task_client_percentage_changed_cb:
+ */
+static void
+pk_task_client_percentage_changed_cb (DBusGProxy   *proxy,
+				      guint	    job,
+				      guint	    percentage,
+				      PkTaskClient *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	if (job == tclient->priv->job) {
+		g_debug ("emit percentage-changed %i", percentage);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
+	}
+}
+
+/**
+ * pk_task_client_status_from_text:
+ **/
+static PkTaskClientStatus
+pk_task_client_status_from_text (const gchar *status)
+{
+	if (strcmp (status, "setup") == 0) {
+		return PK_TASK_CLIENT_STATUS_SETUP;
+	}
+	if (strcmp (status, "query") == 0) {
+		return PK_TASK_CLIENT_STATUS_QUERY;
+	}
+	if (strcmp (status, "remove") == 0) {
+		return PK_TASK_CLIENT_STATUS_REMOVE;
+	}
+	if (strcmp (status, "download") == 0) {
+		return PK_TASK_CLIENT_STATUS_DOWNLOAD;
+	}
+	if (strcmp (status, "install") == 0) {
+		return PK_TASK_CLIENT_STATUS_INSTALL;
+	}
+	if (strcmp (status, "update") == 0) {
+		return PK_TASK_CLIENT_STATUS_UPDATE;
+	}
+	if (strcmp (status, "exit") == 0) {
+		return PK_TASK_CLIENT_STATUS_EXIT;
+	}
+	return PK_TASK_CLIENT_STATUS_INVALID;
+}
+
+
+/**
+ * pk_task_client_job_status_changed_cb:
+ */
+static void
+pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
+				      guint	    job,
+				      const gchar  *status_text,
+				      const gchar  *package,
+				      PkTaskClient *tclient)
+{
+	PkTaskClientStatus status;
+
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	status = pk_task_client_status_from_text (status_text);
+
+	if (job == tclient->priv->job) {
+		g_debug ("emit job-status-changed %i", status);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
+	}
+}
+
+/**
+ * pk_task_client_package_cb:
+ */
+static void
+pk_task_client_package_cb (DBusGProxy   *proxy,
+			   guint	 job,
+			   const gchar  *package,
+			   const gchar  *summary,
+			   PkTaskClient *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	if (job == tclient->priv->job) {
+		g_debug ("emit package %s, %s", package, summary);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, package, summary);
 	}
 }
 
@@ -366,10 +458,30 @@ pk_task_client_init (PkTaskClient *tclient)
 	/* TODO: set up other callbacks */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
 	dbus_g_proxy_add_signal (proxy, "Finished",
-				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_task_client_finished_cb), tclient, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "PercentageChanged",
+				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
+				     G_CALLBACK (pk_task_client_percentage_changed_cb), tclient, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "JobStatusChanged",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "JobStatusChanged",
+				     G_CALLBACK (pk_task_client_job_status_changed_cb), tclient, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "Package",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "Package",
+				     G_CALLBACK (pk_task_client_package_cb), tclient, NULL);
 }
 
 /**

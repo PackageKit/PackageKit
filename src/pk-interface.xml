@@ -55,7 +55,7 @@
     </signal>
     <signal name="Finished">
       <arg type="u" name="job" direction="out"/>
-      <arg type="u" name="status" direction="out"/> <!-- 0=Success, 1=Failed, 2=Canceled -->
+      <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
     </signal>
 
 
