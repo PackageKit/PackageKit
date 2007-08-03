@@ -364,6 +364,8 @@ pk_task_client_init (PkTaskClient *tclient)
 	}
 	tclient->priv->proxy = proxy;
 	/* TODO: set up other callbacks */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Finished",

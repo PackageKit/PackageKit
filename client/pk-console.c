@@ -28,6 +28,8 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-task-client.h"
+
 /**
  * main:
  **/
@@ -42,6 +44,7 @@ main (int argc, char *argv[])
 	gchar *value = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
+	PkTaskClient *tclient;
 
 	const GOptionEntry options[] = {
 		{ "mode", '\0', 0, G_OPTION_ARG_STRING, &mode,
@@ -87,14 +90,16 @@ main (int argc, char *argv[])
 		return 1;
 	}
 
+	tclient = pk_task_client_new ();
 	if (strcmp (mode, "search") == 0) {
 		/* do search */
+		pk_task_client_find_packages (tclient, value);
 	} else {
 		g_debug ("not yet supported");
-		return 1;
 	}
+	g_object_unref (tclient);
 
-	if (async == FALSE) {
+	if (0 && async == FALSE) {
 		loop = g_main_loop_new (NULL, FALSE);
 		g_main_loop_run (loop);
 		g_main_loop_unref (loop);
