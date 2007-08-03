@@ -37,7 +37,24 @@
 static void
 pk_console_package_cb (PkTaskClient *tclient, const gchar *package, const gchar *summary, gpointer data)
 {
-	g_print ("%s\t%s\n", package, summary);
+	gchar *padding;
+	gint size;
+	size = (25 - strlen(package));
+	if (size < 0) {
+		size = 0;
+	}
+	padding = g_strnfill (size, ' ');
+	g_print ("%s%s %s\n", package, padding, summary);
+	g_free (padding);
+}
+
+/**
+ * pk_console_percentage_changed_cb:
+ **/
+static void
+pk_console_percentage_changed_cb (PkTaskClient *tclient, guint percentage, gpointer data)
+{
+	g_print ("%i%%\n", percentage);
 }
 
 /**
@@ -95,14 +112,16 @@ main (int argc, char *argv[])
 	pk_debug ("value = %s", value);
 	pk_debug ("async = %i", async);
 
-	if (mode == NULL || value == NULL) {
-		pk_debug ("invalid command line parameters");
+	if (mode == NULL) {
+		pk_debug ("invalid mode");
 		return 1;
 	}
 
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
+	g_signal_connect (tclient, "percentage-changed",
+			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 
 	pk_task_client_set_sync (tclient, !async);
 	if (strcmp (mode, "search") == 0) {
@@ -111,6 +130,10 @@ main (int argc, char *argv[])
 		pk_task_client_install_package (tclient, value);
 	} else if (strcmp (mode, "remove") == 0) {
 		pk_task_client_remove_package_with_deps (tclient, value);
+	} else if (strcmp (mode, "update") == 0) {
+		pk_task_client_update_system (tclient);
+	} else if (strcmp (mode, "checkupdate") == 0) {
+		pk_task_client_get_updates (tclient);
 	} else {
 		pk_debug ("not yet supported");
 	}

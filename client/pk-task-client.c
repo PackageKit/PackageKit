@@ -93,6 +93,9 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 gboolean
 pk_task_client_get_updates (PkTaskClient *tclient)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -102,6 +105,22 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetUpdates", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetUpdates failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -112,6 +131,9 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 gboolean
 pk_task_client_update_system (PkTaskClient *tclient)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -121,6 +143,22 @@ pk_task_client_update_system (PkTaskClient *tclient)
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "UpdateSystem", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("UpdateSystem failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -170,6 +208,9 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 gboolean
 pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -179,6 +220,23 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDeps", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetDeps failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -189,6 +247,9 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 gboolean
 pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -198,6 +259,23 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackage", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RemovePackage failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -208,6 +286,9 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 gboolean
 pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *package)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -217,6 +298,23 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackageWithDeps", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RemovePackageWithDeps failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -227,6 +325,9 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 gboolean
 pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 {
+	gboolean ret;
+	GError *error;
+
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
@@ -236,6 +337,23 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 		return FALSE;
 	}
 	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "InstallPackage", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("InstallPackage failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
 }
@@ -409,7 +527,7 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED] =
-		g_signal_new ("percentage-complete-changed",
+		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
