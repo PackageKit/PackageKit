@@ -33,6 +33,8 @@ packagekitd_SOURCES =					\
 	pk-marshal.h					\
 	pk-debug.c					\
 	pk-debug.h					\
+	pk-spawn.c					\
+	pk-spawn.h					\
 	pk-engine.h					\
 	pk-engine.c					\
 	$(NULL)

@@ -47,6 +47,8 @@ gboolean	 pk_task_setup_signals			(GObjectClass	*object_class,
 const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
 const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
 gchar		*pk_task_get_description		(PkTask		*task);
+gboolean	 pk_task_filter_package_name		(PkTask		*task,
+							 gchar		*package);
 
 G_END_DECLS
 

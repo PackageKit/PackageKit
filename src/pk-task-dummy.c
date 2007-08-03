@@ -133,6 +133,28 @@ pk_task_find_packages_timeout (gpointer data)
 	return FALSE;
 }
 
+#if 0
+/**
+ * pk_task_parse_data:
+ **/
+static void
+pk_task_parse_data (PkTask *task, const gchar *line)
+{
+	char **sections;
+	gboolean okay;
+
+	/* check if output line */
+	if (strstr (line, " - ") == NULL)
+		return;		
+	sections = g_strsplit (line, " - ", 0);
+	okay = pk_task_filter_package_name (NULL, sections[0]);
+	if (okay == TRUE) {
+		pk_debug ("package='%s' shortdesc='%s'", sections[0], sections[1]);
+	}
+	g_strfreev (sections);
+}
+#endif
+
 /**
  * pk_task_find_packages:
  **/
