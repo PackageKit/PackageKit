@@ -52,14 +52,6 @@ struct PkTaskListPrivate
 	PkJobList		*job_list;
 };
 
-typedef struct
-{
-	guint			 job;
-	PkTaskStatus		 status;
-	gchar			*package;
-	PkTaskClient		*client;
-} PkTaskListItem;
-
 typedef enum {
 	PK_TASK_LIST_CHANGED,
 	PK_TASK_LIST_LAST_SIGNAL

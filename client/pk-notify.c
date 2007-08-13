@@ -41,6 +41,8 @@
 #include "pk-notify.h"
 #include "pk-job-list.h"
 #include "pk-task-client.h"
+#include "pk-task-common.h"
+#include "pk-task-list.h"
 
 static void     pk_notify_class_init	(PkNotifyClass *klass);
 static void     pk_notify_init		(PkNotify      *notify);
@@ -51,6 +53,7 @@ static void     pk_notify_finalize	(GObject       *object);
 struct PkNotifyPrivate
 {
 	GtkStatusIcon		*status_icon;
+	PkTaskList		*tlist;
 };
 
 G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
@@ -81,34 +84,120 @@ pk_notify_class_init (PkNotifyClass *klass)
 }
 
 /**
+ * pk_notify_set_icon:
+ **/
+static gboolean
+pk_notify_set_icon (PkNotify *notify, const gchar *icon)
+{
+	if (icon == NULL) {
+		gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
+		return FALSE;
+	}
+	gtk_status_icon_set_from_icon_name (GTK_STATUS_ICON (notify->priv->status_icon), icon);
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), TRUE);
+	return TRUE;
+}
+
+/**
+ * pk_notify_refresh_state:
+ **/
+static gboolean
+pk_notify_refresh_state (PkNotify *notify)
+{
+	g_warning ("rescan");
+	guint i;
+	PkTaskListItem *item;
+	PkTaskStatus state;
+	guint length;
+	GPtrArray *array;
+	gboolean state_install = FALSE;
+	gboolean state_remove = FALSE;
+	gboolean state_setup = FALSE;
+	gboolean state_update = FALSE;
+	gboolean state_download = FALSE;
+	gboolean state_query = FALSE;
+	const gchar *icon = NULL;
+
+	array = pk_task_list_get_latest	(notify->priv->tlist);
+
+	length = array->len;
+	if (length == 0) {
+		pk_debug ("no activity, so hide the icon");
+		gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
+		return TRUE;
+	}
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (array, i);
+		state = item->status;
+		pk_debug ("%i %s", item->job, pk_task_status_to_text (state));
+		if (state == PK_TASK_STATUS_SETUP) {
+			state_setup = TRUE;
+		} else if (state == PK_TASK_STATUS_QUERY) {
+			state_query = TRUE;
+		} else if (state == PK_TASK_STATUS_REMOVE) {
+			state_remove = TRUE;
+		} else if (state == PK_TASK_STATUS_DOWNLOAD) {
+			state_download = TRUE;
+		} else if (state == PK_TASK_STATUS_INSTALL) {
+			state_install = TRUE;
+		} else if (state == PK_TASK_STATUS_UPDATE) {
+			state_update = TRUE;
+		}
+	}
+	/* in order of priority */
+	if (state_install == TRUE) {
+		icon = "view-refresh";
+	} else if (state_remove == TRUE) {
+		icon = "edit-clear";
+	} else if (state_setup == TRUE) {
+		icon = "emblem-system";
+	} else if (state_update == TRUE) {
+		icon = "system-software-update";
+	} else if (state_download == TRUE) {
+		icon = "mail-send-receive";
+	} else if (state_query == TRUE) {
+		icon = "system-search";
+	}
+	pk_notify_set_icon (notify, icon);
+
+	return TRUE;
+}
+
+/**
+ * pk_notify_task_list_changed_cb:
+ **/
+static void
+pk_notify_task_list_changed_cb (PkTaskList *tlist, gpointer data)
+{
+	PkNotify *notify = (PkNotify *) data;
+	pk_notify_refresh_state (notify);
+}
+
+/**
  * pk_notify_init:
  * @notify: This class instance
  **/
 static void
 pk_notify_init (PkNotify *notify)
 {
-	PkJobList *jlist;
-	PkTaskClient *tclient;
-	GArray *job_list;
-
 	notify->priv = PK_NOTIFY_GET_PRIVATE (notify);
 
 	notify->priv->status_icon = gtk_status_icon_new ();
 
-	jlist = pk_job_list_new ();
-	job_list = pk_job_list_get_latest (jlist);
-	g_object_unref (jlist);
+	notify->priv->tlist = pk_task_list_new ();
+	g_signal_connect (notify->priv->tlist, "task-list-changed",
+			  G_CALLBACK (pk_notify_task_list_changed_cb), notify);
+	pk_notify_refresh_state (notify);
 
-	tclient = pk_task_client_new ();
+//	tclient = pk_task_client_new ();
 //	g_signal_connect (tclient, "package",
 //			  G_CALLBACK (pk_notify_package_cb), notify);
 //	g_signal_connect (tclient, "percentage-changed",
 //			  G_CALLBACK (pk_notify_percentage_changed_cb), notify);
-	g_object_unref (tclient);
+//	g_object_unref (tclient);
 
 	gtk_status_icon_set_tooltip (GTK_STATUS_ICON (notify->priv->status_icon), "Updates available:\ngnome-power-manager: GNOME Power Manager\nevince: Document viewer");
-	gtk_status_icon_set_from_icon_name (GTK_STATUS_ICON (notify->priv->status_icon), "software-update-available");
-	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), TRUE);
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
 }
 
 /**
@@ -127,6 +216,7 @@ pk_notify_finalize (GObject *object)
 
 	g_return_if_fail (notify->priv != NULL);
 	g_object_unref (notify->priv->status_icon);
+	g_object_unref (notify->priv->tlist);
 
 	G_OBJECT_CLASS (pk_notify_parent_class)->finalize (object);
 }

@@ -23,7 +23,8 @@
 #define __PK_TASK_LIST_H
 
 #include <glib-object.h>
-#include "pk-task-common.h"
+#include "pk-task-client.h"
+#include "pk-task-utils.h"
 
 G_BEGIN_DECLS
 
@@ -35,6 +36,14 @@ G_BEGIN_DECLS
 #define PK_TASK_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_LIST, PkTaskListClass))
 
 typedef struct PkTaskListPrivate PkTaskListPrivate;
+
+typedef struct
+{
+	guint			 job;
+	PkTaskStatus		 status;
+	gchar			*package;
+	PkTaskClient		*client;
+} PkTaskListItem;
 
 typedef struct
 {
