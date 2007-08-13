@@ -52,6 +52,8 @@ pk_update_icon_SOURCES =				\
 	pk-task-common.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
+	pk-task-list.c					\
+	pk-task-list.h					\
 	pk-notify.c					\
 	pk-notify.h					\
 	$(NULL)
