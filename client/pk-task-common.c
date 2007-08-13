@@ -36,50 +36,109 @@
 #include "pk-task-common.h"
 
 /**
- * pk_task_common_exit_from_text:
+ * pk_task_exit_from_text:
  */
 PkTaskExit
-pk_task_common_exit_from_text (const gchar *exit)
+pk_task_exit_from_text (const gchar *exit)
 {
 	if (strcmp (exit, "success") == 0) {
-		return PK_TASK_COMMON_EXIT_SUCCESS;
+		return PK_TASK_EXIT_SUCCESS;
 	}
 	if (strcmp (exit, "failed") == 0) {
-		return PK_TASK_COMMON_EXIT_FAILED;
+		return PK_TASK_EXIT_FAILED;
 	}
 	if (strcmp (exit, "canceled") == 0) {
-		return PK_TASK_COMMON_EXIT_CANCELED;
+		return PK_TASK_EXIT_CANCELED;
 	}
-	return PK_TASK_COMMON_EXIT_UNKNOWN;
+	return PK_TASK_EXIT_UNKNOWN;
 }
 
 /**
- * pk_task_common_status_from_text:
+ * pk_task_exit_to_text:
+ **/
+const gchar *
+pk_task_exit_to_text (PkTaskExit exit)
+{
+	const gchar *text = NULL;
+	switch (exit) {
+	case PK_TASK_EXIT_SUCCESS:
+		text = "success";
+		break;
+	case PK_TASK_EXIT_FAILED:
+		text = "failed";
+		break;
+	case PK_TASK_EXIT_CANCELED:
+		text = "canceled";
+		break;
+	default:
+		text = "unknown";
+	}
+	return text;
+}
+
+/**
+ * pk_task_status_from_text:
  **/
 PkTaskStatus
-pk_task_common_status_from_text (const gchar *status)
+pk_task_status_from_text (const gchar *status)
 {
 	if (strcmp (status, "setup") == 0) {
-		return PK_TASK_COMMON_STATUS_SETUP;
+		return PK_TASK_STATUS_SETUP;
 	}
 	if (strcmp (status, "query") == 0) {
-		return PK_TASK_COMMON_STATUS_QUERY;
+		return PK_TASK_STATUS_QUERY;
 	}
 	if (strcmp (status, "remove") == 0) {
-		return PK_TASK_COMMON_STATUS_REMOVE;
+		return PK_TASK_STATUS_REMOVE;
 	}
 	if (strcmp (status, "download") == 0) {
-		return PK_TASK_COMMON_STATUS_DOWNLOAD;
+		return PK_TASK_STATUS_DOWNLOAD;
 	}
 	if (strcmp (status, "install") == 0) {
-		return PK_TASK_COMMON_STATUS_INSTALL;
+		return PK_TASK_STATUS_INSTALL;
 	}
 	if (strcmp (status, "update") == 0) {
-		return PK_TASK_COMMON_STATUS_UPDATE;
+		return PK_TASK_STATUS_UPDATE;
 	}
 	if (strcmp (status, "exit") == 0) {
-		return PK_TASK_COMMON_STATUS_EXIT;
+		return PK_TASK_STATUS_EXIT;
 	}
-	return PK_TASK_COMMON_STATUS_INVALID;
+	return PK_TASK_STATUS_INVALID;
+}
+
+
+/**
+ * pk_task_status_to_text:
+ **/
+const gchar *
+pk_task_status_to_text (PkTaskStatus status)
+{
+	const gchar *text = NULL;
+	switch (status) {
+	case PK_TASK_STATUS_SETUP:
+		text = "setup";
+		break;
+	case PK_TASK_STATUS_QUERY:
+		text = "query";
+		break;
+	case PK_TASK_STATUS_REMOVE:
+		text = "remove";
+		break;
+	case PK_TASK_STATUS_DOWNLOAD:
+		text = "download";
+		break;
+	case PK_TASK_STATUS_INSTALL:
+		text = "install";
+		break;
+	case PK_TASK_STATUS_UPDATE:
+		text = "update";
+		break;
+	case PK_TASK_STATUS_EXIT:
+		text = "exit";
+		break;
+	default:
+		text = "invalid";
+	}
+	return text;
 }
 

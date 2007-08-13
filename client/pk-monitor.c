@@ -30,15 +30,15 @@
 
 #include "pk-debug.h"
 #include "pk-task-common.h"
-#include "pk-job-list.h"
+#include "pk-task-list.h"
 
 /**
- * pk_monitor_job_list_changed_cb:
+ * pk_monitor_task_list_changed_cb:
  **/
 static void
-pk_monitor_job_list_changed_cb (PkJobList *jlist, gpointer data)
+pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 {
-	pk_job_list_print (jlist);
+	pk_task_list_print (tlist);
 }
 
 /**
@@ -47,9 +47,9 @@ pk_monitor_job_list_changed_cb (PkJobList *jlist, gpointer data)
 int
 main (int argc, char *argv[])
 {
-	PkJobList *jlist;
+	PkTaskList *tlist;
 	gboolean ret;
-	GArray *job_list;
+	GPtrArray *task_list;
 	GMainLoop *loop;
 
 	if (! g_thread_supported ()) {
@@ -57,27 +57,27 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
-	pk_debug_init (TRUE);
+	pk_debug_init (FALSE);
 
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
 
-	jlist = pk_job_list_new ();
-	g_signal_connect (jlist, "job-list-changed",
-			  G_CALLBACK (pk_monitor_job_list_changed_cb), NULL);
+	tlist = pk_task_list_new ();
+	g_signal_connect (tlist, "task-list-changed",
+			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
 
-	ret = pk_job_list_refresh (jlist);
+	ret = pk_task_list_refresh (tlist);
 	if (ret == FALSE) {
 		g_error ("cannot refresh job list");
 	}
-	job_list = pk_job_list_get_latest (jlist);
-	pk_job_list_print (jlist);
+	task_list = pk_task_list_get_latest (tlist);
+	pk_task_list_print (tlist);
 
 	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
 
-	g_object_unref (jlist);
+	g_object_unref (tlist);
 
 	return 0;
 }

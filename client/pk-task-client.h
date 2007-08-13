@@ -23,6 +23,7 @@
 #define __PK_TASK_CLIENT_H
 
 #include <glib-object.h>
+#include "pk-task-common.h"
 
 G_BEGIN_DECLS
 
@@ -64,6 +65,12 @@ gboolean	 pk_task_client_remove_package_with_deps(PkTaskClient	*tclient,
 gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
 							 const gchar	*package);
 gboolean	 pk_task_client_cancel_job_try		(PkTaskClient	*tclient);
+
+/* not sure where this belongs... */
+gboolean	 pk_task_client_get_job_status		(PkTaskClient	*tclient,
+							 guint		 job,
+							 PkTaskStatus	*status,
+							 gchar		**package);
 
 G_END_DECLS
 

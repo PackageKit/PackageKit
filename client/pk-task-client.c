@@ -212,6 +212,40 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search)
 }
 
 /**
+ * pk_task_client_get_job_status:
+ **/
+gboolean
+pk_task_client_get_job_status (PkTaskClient *tclient, guint job,
+			       PkTaskStatus *status, gchar **package)
+{
+	gboolean ret;
+	gchar *status_text;
+	GError *error;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetJobStatus", &error,
+				 G_TYPE_UINT, job,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &status_text,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetJobStatus failed!");
+		return FALSE;
+	}
+	*status = pk_task_status_from_text (status_text);
+	return TRUE;
+}
+
+/**
  * pk_task_client_get_deps:
  **/
 gboolean
@@ -400,7 +434,7 @@ pk_task_client_finished_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	if (job == tclient->priv->job) {
-		exit = pk_task_common_exit_from_text (exit_text);
+		exit = pk_task_exit_from_text (exit_text);
 		pk_debug ("emit finished %i", exit);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
 
@@ -444,7 +478,7 @@ pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	status = pk_task_common_status_from_text (status_text);
+	status = pk_task_status_from_text (status_text);
 
 	if (job == tclient->priv->job) {
 		pk_debug ("emit job-status-changed %i", status);

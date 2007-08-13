@@ -49,6 +49,10 @@ pkmon_SOURCES =						\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-task-list.c					\
+	pk-task-list.h					\
+	pk-task-client.c				\
+	pk-task-client.h				\
 	pk-task-common.c				\
 	pk-task-common.h				\
 	pk-job-list.c					\

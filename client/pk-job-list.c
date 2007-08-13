@@ -162,10 +162,10 @@ pk_job_list_get_latest (PkJobList *jlist)
 }
 
 /**
- * PK_JOB_LIST_CHANGED_cb:
+ * pk_job_list_changed_cb:
  */
 static void
-PK_JOB_LIST_CHANGED_cb (DBusGProxy *proxy,
+pk_job_list_changed_cb (DBusGProxy *proxy,
 				  GPtrArray  *job_list,
 				  PkJobList *jlist)
 {
@@ -234,7 +234,7 @@ pk_job_list_init (PkJobList *jlist)
 	dbus_g_proxy_add_signal (proxy, "JobListChanged",
 				 struct_array_type, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "JobListChanged",
-				     G_CALLBACK(PK_JOB_LIST_CHANGED_cb), jlist, NULL);
+				     G_CALLBACK(pk_job_list_changed_cb), jlist, NULL);
 
 	/* force a refresh so we have valid data*/
 	pk_job_list_get_latest (jlist);
