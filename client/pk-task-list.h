@@ -50,7 +50,7 @@ GType		 pk_task_list_get_type			(void);
 PkTaskList	*pk_task_list_new			(void);
 
 gboolean	 pk_task_list_get_job_list		(PkTaskList	*tlist,
-							 GSList		*list);
+							 GSList		**list);
 
 G_END_DECLS
 

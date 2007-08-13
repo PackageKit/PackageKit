@@ -63,7 +63,7 @@ G_DEFINE_TYPE (PkTaskList, pk_task_list, G_TYPE_OBJECT)
  * pk_task_list_get_job_list:
  **/
 gboolean
-pk_task_list_get_job_list (PkTaskList *tlist, GSList *list)
+pk_task_list_get_job_list (PkTaskList *tlist, GSList **list)
 {
 	gboolean ret;
 	GError *error;
@@ -93,10 +93,9 @@ pk_task_list_get_job_list (PkTaskList *tlist, GSList *list)
  * pk_task_list_job_list_changed_cb:
  */
 static void
-pk_task_list_job_list_changed_cb (DBusGProxy   *proxy,
-			    guint	  job,
-			    const gchar	 *exit_text,
-			    PkTaskList *tlist)
+pk_task_list_job_list_changed_cb (DBusGProxy *proxy,
+				  GPtrArray  *job_list,
+				  PkTaskList *tlist)
 {
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
@@ -133,6 +132,8 @@ pk_task_list_init (PkTaskList *tlist)
 {
 	GError *error = NULL;
 	DBusGProxy *proxy = NULL;
+	GType struct_array_type;
+	GType struct_type;
 
 	tlist->priv = PK_TASK_LIST_GET_PRIVATE (tlist);
 
@@ -151,17 +152,16 @@ pk_task_list_init (PkTaskList *tlist)
 		g_error ("Cannot connect to PackageKit.");
 	}
 	tlist->priv->proxy = proxy;
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
+	struct_type = dbus_g_type_get_struct ("GArray", G_TYPE_UINT, G_TYPE_INVALID);
+	struct_array_type = dbus_g_type_get_collection ("GPtrArray", struct_type);
+
+	dbus_g_object_register_marshaller (pk_marshal_VOID__BOXED,
+					   G_TYPE_NONE, struct_array_type, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "JobListChanged",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+				 struct_array_type, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "JobListChanged",
-				     G_CALLBACK (pk_task_list_job_list_changed_cb), tlist, NULL);
+				     G_CALLBACK(pk_task_list_job_list_changed_cb), tlist, NULL);
 }
 
 /**
