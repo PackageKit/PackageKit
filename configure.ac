@@ -98,6 +98,27 @@ if test x$enable_tests = xyes ; then
 fi
 AM_CONDITIONAL([HAVE_TESTS], [test $have_tests = yes])
 
+dnl ---------------------------------------------------------------------------
+dnl - Are we specifying a different dbus root ?
+dnl ---------------------------------------------------------------------------
+AC_ARG_WITH(dbus-sys,
+              [AC_HELP_STRING([--with-dbus-sys=<dir>],
+              [where D-BUS system.d directory is])])
+AC_ARG_WITH(dbus-services,
+              [AC_HELP_STRING([--with-dbus-services=<dir>],
+              [where D-BUS system-services directory is])])
+if ! test -z "$with_dbus_sys" ; then
+	DBUS_SYS_DIR="$with_dbus_sys"
+else
+	DBUS_SYS_DIR="$SYSCONFDIR/dbus-1/system.d"
+fi
+if ! test -z "$with_dbus_services" ; then
+	DBUS_SERVICES_DIR="$with_dbus_services"
+else
+	DBUS_SERVICES_DIR="$DATADIR/dbus-1/system-services"
+fi
+AC_SUBST(DBUS_SYS_DIR)
+AC_SUBST(DBUS_SERVICES_DIR)
 
 dnl ---------------------------------------------------------------------------
 dnl - Compile time choice of backend

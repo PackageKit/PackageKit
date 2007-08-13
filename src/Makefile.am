@@ -3,9 +3,17 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
+servicedir       = $(DBUS_SERVICES_DIR)
+service_in_files = packagekitd.service.in
+service_DATA     = $(service_in_files:.service.in=.service)
+
+$(service_DATA): $(service_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-interface.xml				\
+	$(service_in_files)				\
 	$(NULL)
 
 INCLUDES =						\
@@ -84,6 +92,9 @@ pk-interface.h: pk-interface.xml
 clean-local:
 	rm -f *~
 	rm -f pk-marshal.c pk-marshal.h
+
+DISTCLEANFILES =					\
+	packagekitd.service
 
 CLEANFILES = $(BUILT_SOURCES)
 
