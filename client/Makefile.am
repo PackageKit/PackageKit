@@ -51,8 +51,8 @@ pkmon_SOURCES =						\
 	pk-marshal.h					\
 	pk-task-common.c				\
 	pk-task-common.h				\
-	pk-task-list.c					\
-	pk-task-list.h					\
+	pk-job-list.c					\
+	pk-job-list.h					\
 	$(NULL)
 
 pkmon_LDADD =						\
@@ -70,8 +70,8 @@ pk_update_icon_SOURCES =				\
 	pk-task-common.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
-	pk-task-list.c					\
-	pk-task-list.h					\
+	pk-job-list.c					\
+	pk-job-list.h					\
 	pk-notify.c					\
 	pk-notify.h					\
 	$(NULL)

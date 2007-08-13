@@ -39,7 +39,7 @@
 
 #include "pk-debug.h"
 #include "pk-notify.h"
-#include "pk-task-list.h"
+#include "pk-job-list.h"
 #include "pk-task-client.h"
 
 static void     pk_notify_class_init	(PkNotifyClass *klass);
@@ -87,7 +87,7 @@ pk_notify_class_init (PkNotifyClass *klass)
 static void
 pk_notify_init (PkNotify *notify)
 {
-	PkTaskList *tlist;
+	PkJobList *jlist;
 	PkTaskClient *tclient;
 	GArray *job_list;
 
@@ -95,9 +95,9 @@ pk_notify_init (PkNotify *notify)
 
 	notify->priv->status_icon = gtk_status_icon_new ();
 
-	tlist = pk_task_list_new ();
-	job_list = pk_task_list_get_job_list (tlist);
-	g_object_unref (tlist);
+	jlist = pk_job_list_new ();
+	job_list = pk_job_list_get_latest (jlist);
+	g_object_unref (jlist);
 
 	tclient = pk_task_client_new ();
 //	g_signal_connect (tclient, "package",

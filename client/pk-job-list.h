@@ -19,40 +19,40 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_TASK_LIST_H
-#define __PK_TASK_LIST_H
+#ifndef __PK_JOB_LIST_H
+#define __PK_JOB_LIST_H
 
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_TASK_LIST		(pk_task_list_get_type ())
-#define PK_TASK_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TASK_LIST, PkTaskList))
-#define PK_TASK_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TASK_LIST, PkTaskListClass))
-#define PK_IS_TASK_LIST(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK_LIST))
-#define PK_IS_TASK_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK_LIST))
-#define PK_TASK_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_LIST, PkTaskListClass))
+#define PK_TYPE_JOB_LIST		(pk_job_list_get_type ())
+#define PK_JOB_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_JOB_LIST, PkJobList))
+#define PK_JOB_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_JOB_LIST, PkJobListClass))
+#define PK_IS_JOB_LIST(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_JOB_LIST))
+#define PK_IS_JOB_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_JOB_LIST))
+#define PK_JOB_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_JOB_LIST, PkJobListClass))
 
-typedef struct PkTaskListPrivate PkTaskListPrivate;
+typedef struct PkJobListPrivate PkJobListPrivate;
 
 typedef struct
 {
 	GObject			 parent;
-	PkTaskListPrivate	*priv;
-} PkTaskList;
+	PkJobListPrivate	*priv;
+} PkJobList;
 
 typedef struct
 {
 	GObjectClass	parent_class;
-} PkTaskListClass;
+} PkJobListClass;
 
-GType		 pk_task_list_get_type			(void);
-PkTaskList	*pk_task_list_new			(void);
+GType		 pk_job_list_get_type			(void);
+PkJobList	*pk_job_list_new			(void);
 
-gboolean	 pk_task_list_refresh			(PkTaskList	*tlist);
-gboolean	 pk_task_list_print			(PkTaskList	*tlist);
-GArray		*pk_task_list_get_job_list		(PkTaskList	*tlist);
+gboolean	 pk_job_list_refresh			(PkJobList	*jlist);
+gboolean	 pk_job_list_print			(PkJobList	*jlist);
+GArray		*pk_job_list_get_latest			(PkJobList	*jlist);
 
 G_END_DECLS
 
-#endif /* __PK_TASK_LIST_H */
+#endif /* __PK_JOB_LIST_H */
