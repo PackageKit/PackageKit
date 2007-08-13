@@ -35,6 +35,7 @@
 
 #include "pk-debug.h"
 #include "pk-marshal.h"
+#include "pk-task-common.h"
 #include "pk-task-client.h"
 
 static void     pk_task_client_class_init	(PkTaskClientClass *klass);
@@ -385,24 +386,6 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 }
 
 /**
- * pk_task_client_exit_from_text:
- */
-static PkTaskClientExit
-pk_task_client_exit_from_text (const gchar *exit)
-{
-	if (strcmp (exit, "success") == 0) {
-		return PK_TASK_CLIENT_EXIT_SUCCESS;
-	}
-	if (strcmp (exit, "failed") == 0) {
-		return PK_TASK_CLIENT_EXIT_FAILED;
-	}
-	if (strcmp (exit, "canceled") == 0) {
-		return PK_TASK_CLIENT_EXIT_CANCELED;
-	}
-	return PK_TASK_CLIENT_EXIT_UNKNOWN;
-}
-
-/**
  * pk_task_client_finished_cb:
  */
 static void
@@ -411,13 +394,13 @@ pk_task_client_finished_cb (DBusGProxy   *proxy,
 			    const gchar	 *exit_text,
 			    PkTaskClient *tclient)
 {
-	PkTaskClientExit exit;
+	PkTaskExit exit;
 
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	if (job == tclient->priv->job) {
-		exit = pk_task_client_exit_from_text (exit_text);
+		exit = pk_task_common_exit_from_text (exit_text);
 		pk_debug ("emit finished %i", exit);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
 
@@ -447,37 +430,6 @@ pk_task_client_percentage_changed_cb (DBusGProxy   *proxy,
 }
 
 /**
- * pk_task_client_status_from_text:
- **/
-static PkTaskClientStatus
-pk_task_client_status_from_text (const gchar *status)
-{
-	if (strcmp (status, "setup") == 0) {
-		return PK_TASK_CLIENT_STATUS_SETUP;
-	}
-	if (strcmp (status, "query") == 0) {
-		return PK_TASK_CLIENT_STATUS_QUERY;
-	}
-	if (strcmp (status, "remove") == 0) {
-		return PK_TASK_CLIENT_STATUS_REMOVE;
-	}
-	if (strcmp (status, "download") == 0) {
-		return PK_TASK_CLIENT_STATUS_DOWNLOAD;
-	}
-	if (strcmp (status, "install") == 0) {
-		return PK_TASK_CLIENT_STATUS_INSTALL;
-	}
-	if (strcmp (status, "update") == 0) {
-		return PK_TASK_CLIENT_STATUS_UPDATE;
-	}
-	if (strcmp (status, "exit") == 0) {
-		return PK_TASK_CLIENT_STATUS_EXIT;
-	}
-	return PK_TASK_CLIENT_STATUS_INVALID;
-}
-
-
-/**
  * pk_task_client_job_status_changed_cb:
  */
 static void
@@ -487,12 +439,12 @@ pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
 				      const gchar  *package,
 				      PkTaskClient *tclient)
 {
-	PkTaskClientStatus status;
+	PkTaskStatus status;
 
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	status = pk_task_client_status_from_text (status_text);
+	status = pk_task_common_status_from_text (status_text);
 
 	if (job == tclient->priv->job) {
 		pk_debug ("emit job-status-changed %i", status);

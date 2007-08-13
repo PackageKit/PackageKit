@@ -31,6 +31,8 @@ pkcon_SOURCES =						\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-task-common.c				\
+	pk-task-common.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
 	$(NULL)
@@ -46,6 +48,8 @@ pk_update_icon_SOURCES =				\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-task-common.c				\
+	pk-task-common.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
 	pk-notify.c					\

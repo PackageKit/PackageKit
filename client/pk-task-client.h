@@ -24,10 +24,6 @@
 
 #include <glib-object.h>
 
-#define	PK_DBUS_SERVICE			"org.freedesktop.PackageKit"
-#define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
-#define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
-
 G_BEGIN_DECLS
 
 #define PK_TYPE_TASK_CLIENT		(pk_task_client_get_type ())
@@ -38,25 +34,6 @@ G_BEGIN_DECLS
 #define PK_TASK_CLIENT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_CLIENT, PkTaskClientClass))
 
 typedef struct PkTaskClientPrivate PkTaskClientPrivate;
-
-typedef enum {
-	PK_TASK_CLIENT_STATUS_INVALID,
-	PK_TASK_CLIENT_STATUS_SETUP,
-	PK_TASK_CLIENT_STATUS_QUERY,
-	PK_TASK_CLIENT_STATUS_REMOVE,
-	PK_TASK_CLIENT_STATUS_DOWNLOAD,
-	PK_TASK_CLIENT_STATUS_INSTALL,
-	PK_TASK_CLIENT_STATUS_UPDATE,
-	PK_TASK_CLIENT_STATUS_EXIT,
-	PK_TASK_CLIENT_STATUS_UNKNOWN
-} PkTaskClientStatus;
-
-typedef enum {
-	PK_TASK_CLIENT_EXIT_SUCCESS,
-	PK_TASK_CLIENT_EXIT_FAILED,
-	PK_TASK_CLIENT_EXIT_CANCELED,
-	PK_TASK_CLIENT_EXIT_UNKNOWN
-} PkTaskClientExit;
 
 typedef struct
 {
