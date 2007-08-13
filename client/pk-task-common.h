@@ -24,35 +24,11 @@
 
 #include <glib-object.h>
 
+G_BEGIN_DECLS
+
 #define	PK_DBUS_SERVICE			"org.freedesktop.PackageKit"
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
-
-G_BEGIN_DECLS
-
-typedef enum {
-	PK_TASK_STATUS_INVALID,
-	PK_TASK_STATUS_SETUP,
-	PK_TASK_STATUS_QUERY,
-	PK_TASK_STATUS_REMOVE,
-	PK_TASK_STATUS_DOWNLOAD,
-	PK_TASK_STATUS_INSTALL,
-	PK_TASK_STATUS_UPDATE,
-	PK_TASK_STATUS_EXIT,
-	PK_TASK_STATUS_UNKNOWN
-} PkTaskStatus;
-
-typedef enum {
-	PK_TASK_EXIT_SUCCESS,
-	PK_TASK_EXIT_FAILED,
-	PK_TASK_EXIT_CANCELED,
-	PK_TASK_EXIT_UNKNOWN
-} PkTaskExit;
-
-PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
-const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
-PkTaskStatus	 pk_task_status_from_text		(const gchar	*status);
-const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
 
 G_END_DECLS
 

@@ -227,64 +227,6 @@ pk_task_clear (PkTask *task)
 }
 
 /**
- * pk_task_status_to_text:
- **/
-const gchar *
-pk_task_status_to_text (PkTaskStatus status)
-{
-	const gchar *text = NULL;
-	switch (status) {
-	case PK_TASK_STATUS_SETUP:
-		text = "setup";
-		break;
-	case PK_TASK_STATUS_QUERY:
-		text = "query";
-		break;
-	case PK_TASK_STATUS_REMOVE:
-		text = "remove";
-		break;
-	case PK_TASK_STATUS_DOWNLOAD:
-		text = "download";
-		break;
-	case PK_TASK_STATUS_INSTALL:
-		text = "install";
-		break;
-	case PK_TASK_STATUS_UPDATE:
-		text = "update";
-		break;
-	case PK_TASK_STATUS_EXIT:
-		text = "exit";
-		break;
-	default:
-		text = "invalid";
-	}
-	return text;
-}
-
-/**
- * pk_task_exit_to_text:
- **/
-const gchar *
-pk_task_exit_to_text (PkTaskExit exit)
-{
-	const gchar *text = NULL;
-	switch (exit) {
-	case PK_TASK_EXIT_SUCCESS:
-		text = "success";
-		break;
-	case PK_TASK_EXIT_FAILED:
-		text = "failed";
-		break;
-	case PK_TASK_EXIT_CANCELED:
-		text = "canceled";
-		break;
-	default:
-		text = "unknown";
-	}
-	return text;
-}
-
-/**
  * pk_task_get_description:
  *
  * Need to g_free

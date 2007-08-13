@@ -23,6 +23,7 @@
 #define __PK_TASK_H
 
 #include <glib-object.h>
+#include "pk-task-utils.h"
 
 G_BEGIN_DECLS
 
@@ -34,25 +35,6 @@ G_BEGIN_DECLS
 #define PK_TASK_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK, PkTaskClass))
 
 typedef struct PkTaskPrivate PkTaskPrivate;
-
-typedef enum {
-	PK_TASK_STATUS_INVALID,
-	PK_TASK_STATUS_SETUP,
-	PK_TASK_STATUS_QUERY,
-	PK_TASK_STATUS_REMOVE,
-	PK_TASK_STATUS_DOWNLOAD,
-	PK_TASK_STATUS_INSTALL,
-	PK_TASK_STATUS_UPDATE,
-	PK_TASK_STATUS_EXIT,
-	PK_TASK_STATUS_UNKNOWN
-} PkTaskStatus;
-
-typedef enum {
-	PK_TASK_EXIT_SUCCESS,
-	PK_TASK_EXIT_FAILED,
-	PK_TASK_EXIT_CANCELED,
-	PK_TASK_EXIT_UNKNOWN
-} PkTaskExit;
 
 typedef enum {
 	PK_TASK_JOB_STATUS_CHANGED,

@@ -27,6 +27,8 @@ sbin_PROGRAMS =						\
 packagekitd_SOURCES =					\
 	pk-main.c					\
 	pk-task.h					\
+	pk-task-utils.h					\
+	pk-task-utils.c					\
 	pk-task-common.h				\
 	pk-task-common.c				\
 	pk-marshal.c					\

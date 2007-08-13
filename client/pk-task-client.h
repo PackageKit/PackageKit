@@ -23,7 +23,7 @@
 #define __PK_TASK_CLIENT_H
 
 #include <glib-object.h>
-#include "pk-task-common.h"
+#include "pk-task-utils.h"
 
 G_BEGIN_DECLS
 

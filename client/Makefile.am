@@ -32,6 +32,8 @@ pkcon_SOURCES =						\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-task-utils.h					\
+	pk-task-utils.c					\
 	pk-task-common.c				\
 	pk-task-common.h				\
 	pk-task-client.c				\
@@ -55,6 +57,8 @@ pkmon_SOURCES =						\
 	pk-task-client.h				\
 	pk-task-common.c				\
 	pk-task-common.h				\
+	pk-task-utils.h					\
+	pk-task-utils.c					\
 	pk-job-list.c					\
 	pk-job-list.h					\
 	$(NULL)
@@ -74,6 +78,8 @@ pk_update_icon_SOURCES =				\
 	pk-task-common.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
+	pk-task-utils.h					\
+	pk-task-utils.c					\
 	pk-job-list.c					\
 	pk-job-list.h					\
 	pk-notify.c					\

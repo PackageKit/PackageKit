@@ -28,7 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
-#include "pk-task-constants.h"
+#include "pk-task-utils.h"
 
 /**
  * pk_task_exit_from_text:
