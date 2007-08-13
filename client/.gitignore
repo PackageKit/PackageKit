@@ -2,6 +2,7 @@
 *.o
 pk-marshal.h
 pk-marshal.c
-pk-console
+pkcon
+pkmon
 pk-update-icon
 

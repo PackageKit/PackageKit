@@ -22,6 +22,7 @@ INCLUDES =						\
 
 bin_PROGRAMS =						\
 	pkcon						\
+	pkmon						\
 	pk-update-icon					\
 	$(NULL)
 
@@ -38,6 +39,23 @@ pkcon_SOURCES =						\
 	$(NULL)
 
 pkcon_LDADD =						\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(NULL)
+
+pkmon_SOURCES =						\
+	pk-monitor.c					\
+	pk-debug.c					\
+	pk-debug.h					\
+	pk-marshal.c					\
+	pk-marshal.h					\
+	pk-task-common.c				\
+	pk-task-common.h				\
+	pk-task-list.c					\
+	pk-task-list.h					\
+	$(NULL)
+
+pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(NULL)

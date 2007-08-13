@@ -89,14 +89,14 @@ pk_notify_init (PkNotify *notify)
 {
 	PkTaskList *tlist;
 	PkTaskClient *tclient;
-	GSList *list;
+	GArray *job_list;
 
 	notify->priv = PK_NOTIFY_GET_PRIVATE (notify);
 
 	notify->priv->status_icon = gtk_status_icon_new ();
 
 	tlist = pk_task_list_new ();
-	pk_task_list_get_job_list (tlist, &list);
+	job_list = pk_task_list_get_job_list (tlist);
 	g_object_unref (tlist);
 
 	tclient = pk_task_client_new ();

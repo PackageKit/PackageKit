@@ -49,8 +49,9 @@ typedef struct
 GType		 pk_task_list_get_type			(void);
 PkTaskList	*pk_task_list_new			(void);
 
-gboolean	 pk_task_list_get_job_list		(PkTaskList	*tlist,
-							 GSList		**list);
+gboolean	 pk_task_list_refresh			(PkTaskList	*tlist);
+gboolean	 pk_task_list_print			(PkTaskList	*tlist);
+GArray		*pk_task_list_get_job_list		(PkTaskList	*tlist);
 
 G_END_DECLS
 

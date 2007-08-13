@@ -251,6 +251,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	g_ptr_array_remove (engine->priv->array, task);
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
+	pk_engine_job_list_changed (engine);
 }
 
 /**
