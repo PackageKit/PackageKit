@@ -58,31 +58,92 @@ pk_console_percentage_changed_cb (PkTaskClient *tclient, guint percentage, gpoin
 }
 
 /**
+ * pk_console_usage:
+ **/
+static void
+pk_console_usage (const gchar *error)
+{
+	if (error != NULL) {
+		g_print ("Error: %s\n", error);
+	}
+	g_print ("usage:\n");
+	g_print ("  pkcon search power\n");
+	g_print ("  pkcon async install gtk2-devel\n");
+	g_print ("  pkcon install gimp update totem\n");
+	g_print ("  pkcon sync update async install bluez-gnome\n");
+	g_print ("  pkcon debug checkupdate\n");
+}
+
+/**
+ * pk_console_parse_multiple_commands:
+ **/
+static void
+pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
+{
+	const gchar *mode;
+	const gchar *value = NULL;
+	gboolean remove_two;
+	mode = g_ptr_array_index (array, 0);
+	if (array->len > 1) {
+		value = g_ptr_array_index (array, 1);
+	}
+	remove_two = FALSE;
+
+	if (strcmp (mode, "search") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a search term");
+		} else {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_find_packages (tclient, value);
+			remove_two = TRUE;
+		}
+	} else if (strcmp (mode, "install") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package to install");
+		} else {
+			pk_task_client_install_package (tclient, value);
+			remove_two = TRUE;
+		}
+	} else if (strcmp (mode, "remove") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package to remove");
+		} else {
+			pk_task_client_remove_package_with_deps (tclient, value);
+			remove_two = TRUE;
+		}
+	} else if (strcmp (mode, "debug") == 0) {
+		pk_debug_init (TRUE);
+	} else if (strcmp (mode, "update") == 0) {
+		pk_task_client_update_system (tclient);
+	} else if (strcmp (mode, "sync") == 0) {
+		pk_task_client_set_sync (tclient, TRUE);
+	} else if (strcmp (mode, "async") == 0) {
+		pk_task_client_set_sync (tclient, FALSE);
+	} else if (strcmp (mode, "checkupdate") == 0) {
+		pk_task_client_set_sync (tclient, TRUE);
+		pk_task_client_get_updates (tclient);
+	} else {
+		pk_console_usage ("option not yet supported");
+	}
+
+	/* remove the right number of items from the pointer index */
+	g_ptr_array_remove_index (array, 0);
+	if (remove_two == TRUE) {
+		g_ptr_array_remove_index (array, 0);
+	}
+}
+
+/**
  * main:
  **/
 int
 main (int argc, char *argv[])
 {
 	DBusGConnection *system_connection;
-	gboolean verbose = FALSE;
-	gboolean async = FALSE;
-	gchar *mode = NULL;
-	gchar *value = NULL;
 	GError *error = NULL;
-	GOptionContext *context;
 	PkTaskClient *tclient;
-
-	const GOptionEntry options[] = {
-		{ "mode", '\0', 0, G_OPTION_ARG_STRING, &mode,
-		  "The mode of operation, [search|install|remove|update|checkupdate]", NULL },
-		{ "value", '\0', 0, G_OPTION_ARG_STRING, &value,
-		  "The package to use", NULL },
-		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
-		  "Show extra debugging information", NULL },
-		{ "async", '\0', 0, G_OPTION_ARG_NONE, &async,
-		  "Do not wait for command to complete", NULL },
-		{ NULL}
-	};
+	GPtrArray *array;
+	guint i;
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
@@ -90,15 +151,9 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 	g_type_init ();
 
-	context = g_option_context_new (_("PackageKit console client"));
-	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_parse (context, &argc, &argv, NULL);
-	g_option_context_free (context);
-
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
-	pk_debug_init (verbose);
 
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -108,13 +163,8 @@ main (int argc, char *argv[])
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
 
-	pk_debug ("mode = %s", mode);
-	pk_debug ("value = %s", value);
-	pk_debug ("async = %i", async);
-
-	if (mode == NULL) {
-		pk_debug ("invalid mode");
-		return 1;
+	if (argc < 2) {
+		pk_console_usage (NULL);
 	}
 
 	tclient = pk_task_client_new ();
@@ -123,20 +173,16 @@ main (int argc, char *argv[])
 	g_signal_connect (tclient, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 
-	pk_task_client_set_sync (tclient, !async);
-	if (strcmp (mode, "search") == 0) {
-		pk_task_client_find_packages (tclient, value);
-	} else if (strcmp (mode, "install") == 0) {
-		pk_task_client_install_package (tclient, value);
-	} else if (strcmp (mode, "remove") == 0) {
-		pk_task_client_remove_package_with_deps (tclient, value);
-	} else if (strcmp (mode, "update") == 0) {
-		pk_task_client_update_system (tclient);
-	} else if (strcmp (mode, "checkupdate") == 0) {
-		pk_task_client_get_updates (tclient);
-	} else {
-		pk_debug ("not yet supported");
+	/* add argv to a pointer array */
+	array = g_ptr_array_new ();
+	for (i=1; i<argc; i++) {
+		g_ptr_array_add (array, (gpointer) argv[i]);
 	}
+	/* process all the commands */
+	while (array->len > 0) {
+		pk_console_parse_multiple_commands (tclient, array);
+	}
+	g_ptr_array_free (array, TRUE);
 	g_object_unref (tclient);
 
 	return 0;

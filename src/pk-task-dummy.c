@@ -219,6 +219,7 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	if (ret == FALSE) {
 		g_warning ("spawn failed: '%s'", command);
 		g_object_unref (spawn);
+		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	}
 
 if (0)	g_timeout_add (2000, pk_task_find_packages_timeout, task);

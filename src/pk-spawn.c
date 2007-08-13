@@ -80,6 +80,11 @@ pk_spawn_split_lines (PkSpawn *spawn, const gchar *data)
 	char **lines;
 	char *line;
 
+	if (data == NULL) {
+		pk_warning ("data NULL");
+		return;
+	}
+
 	/* split output into complete lines */
 	lines = g_strsplit (data, "\n", 0);
 
@@ -156,6 +161,11 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 
 	g_return_val_if_fail (spawn != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
+	if (command == NULL) {
+		pk_warning ("command NULL");
+		return FALSE;
+	}
 
 	/* split command line */
 	argv = g_strsplit (command, " ", 0);

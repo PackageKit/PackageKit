@@ -21,11 +21,11 @@ INCLUDES =						\
 	$(NULL)
 
 bin_PROGRAMS =						\
-	pk-console					\
+	pkcon						\
 	pk-update-icon					\
 	$(NULL)
 
-pk_console_SOURCES =					\
+pkcon_SOURCES =						\
 	pk-console.c					\
 	pk-debug.c					\
 	pk-debug.h					\
@@ -35,7 +35,7 @@ pk_console_SOURCES =					\
 	pk-task-client.h				\
 	$(NULL)
 
-pk_console_LDADD =					\
+pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(NULL)
