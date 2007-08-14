@@ -7,11 +7,8 @@ NULL =
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = PackageKit.conf
 
-clean-local :
-	rm -f *~
-
 EXTRA_DIST =			\
-	PackageKit.conf.in				\
+	PackageKit.conf.in	\
 	COPYING			\
 	MAINTAINERS		\
 	AUTHORS			\
@@ -22,8 +19,14 @@ EXTRA_DIST =			\
 	ChangeLog		\
 	$(NULL)
 
+clean-local :
+	rm -f *~
+
 DISTCLEANFILES =					\
 	PackageKit-*.tar.gz		\
+	intltool-extract				\
+	intltool-merge					\
+	intltool-update					\
 	$(NULL)
 
 MAINTAINERCLEANFILES =		\

@@ -114,7 +114,7 @@ main (int argc, char *argv[])
 	DBusGConnection *system_connection;
 	gboolean verbose = FALSE;
 	gboolean version = FALSE;
-	gboolean no_daemon = FALSE;
+	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	PkEngine *engine = NULL;
@@ -122,8 +122,8 @@ main (int argc, char *argv[])
 	GOptionContext *context;
 
 	const GOptionEntry options[] = {
-		{ "no-daemon", '\0', 0, G_OPTION_ARG_NONE, &no_daemon,
-		  "Do not daemonize", NULL },
+		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
+		  "Daemonize and detach", NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
 		  "Show extra debugging information", NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
@@ -157,7 +157,7 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 
 	/* we need to daemonize before we get a system connection */
-	if (no_daemon == FALSE && daemon (0, 0)) {
+	if (use_daemon == TRUE && daemon (0, 0)) {
 		g_error ("Could not daemonize: %s", g_strerror (errno));
 	}
 

@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 servicedir       = $(DBUS_SERVICES_DIR)
-service_in_files = packagekitd.service.in
+service_in_files = org.freedesktop.PackageKit.service.in
 service_DATA     = $(service_in_files:.service.in=.service)
 
 $(service_DATA): $(service_in_files) Makefile
@@ -94,7 +94,7 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 DISTCLEANFILES =					\
-	packagekitd.service
+	org.freedesktop.PackageKit.service
 
 CLEANFILES = $(BUILT_SOURCES)
 

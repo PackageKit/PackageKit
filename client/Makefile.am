@@ -3,8 +3,13 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
+autostartdir = $(datadir)/gnome/autostart
+autostart_DATA = pk-update-icon.desktop
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
+	pk-update-icon.desktop				\
+	$(autostart_in_files)				\
 	$(NULL)
 
 INCLUDES =						\
@@ -111,6 +116,10 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = $(BUILT_SOURCES)
+
+DISTCLEANFILES =					\
+	pk-update-icon.desktop				\
+	$(NULL)
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

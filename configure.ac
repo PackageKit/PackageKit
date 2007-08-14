@@ -9,10 +9,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_LIBTOOL
 
-GNOME_COMPILE_WARNINGS
-GNOME_DOC_INIT
-
-AC_PATH_PROG(GLIB_GENMARSPACKAGEKIT, glib-genmarshal)
+AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
@@ -23,18 +20,27 @@ if test "$GCC" = "yes"; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl - gettext stuff
+dnl ---------------------------------------------------------------------------
+GETTEXT_PACKAGE=PackageKit
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Name of default gettext domain])
+
+AM_GLIB_GNU_GETTEXT
+
+dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.6.0
-DBUS_REQUIRED=0.70
 GTK_REQUIRED=2.10.0
+DBUS_REQUIRED=0.70
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
 dnl ---------------------------------------------------------------------------
 AC_SUBST(GLIB_REQUIRED)
-AC_SUBST(DBUS_REQUIRED)
 AC_SUBST(GTK_REQUIRED)
+AC_SUBST(DBUS_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies

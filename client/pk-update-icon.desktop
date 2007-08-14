@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=PackageKit Update Applet
+Comment=PackageKit Update Applet
+Icon=system-software-update
+Exec=pk-update-icon
+Terminal=false
+Type=Application
+Categories=
+OnlyShowIn=GNOME;XFCE;
+
