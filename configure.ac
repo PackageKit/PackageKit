@@ -34,6 +34,8 @@ dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.6.0
 GTK_REQUIRED=2.10.0
 DBUS_REQUIRED=0.70
+LIBGLADE_REQUIRED=2.5.0
+LIBNOTIFY_REQUIRED=0.4.3
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -41,6 +43,8 @@ dnl ---------------------------------------------------------------------------
 AC_SUBST(GLIB_REQUIRED)
 AC_SUBST(GTK_REQUIRED)
 AC_SUBST(DBUS_REQUIRED)
+AC_SUBST(LIBGLADE_REQUIRED)
+AC_SUBST(LIBNOTIFY_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
@@ -60,6 +64,16 @@ PKG_CHECK_MODULES(GTK, \
  gtk+-2.0 >= $GTK_REQUIRED)
 AC_SUBST(GTK_CFLAGS)
 AC_SUBST(GTK_LIBS)
+
+PKG_CHECK_MODULES(LIBGLADE, \
+ libglade-2.0 >= $LIBGLADE_REQUIRED)
+AC_SUBST(LIBGLADE_CFLAGS)
+AC_SUBST(LIBGLADE_LIBS)
+
+PKG_CHECK_MODULES(LIBNOTIFY, \
+ libnotify >= $LIBNOTIFY_REQUIRED)
+AC_SUBST(LIBNOTIFY_CFLAGS)
+AC_SUBST(LIBNOTIFY_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files

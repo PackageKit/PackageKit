@@ -6,15 +6,22 @@ NULL =
 autostartdir = $(datadir)/gnome/autostart
 autostart_DATA = pk-update-icon.desktop
 
+
+pkgdata_DATA =						\
+	pk-application.glade
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-update-icon.desktop				\
+	$(pkgdata_DATA)					\
 	$(autostart_in_files)				\
 	$(NULL)
 
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(LIBGLADE_CFLAGS)				\
+	$(LIBNOTIFY_CFLAGS)				\
 	$(GTK_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -28,6 +35,7 @@ INCLUDES =						\
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
+	pk-application
 	pk-update-icon					\
 	$(NULL)
 
@@ -96,6 +104,22 @@ pk_update_icon_SOURCES =				\
 pk_update_icon_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(LIBNOTIFY_LIBS)				\
+	$(GTK_LIBS)					\
+	$(NULL)
+
+pk_application_SOURCES =				\
+	pk-application-main.c				\
+	pk-debug.c					\
+	pk-debug.h					\
+	pk-application.c				\
+	pk-application.h				\
+	$(NULL)
+
+pk_application_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(LIBGLADE_LIBS)				\
 	$(GTK_LIBS)					\
 	$(NULL)
 

@@ -5,4 +5,8 @@ pk-marshal.c
 pkcon
 pkmon
 pk-update-icon
+pk-application
+*.glade.bak
+*.gladep
+*.gladep.bak
 
