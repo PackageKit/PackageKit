@@ -5,4 +5,5 @@ pk-marshal.c
 pk-interface.h
 packagekitd
 debug.log
+org.freedesktop.PackageKit.service
 

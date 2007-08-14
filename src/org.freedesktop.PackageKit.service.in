@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.freedesktop.PackageKit
+Exec=@servicedir@/packagekitd
+User=root
+
