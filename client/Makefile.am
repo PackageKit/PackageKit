@@ -35,7 +35,7 @@ INCLUDES =						\
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
-	pk-application
+	pk-application					\
 	pk-update-icon					\
 	$(NULL)
 
@@ -114,6 +114,14 @@ pk_application_SOURCES =				\
 	pk-debug.h					\
 	pk-application.c				\
 	pk-application.h				\
+	pk-marshal.c					\
+	pk-marshal.h					\
+	pk-task-utils.h					\
+	pk-task-utils.c					\
+	pk-task-common.c				\
+	pk-task-common.h				\
+	pk-task-client.c				\
+	pk-task-client.h				\
 	$(NULL)
 
 pk_application_LDADD =					\

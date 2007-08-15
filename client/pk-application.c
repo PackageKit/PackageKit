@@ -31,6 +31,7 @@
 
 #include "pk-application.h"
 #include "pk-debug.h"
+#include "pk-task-client.h"
 
 static void     pk_application_class_init (PkApplicationClass *klass);
 static void     pk_application_init       (PkApplication      *application);
@@ -41,12 +42,21 @@ static void     pk_application_finalize   (GObject	    *object);
 struct PkApplicationPrivate
 {
 	GladeXML		*glade_xml;
+	GtkListStore		*store;
 };
 
 enum {
 	ACTION_HELP,
 	ACTION_CLOSE,
 	LAST_SIGNAL
+};
+
+enum
+{
+	COLUMN_INSTALLED,
+	COLUMN_PACKAGE,
+	COLUMN_DESCRIPTION,
+	NUM_COLUMNS
 };
 
 static guint	     signals [LAST_SIGNAL] = { 0, };
@@ -111,15 +121,46 @@ pk_application_close_cb (GtkWidget	*widget,
 }
 
 /**
+ * pk_console_package_cb:
+ **/
+static void
+pk_console_package_cb (PkTaskClient *tclient, const gchar *package, const gchar *summary, PkApplication	*application)
+{
+	GtkTreeIter iter;
+	g_debug ("package = %s:%s", package, summary);
+	gtk_list_store_append (application->priv->store, &iter);
+	gtk_list_store_set (application->priv->store, &iter,
+			    COLUMN_INSTALLED, TRUE,
+			    COLUMN_PACKAGE, package,
+			    COLUMN_DESCRIPTION, summary,
+			    -1);
+}
+
+/**
  * pk_application_find_cb:
  * @widget: The GtkWidget object
  * @graph: This graph class instance
  **/
 static void
-pk_application_find_cb (GtkWidget	*widget,
+pk_application_find_cb (GtkWidget	*button_widget,
 		        PkApplication	*application)
 {
-	g_error ("find");
+	GtkWidget *widget;
+	const gchar *package;
+	PkTaskClient *tclient;
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "entry_text");
+	package = gtk_entry_get_text (GTK_ENTRY (widget));
+
+	/* clear existing list */
+	gtk_list_store_clear (application->priv->store);
+
+	g_debug ("find %s", package);
+
+	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "package",
+			  G_CALLBACK (pk_console_package_cb), application);
+	pk_task_client_find_packages (tclient, package);
 }
 
 /**
@@ -137,44 +178,76 @@ pk_application_delete_event_cb (GtkWidget	*widget,
 	return FALSE;
 }
 
-/**
- * pk_graph_widget_custom_handler:
- * @xml: The glade file we are reading.
- * @func_name: The function name to create the object
- *
- * Handler for libglade to provide interface with a pointer
- *
- * Return value: The custom widget.
- **/
-static GtkWidget *
-pk_graph_widget_custom_handler (GladeXML *xml,
-			  gchar *func_name, gchar *name,
-			  gchar *string1, gchar *string2,
-			  gint int1, gint int2,
-			  gpointer user_data)
+static gboolean
+pk_application_text_changed_cb (GtkEntry *entry, GdkEventKey *event, PkApplication *application)
 {
-	GtkWidget *widget = NULL;
-	if (strcmp ("pk_graph_new", func_name) == 0) {
-		widget = NULL;
-		return widget;
+	GtkWidget *widget;
+	const gchar *package;
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "entry_text");
+	package = gtk_entry_get_text (GTK_ENTRY (widget));
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
+	if (package == NULL || strlen (package) == 0) {
+		gtk_widget_set_sensitive (widget, FALSE);
+	} else {
+		gtk_widget_set_sensitive (widget, TRUE);
 	}
-	return NULL;
+	return FALSE;
 }
 
-#if 0
-/**
- * pk_application_checkbox_events_cb:
- * @widget: The GtkWidget object
- **/
 static void
-pk_application_checkbox_events_cb (GtkWidget     *widget,
-			           PkApplication *application)
+pk_misc_installed_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpointer data)
 {
-	gboolean checked;
-	checked = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-	pk_debug ("Events enable %i", checked);
+	GtkTreeModel *model = (GtkTreeModel *)data;
+	GtkTreeIter iter;
+	GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
+	gboolean installed;
+
+	/* get toggled iter */
+	gtk_tree_model_get_iter (model, &iter, path);
+	gtk_tree_model_get (model, &iter, COLUMN_INSTALLED, &installed, -1);
+
+	/* do something with the value */
+	installed ^= 1;
+
+	/* set new value */
+	gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_INSTALLED, installed, -1);
+
+	/* clean up */
+	gtk_tree_path_free (path);
 }
-#endif
+
+static void
+pk_misc_add_columns (GtkTreeView *treeview)
+{
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *column;
+	GtkTreeModel *model = gtk_tree_view_get_model (treeview);
+
+	/* column for installed toggles */
+	renderer = gtk_cell_renderer_toggle_new ();
+	g_signal_connect (renderer, "toggled", G_CALLBACK (pk_misc_installed_toggled), model);
+
+	column = gtk_tree_view_column_new_with_attributes ("Installed", renderer,
+							   "active", COLUMN_INSTALLED, NULL);
+	gtk_tree_view_append_column (treeview, column);
+
+	/* column for severities */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Name", renderer,
+							   "text", COLUMN_PACKAGE, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_PACKAGE);
+	gtk_tree_view_append_column (treeview, column);
+
+	/* column for description */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Description", renderer,
+							   "text", COLUMN_DESCRIPTION, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_DESCRIPTION);
+	gtk_tree_view_append_column (treeview, column);
+}
+
 
 /**
  * pk_application_init:
@@ -188,30 +261,44 @@ pk_application_init (PkApplication *application)
 
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 
-	glade_set_custom_handler (pk_graph_widget_custom_handler, application);
-
 	application->priv->glade_xml = glade_xml_new (PK_DATA "/pk-application.glade", NULL, NULL);
 	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
 
 	/* Hide window first so that the dialogue resizes itself without redrawing */
 	gtk_widget_hide (main_window);
-//	gtk_window_set_icon_name (GTK_WINDOW (main_window), PK_STOCK_APP_ICON);
+	gtk_window_set_icon_name (GTK_WINDOW (main_window), "software-update-available");
 
 	/* Get the main window quit */
 	g_signal_connect (main_window, "delete_event",
 			  G_CALLBACK (pk_application_delete_event_cb), application);
 
-	widget = glade_xml_get_widget (application->priv->glade_xml, "button_close");
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_close");
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_close_cb), application);
 
-	widget = glade_xml_get_widget (application->priv->glade_xml, "button_help");
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_help");
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_help_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_install");
+	gtk_widget_set_sensitive (widget, TRUE);
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_remove");
+	gtk_widget_set_sensitive (widget, FALSE);
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_deps");
+	gtk_widget_set_sensitive (widget, FALSE);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_find_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "entry_text");
+	g_signal_connect (widget, "key-press-event",
+			  G_CALLBACK (pk_application_text_changed_cb), application);
+	g_signal_connect (widget, "key-release-event",
+			  G_CALLBACK (pk_application_text_changed_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
+	gtk_widget_set_sensitive (widget, FALSE);
 
 //	widget = glade_xml_get_widget (application->priv->glade_xml, "custom_graph");
 //	gtk_widget_set_size_request (widget, 600, 300);
@@ -220,16 +307,22 @@ pk_application_init (PkApplication *application)
 	gtk_widget_hide (GTK_WIDGET (widget));
 	gtk_widget_show (GTK_WIDGET (widget));
 
-//	widget = glade_xml_get_widget (application->priv->glade_xml, "combobox_type");
-//	pk_application_populate_graph_types (application, widget);
-
-//	widget = glade_xml_get_widget (application->priv->glade_xml, "checkbutton_events");
-//	pk_conf_get_bool (application->priv->conf, PK_CONF_STATS_SHOW_EVENTS, &checked);
-//	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), checked);
-//	g_signal_connect (widget, "clicked",
-//			  G_CALLBACK (pk_application_checkbox_events_cb), application);
-
+	gtk_widget_set_size_request (main_window, 700, 300);
 	gtk_widget_show (main_window);
+
+	/* create list store */
+	application->priv->store = gtk_list_store_new (NUM_COLUMNS,
+						       G_TYPE_BOOLEAN,
+						       G_TYPE_STRING,
+						       G_TYPE_STRING);
+
+	/* create tree view */
+	widget = glade_xml_get_widget (application->priv->glade_xml, "treeview_packages");
+	gtk_tree_view_set_model (GTK_TREE_VIEW (widget),
+				 GTK_TREE_MODEL (application->priv->store));
+
+	/* add columns to the tree view */
+	pk_misc_add_columns (GTK_TREE_VIEW (widget));
 }
 
 /**
@@ -245,6 +338,9 @@ pk_application_finalize (GObject *object)
 
 	application = PK_APPLICATION (object);
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
+
+	g_object_unref (application->priv->store);
+
 	G_OBJECT_CLASS (pk_application_parent_class)->finalize (object);
 }
 
