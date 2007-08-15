@@ -6,6 +6,8 @@ NULL =
 autostartdir = $(datadir)/gnome/autostart
 autostart_DATA = pk-update-icon.desktop
 
+desktopdir = $(datadir)/applications
+desktop_DATA = pk-application.desktop
 
 pkgdata_DATA =						\
 	pk-application.glade
@@ -13,8 +15,8 @@ pkgdata_DATA =						\
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-update-icon.desktop				\
+	pk-application.desktop				\
 	$(pkgdata_DATA)					\
-	$(autostart_in_files)				\
 	$(NULL)
 
 INCLUDES =						\
@@ -150,7 +152,6 @@ clean-local:
 CLEANFILES = $(BUILT_SOURCES)
 
 DISTCLEANFILES =					\
-	pk-update-icon.desktop				\
 	$(NULL)
 
 MAINTAINERCLEANFILES =					\
