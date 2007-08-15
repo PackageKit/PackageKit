@@ -35,16 +35,22 @@
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkTaskClient *tclient, const gchar *package, const gchar *summary, gpointer data)
+pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, gpointer data)
 {
 	gchar *padding;
+	const gchar *installed;
 	gint size;
 	size = (25 - strlen(package));
 	if (size < 0) {
 		size = 0;
 	}
+	if (value == 0) {
+		installed = "no ";
+	} else {
+		installed = "yes";
+	}
 	padding = g_strnfill (size, ' ');
-	g_print ("%s%s %s\n", package, padding, summary);
+	g_print ("%s %s%s %s\n", installed, package, padding, summary);
 	g_free (padding);
 }
 

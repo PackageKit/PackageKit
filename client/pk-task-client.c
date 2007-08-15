@@ -492,6 +492,7 @@ pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
 static void
 pk_task_client_package_cb (DBusGProxy   *proxy,
 			   guint	 job,
+			   guint         value,
 			   const gchar  *package,
 			   const gchar  *summary,
 			   PkTaskClient *tclient)
@@ -500,8 +501,8 @@ pk_task_client_package_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	if (job == tclient->priv->job) {
-		pk_debug ("emit package %s, %s", package, summary);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, package, summary);
+		pk_debug ("emit package %i, %s, %s", value, package, summary);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
 	}
 }
 
@@ -528,8 +529,8 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 	signals [PK_TASK_CLIENT_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -574,6 +575,8 @@ pk_task_client_init (PkTaskClient *tclient)
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
@@ -591,7 +594,7 @@ pk_task_client_init (PkTaskClient *tclient)
 				     G_CALLBACK (pk_task_client_job_status_changed_cb), tclient, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_task_client_package_cb), tclient, NULL);
 }

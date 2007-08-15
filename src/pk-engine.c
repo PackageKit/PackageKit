@@ -218,7 +218,7 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
  * pk_engine_package_cb:
  **/
 static void
-pk_engine_package_cb (PkTask *task, const gchar *package, const gchar *summary, PkEngine *engine)
+pk_engine_package_cb (PkTask *task, guint value, const gchar *package, const gchar *summary, PkEngine *engine)
 {
 	guint job;
 
@@ -226,8 +226,8 @@ pk_engine_package_cb (PkTask *task, const gchar *package, const gchar *summary, 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	job = pk_task_get_job (task);
-	pk_debug ("emitting package job:%i %s, %s", job, package, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, package, summary);
+	pk_debug ("emitting package job:%i value=%i %s, %s", job, value, package, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, value, package, summary);
 }
 
 /**
@@ -541,8 +541,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

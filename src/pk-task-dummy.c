@@ -126,10 +126,10 @@ gboolean
 pk_task_find_packages_timeout (gpointer data)
 {
 	PkTask *task = (PkTask *) data;
-	pk_task_package (task, "evince", "Document viewer");
-	pk_task_package (task, "evince-gnome", "Document viewer GNOME UI");
-	pk_task_package (task, "evince-tools", "Document viewer tools");
-	pk_task_package (task, "evince-debuginfo", "Document viewer debuginfo");
+	pk_task_package (task, 1, "evince", "Document viewer");
+	pk_task_package (task, 1, "evince-gnome", "Document viewer GNOME UI");
+	pk_task_package (task, 0, "evince-tools", "Document viewer tools");
+	pk_task_package (task, 0, "evince-debuginfo", "Document viewer debuginfo");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return FALSE;
 }
@@ -142,15 +142,19 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 {
 	char **sections;
 	gboolean okay;
+	guint value = FALSE;
 
 	/* check if output line */
-	if (strstr (line, " - ") == NULL)
+	if (strstr (line, "\t") == NULL)
 		return;		
-	sections = g_strsplit (line, " - ", 0);
-	okay = pk_task_filter_package_name (NULL, sections[0]);
+	sections = g_strsplit (line, "\t", 0);
+	if (strcmp (sections[0], "yes") == 0) {
+		value = TRUE;
+	}
+	okay = pk_task_filter_package_name (NULL, sections[1]);
 	if (okay == TRUE) {
-		pk_debug ("package='%s' shortdesc='%s'", sections[0], sections[1]);
-		pk_task_package (task, sections[0], sections[1]);
+		pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[1], sections[2]);
+		pk_task_package (task, value, sections[1], sections[2]);
 	}
 	g_strfreev (sections);
 }
@@ -205,9 +209,8 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 
-	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
-//	command = g_strdup_printf ("/usr/bin/yum search %s", search);
-
+//	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
+	command = g_strdup_printf ("/home/hughsie/Code/PackageKit/helpers/yum-search-simple.py %s", search);
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
 			  G_CALLBACK (pk_spawn_finished_cb), task);

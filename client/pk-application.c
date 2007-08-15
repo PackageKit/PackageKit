@@ -124,13 +124,13 @@ pk_application_close_cb (GtkWidget	*widget,
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkTaskClient *tclient, const gchar *package, const gchar *summary, PkApplication	*application)
+pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, PkApplication	*application)
 {
 	GtkTreeIter iter;
-	g_debug ("package = %s:%s", package, summary);
+	g_debug ("package = %i:%s:%s", value, package, summary);
 	gtk_list_store_append (application->priv->store, &iter);
 	gtk_list_store_set (application->priv->store, &iter,
-			    COLUMN_INSTALLED, TRUE,
+			    COLUMN_INSTALLED, value,
 			    COLUMN_PACKAGE, package,
 			    COLUMN_DESCRIPTION, summary,
 			    -1);

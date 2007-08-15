@@ -12,5 +12,8 @@ searchlist = ['name', 'summary', 'description', 'group']
 res = my.searchGenerator(searchlist, searchterms)
 
 for (pkg,values) in res:
-    print "%s\t%s" % (pkg.name, pkg.summary)
+    installed = 'no'
+    if my.rpmdb.installed(pkg.name):
+        installed = 'yes'
+    print "%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
 
