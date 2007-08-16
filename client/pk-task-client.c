@@ -52,6 +52,8 @@ struct PkTaskClientPrivate
 	gboolean		 is_sync;
 	guint			 job;
 	GMainLoop		*loop;
+	PkTaskStatus		 last_status;
+	gboolean		 is_finished;
 };
 
 typedef enum {
@@ -93,6 +95,27 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 		tclient->priv->loop = g_main_loop_new (NULL, FALSE);
 		g_main_loop_run (tclient->priv->loop);
 	}
+	return TRUE;
+}
+
+/**
+ * pk_task_client_reset:
+ **/
+gboolean
+pk_task_client_reset (PkTaskClient *tclient)
+{
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	if (tclient->priv->is_finished != TRUE) {
+		pk_warning ("not exit status, cannot reset");
+		return FALSE;
+	}
+	tclient->priv->assigned = FALSE;
+	tclient->priv->is_sync = FALSE;
+	tclient->priv->job = 0;
+	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
+	tclient->priv->is_finished = FALSE;
 	return TRUE;
 }
 
@@ -436,6 +459,7 @@ pk_task_client_finished_cb (DBusGProxy   *proxy,
 	if (job == tclient->priv->job) {
 		exit = pk_task_exit_from_text (exit_text);
 		pk_debug ("emit finished %i", exit);
+		tclient->priv->is_finished = TRUE;
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
 
 		/* if we are async, then cancel */
@@ -483,6 +507,7 @@ pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
 	if (job == tclient->priv->job) {
 		pk_debug ("emit job-status-changed %i", status);
 		g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
+		tclient->priv->last_status = status;
 	}
 }
 
@@ -553,6 +578,8 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;
 	tclient->priv->job = 0;
+	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
+	tclient->priv->is_finished = FALSE;
 
 	/* check dbus connections, exit if not valid */
 	tclient->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);

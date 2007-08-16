@@ -65,6 +65,7 @@ gboolean	 pk_task_client_remove_package_with_deps(PkTaskClient	*tclient,
 gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
 							 const gchar	*package);
 gboolean	 pk_task_client_cancel_job_try		(PkTaskClient	*tclient);
+gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
 
 /* not sure where this belongs... */
 gboolean	 pk_task_client_get_job_status		(PkTaskClient	*tclient,

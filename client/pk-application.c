@@ -43,6 +43,7 @@ struct PkApplicationPrivate
 {
 	GladeXML		*glade_xml;
 	GtkListStore		*store;
+	PkTaskClient		*tclient;
 	gchar			*package;
 };
 
@@ -114,10 +115,12 @@ pk_application_help_cb (GtkWidget *widget,
  * @graph: This graph class instance
  **/
 static void
-pk_application_install_cb (GtkWidget *widget,
-		   PkApplication  *application)
+pk_application_install_cb (GtkWidget      *widget,
+		           PkApplication  *application)
 {
 	pk_debug ("install %s", application->priv->package);
+	pk_task_client_install_package (application->priv->tclient,
+					application->priv->package);
 }
 
 /**
@@ -126,10 +129,12 @@ pk_application_install_cb (GtkWidget *widget,
  * @graph: This graph class instance
  **/
 static void
-pk_application_remove_cb (GtkWidget *widget,
-		   PkApplication  *application)
+pk_application_remove_cb (GtkWidget      *widget,
+		          PkApplication  *application)
 {
 	pk_debug ("remove %s", application->priv->package);
+	pk_task_client_remove_package (application->priv->tclient,
+				       application->priv->package);
 }
 
 /**
@@ -161,7 +166,7 @@ pk_application_close_cb (GtkWidget	*widget,
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, PkApplication	*application)
+pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, PkApplication *application)
 {
 	GtkTreeIter iter;
 	g_debug ("package = %i:%s:%s", value, package, summary);
@@ -171,6 +176,15 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package,
 			    COLUMN_PACKAGE, package,
 			    COLUMN_DESCRIPTION, summary,
 			    -1);
+}
+
+/**
+ * pk_console_finished_cb:
+ **/
+static void
+pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, PkApplication *application)
+{
+	pk_task_client_reset (application->priv->tclient);
 }
 
 /**
@@ -184,7 +198,6 @@ pk_application_find_cb (GtkWidget	*button_widget,
 {
 	GtkWidget *widget;
 	const gchar *package;
-	PkTaskClient *tclient;
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "entry_text");
 	package = gtk_entry_get_text (GTK_ENTRY (widget));
@@ -194,10 +207,7 @@ pk_application_find_cb (GtkWidget	*button_widget,
 
 	g_debug ("find %s", package);
 
-	tclient = pk_task_client_new ();
-	g_signal_connect (tclient, "package",
-			  G_CALLBACK (pk_console_package_cb), application);
-	pk_task_client_find_packages (tclient, package);
+	pk_task_client_find_packages (application->priv->tclient, package);
 }
 
 /**
@@ -337,6 +347,12 @@ pk_application_init (PkApplication *application)
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 	application->priv->package = NULL;
 
+	application->priv->tclient = pk_task_client_new ();
+	g_signal_connect (application->priv->tclient, "package",
+			  G_CALLBACK (pk_console_package_cb), application);
+	g_signal_connect (application->priv->tclient, "finished",
+			  G_CALLBACK (pk_console_finished_cb), application);
+
 	application->priv->glade_xml = glade_xml_new (PK_DATA "/pk-application.glade", NULL, NULL);
 	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
 
@@ -370,6 +386,10 @@ pk_application_init (PkApplication *application)
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_deps_cb), application);
 	gtk_widget_set_sensitive (widget, FALSE);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), 0.25);
+	gtk_widget_hide (widget);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	g_signal_connect (widget, "clicked",
@@ -432,6 +452,7 @@ pk_application_finalize (GObject *object)
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 
 	g_object_unref (application->priv->store);
+	g_object_unref (application->priv->tclient);
 	g_free (application->priv->package);
 
 	G_OBJECT_CLASS (pk_application_parent_class)->finalize (object);
