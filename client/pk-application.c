@@ -43,6 +43,7 @@ struct PkApplicationPrivate
 {
 	GladeXML		*glade_xml;
 	GtkListStore		*store;
+	gchar			*package;
 };
 
 enum {
@@ -105,6 +106,42 @@ pk_application_help_cb (GtkWidget *widget,
 {
 	pk_debug ("emitting action-help");
 	g_signal_emit (application, signals [ACTION_HELP], 0);
+}
+
+/**
+ * pk_application_install_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_install_cb (GtkWidget *widget,
+		   PkApplication  *application)
+{
+	pk_debug ("install %s", application->priv->package);
+}
+
+/**
+ * pk_application_remove_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_remove_cb (GtkWidget *widget,
+		   PkApplication  *application)
+{
+	pk_debug ("remove %s", application->priv->package);
+}
+
+/**
+ * pk_application_deps_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_deps_cb (GtkWidget *widget,
+		   PkApplication  *application)
+{
+	pk_debug ("deps %s", application->priv->package);
 }
 
 /**
@@ -209,7 +246,7 @@ pk_misc_installed_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpointe
 	gtk_tree_model_get (model, &iter, COLUMN_INSTALLED, &installed, -1);
 
 	/* do something with the value */
-	installed ^= 1;
+//	installed ^= 1;
 
 	/* set new value */
 	gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_INSTALLED, installed, -1);
@@ -248,6 +285,44 @@ pk_misc_add_columns (GtkTreeView *treeview)
 	gtk_tree_view_append_column (treeview, column);
 }
 
+/**
+ * pk_application_treeview_clicked_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
+				    PkApplication *application)
+{
+	GtkWidget *widget;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	gboolean installed;
+
+	/* This will only work in single or browse selection mode! */
+	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+		g_free (application->priv->package);
+		gtk_tree_model_get (model, &iter, COLUMN_PACKAGE, &application->priv->package, -1);
+		gtk_tree_model_get (model, &iter, COLUMN_INSTALLED, &installed, -1);
+		g_print ("selected row is: %i %s\n", installed, application->priv->package);
+
+		/* make the button sensitivities correct */
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_deps");
+		gtk_widget_set_sensitive (widget, TRUE);
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_install");
+		gtk_widget_set_sensitive (widget, !installed);
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_remove");
+		gtk_widget_set_sensitive (widget, installed);
+	} else {
+		g_print ("no row selected.\n");
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_deps");
+		gtk_widget_set_sensitive (widget, FALSE);
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_install");
+		gtk_widget_set_sensitive (widget, FALSE);
+		widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_remove");
+		gtk_widget_set_sensitive (widget, FALSE);
+	}
+}
 
 /**
  * pk_application_init:
@@ -260,6 +335,7 @@ pk_application_init (PkApplication *application)
 	GtkWidget *widget;
 
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
+	application->priv->package = NULL;
 
 	application->priv->glade_xml = glade_xml_new (PK_DATA "/pk-application.glade", NULL, NULL);
 	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
@@ -281,10 +357,18 @@ pk_application_init (PkApplication *application)
 			  G_CALLBACK (pk_application_help_cb), application);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_install");
-	gtk_widget_set_sensitive (widget, TRUE);
-	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_remove");
+	g_signal_connect (widget, "clicked",
+			  G_CALLBACK (pk_application_install_cb), application);
 	gtk_widget_set_sensitive (widget, FALSE);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_remove");
+	g_signal_connect (widget, "clicked",
+			  G_CALLBACK (pk_application_remove_cb), application);
+	gtk_widget_set_sensitive (widget, FALSE);
+
 	widget = glade_xml_get_widget (application->priv->glade_xml, "toolbutton_deps");
+	g_signal_connect (widget, "clicked",
+			  G_CALLBACK (pk_application_deps_cb), application);
 	gtk_widget_set_sensitive (widget, FALSE);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
@@ -318,8 +402,16 @@ pk_application_init (PkApplication *application)
 
 	/* create tree view */
 	widget = glade_xml_get_widget (application->priv->glade_xml, "treeview_packages");
+//	g_signal_connect (widget, "select-cursor-row",
+//			  G_CALLBACK (pk_application_treeview_clicked_cb), application);
 	gtk_tree_view_set_model (GTK_TREE_VIEW (widget),
 				 GTK_TREE_MODEL (application->priv->store));
+
+	GtkTreeSelection *selection;
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
+	g_signal_connect (selection, "changed",
+			  G_CALLBACK (pk_application_treeview_clicked_cb), application);
+
 
 	/* add columns to the tree view */
 	pk_misc_add_columns (GTK_TREE_VIEW (widget));
@@ -340,6 +432,7 @@ pk_application_finalize (GObject *object)
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 
 	g_object_unref (application->priv->store);
+	g_free (application->priv->package);
 
 	G_OBJECT_CLASS (pk_application_parent_class)->finalize (object);
 }
