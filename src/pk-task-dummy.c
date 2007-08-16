@@ -208,6 +208,7 @@ pk_task_find_packages (PkTask *task, const gchar *search)
 
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_no_percentage_updates (task);
 
 //	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
 	command = g_strdup_printf ("/home/hughsie/Code/PackageKit/helpers/yum-search-simple.py %s", search);

@@ -199,21 +199,6 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkProgressBar" id="progressbar_status">
-	      <property name="visible">True</property>
-	      <property name="orientation">GTK_PROGRESS_LEFT_TO_RIGHT</property>
-	      <property name="fraction">0.5</property>
-	      <property name="pulse_step">0.10000000149</property>
-	      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-	    </widget>
-	    <packing>
-	      <property name="padding">0</property>
-	      <property name="expand">False</property>
-	      <property name="fill">False</property>
-	    </packing>
-	  </child>
-
-	  <child>
 	    <widget class="GtkScrolledWindow" id="scrolledwindow_packages">
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
@@ -240,6 +225,21 @@
 	      <property name="padding">0</property>
 	      <property name="expand">True</property>
 	      <property name="fill">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkProgressBar" id="progressbar_status">
+	      <property name="visible">True</property>
+	      <property name="orientation">GTK_PROGRESS_LEFT_TO_RIGHT</property>
+	      <property name="fraction">0.5</property>
+	      <property name="pulse_step">0.10000000149</property>
+	      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">False</property>
+	      <property name="fill">False</property>
 	    </packing>
 	  </child>
 	</widget>

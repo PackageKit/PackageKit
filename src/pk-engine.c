@@ -59,6 +59,7 @@ enum {
 	PK_ENGINE_JOB_LIST_CHANGED,
 	PK_ENGINE_JOB_STATUS_CHANGED,
 	PK_ENGINE_PERCENTAGE_CHANGED,
+	PK_ENGINE_NO_PERCENTAGE_UPDATES,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_DESCRIPTION,
@@ -215,6 +216,22 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 }
 
 /**
+ * pk_engine_no_percentage_updates_cb:
+ **/
+static void
+pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
+{
+	guint job;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+	pk_debug ("emitting no-percentage-updates job:%i", job);
+	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, job);
+}
+
+/**
  * pk_engine_package_cb:
  **/
 static void
@@ -276,6 +293,8 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
 	g_signal_connect (task, "percentage-complete-changed",
 			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
+	g_signal_connect (task, "no-percentage-updates",
+			  G_CALLBACK (pk_engine_no_percentage_updates_cb), engine);
 	g_signal_connect (task, "package",
 			  G_CALLBACK (pk_engine_package_cb), engine);
 	g_signal_connect (task, "finished",
@@ -538,6 +557,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+	signals [PK_ENGINE_NO_PERCENTAGE_UPDATES] =
+		g_signal_new ("no-percentage-updates",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

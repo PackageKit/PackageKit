@@ -34,6 +34,7 @@ gboolean	 pk_task_change_percentage		(PkTask		*task,
 							 guint		 percentage);
 gboolean	 pk_task_change_job_status		(PkTask		*task,
 							 PkTaskStatus	 status);
+gboolean	 pk_task_no_percentage_updates		(PkTask		*task);
 gboolean	 pk_task_finished			(PkTask		*task,
 							 PkTaskExit	 exit);
 gboolean	 pk_task_package			(PkTask		*task,

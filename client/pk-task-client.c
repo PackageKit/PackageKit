@@ -59,6 +59,7 @@ struct PkTaskClientPrivate
 typedef enum {
 	PK_TASK_CLIENT_JOB_STATUS_CHANGED,
 	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
+	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
 	PK_TASK_CLIENT_FINISHED,
 	PK_TASK_CLIENT_LAST_SIGNAL
@@ -488,6 +489,23 @@ pk_task_client_percentage_changed_cb (DBusGProxy   *proxy,
 }
 
 /**
+ * pk_task_client_no_percentage_updates_cb:
+ */
+static void
+pk_task_client_no_percentage_updates_cb (DBusGProxy   *proxy,
+				      guint	    job,
+				      PkTaskClient *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	if (job == tclient->priv->job) {
+		pk_debug ("emit no-percentage-updates");
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES], 0);
+	}
+}
+
+/**
  * pk_task_client_job_status_changed_cb:
  */
 static void
@@ -551,6 +569,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES] =
+		g_signal_new ("no-percentage-updates",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	signals [PK_TASK_CLIENT_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -614,6 +637,11 @@ pk_task_client_init (PkTaskClient *tclient)
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
 				     G_CALLBACK (pk_task_client_percentage_changed_cb), tclient, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "NoPercentageUpdates",
+				 G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "NoPercentageUpdates",
+				     G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "JobStatusChanged",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);

@@ -45,6 +45,7 @@ struct PkApplicationPrivate
 	GtkListStore		*store;
 	PkTaskClient		*tclient;
 	gchar			*package;
+	gboolean		 task_ended;
 };
 
 enum {
@@ -184,7 +185,63 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package,
 static void
 pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, PkApplication *application)
 {
+	GtkWidget *widget;
+
+	application->priv->task_ended = TRUE;
+
+	/* hide widget */
+	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
+	gtk_widget_hide (widget);
+
+	/* make find button sensitive again */
+	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
+	gtk_widget_set_sensitive (widget, TRUE);
+
+	/* reset tclient */
 	pk_task_client_reset (application->priv->tclient);
+}
+
+/**
+ * pk_console_percentage_changed_cb:
+ **/
+static void
+pk_console_percentage_changed_cb (PkTaskClient *tclient, guint percentage, PkApplication *application)
+{
+	GtkWidget *widget;
+	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), (gfloat) percentage / 100.0);
+}
+
+/**
+ * pk_console_no_percentage_updates_timeout:
+ **/
+gboolean
+pk_console_no_percentage_updates_timeout (gpointer data)
+{
+	gfloat fraction;
+	GtkWidget *widget;
+	PkApplication *application = (PkApplication *) data;
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
+	fraction = gtk_progress_bar_get_fraction (GTK_PROGRESS_BAR (widget));
+	fraction += 0.05;
+	if (fraction > 1.00) {
+		fraction = 0.0;
+	}
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), fraction);
+	if (application->priv->task_ended == TRUE) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_console_no_percentage_updates_cb:
+ **/
+static void
+pk_console_no_percentage_updates_cb (PkTaskClient *tclient, PkApplication *application)
+{
+	g_timeout_add (100, pk_console_no_percentage_updates_timeout, application);
 }
 
 /**
@@ -206,8 +263,17 @@ pk_application_find_cb (GtkWidget	*button_widget,
 	gtk_list_store_clear (application->priv->store);
 
 	g_debug ("find %s", package);
+	application->priv->task_ended = FALSE;
+
+	/* show widget */
+	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
+	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), 0.0);
+	gtk_widget_show (widget);
 
 	pk_task_client_find_packages (application->priv->tclient, package);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
+	gtk_widget_set_sensitive (widget, FALSE);
 }
 
 /**
@@ -346,12 +412,17 @@ pk_application_init (PkApplication *application)
 
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 	application->priv->package = NULL;
+	application->priv->task_ended = FALSE;
 
 	application->priv->tclient = pk_task_client_new ();
 	g_signal_connect (application->priv->tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), application);
 	g_signal_connect (application->priv->tclient, "finished",
 			  G_CALLBACK (pk_console_finished_cb), application);
+	g_signal_connect (application->priv->tclient, "no-percentage-updates",
+			  G_CALLBACK (pk_console_no_percentage_updates_cb), application);
+	g_signal_connect (application->priv->tclient, "percentage-changed",
+			  G_CALLBACK (pk_console_percentage_changed_cb), application);
 
 	application->priv->glade_xml = glade_xml_new (PK_DATA "/pk-application.glade", NULL, NULL);
 	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
@@ -388,7 +459,6 @@ pk_application_init (PkApplication *application)
 	gtk_widget_set_sensitive (widget, FALSE);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "progressbar_status");
-	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), 0.25);
 	gtk_widget_hide (widget);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");

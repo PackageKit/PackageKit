@@ -42,6 +42,9 @@
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
+    <signal name="NoPercentageUpdates"> <!-- if we are not emmitting PercentageChanged, the UI has to spin -->
+      <arg type="u" name="job" direction="out"/>
+    </signal>
     <signal name="Package">
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="value" direction="out"/> <!-- installed=1, not-installed=0 | security=1, normal=0 -->

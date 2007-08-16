@@ -73,6 +73,11 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_TASK_NO_PERCENTAGE_UPDATES] =
+		g_signal_new ("no-percentage-updates",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 
 	return TRUE;
 }
@@ -164,6 +169,20 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 	task->exit = exit;
 	pk_task_change_job_status (task, PK_TASK_STATUS_EXIT);
 	g_idle_add (pk_task_finished_idle, task);
+	return TRUE;
+}
+
+/**
+ * pk_task_no_percentage_updates:
+ **/
+gboolean
+pk_task_no_percentage_updates (PkTask *task)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	pk_debug ("emit no-percentage-updates");
+	g_signal_emit (task, task->signals [PK_TASK_NO_PERCENTAGE_UPDATES], 0);
 	return TRUE;
 }
 
