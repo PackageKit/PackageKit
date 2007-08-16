@@ -89,6 +89,17 @@ pk_task_list_print (PkTaskList *tlist)
 }
 
 /**
+ * pk_task_list_job_status_changed_cb:
+ **/
+static void
+pk_task_list_job_status_changed_cb (PkTaskClient *tclient, PkTaskStatus	status, gpointer data)
+{
+	PkTaskList *tlist = (PkTaskList *) data;
+	pk_debug ("%s", status);
+	g_error ("moo %p", tlist);
+}
+
+/**
  * pk_task_list_refresh:
  *
  * Not normally required, but force a refresh
@@ -118,6 +129,9 @@ pk_task_list_refresh (PkTaskList *tlist)
 		item = g_new0 (PkTaskListItem, 1);
 		item->job = job;
 		item->client = pk_task_client_new ();
+		g_signal_connect (item->client, "job-status-changed",
+				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+
 		pk_task_client_get_job_status (item->client, job, &item->status, &item->package);
 		g_object_unref (item->client);
 		g_ptr_array_add (tlist->priv->task_list, item);

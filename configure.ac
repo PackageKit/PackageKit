@@ -162,6 +162,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 client/Makefile
+helpers/Makefile
 PackageKit.conf
 ])
 

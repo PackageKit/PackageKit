@@ -59,7 +59,7 @@ static void     pk_task_finalize	(GObject     *object);
 struct PkTaskPrivate
 {
 	gboolean		 whatever_you_want;
-	guint			 system_update_percentage;
+	guint			 progress_percentage;
 };
 
 static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
@@ -88,12 +88,12 @@ gboolean
 pk_task_update_system_timeout (gpointer data)
 {
 	PkTask *task = (PkTask *) data;
-	if (task->priv->system_update_percentage == 100) {
+	if (task->priv->progress_percentage == 100) {
 		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 		return FALSE;
 	}
-	task->priv->system_update_percentage += 10;
-	pk_task_change_percentage (task, task->priv->system_update_percentage);
+	task->priv->progress_percentage += 10;
+	pk_task_change_percentage (task, task->priv->progress_percentage);
 	return TRUE;
 }
 
@@ -112,8 +112,7 @@ pk_task_update_system (PkTask *task)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
-
-	task->priv->system_update_percentage = 0;
+	task->priv->progress_percentage = 0;
 	g_timeout_add (1000, pk_task_update_system_timeout, task);
 
 	return TRUE;
@@ -289,6 +288,22 @@ pk_task_remove_package_with_deps (PkTask *task, const gchar *package)
 	return TRUE;
 }
 
+static gboolean
+pk_task_install_timeout (gpointer data)
+{
+	PkTask *task = (PkTask *) data;
+	if (task->priv->progress_percentage == 100) {
+		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+		return FALSE;
+	}
+	if (task->priv->progress_percentage == 50) {
+		pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
+	}
+	task->priv->progress_percentage += 10;
+	pk_task_change_percentage (task, task->priv->progress_percentage);
+	return TRUE;
+}
+
 /**
  * pk_task_install_package:
  **/
@@ -302,11 +317,9 @@ pk_task_install_package (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
-
-	//pk_backend_install (package, FALSE);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-
+	pk_task_change_job_status (task, PK_TASK_STATUS_DOWNLOAD);
+	task->priv->progress_percentage = 0;
+	g_timeout_add (1000, pk_task_install_timeout, task);
 	return TRUE;
 }
 

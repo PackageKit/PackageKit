@@ -1,4 +1,4 @@
-SUBDIRS = src client
+SUBDIRS = src client helpers
 
 AUTOMAKE_OPTIONS = 1.7
 
@@ -22,11 +22,11 @@ EXTRA_DIST =			\
 clean-local :
 	rm -f *~
 
-DISTCLEANFILES =					\
-	PackageKit-*.tar.gz		\
-	intltool-extract				\
-	intltool-merge					\
-	intltool-update					\
+DISTCLEANFILES =		\
+	PackageKit-*.tar.gz	\
+	intltool-extract	\
+	intltool-merge		\
+	intltool-update		\
 	$(NULL)
 
 MAINTAINERCLEANFILES =		\
