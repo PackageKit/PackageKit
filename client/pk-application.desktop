@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=Manage Software
 Comment=Managed installed packages
-Icon=system-software-update
+Icon=system-installer
 Exec=pk-application
 Terminal=false
 Type=Application
