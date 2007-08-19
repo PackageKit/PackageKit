@@ -13,7 +13,11 @@ searchterms = sys.argv[2]
 searchlist = ['name']
 res = my.searchGenerator(searchlist, [searchterms])
 
+count = 1
 for (pkg,values) in res:
+    if count > 100:
+        break
+    count+=1 
     installed = 'no'
 
     # are we installed?

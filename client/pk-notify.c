@@ -254,11 +254,11 @@ pk_notify_show_about_cb (GtkMenuItem *item, gpointer data)
 		NULL};
 	const char *license[] = {
 		N_("Licensed under the GNU General Public License Version 2"),
-		N_("Power Manager is free software; you can redistribute it and/or\n"
+		N_("PackageKit is free software; you can redistribute it and/or\n"
 		   "modify it under the terms of the GNU General Public License\n"
 		   "as published by the Free Software Foundation; either version 2\n"
 		   "of the License, or (at your option) any later version."),
-		N_("Power Manager is distributed in the hope that it will be useful,\n"
+		N_("PackageKit is distributed in the hope that it will be useful,\n"
 		   "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
 		   "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
 		   "GNU General Public License for more details."),
@@ -403,6 +403,18 @@ pk_notify_update_system_cb (GtkMenuItem *item, gpointer data)
 }
 
 /**
+ * pk_notify_manage_packages_cb:
+ **/
+static void
+pk_notify_manage_packages_cb (GtkMenuItem *item, gpointer data)
+{
+	const gchar *command = "pk-application";
+	if (g_spawn_command_line_async (command, NULL) == FALSE) {
+		pk_warning ("Couldn't execute command: %s", command);
+	}
+}
+
+/**
  * pk_notify_activate_cb:
  * @button: Which buttons are pressed
  *
@@ -418,19 +430,28 @@ pk_notify_activate_cb (GtkStatusIcon *status_icon,
 
 	pk_debug ("icon left clicked");
 
-	item = gtk_image_menu_item_new_with_mnemonic (_("_Install updates"));
-	image = gtk_image_new_from_icon_name ("software-update-available", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
-	g_signal_connect (G_OBJECT (item), "activate",
-			  G_CALLBACK (pk_notify_update_system_cb), icon);
-	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-
 	/* force a refresh */
-	item = gtk_image_menu_item_new_with_mnemonic (_("Refresh cache"));
+	item = gtk_image_menu_item_new_with_mnemonic (_("_Refresh cache"));
 	image = gtk_image_new_from_icon_name ("view-refresh", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 	g_signal_connect (G_OBJECT (item), "activate",
 			  G_CALLBACK (pk_notify_refresh_cache_cb), icon);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+	/* manage packages */
+	item = gtk_image_menu_item_new_with_mnemonic (_("_Manage packages"));
+	image = gtk_image_new_from_icon_name ("system-installer", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
+	g_signal_connect (G_OBJECT (item), "activate",
+			  G_CALLBACK (pk_notify_manage_packages_cb), icon);
+	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+	/* update system */
+	item = gtk_image_menu_item_new_with_mnemonic (_("_Update system"));
+	image = gtk_image_new_from_icon_name ("software-update-available", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
+	g_signal_connect (G_OBJECT (item), "activate",
+			  G_CALLBACK (pk_notify_update_system_cb), icon);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
 	/* show the menu */
