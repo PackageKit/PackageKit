@@ -192,7 +192,7 @@ pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
  * pk_task_find_packages:
  **/
 gboolean
-pk_task_find_packages (PkTask *task, const gchar *search)
+pk_task_find_packages (PkTask *task, const gchar *search, gboolean installed, gboolean available)
 {
 	PkSpawn *spawn;
 	gchar *command;
@@ -264,7 +264,8 @@ pk_task_remove_package (PkTask *task, const gchar *package)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "No network connection available");
+	pk_task_finished (task, PK_TASK_EXIT_FAILED);
 
 	return TRUE;
 }

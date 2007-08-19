@@ -46,6 +46,8 @@ struct PkApplicationPrivate
 	PkTaskClient		*tclient;
 	gchar			*package;
 	gboolean		 task_ended;
+	gboolean		 find_installed;
+	gboolean		 find_available;
 };
 
 enum {
@@ -180,6 +182,15 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package,
 }
 
 /**
+ * pk_console_error_code_cb:
+ **/
+static void
+pk_console_error_code_cb (PkTaskClient *tclient, guint code, const gchar *details, PkApplication *application)
+{
+	g_warning ("error %i:%s", code, details);
+}
+
+/**
  * pk_console_finished_cb:
  **/
 static void
@@ -245,6 +256,32 @@ pk_console_no_percentage_updates_cb (PkTaskClient *tclient, PkApplication *appli
 }
 
 /**
+ * pk_application_find_options_available_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_find_options_available_cb (GtkToggleButton *togglebutton,
+		    			  PkApplication	*application)
+{
+	application->priv->find_available = gtk_toggle_button_get_active (togglebutton);
+	pk_debug ("available %i", application->priv->find_available);
+}
+
+/**
+ * pk_application_find_options_available_cb:
+ * @widget: The GtkWidget object
+ * @graph: This graph class instance
+ **/
+static void
+pk_application_find_options_installed_cb (GtkToggleButton *togglebutton,
+		    			  PkApplication	*application)
+{
+	application->priv->find_installed = gtk_toggle_button_get_active (togglebutton);
+	pk_debug ("installed %i", application->priv->find_installed);
+}
+
+/**
  * pk_application_find_cb:
  * @widget: The GtkWidget object
  * @graph: This graph class instance
@@ -270,7 +307,9 @@ pk_application_find_cb (GtkWidget	*button_widget,
 	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (widget), 0.0);
 	gtk_widget_show (widget);
 
-	pk_task_client_find_packages (application->priv->tclient, package);
+	pk_task_client_find_packages (application->priv->tclient, package,
+				      application->priv->find_installed,
+				      application->priv->find_available);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	gtk_widget_set_sensitive (widget, FALSE);
@@ -413,10 +452,14 @@ pk_application_init (PkApplication *application)
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 	application->priv->package = NULL;
 	application->priv->task_ended = FALSE;
+	application->priv->find_installed = TRUE;
+	application->priv->find_available = TRUE;
 
 	application->priv->tclient = pk_task_client_new ();
 	g_signal_connect (application->priv->tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), application);
+	g_signal_connect (application->priv->tclient, "error-code",
+			  G_CALLBACK (pk_console_error_code_cb), application);
 	g_signal_connect (application->priv->tclient, "finished",
 			  G_CALLBACK (pk_console_finished_cb), application);
 	g_signal_connect (application->priv->tclient, "no-percentage-updates",
@@ -464,6 +507,14 @@ pk_application_init (PkApplication *application)
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_find_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "checkbutton_installed");
+	g_signal_connect (GTK_TOGGLE_BUTTON (widget), "toggled",
+			  G_CALLBACK (pk_application_find_options_installed_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "checkbutton_available");
+	g_signal_connect (GTK_TOGGLE_BUTTON (widget), "toggled",
+			  G_CALLBACK (pk_application_find_options_available_cb), application);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "entry_text");
 	g_signal_connect (widget, "key-press-event",

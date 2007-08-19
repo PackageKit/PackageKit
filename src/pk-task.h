@@ -69,7 +69,9 @@ PkTask		*pk_task_new				(void);
 gboolean	 pk_task_get_updates			(PkTask		*task);
 gboolean	 pk_task_update_system			(PkTask		*task);
 gboolean	 pk_task_find_packages			(PkTask		*task,
-							 const gchar	*search);
+							 const gchar	*search,
+							 gboolean	 installed,
+							 gboolean	 available);
 gboolean	 pk_task_get_deps			(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_remove_package			(PkTask		*task,
