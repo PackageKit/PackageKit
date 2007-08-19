@@ -356,7 +356,6 @@ pk_notify_popup_menu_cb (GtkStatusIcon *status_icon,
 static void
 pk_notify_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, gpointer data)
 {
-//	PkNotify *notify = PK_NOTIFY (data);
 	pk_debug ("unref'ing %p", tclient);
 	g_object_unref (tclient);
 }
@@ -465,13 +464,6 @@ pk_notify_init (PkNotify *notify)
 			  G_CALLBACK (pk_notify_task_list_changed_cb), notify);
 	pk_notify_refresh_icon (notify);
 	pk_notify_refresh_tooltip (notify);
-
-//	tclient = pk_task_client_new ();
-//	g_signal_connect (tclient, "package",
-//			  G_CALLBACK (pk_notify_package_cb), notify);
-//	g_signal_connect (tclient, "percentage-changed",
-//			  G_CALLBACK (pk_notify_percentage_changed_cb), notify);
-//	g_object_unref (tclient);
 }
 
 /**
