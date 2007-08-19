@@ -9,7 +9,7 @@ dist_helper_DATA = 			\
 	$(NULL)
 
 install-data-hook:
-	chmod a+rx $(helperdir)/*.py
+	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
 clean-local :
 	rm -f *~
