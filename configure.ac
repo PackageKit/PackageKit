@@ -146,13 +146,19 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([backend],
 	    AS_HELP_STRING([--with-backend=<option>],
 			   [Backend to use dummy,apt,yum (dummy)]))
-# default to the dummy backend
+# default to a sane option for the installed tool
 if test x$with_backend = x; then
-    with_backend=dummy
+    if test -f /usr/bin/yum ; then
+        with_backend=yum
+    elif test -f /usr/bin/apt-get ; then
+        with_backend=apt
+    else
+        with_backend=dummy
+    fi
 fi
-AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using APT])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT])
-AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xdummy], [using APT])
+AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
+AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])
 
 
 dnl ---------------------------------------------------------------------------

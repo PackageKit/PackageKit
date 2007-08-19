@@ -1,3 +1,5 @@
+//	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
+
 /**
  * pk_task_parse_data:
  **/

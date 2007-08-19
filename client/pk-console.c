@@ -119,6 +119,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "debug") == 0) {
 		pk_debug_init (TRUE);
+	} else if (strcmp (mode, "verbose") == 0) {
+		pk_debug_init (TRUE);
 	} else if (strcmp (mode, "update") == 0) {
 		pk_task_client_update_system (tclient);
 	} else if (strcmp (mode, "sync") == 0) {
@@ -171,6 +173,7 @@ main (int argc, char *argv[])
 
 	if (argc < 2) {
 		pk_console_usage (NULL);
+		return 1;
 	}
 
 	tclient = pk_task_client_new ();

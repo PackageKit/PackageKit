@@ -19,17 +19,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/* DUMMY TARGET
- *
- * Upgrade takes 10 seconds and gives out 10% percentage points
- * Get updates is instant and sends back a single package "kernel"
- * Install of anything takes 20 seconds and spends 10 secs downloading and 10 secs installing with 1% percentage points
- * Removal is instant
- * Removal of dbus fails for deps
- * Removal of evince passes with no deps
- * Search takes two seconds, returns 5 packages with no percentage updates
- */
-
 #include "config.h"
 
 #include <stdlib.h>
@@ -48,7 +37,6 @@
 #include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
-#include "pk-spawn.h"
 
 static void     pk_task_class_init	(PkTaskClass *klass);
 static void     pk_task_init		(PkTask      *task);
@@ -58,7 +46,6 @@ static void     pk_task_finalize	(GObject     *object);
 
 struct PkTaskPrivate
 {
-	gboolean		 whatever_you_want;
 	guint			 progress_percentage;
 };
 
@@ -102,7 +89,7 @@ pk_task_refresh_cache (PkTask *task)
 	return TRUE;
 }
 
-gboolean
+static gboolean
 pk_task_update_system_timeout (gpointer data)
 {
 	PkTask *task = (PkTask *) data;
@@ -177,42 +164,11 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 }
 
 /**
- * pk_spawn_finished_cb:
- **/
-static void
-pk_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
-{
-	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
-	g_object_unref (spawn);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-}
-
-/**
- * pk_spawn_stdout_cb:
- **/
-static void
-pk_spawn_stdout_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stdout from %p = '%s'", spawn, line);
-	pk_task_parse_data (task, line);
-}
-
-/**
- * pk_spawn_stderr_cb:
- **/
-static void
-pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stderr from %p = '%s'", spawn, line);
-}
-
-/**
  * pk_task_find_packages:
  **/
 gboolean
 pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
-	PkSpawn *spawn;
 	gchar *command;
 	const gchar *mode = NULL;
 	const gchar *script = NULL;
@@ -225,49 +181,11 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 		return FALSE;
 	}
 
-	if (installed == TRUE && available == TRUE) {
-		mode = "all";
-	} else if (installed == TRUE) {
-		mode = "installed";
-	} else if (available == TRUE) {
-		mode = "available";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
-	if (depth == 0) {
-		script = "yum-search-name.py";
-	} else if (depth == 1 || depth == 2) {
-		script = "yum-search-details.py";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "invalid search depth");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_no_percentage_updates (task);
 
-//	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
-	command = g_strdup_printf (DATADIR "/PackageKit/helpers/%s %s %s", script, mode, search);
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
-			  G_CALLBACK (pk_spawn_finished_cb), task);
-	g_signal_connect (spawn, "stdout",
-			  G_CALLBACK (pk_spawn_stdout_cb), task);
-	g_signal_connect (spawn, "stderr",
-			  G_CALLBACK (pk_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, command);
-	if (ret == FALSE) {
-		g_warning ("spawn failed: '%s'", command);
-		g_object_unref (spawn);
-		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-	}
-
-if (0)	g_timeout_add (2000, pk_task_find_packages_timeout, task);
+	g_timeout_add (2000, pk_task_find_packages_timeout, task);
 	g_free (command);
 	return TRUE;
 }
@@ -385,9 +303,6 @@ pk_task_cancel_job_try (PkTask *task)
 		pk_warning ("cannot cancel as not query");
 		return FALSE;
 	}
-
-	/* close process */
-	//pk_backend_cancel ();
 
 	return TRUE;
 }
