@@ -325,13 +325,24 @@ pk_engine_new_task (PkEngine *engine)
 	/* set the job ID */
 	pk_task_set_job (task, job);
 
+	/* we don't add to the array or do the job-list-changed yet
+	 * as this job might fail */
+	return task;
+}
+
+/**
+ * pk_engine_add_task:
+ **/
+static gboolean
+pk_engine_add_task (PkEngine *engine, PkTask *task)
+{
 	/* add to the array */
 	g_ptr_array_add (engine->priv->array, task);
 
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
 
-	return task;
+	return TRUE;
 }
 
 /**
@@ -355,6 +366,7 @@ pk_engine_refresh_cache (PkEngine *engine, guint *job, GError **error)
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -381,6 +393,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -422,6 +435,7 @@ pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -450,6 +464,7 @@ pk_engine_find_packages (PkEngine *engine, const gchar *search,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -477,6 +492,7 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -504,6 +520,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -531,6 +548,7 @@ pk_engine_remove_package_with_deps (PkEngine *engine, const gchar *package,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
@@ -558,6 +576,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	*job = pk_task_get_job (task);
 
 	return TRUE;
