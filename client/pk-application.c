@@ -173,7 +173,7 @@ static void
 pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, PkApplication *application)
 {
 	GtkTreeIter iter;
-	g_debug ("package = %i:%s:%s", value, package, summary);
+	pk_debug ("package = %i:%s:%s", value, package, summary);
 	gtk_list_store_append (application->priv->store, &iter);
 	gtk_list_store_set (application->priv->store, &iter,
 			    COLUMN_INSTALLED, value,
@@ -311,7 +311,7 @@ pk_application_find_cb (GtkWidget	*button_widget,
 	/* clear existing list */
 	gtk_list_store_clear (application->priv->store);
 
-	g_debug ("find %s", package);
+	pk_debug ("find %s", package);
 	application->priv->task_ended = FALSE;
 
 	/* show widget */

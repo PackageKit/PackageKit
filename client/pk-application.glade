@@ -194,9 +194,9 @@
 	      <child>
 		<widget class="GtkComboBox" id="combobox_depth">
 		  <property name="visible">True</property>
-		  <property name="items" translatable="yes">Name
-Summary
-Description</property>
+		  <property name="items" translatable="yes">By package name
+By summary
+By description</property>
 		  <property name="add_tearoffs">False</property>
 		  <property name="focus_on_click">True</property>
 		</widget>
