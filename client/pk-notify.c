@@ -351,23 +351,56 @@ pk_notify_popup_menu_cb (GtkStatusIcon *status_icon,
 }
 
 /**
+ * pk_notify_finished_cb:
+ **/
+static void
+pk_notify_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, gpointer data)
+{
+//	PkNotify *notify = PK_NOTIFY (data);
+	pk_debug ("unref'ing %p", tclient);
+	g_object_unref (tclient);
+}
+
+/**
  * pk_notify_refresh_cache_cb:
  **/
 static void
 pk_notify_refresh_cache_cb (GtkMenuItem *item, gpointer data)
 {
+	gboolean ret;
+	PkTaskClient *tclient;
 	PkNotify *notify = PK_NOTIFY (data);
-	pk_debug ("refresh cache %p", notify);
+	pk_debug ("refresh cache");
+
+	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "finished",
+			  G_CALLBACK (pk_notify_finished_cb), notify);
+	ret = pk_task_client_refresh_cache (tclient);
+	if (ret == FALSE) {
+		g_object_unref (tclient);
+		pk_warning ("failed to refresh cache");
+	}
 }
 
 /**
- * pk_notify_get_updates_cb:
+ * pk_notify_update_system_cb:
  **/
 static void
-pk_notify_get_updates_cb (GtkMenuItem *item, gpointer data)
+pk_notify_update_system_cb (GtkMenuItem *item, gpointer data)
 {
+	gboolean ret;
+	PkTaskClient *tclient;
 	PkNotify *notify = PK_NOTIFY (data);
-	pk_debug ("get updates %p", notify);
+	pk_debug ("install updates");
+
+	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "finished",
+			  G_CALLBACK (pk_notify_finished_cb), notify);
+	ret = pk_task_client_update_system (tclient);
+	if (ret == FALSE) {
+		g_object_unref (tclient);
+		pk_warning ("failed to update system");
+	}
 }
 
 /**
@@ -386,11 +419,11 @@ pk_notify_activate_cb (GtkStatusIcon *status_icon,
 
 	pk_debug ("icon left clicked");
 
-	item = gtk_image_menu_item_new_with_mnemonic (_("_Check for updates"));
+	item = gtk_image_menu_item_new_with_mnemonic (_("_Install updates"));
 	image = gtk_image_new_from_icon_name ("software-update-available", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 	g_signal_connect (G_OBJECT (item), "activate",
-			  G_CALLBACK (pk_notify_get_updates_cb), icon);
+			  G_CALLBACK (pk_notify_update_system_cb), icon);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
 	/* force a refresh */
