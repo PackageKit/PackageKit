@@ -70,6 +70,7 @@ gboolean	 pk_task_get_updates			(PkTask		*task);
 gboolean	 pk_task_update_system			(PkTask		*task);
 gboolean	 pk_task_find_packages			(PkTask		*task,
 							 const gchar	*search,
+							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available);
 gboolean	 pk_task_get_deps			(PkTask		*task,

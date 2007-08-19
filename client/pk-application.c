@@ -48,6 +48,7 @@ struct PkApplicationPrivate
 	gboolean		 task_ended;
 	gboolean		 find_installed;
 	gboolean		 find_available;
+	guint			 search_depth;
 };
 
 enum {
@@ -319,6 +320,7 @@ pk_application_find_cb (GtkWidget	*button_widget,
 	gtk_widget_show (widget);
 
 	pk_task_client_find_packages (application->priv->tclient, package,
+				      application->priv->search_depth,
 				      application->priv->find_installed,
 				      application->priv->find_available);
 
@@ -412,9 +414,17 @@ pk_misc_add_columns (GtkTreeView *treeview)
 }
 
 /**
+ * pk_application_combobox_changed_cb:
+ **/
+static void
+pk_application_combobox_changed_cb (GtkComboBox *combobox, PkApplication *application)
+{
+	application->priv->search_depth = gtk_combo_box_get_active (combobox);
+	pk_debug ("search depth: %i", application->priv->search_depth);
+}
+
+/**
  * pk_application_treeview_clicked_cb:
- * @widget: The GtkWidget object
- * @graph: This graph class instance
  **/
 static void
 pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
@@ -465,6 +475,7 @@ pk_application_init (PkApplication *application)
 	application->priv->task_ended = FALSE;
 	application->priv->find_installed = TRUE;
 	application->priv->find_available = TRUE;
+	application->priv->search_depth = 0;
 
 	application->priv->tclient = pk_task_client_new ();
 	g_signal_connect (application->priv->tclient, "package",
@@ -518,6 +529,11 @@ pk_application_init (PkApplication *application)
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	g_signal_connect (widget, "clicked",
 			  G_CALLBACK (pk_application_find_cb), application);
+
+	widget = glade_xml_get_widget (application->priv->glade_xml, "combobox_depth");
+	g_signal_connect (GTK_COMBO_BOX (widget), "changed",
+			  G_CALLBACK (pk_application_combobox_changed_cb), application);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (widget), 0);
 
 	widget = glade_xml_get_widget (application->priv->glade_xml, "checkbutton_installed");
 	g_signal_connect (GTK_TOGGLE_BUTTON (widget), "toggled",

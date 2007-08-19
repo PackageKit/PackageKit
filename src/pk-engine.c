@@ -411,7 +411,7 @@ pk_engine_update_system (PkEngine *engine, guint *job, GError **error)
  **/
 gboolean
 pk_engine_find_packages (PkEngine *engine, const gchar *search,
-			 gboolean installed, gboolean available,
+			 guint depth, gboolean installed, gboolean available,
 			 guint *job, GError **error)
 {
 	PkTask *task;
@@ -421,7 +421,7 @@ pk_engine_find_packages (PkEngine *engine, const gchar *search,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_task_find_packages (task, search, installed, available);
+	pk_task_find_packages (task, search, depth, installed, available);
 	*job = pk_task_get_job (task);
 
 	return TRUE;

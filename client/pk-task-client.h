@@ -56,6 +56,7 @@ gboolean	 pk_task_client_get_updates		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_update_system		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_find_packages		(PkTaskClient	*tclient,
 							 const gchar	*search,
+							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available);
 gboolean	 pk_task_client_get_deps		(PkTaskClient	*tclient,

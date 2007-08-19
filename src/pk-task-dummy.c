@@ -210,11 +210,12 @@ pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
  * pk_task_find_packages:
  **/
 gboolean
-pk_task_find_packages (PkTask *task, const gchar *search, gboolean installed, gboolean available)
+pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
 	PkSpawn *spawn;
 	gchar *command;
 	const gchar *mode = NULL;
+	const gchar *script = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (task != NULL, FALSE);
@@ -236,12 +237,22 @@ pk_task_find_packages (PkTask *task, const gchar *search, gboolean installed, gb
 		return TRUE;
 	}
 
+	if (depth == 0) {
+		script = "yum-search-name.py";
+	} else if (depth == 1 || depth == 2) {
+		script = "yum-search-details.py";
+	} else {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "invalid search depth");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_no_percentage_updates (task);
 
 //	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
-	command = g_strdup_printf (DATADIR "/PackageKit/helpers/yum-search-name.py %s %s", mode, search);
+	command = g_strdup_printf (DATADIR "/PackageKit/helpers/%s %s %s", script, mode, search);
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
 			  G_CALLBACK (pk_spawn_finished_cb), task);

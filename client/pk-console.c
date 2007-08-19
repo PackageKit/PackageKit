@@ -76,7 +76,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon search power\n");
 	g_print ("  pkcon async install gtk2-devel\n");
 	g_print ("  pkcon install gimp update totem\n");
-	g_print ("  pkcon sync update async install bluez-gnome\n");
+	g_print ("  pkcon sync update\n");
 	g_print ("  pkcon debug checkupdate\n");
 }
 
@@ -100,7 +100,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a search term");
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_find_packages (tclient, value, TRUE, TRUE);
+			pk_task_client_find_packages (tclient, value, 0, TRUE, TRUE);
 			remove_two = TRUE;
 		}
 	} else if (strcmp (mode, "install") == 0) {

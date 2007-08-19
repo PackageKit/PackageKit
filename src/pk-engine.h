@@ -74,6 +74,7 @@ gboolean	 pk_engine_update_system		(PkEngine	*engine,
 							 GError		**error);
 gboolean	 pk_engine_find_packages		(PkEngine	*engine,
 							 const gchar	*search,
+							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available,
 							 guint		*job,

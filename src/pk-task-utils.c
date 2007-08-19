@@ -145,6 +145,9 @@ pk_task_error_code_from_text (const gchar *code)
 	if (strcmp (code, "no-network") == 0) {
 		return PK_TASK_ERROR_CODE_NO_NETWORK;
 	}
+	if (strcmp (code, "not-supported") == 0) {
+		return PK_TASK_ERROR_CODE_NOT_SUPPORTED;
+	}
 	return PK_TASK_ERROR_CODE_UNKNOWN;
 }
 
@@ -158,6 +161,9 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 	switch (code) {
 	case PK_TASK_ERROR_CODE_NO_NETWORK:
 		text = "no-network";
+		break;
+	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
+		text = "not-supported";
 		break;
 	default:
 		text = "unknown";
@@ -175,6 +181,9 @@ pk_task_error_code_to_localised_text (PkTaskErrorCode code)
 	switch (code) {
 	case PK_TASK_ERROR_CODE_NO_NETWORK:
 		text = "No network connection available";
+		break;
+	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
+		text = "Not supported by this backend";
 		break;
 	default:
 		text = "Unknown error";

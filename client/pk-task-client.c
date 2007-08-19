@@ -201,7 +201,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
  * pk_task_client_find_packages:
  **/
 gboolean
-pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, gboolean installed, gboolean available)
+pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
 	gboolean ret;
 	GError *error;
@@ -219,6 +219,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, gboole
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "FindPackages", &error,
 				 G_TYPE_STRING, search,
+				 G_TYPE_UINT, depth,
 				 G_TYPE_BOOLEAN, installed,
 				 G_TYPE_BOOLEAN, available,
 				 G_TYPE_INVALID,
