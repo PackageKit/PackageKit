@@ -61,6 +61,11 @@
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
     </signal>
+    <signal name="ErrorCode">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="code" direction="out"/> <!-- no-network -->
+      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
+    </signal>
 
 
     <!-- SYNCHRONOUS -->

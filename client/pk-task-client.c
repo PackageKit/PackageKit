@@ -61,6 +61,7 @@ typedef enum {
 	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
+	PK_TASK_CLIENT_ERROR_CODE,
 	PK_TASK_CLIENT_FINISHED,
 	PK_TASK_CLIENT_LAST_SIGNAL
 } PkSignals;
@@ -550,6 +551,27 @@ pk_task_client_package_cb (DBusGProxy   *proxy,
 }
 
 /**
+ * pk_task_client_error_code_cb:
+ */
+static void
+pk_task_client_error_code_cb (DBusGProxy   *proxy,
+			   guint	 job,
+			   const gchar  *code_text,
+			   const gchar  *details,
+			   PkTaskClient *tclient)
+{
+	PkTaskErrorCode code;
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	if (job == tclient->priv->job) {
+		code = pk_task_error_code_from_text (code_text);
+		pk_debug ("emit error-code %i, %s", code, details);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_ERROR_CODE], 0, code, details);
+	}
+}
+
+/**
  * pk_task_client_class_init:
  **/
 static void
@@ -579,6 +601,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_CLIENT_ERROR_CODE] =
+		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -652,6 +679,10 @@ pk_task_client_init (PkTaskClient *tclient)
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_task_client_package_cb), tclient, NULL);
+	dbus_g_proxy_add_signal (proxy, "ErrorCode",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
+				     G_CALLBACK (pk_task_client_error_code_cb), tclient, NULL);
 }
 
 /**

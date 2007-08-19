@@ -41,6 +41,9 @@ gboolean	 pk_task_package			(PkTask		*task,
 							 guint		 value,
 							 const gchar	*package,
 							 const gchar	*summary);
+gboolean	 pk_task_error_code			(PkTask		*task,
+							 guint		 code,
+							 const gchar	*details);
 gboolean	 pk_task_assign				(PkTask		*task);
 gboolean	 pk_task_get_job_status			(PkTask		*task,
 							 PkTaskStatus	*status);

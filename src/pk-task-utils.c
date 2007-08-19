@@ -136,3 +136,32 @@ pk_task_status_to_text (PkTaskStatus status)
 	return text;
 }
 
+/**
+ * pk_task_error_code_from_text:
+ **/
+PkTaskErrorCode
+pk_task_error_code_from_text (const gchar *code)
+{
+	if (strcmp (code, "no-network") == 0) {
+		return PK_TASK_ERROR_CODE_NO_NETWORK;
+	}
+	return PK_TASK_ERROR_CODE_UNKNOWN;
+}
+
+/**
+ * pk_task_error_code_to_text:
+ **/
+const gchar *
+pk_task_error_code_to_text (PkTaskErrorCode code)
+{
+	const gchar *text = NULL;
+	switch (code) {
+	case PK_TASK_ERROR_CODE_NO_NETWORK:
+		text = "no-network";
+		break;
+	default:
+		text = "unknown";
+	}
+	return text;
+}
+

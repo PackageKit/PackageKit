@@ -68,6 +68,11 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_ERROR_CODE] =
+		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_TASK_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -120,6 +125,21 @@ pk_task_package (PkTask *task, guint value, const gchar *package, const gchar *s
 
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
 	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, value, package, summary);
+
+	return TRUE;
+}
+
+/**
+ * pk_task_error_code:
+ **/
+gboolean
+pk_task_error_code (PkTask *task, guint code, const gchar *details)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	pk_debug ("emit error-code %i, %s", code, details);
+	g_signal_emit (task, task->signals [PK_TASK_ERROR_CODE], 0, code, details);
 
 	return TRUE;
 }
