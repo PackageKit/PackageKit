@@ -262,7 +262,7 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 
 	job = pk_task_get_job (task);
 	code_text = pk_task_error_code_to_text (code);
-	pk_debug ("emitting error-code job:%i error=%s %s, %s", job, code_text, details);
+	pk_debug ("emitting error-code job:%i %s, '%s'", job, code_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, job, code_text, details);
 }
 
@@ -331,6 +331,25 @@ pk_engine_new_task (PkEngine *engine)
 	pk_engine_job_list_changed (engine);
 
 	return task;
+}
+
+/**
+ * pk_engine_refresh_cache:
+ **/
+gboolean
+pk_engine_refresh_cache (PkEngine *engine, guint *job, GError **error)
+{
+	PkTask *task;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_task_refresh_cache (task);
+	*job = pk_task_get_job (task);
+
+	return TRUE;
 }
 
 /**

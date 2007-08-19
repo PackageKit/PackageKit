@@ -10,7 +10,7 @@ my.conf.cache = 1
 options = sys.argv[1]
 searchterms = sys.argv[2]
 
-searchlist = ['name', 'summary', 'description', 'group']
+searchlist = ['name']
 res = my.searchGenerator(searchlist, [searchterms])
 
 for (pkg,values) in res:

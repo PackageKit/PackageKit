@@ -62,6 +62,7 @@ gboolean	 pk_task_client_get_deps		(PkTaskClient	*tclient,
 							 const gchar	*package);
 gboolean	 pk_task_client_remove_package		(PkTaskClient	*tclient,
 							 const gchar	*package);
+gboolean	 pk_task_client_refresh_cache		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_remove_package_with_deps(PkTaskClient	*tclient,
 							 const gchar	*package);
 gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,

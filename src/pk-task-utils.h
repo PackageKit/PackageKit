@@ -31,6 +31,7 @@ typedef enum {
 	PK_TASK_STATUS_SETUP,
 	PK_TASK_STATUS_QUERY,
 	PK_TASK_STATUS_REMOVE,
+	PK_TASK_STATUS_REFRESH_CACHE,
 	PK_TASK_STATUS_DOWNLOAD,
 	PK_TASK_STATUS_INSTALL,
 	PK_TASK_STATUS_UPDATE,
@@ -57,6 +58,7 @@ PkTaskStatus	 pk_task_status_from_text		(const gchar	*status);
 const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
 PkTaskErrorCode	 pk_task_error_code_from_text		(const gchar	*code);
 const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);
+const gchar	*pk_task_error_code_to_localised_text	(PkTaskErrorCode code);
 
 G_END_DECLS
 

@@ -8,6 +8,9 @@
     <method name="GetUpdates">
       <arg type="u" name="job" direction="out"/>
     </method>
+    <method name="RefreshCache">
+      <arg type="u" name="job" direction="out"/>
+    </method>
     <method name="UpdateSystem">
       <arg type="u" name="job" direction="out"/>
     </method>

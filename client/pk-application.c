@@ -185,9 +185,20 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package,
  * pk_console_error_code_cb:
  **/
 static void
-pk_console_error_code_cb (PkTaskClient *tclient, guint code, const gchar *details, PkApplication *application)
+pk_console_error_code_cb (PkTaskClient *tclient, PkTaskErrorCode code, const gchar *details, PkApplication *application)
 {
-	g_warning ("error %i:%s", code, details);
+	GtkWidget *main_window;
+	GtkWidget *dialog;
+
+	pk_warning ("error %i:%s", code, details);
+	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
+
+	dialog = gtk_message_dialog_new (GTK_WINDOW (main_window), GTK_DIALOG_DESTROY_WITH_PARENT,
+					 GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+					 "%s", pk_task_error_code_to_localised_text (code));
+	gtk_message_dialog_format_secondary_markup (GTK_MESSAGE_DIALOG (dialog), details);
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 /**

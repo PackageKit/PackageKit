@@ -165,3 +165,20 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 	return text;
 }
 
+/**
+ * pk_task_error_code_to_localised_text:
+ **/
+const gchar *
+pk_task_error_code_to_localised_text (PkTaskErrorCode code)
+{
+	const gchar *text = NULL;
+	switch (code) {
+	case PK_TASK_ERROR_CODE_NO_NETWORK:
+		text = "No network connection available";
+		break;
+	default:
+		text = "Unknown error";
+	}
+	return text;
+}
+

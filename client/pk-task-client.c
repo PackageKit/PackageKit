@@ -351,6 +351,44 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 }
 
 /**
+ * pk_task_client_refresh_cache:
+ **/
+gboolean
+pk_task_client_refresh_cache (PkTaskClient *tclient)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	/* check to see if we already have an action */
+	if (tclient->priv->assigned == TRUE) {
+		pk_warning ("Already assigned");
+		return FALSE;
+	}
+	tclient->priv->assigned = TRUE;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "RefreshCache", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RefreshCache failed!");
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
+
+	return TRUE;
+}
+
+/**
  * pk_task_client_remove_package_with_deps:
  **/
 gboolean
@@ -606,8 +644,8 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 	signals [PK_TASK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -84,6 +84,24 @@ pk_task_get_updates (PkTask *task)
 	return TRUE;
 }
 
+/**
+ * pk_task_refresh_cache:
+ **/
+gboolean
+pk_task_refresh_cache (PkTask *task)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	return TRUE;
+}
+
 gboolean
 pk_task_update_system_timeout (gpointer data)
 {
@@ -196,6 +214,7 @@ pk_task_find_packages (PkTask *task, const gchar *search, gboolean installed, gb
 {
 	PkSpawn *spawn;
 	gchar *command;
+	const gchar *mode = NULL;
 	gboolean ret;
 
 	g_return_val_if_fail (task != NULL, FALSE);
@@ -205,12 +224,24 @@ pk_task_find_packages (PkTask *task, const gchar *search, gboolean installed, gb
 		return FALSE;
 	}
 
+	if (installed == TRUE && available == TRUE) {
+		mode = "all";
+	} else if (installed == TRUE) {
+		mode = "installed";
+	} else if (available == TRUE) {
+		mode = "available";
+	} else {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
 	task->package = strdup (search);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_no_percentage_updates (task);
 
 //	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
-	command = g_strdup_printf ("/home/hughsie/Code/PackageKit/helpers/yum-search-simple.py %s", search);
+	command = g_strdup_printf (DATADIR "/PackageKit/helpers/yum-search-name.py %s %s", mode, search);
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
 			  G_CALLBACK (pk_spawn_finished_cb), task);

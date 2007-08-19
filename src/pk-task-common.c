@@ -133,7 +133,7 @@ pk_task_package (PkTask *task, guint value, const gchar *package, const gchar *s
  * pk_task_error_code:
  **/
 gboolean
-pk_task_error_code (PkTask *task, guint code, const gchar *details)
+pk_task_error_code (PkTask *task, PkTaskErrorCode code, const gchar *details)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
