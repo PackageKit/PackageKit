@@ -131,6 +131,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 		item->client = pk_task_client_new ();
 		g_signal_connect (item->client, "job-status-changed",
 				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+		g_signal_connect (item->client, "finished",
+				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
 
 		pk_task_client_get_job_status (item->client, job, &item->status, &item->package);
 		g_object_unref (item->client);

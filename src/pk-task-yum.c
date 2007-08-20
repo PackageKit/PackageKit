@@ -49,6 +49,7 @@
 #include "pk-task.h"
 #include "pk-task-common.h"
 #include "pk-spawn.h"
+#include "pk-network.h"
 
 static void     pk_task_class_init	(PkTaskClass *klass);
 static void     pk_task_init		(PkTask      *task);
@@ -60,6 +61,7 @@ struct PkTaskPrivate
 {
 	gboolean		 whatever_you_want;
 	guint			 progress_percentage;
+	PkNetwork		*network;
 };
 
 static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
@@ -94,6 +96,13 @@ pk_task_refresh_cache (PkTask *task)
 
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;
+	}
+
+	/* check network state */
+	if (pk_network_is_online (task->priv->network) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
 	}
 
 	/* not implimented yet */
@@ -300,6 +309,13 @@ pk_task_install_package (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
+	/* check network state */
+	if (pk_network_is_online (task->priv->network) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot install when offline");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
 	/* not implimented yet */
 	return FALSE;
 }
@@ -344,6 +360,7 @@ pk_task_init (PkTask *task)
 {
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->signals = signals;
+	task->priv->network = pk_network_new ();
 	pk_task_clear (task);
 }
 
@@ -359,6 +376,7 @@ pk_task_finalize (GObject *object)
 	task = PK_TASK (object);
 	g_return_if_fail (task->priv != NULL);
 	g_free (task->package);
+	g_object_unref (task->priv->network);
 	G_OBJECT_CLASS (pk_task_parent_class)->finalize (object);
 }
 

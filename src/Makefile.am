@@ -19,6 +19,7 @@ EXTRA_DIST =						\
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(NM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
@@ -47,6 +48,8 @@ packagekitd_SOURCES =					\
 	pk-spawn.h					\
 	pk-engine.h					\
 	pk-engine.c					\
+	pk-network.h					\
+	pk-network.c					\
 	$(NULL)
 
 if BACKEND_TYPE_DUMMY
@@ -67,6 +70,7 @@ endif
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(LIBNM_LIBS)					\
 	$(NULL)
 
 BUILT_SOURCES = 					\

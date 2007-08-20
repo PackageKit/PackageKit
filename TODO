@@ -1,0 +1,13 @@
+Order of no particular importance:
+
+* Write a PkTaskMonitor class that matches on a job, and use in PkTaskList
+  to emit signals for the icon when task status changes. (in progress)
+* Add Details(s=name, s=description, s=url) signal into client and server
+* Only try to do actions when online (sortof done, use PkNetwork)
+* Detect killing of pk-daemon process (sortof done, use libgbus)
+* Add boolean force input to RefreshCache(b=force)
+* Quit after a little inactivity - need a timeout
+* Go to refresh and update at start of session only if network is up
+* Write documentation for backend writers
+* Write documentation for UI porters
+
