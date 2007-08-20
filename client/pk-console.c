@@ -77,6 +77,8 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon async install gtk2-devel\n");
 	g_print ("  pkcon install gimp update totem\n");
 	g_print ("  pkcon sync update\n");
+	g_print ("  pkcon refresh\n");
+	g_print ("  pkcon force-refresh\n");
 	g_print ("  pkcon debug checkupdate\n");
 }
 
@@ -123,6 +125,10 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		pk_debug_init (TRUE);
 	} else if (strcmp (mode, "update") == 0) {
 		pk_task_client_update_system (tclient);
+	} else if (strcmp (mode, "refresh") == 0) {
+		pk_task_client_refresh_cache (tclient, FALSE);
+	} else if (strcmp (mode, "force-refresh") == 0) {
+		pk_task_client_refresh_cache (tclient, TRUE);
 	} else if (strcmp (mode, "sync") == 0) {
 		pk_task_client_set_sync (tclient, TRUE);
 	} else if (strcmp (mode, "async") == 0) {

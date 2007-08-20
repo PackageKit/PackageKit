@@ -89,7 +89,7 @@ pk_task_get_updates (PkTask *task)
  * pk_task_refresh_cache:
  **/
 gboolean
-pk_task_refresh_cache (PkTask *task)
+pk_task_refresh_cache (PkTask *task, gboolean force)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);

@@ -9,6 +9,7 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="RefreshCache">
+      <arg type="b" name="force" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="UpdateSystem">

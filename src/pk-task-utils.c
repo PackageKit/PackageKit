@@ -77,6 +77,8 @@ pk_task_exit_to_text (PkTaskExit exit)
 PkTaskStatus
 pk_task_status_from_text (const gchar *status)
 {
+	g_return_val_if_fail (status != NULL, PK_TASK_STATUS_INVALID);
+
 	if (strcmp (status, "setup") == 0) {
 		return PK_TASK_STATUS_SETUP;
 	}
@@ -177,6 +179,8 @@ pk_task_status_to_localised_text (PkTaskStatus status)
 PkTaskErrorCode
 pk_task_error_code_from_text (const gchar *code)
 {
+	g_return_val_if_fail (code != NULL, PK_TASK_ERROR_CODE_UNKNOWN);
+
 	if (strcmp (code, "no-network") == 0) {
 		return PK_TASK_ERROR_CODE_NO_NETWORK;
 	}

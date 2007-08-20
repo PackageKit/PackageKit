@@ -77,8 +77,9 @@ gboolean	 pk_task_get_deps			(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_remove_package			(PkTask		*task,
 							 const gchar	*package);
-gboolean	 pk_task_refresh_cache			(PkTask		*task);
-gboolean	 pk_task_remove_package_with_deps	(PkTask	*task,
+gboolean	 pk_task_refresh_cache			(PkTask		*task,
+							 gboolean	 force);
+gboolean	 pk_task_remove_package_with_deps	(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_install_package		(PkTask		*task,
 							 const gchar	*package);

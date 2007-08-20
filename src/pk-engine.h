@@ -89,6 +89,7 @@ gboolean	 pk_engine_remove_package		(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
+							 gboolean	 force,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_remove_package_with_deps	(PkEngine	*engine,

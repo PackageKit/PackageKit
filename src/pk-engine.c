@@ -349,7 +349,7 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
  * pk_engine_refresh_cache:
  **/
 gboolean
-pk_engine_refresh_cache (PkEngine *engine, guint *job, GError **error)
+pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -359,7 +359,7 @@ pk_engine_refresh_cache (PkEngine *engine, guint *job, GError **error)
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_refresh_cache (task);
+	ret = pk_task_refresh_cache (task, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");

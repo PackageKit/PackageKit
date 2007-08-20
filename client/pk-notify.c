@@ -374,7 +374,7 @@ pk_notify_refresh_cache_cb (GtkMenuItem *item, gpointer data)
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "finished",
 			  G_CALLBACK (pk_notify_finished_cb), notify);
-	ret = pk_task_client_refresh_cache (tclient);
+	ret = pk_task_client_refresh_cache (tclient, TRUE);
 	if (ret == FALSE) {
 		g_object_unref (tclient);
 		pk_warning ("failed to refresh cache");

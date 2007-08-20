@@ -328,7 +328,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
  * pk_task_client_refresh_cache:
  **/
 gboolean
-pk_task_client_refresh_cache (PkTaskClient *tclient)
+pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 {
 	gboolean ret;
 	GError *error;
@@ -345,6 +345,7 @@ pk_task_client_refresh_cache (PkTaskClient *tclient)
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "RefreshCache", &error,
+				 G_TYPE_BOOLEAN, force,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
@@ -548,16 +549,14 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
  * pk_task_client_error_code_cb:
  */
 static void
-pk_task_client_error_code_cb (PkTaskMonitor *tmonitor,
-			      const gchar   *code_text,
-			      const gchar   *details,
-			      PkTaskClient  *tclient)
+pk_task_client_error_code_cb (PkTaskMonitor  *tmonitor,
+			      PkTaskErrorCode code,
+			      const gchar    *details,
+			      PkTaskClient   *tclient)
 {
-	PkTaskErrorCode code;
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	code = pk_task_error_code_from_text (code_text);
 	pk_debug ("emit error-code %i, %s", code, details);
 	g_signal_emit (tclient , signals [PK_TASK_CLIENT_ERROR_CODE], 0, code, details);
 }
