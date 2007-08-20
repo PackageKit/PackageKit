@@ -53,6 +53,7 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GPtrArray		*array;
+	GTimer			*timer;
 };
 
 enum {
@@ -105,6 +106,16 @@ pk_engine_error_get_type (void)
 		etype = g_enum_register_static ("PkEngineError", values);
 	}
 	return etype;
+}
+
+/**
+ * pk_engine_reset_timer:
+ **/
+static void
+pk_engine_reset_timer (PkEngine *engine)
+{
+	pk_debug ("reset timer");
+	g_timer_reset (engine->priv->timer);
 }
 
 /**
@@ -177,6 +188,7 @@ pk_engine_job_list_changed (PkEngine *engine)
 
 	pk_debug ("emitting job-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_LIST_CHANGED], 0, job_list);
+	pk_engine_reset_timer (engine);
 	return TRUE;
 }
 
@@ -199,6 +211,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 
 	pk_debug ("emitting job-status-changed job:%i, '%s', '%s'", job, status_text, package);
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text, package);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -215,6 +228,7 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 	job = pk_task_get_job (task);
 	pk_debug ("emitting percentage-changed job:%i %i", job, percentage);
 	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, job, percentage);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -231,6 +245,7 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 	job = pk_task_get_job (task);
 	pk_debug ("emitting no-percentage-updates job:%i", job);
 	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, job);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -247,6 +262,7 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package, const gch
 	job = pk_task_get_job (task);
 	pk_debug ("emitting package job:%i value=%i %s, %s", job, value, package, summary);
 	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, value, package, summary);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -265,6 +281,7 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 	code_text = pk_task_error_code_to_text (code);
 	pk_debug ("emitting error-code job:%i %s, '%s'", job, code_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, job, code_text, details);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -290,6 +307,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
 	pk_engine_job_list_changed (engine);
+	pk_engine_reset_timer (engine);
 }
 
 /**
@@ -324,6 +342,7 @@ pk_engine_new_task (PkEngine *engine)
 
 	/* set the job ID */
 	pk_task_set_job (task, job);
+	pk_engine_reset_timer (engine);
 
 	/* we don't add to the array or do the job-list-changed yet
 	 * as this job might fail */
@@ -680,7 +699,22 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	return TRUE;
 }
 
-//		g_signal_emit (engine, signals [JOB_LIST_CHANGED], 0, FALSE);
+/**
+ * pk_engine_get_seconds_idle:
+ * @engine: This class instance
+ **/
+guint
+pk_engine_get_seconds_idle (PkEngine *engine)
+{
+	guint idle;
+
+	g_return_val_if_fail (engine != NULL, 0);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
+
+	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
+	pk_debug ("engine idle=%i", idle);
+	return idle;
+}
 
 /**
  * pk_engine_class_init:
@@ -747,6 +781,7 @@ pk_engine_init (PkEngine *engine)
 {
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->array = g_ptr_array_new ();
+	engine->priv->timer = g_timer_new ();
 }
 
 /**
@@ -767,6 +802,7 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_ptr_array_free (engine->priv->array, TRUE);
+	g_timer_destroy (engine->priv->timer);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

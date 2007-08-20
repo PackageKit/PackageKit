@@ -34,6 +34,8 @@
 #include "pk-engine.h"
 #include "pk-interface.h"
 
+#define PK_MAIN_EXIT_IDLE_TIME	60 /* seconds */
+
 /**
  * pk_object_register:
  * @connection: What we want to register to
@@ -105,6 +107,22 @@ timed_exit_cb (GMainLoop *loop)
 }
 
 /**
+ * pk_main_timeout_check_cb:
+ **/
+static gboolean
+pk_main_timeout_check_cb (PkEngine *engine)
+{
+	guint idle;
+	idle = pk_engine_get_seconds_idle (engine);
+	pk_debug ("idle is %i", idle);
+	if (idle > PK_MAIN_EXIT_IDLE_TIME) {
+		pk_warning ("exit!!");
+		exit (0);
+	}
+	return TRUE;
+}
+
+/**
  * main:
  **/
 int
@@ -113,6 +131,7 @@ main (int argc, char *argv[])
 	GMainLoop *loop;
 	DBusGConnection *system_connection;
 	gboolean verbose = FALSE;
+	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
 	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
@@ -126,6 +145,8 @@ main (int argc, char *argv[])
 		  "Daemonize and detach", NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
 		  "Show extra debugging information", NULL },
+		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
+		  "Disable the idle timer", NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
 		  "Show version of installed program and exit", NULL },
 		{ "timed-exit", '\0', 0, G_OPTION_ARG_NONE, &timed_exit,
@@ -185,7 +206,12 @@ main (int argc, char *argv[])
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
 	if (timed_exit == TRUE) {
-		g_timeout_add (1000 * 20, (GSourceFunc) timed_exit_cb, loop);
+		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
+	}
+
+	/* only poll every 10 seconds when we are alive */
+	if (disable_timer == FALSE) {
+		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
 	}
 
 	if (immediate_exit == FALSE) {
