@@ -32,6 +32,11 @@ INCLUDES =						\
 	-DLIBDIR=\""$(libdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
+	-I$(top_srcdir)/libgbus				\
+	$(NULL)
+
+GBUS_LIBS =						\
+	$(top_builddir)/libgbus/libgbus.la		\
 	$(NULL)
 
 bin_PROGRAMS =						\
@@ -81,6 +86,7 @@ pkmon_SOURCES =						\
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(GBUS_LIBS)					\
 	$(NULL)
 
 pk_update_icon_SOURCES =				\

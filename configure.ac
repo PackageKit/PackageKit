@@ -166,6 +166,7 @@ dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
+libgbus/Makefile
 src/Makefile
 client/Makefile
 helpers/Makefile

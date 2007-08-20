@@ -1,0 +1,8 @@
+.deps
+.libs
+*.o
+*.la
+*.lo
+*-marshal.c
+*-marshal.h
+
