@@ -37,6 +37,7 @@
 #include "pk-marshal.h"
 #include "pk-task-common.h"
 #include "pk-task-client.h"
+#include "pk-task-monitor.h"
 
 static void     pk_task_client_class_init	(PkTaskClientClass *klass);
 static void     pk_task_client_init		(PkTaskClient      *task_client);
@@ -53,6 +54,7 @@ struct PkTaskClientPrivate
 	guint			 job;
 	GMainLoop		*loop;
 	PkTaskStatus		 last_status;
+	PkTaskMonitor		*tmonitor;
 	gboolean		 is_finished;
 };
 
@@ -154,6 +156,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 		pk_warning ("GetUpdates failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -192,6 +195,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
 		pk_warning ("UpdateSystem failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -234,6 +238,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, guint 
 		pk_warning ("FindPackages failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -273,6 +278,7 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("GetDeps failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -312,6 +318,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("RemovePackage failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -350,6 +357,7 @@ pk_task_client_refresh_cache (PkTaskClient *tclient)
 		pk_warning ("RefreshCache failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -389,6 +397,7 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 		pk_warning ("RemovePackageWithDeps failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -428,6 +437,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("InstallPackage failed!");
 		return FALSE;
 	}
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -455,26 +465,20 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
  * pk_task_client_finished_cb:
  */
 static void
-pk_task_client_finished_cb (DBusGProxy   *proxy,
-			    guint	  job,
-			    const gchar	 *exit_text,
-			    PkTaskClient *tclient)
+pk_task_client_finished_cb (PkTaskMonitor *tmonitor,
+			    PkTaskExit     exit,
+			    PkTaskClient  *tclient)
 {
-	PkTaskExit exit;
-
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	if (job == tclient->priv->job) {
-		exit = pk_task_exit_from_text (exit_text);
-		pk_debug ("emit finished %i", exit);
-		tclient->priv->is_finished = TRUE;
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
+	pk_debug ("emit finished %i", exit);
+	tclient->priv->is_finished = TRUE;
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
 
-		/* if we are async, then cancel */
-		if (tclient->priv->loop != NULL) {
-			g_main_loop_quit (tclient->priv->loop);
-		}
+	/* if we are async, then cancel */
+	if (tclient->priv->loop != NULL) {
+		g_main_loop_quit (tclient->priv->loop);
 	}
 }
 
@@ -482,100 +486,80 @@ pk_task_client_finished_cb (DBusGProxy   *proxy,
  * pk_task_client_percentage_changed_cb:
  */
 static void
-pk_task_client_percentage_changed_cb (DBusGProxy   *proxy,
-				      guint	    job,
-				      guint	    percentage,
-				      PkTaskClient *tclient)
+pk_task_client_percentage_changed_cb (PkTaskMonitor *tmonitor,
+				      guint	     percentage,
+				      PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	if (job == tclient->priv->job) {
-		pk_debug ("emit percentage-changed %i", percentage);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
-	}
+	pk_debug ("emit percentage-changed %i", percentage);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
 }
 
 /**
  * pk_task_client_no_percentage_updates_cb:
  */
 static void
-pk_task_client_no_percentage_updates_cb (DBusGProxy   *proxy,
-				      guint	    job,
-				      PkTaskClient *tclient)
+pk_task_client_no_percentage_updates_cb (PkTaskMonitor *tmonitor,
+				         PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	if (job == tclient->priv->job) {
-		pk_debug ("emit no-percentage-updates");
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES], 0);
-	}
+	pk_debug ("emit no-percentage-updates");
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES], 0);
 }
 
 /**
  * pk_task_client_job_status_changed_cb:
  */
 static void
-pk_task_client_job_status_changed_cb (DBusGProxy   *proxy,
-				      guint	    job,
-				      const gchar  *status_text,
-				      const gchar  *package,
-				      PkTaskClient *tclient)
+pk_task_client_job_status_changed_cb (PkTaskMonitor *tmonitor,
+				      PkTaskStatus   status,
+				      PkTaskClient  *tclient)
 {
-	PkTaskStatus status;
-
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	status = pk_task_status_from_text (status_text);
-
-	if (job == tclient->priv->job) {
-		pk_debug ("emit job-status-changed %i", status);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
-		tclient->priv->last_status = status;
-	}
+	pk_debug ("emit job-status-changed %i", status);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
+	tclient->priv->last_status = status;
 }
 
 /**
  * pk_task_client_package_cb:
  */
 static void
-pk_task_client_package_cb (DBusGProxy   *proxy,
-			   guint	 job,
-			   guint         value,
-			   const gchar  *package,
-			   const gchar  *summary,
-			   PkTaskClient *tclient)
+pk_task_client_package_cb (PkTaskMonitor *tmonitor,
+			   guint          value,
+			   const gchar   *package,
+			   const gchar   *summary,
+			   PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	if (job == tclient->priv->job) {
-		pk_debug ("emit package %i, %s, %s", value, package, summary);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
-	}
+	pk_debug ("emit package %i, %s, %s", value, package, summary);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
 }
 
 /**
  * pk_task_client_error_code_cb:
  */
 static void
-pk_task_client_error_code_cb (DBusGProxy   *proxy,
-			   guint	 job,
-			   const gchar  *code_text,
-			   const gchar  *details,
-			   PkTaskClient *tclient)
+pk_task_client_error_code_cb (PkTaskMonitor *tmonitor,
+			      const gchar   *code_text,
+			      const gchar   *details,
+			      PkTaskClient  *tclient)
 {
 	PkTaskErrorCode code;
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	if (job == tclient->priv->job) {
-		code = pk_task_error_code_from_text (code_text);
-		pk_debug ("emit error-code %i, %s", code, details);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_ERROR_CODE], 0, code, details);
-	}
+	code = pk_task_error_code_from_text (code_text);
+	pk_debug ("emit error-code %i, %s", code, details);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
 /**
@@ -653,43 +637,20 @@ pk_task_client_init (PkTaskClient *tclient)
 		g_error ("Cannot connect to PackageKit.");
 	}
 	tclient->priv->proxy = proxy;
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
-	dbus_g_proxy_add_signal (proxy, "Finished",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "Finished",
-				     G_CALLBACK (pk_task_client_finished_cb), tclient, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "PercentageChanged",
-				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
-				     G_CALLBACK (pk_task_client_percentage_changed_cb), tclient, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "NoPercentageUpdates",
-				 G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "NoPercentageUpdates",
-				     G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "JobStatusChanged",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "JobStatusChanged",
-				     G_CALLBACK (pk_task_client_job_status_changed_cb), tclient, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "Package",
-				     G_CALLBACK (pk_task_client_package_cb), tclient, NULL);
-	dbus_g_proxy_add_signal (proxy, "ErrorCode",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
-				     G_CALLBACK (pk_task_client_error_code_cb), tclient, NULL);
+	tclient->priv->tmonitor = pk_task_monitor_new ();
+	g_signal_connect (tclient->priv->tmonitor, "finished",
+			  G_CALLBACK (pk_task_client_finished_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "percentage-changed",
+			  G_CALLBACK (pk_task_client_percentage_changed_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "no-percentage-updates",
+			  G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "job-status-changed",
+			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "package",
+			  G_CALLBACK (pk_task_client_package_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "error-code",
+			  G_CALLBACK (pk_task_client_error_code_cb), tclient);
 }
 
 /**

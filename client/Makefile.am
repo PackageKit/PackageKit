@@ -56,6 +56,8 @@ pkcon_SOURCES =						\
 	pk-task-utils.c					\
 	pk-task-common.c				\
 	pk-task-common.h				\
+	pk-task-monitor.c				\
+	pk-task-monitor.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
 	$(NULL)
@@ -132,6 +134,8 @@ pk_application_SOURCES =				\
 	pk-task-utils.c					\
 	pk-task-common.c				\
 	pk-task-common.h				\
+	pk-task-monitor.c				\
+	pk-task-monitor.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
 	$(NULL)
