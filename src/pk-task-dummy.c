@@ -139,41 +139,11 @@ pk_task_find_packages_timeout (gpointer data)
 }
 
 /**
- * pk_task_parse_data:
- **/
-static void
-pk_task_parse_data (PkTask *task, const gchar *line)
-{
-	char **sections;
-	gboolean okay;
-	guint value = FALSE;
-
-	/* check if output line */
-	if (strstr (line, "\t") == NULL)
-		return;		
-	sections = g_strsplit (line, "\t", 0);
-	if (strcmp (sections[0], "yes") == 0) {
-		value = TRUE;
-	}
-	okay = pk_task_filter_package_name (NULL, sections[1]);
-	if (okay == TRUE) {
-		pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[1], sections[2]);
-		pk_task_package (task, value, sections[1], sections[2]);
-	}
-	g_strfreev (sections);
-}
-
-/**
  * pk_task_find_packages:
  **/
 gboolean
 pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
-	gchar *command;
-	const gchar *mode = NULL;
-	const gchar *script = NULL;
-	gboolean ret;
-
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -186,7 +156,6 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 	pk_task_no_percentage_updates (task);
 
 	g_timeout_add (2000, pk_task_find_packages_timeout, task);
-	g_free (command);
 	return TRUE;
 }
 
