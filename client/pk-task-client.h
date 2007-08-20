@@ -71,12 +71,6 @@ gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
 gboolean	 pk_task_client_cancel_job_try		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
 
-/* not sure where this belongs... */
-gboolean	 pk_task_client_get_job_status		(PkTaskClient	*tclient,
-							 guint		 job,
-							 PkTaskStatus	*status,
-							 gchar		**package);
-
 G_END_DECLS
 
 #endif /* __PK_TASK_CLIENT_H */

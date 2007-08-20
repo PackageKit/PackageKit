@@ -38,6 +38,7 @@
 #include "pk-task-client.h"
 #include "pk-task-common.h"
 #include "pk-task-list.h"
+#include "pk-task-monitor.h"
 #include "pk-job-list.h"
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
@@ -131,10 +132,15 @@ pk_task_list_refresh (PkTaskList *tlist)
 		item->client = pk_task_client_new ();
 		g_signal_connect (item->client, "job-status-changed",
 				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-		g_signal_connect (item->client, "finished",
-				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+//		g_signal_connect (item->client, "finished",
+//				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+		PkTaskMonitor *tmonitor;
+		tmonitor = pk_task_monitor_new ();
+		pk_task_monitor_set_job (tmonitor, job);
+		pk_task_monitor_get_status (tmonitor, &item->status, &item->package);
+		g_object_unref (tmonitor);
 
-		pk_task_client_get_job_status (item->client, job, &item->status, &item->package);
+//		pk_task_client_get_job_status (item->client, job, &item->status, &item->package);
 		g_object_unref (item->client);
 		g_ptr_array_add (tlist->priv->task_list, item);
 	}

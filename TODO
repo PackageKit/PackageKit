@@ -1,7 +1,6 @@
 Order of no particular importance:
 
-* Make PkTaskList use PkTaskMonitor and get rid of pk_task_client_get_job_status
-  to emit signals for the icon when task status changes. (in progress)
+* Make PkTaskList use PkTaskMonitor. (in progress)
 * Add Details(s=name, s=description, s=url) signal into client and server
 * Only try to do actions when online (sortof done, use PkNetwork)
 * Detect killing of pk-daemon process (sortof done, use libgbus)

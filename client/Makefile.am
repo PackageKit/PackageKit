@@ -97,6 +97,8 @@ pk_update_icon_SOURCES =				\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-task-monitor.c				\
+	pk-task-monitor.h				\
 	pk-task-list.c					\
 	pk-task-list.h					\
 	pk-task-client.c				\
