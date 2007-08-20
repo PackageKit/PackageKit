@@ -48,11 +48,7 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 static void
 pk_libgbus_connection_changed_cb (LibGBus *gbus, gboolean connected, gpointer data)
 {
-	GMainLoop *loop = (GMainLoop *) data;
-	if (connected == FALSE) {
-		pk_debug ("not monitoring as disconnected");
-		g_main_loop_quit (loop);
-	}
+	pk_debug ("connected=%i", connected);
 }
 
 /**
