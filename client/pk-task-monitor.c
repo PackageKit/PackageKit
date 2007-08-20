@@ -35,6 +35,7 @@
 
 #include "pk-debug.h"
 #include "pk-marshal.h"
+#include "pk-connection.h"
 #include "pk-task-common.h"
 #include "pk-task-monitor.h"
 
@@ -49,6 +50,7 @@ struct PkTaskMonitorPrivate
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 	guint			 job;
+	PkConnection		*pconnection;
 };
 
 typedef enum {
@@ -310,6 +312,30 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 }
 
 /**
+ * pk_task_monitor_connect:
+ **/
+static void
+pk_task_monitor_connect (PkTaskMonitor *tmonitor)
+{
+	pk_debug ("connect");
+}
+
+/**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkTaskMonitor *tmonitor)
+{
+	pk_debug ("connected=%i", connected);
+
+	/* if PK re-started mid-transaction then forcibly end the job */
+	if (connected == FALSE) {
+		pk_debug ("emit finished %i", exit);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, PK_TASK_EXIT_FAILED);
+	}
+}
+
+/**
  * pk_task_monitor_init:
  **/
 static void
@@ -329,6 +355,14 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 		g_error ("This program cannot start until you start the dbus system service.");
 	}
 
+	/* watch for PackageKit on the bus, and try to connect up at start */
+	tmonitor->priv->pconnection = pk_connection_new ();
+	g_signal_connect (tmonitor->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), tmonitor);
+	if (pk_connection_valid (tmonitor->priv->pconnection)) {
+		pk_task_monitor_connect (tmonitor);
+	}
+
 	/* get a connection */
 	proxy = dbus_g_proxy_new_for_name (tmonitor->priv->connection,
 					   PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
@@ -342,6 +376,9 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
@@ -393,6 +430,7 @@ pk_task_monitor_finalize (GObject *object)
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (tmonitor->priv->proxy));
+	g_object_unref (tmonitor->priv->pconnection);
 
 	G_OBJECT_CLASS (pk_task_monitor_parent_class)->finalize (object);
 }

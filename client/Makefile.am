@@ -52,6 +52,8 @@ pkcon_SOURCES =						\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-connection.c					\
+	pk-connection.h					\
 	pk-task-utils.h					\
 	pk-task-utils.c					\
 	pk-task-common.c				\
@@ -65,6 +67,7 @@ pkcon_SOURCES =						\
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(GBUS_LIBS)					\
 	$(NULL)
 
 pkmon_SOURCES =						\
@@ -73,6 +76,8 @@ pkmon_SOURCES =						\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-connection.c					\
+	pk-connection.h					\
 	pk-task-monitor.c				\
 	pk-task-monitor.h				\
 	pk-task-list.c					\
@@ -99,6 +104,8 @@ pk_update_icon_SOURCES =				\
 	pk-debug.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-connection.c					\
+	pk-connection.h					\
 	pk-task-monitor.c				\
 	pk-task-monitor.h				\
 	pk-task-list.c					\
@@ -120,6 +127,7 @@ pk_update_icon_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(LIBNOTIFY_LIBS)				\
 	$(GTK_LIBS)					\
+	$(GBUS_LIBS)					\
 	$(NULL)
 
 pk_application_SOURCES =				\
@@ -128,6 +136,8 @@ pk_application_SOURCES =				\
 	pk-debug.h					\
 	pk-application.c				\
 	pk-application.h				\
+	pk-connection.c					\
+	pk-connection.h					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-task-utils.h					\
@@ -144,6 +154,7 @@ pk_application_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(LIBGLADE_LIBS)				\
+	$(GBUS_LIBS)					\
 	$(GTK_LIBS)					\
 	$(NULL)
 

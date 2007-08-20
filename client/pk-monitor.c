@@ -27,11 +27,11 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
-#include <libgbus.h>
 
 #include "pk-debug.h"
 #include "pk-task-common.h"
 #include "pk-task-list.h"
+#include "pk-connection.h"
 
 /**
  * pk_monitor_task_list_changed_cb:
@@ -43,10 +43,10 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 }
 
 /**
- * pk_libgbus_connection_changed_cb:
+ * pk_connection_changed_cb:
  **/
 static void
-pk_libgbus_connection_changed_cb (LibGBus *gbus, gboolean connected, gpointer data)
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointer data)
 {
 	pk_debug ("connected=%i", connected);
 }
@@ -61,7 +61,7 @@ main (int argc, char *argv[])
 	gboolean ret;
 	GPtrArray *task_list;
 	GMainLoop *loop;
-	LibGBus *libgbus;
+	PkConnection *pconnection;
 	gboolean connected;
 
 	if (! g_thread_supported ()) {
@@ -77,11 +77,10 @@ main (int argc, char *argv[])
 
 	loop = g_main_loop_new (NULL, FALSE);
 
-	libgbus = libgbus_new ();
-	libgbus_assign (libgbus, LIBGBUS_SYSTEM, PK_DBUS_SERVICE);
-	g_signal_connect (libgbus, "connection-changed",
-			  G_CALLBACK (pk_libgbus_connection_changed_cb), loop);
-	connected = libgbus_is_connected (libgbus);
+	pconnection = pk_connection_new ();
+	g_signal_connect (pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), loop);
+	connected = pk_connection_valid (pconnection);
 	pk_debug ("connected=%i", connected);
 
 	tlist = pk_task_list_new ();
@@ -98,7 +97,7 @@ main (int argc, char *argv[])
 	g_main_loop_run (loop);
 
 	g_object_unref (tlist);
-	g_object_unref (libgbus);
+	g_object_unref (pconnection);
 
 	return 0;
 }

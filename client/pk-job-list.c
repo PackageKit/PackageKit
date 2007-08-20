@@ -36,6 +36,7 @@
 #include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-task-common.h"
+#include "pk-connection.h"
 #include "pk-job-list.h"
 
 static void     pk_job_list_class_init		(PkJobListClass *klass);
@@ -49,6 +50,7 @@ struct PkJobListPrivate
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 	GArray			*job_list;
+	PkConnection		*pconnection;
 };
 
 typedef enum {
@@ -197,6 +199,27 @@ pk_job_list_class_init (PkJobListClass *klass)
 }
 
 /**
+ * pk_task_monitor_connect:
+ **/
+static void
+pk_job_list_connect (PkJobList *jlist)
+{
+	pk_debug ("connect");
+}
+
+/**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkJobList *jlist)
+{
+	pk_debug ("connected=%i", connected);
+	/* clear job array */
+	g_array_set_size (jlist->priv->job_list, 0);
+}
+
+
+/**
  * pk_job_list_init:
  **/
 static void
@@ -207,6 +230,7 @@ pk_job_list_init (PkJobList *jlist)
 	GType struct_array_type;
 
 	jlist->priv = PK_JOB_LIST_GET_PRIVATE (jlist);
+	jlist->priv->proxy = NULL;
 
 	/* check dbus connections, exit if not valid */
 	jlist->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -218,6 +242,14 @@ pk_job_list_init (PkJobList *jlist)
 
 	/* we maintain a local copy */
 	jlist->priv->job_list = g_array_new (FALSE, FALSE, sizeof (guint));
+
+	/* watch for PackageKit on the bus, and try to connect up at start */
+	jlist->priv->pconnection = pk_connection_new ();
+	g_signal_connect (jlist->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), jlist);
+	if (pk_connection_valid (jlist->priv->pconnection)) {
+		pk_job_list_connect (jlist);
+	}
 
 	/* get a connection */
 	proxy = dbus_g_proxy_new_for_name (jlist->priv->connection,
@@ -254,6 +286,7 @@ pk_job_list_finalize (GObject *object)
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (jlist->priv->proxy));
+	g_object_unref (jlist->priv->pconnection);
 	g_array_free (jlist->priv->job_list, TRUE);
 
 	G_OBJECT_CLASS (pk_job_list_parent_class)->finalize (object);

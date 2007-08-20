@@ -35,6 +35,7 @@
 
 #include "pk-debug.h"
 #include "pk-marshal.h"
+#include "pk-connection.h"
 #include "pk-task-common.h"
 #include "pk-task-client.h"
 #include "pk-task-monitor.h"
@@ -56,6 +57,7 @@ struct PkTaskClientPrivate
 	PkTaskStatus		 last_status;
 	PkTaskMonitor		*tmonitor;
 	gboolean		 is_finished;
+	PkConnection		*pconnection;
 };
 
 typedef enum {
@@ -646,6 +648,25 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 }
 
 /**
+ * pk_task_client_connect:
+ **/
+static void
+pk_task_client_connect (PkTaskClient *tclient)
+{
+	pk_debug ("connect");
+}
+
+/**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkTaskClient *tclient)
+{
+	pk_debug ("connected=%i", connected);
+	/* do we have to requeue the action if PK exitied half way? */
+}
+
+/**
  * pk_task_client_init:
  **/
 static void
@@ -667,6 +688,14 @@ pk_task_client_init (PkTaskClient *tclient)
 		pk_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
+	}
+
+	/* watch for PackageKit on the bus, and try to connect up at start */
+	tclient->priv->pconnection = pk_connection_new ();
+	g_signal_connect (tclient->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), tclient);
+	if (pk_connection_valid (tclient->priv->pconnection)) {
+		pk_task_client_connect (tclient);
 	}
 
 	/* get a connection */
@@ -706,6 +735,7 @@ pk_task_client_finalize (GObject *object)
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (tclient->priv->proxy));
+	g_object_unref (tclient->priv->pconnection);
 
 	G_OBJECT_CLASS (pk_task_client_parent_class)->finalize (object);
 }

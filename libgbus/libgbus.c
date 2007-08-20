@@ -42,6 +42,7 @@ struct LibGBusPrivate
 	gchar			*service;
 	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
+	gboolean		 connected;
 };
 
 enum {
@@ -69,11 +70,13 @@ name_owner_changed_cb (DBusGProxy     *proxy,
 	}
 
 	if (strcmp (name, libgbus->priv->service) == 0) {
-		if (strlen (prev) != 0 && strlen (new) == 0 ) {
+		if (strlen (prev) != 0 && strlen (new) == 0 && libgbus->priv->connected == TRUE) {
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
+			libgbus->priv->connected = FALSE;
 		}
-		if (strlen (prev) == 0 && strlen (new) != 0 ) {
+		if (strlen (prev) == 0 && strlen (new) != 0 && libgbus->priv->connected == FALSE) {
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
+			libgbus->priv->connected = TRUE;
 		}
 	}
 }
@@ -129,6 +132,9 @@ libgbus_assign (LibGBus      *libgbus,
 	dbus_g_proxy_connect_signal (libgbus->priv->proxy, "NameOwnerChanged",
 				     G_CALLBACK (name_owner_changed_cb),
 				     libgbus, NULL);
+
+	/* coldplug */
+	libgbus->priv->connected = libgbus_is_connected (libgbus);
 	return TRUE;
 }
 
