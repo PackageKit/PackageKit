@@ -3,7 +3,6 @@ Order of no particular importance:
 * Add yum details script
 * Add details into the application UI
 * Only try to do actions when online (sortof done, use PkNetwork)
-* Detect killing of pk-daemon process (sortof done, use libgbus)
 * Go to refresh and update at start of session only if network is up
 * Write documentation for backend writers
 * Write documentation for UI porters
