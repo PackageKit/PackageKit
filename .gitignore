@@ -27,7 +27,6 @@ version.h
 intl
 macros
 INSTALL
-ChangeLog
 PackageKit-*.tar.gz
 PackageKit.conf
 xml-i18n-extract.in
@@ -46,3 +45,4 @@ xmldocs.make
 omf.make
 gtk-doc.make
 *~
+
