@@ -185,6 +185,23 @@ pk_task_get_deps (PkTask *task, const gchar *package)
 }
 
 /**
+ * pk_task_get_description:
+ **/
+gboolean
+pk_task_get_description (PkTask *task, const gchar *package)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* not implimented yet */
+	return FALSE;
+}
+
+/**
  * pk_task_remove_package:
  **/
 gboolean

@@ -68,6 +68,11 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_DESCRIPTION] =
+		g_signal_new ("description",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -125,6 +130,22 @@ pk_task_package (PkTask *task, guint value, const gchar *package, const gchar *s
 
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
 	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, value, package, summary);
+
+	return TRUE;
+}
+
+/**
+ * pk_task_description:
+ **/
+gboolean
+pk_task_description (PkTask *task, const gchar *package, const gchar *version,
+		     const gchar *description, const gchar *url)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	pk_debug ("emit description %s, %s, %s, %s", package, version, description, url);
+	g_signal_emit (task, task->signals [PK_TASK_DESCRIPTION], 0, package, version, description, url);
 
 	return TRUE;
 }
@@ -267,12 +288,12 @@ pk_task_clear (PkTask *task)
 }
 
 /**
- * pk_task_get_description:
+ * pk_task_get_data:
  *
  * Need to g_free
  **/
 gchar *
-pk_task_get_description (PkTask *task)
+pk_task_get_data (PkTask *task)
 {
 	return g_strdup (task->package);
 }

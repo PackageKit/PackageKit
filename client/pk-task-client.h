@@ -61,6 +61,8 @@ gboolean	 pk_task_client_find_packages		(PkTaskClient	*tclient,
 							 gboolean	 available);
 gboolean	 pk_task_client_get_deps		(PkTaskClient	*tclient,
 							 const gchar	*package);
+gboolean	 pk_task_client_get_description		(PkTaskClient	*tclient,
+							 const gchar	*package);
 gboolean	 pk_task_client_remove_package		(PkTaskClient	*tclient,
 							 const gchar	*package);
 gboolean	 pk_task_client_refresh_cache		(PkTaskClient	*tclient,

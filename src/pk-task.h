@@ -40,6 +40,7 @@ typedef enum {
 	PK_TASK_JOB_STATUS_CHANGED,
 	PK_TASK_PERCENTAGE_CHANGED,
 	PK_TASK_NO_PERCENTAGE_UPDATES,
+	PK_TASK_DESCRIPTION,
 	PK_TASK_PACKAGE,
 	PK_TASK_ERROR_CODE,
 	PK_TASK_FINISHED,
@@ -82,6 +83,8 @@ gboolean	 pk_task_refresh_cache			(PkTask		*task,
 gboolean	 pk_task_remove_package_with_deps	(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_install_package		(PkTask		*task,
+							 const gchar	*package);
+gboolean	 pk_task_get_description		(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);
 

@@ -84,6 +84,10 @@ gboolean	 pk_engine_get_deps			(PkEngine	*engine,
 							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
+gboolean	 pk_engine_get_description		(PkEngine	*engine,
+							 const gchar	*package,
+							 guint		*job,
+							 GError		**error);
 gboolean	 pk_engine_remove_package		(PkEngine	*engine,
 							 const gchar	*package,
 							 guint		*job,

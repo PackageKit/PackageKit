@@ -1,6 +1,7 @@
 Order of no particular importance:
 
-* Add Details(s=name, s=description, s=url) signal into client and server
+* Add yum details script
+* Add details into the application UI
 * Only try to do actions when online (sortof done, use PkNetwork)
 * Detect killing of pk-daemon process (sortof done, use libgbus)
 * Quit after a little inactivity - need a timeout

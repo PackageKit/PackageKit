@@ -195,7 +195,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 
 	job = pk_task_get_job (task);
 	status_text = pk_task_status_to_text (status);
-	package = pk_task_get_description (task);
+	package = pk_task_get_data (task);
 
 	pk_debug ("emitting job-status-changed job:%i, '%s', '%s'", job, status_text, package);
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text, package);
@@ -499,6 +499,34 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package,
 }
 
 /**
+ * pk_engine_get_description:
+ **/
+gboolean
+pk_engine_get_description (PkEngine *engine, const gchar *package,
+			   guint *job, GError **error)
+{
+	gboolean ret;
+	PkTask *task;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	ret = pk_task_get_description (task, package);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "operation not yet supported by backend");
+		g_object_unref (task);
+		return FALSE;
+	}
+	pk_engine_add_task (engine, task);
+	*job = pk_task_get_job (task);
+
+	return TRUE;
+}
+
+/**
  * pk_engine_remove_package:
  **/
 gboolean
@@ -617,7 +645,7 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 	}
 	pk_task_get_job_status (task, &status_enum);
 	*status = g_strdup (pk_task_status_to_text (status_enum));
-	*package = pk_task_get_description (task);
+	*package = pk_task_get_data (task);
 
 	return TRUE;
 }
@@ -699,8 +727,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
