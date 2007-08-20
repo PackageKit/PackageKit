@@ -35,6 +35,7 @@
 #include <glib/gi18n.h>
 
 #include <gtk/gtk.h>
+#include <libnotify/notify.h>
 #include <gtk/gtkstatusicon.h>
 
 #include "pk-debug.h"
@@ -212,9 +213,8 @@ pk_notify_refresh_icon (PkNotify *notify)
  * pk_notify_task_list_changed_cb:
  **/
 static void
-pk_notify_task_list_changed_cb (PkTaskList *tlist, gpointer data)
+pk_notify_task_list_changed_cb (PkTaskList *tlist, PkNotify *notify)
 {
-	PkNotify *notify = (PkNotify *) data;
 	pk_notify_refresh_icon (notify);
 	pk_notify_refresh_tooltip (notify);
 }
@@ -224,18 +224,40 @@ pk_notify_task_list_changed_cb (PkTaskList *tlist, gpointer data)
  * pk_notify_show_help_cb:
  **/
 static void
-pk_notify_show_help_cb (GtkMenuItem *item, gpointer data)
+pk_notify_show_help_cb (GtkMenuItem *item, PkNotify *notify)
 {
+	NotifyNotification *dialog;
+	const gchar *title;
+	const gchar *message;
+
 	pk_debug ("show help");
+	title = "Functionality incomplete";
+	message = "No help yet, sorry...";
+	dialog = notify_notification_new_with_status_icon (title, message, "help-browser",
+							   notify->priv->status_icon);
+	notify_notification_set_timeout (dialog, 5000);
+	notify_notification_set_urgency (dialog, NOTIFY_URGENCY_LOW);
+	notify_notification_show (dialog, NULL);
 }
 
 /**
  * pk_notify_show_preferences_cb:
  **/
 static void
-pk_notify_show_preferences_cb (GtkMenuItem *item, gpointer data)
+pk_notify_show_preferences_cb (GtkMenuItem *item, PkNotify *notify)
 {
+	NotifyNotification *dialog;
+	const gchar *title;
+	const gchar *message;
+
 	pk_debug ("show preferences");
+	title = "Functionality incomplete";
+	message = "No preferences yet, sorry...";
+	dialog = notify_notification_new_with_status_icon (title, message, "help-browser",
+							   notify->priv->status_icon);
+	notify_notification_set_timeout (dialog, 5000);
+	notify_notification_set_urgency (dialog, NOTIFY_URGENCY_LOW);
+	notify_notification_show (dialog, NULL);
 }
 
 /**
@@ -361,6 +383,25 @@ pk_notify_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, gpointer dat
 }
 
 /**
+ * pk_notify_not_supported:
+ **/
+static void
+pk_notify_not_supported (PkNotify *notify, const gchar *title)
+{
+	NotifyNotification *dialog;
+	const gchar *message;
+
+	pk_debug ("not_supported");
+	message = "The action could not be completed due to the backend refusing the command.\n"
+	          "Possible causes are an incomplete backend or other critical error.";
+	dialog = notify_notification_new_with_status_icon (title, message, "process-stop",
+							   notify->priv->status_icon);
+	notify_notification_set_timeout (dialog, 5000);
+	notify_notification_set_urgency (dialog, NOTIFY_URGENCY_LOW);
+	notify_notification_show (dialog, NULL);
+}
+
+/**
  * pk_notify_refresh_cache_cb:
  **/
 static void
@@ -378,6 +419,7 @@ pk_notify_refresh_cache_cb (GtkMenuItem *item, gpointer data)
 	if (ret == FALSE) {
 		g_object_unref (tclient);
 		pk_warning ("failed to refresh cache");
+		pk_notify_not_supported (notify, "Failed to refresh cache");
 	}
 }
 
@@ -399,6 +441,7 @@ pk_notify_update_system_cb (GtkMenuItem *item, gpointer data)
 	if (ret == FALSE) {
 		g_object_unref (tclient);
 		pk_warning ("failed to update system");
+		pk_notify_not_supported (notify, "Failed to update system");
 	}
 }
 
@@ -480,6 +523,7 @@ pk_notify_init (PkNotify *notify)
 				 G_CALLBACK (pk_notify_activate_cb),
 				 notify, 0);
 
+	notify_init ("packagekit-update-applet");
 	notify->priv->tlist = pk_task_list_new ();
 	g_signal_connect (notify->priv->tlist, "task-list-changed",
 			  G_CALLBACK (pk_notify_task_list_changed_cb), notify);
