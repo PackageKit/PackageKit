@@ -150,7 +150,9 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -189,7 +191,9 @@ pk_task_client_update_system (PkTaskClient *tclient)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -232,7 +236,9 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, guint 
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -272,7 +278,9 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -312,7 +320,9 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -352,7 +362,9 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -392,7 +404,9 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -432,7 +446,9 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {
@@ -472,7 +488,9 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
 	if (error) {
-		pk_debug ("ERROR: %s", error->message);
+		const gchar *error_name;
+		error_name = dbus_g_error_get_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
 	if (ret == FALSE) {

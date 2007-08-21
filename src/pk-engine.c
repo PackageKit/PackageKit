@@ -607,7 +607,7 @@ pk_engine_remove_package_with_deps (PkEngine *engine, const gchar *package,
 /**
  * pk_engine_can_do_action:
  **/
-static gboolean
+static PolKitResult
 pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *action)
 {
 	PolKitResult pk_result;
@@ -616,7 +616,6 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 	PolKitCaller *pk_caller;
 	PolKitError *pk_error;
 	polkit_bool_t retval;
-	gboolean allowed;
 	DBusConnection *connection;
 	DBusError dbus_error;
 
@@ -654,14 +653,13 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 
 	pk_result = polkit_context_can_caller_do_action (pk_context, pk_action, pk_caller);
 	pk_warning ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
-	allowed = (pk_result == POLKIT_RESULT_YES);
 
 	polkit_action_unref (pk_action);
 	polkit_caller_unref (pk_caller);
 
 	/* TODO: move this to module_init */
 	polkit_context_unref (pk_context);
-	return allowed;
+	return pk_result;
 }
 
 /**
@@ -677,18 +675,19 @@ pk_engine_install_package (PkEngine *engine, const gchar *package,
 	guint job;
 	PkTask *task;
 	GError *error;
-	gboolean allowed;
+	PolKitResult pk_result;
 	const gchar *dbus_name;
+	const gchar *action;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	dbus_name = dbus_g_method_get_sender (context);
-	allowed = pk_engine_can_do_action (engine, dbus_name,
-					   "org.freedesktop.packagekit.install");
-	if (allowed == FALSE) {
+	action = "org.freedesktop.packagekit.install";
+	pk_result = pk_engine_can_do_action (engine, dbus_name, action);
+	if (pk_result != POLKIT_RESULT_YES) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
-				     "refused");
+				     "%s %s", action, polkit_result_to_string_representation (pk_result));
 		dbus_g_method_return_error (context, error);
 		return;
 	}

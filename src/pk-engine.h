@@ -62,7 +62,6 @@ typedef enum
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
-
 GQuark		 pk_engine_error_quark			(void);
 GType		 pk_engine_error_get_type		(void);
 GType		 pk_engine_get_type		  	(void);
