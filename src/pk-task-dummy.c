@@ -67,6 +67,8 @@ pk_task_get_updates (PkTask *task)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_package (task, 0, "powertop", "Power utility");
+	pk_task_package (task, 1, "kernel", "Linux kernel");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
 }
