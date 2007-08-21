@@ -60,6 +60,7 @@ struct PkTaskClientPrivate
 	PkConnection		*pconnection;
 	PkPolkitClient		*polkit;
 	gboolean		 is_finished;
+	GPtrArray		*package_items;
 };
 
 typedef enum {
@@ -765,6 +766,7 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv->job = 0;
 	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
 	tclient->priv->is_finished = FALSE;
+	tclient->priv->package_items = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
 	tclient->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -815,6 +817,7 @@ static void
 pk_task_client_finalize (GObject *object)
 {
 	PkTaskClient *tclient;
+	PkTaskClientPackageItem *item;
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (object));
 	tclient = PK_TASK_CLIENT (object);
@@ -824,6 +827,16 @@ pk_task_client_finalize (GObject *object)
 	g_object_unref (G_OBJECT (tclient->priv->proxy));
 	g_object_unref (tclient->priv->pconnection);
 	g_object_unref (tclient->priv->polkit);
+
+	/* removed any cached packages */
+	while (tclient->priv->package_items->len > 0) {
+		item = g_ptr_array_index (tclient->priv->package_items, 0);
+		g_free (item->package);
+		g_free (item->summary);
+		g_free (item);
+		g_ptr_array_remove_index_fast (tclient->priv->package_items, 0);
+	}
+	g_ptr_array_free (tclient->priv->package_items);
 
 	G_OBJECT_CLASS (pk_task_client_parent_class)->finalize (object);
 }

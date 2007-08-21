@@ -44,8 +44,16 @@ typedef struct
 
 typedef struct
 {
-	GObjectClass	parent_class;
+	GObjectClass		 parent_class;
 } PkTaskClientClass;
+
+/* used if we are collecting packages sync */
+typedef struct
+{
+	guint			 value;
+	gchar			*package;
+	gchar			*summary;
+} PkTaskClientPackageItem;
 
 GType		 pk_task_client_get_type		(void);
 PkTaskClient	*pk_task_client_new			(void);
