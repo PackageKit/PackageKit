@@ -777,6 +777,13 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	g_return_val_if_fail (engine != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
 
+	/* check for jobs running - a job that takes a *long* time might not
+	 * give sufficient percentage updates to not be marked as idle */
+	if (engine->priv->array->len != 0) {
+		pk_debug ("engine idle zero as jobs in progress");
+		return 0;
+	}
+
 	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
 	pk_debug ("engine idle=%i", idle);
 	return idle;
