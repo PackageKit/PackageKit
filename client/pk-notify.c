@@ -44,6 +44,7 @@
 #include "pk-task-client.h"
 #include "pk-task-common.h"
 #include "pk-task-list.h"
+#include "pk-connection.h"
 
 static void     pk_notify_class_init	(PkNotifyClass *klass);
 static void     pk_notify_init		(PkNotify      *notify);
@@ -55,6 +56,7 @@ static void     pk_notify_finalize	(GObject       *object);
 struct PkNotifyPrivate
 {
 	GtkStatusIcon		*status_icon;
+	PkConnection		*pconnection;
 	PkTaskList		*tlist;
 };
 
@@ -539,6 +541,21 @@ pk_notify_activate_cb (GtkStatusIcon *status_icon,
 }
 
 /**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkNotify *notify)
+{
+	pk_debug ("connected=%i", connected);
+	if (connected == TRUE) {
+		pk_notify_refresh_icon (notify);
+		pk_notify_refresh_tooltip (notify);
+	} else {
+		pk_notify_set_icon (notify, NULL);
+	}
+}
+
+/**
  * pk_notify_init:
  * @notify: This class instance
  **/
@@ -563,8 +580,13 @@ pk_notify_init (PkNotify *notify)
 			  G_CALLBACK (pk_notify_task_list_changed_cb), notify);
 	g_signal_connect (notify->priv->tlist, "task-list-finished",
 			  G_CALLBACK (pk_notify_task_list_finished_cb), notify);
-	pk_notify_refresh_icon (notify);
-	pk_notify_refresh_tooltip (notify);
+
+	notify->priv->pconnection = pk_connection_new ();
+	g_signal_connect (notify->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), notify);
+	if (pk_connection_valid (notify->priv->pconnection)) {
+		pk_connection_changed_cb (notify->priv->pconnection, TRUE, notify);
+	}
 }
 
 /**
@@ -584,6 +606,7 @@ pk_notify_finalize (GObject *object)
 	g_return_if_fail (notify->priv != NULL);
 	g_object_unref (notify->priv->status_icon);
 	g_object_unref (notify->priv->tlist);
+	g_object_unref (notify->priv->pconnection);
 
 	G_OBJECT_CLASS (pk_notify_parent_class)->finalize (object);
 }
