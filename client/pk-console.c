@@ -148,6 +148,29 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 }
 
 /**
+ * pk_console_tidy_up_sync:
+ **/
+static void
+pk_console_tidy_up_sync (PkTaskClient *tclient)
+{
+	PkTaskClientPackageItem *item;
+	GPtrArray *packages;
+	guint i;
+	guint length;
+	gboolean sync;
+
+	sync = pk_task_client_get_sync (tclient);
+	if (sync == TRUE) {
+		packages = pk_task_client_get_cached_packages (tclient);
+		length = packages->len;
+		for (i=0; i<length; i++) {
+			item = g_ptr_array_index (packages, i);
+			pk_console_package_cb (tclient, item->value, item->package, item->summary, NULL);
+		}
+	}
+}
+
+/**
  * main:
  **/
 int
@@ -197,6 +220,10 @@ main (int argc, char *argv[])
 	while (array->len > 0) {
 		pk_console_parse_multiple_commands (tclient, array);
 	}
+
+	/* if we are sync then print the package lists */
+	pk_console_tidy_up_sync (tclient);
+
 	g_ptr_array_free (array, TRUE);
 	g_object_unref (tclient);
 
