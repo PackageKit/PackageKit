@@ -125,7 +125,7 @@ pk_notify_refresh_tooltip (PkNotify *notify)
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (array, i);
 		localised_status = pk_task_status_to_localised_text (item->status);
-		if (item->package == NULL && strlen (item->package) > 0) {
+		if (item->package == NULL || strlen (item->package) == 0) {
 			g_string_append_printf (status, "%s\n", localised_status);
 		} else {
 			g_string_append_printf (status, "%s: %s\n", localised_status, item->package);
