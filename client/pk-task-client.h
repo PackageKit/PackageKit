@@ -52,6 +52,7 @@ PkTaskClient	*pk_task_client_new			(void);
 
 gboolean	 pk_task_client_set_sync		(PkTaskClient	*tclient,
 							 gboolean	 is_sync);
+gboolean	 pk_task_client_get_sync		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_get_updates		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_update_system		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_find_packages		(PkTaskClient	*tclient,

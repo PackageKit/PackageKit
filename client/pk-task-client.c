@@ -90,6 +90,18 @@ pk_task_client_set_sync (PkTaskClient *tclient, gboolean is_sync)
 }
 
 /**
+ * pk_task_client_get_sync:
+ **/
+gboolean
+pk_task_client_get_sync (PkTaskClient *tclient)
+{
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	return tclient->priv->is_sync;
+}
+
+/**
  * pk_task_client_wait_if_sync:
  **/
 static gboolean
