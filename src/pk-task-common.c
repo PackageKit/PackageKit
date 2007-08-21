@@ -33,7 +33,7 @@
  * pk_task_filter_package_name:
  **/
 gboolean
-pk_task_filter_package_name (PkTask *task, gchar *package)
+pk_task_filter_package_name (PkTask *task, const gchar *package)
 {
 	if (strstr (package, "-debuginfo") != NULL) {
 		return FALSE;
