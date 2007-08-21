@@ -103,6 +103,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_DENIED, "PermissionDenied"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -615,6 +616,7 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 	PolKitCaller *pk_caller;
 	PolKitError *pk_error;
 	polkit_bool_t retval;
+	gboolean allowed;
 	DBusConnection *connection;
 	DBusError dbus_error;
 
@@ -652,13 +654,14 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 
 	pk_result = polkit_context_can_caller_do_action (pk_context, pk_action, pk_caller);
 	pk_warning ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
+	allowed = (pk_result == POLKIT_RESULT_YES);
 
 	polkit_action_unref (pk_action);
 	polkit_caller_unref (pk_caller);
 
 	/* TODO: move this to module_init */
 	polkit_context_unref (pk_context);
-	return TRUE;
+	return allowed;
 }
 
 /**
@@ -683,13 +686,19 @@ pk_engine_install_package (PkEngine *engine, const gchar *package,
 	dbus_name = dbus_g_method_get_sender (context);
 	allowed = pk_engine_can_do_action (engine, dbus_name,
 					   "org.freedesktop.packagekit.install");
+	if (allowed == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
+				     "refused");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_install_package (task, package);
 	if (ret == FALSE) {
-		g_set_error (&error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "operation not yet supported by backend");
 		g_object_unref (task);
 		dbus_g_method_return_error (context, error);
 		return;
