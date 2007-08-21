@@ -19,6 +19,7 @@ EXTRA_DIST =						\
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(POLKIT_CFLAGS)				\
 	$(NM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -71,6 +72,7 @@ packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(POLKIT_LIBS)					\
 	$(NULL)
 
 BUILT_SOURCES = 					\

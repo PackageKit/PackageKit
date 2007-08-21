@@ -2,7 +2,7 @@ Order of no particular importance:
 
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add yum details script
-* Add PolicyKit server bits
+* Add other PolicyKit server bits, and throw the correct errors
 * Add policykit application UI for the session
 * Add details into the application UI
 * Only try to do actions when online (sortof done, use PkNetwork)

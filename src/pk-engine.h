@@ -100,9 +100,9 @@ gboolean	 pk_engine_remove_package_with_deps	(PkEngine	*engine,
 							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_install_package		(PkEngine	*engine,
+void		 pk_engine_install_package		(PkEngine	*engine,
 							 const gchar	*package,
-							 guint		*job,
+							 DBusGMethodInvocation *context,
 							 GError		**error);
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
 							 GArray		**job_list,

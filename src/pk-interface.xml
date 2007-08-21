@@ -39,6 +39,7 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="InstallPackage">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>

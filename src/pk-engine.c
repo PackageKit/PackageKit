@@ -36,6 +36,8 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <polkit/polkit.h>
+#include <polkit-dbus/polkit-dbus.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
@@ -602,31 +604,99 @@ pk_engine_remove_package_with_deps (PkEngine *engine, const gchar *package,
 }
 
 /**
- * pk_engine_install_package:
+ * pk_engine_can_do_action:
  **/
-gboolean
+static gboolean
+pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *action)
+{
+	PolKitResult pk_result;
+	PolKitContext *pk_context;
+	PolKitAction *pk_action;
+	PolKitCaller *pk_caller;
+	PolKitError *pk_error;
+	polkit_bool_t retval;
+	DBusConnection *connection;
+	DBusError dbus_error;
+
+	/* TODO: move this to module_init */
+	/* get bus */
+	dbus_error_init (&dbus_error);
+	connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
+	if (connection == NULL) {
+		pk_error ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+	}
+
+	/* TODO: move this to module_init */
+	/* get context */
+	pk_context = polkit_context_new ();
+	pk_error = NULL;
+	retval = polkit_context_init (pk_context, &pk_error);
+	if (retval == FALSE) {
+		pk_error ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
+		polkit_error_free (pk_error);
+	}
+
+	/* set action */
+	pk_action = polkit_action_new ();
+	polkit_action_set_action_id (pk_action, action);
+
+	/* set caller */
+	pk_debug ("using caller %s", dbus_name);
+	pk_caller = polkit_caller_new_from_dbus_name (connection, dbus_name, &dbus_error);
+	if (pk_caller == NULL) {
+		if (dbus_error_is_set (&dbus_error)) {
+			pk_error ("error: polkit_caller_new_from_dbus_name(): %s: %s\n", 
+				  dbus_error.name, dbus_error.message);
+		}
+	}
+
+	pk_result = polkit_context_can_caller_do_action (pk_context, pk_action, pk_caller);
+	pk_warning ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
+
+	polkit_action_unref (pk_action);
+	polkit_caller_unref (pk_caller);
+
+	/* TODO: move this to module_init */
+	polkit_context_unref (pk_context);
+	return TRUE;
+}
+
+/**
+ * pk_engine_install_package:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
 pk_engine_install_package (PkEngine *engine, const gchar *package,
-			   guint *job, GError **error)
+			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
+	guint job;
 	PkTask *task;
+	GError *error;
+	gboolean allowed;
+	const gchar *dbus_name;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	dbus_name = dbus_g_method_get_sender (context);
+	allowed = pk_engine_can_do_action (engine, dbus_name,
+					   "org.freedesktop.packagekit.install");
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_install_package (task, package);
 	if (ret == FALSE) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+		g_set_error (&error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");
 		g_object_unref (task);
-		return FALSE;
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
-
-	return TRUE;
+	job = pk_task_get_job (task);
+	dbus_g_method_return (context, job);
 }
 
 /**
