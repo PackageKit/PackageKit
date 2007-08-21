@@ -62,6 +62,8 @@ pkcon_SOURCES =						\
 	pk-task-monitor.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
+	pk-polkit-client.c				\
+	pk-polkit-client.h				\
 	$(NULL)
 
 pkcon_LDADD =						\
@@ -88,6 +90,8 @@ pkmon_SOURCES =						\
 	pk-task-common.h				\
 	pk-task-utils.h					\
 	pk-task-utils.c					\
+	pk-polkit-client.c				\
+	pk-polkit-client.h				\
 	pk-job-list.c					\
 	pk-job-list.h					\
 	$(NULL)
@@ -118,6 +122,8 @@ pk_update_icon_SOURCES =				\
 	pk-task-utils.c					\
 	pk-job-list.c					\
 	pk-job-list.h					\
+	pk-polkit-client.c				\
+	pk-polkit-client.h				\
 	pk-notify.c					\
 	pk-notify.h					\
 	$(NULL)
@@ -148,6 +154,8 @@ pk_application_SOURCES =				\
 	pk-task-monitor.h				\
 	pk-task-client.c				\
 	pk-task-client.h				\
+	pk-polkit-client.c				\
+	pk-polkit-client.h				\
 	$(NULL)
 
 pk_application_LDADD =					\
