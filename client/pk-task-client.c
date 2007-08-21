@@ -462,6 +462,104 @@ pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *pac
 	return TRUE;
 }
 
+static gboolean
+attempt_to_gain_privilege (const char *error_detail)
+{
+	const gchar *pk_action;
+	const gchar *pk_result;
+	gchar **tokens;
+	gboolean ret;
+	DBusGConnection *session_bus;
+	DBusGProxy *polkit_gnome_proxy;
+	GError *error = NULL;
+	gboolean gained_privilege;
+
+	ret = FALSE;
+	tokens = NULL;
+	polkit_gnome_proxy = NULL;
+
+	tokens = g_strsplit (error_detail, " ", 0);
+	if (tokens == NULL) {
+		goto out;
+	}
+	if (g_strv_length (tokens) < 2) {
+		goto out;
+	}
+	pk_action = tokens[0];
+	pk_result = tokens[1];
+
+	pk_debug ("pk_action='%s' pk_result='%s'", pk_action, pk_result);
+
+	session_bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error);
+	if (session_bus == NULL) {
+		pk_warning ("Caught exception '%s'", error->message);
+		g_error_free (error);
+		goto out;
+	}
+	polkit_gnome_proxy = dbus_g_proxy_new_for_name (session_bus,
+							"org.gnome.PolicyKit",	   /* bus name */
+							"/org/gnome/PolicyKit/Manager",  /* object */
+							"org.gnome.PolicyKit.Manager");  /* interface */
+	if (polkit_gnome_proxy == NULL) {
+		pk_warning ("failed to connect to PolicyKit-gnome");
+		goto out;
+	}
+
+	/* now use PolicyKit-gnome to bring up an auth dialog (we
+	 * don't have any windows so set the XID to "null") */
+	if (!dbus_g_proxy_call_with_timeout (polkit_gnome_proxy,
+					     "ShowDialog",
+					     INT_MAX,
+					     &error,
+					     /* parameters: */
+					     G_TYPE_STRING, pk_action,      /* action_id */
+					     G_TYPE_UINT, 0,		/* X11 window ID */
+					     G_TYPE_INVALID,
+					     /* return values: */
+					     G_TYPE_BOOLEAN, &gained_privilege,
+					     G_TYPE_INVALID)) {
+		pk_warning ("Caught exception '%s'", error->message);
+		g_error_free (error);
+		goto out;
+	}
+
+	ret = gained_privilege;
+	pk_debug ("gained privilege = %d", gained_privilege);
+
+out:
+	if (polkit_gnome_proxy != NULL)
+		g_object_unref (polkit_gnome_proxy);
+	if (tokens != NULL)
+		g_strfreev (tokens);
+
+	return ret;
+}
+
+/**
+ * pk_task_client_install_package_dbus:
+ **/
+gboolean
+pk_task_client_install_package_dbus (PkTaskClient *tclient, const gchar *package, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "InstallPackage", error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("InstallPackage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
 /**
  * pk_task_client_install_package:
  **/
@@ -469,6 +567,7 @@ gboolean
 pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 {
 	gboolean ret;
+	const gchar *error_name;
 	GError *error;
 
 	g_return_val_if_fail (tclient != NULL, FALSE);
@@ -481,23 +580,20 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 	}
 	tclient->priv->assigned = TRUE;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "InstallPackage", &error,
-				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
-				 G_TYPE_INVALID);
-	if (error) {
-		const gchar *error_name;
+	ret = pk_task_client_install_package_dbus (tclient, package, &error);
+	if (ret == FALSE) {
 		error_name = dbus_g_error_get_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		if (strcmp (error_name, "org.freedesktop.PackageKit.RefusedByPolicy") == 0) {
+			gboolean ret = attempt_to_gain_privilege (error->message);
+			pk_warning ("now=%i", ret);
+		}
 		g_error_free (error);
+
+		ret = pk_task_client_install_package_dbus (tclient, package, &error);
+		pk_error ("now2=%i", ret);
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("InstallPackage failed!");
-		return FALSE;
-	}
+
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 

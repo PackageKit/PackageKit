@@ -657,7 +657,7 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 	polkit_action_unref (pk_action);
 	polkit_caller_unref (pk_caller);
 
-	/* TODO: move this to module_init */
+	/* TODO: move this to module_finalise */
 	polkit_context_unref (pk_context);
 	return pk_result;
 }
