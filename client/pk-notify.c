@@ -111,6 +111,7 @@ pk_notify_refresh_tooltip (PkNotify *notify)
 	guint length;
 	GPtrArray *array;
 	GString *status;
+	const gchar *localised_status;
 
 	array = pk_task_list_get_latest	(notify->priv->tlist);
 
@@ -123,10 +124,11 @@ pk_notify_refresh_tooltip (PkNotify *notify)
 	status = g_string_new ("");
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (array, i);
-		if (item->package == NULL) {
-			g_string_append_printf (status, "%s\n", pk_task_status_to_text (item->status));
+		localised_status = pk_task_status_to_localised_text (item->status);
+		if (item->package == NULL && strlen (item->package) > 0) {
+			g_string_append_printf (status, "%s\n", localised_status);
 		} else {
-			g_string_append_printf (status, "%s: %s\n", pk_task_status_to_localised_text (item->status), item->package);
+			g_string_append_printf (status, "%s: %s\n", localised_status, item->package);
 		}
 	}
 	if (status->len == 0) {

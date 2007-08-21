@@ -1,5 +1,6 @@
 Order of no particular importance:
 
+* Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add yum details script
 * Add details into the application UI
 * Only try to do actions when online (sortof done, use PkNetwork)

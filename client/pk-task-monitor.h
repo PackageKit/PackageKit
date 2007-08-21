@@ -52,7 +52,7 @@ PkTaskMonitor	*pk_task_monitor_new			(void);
 
 gboolean	 pk_task_monitor_set_job		(PkTaskMonitor	*tmonitor,
 							 guint		 job);
-guint		 pk_task_monitor_gset_job		(PkTaskMonitor	*tmonitor);
+guint		 pk_task_monitor_get_job		(PkTaskMonitor	*tmonitor);
 gboolean	 pk_task_monitor_get_status		(PkTaskMonitor	*tmonitor,
 							 PkTaskStatus	*status,
 							 gchar		**package);

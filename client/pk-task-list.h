@@ -23,7 +23,7 @@
 #define __PK_TASK_LIST_H
 
 #include <glib-object.h>
-#include "pk-task-client.h"
+#include "pk-task-monitor.h"
 #include "pk-task-utils.h"
 
 G_BEGIN_DECLS
@@ -42,7 +42,8 @@ typedef struct
 	guint			 job;
 	PkTaskStatus		 status;
 	gchar			*package;
-	PkTaskClient		*client;
+	PkTaskMonitor		*monitor;
+	gboolean		 valid;
 } PkTaskListItem;
 
 typedef struct

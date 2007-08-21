@@ -90,14 +90,47 @@ pk_task_list_print (PkTaskList *tlist)
 }
 
 /**
+ * pk_task_list_find_existing_job:
+ **/
+static PkTaskListItem *
+pk_task_list_find_existing_job (PkTaskList *tlist, guint job)
+{
+	guint i;
+	guint length;
+	PkTaskListItem *item;
+
+	length = tlist->priv->task_list->len;
+	/* mark previous tasks as non-valid */
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (tlist->priv->task_list, i);
+		if (item->job == job) {
+			return item;
+		}
+	}
+	return NULL;
+}
+
+/**
  * pk_task_list_job_status_changed_cb:
  **/
 static void
-pk_task_list_job_status_changed_cb (PkTaskClient *tclient, PkTaskStatus	status, gpointer data)
+pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkTaskStatus status, PkTaskList *tlist)
 {
-	PkTaskList *tlist = (PkTaskList *) data;
-	pk_debug ("%s", status);
-	g_error ("moo %p", tlist);
+	guint job;
+	PkTaskListItem *item;
+
+	g_return_if_fail (tlist != NULL);
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+
+	job = pk_task_monitor_get_job (tmonitor);
+	pk_debug ("job %i is now %i", job, status);
+
+	/* get correct item */
+	item = pk_task_list_find_existing_job (tlist, job);
+	item->status = status;
+
+	pk_debug ("emit task-list-changed");
+	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
 }
 
 /**
@@ -117,33 +150,52 @@ pk_task_list_refresh (PkTaskList *tlist)
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
-	//clear array:TODO leak?
-	g_ptr_array_set_size (tlist->priv->task_list, 0);
-
 	/* get the latest job list */
 	array = pk_job_list_get_latest (tlist->priv->job_list);
+
+	/* mark previous tasks as non-valid */
+	length = tlist->priv->task_list->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (tlist->priv->task_list, i);
+		item->valid = FALSE;
+	}
 
 	/* copy tasks */
 	length = array->len;
 	for (i=0; i<length; i++) {
 		job = g_array_index (array, guint, i);
-		item = g_new0 (PkTaskListItem, 1);
-		item->job = job;
-		item->client = pk_task_client_new ();
-		g_signal_connect (item->client, "job-status-changed",
-				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-//		g_signal_connect (item->client, "finished",
-//				  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-		PkTaskMonitor *tmonitor;
-		tmonitor = pk_task_monitor_new ();
-		pk_task_monitor_set_job (tmonitor, job);
-		pk_task_monitor_get_status (tmonitor, &item->status, &item->package);
-		g_object_unref (tmonitor);
 
-//		pk_task_client_get_job_status (item->client, job, &item->status, &item->package);
-		g_object_unref (item->client);
-		g_ptr_array_add (tlist->priv->task_list, item);
+		item = pk_task_list_find_existing_job (tlist, job);
+		if (item == NULL) {
+			pk_debug ("new job, have to create %i", job);
+			item = g_new0 (PkTaskListItem, 1);
+			item->job = job;
+			item->monitor = pk_task_monitor_new ();
+			g_signal_connect (item->monitor, "job-status-changed",
+					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+			pk_task_monitor_set_job (item->monitor, job);
+			pk_task_monitor_get_status (item->monitor, &item->status, &item->package);
+
+			/* add to watched array */
+			g_ptr_array_add (tlist->priv->task_list, item);
+		}
+
+		/* mark as present so we don't garbage collect it */
+		item->valid = TRUE;
 	}
+
+	/* find and remove non-valid watches */
+	for (i=0; i<tlist->priv->task_list->len; i++) {
+		item = g_ptr_array_index (tlist->priv->task_list, i);
+		if (item->valid == FALSE) {
+			pk_debug ("remove %i", item->job);
+			g_object_unref (item->monitor);
+			g_free (item->package);
+			g_ptr_array_remove (tlist->priv->task_list, item);
+			g_free (item);
+		}
+	}
+
 	return TRUE;
 }
 

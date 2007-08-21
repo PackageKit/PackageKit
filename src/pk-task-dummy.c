@@ -213,6 +213,7 @@ pk_task_remove_package (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
+	task->package = strdup (package);
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
 	pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "No network connection available");
 	pk_task_finished (task, PK_TASK_EXIT_FAILED);
@@ -233,6 +234,7 @@ pk_task_remove_package_with_deps (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
+	task->package = strdup (package);
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
@@ -268,6 +270,7 @@ pk_task_install_package (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
+	task->package = strdup (package);
 	pk_task_change_job_status (task, PK_TASK_STATUS_DOWNLOAD);
 	task->priv->progress_percentage = 0;
 	g_timeout_add (1000, pk_task_install_timeout, task);
