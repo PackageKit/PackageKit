@@ -169,6 +169,30 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_update_system_action:
+ **/
+gboolean
+pk_task_client_update_system_action (PkTaskClient *tclient, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "UpdateSystem", error,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("UpdateSystem failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_client_update_system:
  **/
 gboolean
@@ -187,24 +211,30 @@ pk_task_client_update_system (PkTaskClient *tclient)
 	}
 	tclient->priv->assigned = TRUE;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "UpdateSystem", &error,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
-				 G_TYPE_INVALID);
-	if (error) {
-		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
+	/* hopefully do the operation first time */
+	ret = pk_task_client_update_system_action (tclient, &error);
+
+	/* we were refused by policy then try to get auth */
 	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("UpdateSystem failed!");
-		return FALSE;
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (tclient->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_task_client_update_system_action (tclient, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
 	}
+
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
-	pk_task_client_wait_if_sync (tclient);
+	if (ret == TRUE) {
+		pk_task_client_wait_if_sync (tclient);
+	}
 
 	return TRUE;
 }
@@ -340,6 +370,33 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 }
 
 /**
+ * pk_task_client_remove_package_action:
+ **/
+gboolean
+pk_task_client_remove_package_action (PkTaskClient *tclient, const gchar *package,
+				      gboolean allow_deps, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackage", error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_BOOLEAN, allow_deps,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RemovePackage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_client_remove_package:
  **/
 gboolean
@@ -358,26 +415,30 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package, gboo
 	}
 	tclient->priv->assigned = TRUE;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackage", &error,
-				 G_TYPE_STRING, package,
-				 G_TYPE_BOOLEAN, allow_deps,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
-				 G_TYPE_INVALID);
-	if (error) {
-		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
+	/* hopefully do the operation first time */
+	ret = pk_task_client_remove_package_action (tclient, package, allow_deps, &error);
+
+	/* we were refused by policy then try to get auth */
 	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RemovePackage failed!");
-		return FALSE;
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (tclient->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_task_client_remove_package_action (tclient, package, allow_deps, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
 	}
+
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
-	pk_task_client_wait_if_sync (tclient);
+	if (ret == TRUE) {
+		pk_task_client_wait_if_sync (tclient);
+	}
 
 	return TRUE;
 }
