@@ -836,7 +836,7 @@ pk_task_client_finalize (GObject *object)
 		g_free (item);
 		g_ptr_array_remove_index_fast (tclient->priv->package_items, 0);
 	}
-	g_ptr_array_free (tclient->priv->package_items);
+	g_ptr_array_free (tclient->priv->package_items, TRUE);
 
 	G_OBJECT_CLASS (pk_task_client_parent_class)->finalize (object);
 }
