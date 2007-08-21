@@ -328,11 +328,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkTaskM
 {
 	pk_debug ("connected=%i", connected);
 
-	/* if PK re-started mid-transaction then forcibly end the job */
-	if (connected == FALSE) {
-		pk_debug ("emit finished %i", exit);
-		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, PK_TASK_EXIT_FAILED);
-	}
+	/* TODO: if PK re-started mid-transaction then show a big fat warning */
 }
 
 /**

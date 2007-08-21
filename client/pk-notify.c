@@ -221,6 +221,38 @@ pk_notify_task_list_changed_cb (PkTaskList *tlist, PkNotify *notify)
 	pk_notify_refresh_tooltip (notify);
 }
 
+/**
+ * pk_notify_task_list_finished_cb:
+ **/
+static void
+pk_notify_task_list_finished_cb (PkTaskList *tlist, PkTaskStatus status, const gchar *package, PkNotify *notify)
+{
+	NotifyNotification *dialog;
+	const gchar *title;
+	gchar *message = NULL;
+
+	pk_debug ("status=%i, package=%s", status, package);
+
+	if (status == PK_TASK_STATUS_REMOVE) {
+		message = g_strdup_printf ("Package '%s' has been removed", package);
+	} else if (status == PK_TASK_STATUS_INSTALL) {
+		message = g_strdup_printf ("Package '%s' has been installed", package);
+	} else if (status == PK_TASK_STATUS_UPDATE) {
+		message = g_strdup ("System has been updated");
+	}
+
+	/* nothing of interest */
+	if (message == NULL) {
+		return;
+	}
+	title = "Task completed";
+	dialog = notify_notification_new_with_status_icon (title, message, "help-browser",
+							   notify->priv->status_icon);
+	notify_notification_set_timeout (dialog, 5000);
+	notify_notification_set_urgency (dialog, NOTIFY_URGENCY_LOW);
+	notify_notification_show (dialog, NULL);
+	g_free (message);
+}
 
 /**
  * pk_notify_show_help_cb:
@@ -529,6 +561,8 @@ pk_notify_init (PkNotify *notify)
 	notify->priv->tlist = pk_task_list_new ();
 	g_signal_connect (notify->priv->tlist, "task-list-changed",
 			  G_CALLBACK (pk_notify_task_list_changed_cb), notify);
+	g_signal_connect (notify->priv->tlist, "task-list-finished",
+			  G_CALLBACK (pk_notify_task_list_finished_cb), notify);
 	pk_notify_refresh_icon (notify);
 	pk_notify_refresh_tooltip (notify);
 }

@@ -97,9 +97,7 @@ pk_task_status_from_text (const gchar *status)
 	if (strcmp (status, "update") == 0) {
 		return PK_TASK_STATUS_UPDATE;
 	}
-	if (strcmp (status, "exit") == 0) {
-		return PK_TASK_STATUS_EXIT;
-	}
+	pk_warning ("fall through to INVALID '%s'", status);
 	return PK_TASK_STATUS_INVALID;
 }
 
@@ -128,9 +126,6 @@ pk_task_status_to_text (PkTaskStatus status)
 		break;
 	case PK_TASK_STATUS_UPDATE:
 		text = "update";
-		break;
-	case PK_TASK_STATUS_EXIT:
-		text = "exit";
 		break;
 	default:
 		text = "invalid";
@@ -163,9 +158,6 @@ pk_task_status_to_localised_text (PkTaskStatus status)
 		break;
 	case PK_TASK_STATUS_UPDATE:
 		text = "Updating";
-		break;
-	case PK_TASK_STATUS_EXIT:
-		text = "Exiting";
 		break;
 	default:
 		text = "Invalid";

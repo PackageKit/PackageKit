@@ -208,7 +208,6 @@ pk_task_finished (PkTask *task, PkTaskExit exit)
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to idle loop", task);
 	task->exit = exit;
-	pk_task_change_job_status (task, PK_TASK_STATUS_EXIT);
 	g_idle_add (pk_task_finished_idle, task);
 	return TRUE;
 }

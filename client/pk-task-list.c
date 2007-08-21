@@ -152,7 +152,7 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, PkTaskLi
 	/* get correct item */
 	item = pk_task_list_find_existing_job (tlist, job);
 
-	pk_error ("emit task-list-finished %i, %s", item->status, item->package);
+	pk_debug ("emit task-list-finished %i, %s", item->status, item->package);
 	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package);
 }
 
@@ -268,7 +268,7 @@ pk_task_list_class_init (PkTaskListClass *klass)
 		g_signal_new ("task-list-finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 0);
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
 }
