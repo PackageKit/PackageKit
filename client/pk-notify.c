@@ -51,13 +51,21 @@ static void     pk_notify_init		(PkNotify      *notify);
 static void     pk_notify_finalize	(GObject       *object);
 
 #define PK_NOTIFY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NOTIFY, PkNotifyPrivate))
-#define PK_NOTIFY_NOTHING	"system-installer" /*NULL*/
+
+#define PK_NOTIFY_ICON_STOCK	"system-installer"
+
+#define PK_NOTIFY_DELAY_REFRESH_CACHE_STARTUP	5	/* time till the first refresh */
+#define PK_NOTIFY_DELAY_REFRESH_CACHE_CHECK	60	/* if we failed the first refresh, check after this much time */
+#define PK_NOTIFY_DELAY_REFRESH_CACHE_PERIODIC	2*60*60	/* check for updates every this much time */
 
 struct PkNotifyPrivate
 {
 	GtkStatusIcon		*status_icon;
+	GtkStatusIcon		*update_icon;
 	PkConnection		*pconnection;
 	PkTaskList		*tlist;
+	gboolean		 cache_okay;
+	gboolean		 cache_update_in_progress;
 };
 
 G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
@@ -162,14 +170,14 @@ pk_notify_refresh_icon (PkNotify *notify)
 	gboolean state_download = FALSE;
 	gboolean state_query = FALSE;
 	gboolean state_refresh_cache = FALSE;
-	const gchar *icon = PK_NOTIFY_NOTHING;
+	const gchar *icon = PK_NOTIFY_ICON_STOCK;
 
 	array = pk_task_list_get_latest	(notify->priv->tlist);
 
 	length = array->len;
 	if (length == 0) {
 		pk_debug ("no activity");
-		pk_notify_set_icon (notify, PK_NOTIFY_NOTHING);
+		pk_notify_set_icon (notify, PK_NOTIFY_ICON_STOCK);
 		return TRUE;
 	}
 	for (i=0; i<length; i++) {
@@ -555,6 +563,102 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkNotif
 	}
 }
 
+static gboolean pk_notify_check_for_updates_cb (PkNotify *notify);
+
+/**
+ * pk_notify_query_updates:
+ **/
+static gboolean
+pk_notify_query_updates (PkNotify *notify)
+{
+	/* we need to do a synronous wait on the method, and catch all Package data items */
+	gtk_status_icon_set_from_icon_name (GTK_STATUS_ICON (notify->priv->update_icon), "software-update-available");
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), TRUE);
+	gtk_status_icon_set_tooltip (GTK_STATUS_ICON (notify->priv->update_icon), "No updates available");
+	return TRUE;
+}
+
+/**
+ * pk_notify_check_for_updates_cb:
+ **/
+static gboolean
+pk_notify_invalidate_cache_cb (PkNotify *notify)
+{
+	notify->priv->cache_okay = FALSE;
+	g_timeout_add_seconds (5, (GSourceFunc) pk_notify_check_for_updates_cb, notify);
+	return FALSE;
+}
+
+/**
+ * pk_notify_refresh_cache_finished_cb:
+ **/
+static void
+pk_notify_refresh_cache_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, PkNotify *notify)
+{
+	pk_debug ("finished refreshing cache :%s", pk_task_exit_to_text (exit_code));
+	if (exit_code != PK_TASK_EXIT_SUCCESS) {
+		/* we failed to get the cache */
+		notify->priv->cache_okay = FALSE;
+	} else {
+		/* stop the polling */
+		notify->priv->cache_okay = TRUE;
+
+		/* schedule the next cache reload in a few hours */
+		g_timeout_add_seconds (PK_NOTIFY_DELAY_REFRESH_CACHE_PERIODIC,
+				       (GSourceFunc) pk_notify_invalidate_cache_cb, notify);
+
+		/* now try to get updates */
+		pk_debug ("get updates");
+		pk_notify_query_updates (notify);
+	}
+	notify->priv->cache_update_in_progress = FALSE;
+}
+
+/**
+ * pk_notify_check_for_updates_cb:
+ **/
+static gboolean
+pk_notify_check_for_updates_cb (PkNotify *notify)
+{
+	gboolean ret;
+	PkTaskClient *tclient;
+	pk_debug ("refresh cache");
+
+	/* got a cache, no need to poll */
+	if (notify->priv->cache_okay == TRUE) {
+		return FALSE;
+	}
+
+	/* already in progress, but not yet certified okay */
+	if (notify->priv->cache_update_in_progress == TRUE) {
+		return TRUE;
+	}
+
+	notify->priv->cache_update_in_progress = TRUE;
+	notify->priv->cache_okay = TRUE;
+	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "finished",
+			  G_CALLBACK (pk_notify_refresh_cache_finished_cb), notify);
+	ret = pk_task_client_refresh_cache (tclient, TRUE);
+	if (ret == FALSE) {
+		g_object_unref (tclient);
+		pk_warning ("failed to refresh cache");
+		/* try again in a few minutes */
+	}
+	return TRUE;
+}
+
+/**
+ * pk_notify_check_for_updates_early_cb:
+ **/
+static gboolean
+pk_notify_check_for_updates_early_cb (PkNotify *notify)
+{
+	pk_notify_check_for_updates_cb (notify);
+	/* we don't want to do this quick timer again */
+	return FALSE;
+}
+
 /**
  * pk_notify_init:
  * @notify: This class instance
@@ -565,6 +669,10 @@ pk_notify_init (PkNotify *notify)
 	notify->priv = PK_NOTIFY_GET_PRIVATE (notify);
 
 	notify->priv->status_icon = gtk_status_icon_new ();
+	notify->priv->update_icon = gtk_status_icon_new ();
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), FALSE);
+
 	g_signal_connect_object (G_OBJECT (notify->priv->status_icon),
 				 "popup_menu",
 				 G_CALLBACK (pk_notify_popup_menu_cb),
@@ -587,6 +695,15 @@ pk_notify_init (PkNotify *notify)
 	if (pk_connection_valid (notify->priv->pconnection)) {
 		pk_connection_changed_cb (notify->priv->pconnection, TRUE, notify);
 	}
+
+	/* refresh the cache, and poll until we get a good refresh */
+	notify->priv->cache_okay = FALSE;
+	notify->priv->cache_update_in_progress = FALSE;
+	/* set up one quick (start of session) timer and one long (wait for changes timer) */
+	g_timeout_add_seconds (PK_NOTIFY_DELAY_REFRESH_CACHE_STARTUP,
+			       (GSourceFunc) pk_notify_check_for_updates_early_cb, notify);
+	g_timeout_add_seconds (PK_NOTIFY_DELAY_REFRESH_CACHE_CHECK,
+			       (GSourceFunc) pk_notify_check_for_updates_cb, notify);
 }
 
 /**
@@ -605,6 +722,7 @@ pk_notify_finalize (GObject *object)
 
 	g_return_if_fail (notify->priv != NULL);
 	g_object_unref (notify->priv->status_icon);
+	g_object_unref (notify->priv->update_icon);
 	g_object_unref (notify->priv->tlist);
 	g_object_unref (notify->priv->pconnection);
 
