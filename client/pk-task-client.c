@@ -116,8 +116,7 @@ pk_task_client_reset (PkTaskClient *tclient)
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
 	if (tclient->priv->is_finished != TRUE) {
-		pk_warning ("not exit status, cannot reset");
-		return FALSE;
+		pk_warning ("not exit status, reset might be invalid");
 	}
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;

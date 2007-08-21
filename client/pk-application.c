@@ -122,9 +122,14 @@ static void
 pk_application_install_cb (GtkWidget      *widget,
 		           PkApplication  *application)
 {
+	gboolean ret;
 	pk_debug ("install %s", application->priv->package);
-	pk_task_client_install_package (application->priv->tclient,
-					application->priv->package);
+	ret = pk_task_client_install_package (application->priv->tclient,
+					      application->priv->package);
+	/* ick, we failed so pretend we didn't do the action */
+	if (ret == FALSE) {
+		pk_task_client_reset (application->priv->tclient);
+	}
 }
 
 /**
@@ -136,10 +141,15 @@ static void
 pk_application_remove_cb (GtkWidget      *widget,
 		          PkApplication  *application)
 {
+	gboolean ret;
 	pk_debug ("remove %s", application->priv->package);
-	pk_task_client_remove_package (application->priv->tclient,
-				       application->priv->package,
-				       FALSE);
+	ret = pk_task_client_remove_package (application->priv->tclient,
+				             application->priv->package,
+				             FALSE);
+	/* ick, we failed so pretend we didn't do the action */
+	if (ret == FALSE) {
+		pk_task_client_reset (application->priv->tclient);
+	}
 }
 
 /**
