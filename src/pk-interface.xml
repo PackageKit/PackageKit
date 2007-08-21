@@ -13,6 +13,7 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="UpdateSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="FindPackages">
@@ -31,10 +32,12 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="RemovePackage">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="RemovePackageWithDeps">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>

@@ -70,9 +70,6 @@ PkEngine	*pk_engine_new				(void);
 gboolean	 pk_engine_get_updates			(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_update_system		(PkEngine	*engine,
-							 guint		*job,
-							 GError		**error);
 gboolean	 pk_engine_find_packages		(PkEngine	*engine,
 							 const gchar	*search,
 							 guint		 depth,
@@ -88,17 +85,20 @@ gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*package,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_remove_package		(PkEngine	*engine,
-							 const gchar	*package,
-							 guint		*job,
-							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
 							 gboolean	 force,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_remove_package_with_deps	(PkEngine	*engine,
+void		 pk_engine_update_system		(PkEngine	*engine,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
+void		 pk_engine_remove_package		(PkEngine	*engine,
 							 const gchar	*package,
-							 guint		*job,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
+void		 pk_engine_remove_package_with_deps	(PkEngine	*engine,
+							 const gchar	*package,
+							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_install_package		(PkEngine	*engine,
 							 const gchar	*package,

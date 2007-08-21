@@ -591,7 +591,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 		g_error_free (error);
 
 		ret = pk_task_client_install_package_dbus (tclient, package, &error);
-		pk_error ("now2=%i", ret);
+		pk_warning ("now2=%i", ret);
 	}
 
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
