@@ -120,6 +120,22 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_remove_package_items:
+ **/
+static void
+pk_task_client_remove_package_items (PkTaskClient *tclient)
+{
+	PkTaskClientPackageItem *item;
+	while (tclient->priv->package_items->len > 0) {
+		item = g_ptr_array_index (tclient->priv->package_items, 0);
+		g_free (item->package);
+		g_free (item->summary);
+		g_free (item);
+		g_ptr_array_remove_index_fast (tclient->priv->package_items, 0);
+	}
+}
+
+/**
  * pk_task_client_reset:
  **/
 gboolean
@@ -136,6 +152,7 @@ pk_task_client_reset (PkTaskClient *tclient)
 	tclient->priv->job = 0;
 	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
 	tclient->priv->is_finished = FALSE;
+	pk_task_client_remove_package_items (tclient);
 	return TRUE;
 }
 
@@ -817,7 +834,6 @@ static void
 pk_task_client_finalize (GObject *object)
 {
 	PkTaskClient *tclient;
-	PkTaskClientPackageItem *item;
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (object));
 	tclient = PK_TASK_CLIENT (object);
@@ -829,13 +845,7 @@ pk_task_client_finalize (GObject *object)
 	g_object_unref (tclient->priv->polkit);
 
 	/* removed any cached packages */
-	while (tclient->priv->package_items->len > 0) {
-		item = g_ptr_array_index (tclient->priv->package_items, 0);
-		g_free (item->package);
-		g_free (item->summary);
-		g_free (item);
-		g_ptr_array_remove_index_fast (tclient->priv->package_items, 0);
-	}
+	pk_task_client_remove_package_items (tclient);
 	g_ptr_array_free (tclient->priv->package_items, TRUE);
 
 	G_OBJECT_CLASS (pk_task_client_parent_class)->finalize (object);
