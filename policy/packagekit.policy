@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+
+<!--
+Policy definitions for PackageKit system actions.
+Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
+-->
+
+  <action id="org.freedesktop.packagekit.install">
+    <description>Install package</description>
+    <message>System policy prevents installing package</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_self</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.remove">
+    <description>Remove package</description>
+    <message>System policy prevents removing package</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.update">
+    <description>Update all packages on system</description>
+    <message>System policy prevents updating system</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+</policyconfig>
+

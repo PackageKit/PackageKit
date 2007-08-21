@@ -37,6 +37,8 @@ DBUS_REQUIRED=0.70
 LIBGLADE_REQUIRED=2.5.0
 LIBNOTIFY_REQUIRED=0.4.3
 LIBNM_REQUIRED=0.6.5
+POLKIT_DBUS_REQUIRED=0.5
+POLKIT_GRANT_REQUIRED=0.5
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -81,6 +83,16 @@ PKG_CHECK_MODULES(LIBNM, \
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
+PKG_CHECK_MODULES(POLKIT, \
+        polkit-dbus >= $POLKIT_DBUS_REQUIRED \
+        polkit-grant >= $POLKIT_GRANT_REQUIRED)
+
+AC_CHECK_PROG([POLKIT_POLICY_FILE_VALIDATE],
+              [polkit-policy-file-validate], [polkit-policy-file-validate])
+if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
+   AC_MSG_ERROR([polkit-policy-file-validate not found])
+fi
+
 dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
@@ -88,18 +100,6 @@ AC_SUBST(SYSCONFDIR, $sysconfdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 AC_SUBST(SBINDIR, $sbindir)
-
-dnl ---------------------------------------------------------------------------
-dnl - PolicyKit support?
-dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(policykit, [  --enable-policykit      support PolicyKit permissions daemon (requires polkitd)],enable_polkit=$enableval,enable_polkit=no)
-AC_MSG_CHECKING([whether to support PolicyKit])
-have_polkit=no
-if test x$enable_polkit = xyes ; then
-    have_polkit=yes
-    AC_DEFINE(HAVE_POLKIT, 1, [Define if we use PolicyKit])
-fi
-#AC_MSG_RESULT(yes)
 
 AC_ARG_WITH([packagekit_user],
 	    AS_HELP_STRING([--with-packagekit-user=<user>],
@@ -173,6 +173,7 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 libgbus/Makefile
+policy/Makefile
 src/Makefile
 client/Makefile
 helpers/Makefile
@@ -189,7 +190,6 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         Backend:                   ${with_backend}
-        PolicyKit support:         ${have_polkit}
         Self test support:         ${have_tests}
 "
 

@@ -1,4 +1,4 @@
-SUBDIRS = libgbus src client helpers
+SUBDIRS = policy libgbus src client helpers
 
 AUTOMAKE_OPTIONS = 1.7
 
