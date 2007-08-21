@@ -213,7 +213,8 @@ pk_task_client_update_system (PkTaskClient *tclient)
  * pk_task_client_find_packages:
  **/
 gboolean
-pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search, guint depth, gboolean installed, gboolean available)
+pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search,
+			      guint depth, gboolean installed, gboolean available)
 {
 	gboolean ret;
 	GError *error;
@@ -342,7 +343,7 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
  * pk_task_client_remove_package:
  **/
 gboolean
-pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
+pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package, gboolean allow_deps)
 {
 	gboolean ret;
 	GError *error;
@@ -360,6 +361,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package)
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackage", &error,
 				 G_TYPE_STRING, package,
+				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
@@ -414,48 +416,6 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
 		pk_warning ("RefreshCache failed!");
-		return FALSE;
-	}
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
-	pk_task_client_wait_if_sync (tclient);
-
-	return TRUE;
-}
-
-/**
- * pk_task_client_remove_package_with_deps:
- **/
-gboolean
-pk_task_client_remove_package_with_deps (PkTaskClient *tclient, const gchar *package)
-{
-	gboolean ret;
-	GError *error;
-
-	g_return_val_if_fail (tclient != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
-
-	/* check to see if we already have an action */
-	if (tclient->priv->assigned == TRUE) {
-		pk_warning ("Already assigned");
-		return FALSE;
-	}
-	tclient->priv->assigned = TRUE;
-
-	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "RemovePackageWithDeps", &error,
-				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
-				 G_TYPE_INVALID);
-	if (error) {
-		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RemovePackageWithDeps failed!");
 		return FALSE;
 	}
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);

@@ -116,7 +116,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package to remove");
 		} else {
-			pk_task_client_remove_package_with_deps (tclient, value);
+			pk_task_client_remove_package (tclient, value, FALSE);
 			remove_two = TRUE;
 		}
 	} else if (strcmp (mode, "debug") == 0) {

@@ -621,7 +621,7 @@ pk_engine_update_system (PkEngine *engine,
  * pk_engine_remove_package:
  **/
 void
-pk_engine_remove_package (PkEngine *engine, const gchar *package,
+pk_engine_remove_package (PkEngine *engine, const gchar *package, gboolean allow_deps,
 			  DBusGMethodInvocation *context, GError **dead_error)
 {
 	guint job;
@@ -641,45 +641,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_remove_package (task, package);
-	if (ret == FALSE) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "operation not yet supported by backend");
-		g_object_unref (task);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-	pk_engine_add_task (engine, task);
-
-	job = pk_task_get_job (task);
-	dbus_g_method_return (context, job);
-}
-
-/**
- * pk_engine_remove_package_with_deps:
- **/
-void
-pk_engine_remove_package_with_deps (PkEngine *engine, const gchar *package,
-				    DBusGMethodInvocation *context, GError **dead_error)
-{
-	guint job;
-	gboolean ret;
-	PkTask *task;
-	GError *error;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.remove", &error);
-	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* create a new task and start it */
-	task = pk_engine_new_task (engine);
-	ret = pk_task_remove_package_with_deps (task, package);
+	ret = pk_task_remove_package (task, package, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "operation not yet supported by backend");

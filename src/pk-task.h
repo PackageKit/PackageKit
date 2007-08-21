@@ -77,11 +77,10 @@ gboolean	 pk_task_find_packages			(PkTask		*task,
 gboolean	 pk_task_get_deps			(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_remove_package			(PkTask		*task,
-							 const gchar	*package);
+							 const gchar	*package,
+							 gboolean	 allow_deps);
 gboolean	 pk_task_refresh_cache			(PkTask		*task,
 							 gboolean	 force);
-gboolean	 pk_task_remove_package_with_deps	(PkTask		*task,
-							 const gchar	*package);
 gboolean	 pk_task_install_package		(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_get_description		(PkTask		*task,

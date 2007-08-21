@@ -94,10 +94,7 @@ void		 pk_engine_update_system		(PkEngine	*engine,
 							 GError		**error);
 void		 pk_engine_remove_package		(PkEngine	*engine,
 							 const gchar	*package,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
-void		 pk_engine_remove_package_with_deps	(PkEngine	*engine,
-							 const gchar	*package,
+							 gboolean	 allow_deps,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_install_package		(PkEngine	*engine,

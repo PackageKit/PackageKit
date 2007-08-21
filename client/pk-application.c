@@ -138,7 +138,8 @@ pk_application_remove_cb (GtkWidget      *widget,
 {
 	pk_debug ("remove %s", application->priv->package);
 	pk_task_client_remove_package (application->priv->tclient,
-				       application->priv->package);
+				       application->priv->package,
+				       FALSE);
 }
 
 /**
