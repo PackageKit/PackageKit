@@ -55,6 +55,7 @@ struct PkTaskListPrivate
 
 typedef enum {
 	PK_TASK_LIST_CHANGED,
+	PK_TASK_LIST_FINISHED,
 	PK_TASK_LIST_LAST_SIGNAL
 } PkSignals;
 
@@ -134,6 +135,28 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkTaskStatus status
 }
 
 /**
+ * pk_task_list_job_finished_cb:
+ **/
+static void
+pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, PkTaskList *tlist)
+{
+	guint job;
+	PkTaskListItem *item;
+
+	g_return_if_fail (tlist != NULL);
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+
+	job = pk_task_monitor_get_job (tmonitor);
+	pk_debug ("job %i exited with %i", job, exit);
+
+	/* get correct item */
+	item = pk_task_list_find_existing_job (tlist, job);
+
+	pk_error ("emit task-list-finished %i, %s", item->status, item->package);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package);
+}
+
+/**
  * pk_task_list_refresh:
  *
  * Not normally required, but force a refresh
@@ -173,6 +196,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item->monitor = pk_task_monitor_new ();
 			g_signal_connect (item->monitor, "job-status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
+			g_signal_connect (item->monitor, "finished",
+					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
 			pk_task_monitor_set_job (item->monitor, job);
 			pk_task_monitor_get_status (item->monitor, &item->status, &item->package);
 
@@ -238,6 +263,11 @@ pk_task_list_class_init (PkTaskListClass *klass)
 		g_signal_new ("task-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals [PK_TASK_LIST_FINISHED] =
+		g_signal_new ("task-list-finished",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
