@@ -120,6 +120,18 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_cached_packages:
+ **/
+GPtrArray *
+pk_task_client_get_cached_packages (PkTaskClient *tclient)
+{
+	if (tclient->priv->is_sync == FALSE) {
+		return NULL;
+	}
+	return tclient->priv->package_items;
+}
+
+/**
  * pk_task_client_remove_package_items:
  **/
 static void
@@ -682,11 +694,23 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 			   const gchar   *summary,
 			   PkTaskClient  *tclient)
 {
+	PkTaskClientPackageItem *item;
+
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	pk_debug ("emit package %i, %s, %s", value, package, summary);
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
+	/* if sync then just add results to an array */
+	if (tclient->priv->is_sync == TRUE) {
+		pk_debug ("adding to cache array package %i, %s, %s", value, package, summary);
+		item = g_new0 (PkTaskClientPackageItem, 1);
+		item->value = value;
+		item->package = g_strdup (package);
+		item->summary = g_strdup (summary);
+		g_ptr_array_add (tclient->priv->package_items, item);
+	} else {
+		pk_debug ("emit package %i, %s, %s", value, package, summary);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
+	}
 }
 
 /**
