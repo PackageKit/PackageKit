@@ -2,6 +2,9 @@ Order of no particular importance:
 
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add yum details script
+* Add PolicyKit server bits
+* Add policykit application UI for the session
+* Add policykit rules packagekit-remove packagekit-install packagekit-update
 * Add details into the application UI
 * Only try to do actions when online (sortof done, use PkNetwork)
 * Go to refresh and update at start of session only if network is up
