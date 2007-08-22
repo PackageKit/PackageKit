@@ -110,6 +110,10 @@ pk_spawn_check_child (gpointer data)
 	gchar *message_out;
 	spawn  = (PkSpawn *) data;
 
+//bytes_read = read (spawn->priv->standard_error, buffer, 1023);
+//buffer[bytes_read] = '\0';
+//g_warning ("%s", buffer);
+
 	/* read input from stderr */
 	while ((bytes_read = read (spawn->priv->standard_error, buffer, 1023)) > 0) {
 		buffer[bytes_read] = '\0';
@@ -189,7 +193,9 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->standard_out, F_SETFL, O_NONBLOCK);
 	fcntl (spawn->priv->standard_error, F_SETFL, O_NONBLOCK);
-	g_idle_add (pk_spawn_check_child, spawn);
+//	g_idle_add (pk_spawn_check_child, spawn);
+
+	g_timeout_add (250, pk_spawn_check_child, spawn);
 
 	return TRUE;
 }

@@ -58,64 +58,6 @@ static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
 
 /**
- * pk_task_get_updates:
- **/
-gboolean
-pk_task_get_updates (PkTask *task)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-
-	if (pk_task_assign (task) == FALSE) {
-		return FALSE;
-	}
-
-	/* not implimented yet */
-	return FALSE;
-}
-
-/**
- * pk_task_refresh_cache:
- **/
-gboolean
-pk_task_refresh_cache (PkTask *task, gboolean force)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-
-	if (pk_task_assign (task) == FALSE) {
-		return FALSE;
-	}
-
-	/* check network state */
-	if (pk_network_is_online (task->priv->network) == FALSE) {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
-	/* not implimented yet */
-	return FALSE;
-}
-
-/**
- * pk_task_update_system:
- **/
-gboolean
-pk_task_update_system (PkTask *task)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-
-	if (pk_task_assign (task) == FALSE) {
-		return FALSE;
-	}
-
-	/* not implimented yet */
-	return FALSE;
-}
-
-/**
  * pk_task_parse_data:
  **/
 static void
@@ -171,16 +113,99 @@ pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
 }
 
 /**
+ * pk_spawn_task_helper:
+ **/
+static void
+pk_spawn_task_helper (PkTask *task, const gchar *command)
+{
+	PkSpawn *spawn;
+	gboolean ret;
+
+	spawn = pk_spawn_new ();
+	g_signal_connect (spawn, "finished",
+			  G_CALLBACK (pk_spawn_finished_cb), task);
+	g_signal_connect (spawn, "stdout",
+			  G_CALLBACK (pk_spawn_stdout_cb), task);
+	g_signal_connect (spawn, "stderr",
+			  G_CALLBACK (pk_spawn_stderr_cb), task);
+	ret = pk_spawn_command (spawn, command);
+	if (ret == FALSE) {
+		g_warning ("spawn failed: '%s'", command);
+		g_object_unref (spawn);
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "spawn failed");
+		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	}
+}
+
+/**
+ * pk_task_get_updates:
+ **/
+gboolean
+pk_task_get_updates (PkTask *task)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* not implimented yet */
+	return FALSE;
+}
+
+/**
+ * pk_task_refresh_cache:
+ **/
+gboolean
+pk_task_refresh_cache (PkTask *task, gboolean force)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* check network state */
+	if (pk_network_is_online (task->priv->network) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+	/* easy as that */
+	pk_spawn_task_helper (task, DATADIR "/PackageKit/helpers/yum-refresh-cache.py");
+
+	return TRUE;
+}
+
+/**
+ * pk_task_update_system:
+ **/
+gboolean
+pk_task_update_system (PkTask *task)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* not implimented yet */
+	return FALSE;
+}
+
+/**
  * pk_task_find_packages:
  **/
 gboolean
 pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
-	PkSpawn *spawn;
 	gchar *command;
 	const gchar *mode = NULL;
 	const gchar *script = NULL;
-	gboolean ret;
 
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -216,20 +241,7 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 	pk_task_no_percentage_updates (task);
 
 	command = g_strdup_printf (DATADIR "/PackageKit/helpers/%s %s %s", script, mode, search);
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
-			  G_CALLBACK (pk_spawn_finished_cb), task);
-	g_signal_connect (spawn, "stdout",
-			  G_CALLBACK (pk_spawn_stdout_cb), task);
-	g_signal_connect (spawn, "stderr",
-			  G_CALLBACK (pk_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, command);
-	if (ret == FALSE) {
-		g_warning ("spawn failed: '%s'", command);
-		g_object_unref (spawn);
-		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-	}
-
+	pk_spawn_task_helper (task, command);
 	g_free (command);
 	return TRUE;
 }

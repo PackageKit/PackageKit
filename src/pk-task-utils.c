@@ -179,6 +179,9 @@ pk_task_error_code_from_text (const gchar *code)
 	if (strcmp (code, "not-supported") == 0) {
 		return PK_TASK_ERROR_CODE_NOT_SUPPORTED;
 	}
+	if (strcmp (code, "internal-error") == 0) {
+		return PK_TASK_ERROR_CODE_INTERNAL_ERROR;
+	}
 	return PK_TASK_ERROR_CODE_UNKNOWN;
 }
 
@@ -195,6 +198,9 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 		break;
 	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
 		text = "not-supported";
+		break;
+	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
+		text = "internal-error";
 		break;
 	default:
 		text = "unknown";
@@ -215,6 +221,9 @@ pk_task_error_code_to_localised_text (PkTaskErrorCode code)
 		break;
 	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
 		text = "Not supported by this backend";
+		break;
+	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
+		text = "An internal system error has occurred";
 		break;
 	default:
 		text = "Unknown error";
