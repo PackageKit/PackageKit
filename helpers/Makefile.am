@@ -9,6 +9,7 @@ dist_helper_DATA = 			\
 	yum-search-details.py		\
 	yum-description.py		\
 	yum-get-deps.py			\
+	yum-get-updates.py		\
 	yum-install.py			\
 	yum-refresh-cache.py		\
 	yum-remove.py			\
