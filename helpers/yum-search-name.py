@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
