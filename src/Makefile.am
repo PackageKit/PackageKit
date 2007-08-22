@@ -102,6 +102,28 @@ pk-interface.h: pk-interface.xml
 		--output=pk-interface.h	\
 		$(srcdir)/pk-interface.xml
 
+check_PROGRAMS =					\
+	pk-self-test
+
+pk_self_test_SOURCES =					\
+	pk-spawn.h					\
+	pk-spawn.c					\
+	pk-debug.c					\
+	pk-debug.h					\
+	pk-self-test.c					\
+	pk-self-test.h					\
+	$(NULL)
+
+pk_self_test_LDADD =					\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(LIBNM_LIBS)					\
+	$(POLKIT_LIBS)					\
+	$(NULL)
+
+pk_self_test_CPPFLAGS=	\
+	-DPK_BUILD_TESTS
+
 clean-local:
 	rm -f *~
 	rm -f pk-marshal.c pk-marshal.h
@@ -110,6 +132,8 @@ DISTCLEANFILES =					\
 	org.freedesktop.PackageKit.service
 
 CLEANFILES = $(BUILT_SOURCES)
+
+TESTS = pk-self-test
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

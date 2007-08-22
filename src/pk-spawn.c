@@ -281,3 +281,47 @@ pk_spawn_new (void)
 	spawn = g_object_new (PK_TYPE_SPAWN, NULL);
 	return PK_SPAWN (spawn);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include "pk-self-test.h"
+
+void
+pk_st_spawn (PkSelfTest *test)
+{
+	PkSpawn *spawn;
+	gboolean ret;
+
+	if (pk_st_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	spawn = pk_spawn_new ();
+
+
+	/************************************************************/
+	pk_st_title (test, "make sure return error for missing file");
+	ret = pk_spawn_command (spawn, "../helpers/xxx-yum-refresh-cache.py");
+	if (ret == FALSE) {
+		pk_st_success (test, "failed to run invalid file");
+	} else {
+		pk_st_failed (test, "ran incorrect file");
+	}
+
+	/************************************************************/
+	pk_st_title (test, "make sure run correct helper");
+	ret = pk_spawn_command (spawn, "../helpers/yum-refresh-cache.py");
+	if (ret == TRUE) {
+		pk_st_success (test, "ran correct file");
+	} else {
+		pk_st_failed (test, "did not run helper");
+	}
+
+	g_object_unref (spawn);
+
+	pk_st_end (test);
+}
+#endif
+
