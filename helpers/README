@@ -21,14 +21,14 @@ STDIN:		$options $search_term
 		search_term:	Single word search term with no wildcard chars.
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	"yes" if installed, "no" if not
-		$package_name:	the package name, e.g. openoffice-clipart
-		$summary:	the one line package summary, e.g. "Clipart for OpenOffice"
+		$package_name:	The package name, e.g. openoffice-clipart
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
 NOTES:		Do not refresh the package cache. This should be fast.
 
@@ -39,12 +39,12 @@ FILENAME:	{backend}-refresh-cache.*
 STDIN:		<none>
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDERR		subpercentage:$value
-		$value:		percentage complete of the sub-transaction.
+		$value:		Percentage complete of the sub-transaction.
 		notes:		This is optional.
 
 STDOUT		<none>
@@ -57,12 +57,12 @@ STDIN:		$package
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDERR		subpercentage:$value
-		$value:		percentage complete of the sub-transaction
+		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
 
 STDERR		status:$state
@@ -75,9 +75,9 @@ STDERR		data:$current_data
 				package is being installed on for that sub-transaction.
 
 STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	always "yes"
-		$package_name:	the package name, e.g. openoffice-clipart
-		$summary:	the one line package summary, e.g. "Clipart for OpenOffice"
+		$status:	Always "yes"
+		$package_name:	The package name, e.g. openoffice-clipart
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
@@ -93,12 +93,12 @@ STDIN:		$allowdeps $package
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDERR		subpercentage:$value
-		$value:		percentage complete of the sub-transaction
+		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
 
 STDERR		data:$current_data
@@ -107,10 +107,10 @@ STDERR		data:$current_data
 				package is being installed on for that sub-transaction.
 
 STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	always "yes"
-		$package_name:	the package name, e.g. openoffice-clipart
-		$summary:	the one line package summary, e.g. "Clipart for OpenOffice"
-		NOTE:		As packages are installed then emit them to the screen.
+		$status:	Always "yes"
+		$package_name:	The package name, e.g. openoffice-clipart
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
+		NOTE:		as packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
 ========= Get Dependancies ========= 
@@ -121,14 +121,14 @@ STDIN:		$package
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	always "yes"
-		$package_name:	the package name, e.g. openoffice-clipart
-		$summary:	the one line package summary.
+		$status:	Always "yes"
+		$package_name:	The package name, e.g. openoffice-clipart
+		$summary:	The one line package summary.
 
 ========= Update System ========= 
 
@@ -137,18 +137,31 @@ FILENAME:	{backend}-update-system.*
 STDIN:		<none>
 
 STDERR		percentage:$value
-		value:		percentage complete of the entire transaction
+		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
 STDERR		subpercentage:$value
-		$value:		percentage complete of the sub-transaction
+		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
 
 STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	always "yes"
-		$package_name:	the package name, e.g. openoffice-clipart
-		$summary:	the one line package summary.
+		$status:	Always "yes"
+		$package_name:	The package name, e.g. openoffice-clipart
+		$summary:	The one line package summary.
 		NOTE:		As packages are updated then emit them to the screen.
 				This allows a summary to be presented after the transaction.
+
+========= Get Description ========= 
+
+FILENAME:	{backend}-get-description.*
+
+STDIN:		$package
+		package:	Single word package with no wildcard chars.
+
+STDOUT		$package_name<tab>$version<tab>$detail<tab>$url
+		$package_name:	The package name, e.g. openoffice-clipart
+		$version:	The full distro package version
+		$detail:	The multi line package description.
+		$url:		The upstream project homepage
 
