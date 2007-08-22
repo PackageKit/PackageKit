@@ -145,6 +145,8 @@ main (int argc, char **argv)
 		{ NULL}
 	};
 
+verbose = TRUE;
+
 	context = g_option_context_new ("GNOME Power Manager Self Test");
 	g_option_context_add_main_entries (context, options, GETTEXT_PACKAGE);
 	g_option_context_parse (context, &argc, &argv, NULL);

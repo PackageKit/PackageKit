@@ -53,8 +53,8 @@ static void     pk_spawn_finalize	(GObject       *object);
 struct PkSpawnPrivate
 {
 	gint			 child_pid;
-	gint			 standard_error;
-	gint			 standard_out;
+	gint			 stderr_fd;
+	gint			 stdout_fd;
 	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
@@ -71,82 +71,96 @@ static guint	     signals [PK_SPAWN_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkSpawn, pk_spawn, G_TYPE_OBJECT)
 
 /**
- * pk_spawn_split_lines:
+ * pk_spawn_read_fd_into_buffer:
  **/
-static void
-pk_spawn_split_lines (PkSpawn *spawn, const gchar *data)
+static gboolean
+pk_spawn_read_fd_into_buffer (gint fd, GString *string)
+{
+	gint bytes_read;
+	gchar buffer[1024];
+
+	/* read as much as we can */
+	while ((bytes_read = read (fd, buffer, 1023)) > 0) {
+		buffer[bytes_read] = '\0';
+		g_string_append (string, buffer);
+	}
+
+	return TRUE;
+}
+
+/**
+ * pk_spawn_emit_whole_lines:
+ **/
+static gboolean
+pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 {
 	guint i;
-	char **lines;
-	char *line;
+	guint size;
+	gchar **lines;
+	gchar *message;
+	guint bytes_processed;
 
-	if (data == NULL) {
-		pk_warning ("data NULL");
-		return;
+	if (strlen (string->str) == 0) {
+		return FALSE;
 	}
 
-	/* split output into complete lines */
-	lines = g_strsplit (data, "\n", 0);
-
-	for (i=0; lines[i]; i++) {
-		line = lines[i];
-		pk_debug ("emitting stdout %s", line);
-		g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, line);
+	/* split into lines - the las line may be incomplete */
+	lines = g_strsplit (string->str, "\n", 0);
+	if (lines == NULL) {
+		return FALSE;
 	}
+
+	/* find size */
+	for (size=0; lines[size]; size++);
+
+	bytes_processed = 0;
+	/* we only emit n-1 strings */
+	for (i=0; i<(size-1); i++) {
+		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
+		if (is_stdout == TRUE) {
+			pk_debug ("emitting stdout %s", message);
+			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
+		} else {
+			pk_debug ("emitting stderr %s", message);
+			g_signal_emit (spawn, signals [PK_SPAWN_STDERR], 0, message);
+		}
+		g_free (message);
+		bytes_processed += strlen (lines[i]) + 1;
+	}
+
+	/* remove the text we've processed */
+	g_string_erase (string, 0, bytes_processed);
+
 	g_strfreev (lines);
+	return TRUE;
 }
 
 /**
  * pk_spawn_check_child:
  **/
 static gboolean
-pk_spawn_check_child (gpointer data)
+pk_spawn_check_child (PkSpawn *spawn)
 {
-	PkSpawn *spawn;
 	int status;
-	int bytes_read;
-	gchar buffer[1024];
-	gchar *message_err;
-	gchar *message_out;
-	spawn  = (PkSpawn *) data;
 
-//bytes_read = read (spawn->priv->standard_error, buffer, 1023);
-//buffer[bytes_read] = '\0';
-//g_warning ("%s", buffer);
-
-	/* read input from stderr */
-	while ((bytes_read = read (spawn->priv->standard_error, buffer, 1023)) > 0) {
-		buffer[bytes_read] = '\0';
-		g_string_append (spawn->priv->stderr_buf, buffer);
-	}
-
-	/* read input from stdout */
-	while ((bytes_read = read (spawn->priv->standard_out, buffer, 1023)) > 0) {
-		buffer[bytes_read] = '\0';
-		g_string_append (spawn->priv->stdout_buf, buffer);
-	}
+	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
+	pk_spawn_read_fd_into_buffer (spawn->priv->stderr_fd, spawn->priv->stderr_buf);
+	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf, TRUE);
+	pk_spawn_emit_whole_lines (spawn, spawn->priv->stderr_buf, FALSE);
 
 	/* check if the child exited */
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
 		return TRUE;
 
 	/* child exited, display some information... */
-	close (spawn->priv->standard_error);
-	close (spawn->priv->standard_out);
+	close (spawn->priv->stderr_fd);
+	close (spawn->priv->stdout_fd);
 
-	message_err = g_locale_to_utf8 (spawn->priv->stderr_buf->str, -1, NULL, (gsize *) &bytes_read, NULL);
-	message_out = g_locale_to_utf8 (spawn->priv->stdout_buf->str, -1, NULL, (gsize *) &bytes_read, NULL);
 	if (WEXITSTATUS (status) > 0) {
-		pk_warning ("Running fork failed with return value %d:\nout:'%s'\nerr:'%s'", WEXITSTATUS (status), message_out, message_err);
+		pk_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
 	} else {
-		pk_debug ("Running fork successful:\nout:'%s'\nerr:'%s'", message_out, message_err);
+		pk_debug ("Running fork successful");
 	}
-
-	/* only do at end, TODO: run stderr async for percentage output */
-	pk_spawn_split_lines (spawn, message_out);
-
-	g_free (message_err);
-	g_free (message_out);
 
 	pk_debug ("emitting finished %i", WEXITSTATUS (status));
 	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, WEXITSTATUS (status));
@@ -179,23 +193,23 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
 				 NULL, /* stdin */
-				 &spawn->priv->standard_out,
-				 &spawn->priv->standard_error,
+				 &spawn->priv->stdout_fd,
+				 &spawn->priv->stderr_fd,
 				 NULL);
 	g_strfreev (argv);
 
 	/* we failed to invoke the helper */
 	if (ret == FALSE) {
-		g_warning ("failed to spawn '%s'", command);
+		pk_warning ("failed to spawn '%s'", command);
 		return FALSE;
 	}
 
 	/* install an idle handler to check if the child returnd successfully. */
-	fcntl (spawn->priv->standard_out, F_SETFL, O_NONBLOCK);
-	fcntl (spawn->priv->standard_error, F_SETFL, O_NONBLOCK);
-//	g_idle_add (pk_spawn_check_child, spawn);
+	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
+	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
-	g_timeout_add (250, pk_spawn_check_child, spawn);
+	/* poll every 250ms */
+	g_timeout_add (250, (GSourceFunc) pk_spawn_check_child, spawn);
 
 	return TRUE;
 }
@@ -240,8 +254,8 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv = PK_SPAWN_GET_PRIVATE (spawn);
 
 	spawn->priv->child_pid = -1;
-	spawn->priv->standard_error = -1;
-	spawn->priv->standard_out = -1;
+	spawn->priv->stderr_fd = -1;
+	spawn->priv->stdout_fd = -1;
 
 	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -288,6 +302,36 @@ pk_spawn_new (void)
 #ifdef PK_BUILD_TESTS
 #include "pk-self-test.h"
 
+static GMainLoop *loop;
+
+/**
+ * pk_test_finished_cb:
+ **/
+static void
+pk_test_finished_cb (PkSpawn *spawn, gint exitcode, PkSelfTest *test)
+{
+	pk_debug ("spawn exitcode=%i", exitcode);
+	g_main_loop_quit (loop);
+}
+
+/**
+ * pk_test_stdout_cb:
+ **/
+static void
+pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, PkSelfTest *test)
+{
+	pk_debug ("stdout '%s'", line);
+}
+
+/**
+ * pk_test_stderr_cb:
+ **/
+static void
+pk_test_stderr_cb (PkSpawn *spawn, const gchar *line, PkSelfTest *test)
+{
+	pk_debug ("stderr '%s'", line);
+}
+
 void
 pk_st_spawn (PkSelfTest *test)
 {
@@ -299,11 +343,16 @@ pk_st_spawn (PkSelfTest *test)
 	}
 
 	spawn = pk_spawn_new ();
-
+	g_signal_connect (spawn, "finished",
+			  G_CALLBACK (pk_test_finished_cb), test);
+	g_signal_connect (spawn, "stdout",
+			  G_CALLBACK (pk_test_stdout_cb), test);
+	g_signal_connect (spawn, "stderr",
+			  G_CALLBACK (pk_test_stderr_cb), test);
 
 	/************************************************************/
 	pk_st_title (test, "make sure return error for missing file");
-	ret = pk_spawn_command (spawn, "../helpers/xxx-yum-refresh-cache.py");
+	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		pk_st_success (test, "failed to run invalid file");
 	} else {
@@ -312,12 +361,16 @@ pk_st_spawn (PkSelfTest *test)
 
 	/************************************************************/
 	pk_st_title (test, "make sure run correct helper");
-	ret = pk_spawn_command (spawn, "../helpers/yum-refresh-cache.py");
+	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
 	if (ret == TRUE) {
 		pk_st_success (test, "ran correct file");
 	} else {
 		pk_st_failed (test, "did not run helper");
 	}
+
+	/* spin for a bit */
+	loop = g_main_loop_new (NULL, FALSE);
+	g_main_loop_run (loop);
 
 	g_object_unref (spawn);
 
