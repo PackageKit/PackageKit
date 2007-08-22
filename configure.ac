@@ -162,6 +162,17 @@ if test x$with_backend = x; then
         with_backend=dummy
     fi
 fi
+
+# apt has other BR's
+if test x$with_backend = xapt; then
+#    This does not work for me on fedora
+#    PKG_CHECK_MODULES(APT,libapt-pkg)
+    APT_CFLAGS="-I/usr/include/apt-pkg"
+    APT_LIBS="-lapt-pkg"
+    AC_SUBST(APT_CFLAGS)
+    AC_SUBST(APT_LIBS)
+fi
+
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])

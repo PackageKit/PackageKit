@@ -75,6 +75,13 @@ packagekitd_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 
+if BACKEND_TYPE_APT
+packagekitd_INCLUDES =					\
+	$(APT_CFLAGS)
+packagekitd_LDADD += 					\
+	$(APT_LIBS)
+endif
+
 BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
