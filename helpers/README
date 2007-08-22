@@ -25,10 +25,6 @@ STDERR		percentage:$value
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
-STDERR		subpercentage:$value
-		$value:		percentage complete of the sub-transaction
-		notes:		This is optional.
-
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	"yes" if installed, "no" if not
 		$package_name:	the package name, e.g. openoffice-clipart
@@ -55,9 +51,45 @@ STDOUT		<none>
 
 ========= Install Packages ========= 
 
-FILENAME:	{backend}-search-name.*
+FILENAME:	{backend}-install.*
 
 STDIN:		$package
+		package:	Single word package with no wildcard chars.
+
+STDERR		percentage:$value
+		value:		percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the signal
+				NoPercentageUpdates if these are not expected.
+
+STDERR		subpercentage:$value
+		$value:		percentage complete of the sub-transaction
+		notes:		This is optional.
+
+STDERR		status:$state
+		$state:		One of "download", "install", "update", "remove"
+		notes:		This is optional.
+
+STDERR		data:$current_data
+		$current_data:	The current worked on package
+		notes:		This is optional, but allows the UI to show what
+				package is being installed on for that sub-transaction.
+
+STDOUT		$status<tab>$package_name<tab>$summary
+		$status:	always "yes"
+		$package_name:	the package name, e.g. openoffice-clipart
+		$summary:	the one line package summary, e.g. "Clipart for OpenOffice"
+		NOTE:		As packages are installed then emit them to the screen.
+				This allows a summary to be presented after the transaction.
+
+========= Remove Packages ========= 
+
+FILENAME:	{backend}-install.*
+
+STDIN:		$allowdeps $package
+		allowdeps:	Either "yes" or "no". If yes allow other packages
+				to be removed with the package, but "no" should
+				cause the script to abort if other packages are
+				dependant on the package.
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage:$value
