@@ -10,8 +10,10 @@ dist_helper_DATA = 			\
 	$(NULL)
 endif	
 
+if BACKEND_TYPE_YUM
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/*.py
+endif	
 
 clean-local :
 	rm -f *~
