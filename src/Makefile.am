@@ -60,7 +60,7 @@ endif
 
 if BACKEND_TYPE_APT
 packagekitd_SOURCES +=					\
-	pk-task-apt.c
+	pk-task-apt.cpp
 endif
 
 if BACKEND_TYPE_YUM

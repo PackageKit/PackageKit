@@ -300,7 +300,7 @@ PkTask *
 pk_task_new (void)
 {
 	PkTask *task;
-	task = g_object_new (PK_TYPE_TASK, NULL);
+	task = (PkTask *) g_object_new (PK_TYPE_TASK, NULL);
 	return PK_TASK (task);
 }
 
