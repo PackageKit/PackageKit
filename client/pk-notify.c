@@ -511,13 +511,13 @@ pk_notify_manage_packages_cb (GtkMenuItem *item, gpointer data)
 }
 
 /**
- * pk_notify_activate_cb:
+ * pk_notify_activate_status_cb:
  * @button: Which buttons are pressed
  *
  * Callback when the icon is clicked
  **/
 static void
-pk_notify_activate_cb (GtkStatusIcon *status_icon,
+pk_notify_activate_status_cb (GtkStatusIcon *status_icon,
 			   PkNotify   *icon)
 {
 	GtkMenu *menu = (GtkMenu*) gtk_menu_new ();
@@ -541,6 +541,29 @@ pk_notify_activate_cb (GtkStatusIcon *status_icon,
 	g_signal_connect (G_OBJECT (item), "activate",
 			  G_CALLBACK (pk_notify_manage_packages_cb), icon);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+
+	/* show the menu */
+	gtk_widget_show_all (GTK_WIDGET (menu));
+	gtk_menu_popup (GTK_MENU (menu), NULL, NULL,
+			gtk_status_icon_position_menu, status_icon,
+			1, gtk_get_current_event_time());
+}
+
+/**
+ * pk_notify_activate_update_cb:
+ * @button: Which buttons are pressed
+ *
+ * Callback when the icon is clicked
+ **/
+static void
+pk_notify_activate_update_cb (GtkStatusIcon *status_icon,
+			      PkNotify   *icon)
+{
+	GtkMenu *menu = (GtkMenu*) gtk_menu_new ();
+	GtkWidget *item;
+	GtkWidget *image;
+
+	pk_debug ("icon left clicked");
 
 	/* update system */
 	item = gtk_image_menu_item_new_with_mnemonic (_("_Update system"));
@@ -816,13 +839,22 @@ pk_notify_init (PkNotify *notify)
 	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
 	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), FALSE);
 
+	/* right click actions are common */
 	g_signal_connect_object (G_OBJECT (notify->priv->status_icon),
+				 "popup_menu",
+				 G_CALLBACK (pk_notify_popup_menu_cb),
+				 notify, 0);
+	g_signal_connect_object (G_OBJECT (notify->priv->update_icon),
 				 "popup_menu",
 				 G_CALLBACK (pk_notify_popup_menu_cb),
 				 notify, 0);
 	g_signal_connect_object (G_OBJECT (notify->priv->status_icon),
 				 "activate",
-				 G_CALLBACK (pk_notify_activate_cb),
+				 G_CALLBACK (pk_notify_activate_status_cb),
+				 notify, 0);
+	g_signal_connect_object (G_OBJECT (notify->priv->update_icon),
+				 "activate",
+				 G_CALLBACK (pk_notify_activate_update_cb),
 				 notify, 0);
 
 	notify_init ("packagekit-update-applet");
