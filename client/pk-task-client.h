@@ -61,7 +61,12 @@ PkTaskClient	*pk_task_client_new			(void);
 gboolean	 pk_task_client_set_sync		(PkTaskClient	*tclient,
 							 gboolean	 is_sync);
 gboolean	 pk_task_client_get_sync		(PkTaskClient	*tclient);
-GPtrArray	*pk_task_client_get_cached_packages	(PkTaskClient	*tclient);
+
+gboolean	 pk_task_client_set_use_buffer		(PkTaskClient	*tclient,
+							 gboolean	 use_buffer);
+gboolean	 pk_task_client_get_use_buffer		(PkTaskClient	*tclient);
+GPtrArray	*pk_task_client_get_package_buffer	(PkTaskClient	*tclient);
+
 gboolean	 pk_task_client_get_updates		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_update_system		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_find_packages		(PkTaskClient	*tclient,

@@ -53,6 +53,7 @@ struct PkTaskClientPrivate
 	DBusGProxy		*proxy;
 	gboolean		 assigned;
 	gboolean		 is_sync;
+	gboolean		 use_buffer;
 	guint			 job;
 	GMainLoop		*loop;
 	PkTaskStatus		 last_status;
@@ -78,6 +79,31 @@ static guint signals [PK_TASK_CLIENT_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkTaskClient, pk_task_client, G_TYPE_OBJECT)
 
 /**
+ * pk_task_client_set_use_buffer:
+ **/
+gboolean
+pk_task_client_set_use_buffer (PkTaskClient *tclient, gboolean use_buffer)
+{
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	tclient->priv->use_buffer = use_buffer;
+	return TRUE;
+}
+
+/**
+ * pk_task_client_get_use_buffer:
+ **/
+gboolean
+pk_task_client_get_use_buffer (PkTaskClient *tclient)
+{
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	return tclient->priv->use_buffer;
+}
+
+/**
  * pk_task_client_set_sync:
  **/
 gboolean
@@ -87,6 +113,7 @@ pk_task_client_set_sync (PkTaskClient *tclient, gboolean is_sync)
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
 	tclient->priv->is_sync = is_sync;
+	tclient->priv->use_buffer = is_sync;
 	return TRUE;
 }
 
@@ -120,12 +147,12 @@ pk_task_client_wait_if_sync (PkTaskClient *tclient)
 }
 
 /**
- * pk_task_client_get_cached_packages:
+ * pk_task_client_get_package_buffer:
  **/
 GPtrArray *
-pk_task_client_get_cached_packages (PkTaskClient *tclient)
+pk_task_client_get_package_buffer (PkTaskClient *tclient)
 {
-	if (tclient->priv->is_sync == FALSE) {
+	if (tclient->priv->use_buffer == FALSE) {
 		return NULL;
 	}
 	return tclient->priv->package_items;
@@ -161,6 +188,7 @@ pk_task_client_reset (PkTaskClient *tclient)
 	}
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;
+	tclient->priv->use_buffer = FALSE;
 	tclient->priv->job = 0;
 	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
 	tclient->priv->is_finished = FALSE;
@@ -203,6 +231,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 		pk_warning ("GetUpdates failed!");
 		return FALSE;
 	}
+pk_warning("set job");
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
@@ -700,7 +729,7 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
 	/* if sync then just add results to an array */
-	if (tclient->priv->is_sync == TRUE) {
+	if (tclient->priv->use_buffer == TRUE) {
 		pk_debug ("adding to cache array package %i, %s, %s", value, package, summary);
 		item = g_new0 (PkTaskClientPackageItem, 1);
 		item->value = value;
@@ -804,6 +833,7 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv = PK_TASK_CLIENT_GET_PRIVATE (tclient);
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;
+	tclient->priv->use_buffer = FALSE;
 	tclient->priv->job = 0;
 	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
 	tclient->priv->is_finished = FALSE;

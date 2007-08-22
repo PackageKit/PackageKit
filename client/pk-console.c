@@ -161,7 +161,7 @@ pk_console_tidy_up_sync (PkTaskClient *tclient)
 
 	sync = pk_task_client_get_sync (tclient);
 	if (sync == TRUE) {
-		packages = pk_task_client_get_cached_packages (tclient);
+		packages = pk_task_client_get_package_buffer (tclient);
 		length = packages->len;
 		for (i=0; i<length; i++) {
 			item = g_ptr_array_index (packages, i);

@@ -101,6 +101,9 @@ pk_notify_class_init (PkNotifyClass *klass)
 static gboolean
 pk_notify_set_icon (PkNotify *notify, const gchar *icon)
 {
+	g_return_val_if_fail (notify != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+
 	if (icon == NULL) {
 		gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->status_icon), FALSE);
 		return FALSE;
@@ -122,6 +125,9 @@ pk_notify_refresh_tooltip (PkNotify *notify)
 	GPtrArray *array;
 	GString *status;
 	const gchar *localised_status;
+
+	g_return_val_if_fail (notify != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
 	array = pk_task_list_get_latest	(notify->priv->tlist);
 
@@ -171,6 +177,9 @@ pk_notify_refresh_icon (PkNotify *notify)
 	gboolean state_query = FALSE;
 	gboolean state_refresh_cache = FALSE;
 	const gchar *icon = PK_NOTIFY_ICON_STOCK;
+
+	g_return_val_if_fail (notify != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
 	array = pk_task_list_get_latest	(notify->priv->tlist);
 
@@ -566,15 +575,143 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkNotif
 static gboolean pk_notify_check_for_updates_cb (PkNotify *notify);
 
 /**
+ * pk_notify_libnotify_update_system_cb:
+ **/
+static void
+pk_notify_libnotify_update_system_cb (NotifyNotification *dialog, gchar *action, PkNotify *notify)
+{
+	pk_warning ("update something");
+}
+
+/**
+ * pk_notify_query_updates_finished_cb:
+ **/
+static void
+pk_notify_critical_updates_warning (PkNotify *notify, const gchar *details, gboolean plural)
+{
+	NotifyNotification *dialog;
+	const gchar *title;
+	gchar *message;
+
+	g_return_if_fail (notify != NULL);
+	g_return_if_fail (PK_IS_NOTIFY (notify));
+
+	if (plural == TRUE) {
+		title = "Security Updates Available";
+		message = g_strdup_printf ("The following important updates are available for your computer:\n\n%s", details);
+	} else {
+		title = "Security Update Available";
+		message = g_strdup_printf ("The following important update is available for your computer:\n\n%s", details);
+	}
+	dialog = notify_notification_new_with_status_icon (title, message, "software-update-urgent",
+							   notify->priv->status_icon);
+	notify_notification_set_timeout (dialog, NOTIFY_EXPIRES_NEVER);
+	notify_notification_set_urgency (dialog, NOTIFY_URGENCY_CRITICAL);
+	notify_notification_add_action (dialog, "update-system", "Update system now",
+					(NotifyActionCallback) pk_notify_libnotify_update_system_cb,
+					notify, NULL);
+	notify_notification_add_action (dialog, "update-system", "Don't warn me again",
+					(NotifyActionCallback) pk_notify_libnotify_update_system_cb,
+					notify, NULL);
+	notify_notification_show (dialog, NULL);
+	g_free (message);
+}
+
+/**
+ * pk_notify_query_updates_finished_cb:
+ **/
+static void
+pk_notify_query_updates_finished_cb (PkTaskClient *tclient, PkTaskExit exit, PkNotify *notify)
+{
+	PkTaskClientPackageItem *item;
+	GPtrArray *packages;
+	guint length;
+	guint i;
+	gboolean is_security;
+	const gchar *icon;
+	GString *status_security;
+	GString *status_tooltip;
+
+	g_return_if_fail (notify != NULL);
+	g_return_if_fail (PK_IS_NOTIFY (notify));
+
+	status_security = g_string_new ("");
+	status_tooltip = g_string_new ("");
+	g_print ("exit: %i\n", exit);
+
+	/* find packages */
+	packages = pk_task_client_get_package_buffer (tclient);
+	length = packages->len;
+	pk_debug ("length=%i", length);
+	if (length == 0) {
+		pk_debug ("no updates");
+		gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), FALSE);
+		return;
+	}
+
+	is_security = FALSE;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (packages, i);
+		pk_debug ("%i, %s, %s", item->value, item->package, item->summary);
+		if (item->value == 1) {
+			is_security = TRUE;
+			g_string_append_printf (status_security, "<b>%s</b> - %s\n", item->package, item->summary);
+			g_string_append_printf (status_tooltip, "%s - %s (Security)\n", item->package, item->summary);
+		} else {
+			g_string_append_printf (status_tooltip, "%s - %s\n", item->package, item->summary);
+		}
+	}
+	g_object_unref (tclient);
+
+	/* work out icon */
+	if (is_security == TRUE) {
+		icon = "software-update-urgent";
+	} else {
+		icon = "software-update-available";
+	}
+
+	/* trim off extra newlines */
+	if (status_security->len != 0) {
+		g_string_set_size (status_security, status_security->len-1);
+	}
+	if (status_tooltip->len != 0) {
+		g_string_set_size (status_tooltip, status_tooltip->len-1);
+	}
+
+	/* make tooltip */
+	if (status_tooltip->len != 0) {
+		g_string_prepend (status_tooltip, "Updates:\n");
+	}
+
+	gtk_status_icon_set_from_icon_name (GTK_STATUS_ICON (notify->priv->update_icon), icon);
+	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), TRUE);
+	gtk_status_icon_set_tooltip (GTK_STATUS_ICON (notify->priv->update_icon), status_tooltip->str);
+
+	/* do we warn the user? */
+	if (is_security == TRUE) {
+		pk_notify_critical_updates_warning (notify, status_security->str, (length > 1));
+	}
+
+	g_string_free (status_security, TRUE);
+	g_string_free (status_tooltip, TRUE);
+}
+
+/**
  * pk_notify_query_updates:
  **/
 static gboolean
 pk_notify_query_updates (PkNotify *notify)
 {
-	/* we need to do a synronous wait on the method, and catch all Package data items */
-	gtk_status_icon_set_from_icon_name (GTK_STATUS_ICON (notify->priv->update_icon), "software-update-available");
-	gtk_status_icon_set_visible (GTK_STATUS_ICON (notify->priv->update_icon), TRUE);
-	gtk_status_icon_set_tooltip (GTK_STATUS_ICON (notify->priv->update_icon), "No updates available");
+	PkTaskClient *tclient;
+
+	g_return_val_if_fail (notify != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+
+	tclient = pk_task_client_new ();
+	g_signal_connect (tclient, "finished",
+			  G_CALLBACK (pk_notify_query_updates_finished_cb), notify);
+	pk_task_client_set_use_buffer (tclient, TRUE);
+	pk_task_client_get_updates (tclient);
 	return TRUE;
 }
 
@@ -584,6 +721,9 @@ pk_notify_query_updates (PkNotify *notify)
 static gboolean
 pk_notify_invalidate_cache_cb (PkNotify *notify)
 {
+	g_return_val_if_fail (notify != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+
 	notify->priv->cache_okay = FALSE;
 	g_timeout_add_seconds (5, (GSourceFunc) pk_notify_check_for_updates_cb, notify);
 	return FALSE;
@@ -595,6 +735,9 @@ pk_notify_invalidate_cache_cb (PkNotify *notify)
 static void
 pk_notify_refresh_cache_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, PkNotify *notify)
 {
+	g_return_if_fail (notify != NULL);
+	g_return_if_fail (PK_IS_NOTIFY (notify));
+
 	pk_debug ("finished refreshing cache :%s", pk_task_exit_to_text (exit_code));
 	if (exit_code != PK_TASK_EXIT_SUCCESS) {
 		/* we failed to get the cache */
