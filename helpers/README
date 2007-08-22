@@ -130,3 +130,25 @@ STDOUT		$status<tab>$package_name<tab>$summary
 		$package_name:	the package name, e.g. openoffice-clipart
 		$summary:	the one line package summary.
 
+========= Update System ========= 
+
+FILENAME:	{backend}-update-system.*
+
+STDIN:		<none>
+
+STDERR		percentage:$value
+		value:		percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the signal
+				NoPercentageUpdates if these are not expected.
+
+STDERR		subpercentage:$value
+		$value:		percentage complete of the sub-transaction
+		notes:		This is optional.
+
+STDOUT		$status<tab>$package_name<tab>$summary
+		$status:	always "yes"
+		$package_name:	the package name, e.g. openoffice-clipart
+		$summary:	the one line package summary.
+		NOTE:		As packages are updated then emit them to the screen.
+				This allows a summary to be presented after the transaction.
+
