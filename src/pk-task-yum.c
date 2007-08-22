@@ -19,17 +19,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-/* DUMMY TARGET
- *
- * Upgrade takes 10 seconds and gives out 10% percentage points
- * Get updates is instant and sends back a single package "kernel"
- * Install of anything takes 20 seconds and spends 10 secs downloading and 10 secs installing with 1% percentage points
- * Removal is instant
- * Removal of dbus fails for deps
- * Removal of evince passes with no deps
- * Search takes two seconds, returns 5 packages with no percentage updates
- */
-
 #include "config.h"
 
 #include <stdlib.h>
