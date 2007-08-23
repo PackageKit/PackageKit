@@ -67,11 +67,11 @@ pk_task_get_updates (PkTask *task)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_package (task, 0, "powertop;1.8-1.fc8;i386",
+	pk_task_package (task, 0, "powertop;1.8-1.fc8;i386;fedora",
 			 "Power consumption monitor");
-	pk_task_package (task, 1, "kernel-2.6.23-0.115.rc3.git1.fc8;i386",
+	pk_task_package (task, 1, "kernel-2.6.23-0.115.rc3.git1.fc8;i386;installed",
 			 "The Linux kernel (the core of the Linux operating system)");
-	pk_task_package (task, 1, "gtkhtml2;2.19.1-4.fc8;i386", "An HTML widget for GTK+ 2.0");
+	pk_task_package (task, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
 }
@@ -136,13 +136,13 @@ gboolean
 pk_task_find_packages_timeout (gpointer data)
 {
 	PkTask *task = (PkTask *) data;
-	pk_task_package (task, 1, "evince;0.9.3-5.fc8;i386",
+	pk_task_package (task, 1, "evince;0.9.3-5.fc8;i386;installed",
 			 "PDF Document viewer");
-	pk_task_package (task, 1, "tetex;3.0-41.fc8;i386",
+	pk_task_package (task, 1, "tetex;3.0-41.fc8;i386;fedora",
 			 "TeTeX is an implementation of TeX for Linux or UNIX systems.");
-	pk_task_package (task, 0, "scribus;1.3.4-1.fc8;i386",
+	pk_task_package (task, 0, "scribus;1.3.4-1.fc8;i386;fedora",
 			 "Scribus is an desktop open source page layout program");
-	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch",
+	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return FALSE;
