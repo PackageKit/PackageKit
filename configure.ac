@@ -5,6 +5,17 @@ AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
+# libtool versioning - this applies to libpackagekit
+#
+# See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
+#
+LT_CURRENT=1
+LT_REVISION=0
+LT_AGE=0
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
@@ -296,6 +307,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
+packagekit.pc
 Makefile
 man/Makefile
 libgbus/Makefile

@@ -12,11 +12,15 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = packagekit.pc
+
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = PackageKit.conf
 
 EXTRA_DIST =			\
 	PackageKit.conf.in	\
+	packagekit.pc.in	\
 	COPYING			\
 	MAINTAINERS		\
 	AUTHORS			\
@@ -32,6 +36,7 @@ clean-local :
 
 DISTCLEANFILES =		\
 	PackageKit-*.tar.gz	\
+	packagekit.pc		\
 	intltool-extract	\
 	intltool-merge		\
 	intltool-update		\

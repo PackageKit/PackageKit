@@ -13,13 +13,25 @@ GBUS_LIBS =							\
 	$(top_builddir)/libgbus/libgbus.la			\
 	$(NULL)
 
-noinst_LTLIBRARIES =						\
+lib_LTLIBRARIES =						\
 	libpackagekit.la					\
 	$(NULL)
 
+libpackagekit_includedir = $(includedir)/packagekit
+
+libpackagekit_include_HEADERS =					\
+	pk-debug.h						\
+	pk-connection.h						\
+	pk-task-utils.h						\
+	pk-task-common.h					\
+	pk-task-monitor.h					\
+	pk-task-client.h					\
+	pk-task-list.h						\
+	pk-job-list.h						\
+	pk-polkit-client.h					\
+	$(NULL)
+
 libpackagekit_la_SOURCES =					\
-	pk-marshal.h						\
-	pk-marshal.c						\
 	pk-debug.c						\
 	pk-debug.h						\
 	pk-marshal.c						\
@@ -46,6 +58,10 @@ libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
+	$(NULL)
+
+libpackagekit_la_LDFLAGS =					\
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	$(NULL)
 
 EXTRA_DIST =							\
