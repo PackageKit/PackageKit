@@ -24,22 +24,22 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="GetDeps">
-      <arg type="s" name="package" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="GetDescription"> <!-- orders Description signals for the package -->
-      <arg type="s" name="package" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="RemovePackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="allow_deps" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="InstallPackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
 
@@ -47,7 +47,7 @@
     <signal name="JobStatusChanged">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
-      <arg type="s" name="package" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
     </signal>
     <signal name="PercentageChanged">
       <arg type="u" name="job" direction="out"/>
@@ -59,12 +59,12 @@
     <signal name="Package">
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="value" direction="out"/> <!-- installed=1, not-installed=0 | security=1, normal=0 -->
-      <arg type="s" name="package" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>
     <signal name="Description">
       <arg type="u" name="job" direction="out"/>
-      <arg type="s" name="package" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="version" direction="out"/>
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>

@@ -34,24 +34,53 @@
 /**
  * pk_console_package_cb:
  **/
-static void
-pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, gpointer data)
+static gchar *
+pk_console_make_space (const gchar *data, guint length)
 {
-	gchar *padding;
-	const gchar *installed;
 	gint size;
-	size = (25 - strlen(package));
+	gchar *padding;
+	size = (length - strlen(data));
 	if (size < 0) {
 		size = 0;
 	}
-	if (value == 0) {
-		installed = "no ";
-	} else {
-		installed = "yes";
-	}
 	padding = g_strnfill (size, ' ');
-	g_print ("%s %s%s %s\n", installed, package, padding, summary);
-	g_free (padding);
+	return padding;
+}
+
+/**
+ * pk_console_package_cb:
+ **/
+static void
+pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_id, const gchar *summary, gpointer data)
+{
+	PkPackageIdent *ident;
+	PkPackageIdent *spacing;
+	const gchar *installed;
+
+	if (value == 0) {
+		installed = "no  ";
+	} else {
+		installed = "yes ";
+	}
+
+	spacing = pk_task_package_ident_new ();
+	ident = pk_task_package_ident_from_string (package_id);
+
+	/* these numbers are guesses */
+	spacing->name = pk_console_make_space (ident->name, 20);
+	spacing->version = pk_console_make_space (ident->version, 20);
+	spacing->arch = pk_console_make_space (ident->arch, 10);
+
+	/* pretty print */
+	g_print ("%s %s%s %s%s %s%s %s\n", installed,
+		 ident->name, spacing->name,
+		 ident->version, spacing->version,
+		 ident->arch, spacing->arch,
+		 summary);
+
+	/* free all the data */
+	pk_task_package_ident_free (ident);
+	pk_task_package_ident_free (spacing);
 }
 
 /**

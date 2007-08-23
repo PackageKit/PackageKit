@@ -45,5 +45,5 @@ for (pkg,values) in res:
 
     # print in correct format
     if do_print == 1:
-    	print "package\t%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
+    	print "package\t%s\t%s;%s;%s\t%s" % (installed, pkg.name, pkg.version, pkg.arch, pkg.summary)
 

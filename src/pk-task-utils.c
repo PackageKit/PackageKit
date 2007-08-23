@@ -322,3 +322,96 @@ pk_task_restart_to_localised_text (PkTaskRestart restart)
 	return text;
 }
 
+/**
+ * pk_task_check_package_id:
+ **/
+gboolean
+pk_task_check_package_id (const gchar *package_id)
+{
+	guint i;
+	guint length;
+	guint sections;
+
+	if (package_id == NULL) {
+		return FALSE;
+	}
+
+	length = strlen (package_id);
+	sections = 1;
+	for (i=0; i<length; i++) {
+		if (package_id[i] == ';') {
+			sections += 1;
+		}
+	}
+	if (sections != 3) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_package_ident_build:
+ **/
+gchar *
+pk_task_package_ident_build (const gchar *name, const gchar *version, const gchar *arch)
+{
+	return g_strdup_printf ("%s;%s;%s", name, version, arch);
+}
+
+/**
+ * pk_task_package_ident_new:
+ **/
+PkPackageIdent *
+pk_task_package_ident_new (void)
+{
+	PkPackageIdent *ident;
+	ident = g_new0 (PkPackageIdent, 1);
+	ident->name = NULL;
+	ident->version = NULL;
+	ident->arch = NULL;
+	return ident;
+}
+
+/**
+ * pk_task_package_ident_from_string:
+ **/
+PkPackageIdent*
+pk_task_package_ident_from_string (const gchar *package_id)
+{
+	gchar **sections;
+	PkPackageIdent *ident;
+
+	/* create new object */
+	ident = pk_task_package_ident_new ();
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (package_id, ";", 3);
+	ident->name = g_strdup (sections[0]);
+	ident->version = g_strdup (sections[1]);
+	ident->arch = g_strdup (sections[2]);
+	g_strfreev (sections);
+	return ident;	
+}
+
+/**
+ * pk_task_package_ident_to_string:
+ **/
+gchar *
+pk_task_package_ident_to_string (PkPackageIdent *ident)
+{
+	return g_strdup_printf ("%s;%s;%s", ident->name, ident->version, ident->arch);
+}
+
+/**
+ * pk_task_package_ident_free:
+ **/
+gboolean
+pk_task_package_ident_free (PkPackageIdent *ident)
+{
+	g_free (ident->name);
+	g_free (ident->arch);
+	g_free (ident->version);
+	g_free (ident);
+	return TRUE;
+}
+

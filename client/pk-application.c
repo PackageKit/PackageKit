@@ -63,7 +63,9 @@ enum {
 enum
 {
 	COLUMN_INSTALLED,
-	COLUMN_PACKAGE,
+	COLUMN_NAME,
+	COLUMN_VERSION,
+	COLUMN_ARCH,
 	COLUMN_DESCRIPTION,
 	NUM_COLUMNS
 };
@@ -210,16 +212,24 @@ pk_application_close_cb (GtkWidget	*widget,
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package, const gchar *summary, PkApplication *application)
+pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_id, const gchar *summary, PkApplication *application)
 {
+	PkPackageIdent *ident;
 	GtkTreeIter iter;
-	pk_debug ("package = %i:%s:%s", value, package, summary);
+	pk_debug ("package = %i:%s:%s", value, package_id, summary);
+
+	/* split by delimeter */
+	ident = pk_task_package_ident_from_string (package_id);
+
 	gtk_list_store_append (application->priv->store, &iter);
 	gtk_list_store_set (application->priv->store, &iter,
 			    COLUMN_INSTALLED, value,
-			    COLUMN_PACKAGE, package,
+			    COLUMN_NAME, ident->name,
+			    COLUMN_VERSION, ident->version,
+			    COLUMN_ARCH, ident->arch,
 			    COLUMN_DESCRIPTION, summary,
 			    -1);
+	pk_task_package_ident_free (ident);
 }
 
 /**
@@ -435,11 +445,25 @@ pk_misc_add_columns (GtkTreeView *treeview)
 							   "active", COLUMN_INSTALLED, NULL);
 	gtk_tree_view_append_column (treeview, column);
 
-	/* column for severities */
+	/* column for name */
 	renderer = gtk_cell_renderer_text_new ();
 	column = gtk_tree_view_column_new_with_attributes ("Name", renderer,
-							   "text", COLUMN_PACKAGE, NULL);
-	gtk_tree_view_column_set_sort_column_id (column, COLUMN_PACKAGE);
+							   "text", COLUMN_NAME, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
+	gtk_tree_view_append_column (treeview, column);
+
+	/* column for version */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Version", renderer,
+							   "text", COLUMN_VERSION, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_VERSION);
+	gtk_tree_view_append_column (treeview, column);
+
+	/* column for arch */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Arch", renderer,
+							   "text", COLUMN_ARCH, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_ARCH);
 	gtk_tree_view_append_column (treeview, column);
 
 	/* column for description */
@@ -471,12 +495,25 @@ pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	gboolean installed;
+	gchar *name;
+	gchar *version;
+	gchar *arch;
 
 	/* This will only work in single or browse selection mode! */
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
 		g_free (application->priv->package);
-		gtk_tree_model_get (model, &iter, COLUMN_PACKAGE, &application->priv->package, -1);
-		gtk_tree_model_get (model, &iter, COLUMN_INSTALLED, &installed, -1);
+		gtk_tree_model_get (model, &iter,
+				    COLUMN_INSTALLED, &installed,
+				    COLUMN_NAME, &name,
+				    COLUMN_VERSION, &version,
+				    COLUMN_ARCH, &arch, -1);
+
+		/* make back into package ID */
+		application->priv->package = pk_task_package_ident_build (name, version, arch);
+		g_free (name);
+		g_free (version);
+		g_free (arch);
+
 		g_print ("selected row is: %i %s\n", installed, application->priv->package);
 
 		/* make the button sensitivities correct */
@@ -606,19 +643,18 @@ pk_application_init (PkApplication *application)
 	widget = glade_xml_get_widget (application->priv->glade_xml, "button_find");
 	gtk_widget_set_sensitive (widget, FALSE);
 
-//	widget = glade_xml_get_widget (application->priv->glade_xml, "custom_graph");
-//	gtk_widget_set_size_request (widget, 600, 300);
+	gtk_widget_set_size_request (main_window, 800, 400);
+	gtk_widget_show (main_window);
 
 	/* FIXME: There's got to be a better way than this */
 	gtk_widget_hide (GTK_WIDGET (widget));
 	gtk_widget_show (GTK_WIDGET (widget));
 
-	gtk_widget_set_size_request (main_window, 700, 300);
-	gtk_widget_show (main_window);
-
 	/* create list store */
 	application->priv->store = gtk_list_store_new (NUM_COLUMNS,
 						       G_TYPE_BOOLEAN,
+						       G_TYPE_STRING,
+						       G_TYPE_STRING,
 						       G_TYPE_STRING,
 						       G_TYPE_STRING);
 

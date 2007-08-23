@@ -59,6 +59,12 @@ typedef enum {
 	PK_TASK_ERROR_CODE_UNKNOWN
 } PkTaskErrorCode;
 
+typedef struct {
+	gchar	*name;
+	gchar	*version;
+	gchar	*arch;
+} PkPackageIdent;
+
 PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
 const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
 
@@ -73,6 +79,17 @@ const gchar	*pk_task_error_code_to_localised_text	(PkTaskErrorCode code);
 PkTaskRestart	 pk_task_restart_from_text		(const gchar	*restart);
 const gchar	*pk_task_restart_to_text		(PkTaskRestart	 restart);
 const gchar	*pk_task_restart_to_localised_text	(PkTaskRestart	 restart);
+
+gboolean	 pk_task_check_package_id		(const gchar	*package_id);
+
+/* ident parsing */
+PkPackageIdent	*pk_task_package_ident_new		(void);
+PkPackageIdent	*pk_task_package_ident_from_string	(const gchar	*package_id);
+gchar		*pk_task_package_ident_build		(const gchar	*name,
+							 const gchar	*version,
+							 const gchar	*arch);
+gchar		*pk_task_package_ident_to_string	(PkPackageIdent *ident);
+gboolean	 pk_task_package_ident_free		(PkPackageIdent *ident);
 
 G_END_DECLS
 
