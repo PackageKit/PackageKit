@@ -255,3 +255,70 @@ pk_task_error_code_to_localised_text (PkTaskErrorCode code)
 	return text;
 }
 
+/**
+ * pk_task_restart_from_text:
+ **/
+PkTaskRestart
+pk_task_restart_from_text (const gchar *restart)
+{
+	g_return_val_if_fail (restart != NULL, PK_TASK_RESTART_UNKNOWN);
+
+	if (strcmp (restart, "system") == 0) {
+		return PK_TASK_RESTART_SYSTEM;
+	}
+	if (strcmp (restart, "session") == 0) {
+		return PK_TASK_RESTART_SESSION;
+	}
+	if (strcmp (restart, "application") == 0) {
+		return PK_TASK_RESTART_APPLICATION;
+	}
+	pk_error ("fall through: '%s'", restart);
+	return PK_TASK_RESTART_UNKNOWN;
+}
+
+/**
+ * pk_task_restart_to_text:
+ **/
+const gchar *
+pk_task_restart_to_text (PkTaskRestart restart)
+{
+	const gchar *text = NULL;
+	switch (restart) {
+	case PK_TASK_RESTART_SYSTEM:
+		text = "system";
+		break;
+	case PK_TASK_RESTART_SESSION:
+		text = "session";
+		break;
+	case PK_TASK_RESTART_APPLICATION:
+		text = "application";
+		break;
+	default:
+		pk_error ("restart unrecognised: %i", restart);
+	}
+	return text;
+}
+
+/**
+ * pk_task_restart_to_localised_text:
+ **/
+const gchar *
+pk_task_restart_to_localised_text (PkTaskRestart restart)
+{
+	const gchar *text = NULL;
+	switch (restart) {
+	case PK_TASK_RESTART_SYSTEM:
+		text = "A machine reboot is required";
+		break;
+	case PK_TASK_RESTART_SESSION:
+		text = "You will need to log off and log back on";
+		break;
+	case PK_TASK_RESTART_APPLICATION:
+		text = "You need to restart an application";
+		break;
+	default:
+		pk_error ("restart unrecognised: %i", restart);
+	}
+	return text;
+}
+

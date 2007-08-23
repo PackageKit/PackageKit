@@ -45,6 +45,13 @@ typedef enum {
 } PkTaskExit;
 
 typedef enum {
+	PK_TASK_RESTART_APPLICATION,
+	PK_TASK_RESTART_SESSION,
+	PK_TASK_RESTART_SYSTEM,
+	PK_TASK_RESTART_UNKNOWN
+} PkTaskRestart;
+
+typedef enum {
 	PK_TASK_ERROR_CODE_NO_NETWORK,
 	PK_TASK_ERROR_CODE_NOT_SUPPORTED,
 	PK_TASK_ERROR_CODE_INTERNAL_ERROR,
@@ -54,12 +61,18 @@ typedef enum {
 
 PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
 const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
+
 PkTaskStatus	 pk_task_status_from_text		(const gchar	*status);
 const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
 const gchar	*pk_task_status_to_localised_text	(PkTaskStatus	 status);
+
 PkTaskErrorCode	 pk_task_error_code_from_text		(const gchar	*code);
 const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);
 const gchar	*pk_task_error_code_to_localised_text	(PkTaskErrorCode code);
+
+PkTaskRestart	 pk_task_restart_from_text		(const gchar	*restart);
+const gchar	*pk_task_restart_to_text			(PkTaskRestart	 restart);
+const gchar	*pk_task_restart_to_localised_text	(PkTaskRestart	 restart);
 
 G_END_DECLS
 

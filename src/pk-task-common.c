@@ -163,6 +163,7 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 	gchar *command;
 	PkTaskErrorCode error_enum;
 	PkTaskStatus status_enum;
+	PkTaskRestart restart_enum;
 	gboolean ret = TRUE;
 
 	/* check if output line */
@@ -200,6 +201,14 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		}
 		error_enum = pk_task_error_code_from_text (sections[1]);
 		pk_task_error_code (task, error_enum, sections[2]);
+	} else if (strcmp (command, "requirerestart") == 0) {
+		if (size != 3) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		restart_enum = pk_task_restart_from_text (sections[1]);
+		pk_task_require_restart (task, restart_enum, sections[2]);
 	} else if (strcmp (command, "data") == 0) {
 		if (size != 2) {
 			g_error ("invalid command '%s'", command);
@@ -328,6 +337,21 @@ pk_task_package (PkTask *task, guint value, const gchar *package, const gchar *s
 
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
 	g_signal_emit (task, task->signals [PK_TASK_PACKAGE], 0, value, package, summary);
+
+	return TRUE;
+}
+
+/**
+ * pk_task_require_restart:
+ **/
+gboolean
+pk_task_require_restart (PkTask *task, PkTaskRestart restart, const gchar *details)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	pk_debug ("emit require-restart %i, %s", restart, details);
+	g_signal_emit (task, task->signals [PK_TASK_REQUIRE_RESTART], 0, restart, details);
 
 	return TRUE;
 }

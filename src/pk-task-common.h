@@ -41,6 +41,9 @@ gboolean	 pk_task_package			(PkTask		*task,
 							 guint		 value,
 							 const gchar	*package,
 							 const gchar	*summary);
+gboolean	 pk_task_require_restart			(PkTask		*task,
+							 PkTaskRestart	 restart,
+							 const gchar	*details);
 gboolean	 pk_task_description			(PkTask		*task,
 							 const gchar	*package,
 							 const gchar	*version,

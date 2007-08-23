@@ -190,6 +190,13 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
+STDERR		requirerestart<tab>$type<tab>$details
+		type:		Enumerated type, e.g. "system", "application", "session"
+		details:	Optional details about the restart
+		notes:		This can be sent as many times as needed by the
+				backend script. PackageKit will always choose
+				the 'worst' method in the UI notification.
+
 STDOUT		package<tab>$status<tab>$package_name<tab>$summary
 		$status:	Always "1"
 		$package_name:	The package name, e.g. openoffice-clipart
