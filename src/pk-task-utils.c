@@ -343,7 +343,7 @@ pk_task_check_package_id (const gchar *package_id)
 			sections += 1;
 		}
 	}
-	if (sections != 3) {
+	if (sections != 4) {
 		return FALSE;
 	}
 	return TRUE;
@@ -353,9 +353,10 @@ pk_task_check_package_id (const gchar *package_id)
  * pk_task_package_ident_build:
  **/
 gchar *
-pk_task_package_ident_build (const gchar *name, const gchar *version, const gchar *arch)
+pk_task_package_ident_build (const gchar *name, const gchar *version,
+			     const gchar *arch, const gchar *data)
 {
-	return g_strdup_printf ("%s;%s;%s", name, version, arch);
+	return g_strdup_printf ("%s;%s;%s;%s", name, version, arch, data);
 }
 
 /**
@@ -369,6 +370,7 @@ pk_task_package_ident_new (void)
 	ident->name = NULL;
 	ident->version = NULL;
 	ident->arch = NULL;
+	ident->data = NULL;
 	return ident;
 }
 
@@ -385,10 +387,11 @@ pk_task_package_ident_from_string (const gchar *package_id)
 	ident = pk_task_package_ident_new ();
 
 	/* split by delimeter ';' */
-	sections = g_strsplit (package_id, ";", 3);
+	sections = g_strsplit (package_id, ";", 4);
 	ident->name = g_strdup (sections[0]);
 	ident->version = g_strdup (sections[1]);
 	ident->arch = g_strdup (sections[2]);
+	ident->data = g_strdup (sections[3]);
 	g_strfreev (sections);
 	return ident;	
 }
@@ -399,7 +402,8 @@ pk_task_package_ident_from_string (const gchar *package_id)
 gchar *
 pk_task_package_ident_to_string (PkPackageIdent *ident)
 {
-	return g_strdup_printf ("%s;%s;%s", ident->name, ident->version, ident->arch);
+	return g_strdup_printf ("%s;%s;%s;%s", ident->name, ident->version,
+				ident->arch, ident->data);
 }
 
 /**
@@ -411,6 +415,7 @@ pk_task_package_ident_free (PkPackageIdent *ident)
 	g_free (ident->name);
 	g_free (ident->arch);
 	g_free (ident->version);
+	g_free (ident->data);
 	g_free (ident);
 	return TRUE;
 }

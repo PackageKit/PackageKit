@@ -67,6 +67,7 @@ enum
 	COLUMN_VERSION,
 	COLUMN_ARCH,
 	COLUMN_DESCRIPTION,
+	COLUMN_DATA,
 	NUM_COLUMNS
 };
 
@@ -227,6 +228,7 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 			    COLUMN_NAME, ident->name,
 			    COLUMN_VERSION, ident->version,
 			    COLUMN_ARCH, ident->arch,
+			    COLUMN_DATA, ident->data,
 			    COLUMN_DESCRIPTION, summary,
 			    -1);
 	pk_task_package_ident_free (ident);
@@ -472,6 +474,14 @@ pk_misc_add_columns (GtkTreeView *treeview)
 							   "text", COLUMN_DESCRIPTION, NULL);
 	gtk_tree_view_column_set_sort_column_id (column, COLUMN_DESCRIPTION);
 	gtk_tree_view_append_column (treeview, column);
+
+	/* column for arch */
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes ("Data", renderer,
+							   "text", COLUMN_DATA, NULL);
+	gtk_tree_view_column_set_sort_column_id (column, COLUMN_DATA);
+	gtk_tree_view_append_column (treeview, column);
+
 }
 
 /**
@@ -498,6 +508,7 @@ pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
 	gchar *name;
 	gchar *version;
 	gchar *arch;
+	gchar *data;
 
 	/* This will only work in single or browse selection mode! */
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
@@ -506,13 +517,15 @@ pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
 				    COLUMN_INSTALLED, &installed,
 				    COLUMN_NAME, &name,
 				    COLUMN_VERSION, &version,
-				    COLUMN_ARCH, &arch, -1);
+				    COLUMN_ARCH, &arch,
+				    COLUMN_DATA, &data, -1);
 
 		/* make back into package ID */
-		application->priv->package = pk_task_package_ident_build (name, version, arch);
+		application->priv->package = pk_task_package_ident_build (name, version, arch, data);
 		g_free (name);
 		g_free (version);
 		g_free (arch);
+		g_free (data);
 
 		g_print ("selected row is: %i %s\n", installed, application->priv->package);
 
@@ -653,6 +666,7 @@ pk_application_init (PkApplication *application)
 	/* create list store */
 	application->priv->store = gtk_list_store_new (NUM_COLUMNS,
 						       G_TYPE_BOOLEAN,
+						       G_TYPE_STRING,
 						       G_TYPE_STRING,
 						       G_TYPE_STRING,
 						       G_TYPE_STRING,

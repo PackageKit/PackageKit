@@ -63,6 +63,7 @@ typedef struct {
 	gchar	*name;
 	gchar	*version;
 	gchar	*arch;
+	gchar	*data;
 } PkPackageIdent;
 
 PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
@@ -87,7 +88,8 @@ PkPackageIdent	*pk_task_package_ident_new		(void);
 PkPackageIdent	*pk_task_package_ident_from_string	(const gchar	*package_id);
 gchar		*pk_task_package_ident_build		(const gchar	*name,
 							 const gchar	*version,
-							 const gchar	*arch);
+							 const gchar	*arch,
+							 const gchar	*data);
 gchar		*pk_task_package_ident_to_string	(PkPackageIdent *ident);
 gboolean	 pk_task_package_ident_free		(PkPackageIdent *ident);
 

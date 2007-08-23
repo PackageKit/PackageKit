@@ -35,13 +35,19 @@
  * pk_console_package_cb:
  **/
 static gchar *
-pk_console_make_space (const gchar *data, guint length)
+pk_console_make_space (const gchar *data, guint length, guint *extra)
 {
 	gint size;
 	gchar *padding;
-	size = (length - strlen(data));
-	if (size < 0) {
-		size = 0;
+	*extra = 0;
+
+	size = length;
+	if (data != NULL) {
+		size = (length - strlen(data));
+		if (size < 0) {
+			*extra = -size;
+			size = 0;
+		}
 	}
 	padding = g_strnfill (size, ' ');
 	return padding;
@@ -56,6 +62,7 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 	PkPackageIdent *ident;
 	PkPackageIdent *spacing;
 	const gchar *installed;
+	guint extra;
 
 	if (value == 0) {
 		installed = "no  ";
@@ -67,15 +74,18 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 	ident = pk_task_package_ident_from_string (package_id);
 
 	/* these numbers are guesses */
-	spacing->name = pk_console_make_space (ident->name, 20);
-	spacing->version = pk_console_make_space (ident->version, 20);
-	spacing->arch = pk_console_make_space (ident->arch, 10);
+	extra = 0;
+	spacing->name = pk_console_make_space (ident->name, 20, &extra);
+	spacing->version = pk_console_make_space (ident->version, 15-extra, &extra);
+	spacing->arch = pk_console_make_space (ident->arch, 7-extra, &extra);
+	spacing->data = pk_console_make_space (ident->data, 7-extra, &extra);
 
 	/* pretty print */
-	g_print ("%s %s%s %s%s %s%s %s\n", installed,
+	g_print ("%s %s%s %s%s %s%s %s%s %s\n", installed,
 		 ident->name, spacing->name,
 		 ident->version, spacing->version,
 		 ident->arch, spacing->arch,
+		 ident->data, spacing->data,
 		 summary);
 
 	/* free all the data */
