@@ -168,11 +168,14 @@ pk_task_status_to_localised_text (PkTaskStatus status)
 	case PK_TASK_STATUS_INSTALL:
 		text = "Installing";
 		break;
+	case PK_TASK_STATUS_REFRESH_CACHE:
+		text = "Refreshing package cache";
+		break;
 	case PK_TASK_STATUS_UPDATE:
 		text = "Updating";
 		break;
 	default:
-		text = "Invalid";
+		pk_error ("status unrecognised: %i", status);
 	}
 	return text;
 }
