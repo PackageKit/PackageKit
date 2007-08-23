@@ -19,41 +19,69 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-//	command = g_strdup_printf ("/usr/bin/apt-cache search %s", search);
-
 #include <string.h>
+
+#include <apt-pkg/pkgcache.h>
+#include <apt-pkg/cachefile.h>
+#include <apt-pkg/progress.h>
+#include <apt-pkg/configuration.h>
+#include <apt-pkg/init.h>
+#include <apt-pkg/pkgrecords.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
 #include "pk-spawn.h"
 
-static void     pk_task_class_init	(PkTaskClass *klass);
-static void     pk_task_init		(PkTask      *task);
-static void     pk_task_finalize	(GObject     *object);
+static void pk_task_class_init(PkTaskClass * klass);
+static void pk_task_init(PkTask * task);
+static void pk_task_finalize(GObject * object);
 
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
 
+static pkgCacheFile* getCache()
+{
+	static pkgCacheFile *fileCache = NULL;
+	if (fileCache == NULL)
+	{
+		if (pkgInitConfig(*_config) == false)
+			pk_debug("pkginitconfig was false");
+		if (pkgInitSystem(*_config, _system) == false)
+			pk_debug("pkginitsystem was false");
+		fileCache = new pkgCacheFile();
+
+		OpTextProgress Prog;
+		if (fileCache->Open(Prog, FALSE) == FALSE)
+		{
+			pk_debug("I need more privelges");
+			fileCache->Close();
+			fileCache = NULL;
+		}
+		else
+			pk_debug("cache inited");
+	}
+	return fileCache;
+}
+
 struct PkTaskPrivate
 {
-	gboolean		 whatever_you_want;
-	guint			 progress_percentage;
+	guint progress_percentage;
 };
 
-static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
+static guint signals[PK_TASK_LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
+G_DEFINE_TYPE(PkTask, pk_task, G_TYPE_OBJECT)
 
 /**
  * pk_task_get_updates:
  **/
-gboolean
-pk_task_get_updates (PkTask *task)
+gboolean pk_task_get_updates(PkTask * task)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -64,13 +92,13 @@ pk_task_get_updates (PkTask *task)
 /**
  * pk_task_refresh_cache:
  **/
-gboolean
-pk_task_refresh_cache (PkTask *task, gboolean force)
+gboolean pk_task_refresh_cache(PkTask * task, gboolean force)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -81,13 +109,13 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 /**
  * pk_task_update_system:
  **/
-gboolean
-pk_task_update_system (PkTask *task)
+gboolean pk_task_update_system(PkTask * task)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -95,88 +123,185 @@ pk_task_update_system (PkTask *task)
 	return FALSE;
 }
 
-#if 0
-
-/**
- * pk_task_parse_data:
- **/
-static void
-pk_task_parse_data (PkTask *task, const gchar *line)
+struct ExDescFile
 {
-	char **sections;
-	gboolean okay;
+	pkgCache::DescFile *Df;
+	bool NameMatch;
+};
 
-	/* check if output line */
-	if (strstr (line, " - ") == NULL)
-		return;		
-	sections = g_strsplit (line, " - ", 0);
-	okay = pk_task_filter_package_name (NULL, sections[0]);
-	if (okay == TRUE) {
-		pk_debug ("package='%s' shortdesc='%s'", sections[0], sections[1]);
-		pk_task_package (task, TRUE, sections[0], sections[1]);
+// LocalitySort - Sort a version list by package file locality		/*{{{*/
+// ---------------------------------------------------------------------
+/* */
+static int LocalityCompare(const void *a, const void *b)
+{
+	pkgCache::VerFile *A = *(pkgCache::VerFile **)a;
+	pkgCache::VerFile *B = *(pkgCache::VerFile **)b;
+
+	if (A == 0 && B == 0)
+		return 0;
+	if (A == 0)
+		return 1;
+	if (B == 0)
+		return -1;
+
+	if (A->File == B->File)
+		return A->Offset - B->Offset;
+	return A->File - B->File;
+}
+
+static void LocalitySort(pkgCache::DescFile **begin,
+		  unsigned long Count,size_t Size)
+{
+	qsort(begin,Count,Size,LocalityCompare);
+}
+
+struct search_task
+{
+	PkTask *task;
+	gchar *search;
+	guint depth;
+	gboolean installed;
+	gboolean available;
+};
+
+static void * do_search_task(gpointer data)
+{
+	search_task *st = (search_task*)data;
+	ExDescFile *DFList = NULL;
+
+	pk_task_change_job_status(st->task, PK_TASK_STATUS_QUERY);
+	pk_task_no_percentage_updates(st->task);
+
+	pk_debug("finding %s", st->search);
+	pkgCache & pkgCache = *(getCache());
+	pkgDepCache::Policy Plcy;
+	// Create the text record parser
+	pkgRecords Recs(pkgCache);
+
+	// Compile the regex pattern
+	regex_t *Pattern = new regex_t;
+	memset(Pattern, 0, sizeof(*Pattern));
+	if (regcomp(Pattern, st->search, REG_EXTENDED | REG_ICASE | REG_NOSUB) != 0)
+	{
+		pk_task_error_code (st->task, PK_TASK_ERROR_CODE_UNKNOWN, "regex compilation error");
+		pk_task_finished (st->task, PK_TASK_EXIT_FAILED);
+		goto search_task_cleanup;
 	}
-	g_strfreev (sections);
+
+	DFList = new ExDescFile[pkgCache.HeaderP->PackageCount + 1];
+	memset(DFList, 0, sizeof(*DFList) * pkgCache.HeaderP->PackageCount + 1);
+
+	// Map versions that we want to write out onto the VerList array.
+	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
+	{
+		DFList[P->ID].NameMatch = true;
+		if (regexec(Pattern, P.Name(), 0, 0, 0) == 0)
+			DFList[P->ID].NameMatch &= true;
+		else
+			DFList[P->ID].NameMatch = false;
+
+		// Doing names only, drop any that dont match..
+		if (st->depth==0 && DFList[P->ID].NameMatch == false)
+			continue;
+
+		// Find the proper version to use. 
+		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
+		if (V.end() == false)
+			DFList[P->ID].Df = V.DescriptionList().FileList();
+	}
+
+	// Include all the packages that provide matching names too
+	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
+	{
+		if (DFList[P->ID].NameMatch == false)
+			continue;
+
+		for (pkgCache::PrvIterator Prv = P.ProvidesList(); Prv.end() == false; Prv++)
+		{
+			pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
+			if (V.end() == false)
+			{
+				DFList[Prv.OwnerPkg()->ID].Df = V.DescriptionList().FileList();
+				DFList[Prv.OwnerPkg()->ID].NameMatch = true;
+			}
+		}
+	}
+
+	LocalitySort(&DFList->Df, pkgCache.HeaderP->PackageCount, sizeof(*DFList));
+
+	// Iterate over all the version records and check them
+	for (ExDescFile * J = DFList; J->Df != 0; J++)
+	{
+		pkgRecords::Parser & P = Recs.Lookup(pkgCache::DescFileIterator(pkgCache, J->Df));
+
+		gboolean Match = true;
+		if (J->NameMatch == false)
+		{
+			string LongDesc = P.LongDesc();
+			if (regexec(Pattern, LongDesc.c_str(), 0, 0, 0) == 0)
+				Match = true;
+			else
+				Match = false;
+		}
+
+		if (Match == true && pk_task_filter_package_name(st->task,P.Name().c_str()))
+			pk_task_package(st->task, true, P.Name().c_str(), P.ShortDesc().c_str());
+	}
+
+	pk_task_finished(st->task, PK_TASK_EXIT_SUCCESS);
+
+	search_task_cleanup:
+	delete[] DFList;
+	regfree(Pattern);
+	g_free(st->search);
+	g_free(st);
+
+	return NULL;
 }
 
-/**
- * pk_spawn_finished_cb:
- **/
-static void
-pk_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
+gboolean pk_task_find_packages(PkTask * task, const gchar * search, guint depth, gboolean installed, gboolean available)
 {
-	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
-	g_object_unref (spawn);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-}
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-/**
- * pk_spawn_stdout_cb:
- **/
-static void
-pk_spawn_stdout_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stdout from %p = '%s'", spawn, line);
-	pk_task_parse_data (task, line);
-}
-
-/**
- * pk_spawn_stderr_cb:
- **/
-static void
-pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stderr from %p = '%s'", spawn, line);
-}
-
-#endif
-
-/**
- * pk_task_find_packages:
- **/
-gboolean
-pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	search_task *data = g_new(struct search_task, 1);
+	if (data == NULL)
+	{
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for search task");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+	}
+	else
+	{
+		data->task = task;
+		data->search = g_strdup(search);
+		data->depth = depth;
+		data->installed = installed;
+		data->available = available;
+
+		if (g_thread_create(do_search_task,data,false,NULL)==NULL)
+		{
+			pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "can't spawn thread");
+			pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		}
+	}
+	return TRUE;
 }
 
 /**
  * pk_task_get_deps:
  **/
-gboolean
-pk_task_get_deps (PkTask *task, const gchar *package)
+gboolean pk_task_get_deps(PkTask * task, const gchar * package)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -187,13 +312,13 @@ pk_task_get_deps (PkTask *task, const gchar *package)
 /**
  * pk_task_get_description:
  **/
-gboolean
-pk_task_get_description (PkTask *task, const gchar *package)
+gboolean pk_task_get_description(PkTask * task, const gchar * package)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -204,13 +329,13 @@ pk_task_get_description (PkTask *task, const gchar *package)
 /**
  * pk_task_remove_package:
  **/
-gboolean
-pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
+gboolean pk_task_remove_package(PkTask * task, const gchar * package, gboolean allow_deps)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -221,13 +346,13 @@ pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
 /**
  * pk_task_install_package:
  **/
-gboolean
-pk_task_install_package (PkTask *task, const gchar *package)
+gboolean pk_task_install_package(PkTask * task, const gchar * package)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
-	if (pk_task_assign (task) == FALSE) {
+	if (pk_task_assign(task) == FALSE)
+	{
 		return FALSE;
 	}
 
@@ -238,15 +363,15 @@ pk_task_install_package (PkTask *task, const gchar *package)
 /**
  * pk_task_cancel_job_try:
  **/
-gboolean
-pk_task_cancel_job_try (PkTask *task)
+gboolean pk_task_cancel_job_try(PkTask * task)
 {
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
 
 	/* check to see if we have an action */
-	if (task->assigned == FALSE) {
-		pk_warning ("Not assigned");
+	if (task->assigned == FALSE)
+	{
+		pk_warning("Not assigned");
 		return FALSE;
 	}
 
@@ -257,50 +382,46 @@ pk_task_cancel_job_try (PkTask *task)
 /**
  * pk_task_class_init:
  **/
-static void
-pk_task_class_init (PkTaskClass *klass)
+static void pk_task_class_init(PkTaskClass * klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
 	object_class->finalize = pk_task_finalize;
-	pk_task_setup_signals (object_class, signals);
-	g_type_class_add_private (klass, sizeof (PkTaskPrivate));
+	pk_task_setup_signals(object_class, signals);
+	g_type_class_add_private(klass, sizeof(PkTaskPrivate));
 }
 
 /**
  * pk_task_init:
  **/
-static void
-pk_task_init (PkTask *task)
+static void pk_task_init(PkTask * task)
 {
-	task->priv = PK_TASK_GET_PRIVATE (task);
+	task->priv = PK_TASK_GET_PRIVATE(task);
 	task->signals = signals;
-	pk_task_clear (task);
+	pk_task_clear(task);
 }
 
 /**
  * pk_task_finalize:
  **/
-static void
-pk_task_finalize (GObject *object)
+static void pk_task_finalize(GObject * object)
 {
 	PkTask *task;
-	g_return_if_fail (object != NULL);
-	g_return_if_fail (PK_IS_TASK (object));
-	task = PK_TASK (object);
-	g_return_if_fail (task->priv != NULL);
-	g_free (task->package);
-	G_OBJECT_CLASS (pk_task_parent_class)->finalize (object);
+	g_return_if_fail(object != NULL);
+	g_return_if_fail(PK_IS_TASK(object));
+	task = PK_TASK(object);
+	g_return_if_fail(task->priv != NULL);
+	g_free(task->package);
+	G_OBJECT_CLASS(pk_task_parent_class)->finalize(object);
 }
 
 /**
  * pk_task_new:
  **/
-PkTask *
-pk_task_new (void)
+PkTask *pk_task_new(void)
 {
 	PkTask *task;
-	task = (PkTask *) g_object_new (PK_TYPE_TASK, NULL);
-	return PK_TASK (task);
+	task = (PkTask *) g_object_new(PK_TYPE_TASK, NULL);
+	return PK_TASK(task);
 }
 
