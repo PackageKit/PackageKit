@@ -306,7 +306,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
 		pk_task_client_wait_if_sync (tclient);
 	}
 
-	return TRUE;
+	return ret;
 }
 
 /**
@@ -510,7 +510,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package, gboo
 		pk_task_client_wait_if_sync (tclient);
 	}
 
-	return TRUE;
+	return ret;
 }
 
 /**

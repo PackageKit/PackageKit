@@ -32,6 +32,7 @@
 #include "pk-application.h"
 #include "pk-debug.h"
 #include "pk-task-client.h"
+#include "pk-connection.h"
 
 static void     pk_application_class_init (PkApplicationClass *klass);
 static void     pk_application_init       (PkApplication      *application);
@@ -44,6 +45,7 @@ struct PkApplicationPrivate
 	GladeXML		*glade_xml;
 	GtkListStore		*store;
 	PkTaskClient		*tclient;
+	PkConnection		*pconnection;
 	gchar			*package;
 	gboolean		 task_ended;
 	gboolean		 find_installed;
@@ -101,6 +103,25 @@ pk_application_class_init (PkApplicationClass *klass)
 }
 
 /**
+ * pk_console_error_code_cb:
+ **/
+static void
+pk_application_error_message (PkApplication *application, const gchar *title, const gchar *details)
+{
+	GtkWidget *main_window;
+	GtkWidget *dialog;
+
+	pk_warning ("error %s:%s", title, details);
+	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
+
+	dialog = gtk_message_dialog_new (GTK_WINDOW (main_window), GTK_DIALOG_DESTROY_WITH_PARENT,
+					 GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, title);
+	gtk_message_dialog_format_secondary_markup (GTK_MESSAGE_DIALOG (dialog), details);
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (GTK_WIDGET (dialog));
+}
+
+/**
  * pk_application_help_cb:
  * @widget: The GtkWidget object
  * @graph: This graph class instance
@@ -129,6 +150,8 @@ pk_application_install_cb (GtkWidget      *widget,
 	/* ick, we failed so pretend we didn't do the action */
 	if (ret == FALSE) {
 		pk_task_client_reset (application->priv->tclient);
+		pk_application_error_message (application,
+					      "The package could not be installed", NULL);
 	}
 }
 
@@ -149,6 +172,8 @@ pk_application_remove_cb (GtkWidget      *widget,
 	/* ick, we failed so pretend we didn't do the action */
 	if (ret == FALSE) {
 		pk_task_client_reset (application->priv->tclient);
+		pk_application_error_message (application,
+					      "The package could not be removed", NULL);
 	}
 }
 
@@ -162,6 +187,9 @@ pk_application_deps_cb (GtkWidget *widget,
 		   PkApplication  *application)
 {
 	pk_debug ("deps %s", application->priv->package);
+	//TODO: at least try...
+	pk_application_error_message (application,
+				      "The package deps could not be found", NULL);
 }
 
 /**
@@ -199,18 +227,8 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package,
 static void
 pk_console_error_code_cb (PkTaskClient *tclient, PkTaskErrorCode code, const gchar *details, PkApplication *application)
 {
-	GtkWidget *main_window;
-	GtkWidget *dialog;
-
-	pk_warning ("error %i:%s", code, details);
-	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
-
-	dialog = gtk_message_dialog_new (GTK_WINDOW (main_window), GTK_DIALOG_DESTROY_WITH_PARENT,
-					 GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-					 "%s", pk_task_error_code_to_localised_text (code));
-	gtk_message_dialog_format_secondary_markup (GTK_MESSAGE_DIALOG (dialog), details);
-	gtk_dialog_run (GTK_DIALOG (dialog));
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	pk_application_error_message (application,
+				      pk_task_error_code_to_localised_text (code), details);
 }
 
 /**
@@ -233,6 +251,13 @@ pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, PkApplicatio
 
 	/* reset tclient */
 	pk_task_client_reset (application->priv->tclient);
+
+	/* panic */
+	if (status == PK_TASK_EXIT_FAILED) {
+		pk_application_error_message (application,
+					      "The action did not complete",
+					      NULL);
+	}
 }
 
 /**
@@ -472,6 +497,19 @@ pk_application_treeview_clicked_cb (GtkTreeSelection *selection,
 }
 
 /**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkApplication *application)
+{
+	pk_debug ("connected=%i", connected);
+	if (connected == FALSE && application->priv->task_ended == FALSE) {
+		/* forcibly end the transaction */
+		pk_console_finished_cb (application->priv->tclient, PK_TASK_EXIT_FAILED, application);
+	}
+}
+
+/**
  * pk_application_init:
  * @graph: This graph class instance
  **/
@@ -483,7 +521,7 @@ pk_application_init (PkApplication *application)
 
 	application->priv = PK_APPLICATION_GET_PRIVATE (application);
 	application->priv->package = NULL;
-	application->priv->task_ended = FALSE;
+	application->priv->task_ended = TRUE;
 	application->priv->find_installed = TRUE;
 	application->priv->find_available = TRUE;
 	application->priv->search_depth = 0;
@@ -499,6 +537,10 @@ pk_application_init (PkApplication *application)
 			  G_CALLBACK (pk_console_no_percentage_updates_cb), application);
 	g_signal_connect (application->priv->tclient, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), application);
+
+	application->priv->pconnection = pk_connection_new ();
+	g_signal_connect (application->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), application);
 
 	application->priv->glade_xml = glade_xml_new (PK_DATA "/pk-application.glade", NULL, NULL);
 	main_window = glade_xml_get_widget (application->priv->glade_xml, "window_manager");
@@ -612,6 +654,7 @@ pk_application_finalize (GObject *object)
 
 	g_object_unref (application->priv->store);
 	g_object_unref (application->priv->tclient);
+	g_object_unref (application->priv->pconnection);
 	g_free (application->priv->package);
 
 	G_OBJECT_CLASS (pk_application_parent_class)->finalize (object);

@@ -11,6 +11,4 @@ Order of no particular importance:
 * Add FindPackagesByGroup() and GetGroupList perhaps
 * Add RequireRestart(s=system,application,session,s=detail)
 * Add a way to import GPG keys (and add error enum gpg-key-required)
-* If PK crashes in the middle of a pk-application method then stop job and
-  report an error to the user.
 
