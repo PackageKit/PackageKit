@@ -278,7 +278,7 @@ pk_task_clear (PkTask *task)
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
 	task->assigned = FALSE;
-	task->status = PK_TASK_STATUS_INVALID;
+	task->status = PK_TASK_STATUS_UNKNOWN;
 	task->exit = PK_TASK_EXIT_UNKNOWN;
 	task->job = 1;
 	task->package = NULL;

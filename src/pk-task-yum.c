@@ -83,6 +83,48 @@ pk_task_parse_data (PkTask *task, const gchar *line)
 }
 
 /**
+ * pk_task_parse_command_common:
+ **/
+static gboolean
+pk_task_parse_command_common (PkTask *task, const gchar *line)
+{
+	gchar **sections;
+	guint size;
+	guint percentage;
+	gchar *command;
+	gboolean ret = TRUE;
+
+	/* split by tab */
+	sections = g_strsplit (line, "\t", 0);
+	command = sections[0];
+
+	/* get size */
+	for (size=0; sections[size]; size++);
+
+	if (strcmp (command, "percentage") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		percentage = atoi(sections[1]);
+		pk_task_change_percentage (task, percentage);
+	} else if (strcmp (command, "no-percentage-updates") == 0) {
+		if (size != 1) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_task_no_percentage_updates (task);
+	} else {
+		pk_error ("invalid command '%s'", command);
+	}		
+out:
+	g_strfreev (sections);
+	return ret;
+}
+
+/**
  * pk_spawn_finished_cb:
  **/
 static void
@@ -110,6 +152,7 @@ static void
 pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
 {
 	pk_debug ("stderr from %p = '%s'", spawn, line);
+	pk_task_parse_command_common (task, line);
 }
 
 /**
@@ -120,7 +163,9 @@ pk_spawn_task_helper (PkTask *task, const gchar *command)
 {
 	PkSpawn *spawn;
 	gboolean ret;
+	gchar *filename;
 
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", command, NULL);
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
 			  G_CALLBACK (pk_spawn_finished_cb), task);
@@ -128,13 +173,14 @@ pk_spawn_task_helper (PkTask *task, const gchar *command)
 			  G_CALLBACK (pk_spawn_stdout_cb), task);
 	g_signal_connect (spawn, "stderr",
 			  G_CALLBACK (pk_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, command);
+	ret = pk_spawn_command (spawn, filename);
 	if (ret == FALSE) {
-		g_warning ("spawn failed: '%s'", command);
+		g_warning ("spawn failed: '%s'", filename);
 		g_object_unref (spawn);
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "spawn failed");
 		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	}
+	g_free (filename);
 }
 
 /**
@@ -175,7 +221,8 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 	}
 
 	/* easy as that */
-	pk_spawn_task_helper (task, DATADIR "/PackageKit/helpers/yum-refresh-cache.py");
+	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
+	pk_spawn_task_helper (task, "yum-refresh-cache.py");
 
 	return TRUE;
 }
@@ -240,7 +287,7 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_no_percentage_updates (task);
 
-	command = g_strdup_printf (DATADIR "/PackageKit/helpers/%s %s %s", script, mode, search);
+	command = g_strdup_printf ("%s %s %s", script, mode, search);
 	pk_spawn_task_helper (task, command);
 	g_free (command);
 	return TRUE;

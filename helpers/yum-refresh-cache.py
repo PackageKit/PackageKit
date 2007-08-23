@@ -14,7 +14,7 @@ import yum
 import sys
 
 def progress(pct):
-    print >> sys.stderr, "percentage:%i" % (pct)
+    print >> sys.stderr, "percentage\t%i" % (pct)
 
 my = yum.YumBase()
 my.doConfigSetup()

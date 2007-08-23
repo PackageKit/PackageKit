@@ -14,16 +14,27 @@ you have a compiled backend to use if you need it.
 
 ========= Find Packages ========= 
 
-FILENAME:	{backend}-search-name.*
+FILENAME	{backend}-search-name.*
 
-STDIN:		$options $search_term
+STDIN		$options $search_term
 		options:	One of "installed", "available", "all".
 		search_term:	Single word search term with no wildcard chars.
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
-		notes:		This is optional. Backends should send the signal
-				NoPercentageUpdates if these are not expected.
+		notes:		This is optional. Backends should send the DBUS
+				signal NoPercentageUpdates or use no-percentage-updates
+				if the remaining position cannot be calculated.
+
+STDERR		no-percentage-updates
+		notes:		This is optional and signifies that the helper
+				is no longer able to send percentage updates.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	"yes" if installed, "no" if not
@@ -34,45 +45,57 @@ NOTES:		Do not refresh the package cache. This should be fast.
 
 ========= Refresh Cache =========
 
-FILENAME:	{backend}-refresh-cache.*
+FILENAME	{backend}-refresh-cache.*
 
-STDIN:		<none>
+STDIN		<none>
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
-STDERR		subpercentage:$value
+STDERR		subpercentage<tab>$value
 		$value:		Percentage complete of the sub-transaction.
 		notes:		This is optional.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		<none>
 
 ========= Install Packages ========= 
 
-FILENAME:	{backend}-install.*
+FILENAME	{backend}-install.*
 
-STDIN:		$package
+STDIN		$package
 		package:	Single word package with no wildcard chars.
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
-STDERR		subpercentage:$value
+STDERR		subpercentage<tab>$value
 		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
 
-STDERR		status:$state
+STDERR		status<tab>$state
 		$state:		One of "download", "install", "update", "remove"
 		notes:		This is optional.
 
-STDERR		data:$current_data
+STDERR		data<tab>$current_data
 		$current_data:	The current worked on package
 		notes:		This is optional, but allows the UI to show what
 				package is being installed on for that sub-transaction.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	Always "yes"
@@ -83,28 +106,34 @@ STDOUT		$status<tab>$package_name<tab>$summary
 
 ========= Remove Packages ========= 
 
-FILENAME:	{backend}-install.*
+FILENAME	{backend}-install.*
 
-STDIN:		$allowdeps $package
+STDIN		$allowdeps $package
 		allowdeps:	Either "yes" or "no". If yes allow other packages
 				to be removed with the package, but "no" should
 				cause the script to abort if other packages are
 				dependant on the package.
 		package:	Single word package with no wildcard chars.
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
-STDERR		subpercentage:$value
+STDERR		subpercentage<tab>$value
 		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
 
-STDERR		data:$current_data
+STDERR		data<tab>$current_data
 		$current_data:	The current worked on package
 		notes:		This is optional, but allows the UI to show what
 				package is being installed on for that sub-transaction.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	Always "yes"
@@ -115,15 +144,21 @@ STDOUT		$status<tab>$package_name<tab>$summary
 
 ========= Get Dependancies ========= 
 
-FILENAME:	{backend}-get-deps.*
+FILENAME	{backend}-get-deps.*
 
-STDIN:		$package
+STDIN		$package
 		package:	Single word package with no wildcard chars.
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	Always "yes"
@@ -132,18 +167,24 @@ STDOUT		$status<tab>$package_name<tab>$summary
 
 ========= Update System ========= 
 
-FILENAME:	{backend}-update-system.*
+FILENAME	{backend}-update-system.*
 
-STDIN:		<none>
+STDIN		<none>
 
-STDERR		percentage:$value
+STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
 		notes:		This is optional. Backends should send the signal
 				NoPercentageUpdates if these are not expected.
 
-STDERR		subpercentage:$value
+STDERR		subpercentage<tab>$value
 		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$status<tab>$package_name<tab>$summary
 		$status:	Always "yes"
@@ -154,10 +195,16 @@ STDOUT		$status<tab>$package_name<tab>$summary
 
 ========= Get Description ========= 
 
-FILENAME:	{backend}-get-description.*
+FILENAME	{backend}-get-description.*
 
-STDIN:		$package
+STDIN		$package
 		package:	Single word package with no wildcard chars.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		$package_name<tab>$version<tab>$detail<tab>$url
 		$package_name:	The package name, e.g. openoffice-clipart

@@ -77,7 +77,7 @@ pk_task_exit_to_text (PkTaskExit exit)
 PkTaskStatus
 pk_task_status_from_text (const gchar *status)
 {
-	g_return_val_if_fail (status != NULL, PK_TASK_STATUS_INVALID);
+	g_return_val_if_fail (status != NULL, PK_TASK_STATUS_UNKNOWN);
 
 	if (strcmp (status, "setup") == 0) {
 		return PK_TASK_STATUS_SETUP;
@@ -88,6 +88,9 @@ pk_task_status_from_text (const gchar *status)
 	if (strcmp (status, "remove") == 0) {
 		return PK_TASK_STATUS_REMOVE;
 	}
+	if (strcmp (status, "refresh-cache") == 0) {
+		return PK_TASK_STATUS_REFRESH_CACHE;
+	}
 	if (strcmp (status, "download") == 0) {
 		return PK_TASK_STATUS_DOWNLOAD;
 	}
@@ -97,8 +100,11 @@ pk_task_status_from_text (const gchar *status)
 	if (strcmp (status, "update") == 0) {
 		return PK_TASK_STATUS_UPDATE;
 	}
-	pk_warning ("fall through to INVALID '%s'", status);
-	return PK_TASK_STATUS_INVALID;
+	if (strcmp (status, "unknown") == 0) {
+		return PK_TASK_STATUS_UNKNOWN;
+	}
+	pk_error ("fall through: '%s'", status);
+	return PK_TASK_STATUS_UNKNOWN;
 }
 
 /**
@@ -115,6 +121,9 @@ pk_task_status_to_text (PkTaskStatus status)
 	case PK_TASK_STATUS_QUERY:
 		text = "query";
 		break;
+	case PK_TASK_STATUS_REFRESH_CACHE:
+		text = "refresh-cache";
+		break;
 	case PK_TASK_STATUS_REMOVE:
 		text = "remove";
 		break;
@@ -127,8 +136,11 @@ pk_task_status_to_text (PkTaskStatus status)
 	case PK_TASK_STATUS_UPDATE:
 		text = "update";
 		break;
+	case PK_TASK_STATUS_UNKNOWN:
+		text = "unknown";
+		break;
 	default:
-		text = "invalid";
+		pk_error ("status unrecognised: %i", status);
 	}
 	return text;
 }

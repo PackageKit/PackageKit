@@ -2,6 +2,7 @@ Order of no particular importance:
 
 * Use libgbus in PkNetwork to avoid warning message
 * Move the common spawn code from the yum backend to common
+* Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Complete the yum backend!
 * Add details into the application UI
