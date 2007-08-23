@@ -60,6 +60,7 @@ struct PkTaskClientPrivate
 	PkTaskMonitor		*tmonitor;
 	PkConnection		*pconnection;
 	PkPolkitClient		*polkit;
+	PkTaskRestart		 require_restart;
 	gboolean		 is_finished;
 	GPtrArray		*package_items;
 };
@@ -101,6 +102,18 @@ pk_task_client_get_use_buffer (PkTaskClient *tclient)
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
 	return tclient->priv->use_buffer;
+}
+
+/**
+ * pk_task_client_get_use_buffer:
+ **/
+PkTaskRestart
+pk_task_client_get_require_restart (PkTaskClient *tclient)
+{
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	return tclient->priv->require_restart;
 }
 
 /**
@@ -759,6 +772,25 @@ pk_task_client_error_code_cb (PkTaskMonitor  *tmonitor,
 }
 
 /**
+ * pk_task_client_require_restart_cb:
+ */
+static void
+pk_task_client_require_restart_cb (PkTaskMonitor  *tmonitor,
+				   PkTaskRestart   restart,
+				   const gchar    *details,
+				   PkTaskClient   *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	/* always use the 'worst' possible restart scenario */
+	if (restart > tclient->priv->require_restart) {
+		tclient->priv->require_restart = restart;
+		pk_debug ("restart status now %s", pk_task_restart_to_text (restart));
+	}
+}
+
+/**
  * pk_task_client_class_init:
  **/
 static void
@@ -836,6 +868,7 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv->use_buffer = FALSE;
 	tclient->priv->job = 0;
 	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
+	tclient->priv->require_restart = PK_TASK_RESTART_NONE;
 	tclient->priv->is_finished = FALSE;
 	tclient->priv->package_items = g_ptr_array_new ();
 
@@ -876,6 +909,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_package_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "error-code",
 			  G_CALLBACK (pk_task_client_error_code_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "require-restart",
+			  G_CALLBACK (pk_task_client_require_restart_cb), tclient);
 
 	/* use PolicyKit */
 	tclient->priv->polkit = pk_polkit_client_new ();

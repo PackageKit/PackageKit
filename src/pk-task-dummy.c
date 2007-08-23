@@ -121,6 +121,7 @@ pk_task_update_system (PkTask *task)
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
 	task->priv->progress_percentage = 0;
+	pk_task_require_restart (task, PK_TASK_RESTART_SYSTEM, NULL);
 	g_timeout_add (1000, pk_task_update_system_timeout, task);
 
 	return TRUE;

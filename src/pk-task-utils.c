@@ -308,13 +308,13 @@ pk_task_restart_to_localised_text (PkTaskRestart restart)
 	const gchar *text = NULL;
 	switch (restart) {
 	case PK_TASK_RESTART_SYSTEM:
-		text = "A machine reboot is required";
+		text = "A system reboot is required";
 		break;
 	case PK_TASK_RESTART_SESSION:
 		text = "You will need to log off and log back on";
 		break;
 	case PK_TASK_RESTART_APPLICATION:
-		text = "You need to restart an application";
+		text = "You need to restart the application";
 		break;
 	default:
 		pk_error ("restart unrecognised: %i", restart);

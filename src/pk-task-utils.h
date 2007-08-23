@@ -45,10 +45,10 @@ typedef enum {
 } PkTaskExit;
 
 typedef enum {
+	PK_TASK_RESTART_NONE,
 	PK_TASK_RESTART_APPLICATION,
 	PK_TASK_RESTART_SESSION,
-	PK_TASK_RESTART_SYSTEM,
-	PK_TASK_RESTART_NONE
+	PK_TASK_RESTART_SYSTEM
 } PkTaskRestart;
 
 typedef enum {
@@ -71,7 +71,7 @@ const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);
 const gchar	*pk_task_error_code_to_localised_text	(PkTaskErrorCode code);
 
 PkTaskRestart	 pk_task_restart_from_text		(const gchar	*restart);
-const gchar	*pk_task_restart_to_text			(PkTaskRestart	 restart);
+const gchar	*pk_task_restart_to_text		(PkTaskRestart	 restart);
 const gchar	*pk_task_restart_to_localised_text	(PkTaskRestart	 restart);
 
 G_END_DECLS

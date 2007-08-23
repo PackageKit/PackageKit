@@ -425,12 +425,42 @@ pk_notify_popup_menu_cb (GtkStatusIcon *status_icon,
 	}
 }
 
+static gboolean pk_notify_check_for_updates_cb (PkNotify *notify);
+static void pk_notify_refresh_cache_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, PkNotify *notify);
+
 /**
- * pk_notify_finished_cb:
+ * pk_notify_libnotify_reboot_now_cb:
  **/
 static void
-pk_notify_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, gpointer data)
+pk_notify_libnotify_reboot_now_cb (NotifyNotification *dialog, gchar *action, PkNotify *notify)
 {
+	pk_warning ("reboot now");
+}
+
+/**
+ * pk_notify_update_system_finished_cb:
+ **/
+static void
+pk_notify_update_system_finished_cb (PkTaskClient *tclient, PkTaskExit exit_code, PkNotify *notify)
+{
+	PkTaskRestart restart;
+	restart = pk_task_client_get_require_restart (tclient);
+	if (restart != PK_TASK_RESTART_NONE) {
+		NotifyNotification *dialog;
+		const gchar *message;
+
+		pk_debug ("Doing requires-restart notification");
+		message = pk_task_restart_to_localised_text (restart);
+		dialog = notify_notification_new_with_status_icon ("The update has completed", message,
+								   "software-update-available",
+								   notify->priv->status_icon);
+		notify_notification_set_timeout (dialog, 50000);
+		notify_notification_set_urgency (dialog, NOTIFY_URGENCY_LOW);
+		notify_notification_add_action (dialog, "reboot-now", "Restart computer now",
+						(NotifyActionCallback) pk_notify_libnotify_reboot_now_cb,
+						notify, NULL);
+		notify_notification_show (dialog, NULL);
+	}
 	pk_debug ("unref'ing %p", tclient);
 	g_object_unref (tclient);
 }
@@ -467,7 +497,7 @@ pk_notify_refresh_cache_cb (GtkMenuItem *item, gpointer data)
 
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "finished",
-			  G_CALLBACK (pk_notify_finished_cb), notify);
+			  G_CALLBACK (pk_notify_refresh_cache_finished_cb), notify);
 	ret = pk_task_client_refresh_cache (tclient, TRUE);
 	if (ret == FALSE) {
 		g_object_unref (tclient);
@@ -477,25 +507,34 @@ pk_notify_refresh_cache_cb (GtkMenuItem *item, gpointer data)
 }
 
 /**
- * pk_notify_update_system_cb:
+ * pk_notify_update_system:
  **/
 static void
-pk_notify_update_system_cb (GtkMenuItem *item, gpointer data)
+pk_notify_update_system (PkNotify *notify)
 {
 	gboolean ret;
 	PkTaskClient *tclient;
-	PkNotify *notify = PK_NOTIFY (data);
 	pk_debug ("install updates");
 
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "finished",
-			  G_CALLBACK (pk_notify_finished_cb), notify);
+			  G_CALLBACK (pk_notify_update_system_finished_cb), notify);
 	ret = pk_task_client_update_system (tclient);
 	if (ret == FALSE) {
 		g_object_unref (tclient);
 		pk_warning ("failed to update system");
 		pk_notify_not_supported (notify, "Failed to update system");
 	}
+}
+
+/**
+ * pk_notify_menuitem_update_system_cb:
+ **/
+static void
+pk_notify_menuitem_update_system_cb (GtkMenuItem *item, gpointer data)
+{
+	PkNotify *notify = PK_NOTIFY (data);
+	pk_notify_update_system (notify);
 }
 
 /**
@@ -570,7 +609,7 @@ pk_notify_activate_update_cb (GtkStatusIcon *status_icon,
 	image = gtk_image_new_from_icon_name ("software-update-available", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 	g_signal_connect (G_OBJECT (item), "activate",
-			  G_CALLBACK (pk_notify_update_system_cb), icon);
+			  G_CALLBACK (pk_notify_menuitem_update_system_cb), icon);
 	gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
 	/* show the menu */
@@ -595,15 +634,14 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkNotif
 	}
 }
 
-static gboolean pk_notify_check_for_updates_cb (PkNotify *notify);
-
 /**
  * pk_notify_libnotify_update_system_cb:
  **/
 static void
 pk_notify_libnotify_update_system_cb (NotifyNotification *dialog, gchar *action, PkNotify *notify)
 {
-	pk_warning ("update something");
+	pk_debug ("update something");
+	pk_notify_update_system (notify);
 }
 
 /**
