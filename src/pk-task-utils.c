@@ -261,7 +261,7 @@ pk_task_error_code_to_localised_text (PkTaskErrorCode code)
 PkTaskRestart
 pk_task_restart_from_text (const gchar *restart)
 {
-	g_return_val_if_fail (restart != NULL, PK_TASK_RESTART_UNKNOWN);
+	g_return_val_if_fail (restart != NULL, PK_TASK_RESTART_NONE);
 
 	if (strcmp (restart, "system") == 0) {
 		return PK_TASK_RESTART_SYSTEM;
@@ -273,7 +273,7 @@ pk_task_restart_from_text (const gchar *restart)
 		return PK_TASK_RESTART_APPLICATION;
 	}
 	pk_error ("fall through: '%s'", restart);
-	return PK_TASK_RESTART_UNKNOWN;
+	return PK_TASK_RESTART_NONE;
 }
 
 /**

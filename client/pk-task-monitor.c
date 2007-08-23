@@ -60,6 +60,7 @@ typedef enum {
 	PK_TASK_MONITOR_PACKAGE,
 	PK_TASK_MONITOR_DESCRIPTION,
 	PK_TASK_MONITOR_ERROR_CODE,
+	PK_TASK_MONITOR_REQUIRE_RESTART,
 	PK_TASK_MONITOR_FINISHED,
 	PK_TASK_MONITOR_LAST_SIGNAL
 } PkSignals;
@@ -263,6 +264,27 @@ pk_task_monitor_error_code_cb (DBusGProxy   *proxy,
 }
 
 /**
+ * pk_task_monitor_require_restart_cb:
+ */
+static void
+pk_task_monitor_require_restart_cb (DBusGProxy   *proxy,
+			   guint	 job,
+			   const gchar  *restart_text,
+			   const gchar  *details,
+			   PkTaskMonitor *tmonitor)
+{
+	PkTaskRestart restart;
+	g_return_if_fail (tmonitor != NULL);
+	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
+
+	if (job == tmonitor->priv->job) {
+		restart = pk_task_restart_from_text (restart_text);
+		pk_debug ("emit require-restart %i, %s", restart, details);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_REQUIRE_RESTART], 0, restart, details);
+	}
+}
+
+/**
  * pk_task_monitor_class_init:
  **/
 static void
@@ -299,6 +321,11 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_MONITOR_ERROR_CODE] =
 		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_TASK_MONITOR_REQUIRE_RESTART] =
+		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
@@ -410,6 +437,10 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
 				     G_CALLBACK (pk_task_monitor_error_code_cb), tmonitor, NULL);
+	dbus_g_proxy_add_signal (proxy, "RequireRestart",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
+				     G_CALLBACK (pk_task_monitor_require_restart_cb), tmonitor, NULL);
 }
 
 /**
