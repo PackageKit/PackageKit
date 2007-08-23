@@ -45,4 +45,5 @@ xmldocs.make
 omf.make
 gtk-doc.make
 *~
+*.pc
 
