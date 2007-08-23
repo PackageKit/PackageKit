@@ -27,11 +27,13 @@
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/pkgrecords.h>
+#include <regex.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
 #include "pk-task-common.h"
 #include "pk-spawn.h"
+#include "config.h"
 
 static void pk_task_class_init(PkTaskClass * klass);
 static void pk_task_init(PkTask * task);
@@ -123,9 +125,17 @@ gboolean pk_task_update_system(PkTask * task)
 	return FALSE;
 }
 
+#ifdef APT_PKG_RPM
+typedef pkgCache::VerFile AptCompFile;
+#elif defined(APT_PKG_DEB)
+typedef pkgCache::DescFile AptCompFile;
+#else
+#error Need either rpm or deb defined
+#endif
+
 struct ExDescFile
 {
-	pkgCache::DescFile *Df;
+	AptCompFile *Df;
 	bool NameMatch;
 };
 
@@ -149,7 +159,7 @@ static int LocalityCompare(const void *a, const void *b)
 	return A->File - B->File;
 }
 
-static void LocalitySort(pkgCache::DescFile **begin,
+static void LocalitySort(AptCompFile **begin,
 		  unsigned long Count,size_t Size)
 {
 	qsort(begin,Count,Size,LocalityCompare);
@@ -207,7 +217,11 @@ static void * do_search_task(gpointer data)
 		// Find the proper version to use. 
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		if (V.end() == false)
+		#ifdef APT_PKG_RPM
+	 		DFList[P->ID].Df = V.FileList();
+		#else	
 			DFList[P->ID].Df = V.DescriptionList().FileList();
+		#endif	
 	}
 
 	// Include all the packages that provide matching names too
@@ -221,7 +235,11 @@ static void * do_search_task(gpointer data)
 			pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
 			if (V.end() == false)
 			{
+				#ifdef APT_PKG_RPM
+				DFList[Prv.OwnerPkg()->ID].Df = V.FileList();
+				#else
 				DFList[Prv.OwnerPkg()->ID].Df = V.DescriptionList().FileList();
+				#endif
 				DFList[Prv.OwnerPkg()->ID].NameMatch = true;
 			}
 		}
@@ -232,7 +250,11 @@ static void * do_search_task(gpointer data)
 	// Iterate over all the version records and check them
 	for (ExDescFile * J = DFList; J->Df != 0; J++)
 	{
+   		#ifdef APT_PKG_RPM
+		pkgRecords::Parser & P = Recs.Lookup(pkgCache::VerFileIterator(pkgCache, J->Df));
+		#else
 		pkgRecords::Parser & P = Recs.Lookup(pkgCache::DescFileIterator(pkgCache, J->Df));
+		#endif
 
 		gboolean Match = true;
 		if (J->NameMatch == false)
