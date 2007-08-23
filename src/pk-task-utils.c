@@ -197,6 +197,9 @@ pk_task_error_code_from_text (const gchar *code)
 	if (strcmp (code, "internal-error") == 0) {
 		return PK_TASK_ERROR_CODE_INTERNAL_ERROR;
 	}
+	if (strcmp (code, "gpg-failure") == 0) {
+		return PK_TASK_ERROR_CODE_GPG_FAILURE;
+	}
 	return PK_TASK_ERROR_CODE_UNKNOWN;
 }
 
@@ -216,6 +219,9 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 		break;
 	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
 		text = "internal-error";
+		break;
+	case PK_TASK_ERROR_CODE_GPG_FAILURE:
+		text = "gpg-failure";
 		break;
 	default:
 		text = "unknown";
@@ -239,6 +245,9 @@ pk_task_error_code_to_localised_text (PkTaskErrorCode code)
 		break;
 	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
 		text = "An internal system error has occurred";
+		break;
+	case PK_TASK_ERROR_CODE_GPG_FAILURE:
+		text = "A security trust relationship is not present";
 		break;
 	default:
 		text = "Unknown error";
