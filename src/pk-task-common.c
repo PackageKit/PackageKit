@@ -40,7 +40,13 @@ pk_task_filter_package_name (PkTask *task, const gchar *package)
 	if (strstr (package, "-debuginfo") != NULL) {
 		return FALSE;
 	}
+	if (strstr (package, "-dbg") != NULL) {
+		return FALSE;
+	}
 	if (strstr (package, "-devel") != NULL) {
+		return FALSE;
+	}
+	if (strstr (package, "-dev") != NULL) {
 		return FALSE;
 	}
 	/* todo, check if package depends on any gtk/qt toolkit */
