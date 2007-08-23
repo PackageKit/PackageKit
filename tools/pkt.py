@@ -22,8 +22,8 @@ def catchall_signal_handler(*args, **kwargs):
 	if kwargs['member'] == "JobListChanged":
 		stuff = pk_iface.GetJobStatus(job)
 		print stuff
-	elif kwargs['member'] == "JobStatusChanged":
-		if args[0] == job and args[1]=="exit":
+	elif kwargs['member'] == "Finished":
+		if args[0] == job:
 			loop.quit()
 
 bus.add_signal_receiver(catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member')
