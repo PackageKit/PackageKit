@@ -161,13 +161,15 @@ dnl - Compile time choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([backend],
 	    AS_HELP_STRING([--with-backend=<option>],
-			   [Backend to use dummy,apt,yum (dummy)]))
+			   [Backend to use dummy,apt,yum,conary (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_backend = x; then
     if test -f /usr/bin/yum ; then
         with_backend=yum
     elif test -f /usr/bin/apt-get ; then
         with_backend=apt
+    elif test -f /usr/bin/conary ; then
+        with_backend=conary
     else
         with_backend=dummy
     fi
@@ -186,6 +188,7 @@ fi
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])
+AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_backend = xconary], [using CONARY backend])
 
 
 dnl ---------------------------------------------------------------------------

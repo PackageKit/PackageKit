@@ -18,9 +18,29 @@ dist_helper_DATA = 			\
 	$(NULL)
 endif	
 
+if BACKEND_TYPE_CONARY
+dist_helper_DATA = 			\
+	conary-search-name.py		\
+	conary-search-details.py		\
+	conary-description.py		\
+	conary-get-deps.py			\
+	conary-get-updates.py		\
+	conary-install.py			\
+	conary-refresh-cache.py		\
+	conary-remove.py			\
+	conary-update-system.py		\
+	conary-get-description.py		\
+	$(NULL)
+endif	
+
 if BACKEND_TYPE_YUM
 install-data-hook:
-	chmod a+rx $(DESTDIR)$(helperdir)/*.py
+	chmod a+rx $(DESTDIR)$(helperdir)/yum*.py
+endif	
+
+if BACKEND_TYPE_CONARY
+install-data-hook:
+	chmod a+rx $(DESTDIR)$(helperdir)/conary*.py
 endif	
 
 clean-local :

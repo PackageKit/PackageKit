@@ -69,6 +69,11 @@ packagekitd_SOURCES +=					\
 	pk-task-yum.c
 endif
 
+if BACKEND_TYPE_CONARY
+packagekitd_SOURCES +=					\
+	pk-task-conary.c
+endif
+
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
