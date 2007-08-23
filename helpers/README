@@ -9,12 +9,12 @@ PackageKit executes scripts written in pretty much any language
 This means we need a standard for what goes on stdin, stdout and stderr to
 try and maximise the common code between the backends.
 
-The following are guidelines. Feel free to break the rules if you have to,
-you have a compiled backend to use if you need it.
-
 If you are unable to write scripts that conform to these specifications then
 just launch a PkSpawn object with stdout and stderr callbacks and then try to
 do screenscraping in the backend. This option is least popular.
+
+The following are guidelines. Feel free to break the rules if you have to,
+you have a compiled backend to use if you need it.
 
 ========= Find Packages ========= 
 

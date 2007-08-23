@@ -161,6 +161,8 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 	guint size;
 	guint percentage;
 	gchar *command;
+	PkTaskErrorCode error_enum;
+	PkTaskStatus status_enum;
 	gboolean ret = TRUE;
 
 	/* check if output line */
@@ -182,6 +184,37 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		}
 		percentage = atoi(sections[1]);
 		pk_task_change_percentage (task, percentage);
+	} else if (strcmp (command, "subpercentage") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		percentage = atoi(sections[1]);
+		pk_warning ("Ignoring sub-percentage %i", percentage);
+	} else if (strcmp (command, "error") == 0) {
+		if (size != 3) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		error_enum = pk_task_error_code_from_text (sections[1]);
+		pk_task_error_code (task, error_enum, sections[2]);
+	} else if (strcmp (command, "data") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_task_set_data (task, sections[1]);
+	} else if (strcmp (command, "status") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		status_enum = pk_task_status_from_text (sections[1]);
+		pk_task_change_job_status (task, status_enum);
 	} else if (strcmp (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
 			g_error ("invalid command '%s'", command);
@@ -460,5 +493,18 @@ gchar *
 pk_task_get_data (PkTask *task)
 {
 	return g_strdup (task->package);
+}
+
+/**
+ * pk_task_set_data:
+ *
+ * Need to g_free
+ **/
+gboolean
+pk_task_set_data (PkTask *task, const gchar *data)
+{
+	g_free (task->package);
+	task->package = g_strdup (data);
+	return TRUE;
 }
 
