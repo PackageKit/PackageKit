@@ -10,6 +10,10 @@ service_DATA     = $(service_in_files:.service.in=.service)
 $(service_DATA): $(service_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
 
+PK_LIBS =						\
+	$(top_builddir)/libpackagekit/libpackagekit.la	\
+	$(NULL)
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-interface.xml				\
@@ -29,6 +33,7 @@ INCLUDES =						\
 	-DLIBDIR=\""$(libdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
+	-I$(top_srcdir)/libpackagekit			\
 	$(NULL)
 
 sbin_PROGRAMS =						\
@@ -38,14 +43,10 @@ sbin_PROGRAMS =						\
 packagekitd_SOURCES =					\
 	pk-main.c					\
 	pk-task.h					\
-	pk-task-utils.h					\
-	pk-task-utils.c					\
 	pk-task-common.h				\
 	pk-task-common.c				\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-debug.c					\
-	pk-debug.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-engine.h					\
@@ -77,6 +78,7 @@ endif
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(PK_LIBS)					\
 	$(LIBNM_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
@@ -114,8 +116,6 @@ check_PROGRAMS =					\
 pk_self_test_SOURCES =					\
 	pk-spawn.h					\
 	pk-spawn.c					\
-	pk-debug.c					\
-	pk-debug.h					\
 	pk-self-test.c					\
 	pk-self-test.h					\
 	$(NULL)
@@ -124,6 +124,7 @@ pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(LIBNM_LIBS)					\
+	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 

@@ -1,1 +1,422 @@
-../src/pk-task-utils.c
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ *
+ * Licensed under the GNU General Public License Version 2
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include "config.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <glib/gi18n.h>
+
+#include "pk-debug.h"
+#include "pk-task-utils.h"
+
+/**
+ * pk_task_exit_from_text:
+ */
+PkTaskExit
+pk_task_exit_from_text (const gchar *exit)
+{
+	if (strcmp (exit, "success") == 0) {
+		return PK_TASK_EXIT_SUCCESS;
+	}
+	if (strcmp (exit, "failed") == 0) {
+		return PK_TASK_EXIT_FAILED;
+	}
+	if (strcmp (exit, "canceled") == 0) {
+		return PK_TASK_EXIT_CANCELED;
+	}
+	return PK_TASK_EXIT_UNKNOWN;
+}
+
+/**
+ * pk_task_exit_to_text:
+ **/
+const gchar *
+pk_task_exit_to_text (PkTaskExit exit)
+{
+	const gchar *text = NULL;
+	switch (exit) {
+	case PK_TASK_EXIT_SUCCESS:
+		text = "success";
+		break;
+	case PK_TASK_EXIT_FAILED:
+		text = "failed";
+		break;
+	case PK_TASK_EXIT_CANCELED:
+		text = "canceled";
+		break;
+	default:
+		text = "unknown";
+	}
+	return text;
+}
+
+/**
+ * pk_task_status_from_text:
+ **/
+PkTaskStatus
+pk_task_status_from_text (const gchar *status)
+{
+	g_return_val_if_fail (status != NULL, PK_TASK_STATUS_UNKNOWN);
+
+	if (strcmp (status, "setup") == 0) {
+		return PK_TASK_STATUS_SETUP;
+	}
+	if (strcmp (status, "query") == 0) {
+		return PK_TASK_STATUS_QUERY;
+	}
+	if (strcmp (status, "remove") == 0) {
+		return PK_TASK_STATUS_REMOVE;
+	}
+	if (strcmp (status, "refresh-cache") == 0) {
+		return PK_TASK_STATUS_REFRESH_CACHE;
+	}
+	if (strcmp (status, "download") == 0) {
+		return PK_TASK_STATUS_DOWNLOAD;
+	}
+	if (strcmp (status, "install") == 0) {
+		return PK_TASK_STATUS_INSTALL;
+	}
+	if (strcmp (status, "update") == 0) {
+		return PK_TASK_STATUS_UPDATE;
+	}
+	if (strcmp (status, "unknown") == 0) {
+		return PK_TASK_STATUS_UNKNOWN;
+	}
+	pk_error ("fall through: '%s'", status);
+	return PK_TASK_STATUS_UNKNOWN;
+}
+
+/**
+ * pk_task_status_to_text:
+ **/
+const gchar *
+pk_task_status_to_text (PkTaskStatus status)
+{
+	const gchar *text = NULL;
+	switch (status) {
+	case PK_TASK_STATUS_SETUP:
+		text = "setup";
+		break;
+	case PK_TASK_STATUS_QUERY:
+		text = "query";
+		break;
+	case PK_TASK_STATUS_REFRESH_CACHE:
+		text = "refresh-cache";
+		break;
+	case PK_TASK_STATUS_REMOVE:
+		text = "remove";
+		break;
+	case PK_TASK_STATUS_DOWNLOAD:
+		text = "download";
+		break;
+	case PK_TASK_STATUS_INSTALL:
+		text = "install";
+		break;
+	case PK_TASK_STATUS_UPDATE:
+		text = "update";
+		break;
+	case PK_TASK_STATUS_UNKNOWN:
+		text = "unknown";
+		break;
+	default:
+		pk_error ("status unrecognised: %i", status);
+	}
+	return text;
+}
+
+/**
+ * pk_task_status_to_localised_text:
+ **/
+const gchar *
+pk_task_status_to_localised_text (PkTaskStatus status)
+{
+	const gchar *text = NULL;
+	switch (status) {
+	case PK_TASK_STATUS_SETUP:
+		text = "Setting up";
+		break;
+	case PK_TASK_STATUS_QUERY:
+		text = "Querying";
+		break;
+	case PK_TASK_STATUS_REMOVE:
+		text = "Removing";
+		break;
+	case PK_TASK_STATUS_DOWNLOAD:
+		text = "Downloading";
+		break;
+	case PK_TASK_STATUS_INSTALL:
+		text = "Installing";
+		break;
+	case PK_TASK_STATUS_REFRESH_CACHE:
+		text = "Refreshing package cache";
+		break;
+	case PK_TASK_STATUS_UPDATE:
+		text = "Updating";
+		break;
+	default:
+		pk_error ("status unrecognised: %i", status);
+	}
+	return text;
+}
+
+/**
+ * pk_task_error_code_from_text:
+ **/
+PkTaskErrorCode
+pk_task_error_code_from_text (const gchar *code)
+{
+	g_return_val_if_fail (code != NULL, PK_TASK_ERROR_CODE_UNKNOWN);
+
+	if (strcmp (code, "no-network") == 0) {
+		return PK_TASK_ERROR_CODE_NO_NETWORK;
+	}
+	if (strcmp (code, "not-supported") == 0) {
+		return PK_TASK_ERROR_CODE_NOT_SUPPORTED;
+	}
+	if (strcmp (code, "internal-error") == 0) {
+		return PK_TASK_ERROR_CODE_INTERNAL_ERROR;
+	}
+	if (strcmp (code, "gpg-failure") == 0) {
+		return PK_TASK_ERROR_CODE_GPG_FAILURE;
+	}
+	return PK_TASK_ERROR_CODE_UNKNOWN;
+}
+
+/**
+ * pk_task_error_code_to_text:
+ **/
+const gchar *
+pk_task_error_code_to_text (PkTaskErrorCode code)
+{
+	const gchar *text = NULL;
+	switch (code) {
+	case PK_TASK_ERROR_CODE_NO_NETWORK:
+		text = "no-network";
+		break;
+	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
+		text = "not-supported";
+		break;
+	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
+		text = "internal-error";
+		break;
+	case PK_TASK_ERROR_CODE_GPG_FAILURE:
+		text = "gpg-failure";
+		break;
+	default:
+		text = "unknown";
+	}
+	return text;
+}
+
+/**
+ * pk_task_error_code_to_localised_text:
+ **/
+const gchar *
+pk_task_error_code_to_localised_text (PkTaskErrorCode code)
+{
+	const gchar *text = NULL;
+	switch (code) {
+	case PK_TASK_ERROR_CODE_NO_NETWORK:
+		text = "No network connection available";
+		break;
+	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
+		text = "Not supported by this backend";
+		break;
+	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
+		text = "An internal system error has occurred";
+		break;
+	case PK_TASK_ERROR_CODE_GPG_FAILURE:
+		text = "A security trust relationship is not present";
+		break;
+	default:
+		text = "Unknown error";
+	}
+	return text;
+}
+
+/**
+ * pk_task_restart_from_text:
+ **/
+PkTaskRestart
+pk_task_restart_from_text (const gchar *restart)
+{
+	g_return_val_if_fail (restart != NULL, PK_TASK_RESTART_NONE);
+
+	if (strcmp (restart, "system") == 0) {
+		return PK_TASK_RESTART_SYSTEM;
+	}
+	if (strcmp (restart, "session") == 0) {
+		return PK_TASK_RESTART_SESSION;
+	}
+	if (strcmp (restart, "application") == 0) {
+		return PK_TASK_RESTART_APPLICATION;
+	}
+	pk_error ("fall through: '%s'", restart);
+	return PK_TASK_RESTART_NONE;
+}
+
+/**
+ * pk_task_restart_to_text:
+ **/
+const gchar *
+pk_task_restart_to_text (PkTaskRestart restart)
+{
+	const gchar *text = NULL;
+	switch (restart) {
+	case PK_TASK_RESTART_SYSTEM:
+		text = "system";
+		break;
+	case PK_TASK_RESTART_SESSION:
+		text = "session";
+		break;
+	case PK_TASK_RESTART_APPLICATION:
+		text = "application";
+		break;
+	default:
+		pk_error ("restart unrecognised: %i", restart);
+	}
+	return text;
+}
+
+/**
+ * pk_task_restart_to_localised_text:
+ **/
+const gchar *
+pk_task_restart_to_localised_text (PkTaskRestart restart)
+{
+	const gchar *text = NULL;
+	switch (restart) {
+	case PK_TASK_RESTART_SYSTEM:
+		text = "A system reboot is required";
+		break;
+	case PK_TASK_RESTART_SESSION:
+		text = "You will need to log off and log back on";
+		break;
+	case PK_TASK_RESTART_APPLICATION:
+		text = "You need to restart the application";
+		break;
+	default:
+		pk_error ("restart unrecognised: %i", restart);
+	}
+	return text;
+}
+
+/**
+ * pk_task_check_package_id:
+ **/
+gboolean
+pk_task_check_package_id (const gchar *package_id)
+{
+	guint i;
+	guint length;
+	guint sections;
+
+	if (package_id == NULL) {
+		return FALSE;
+	}
+
+	length = strlen (package_id);
+	sections = 1;
+	for (i=0; i<length; i++) {
+		if (package_id[i] == ';') {
+			sections += 1;
+		}
+	}
+	if (sections != 4) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_package_ident_build:
+ **/
+gchar *
+pk_task_package_ident_build (const gchar *name, const gchar *version,
+			     const gchar *arch, const gchar *data)
+{
+	return g_strdup_printf ("%s;%s;%s;%s", name, version, arch, data);
+}
+
+/**
+ * pk_task_package_ident_new:
+ **/
+PkPackageIdent *
+pk_task_package_ident_new (void)
+{
+	PkPackageIdent *ident;
+	ident = g_new0 (PkPackageIdent, 1);
+	ident->name = NULL;
+	ident->version = NULL;
+	ident->arch = NULL;
+	ident->data = NULL;
+	return ident;
+}
+
+/**
+ * pk_task_package_ident_from_string:
+ **/
+PkPackageIdent*
+pk_task_package_ident_from_string (const gchar *package_id)
+{
+	gchar **sections;
+	PkPackageIdent *ident;
+
+	/* create new object */
+	ident = pk_task_package_ident_new ();
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (package_id, ";", 4);
+	ident->name = g_strdup (sections[0]);
+	ident->version = g_strdup (sections[1]);
+	ident->arch = g_strdup (sections[2]);
+	ident->data = g_strdup (sections[3]);
+	g_strfreev (sections);
+	return ident;	
+}
+
+/**
+ * pk_task_package_ident_to_string:
+ **/
+gchar *
+pk_task_package_ident_to_string (PkPackageIdent *ident)
+{
+	return g_strdup_printf ("%s;%s;%s;%s", ident->name, ident->version,
+				ident->arch, ident->data);
+}
+
+/**
+ * pk_task_package_ident_free:
+ **/
+gboolean
+pk_task_package_ident_free (PkPackageIdent *ident)
+{
+	g_free (ident->name);
+	g_free (ident->arch);
+	g_free (ident->version);
+	g_free (ident->data);
+	g_free (ident);
+	return TRUE;
+}
+

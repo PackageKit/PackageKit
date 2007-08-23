@@ -30,7 +30,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "pk-debug.h"
+#include <pk-debug.h>
 #include "pk-engine.h"
 #include "pk-interface.h"
 

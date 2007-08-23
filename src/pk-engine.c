@@ -39,7 +39,7 @@
 #include <polkit/polkit.h>
 #include <polkit-dbus/polkit-dbus.h>
 
-#include "pk-debug.h"
+#include <pk-debug.h>
 #include "pk-task.h"
 #include "pk-task-utils.h"
 #include "pk-task-common.h"
