@@ -58,7 +58,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	"1" if installed, "0" if not
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
 NOTES:		Do not refresh the package cache. This should be fast.
@@ -119,7 +119,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are installed then emit them to the screen.
@@ -158,7 +158,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		as packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
@@ -183,7 +183,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 
 ========= Update System ========= 
@@ -216,7 +216,7 @@ STDERR		requirerestart<tab>$type<tab>$details
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 		NOTE:		As packages are updated then emit them to the screen.
 				This allows a summary to be presented after the transaction.
@@ -235,7 +235,7 @@ STDERR		error<tab>$enum<tab>description
 		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		description<tab>$package_id<tab>$version<tab>$detail<tab>$url
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$version:	The full distro package version
 		$detail:	The multi line package description.
 		$url:		The upstream project homepage
