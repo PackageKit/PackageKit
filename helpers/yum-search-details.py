@@ -28,22 +28,22 @@ for (pkg,values) in res:
     if count > 100:
         break
     count+=1 
-    installed = 'no'
+    installed = '0'
 
     # are we installed?
     if my.rpmdb.installed(pkg.name):
-        installed = 'yes'
+        installed = '1'
 
     # do we print to stdout?
     do_print = 0;
-    if options == 'installed' and installed == 'yes':
+    if options == 'installed' and installed == '1':
     	do_print = 1
-    elif options == 'available' and installed == 'no':
+    elif options == 'available' and installed == '0':
     	do_print = 1
     elif options == 'all':
     	do_print = 1
 
     # print in correct format
     if do_print == 1:
-    	print "%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
+    	print "package\t%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
 

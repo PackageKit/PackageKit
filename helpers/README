@@ -12,6 +12,10 @@ try and maximise the common code between the backends.
 The following are guidelines. Feel free to break the rules if you have to,
 you have a compiled backend to use if you need it.
 
+If you are unable to write scripts that conform to these specifications then
+just launch a PkSpawn object with stdout and stderr callbacks and then try to
+do screenscraping in the backend. This option is least popular.
+
 ========= Find Packages ========= 
 
 FILENAME	{backend}-search-name.*
@@ -36,8 +40,8 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	"yes" if installed, "no" if not
+STDOUT		package<tab>$status<tab>$package_name<tab>$summary
+		$status:	"1" if installed, "0" if not
 		$package_name:	The package name, e.g. openoffice-clipart
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
@@ -97,8 +101,8 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	Always "yes"
+STDOUT		package<tab>$status<tab>$package_name<tab>$summary
+		$status:	Always "1"
 		$package_name:	The package name, e.g. openoffice-clipart
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are installed then emit them to the screen.
@@ -135,8 +139,8 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	Always "yes"
+STDOUT		package<tab>$status<tab>$package_name<tab>$summary
+		$status:	Always "1"
 		$package_name:	The package name, e.g. openoffice-clipart
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		as packages are installed then emit them to the screen.
@@ -160,8 +164,8 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	Always "yes"
+STDOUT		package<tab>$status<tab>$package_name<tab>$summary
+		$status:	Always "1"
 		$package_name:	The package name, e.g. openoffice-clipart
 		$summary:	The one line package summary.
 
@@ -186,8 +190,8 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$status<tab>$package_name<tab>$summary
-		$status:	Always "yes"
+STDOUT		package<tab>$status<tab>$package_name<tab>$summary
+		$status:	Always "1"
 		$package_name:	The package name, e.g. openoffice-clipart
 		$summary:	The one line package summary.
 		NOTE:		As packages are updated then emit them to the screen.
@@ -206,7 +210,7 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		$package_name<tab>$version<tab>$detail<tab>$url
+STDOUT		description<tab>$package_name<tab>$version<tab>$detail<tab>$url
 		$package_name:	The package name, e.g. openoffice-clipart
 		$version:	The full distro package version
 		$detail:	The multi line package description.

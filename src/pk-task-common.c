@@ -96,31 +96,63 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 
 /**
  * pk_task_parse_common_output:
+ *
+ * If you are editing this function creating a new backend,
+ * then you are probably doing something wrong.
  **/
-static void
+static gboolean
 pk_task_parse_common_output (PkTask *task, const gchar *line)
 {
-	char **sections;
+	gchar **sections;
+	guint size;
+	guint value = 0;
+	gchar *command;
+	gboolean ret = TRUE;
 	gboolean okay;
-	guint value = FALSE;
 
 	/* check if output line */
-	if (strstr (line, "\t") == NULL)
-		return;		
+	if (line == NULL || strstr (line, "\t") == NULL)
+		return FALSE;
+
+	/* split by tab */
 	sections = g_strsplit (line, "\t", 0);
-	if (strcmp (sections[0], "yes") == 0) {
-		value = TRUE;
-	}
-	okay = pk_task_filter_package_name (NULL, sections[1]);
-	if (okay == TRUE) {
-		pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[1], sections[2]);
-		pk_task_package (task, value, sections[1], sections[2]);
-	}
+	command = sections[0];
+
+	/* get size */
+	for (size=0; sections[size]; size++);
+
+	if (strcmp (command, "package") == 0) {
+		if (size != 4) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		okay = pk_task_filter_package_name (task, sections[2]);
+		if (okay == TRUE) {
+			value = atoi(sections[1]);
+			pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
+			pk_task_package (task, value, sections[2], sections[3]);
+		}
+	} else if (strcmp (command, "description") == 0) {
+		if (size != 5) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_task_description (task, sections[1], sections[2], sections[3], sections[4]);
+	} else {
+		pk_warning ("invalid command '%s'", command);
+	}		
+out:
 	g_strfreev (sections);
+	return ret;
 }
 
 /**
  * pk_task_parse_common_error:
+ *
+ * If you are editing this function creating a new backend,
+ * then you are probably doing something wrong.
  **/
 static gboolean
 pk_task_parse_common_error (PkTask *task, const gchar *line)
@@ -131,6 +163,10 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 	gchar *command;
 	gboolean ret = TRUE;
 
+	/* check if output line */
+	if (line == NULL || strstr (line, "\t") == NULL)
+		return FALSE;
+  
 	/* split by tab */
 	sections = g_strsplit (line, "\t", 0);
 	command = sections[0];
@@ -154,7 +190,7 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		}
 		pk_task_no_percentage_updates (task);
 	} else {
-		pk_error ("invalid command '%s'", command);
+		pk_warning ("invalid command '%s'", command);
 	}		
 out:
 	g_strfreev (sections);
