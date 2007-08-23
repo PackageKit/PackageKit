@@ -78,6 +78,11 @@
       <arg type="s" name="code" direction="out"/> <!-- no-network -->
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
+    <signal name="RequireRestart">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="type" direction="out"/> <!-- system,application,session -->
+      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
+    </signal>
 
 
     <!-- SYNCHRONOUS -->

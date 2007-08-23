@@ -67,6 +67,7 @@ enum {
 	PK_ENGINE_NO_PERCENTAGE_UPDATES,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_ERROR_CODE,
+	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_LAST_SIGNAL
@@ -290,6 +291,25 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 }
 
 /**
+ * pk_engine_require_restart_cb:
+ **/
+static void
+pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *details, PkEngine *engine)
+{
+	guint job;
+	const gchar *restart_text;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+	restart_text = pk_task_restart_to_text (restart);
+	pk_debug ("emitting error-code job:%i %s, '%s'", job, restart_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, job, restart_text, details);
+	pk_engine_reset_timer (engine);
+}
+
+/**
  * pk_engine_finished_cb:
  **/
 static void
@@ -342,6 +362,8 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_package_cb), engine);
 	g_signal_connect (task, "error-code",
 			  G_CALLBACK (pk_engine_error_code_cb), engine);
+	g_signal_connect (task, "require-restart",
+			  G_CALLBACK (pk_engine_require_restart_cb), engine);
 	g_signal_connect (task, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 
@@ -828,6 +850,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ERROR_CODE] =
 		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_ENGINE_REQUIRE_RESTART] =
+		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
