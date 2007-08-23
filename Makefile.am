@@ -1,4 +1,12 @@
-SUBDIRS = policy libgbus libpackagekit src client helpers
+SUBDIRS = 			\
+	policy			\
+	man			\
+	libgbus			\
+	libpackagekit		\
+	src			\
+	client			\
+	helpers			\
+	$(NULL)
 
 AUTOMAKE_OPTIONS = 1.7
 

@@ -31,12 +31,7 @@ INCLUDES =						\
 	-DLIBDIR=\""$(libdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
-	-I$(top_srcdir)/libgbus				\
 	-I$(top_srcdir)/libpackagekit			\
-	$(NULL)
-
-GBUS_LIBS =						\
-	$(top_builddir)/libgbus/libgbus.la		\
 	$(NULL)
 
 PK_LIBS =						\
@@ -57,7 +52,6 @@ pkcon_SOURCES =						\
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(GBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 
@@ -68,7 +62,6 @@ pkmon_SOURCES =						\
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
-	$(GBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 
@@ -83,7 +76,6 @@ pk_update_icon_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(LIBNOTIFY_LIBS)				\
 	$(GTK_LIBS)					\
-	$(GBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
 
@@ -97,7 +89,6 @@ pk_application_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(LIBGLADE_LIBS)				\
-	$(GBUS_LIBS)					\
 	$(GTK_LIBS)					\
 	$(PK_LIBS)					\
 	$(NULL)
