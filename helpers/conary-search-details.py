@@ -21,6 +21,7 @@ cfg.readFiles()
 cfg.initializeFlavors()
 repos = client.getRepos()
 db = conaryclient.ConaryClient(cfg).db
+affinityDb = client.db
 
 options = sys.argv[1]
 searchterms = sys.argv[2]
@@ -34,10 +35,14 @@ except:
 troveSpecs = [ cmdline.parseTroveSpec(searchterms, allowEmptyName=False)]
 
 try:
-    troveTuple = repos.findTroves(cfg.installLabelPath, troveSpecs, cfg.flavor, getLeaves=True, acrossFlavors=False, acrossLabels=False, bestFlavor=True)
-    for k,v in troveTuple.iteritems():
-        name = v[0][0]
-        version = str(v[0][1].trailingRevision())
+    #Not sure which way is better, findTroves or getTrovesToDisplay
+    #troveTupleList = repos.findTroves(cfg.installLabelPath, troveSpecs, cfg.flavor, getLeaves=True, acrossFlavors=False, acrossLabels=False, bestFlavor=True, affinityDatabase=affinityDb )
+    troveTupleList = queryrep.getTrovesToDisplay(repos, troveSpecs, None, None, queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST, cfg.installLabelPath, cfg.flavor, affinityDb)
+    for troveTuple in troveTupleList:
+        name = troveTuple[0]
+        version = troveTuple[1].trailingRevision().asString()
+        arch = ""
+        package_id = name + ";" + version + ";" + arch
         do_print = 0;
         if options == 'installed' and installed == 1:
             do_print = 1
@@ -47,6 +52,6 @@ try:
             do_print = 1
         # print in correct format
         if do_print == 1:
-            print "package\t%s\t%s\t%s" % (installed, name, "")
+            print "package\t%s\t%s\t%s" % (installed, package_id, "")
 except:
     pass
