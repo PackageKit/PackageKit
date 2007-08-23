@@ -175,14 +175,113 @@ if test x$with_backend = x; then
     fi
 fi
 
-# apt has other BR's
+AC_DEFUN([APT_BACKEND],
+[
+  if test "$APT_PKG_TYPE" == "" ; then
+	   AC_LANG_PUSH(C++)
+		_libaptpkg_save_cppflags=$CPPFLAGS
+	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
+	   _APT_save_libs=$LIBS
+	   LIBS="$APT_LIBS $LIBS"
+	   
+	   AC_MSG_CHECKING([for apt support for $1 packages])
+		AC_RUN_IFELSE(AC_LANG_PROGRAM([
+		#include <apt-pkg/configuration.h>
+		#include <apt-pkg/pkgsystem.h>
+		#include <apt-pkg/init.h>
+		#include <stdio.h>
+	   ],[
+		if (pkgInitConfig(*_config) == false)
+		{
+			fprintf(stderr,"pkginitconfig was false");
+			return -1;
+		}
+		if (pkgInitSystem(*_config, _system) == false)
+		{
+			fprintf(stderr,"pkginitsystem was false");
+			return -1;
+		}
+		if (_system->ArchiveSupported("$1"))
+			return 0;
+		else
+			return 1;
+		]),[
+			APT_PKG_TYPE=$1
+			AC_MSG_RESULT([yes])
+			AC_DEFINE(APT_PKG_$2,1,[apt-pkg support files of type $1])
+		],)
+		AC_LANG_POP(C++)
+	   CPPFLAGS=$_libaptpkg_save_cppflags
+	   LIBS=$_libaptpkg_save_libs
+	   unset _libaptpkg_save_cppflags
+	   unset _libaptpkg_save_libs
+ 	fi
+])
+
 if test x$with_backend = xapt; then
-#    This does not work for me on fedora
-#    PKG_CHECK_MODULES(APT,libapt-pkg)
-    APT_CFLAGS="-I/usr/include/apt-pkg"
-    APT_LIBS="-lapt-pkg"
+   
+   AC_ARG_WITH(libapt-pkg-lib,
+     AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
+     [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
+  	if test "$_libaptpkg_with_lib" == "no" ; then
+		APT_LIBS="-lapt-pkg"
+    else
+        APT_LIBS="-L$withval -lapt-pkg"
+	fi	
+
+   AC_ARG_WITH(libapt-pkg-includes,
+     AC_HELP_STRING([--with-libapt-pkg-includes=DIR],[look for the libapt-pkg includes in DIR]),
+     [_libaptpkg_with_inc=$withval],[_libaptpkg_with_inc=no])
+  	if test "$_libaptpkg_with_inc" == "no" ; then
+		APT_CFLAGS="-I/usr/include/apt-pkg"
+    else
+		APT_CFLAGS="-I$withval"
+	fi	
+
+	AC_CACHE_CHECK([whether libapt-pkg is usable],
+	   [libaptpkg_usable],
+	   [
+	   _libaptpkg_save_cppflags=$CPPFLAGS
+	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
+	   _APT_save_libs=$LIBS
+	   LIBS="$APT_LIBS $LIBS"
+
+	   AC_LANG_PUSH(C++)
+	   AC_LINK_IFELSE(AC_LANG_PROGRAM([
+		#include <apt-pkg/configuration.h>
+	   	#include <apt-pkg/pkgsystem.h>
+	   	#include <apt-pkg/init.h>
+		#include <stdio.h>
+	   ],[
+		if (pkgInitConfig(*_config) == false)
+		{
+			fprintf(stderr,"pkginitconfig was false");
+			return -1;
+		}
+		if (pkgInitSystem(*_config, _system) == false)
+		{
+			fprintf(stderr,"pkginitsystem was false");
+			return -1;
+		}
+		return 0;
+]),libaptpkg_usable=yes,AC_MSG_ERROR([libapt-pkg not found]))
+
+	   CPPFLAGS=$_libaptpkg_save_cppflags
+	   LIBS=$_libaptpkg_save_libs
+	   unset _libaptpkg_save_cppflags
+	   unset _libaptpkg_save_libs
+	   ])
+    AC_LANG_POP(C++)
+
+	APT_BACKEND(deb,DEB)
+	APT_BACKEND(rpm,RPM)
+  	if test "$APT_PKG_TYPE" == "" ; then
+		AC_MSG_ERROR([Couldn't find support for any type of packages that we know about for Apt!])
+	fi
+		
     AC_SUBST(APT_CFLAGS)
     AC_SUBST(APT_LIBS)
+    AC_SUBST(APT_PKG_TYPE)
 fi
 
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])

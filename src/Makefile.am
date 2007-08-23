@@ -82,7 +82,7 @@ packagekitd_LDADD =					\
 	$(NULL)
 
 if BACKEND_TYPE_APT
-packagekitd_INCLUDES =					\
+INCLUDES =					\
 	$(APT_CFLAGS)
 packagekitd_LDADD += 					\
 	$(APT_LIBS)
