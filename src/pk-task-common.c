@@ -23,9 +23,11 @@
 
 #include <glib/gi18n.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
+#include "pk-spawn.h"
 #include "pk-task-common.h"
 #include "pk-marshal.h"
 
@@ -90,6 +92,133 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      G_TYPE_NONE, 0);
 
 	return TRUE;
+}
+
+/**
+ * pk_task_parse_common_output:
+ **/
+static void
+pk_task_parse_common_output (PkTask *task, const gchar *line)
+{
+	char **sections;
+	gboolean okay;
+	guint value = FALSE;
+
+	/* check if output line */
+	if (strstr (line, "\t") == NULL)
+		return;		
+	sections = g_strsplit (line, "\t", 0);
+	if (strcmp (sections[0], "yes") == 0) {
+		value = TRUE;
+	}
+	okay = pk_task_filter_package_name (NULL, sections[1]);
+	if (okay == TRUE) {
+		pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[1], sections[2]);
+		pk_task_package (task, value, sections[1], sections[2]);
+	}
+	g_strfreev (sections);
+}
+
+/**
+ * pk_task_parse_common_error:
+ **/
+static gboolean
+pk_task_parse_common_error (PkTask *task, const gchar *line)
+{
+	gchar **sections;
+	guint size;
+	guint percentage;
+	gchar *command;
+	gboolean ret = TRUE;
+
+	/* split by tab */
+	sections = g_strsplit (line, "\t", 0);
+	command = sections[0];
+
+	/* get size */
+	for (size=0; sections[size]; size++);
+
+	if (strcmp (command, "percentage") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		percentage = atoi(sections[1]);
+		pk_task_change_percentage (task, percentage);
+	} else if (strcmp (command, "no-percentage-updates") == 0) {
+		if (size != 1) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_task_no_percentage_updates (task);
+	} else {
+		pk_error ("invalid command '%s'", command);
+	}		
+out:
+	g_strfreev (sections);
+	return ret;
+}
+
+/**
+ * pk_task_spawn_finished_cb:
+ **/
+static void
+pk_task_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
+{
+	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
+	g_object_unref (spawn);
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+}
+
+/**
+ * pk_task_spawn_stdout_cb:
+ **/
+static void
+pk_task_spawn_stdout_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
+{
+	pk_debug ("stdout from %p = '%s'", spawn, line);
+	pk_task_parse_common_output (task, line);
+}
+
+/**
+ * pk_task_spawn_stderr_cb:
+ **/
+static void
+pk_task_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
+{
+	pk_debug ("stderr from %p = '%s'", spawn, line);
+	pk_task_parse_common_error (task, line);
+}
+
+/**
+ * pk_task_spawn_helper:
+ **/
+gboolean
+pk_task_spawn_helper (PkTask *task, const gchar *script)
+{
+	PkSpawn *spawn;
+	gboolean ret;
+	gchar *filename;
+
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
+	spawn = pk_spawn_new ();
+	g_signal_connect (spawn, "finished",
+			  G_CALLBACK (pk_task_spawn_finished_cb), task);
+	g_signal_connect (spawn, "stdout",
+			  G_CALLBACK (pk_task_spawn_stdout_cb), task);
+	g_signal_connect (spawn, "stderr",
+			  G_CALLBACK (pk_task_spawn_stderr_cb), task);
+	ret = pk_spawn_command (spawn, filename);
+	if (ret == FALSE) {
+		g_warning ("spawn failed: '%s'", filename);
+		g_object_unref (spawn);
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "spawn failed");
+		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	}
+	g_free (filename);
+	return ret;
 }
 
 /**

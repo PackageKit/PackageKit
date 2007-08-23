@@ -57,7 +57,9 @@ gboolean	 pk_task_setup_signals			(GObjectClass	*object_class,
 							 guint		*signals);
 gchar		*pk_task_get_data			(PkTask		*task);
 gboolean	 pk_task_filter_package_name		(PkTask		*task,
-							 const gchar		*package);
+							 const gchar	*package);
+gboolean	 pk_task_spawn_helper			(PkTask		*task,
+							 const gchar	*script);
 
 G_END_DECLS
 

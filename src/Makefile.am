@@ -13,6 +13,7 @@ $(service_DATA): $(service_in_files) Makefile
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-interface.xml				\
+	pk-spawn-test.sh				\
 	$(service_in_files)				\
 	$(NULL)
 

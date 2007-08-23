@@ -359,6 +359,7 @@ pk_st_spawn (PkSelfTest *test)
 		pk_st_failed (test, "ran incorrect file");
 	}
 
+#if 0
 	/************************************************************/
 	pk_st_title (test, "make sure run correct helper");
 	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
@@ -367,10 +368,13 @@ pk_st_spawn (PkSelfTest *test)
 	} else {
 		pk_st_failed (test, "did not run helper");
 	}
+#endif
 
+#if 0
 	/* spin for a bit */
 	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
+#endif
 
 	g_object_unref (spawn);
 

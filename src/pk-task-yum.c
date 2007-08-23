@@ -58,132 +58,6 @@ static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
 
 /**
- * pk_task_parse_data:
- **/
-static void
-pk_task_parse_data (PkTask *task, const gchar *line)
-{
-	char **sections;
-	gboolean okay;
-	guint value = FALSE;
-
-	/* check if output line */
-	if (strstr (line, "\t") == NULL)
-		return;		
-	sections = g_strsplit (line, "\t", 0);
-	if (strcmp (sections[0], "yes") == 0) {
-		value = TRUE;
-	}
-	okay = pk_task_filter_package_name (NULL, sections[1]);
-	if (okay == TRUE) {
-		pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[1], sections[2]);
-		pk_task_package (task, value, sections[1], sections[2]);
-	}
-	g_strfreev (sections);
-}
-
-/**
- * pk_task_parse_command_common:
- **/
-static gboolean
-pk_task_parse_command_common (PkTask *task, const gchar *line)
-{
-	gchar **sections;
-	guint size;
-	guint percentage;
-	gchar *command;
-	gboolean ret = TRUE;
-
-	/* split by tab */
-	sections = g_strsplit (line, "\t", 0);
-	command = sections[0];
-
-	/* get size */
-	for (size=0; sections[size]; size++);
-
-	if (strcmp (command, "percentage") == 0) {
-		if (size != 2) {
-			g_error ("invalid command '%s'", command);
-			ret = FALSE;
-			goto out;
-		}
-		percentage = atoi(sections[1]);
-		pk_task_change_percentage (task, percentage);
-	} else if (strcmp (command, "no-percentage-updates") == 0) {
-		if (size != 1) {
-			g_error ("invalid command '%s'", command);
-			ret = FALSE;
-			goto out;
-		}
-		pk_task_no_percentage_updates (task);
-	} else {
-		pk_error ("invalid command '%s'", command);
-	}		
-out:
-	g_strfreev (sections);
-	return ret;
-}
-
-/**
- * pk_spawn_finished_cb:
- **/
-static void
-pk_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
-{
-	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
-	g_object_unref (spawn);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-}
-
-/**
- * pk_spawn_stdout_cb:
- **/
-static void
-pk_spawn_stdout_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stdout from %p = '%s'", spawn, line);
-	pk_task_parse_data (task, line);
-}
-
-/**
- * pk_spawn_stderr_cb:
- **/
-static void
-pk_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
-{
-	pk_debug ("stderr from %p = '%s'", spawn, line);
-	pk_task_parse_command_common (task, line);
-}
-
-/**
- * pk_spawn_task_helper:
- **/
-static void
-pk_spawn_task_helper (PkTask *task, const gchar *command)
-{
-	PkSpawn *spawn;
-	gboolean ret;
-	gchar *filename;
-
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", command, NULL);
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
-			  G_CALLBACK (pk_spawn_finished_cb), task);
-	g_signal_connect (spawn, "stdout",
-			  G_CALLBACK (pk_spawn_stdout_cb), task);
-	g_signal_connect (spawn, "stderr",
-			  G_CALLBACK (pk_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, filename);
-	if (ret == FALSE) {
-		g_warning ("spawn failed: '%s'", filename);
-		g_object_unref (spawn);
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "spawn failed");
-		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
-	}
-	g_free (filename);
-}
-
-/**
  * pk_task_get_updates:
  **/
 gboolean
@@ -222,7 +96,7 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 
 	/* easy as that */
 	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
-	pk_spawn_task_helper (task, "yum-refresh-cache.py");
+	pk_task_spawn_helper (task, "yum-refresh-cache.py");
 
 	return TRUE;
 }
@@ -288,7 +162,7 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 	pk_task_no_percentage_updates (task);
 
 	command = g_strdup_printf ("%s %s %s", script, mode, search);
-	pk_spawn_task_helper (task, command);
+	pk_task_spawn_helper (task, command);
 	g_free (command);
 	return TRUE;
 }
