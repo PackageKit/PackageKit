@@ -13,7 +13,6 @@ pkgdata_DATA =						\
 	pk-application.glade
 
 EXTRA_DIST =						\
-	pk-marshal.list					\
 	pk-update-icon.desktop				\
 	pk-application.desktop				\
 	$(pkgdata_DATA)					\
@@ -33,10 +32,15 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-I$(top_srcdir)/libgbus				\
+	-I$(top_srcdir)/libpackagekit			\
 	$(NULL)
 
 GBUS_LIBS =						\
 	$(top_builddir)/libgbus/libgbus.la		\
+	$(NULL)
+
+PK_LIBS =						\
+	$(top_builddir)/libpackagekit/libpackagekit.la	\
 	$(NULL)
 
 bin_PROGRAMS =						\
@@ -48,82 +52,28 @@ bin_PROGRAMS =						\
 
 pkcon_SOURCES =						\
 	pk-console.c					\
-	pk-debug.c					\
-	pk-debug.h					\
-	pk-marshal.c					\
-	pk-marshal.h					\
-	pk-connection.c					\
-	pk-connection.h					\
-	pk-task-utils.h					\
-	pk-task-utils.c					\
-	pk-task-common.c				\
-	pk-task-common.h				\
-	pk-task-monitor.c				\
-	pk-task-monitor.h				\
-	pk-task-client.c				\
-	pk-task-client.h				\
-	pk-polkit-client.c				\
-	pk-polkit-client.h				\
 	$(NULL)
 
 pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(GBUS_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
 
 pkmon_SOURCES =						\
 	pk-monitor.c					\
-	pk-debug.c					\
-	pk-debug.h					\
-	pk-marshal.c					\
-	pk-marshal.h					\
-	pk-connection.c					\
-	pk-connection.h					\
-	pk-task-monitor.c				\
-	pk-task-monitor.h				\
-	pk-task-list.c					\
-	pk-task-list.h					\
-	pk-task-client.c				\
-	pk-task-client.h				\
-	pk-task-common.c				\
-	pk-task-common.h				\
-	pk-task-utils.h					\
-	pk-task-utils.c					\
-	pk-polkit-client.c				\
-	pk-polkit-client.h				\
-	pk-job-list.c					\
-	pk-job-list.h					\
 	$(NULL)
 
 pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(GBUS_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
 
 pk_update_icon_SOURCES =				\
 	pk-update-icon.c				\
-	pk-debug.c					\
-	pk-debug.h					\
-	pk-marshal.c					\
-	pk-marshal.h					\
-	pk-connection.c					\
-	pk-connection.h					\
-	pk-task-monitor.c				\
-	pk-task-monitor.h				\
-	pk-task-list.c					\
-	pk-task-list.h					\
-	pk-task-client.c				\
-	pk-task-client.h				\
-	pk-task-common.c				\
-	pk-task-common.h				\
-	pk-task-utils.h					\
-	pk-task-utils.c					\
-	pk-job-list.c					\
-	pk-job-list.h					\
-	pk-polkit-client.c				\
-	pk-polkit-client.h				\
 	pk-notify.c					\
 	pk-notify.h					\
 	$(NULL)
@@ -134,28 +84,13 @@ pk_update_icon_LDADD =					\
 	$(LIBNOTIFY_LIBS)				\
 	$(GTK_LIBS)					\
 	$(GBUS_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
 
 pk_application_SOURCES =				\
 	pk-application-main.c				\
-	pk-debug.c					\
-	pk-debug.h					\
 	pk-application.c				\
 	pk-application.h				\
-	pk-connection.c					\
-	pk-connection.h					\
-	pk-marshal.c					\
-	pk-marshal.h					\
-	pk-task-utils.h					\
-	pk-task-utils.c					\
-	pk-task-common.c				\
-	pk-task-common.h				\
-	pk-task-monitor.c				\
-	pk-task-monitor.h				\
-	pk-task-client.c				\
-	pk-task-client.h				\
-	pk-polkit-client.c				\
-	pk-polkit-client.h				\
 	$(NULL)
 
 pk_application_LDADD =					\
@@ -164,23 +99,11 @@ pk_application_LDADD =					\
 	$(LIBGLADE_LIBS)				\
 	$(GBUS_LIBS)					\
 	$(GTK_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
-
-BUILT_SOURCES = 					\
-	pk-marshal.c					\
-	pk-marshal.h					\
-	$(NULL)
-
-pk-marshal.c: pk-marshal.list
-	echo "#include \"pk-marshal.h\"" > $@ && \
-	glib-genmarshal $< --prefix=pk_marshal --body >> $@
-
-pk-marshal.h: pk-marshal.list
-	glib-genmarshal $< --prefix=pk_marshal --header > $@
 
 clean-local:
 	rm -f *~
-	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = $(BUILT_SOURCES)
 

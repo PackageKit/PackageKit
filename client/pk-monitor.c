@@ -28,10 +28,10 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
-#include "pk-task-common.h"
-#include "pk-task-list.h"
-#include "pk-connection.h"
+#include <pk-debug.h>
+#include <pk-task-common.h>
+#include <pk-task-list.h>
+#include <pk-connection.h>
 
 /**
  * pk_monitor_task_list_changed_cb:

@@ -30,7 +30,8 @@
 #include <dbus/dbus-glib.h>
 #include <gtk/gtk.h>
 
-#include "pk-debug.h"
+#include <pk-debug.h>
+
 #include "pk-notify.h"
 
 /**

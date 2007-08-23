@@ -185,6 +185,7 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 Makefile
 libgbus/Makefile
+libpackagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile

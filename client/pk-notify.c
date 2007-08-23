@@ -38,13 +38,14 @@
 #include <libnotify/notify.h>
 #include <gtk/gtkstatusicon.h>
 
-#include "pk-debug.h"
+#include <pk-debug.h>
+#include <pk-job-list.h>
+#include <pk-task-client.h>
+#include <pk-task-common.h>
+#include <pk-task-list.h>
+#include <pk-connection.h>
+
 #include "pk-notify.h"
-#include "pk-job-list.h"
-#include "pk-task-client.h"
-#include "pk-task-common.h"
-#include "pk-task-list.h"
-#include "pk-connection.h"
 
 static void     pk_notify_class_init	(PkNotifyClass *klass);
 static void     pk_notify_init		(PkNotify      *notify);

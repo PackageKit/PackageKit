@@ -29,10 +29,11 @@
 #include <math.h>
 #include <string.h>
 
+#include <pk-debug.h>
+#include <pk-task-client.h>
+#include <pk-connection.h>
+
 #include "pk-application.h"
-#include "pk-debug.h"
-#include "pk-task-client.h"
-#include "pk-connection.h"
 
 static void     pk_application_class_init (PkApplicationClass *klass);
 static void     pk_application_init       (PkApplication      *application);

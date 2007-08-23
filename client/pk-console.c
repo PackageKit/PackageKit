@@ -28,8 +28,8 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
-#include "pk-task-client.h"
+#include <pk-debug.h>
+#include <pk-task-client.h>
 
 /**
  * pk_console_package_cb:

@@ -1,0 +1,71 @@
+
+NULL =
+
+INCLUDES = \
+	$(GLIB_CFLAGS)						\
+	$(DBUS_CFLAGS)						\
+	-I$(top_srcdir)/libpackagekit				\
+	-I$(top_srcdir)/libgbus					\
+	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
+	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
+
+GBUS_LIBS =							\
+	$(top_builddir)/libgbus/libgbus.la			\
+	$(NULL)
+
+noinst_LTLIBRARIES =						\
+	libpackagekit.la					\
+	$(NULL)
+
+libpackagekit_la_SOURCES =					\
+	pk-marshal.h						\
+	pk-marshal.c						\
+	pk-debug.c						\
+	pk-debug.h						\
+	pk-marshal.c						\
+	pk-marshal.h						\
+	pk-connection.c						\
+	pk-connection.h						\
+	pk-task-utils.h						\
+	pk-task-utils.c						\
+	pk-task-common.c					\
+	pk-task-common.h					\
+	pk-task-monitor.c					\
+	pk-task-monitor.h					\
+	pk-task-client.c					\
+	pk-task-client.h					\
+	pk-task-list.c						\
+	pk-task-list.h						\
+	pk-job-list.c						\
+	pk-job-list.h						\
+	pk-polkit-client.c					\
+	pk-polkit-client.h					\
+	$(NULL)
+
+libpackagekit_la_LIBADD =					\
+	$(GLIB_LIBS)						\
+	$(DBUS_LIBS)						\
+	$(GBUS_LIBS)						\
+	$(NULL)
+
+EXTRA_DIST =							\
+	pk-marshal.list
+
+BUILT_SOURCES = 						\
+	pk-marshal.c						\
+	pk-marshal.h						\
+	$(NULL)
+
+pk-marshal.c: pk-marshal.list
+	echo "#include \"pk-marshal.h\"" > $@ && \
+	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --body >> $@
+
+pk-marshal.h: pk-marshal.list
+	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
+
+clean-local:
+	rm -f *~
+	rm -f pk-marshal.c pk-marshal.h
+
+CLEANFILES = $(BUILT_SOURCES)
+
