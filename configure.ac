@@ -32,9 +32,10 @@ AM_GLIB_GNU_GETTEXT
 dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
-GLIB_REQUIRED=2.6.0
+GLIB_REQUIRED=2.14.0
 GTK_REQUIRED=2.10.0
-DBUS_REQUIRED=0.70
+DBUS_REQUIRED=1.1.2
+DBUS_GLIB_REQUIRED=0.74
 LIBGLADE_REQUIRED=2.5.0
 LIBNOTIFY_REQUIRED=0.4.3
 LIBNM_REQUIRED=0.6.4
@@ -47,6 +48,7 @@ dnl ---------------------------------------------------------------------------
 AC_SUBST(GLIB_REQUIRED)
 AC_SUBST(GTK_REQUIRED)
 AC_SUBST(DBUS_REQUIRED)
+AC_SUBST(DBUS_GLIB_REQUIRED)
 AC_SUBST(LIBGLADE_REQUIRED)
 AC_SUBST(LIBNOTIFY_REQUIRED)
 
@@ -58,7 +60,7 @@ AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
 PKG_CHECK_MODULES(DBUS, \
- dbus-glib-1 >= $DBUS_REQUIRED \
+ dbus-glib-1 >= $DBUS_GLIB_REQUIRED \
  dbus-1 >= $DBUS_REQUIRED \
  gthread-2.0)
 AC_SUBST(DBUS_CFLAGS)
