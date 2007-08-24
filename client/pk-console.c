@@ -163,6 +163,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package to find the deps for");
 		} else {
+			pk_task_client_set_sync (tclient, TRUE);
 			pk_task_client_get_deps (tclient, value);
 			remove_two = TRUE;
 		}
