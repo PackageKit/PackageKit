@@ -44,11 +44,8 @@ dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
-GTK_REQUIRED=2.10.0
 DBUS_REQUIRED=1.1.2
 DBUS_GLIB_REQUIRED=0.74
-LIBGLADE_REQUIRED=2.5.0
-LIBNOTIFY_REQUIRED=0.4.3
 LIBNM_REQUIRED=0.6.4
 POLKIT_DBUS_REQUIRED=0.5
 POLKIT_GRANT_REQUIRED=0.5
@@ -57,11 +54,8 @@ dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
 dnl ---------------------------------------------------------------------------
 AC_SUBST(GLIB_REQUIRED)
-AC_SUBST(GTK_REQUIRED)
 AC_SUBST(DBUS_REQUIRED)
 AC_SUBST(DBUS_GLIB_REQUIRED)
-AC_SUBST(LIBGLADE_REQUIRED)
-AC_SUBST(LIBNOTIFY_REQUIRED)
 
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
@@ -77,29 +71,14 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-PKG_CHECK_MODULES(GTK, \
- gtk+-2.0 >= $GTK_REQUIRED)
-AC_SUBST(GTK_CFLAGS)
-AC_SUBST(GTK_LIBS)
-
-PKG_CHECK_MODULES(LIBGLADE, \
- libglade-2.0 >= $LIBGLADE_REQUIRED)
-AC_SUBST(LIBGLADE_CFLAGS)
-AC_SUBST(LIBGLADE_LIBS)
-
-PKG_CHECK_MODULES(LIBNOTIFY, \
- libnotify >= $LIBNOTIFY_REQUIRED)
-AC_SUBST(LIBNOTIFY_CFLAGS)
-AC_SUBST(LIBNOTIFY_LIBS)
-
 PKG_CHECK_MODULES(LIBNM, \
  libnm_glib >= $LIBNM_REQUIRED)
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
 PKG_CHECK_MODULES(POLKIT, \
-        polkit-dbus >= $POLKIT_DBUS_REQUIRED \
-        polkit-grant >= $POLKIT_GRANT_REQUIRED)
+ polkit-dbus >= $POLKIT_DBUS_REQUIRED \
+ polkit-grant >= $POLKIT_GRANT_REQUIRED)
 
 AC_CHECK_PROG([POLKIT_POLICY_FILE_VALIDATE],
               [polkit-policy-file-validate], [polkit-policy-file-validate])
@@ -329,6 +308,5 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         Backend:                   ${with_backend}
-        Self test support:         ${have_tests}
 "
 
