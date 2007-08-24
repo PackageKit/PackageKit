@@ -119,7 +119,6 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 	guint value = 0;
 	gchar *command;
 	gboolean ret = TRUE;
-	gboolean okay;
 
 	/* check if output line */
 	if (line == NULL || strstr (line, "\t") == NULL)
@@ -138,15 +137,12 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		okay = pk_task_filter_package_name (task, sections[2]);
-		if (okay == TRUE) {
-			if (pk_task_check_package_id (sections[2]) == TRUE) {
-				value = atoi(sections[1]);
-				pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
-				pk_task_package (task, value, sections[2], sections[3]);
-			} else {
-				pk_warning ("invalid package_id");
-			}
+		if (pk_task_check_package_id (sections[2]) == TRUE) {
+			value = atoi(sections[1]);
+			pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
+			pk_task_package (task, value, sections[2], sections[3]);
+		} else {
+			pk_warning ("invalid package_id");
 		}
 	} else if (strcmp (command, "description") == 0) {
 		if (size != 5) {
