@@ -1,11 +1,9 @@
 Order of no particular importance:
 
-* For Description signal covert "version" to "group"
 * yum-find-name.py has to emit full version and epoch, not just the version
 * Use libgbus in PkNetwork to avoid warning message
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
-* Complete the yum backend
 * Add details into the application UI
 * Add runtime into finished signal
 * Write documentation for UI porters
