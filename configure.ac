@@ -172,6 +172,8 @@ if test x$with_backend = xyum; then
     AC_DEFINE(BACKEND_PREFIX, "yum", [backend prefix])
 elif test x$with_backend = xconary; then
     AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
+else
+    AC_DEFINE(BACKEND_PREFIX, "dummy", [backend prefix])
 fi
 
 AC_DEFUN([APT_BACKEND],
