@@ -71,8 +71,8 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "GetUpdates");
+	return TRUE;
 }
 
 /**
@@ -97,7 +97,7 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 
 	/* easy as that */
 	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
-	pk_task_spawn_helper (task, "conary-refresh-cache.py");
+	pk_task_spawn_helper (task, "refresh-cache.py", NULL);
 
 	return TRUE;
 }
@@ -115,8 +115,8 @@ pk_task_update_system (PkTask *task)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "UpdateSystem");
+	return TRUE;
 }
 
 /**
@@ -125,10 +125,6 @@ pk_task_update_system (PkTask *task)
 gboolean
 pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
-	gchar *command;
-	const gchar *mode = NULL;
-	const gchar *script = NULL;
-
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -136,35 +132,9 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 		return FALSE;
 	}
 
-	if (installed == TRUE && available == TRUE) {
-		mode = "all";
-	} else if (installed == TRUE) {
-		mode = "installed";
-	} else if (available == TRUE) {
-		mode = "available";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
-	if (depth == 0) {
-		script = "conary-search-name.py";
-	} else if (depth == 1 || depth == 2) {
-		script = "conary-search-details.py";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "invalid search depth");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
-	task->package = strdup (search);
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_no_percentage_updates (task);
-
-	command = g_strdup_printf ("%s %s %s", script, mode, search);
-	pk_task_spawn_helper (task, command);
-	g_free (command);
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_spawn_helper_find (task, search, depth, installed, available);
 	return TRUE;
 }
 
@@ -172,7 +142,7 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
  * pk_task_get_deps:
  **/
 gboolean
-pk_task_get_deps (PkTask *task, const gchar *package)
+pk_task_get_deps (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -181,15 +151,15 @@ pk_task_get_deps (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "GetDeps");
+	return TRUE;
 }
 
 /**
  * pk_task_get_description:
  **/
 gboolean
-pk_task_get_description (PkTask *task, const gchar *package)
+pk_task_get_description (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -198,15 +168,15 @@ pk_task_get_description (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "GetDescription");
+	return TRUE;
 }
 
 /**
  * pk_task_remove_package:
  **/
 gboolean
-pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
+pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -215,15 +185,15 @@ pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "RemovePackage");
+	return TRUE;
 }
 
 /**
  * pk_task_install_package:
  **/
 gboolean
-pk_task_install_package (PkTask *task, const gchar *package)
+pk_task_install_package (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -239,8 +209,8 @@ pk_task_install_package (PkTask *task, const gchar *package)
 		return TRUE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "InstallPackage");
+	return TRUE;
 }
 
 /**
@@ -258,8 +228,8 @@ pk_task_cancel_job_try (PkTask *task)
 		return FALSE;
 	}
 
-	/* not implimented yet */
-	return FALSE;
+	pk_task_not_implemented_yet (task, "CancelJobTry");
+	return TRUE;
 }
 
 /**

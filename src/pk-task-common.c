@@ -289,13 +289,25 @@ pk_task_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
  * pk_task_spawn_helper:
  **/
 gboolean
-pk_task_spawn_helper (PkTask *task, const gchar *script)
+pk_task_spawn_helper (PkTask *task, const gchar *script_ending, const gchar *argument)
 {
 	PkSpawn *spawn;
 	gboolean ret;
 	gchar *filename;
+	gchar *command;
+	gchar *script;
+	gchar *error_str;
+
+	/* build script */
+	script = g_strdup_printf ("%s-%s", BACKEND_PREFIX, script_ending);
 
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
+	if (argument != NULL) {
+		command = g_strdup_printf ("%s %s", filename, argument);
+	} else {
+		command = g_strdup (filename);
+	}
+
 	spawn = pk_spawn_new ();
 	g_signal_connect (spawn, "finished",
 			  G_CALLBACK (pk_task_spawn_finished_cb), task);
@@ -303,15 +315,76 @@ pk_task_spawn_helper (PkTask *task, const gchar *script)
 			  G_CALLBACK (pk_task_spawn_stdout_cb), task);
 	g_signal_connect (spawn, "stderr",
 			  G_CALLBACK (pk_task_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, filename);
+	ret = pk_spawn_command (spawn, command);
 	if (ret == FALSE) {
-		g_warning ("spawn failed: '%s'", filename);
+		error_str = g_strdup_printf ("Spawn of helper '%s' failed", command);
+		pk_warning ("'%s'", error_str);
 		g_object_unref (spawn);
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "spawn failed");
-		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, error_str);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		g_free (error_str);
 	}
+	g_free (script);
 	g_free (filename);
+	g_free (command);
 	return ret;
+}
+
+/**
+ * pk_task_spawn_helper_find:
+ **/
+gboolean
+pk_task_spawn_helper_find (PkTask *task, const gchar *search, guint depth,
+			   gboolean installed, gboolean available)
+{
+	gchar *command;
+	const gchar *script = NULL;
+	const gchar *mode = NULL;
+
+	if (installed == TRUE && available == TRUE) {
+		mode = "all";
+	} else if (installed == TRUE) {
+		mode = "installed";
+	} else if (available == TRUE) {
+		mode = "available";
+	} else {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return FALSE;
+	}
+
+	/* TODO: merge these into one script */
+	if (depth == 0) {
+		script = "search-name.py";
+	} else if (depth == 1 || depth == 2) {
+		script = "search-details.py";
+	} else {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "invalid search depth");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return FALSE;
+	}
+
+	task->package = strdup (search);
+
+	command = g_strdup_printf ("%s %s", mode, search);
+	pk_task_spawn_helper (task, script, command);
+	g_free (command);
+
+	return TRUE;
+}
+
+/**
+ * pk_task_not_implemented_yet:
+ **/
+gboolean
+pk_task_not_implemented_yet (PkTask *task, const gchar *method)
+{
+	gchar *message;
+	message = g_strdup_printf ("the method '%s' is not implimented yet", method);
+	pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, message);
+	pk_task_finished (task, PK_TASK_EXIT_FAILED);
+	g_free (message);
+	return TRUE;
 }
 
 /**

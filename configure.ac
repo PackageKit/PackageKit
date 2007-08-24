@@ -167,6 +167,13 @@ if test x$with_backend = x; then
     fi
 fi
 
+# we need this for the spawn code
+if test x$with_backend = xyum; then
+    AC_DEFINE(BACKEND_PREFIX, "yum", [backend prefix])
+elif test x$with_backend = xconary; then
+    AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
+fi
+
 AC_DEFUN([APT_BACKEND],
 [
   if test "$APT_PKG_TYPE" == "" ; then
