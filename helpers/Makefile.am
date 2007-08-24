@@ -7,7 +7,6 @@ if BACKEND_TYPE_YUM
 dist_helper_DATA = 			\
 	yum-search-name.py		\
 	yum-search-details.py		\
-	yum-description.py		\
 	yum-get-deps.py			\
 	yum-get-updates.py		\
 	yum-install.py			\
@@ -24,7 +23,6 @@ if BACKEND_TYPE_CONARY
 dist_helper_DATA = 			\
 	conary-search-name.py		\
 	conary-search-details.py	\
-	conary-description.py		\
 	conary-get-deps.py		\
 	conary-get-updates.py		\
 	conary-install.py		\
