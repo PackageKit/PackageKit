@@ -26,6 +26,8 @@ affinityDb = client.db
 options = sys.argv[1]
 searchterms = sys.argv[2]
 
+sys.stderr.write('no-percentage-updates')
+
 try:
     localInstall = db.findTrove(None, (searchterms, None, None))
     installed = 1
@@ -42,7 +44,10 @@ try:
         name = troveTuple[0]
         version = troveTuple[1].trailingRevision().asString()
         arch = ""
-        package_id = name + ";" + version + ";" + arch
+        fullVersion = troveTuple[1].asString()
+        flavor = str(troveTuple[2])
+        data = fullVersion + " " + flavor
+        package_id = name + ";" + version + ";" + arch + ";" + data
         do_print = 0;
         if options == 'installed' and installed == 1:
             do_print = 1
