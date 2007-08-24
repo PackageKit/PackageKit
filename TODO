@@ -19,4 +19,5 @@ Order of no particular importance:
 * Add FindPackagesByFile(s=fullpath)
 * Add files in package into Description signal
 * Add conary backend
+* In update icon only show name, not package_id
 

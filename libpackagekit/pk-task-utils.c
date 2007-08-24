@@ -63,6 +63,8 @@ static PkTaskEnumMatch task_error[] = {
 	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
 	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
+	{PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
+	{PK_TASK_ERROR_CODE_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{0, NULL},
 };
 

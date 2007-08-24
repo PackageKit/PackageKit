@@ -27,6 +27,11 @@ import sys
 ERROR_NO_NETWORK = "no-network"
 ERROR_NOT_SUPPORTED = "not-supported"
 ERROR_INTERNAL_ERROR = "internal-error"
+ERROR_GPG_FAILURE = "gpg-failure"
+ERROR_PACKAGE_NOT_INSTALLED = "package-not-installed"
+ERROR_PACKAGE_ALREADY_INSTALLED = "package-already-installed"
+ERROR_PACKAGE_DOWNLOAD_FAILED = "package-download-failed"
+ERROR_DEP_RESOLUTION_FAILED = "dep-resolution-failed"
 
 STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"

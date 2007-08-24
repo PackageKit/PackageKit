@@ -35,7 +35,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
 
-    def _do_search(self,searchlist,opt,key):       
+    def _do_search(self,searchlist,opt,key):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
@@ -50,7 +50,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             print pkg
             if count > 100:
                 break
-            count+=1 
+            count+=1
             installed = '0'
 
             # are we installed?
@@ -159,15 +159,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
 
-    def _runYumTransaction(self):      
+    def _runYumTransaction(self):
         '''
         Run the yum Transaction
-        This will only work with yum 3.2.4 or higher        
+        This will only work with yum 3.2.4 or higher
         '''
-        rc,msgs =  self.yumbase.buildTransaction() 
+        rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
             retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
-            self.error(ERROR_INTERNAL_ERROR,retmsg)
+            self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
             try:
                 rpmDisplay = PackageKitCallback(self)
@@ -176,14 +176,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                       rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, msgs:
                 retmsg = "Error in Download\n" +"\n".join(msgs)
-                self.error(ERROR_INTERNAL_ERROR,retmsg)
+                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
             except yum.Errors.YumGPGCheckError, msgs:
                 retmsg = "Error in Package Signatures\n" +"\n".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except yum.Errors.YumBaseError, msgs:
                 retmsg = "Error in Transaction Processing\n" +"\n".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
-          
+
     def remove(self, allowdep, package):
         '''
         Implement the {backend}-remove functionality
@@ -279,7 +279,7 @@ class PackageKitCallback(RPMBaseCallback):
         self.base = base
         self.pct = 0
         self.curpkg = None
-        self.actions = { 'Updating' : STATE_UPDATE, 
+        self.actions = { 'Updating' : STATE_UPDATE,
                          'Erasing' : STATE_REMOVE,
                          'Installing' : STATE_INSTALL}
 
