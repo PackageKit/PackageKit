@@ -17,7 +17,6 @@ Order of no particular importance:
 * Add enough new error enums for the yum backend
 * Add sub-percentage support into API
 * Split up PolicyKit install into different types
-
- wwoods: i was thinking of this earlier. I think we need a new method FindPackagesByFile
- wwoods: and put the file info into the Description signal
+* Add FindPackagesByFile(s=fullpath)
+* Add files in package into Description signal
 
