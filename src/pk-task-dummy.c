@@ -184,9 +184,9 @@ pk_task_get_deps (PkTask *task, const gchar *package)
 
 	task->package = strdup (package);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_package (task, 0, "glib2;2.14.0;i386;fedora",
+	pk_task_package (task, 1, "glib2;2.14.0;i386;fedora",
 			 "The GLib library");
-	pk_task_package (task, 0, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
+	pk_task_package (task, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
