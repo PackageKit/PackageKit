@@ -56,6 +56,7 @@ typedef struct
 	guint			 job;
 	PkTaskStatus		 status;
 	PkTaskExit		 exit;
+	GTimer			*timer;
 	gchar			*package;
 	guint			*signals;
 } PkTask;

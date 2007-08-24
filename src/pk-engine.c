@@ -317,6 +317,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 {
 	guint job;
 	const gchar *exit_text;
+	gdouble time;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -327,8 +328,13 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	pk_debug ("emitting finished job:%i, '%s'", job, exit_text);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text);
 
+	/* find the length of time we have been running */
+	time = g_timer_elapsed (task->timer, NULL);
+	pk_debug ("task was running for %f seconds", time);
+
 	/* remove from array and unref */
 	g_ptr_array_remove (engine->priv->array, task);
+	g_timer_destroy (task->timer);
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
 	pk_engine_job_list_changed (engine);
@@ -366,6 +372,9 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_require_restart_cb), engine);
 	g_signal_connect (task, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
+
+	/* track how long the job has been running for */
+	task->timer = g_timer_new ();
 
 	/* set the job ID */
 	pk_task_set_job (task, job);
