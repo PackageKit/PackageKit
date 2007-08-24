@@ -117,9 +117,16 @@ class PackageKitBaseBackend:
 # Backend Action Methods
 #    
     
-    def search_name(self,opt,keys):
+    def search_name(self,opt,key):
         '''
-        Implement the {backend}-search-nam functionality
+        Implement the {backend}-search-name functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def search_details(self,opt,key):
+        '''
+        Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

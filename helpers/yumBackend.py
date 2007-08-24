@@ -30,14 +30,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
         
-    def search_name(self,opt,keys):
+    def _do_search(self,searchlist,opt,key):       
         '''
-        Implement the {backend}-search-nam functionality
-        Needed to be implemented in a sub class
+        Search for yum packages
+        @param searchlist: The yum package fields to search in
+        @param opt: package types to search (all,installed,available)
+        @param key: key to seach for
         '''
         self.yumbase.conf.cache = 1 # Only look in cache.
-        searchlist = ['name']
-        res = self.yumbase.searchGenerator(searchlist, [keys])
+        res = self.yumbase.searchGenerator(searchlist, [key])
         
         count = 1
         for (pkg,values) in res:
@@ -64,8 +65,24 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if do_print == 1:
                 id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
                 self.package(id,installed, pkg.summary)
-            
         
+    def search_name(self,opt,key):
+        '''
+        Implement the {backend}-search-nam functionality
+        Needed to be implemented in a sub class
+        '''
+        searchlist = ['name']
+        self._do_search(searchlist, opt, key)
+            
+    def search_details(self,opt,key):
+        '''
+        Implement the {backend}-search-details functionality
+        Needed to be implemented in a sub class
+        '''
+        searchlist = ['name', 'summary', 'description', 'group']
+        self._do_search(searchlist, opt, key)
+
+       
     def get_deps(self,package):
         '''
         Implement the {backend}-get-deps functionality
