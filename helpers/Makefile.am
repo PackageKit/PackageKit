@@ -15,21 +15,23 @@ dist_helper_DATA = 			\
 	yum-remove.py			\
 	yum-update-system.py		\
 	yum-get-description.py		\
+	yumBackend.py			\
+	packagekit.py			\
 	$(NULL)
 endif	
 
 if BACKEND_TYPE_CONARY
 dist_helper_DATA = 			\
 	conary-search-name.py		\
-	conary-search-details.py		\
+	conary-search-details.py	\
 	conary-description.py		\
-	conary-get-deps.py			\
+	conary-get-deps.py		\
 	conary-get-updates.py		\
-	conary-install.py			\
+	conary-install.py		\
 	conary-refresh-cache.py		\
-	conary-remove.py			\
+	conary-remove.py		\
 	conary-update-system.py		\
-	conary-get-description.py		\
+	conary-get-description.py	\
 	$(NULL)
 endif	
 
