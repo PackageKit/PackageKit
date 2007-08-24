@@ -1,8 +1,8 @@
 			          PackageKit
-		       A dbus packaging abstraction layer
+		       A DBUS packaging abstraction layer
 
-PackageKit is a dbus abstraction layer that allows the session user to do cool
-stuff rather that worry about the underlying software package install system.
+PackageKit is a DBUS abstraction layer that allows the session user to manage
+packages in a secure way using a cross-distro, cross-architecture API.
 
 For more information, please see http://live.gnome.org/PackageKit
 

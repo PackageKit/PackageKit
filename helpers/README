@@ -36,7 +36,7 @@ you have a compiled backend to use if you need it.
 
 FILENAME	{backend}-search-name.*
 
-STDIN		$options $search_term
+ARGUMENTS	$options $search_term
 		options:	One of "installed", "available", "all".
 		search_term:	Single word search term with no wildcard chars.
 
@@ -61,13 +61,13 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
-NOTES:		Do not refresh the package cache. This should be fast.
+NOTES		Do not refresh the package cache. This should be fast.
 
 ========= Search Details ========= 
 
 FILENAME	{backend}-search-details.*
 
-STDIN		$options $search_term
+ARGUMENTS	$options $search_term
 		options:	One of "installed", "available", "all".
 		search_term:	Single word search term with no wildcard chars.
 
@@ -92,7 +92,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
-NOTES:		This is very similar to find-package.
+NOTES		This is very similar to find-package.
 		This should search as much data as possible, including, if possible
 		repo names, package summaries, descriptions and urls.
 
@@ -100,7 +100,7 @@ NOTES:		This is very similar to find-package.
 
 FILENAME	{backend}-refresh-cache.*
 
-STDIN		<none>
+ARGUMENTS	<none>
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -123,7 +123,7 @@ STDOUT		<none>
 
 FILENAME	{backend}-install.*
 
-STDIN		$package
+ARGUMENTS	$package
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage<tab>$value
@@ -158,11 +158,15 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		NOTE:		As packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
+NOTES		The installer should always install extra packages automatically
+		as the use could call GetDeps prior to the intstall if a
+		confirmation is required in the UI.
+
 ========= Remove Packages ========= 
 
 FILENAME	{backend}-remove.*
 
-STDIN		$allowdeps $package
+ARGUMENTS	$allowdeps $package
 		allowdeps:	Either "yes" or "no". If yes allow other packages
 				to be removed with the package, but "no" should
 				cause the script to abort if other packages are
@@ -200,7 +204,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 FILENAME	{backend}-get-deps.*
 
-STDIN		$package
+ARGUMENTS	$package
 		package:	Single word package with no wildcard chars.
 
 STDERR		percentage<tab>$value
@@ -223,7 +227,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 FILENAME	{backend}-update-system.*
 
-STDIN		<none>
+ARGUMENTS	<none>
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -258,7 +262,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 FILENAME	{backend}-get-description.*
 
-STDIN		$package
+ARGUMENTS	$package
 		package:	Single word package with no wildcard chars.
 
 STDERR		error<tab>$enum<tab>description
@@ -283,7 +287,7 @@ STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
 
 FILENAME	{backend}-get-updates.*
 
-STDIN		<none>
+ARGUMENTS	<none>
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
