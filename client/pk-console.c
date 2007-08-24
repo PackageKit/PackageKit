@@ -118,6 +118,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon sync update\n");
 	g_print ("  pkcon refresh\n");
 	g_print ("  pkcon force-refresh\n");
+	g_print ("  pkcon getdeps gimp\n");
 	g_print ("  pkcon debug checkupdate\n");
 }
 
@@ -156,6 +157,13 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a package to remove");
 		} else {
 			pk_task_client_remove_package (tclient, value, FALSE);
+			remove_two = TRUE;
+		}
+	} else if (strcmp (mode, "getdeps") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package to find the deps for");
+		} else {
+			pk_task_client_get_deps (tclient, value);
 			remove_two = TRUE;
 		}
 	} else if (strcmp (mode, "debug") == 0) {
