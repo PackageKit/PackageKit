@@ -14,6 +14,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
+# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
+
 
 # imports
 
@@ -25,15 +27,44 @@ import yum
 class PackageKitYumBackend(PackageKitBaseBackend):
     
     def __init__(self,args):
-        PackageKitBaseBackend.__init__(args)
+        PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
         
-    def search_name(self,key,opt):
+    def search_name(self,opt,keys):
         '''
         Implement the {backend}-search-nam functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        searchlist = ['name']
+        res = self.yumbase.searchGenerator(searchlist, [keys])
+        
+        count = 1
+        for (pkg,values) in res:
+            print pkg
+            if count > 100:
+                break
+            count+=1 
+            installed = '0'
+        
+            # are we installed?
+            if self.yumbase.rpmdb.installed(pkg.name):
+                installed = '1'
+        
+            # do we print to stdout?
+            do_print = 0;
+            if opt == 'installed' and installed == '1':
+                do_print = 1
+            elif opt == 'available' and installed == '0':
+                do_print = 1
+            elif opt == 'all':
+                do_print = 1
+        
+            # print in correct format
+            if do_print == 1:
+                id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
+                self.package(id,installed, pkg.summary)
+            
         
     def get_deps(self,package):
         '''

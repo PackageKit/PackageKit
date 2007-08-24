@@ -10,40 +10,14 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-import yum
 import sys
-
-my = yum.YumBase()
-#my.doConfigSetup()
-my.conf.cache = 1
 
 options = sys.argv[1]
 searchterms = sys.argv[2]
 
-searchlist = ['name']
-res = my.searchGenerator(searchlist, [searchterms])
+from yumBackend import PackageKitYumBackend
 
-count = 1
-for (pkg,values) in res:
-    if count > 100:
-        break
-    count+=1 
-    installed = '0'
-
-    # are we installed?
-    if my.rpmdb.installed(pkg.name):
-        installed = '1'
-
-    # do we print to stdout?
-    do_print = 0;
-    if options == 'installed' and installed == '1':
-    	do_print = 1
-    elif options == 'available' and installed == '0':
-    	do_print = 1
-    elif options == 'all':
-    	do_print = 1
-
-    # print in correct format
-    if do_print == 1:
-    	print "package\t%s\t%s;%s;%s;%s\t%s" % (installed, pkg.name, pkg.version, pkg.arch, pkg.repo, pkg.summary)
+backend = PackageKitYumBackend(sys.argv[1:])
+backend.search_name(options,searchterms)
+sys.exit(1)
 
