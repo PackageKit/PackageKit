@@ -267,10 +267,16 @@ STDERR		error<tab>$enum<tab>description
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
-STDOUT		description<tab>$package_id<tab>$version<tab>$detail<tab>$url
+STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
 		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-		$version:	The full distro package version
-		$detail:	The multi line package description.
+		$group:		The enumerated package group description
+				This should be one of:
+				"accessibility", "accessories", "education", "games",
+				"graphics", "internet", "office", "other", "programming",
+				"sound-video", "system"
+		$detail:	The multi line package description
+				NOTE: Tabs may have to be stripped from the
+				description to avoid being split for the url.
 		$url:		The upstream project homepage
 
 ========= Get Updates ========= 

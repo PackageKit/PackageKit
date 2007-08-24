@@ -375,14 +375,14 @@ pk_task_require_restart (PkTask *task, PkTaskRestart restart, const gchar *detai
  * pk_task_description:
  **/
 gboolean
-pk_task_description (PkTask *task, const gchar *package, const gchar *version,
+pk_task_description (PkTask *task, const gchar *package, const gchar *group,
 		     const gchar *description, const gchar *url)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
-	pk_debug ("emit description %s, %s, %s, %s", package, version, description, url);
-	g_signal_emit (task, task->signals [PK_TASK_DESCRIPTION], 0, package, version, description, url);
+	pk_debug ("emit description %s, %s, %s, %s", package, group, description, url);
+	g_signal_emit (task, task->signals [PK_TASK_DESCRIPTION], 0, package, group, description, url);
 
 	return TRUE;
 }

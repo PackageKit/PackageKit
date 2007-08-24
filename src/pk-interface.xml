@@ -65,7 +65,7 @@
     <signal name="Description">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="version" direction="out"/>
+      <arg type="s" name="group" direction="out"/> <!-- enumerated type, see helpers/README -->
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>
     </signal>
