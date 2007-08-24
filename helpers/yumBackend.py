@@ -25,6 +25,8 @@ import sys
 from packagekit import *
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
+from yum.rpmtrans import RPMBaseCallback
+from yum.constants import *
 
 
 class PackageKitYumBackend(PackageKitBaseBackend):
@@ -145,10 +147,43 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def install(self, package):
         '''
         Implement the {backend}-install functionality
-        Needed to be implemented in a sub class
+        This will only work with yum 3.2.4 or higher
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.yumbase.doConfigSetup()                         # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)     # Download callback
+        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self.percentage(0)
+        txmbr = self.yumbase.install(name=package)
+        if txmbr:
+            self._runYumTransaction()
+        else:
+            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
 
+    def _runYumTransaction(self):      
+        '''
+        Run the yum Transaction
+        This will only work with yum 3.2.4 or higher        
+        '''
+        rc,msgs =  self.yumbase.buildTransaction() 
+        if rc !=2:
+            retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
+            self.error(ERROR_INTERNAL_ERROR,retmsg)
+        else:
+            try:
+                rpmDisplay = PackageKitCallback(self)
+                callback = ProcessTransPackageKitCallback(self)
+                self.yumbase.processTransaction(callback=callback,
+                                      rpmDisplay=rpmDisplay)
+            except yum.Errors.YumDownloadError, msgs:
+                retmsg = "Error in Download\n" +"\n".join(msgs)
+                self.error(ERROR_INTERNAL_ERROR,retmsg)
+            except yum.Errors.YumGPGCheckError, msgs:
+                retmsg = "Error in Package Signatures\n" +"\n".join(msgs)
+                self.error(ERROR_INTERNAL_ERROR,retmsg)
+            except yum.Errors.YumBaseError, msgs:
+                retmsg = "Error in Transaction Processing\n" +"\n".join(msgs)
+                self.error(ERROR_INTERNAL_ERROR,retmsg)
+          
     def remove(self, allowdep, package):
         '''
         Implement the {backend}-remove functionality
@@ -171,10 +206,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
-    def __init__( self,base):
+    def __init__(self,base,showNames = False):
         BaseMeter.__init__( self )
         self.totSize = ""
         self.base = base
+        self.showNames = showNames
+        self.oldName = None
+        self.lastPct = 0
 
     def update( self, amount_read, now=None ):
         BaseMeter.update( self, amount_read, now )
@@ -189,7 +227,7 @@ class DownloadCallback( BaseMeter ):
         fread = format_number( amount_read )
         name = self._getName()
         if self.size is None:
-            # Elabsed time
+            # Elapsed time
             etime = self.re.elapsed_time()
             fetime = format_time( etime )
             frac = 0.0
@@ -226,7 +264,62 @@ class DownloadCallback( BaseMeter ):
         @param fread: formated string containing BytesRead
         @param ftime : formated string containing remaining or elapsed time
         '''
-        self.base.sub_percentage(int( frac*100 ))
+        pct = int( frac*100 )
+        if self.lastPct != pct:
+            self.lastPct = pct
+            self.base.sub_percentage(int( frac*100 ))
+        if name != self.oldName:
+            self.oldName = name
+            if self.showNames:
+                self.base.data(name)
 
+class PackageKitCallback(RPMBaseCallback):
+    def __init__(self,base):
+        RPMBaseCallback.__init__(self)
+        self.base = base
+        self.pct = 0
+        self.curpkg = None
+        self.actions = { 'Updating' : STATE_UPDATE, 
+                         'Erasing' : STATE_REMOVE,
+                         'Installing' : STATE_INSTALL}
 
+    def event(self, package, action, te_current, te_total, ts_current, ts_total):
+        if str(package) != self.curpkg:
+            self.curpkg = str(package)
+            self.base.data(package)
+            print action
+            if action in TS_INSTALL_STATES:
+                self.base.status(STATE_INSTALL)
+            elif action in TS_REMOVE_STATES:
+                self.base.status(STATE_REMOVE)
+        val = (ts_current*100L)/ts_total
+        if val != self.pct:
+            self.pct = val
+            self.base.sub_percentage(val)
 
+    def errorlog(self, msg):
+        # grrrrrrrr
+        pass
+
+PT_DOWNLOAD        = 0
+PT_GPGCHECK        = 1
+PT_TEST_TRANS      = 2
+PT_TRANSACTION     = 3
+
+class ProcessTransPackageKitCallback:
+    def __init__(self,base):
+        self.base = base
+
+    def event(self,state):
+        if state == PT_DOWNLOAD:
+            self.base.percentage(10)
+            self.base.status(STATE_DOWNLOAD)
+        elif state == PT_GPGCHECK:
+            self.base.percentage(40)
+            pass
+        elif state == PT_TEST_TRANS:
+            self.base.percentage(45)
+            pass
+        elif state == PT_TRANSACTION:
+            self.base.percentage(50)
+            pass
