@@ -19,4 +19,4 @@ Order of no particular importance:
 * Split up PolicyKit install into different types
 * Add FindPackagesByFile(s=fullpath)
 * Add files in package into Description signal
-
+* Add conary backend
