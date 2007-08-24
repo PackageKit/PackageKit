@@ -63,6 +63,39 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 NOTES:		Do not refresh the package cache. This should be fast.
 
+========= Search Details ========= 
+
+FILENAME	{backend}-search-details.*
+
+STDIN		$options $search_term
+		options:	One of "installed", "available", "all".
+		search_term:	Single word search term with no wildcard chars.
+
+STDERR		percentage<tab>$value
+		value:		Percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the DBUS
+				signal NoPercentageUpdates or use no-percentage-updates
+				if the remaining position cannot be calculated.
+
+STDERR		no-percentage-updates
+		notes:		This is optional and signifies that the helper
+				is no longer able to send percentage updates.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	"1" if installed, "0" if not
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
+
+NOTES:		This is very similar to find-package.
+		This should search as much data as possible, including, if possible
+		repo names, package summaries, descriptions and urls.
+
 ========= Refresh Cache =========
 
 FILENAME	{backend}-refresh-cache.*
@@ -239,4 +272,24 @@ STDOUT		description<tab>$package_id<tab>$version<tab>$detail<tab>$url
 		$version:	The full distro package version
 		$detail:	The multi line package description.
 		$url:		The upstream project homepage
+
+========= Get Updates ========= 
+
+FILENAME	{backend}-get-updates.*
+
+STDIN		<none>
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	"0" for normal priority updates
+				"1" for security updates
+				"2" for important updates
+				"3" for low priority updates
+		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$summary:	The one line package summary.
 
