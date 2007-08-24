@@ -146,41 +146,6 @@ pk_task_status_to_text (PkTaskStatus status)
 }
 
 /**
- * pk_task_status_to_localised_text:
- **/
-const gchar *
-pk_task_status_to_localised_text (PkTaskStatus status)
-{
-	const gchar *text = NULL;
-	switch (status) {
-	case PK_TASK_STATUS_SETUP:
-		text = "Setting up";
-		break;
-	case PK_TASK_STATUS_QUERY:
-		text = "Querying";
-		break;
-	case PK_TASK_STATUS_REMOVE:
-		text = "Removing";
-		break;
-	case PK_TASK_STATUS_DOWNLOAD:
-		text = "Downloading";
-		break;
-	case PK_TASK_STATUS_INSTALL:
-		text = "Installing";
-		break;
-	case PK_TASK_STATUS_REFRESH_CACHE:
-		text = "Refreshing package cache";
-		break;
-	case PK_TASK_STATUS_UPDATE:
-		text = "Updating";
-		break;
-	default:
-		pk_error ("status unrecognised: %i", status);
-	}
-	return text;
-}
-
-/**
  * pk_task_error_code_from_text:
  **/
 PkTaskErrorCode
@@ -230,32 +195,6 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 }
 
 /**
- * pk_task_error_code_to_localised_text:
- **/
-const gchar *
-pk_task_error_code_to_localised_text (PkTaskErrorCode code)
-{
-	const gchar *text = NULL;
-	switch (code) {
-	case PK_TASK_ERROR_CODE_NO_NETWORK:
-		text = "No network connection available";
-		break;
-	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
-		text = "Not supported by this backend";
-		break;
-	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
-		text = "An internal system error has occurred";
-		break;
-	case PK_TASK_ERROR_CODE_GPG_FAILURE:
-		text = "A security trust relationship is not present";
-		break;
-	default:
-		text = "Unknown error";
-	}
-	return text;
-}
-
-/**
  * pk_task_restart_from_text:
  **/
 PkTaskRestart
@@ -292,29 +231,6 @@ pk_task_restart_to_text (PkTaskRestart restart)
 		break;
 	case PK_TASK_RESTART_APPLICATION:
 		text = "application";
-		break;
-	default:
-		pk_error ("restart unrecognised: %i", restart);
-	}
-	return text;
-}
-
-/**
- * pk_task_restart_to_localised_text:
- **/
-const gchar *
-pk_task_restart_to_localised_text (PkTaskRestart restart)
-{
-	const gchar *text = NULL;
-	switch (restart) {
-	case PK_TASK_RESTART_SYSTEM:
-		text = "A system reboot is required";
-		break;
-	case PK_TASK_RESTART_SESSION:
-		text = "You will need to log off and log back on";
-		break;
-	case PK_TASK_RESTART_APPLICATION:
-		text = "You need to restart the application";
 		break;
 	default:
 		pk_error ("restart unrecognised: %i", restart);
