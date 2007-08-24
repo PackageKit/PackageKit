@@ -36,13 +36,13 @@ for (pkg,values) in res:
     # do we print to stdout?
     do_print = 0;
     if options == 'installed' and installed == 'yes':
-    	do_print = 1
+        do_print = 1
     elif options == 'available' and installed == 'no':
-    	do_print = 1
+        do_print = 1
     elif options == 'all':
-    	do_print = 1
+        do_print = 1
 
     # print in correct format
     if do_print == 1:
-    	print "%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
+        print "%s\t%s\t%s" % (installed, pkg.name, pkg.summary)
 

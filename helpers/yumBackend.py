@@ -28,11 +28,11 @@ from urlgrabber.progress import BaseMeter,format_time,format_number
 
 
 class PackageKitYumBackend(PackageKitBaseBackend):
-    
+
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
-        
+
     def _do_search(self,searchlist,opt,key):       
         '''
         Search for yum packages
@@ -42,7 +42,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.yumbase.conf.cache = 1 # Only look in cache.
         res = self.yumbase.searchGenerator(searchlist, [key])
-        
+
         count = 1
         for (pkg,values) in res:
             print pkg
@@ -50,11 +50,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 break
             count+=1 
             installed = '0'
-        
+
             # are we installed?
             if self.yumbase.rpmdb.installed(pkg.name):
                 installed = '1'
-        
+
             # do we print to stdout?
             do_print = 0;
             if opt == 'installed' and installed == '1':
@@ -63,19 +63,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 do_print = 1
             elif opt == 'all':
                 do_print = 1
-        
+
             # print in correct format
             if do_print == 1:
                 id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
                 self.package(id,installed, pkg.summary)
-        
+
     def search_name(self,opt,key):
         '''
         Implement the {backend}-search-nam functionality
         '''
         searchlist = ['name']
         self._do_search(searchlist, opt, key)
-            
+
     def search_details(self,opt,key):
         '''
         Implement the {backend}-search-details functionality
@@ -83,7 +83,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         searchlist = ['name', 'summary', 'description', 'group']
         self._do_search(searchlist, opt, key)
 
-       
     def get_deps(self,package):
         '''
         Print a list of dependencies for a given package
@@ -109,8 +108,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
-        
+
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -125,10 +123,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if len(self.yumbase.repos.listEnabled()) == 0:
                 self.percentage(100)
                 return
-        
+
             #work out the slice for each one
             bump = (100/len(self.yumbase.repos.listEnabled()))/2
-        
+
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 0
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
@@ -137,13 +135,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
                 pct+=bump
                 self.percentage(pct)
-        
+
             #we might have a rounding error
             self.percentage(100)
-        
+
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_INTERNAL_ERROR,str(e))
-        
+
     def install(self, package):
         '''
         Implement the {backend}-install functionality
@@ -177,38 +175,38 @@ class DownloadCallback( BaseMeter ):
         BaseMeter.__init__( self )
         self.totSize = ""
         self.base = base
-               
+
     def update( self, amount_read, now=None ):
-        BaseMeter.update( self, amount_read, now )           
+        BaseMeter.update( self, amount_read, now )
 
     def _do_start( self, now=None ):
-        name = self._getName()        
-        self.updateProgress(name,0.0,"","")        
+        name = self._getName()
+        self.updateProgress(name,0.0,"","")
         if not self.size is None:
             self.totSize = format_number( self.size )
 
     def _do_update( self, amount_read, now=None ):
         fread = format_number( amount_read )
-        name = self._getName()        
+        name = self._getName()
         if self.size is None:
             # Elabsed time
             etime = self.re.elapsed_time()
             fetime = format_time( etime )
             frac = 0.0
-            self.updateProgress(name,frac,fread,fetime)      
+            self.updateProgress(name,frac,fread,fetime)
         else:
             # Remaining time
             rtime = self.re.remaining_time()
             frtime = format_time( rtime )
             frac = self.re.fraction_read()
-            self.updateProgress(name,frac,fread,frtime)      
-              
+            self.updateProgress(name,frac,fread,frtime)
+
 
     def _do_end( self, amount_read, now=None ):
         total_time = format_time( self.re.elapsed_time() )
         total_size = format_number( amount_read )
-        name = self._getName()        
-        self.updateProgress(name,1.0,total_size,total_time)      
+        name = self._getName()
+        self.updateProgress(name,1.0,total_size,total_time)
 
     def _getName(self):
         '''
@@ -219,7 +217,7 @@ class DownloadCallback( BaseMeter ):
         else:
             name = self.basename
         return name
-        
+
     def updateProgress(self,name,frac,fread,ftime):
         '''
          Update the progressbar (Overload in child class)
@@ -229,6 +227,6 @@ class DownloadCallback( BaseMeter ):
         @param ftime : formated string containing remaining or elapsed time
         '''
         self.base.sub_percentage(int( frac*100 ))
-    
-    
-        
+
+
+

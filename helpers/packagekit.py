@@ -40,10 +40,10 @@ RESTART_SESSION = "session"
 # Classes
 
 class PackageKitBaseBackend:
-    
+
     def __init__(self,cmds):
         self.cmds = cmds
-        
+
     def percentage(self,percent=None):
         ''' 
         Write progress percentage
@@ -68,7 +68,7 @@ class PackageKitBaseBackend:
         @param description: Error description
         '''
         print >> sys.stderr,"error\t%s\t%s" % (err,description)
-        
+
     def package(self,id,status,summary):
         '''
         send 'package' signal
@@ -77,21 +77,21 @@ class PackageKitBaseBackend:
         @param summary: The package Summary 
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
-        
+
     def status(self,state):
         '''
         send 'status' signal
         @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE 
         '''
         print >> sys.stderr,"status\t%s" % (state)
-        
+
     def data(self,data):
         '''
         send 'data' signal:
         @param data:  The current worked on package
         '''
         print >> sys.stderr,"data\t%s" % (data)
-        
+
     def description(self,id,group,desc,url):
         '''
         Send 'description' signal
@@ -101,7 +101,7 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s" % (id,group,desc,url)
-        
+
     def require_restart(self,restart_type,details):
         '''
         Send 'requirerestart' signal
@@ -109,14 +109,14 @@ class PackageKitBaseBackend:
         @param details: Optional details about the restart
         '''
         print >> sys.stderr,"requirerestart\t%s\t%s" % (restart_type,details)
-    
+
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)
 
 #
 # Backend Action Methods
-#    
-    
+#
+
     def search_name(self,opt,key):
         '''
         Implement the {backend}-search-name functionality
@@ -130,7 +130,7 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
+
     def get_deps(self,package):
         '''
         Implement the {backend}-get-deps functionality
@@ -144,15 +144,15 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
-        
+
+
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
+
     def install(self, package):
         '''
         Implement the {backend}-install functionality
@@ -173,5 +173,3 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
-        

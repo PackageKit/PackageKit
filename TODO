@@ -10,6 +10,11 @@ Order of no particular importance:
 * Add FindPackagesByGroup() and GetGroupList perhaps
 * Add a way to import GPG keys
 * Add       <arg type="b" name="filter_development" direction="in"/>
+  or a s=searchtype:
+  	only-devel;non-devel
+  	only-installed;non-installed
+  	only-gui;non-gui
 * Add enough new error enums for the yum backend
 * Add sub-percentage support into API
+* Split up PolicyKit install into different types
 
