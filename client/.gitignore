@@ -1,4 +1,5 @@
 .deps
+.libs
 *.o
 pk-marshal.h
 pk-marshal.c
