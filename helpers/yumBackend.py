@@ -15,6 +15,7 @@
 #
 # Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
 # Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
+# Copyright (C) 2007 Luke Macken <lmacken@redhat.com>
 
 
 # imports
@@ -87,10 +88,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
        
     def get_deps(self,package):
         '''
-        Implement the {backend}-get-deps functionality
-        Needed to be implemented in a sub class
+        Print a list of dependencies for a given package
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        res = self.yumbase.searchGenerator(['name'], [package])
+
+        for (pkg, name) in res:
+            if name[0] == package:
+                deps = self.yumbase.findDeps([pkg]).values()[0]
+                for deplist in deps.values():
+                    for dep in deplist:
+                        if not results.has_key(dep.name):
+                            results[dep.name] = dep
+                break
+
+        for pkg in results.values():
+            id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
+            self.package(id, 1, pkg.summary)
 
     def update_system(self):
         '''
@@ -149,11 +162,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def get_description(self, package):
         '''
-        Implement the {backend}-get-description functionality
-        Needed to be implemented in a sub class
+        Print a detailed description for a given package
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
+        res = self.yumbase.searchGenerator(['name'], [package])
+        for (pkg, name) in res:
+            if name[0] == package:
+                id = self.get_package_id(pkg.name, pkg.version,
+                                         pkg.arch, pkg.repo)
+                self.description(id, "%s-%s" % (pkg.version, pkg.release),
+                                 repr(pkg.description), pkg.url)
+                break
+
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
     def __init__( self,base):
