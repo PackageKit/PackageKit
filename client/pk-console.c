@@ -204,7 +204,7 @@ pk_console_tidy_up_sync (PkTaskClient *tclient)
 		length = packages->len;
 		for (i=0; i<length; i++) {
 			item = g_ptr_array_index (packages, i);
-			pk_console_package_cb (tclient, item->value, item->package, item->summary, NULL);
+			pk_console_package_cb (tclient, item->value, item->package_id, item->summary, NULL);
 		}
 	}
 }

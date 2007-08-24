@@ -51,7 +51,7 @@ typedef struct
 typedef struct
 {
 	guint			 value;
-	gchar			*package;
+	gchar			*package_id;
 	gchar			*summary;
 } PkTaskClientPackageItem;
 

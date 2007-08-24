@@ -1,15 +1,12 @@
 Order of no particular importance:
 
 * yum-find-name.py has to emit full version and epoch, not just the version
-* Use libgbus in PkNetwork to avoid warning message
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
-* Add details into the application UI
 * Write documentation for UI porters
 * Add FindPackagesByGroup() and GetGroupList perhaps
 * Add a way to import GPG keys
-* Add       <arg type="b" name="filter_development" direction="in"/>
-  or a s=searchtype:
+* Add s=searchtype:
   	only-devel;non-devel
   	only-installed;non-installed
   	only-gui;non-gui
@@ -19,5 +16,4 @@ Order of no particular importance:
 * Add FindPackagesByFile(s=fullpath)
 * Add files in package into Description signal
 * Add conary backend
-* In update icon only show name, not package_id
 

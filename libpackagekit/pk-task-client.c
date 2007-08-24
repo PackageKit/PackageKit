@@ -180,7 +180,7 @@ pk_task_client_remove_package_items (PkTaskClient *tclient)
 	PkTaskClientPackageItem *item;
 	while (tclient->priv->package_items->len > 0) {
 		item = g_ptr_array_index (tclient->priv->package_items, 0);
-		g_free (item->package);
+		g_free (item->package_id);
 		g_free (item->summary);
 		g_free (item);
 		g_ptr_array_remove_index_fast (tclient->priv->package_items, 0);
@@ -733,7 +733,7 @@ pk_task_client_job_status_changed_cb (PkTaskMonitor *tmonitor,
 static void
 pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 			   guint          value,
-			   const gchar   *package,
+			   const gchar   *package_id,
 			   const gchar   *summary,
 			   PkTaskClient  *tclient)
 {
@@ -744,15 +744,15 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 
 	/* if sync then just add results to an array */
 	if (tclient->priv->use_buffer == TRUE) {
-		pk_debug ("adding to cache array package %i, %s, %s", value, package, summary);
+		pk_debug ("adding to cache array package %i, %s, %s", value, package_id, summary);
 		item = g_new0 (PkTaskClientPackageItem, 1);
 		item->value = value;
-		item->package = g_strdup (package);
+		item->package_id = g_strdup (package_id);
 		item->summary = g_strdup (summary);
 		g_ptr_array_add (tclient->priv->package_items, item);
 	} else {
-		pk_debug ("emit package %i, %s, %s", value, package, summary);
-		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package, summary);
+		pk_debug ("emit package %i, %s, %s", value, package_id, summary);
+		g_signal_emit (tclient , signals [PK_TASK_CLIENT_PACKAGE], 0, value, package_id, summary);
 	}
 }
 
