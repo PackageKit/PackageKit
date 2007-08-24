@@ -58,7 +58,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	"1" if installed, "0" if not
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
 NOTES		Do not refresh the package cache. This should be fast.
@@ -89,7 +89,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	"1" if installed, "0" if not
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 
 NOTES		This is very similar to find-package.
@@ -123,8 +123,8 @@ STDOUT		<none>
 
 FILENAME	{backend}-install.*
 
-ARGUMENTS	$package
-		package:	Single word package with no wildcard chars.
+ARGUMENTS	$package_id
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -153,7 +153,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are installed then emit them to the screen.
@@ -167,12 +167,12 @@ NOTES		The installer should always install extra packages automatically
 
 FILENAME	{backend}-remove.*
 
-ARGUMENTS	$allowdeps $package
+ARGUMENTS	$allowdeps $package_id
 		allowdeps:	Either "yes" or "no". If yes allow other packages
 				to be removed with the package, but "no" should
 				cause the script to abort if other packages are
 				dependant on the package.
-		package:	Single word package with no wildcard chars.
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -197,7 +197,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		as packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
@@ -206,8 +206,8 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 FILENAME	{backend}-get-deps.*
 
-ARGUMENTS	$package
-		package:	Single word package with no wildcard chars.
+ARGUMENTS	$package_id
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -222,7 +222,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 
 ========= Update System ========= 
@@ -255,7 +255,7 @@ STDERR		requirerestart<tab>$type<tab>$details
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 		NOTE:		As packages are updated then emit them to the screen.
 				This allows a summary to be presented after the transaction.
@@ -264,8 +264,8 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 FILENAME	{backend}-get-description.*
 
-ARGUMENTS	$package
-		package:	Single word package with no wildcard chars.
+ARGUMENTS	$package_id
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
@@ -274,7 +274,7 @@ STDERR		error<tab>$enum<tab>description
 		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$group:		The enumerated package group description
 				This should be one of:
 				"accessibility", "accessories", "education", "games",
@@ -302,6 +302,6 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 				"1" for security updates
 				"2" for important updates
 				"3" for low priority updates
-		$package_id:	The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 
