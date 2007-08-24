@@ -325,12 +325,12 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	job = pk_task_get_job (task);
 	exit_text = pk_task_exit_to_text (exit);
 
-	pk_debug ("emitting finished job:%i, '%s'", job, exit_text);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text);
-
 	/* find the length of time we have been running */
 	time = g_timer_elapsed (task->timer, NULL);
 	pk_debug ("task was running for %f seconds", time);
+
+	pk_debug ("emitting finished job:%i, '%s', %i", job, exit_text);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text, (guint) time);
 
 	/* remove from array and unref */
 	g_ptr_array_remove (engine->priv->array, task);
@@ -875,8 +875,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }

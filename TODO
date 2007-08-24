@@ -5,7 +5,6 @@ Order of no particular importance:
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add details into the application UI
-* Add runtime into finished signal
 * Write documentation for UI porters
 * Add FindPackagesByGroup() and GetGroupList perhaps
 * Add a way to import GPG keys
@@ -20,3 +19,4 @@ Order of no particular importance:
 * Add FindPackagesByFile(s=fullpath)
 * Add files in package into Description signal
 * Add conary backend
+

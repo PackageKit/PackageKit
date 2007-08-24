@@ -129,6 +129,7 @@ static void
 pk_task_monitor_finished_cb (DBusGProxy    *proxy,
 			     guint	    job,
 			     const gchar   *exit_text,
+			     guint          runtime,
 			     PkTaskMonitor *tmonitor)
 {
 	PkTaskExit exit;
@@ -138,8 +139,8 @@ pk_task_monitor_finished_cb (DBusGProxy    *proxy,
 
 	if (job == tmonitor->priv->job) {
 		exit = pk_task_exit_from_text (exit_text);
-		pk_debug ("emit finished %i", exit);
-		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, exit);
+		pk_debug ("emit finished %i, %i", exit, runtime);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, exit, runtime);
 	}
 }
 
@@ -332,8 +333,8 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 	signals [PK_TASK_MONITOR_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkTaskMonitorPrivate));
 }
@@ -397,6 +398,8 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_UINT,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING,
@@ -406,7 +409,7 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_task_monitor_finished_cb), tmonitor, NULL);
 

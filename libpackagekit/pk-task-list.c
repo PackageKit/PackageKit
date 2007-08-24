@@ -138,7 +138,7 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkTaskStatus status
  * pk_task_list_job_finished_cb:
  **/
 static void
-pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, PkTaskList *tlist)
+pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, guint runtime, PkTaskList *tlist)
 {
 	guint job;
 	PkTaskListItem *item;
@@ -152,8 +152,8 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, PkTaskLi
 	/* get correct item */
 	item = pk_task_list_find_existing_job (tlist, job);
 
-	pk_debug ("emit task-list-finished %i, %s", item->status, item->package);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package);
+	pk_debug ("emit task-list-finished %i, %s, %i", item->status, item->package, runtime);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package, runtime);
 }
 
 /**
@@ -267,8 +267,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 	signals [PK_TASK_LIST_FINISHED] =
 		g_signal_new ("task-list-finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
 }

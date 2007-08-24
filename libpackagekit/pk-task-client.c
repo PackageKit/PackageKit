@@ -666,14 +666,15 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 static void
 pk_task_client_finished_cb (PkTaskMonitor *tmonitor,
 			    PkTaskExit     exit,
+			    guint          runtime,
 			    PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	pk_debug ("emit finished %i", exit);
+	pk_debug ("emit finished %i, %i", exit, runtime);
 	tclient->priv->is_finished = TRUE;
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_FINISHED], 0, exit, runtime);
 
 	/* if we are async, then cancel */
 	if (tclient->priv->loop != NULL) {
@@ -828,8 +829,8 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 	signals [PK_TASK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkTaskClientPrivate));
 }
