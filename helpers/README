@@ -146,7 +146,8 @@ STDERR		data<tab>$current_data
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
-				"not-supported" or "internal-error"
+				"not-supported", "package-already-installed"
+				or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 
@@ -189,7 +190,8 @@ STDERR		data<tab>$current_data
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
-				"not-supported" or "internal-error"
+				"not-supported", "package-not-installed"
+				or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
 

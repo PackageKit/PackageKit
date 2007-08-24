@@ -30,22 +30,105 @@
 #include "pk-debug.h"
 #include "pk-task-utils.h"
 
+typedef struct {
+	guint		 value;
+	const gchar	*string;
+} PkTaskEnumMatch;
+
+static PkTaskEnumMatch task_exit[] = {
+	{PK_TASK_EXIT_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_TASK_EXIT_SUCCESS,			"success"},
+	{PK_TASK_EXIT_FAILED,			"failed"},
+	{PK_TASK_EXIT_CANCELED,			"canceled"},
+	{0, NULL},
+};
+
+static PkTaskEnumMatch task_status[] = {
+	{PK_TASK_STATUS_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_TASK_STATUS_SETUP,			"setup"},
+	{PK_TASK_STATUS_QUERY,			"query"},
+	{PK_TASK_STATUS_REFRESH_CACHE,		"refresh-cache"},
+	{PK_TASK_STATUS_REMOVE,			"remove"},
+	{PK_TASK_STATUS_DOWNLOAD,		"download"},
+	{PK_TASK_STATUS_INSTALL,		"install"},
+	{PK_TASK_STATUS_UPDATE,			"update"},
+	{0, NULL},
+};
+
+static PkTaskEnumMatch task_error[] = {
+	{PK_TASK_ERROR_CODE_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_TASK_ERROR_CODE_NO_NETWORK,		"no-network"},
+	{PK_TASK_ERROR_CODE_NOT_SUPPORTED,	"not-supported"},
+	{PK_TASK_ERROR_CODE_INTERNAL_ERROR,	"internal-error"},
+	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
+	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
+	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
+	{0, NULL},
+};
+
+static PkTaskEnumMatch task_restart[] = {
+	{PK_TASK_RESTART_NONE,			"none"},
+	{PK_TASK_RESTART_SYSTEM,		"system"},
+	{PK_TASK_RESTART_SESSION,		"session"},
+	{PK_TASK_RESTART_APPLICATION,		"application"},
+	{0, NULL},
+};
+
+/**
+ * pk_task_enum_find_value:
+ */
+static guint
+pk_task_enum_find_value (PkTaskEnumMatch *table, const gchar *string)
+{
+	guint i;
+	const gchar *string_tmp;
+
+	/* return the first entry on non-found or error */
+	if (string == NULL) {
+		return table[0].value;
+	}
+	for (i=0;;i++) {
+		string_tmp = table[i].string;
+		if (string_tmp == NULL) {
+			break;
+		}
+		if (strcmp (string, string_tmp) == 0) {
+			return table[i].value;
+		}
+	}
+	return table[0].value;
+}
+
+/**
+ * pk_task_enum_find_string:
+ */
+static const gchar *
+pk_task_enum_find_string (PkTaskEnumMatch *table, guint value)
+{
+	guint i;
+	guint tmp;
+	const gchar *string_tmp;
+
+	for (i=0;;i++) {
+		string_tmp = table[i].string;
+		if (string_tmp == NULL) {
+			break;
+		}
+		tmp = table[i].value;
+		if (tmp == value) {
+			return table[i].string;
+		}
+	}
+	return table[0].string;
+}
+
 /**
  * pk_task_exit_from_text:
  */
 PkTaskExit
 pk_task_exit_from_text (const gchar *exit)
 {
-	if (strcmp (exit, "success") == 0) {
-		return PK_TASK_EXIT_SUCCESS;
-	}
-	if (strcmp (exit, "failed") == 0) {
-		return PK_TASK_EXIT_FAILED;
-	}
-	if (strcmp (exit, "canceled") == 0) {
-		return PK_TASK_EXIT_CANCELED;
-	}
-	return PK_TASK_EXIT_UNKNOWN;
+	return pk_task_enum_find_value (task_exit, exit);
 }
 
 /**
@@ -54,21 +137,7 @@ pk_task_exit_from_text (const gchar *exit)
 const gchar *
 pk_task_exit_to_text (PkTaskExit exit)
 {
-	const gchar *text = NULL;
-	switch (exit) {
-	case PK_TASK_EXIT_SUCCESS:
-		text = "success";
-		break;
-	case PK_TASK_EXIT_FAILED:
-		text = "failed";
-		break;
-	case PK_TASK_EXIT_CANCELED:
-		text = "canceled";
-		break;
-	default:
-		text = "unknown";
-	}
-	return text;
+	return pk_task_enum_find_string (task_exit, exit);
 }
 
 /**
@@ -77,34 +146,7 @@ pk_task_exit_to_text (PkTaskExit exit)
 PkTaskStatus
 pk_task_status_from_text (const gchar *status)
 {
-	g_return_val_if_fail (status != NULL, PK_TASK_STATUS_UNKNOWN);
-
-	if (strcmp (status, "setup") == 0) {
-		return PK_TASK_STATUS_SETUP;
-	}
-	if (strcmp (status, "query") == 0) {
-		return PK_TASK_STATUS_QUERY;
-	}
-	if (strcmp (status, "remove") == 0) {
-		return PK_TASK_STATUS_REMOVE;
-	}
-	if (strcmp (status, "refresh-cache") == 0) {
-		return PK_TASK_STATUS_REFRESH_CACHE;
-	}
-	if (strcmp (status, "download") == 0) {
-		return PK_TASK_STATUS_DOWNLOAD;
-	}
-	if (strcmp (status, "install") == 0) {
-		return PK_TASK_STATUS_INSTALL;
-	}
-	if (strcmp (status, "update") == 0) {
-		return PK_TASK_STATUS_UPDATE;
-	}
-	if (strcmp (status, "unknown") == 0) {
-		return PK_TASK_STATUS_UNKNOWN;
-	}
-	pk_error ("fall through: '%s'", status);
-	return PK_TASK_STATUS_UNKNOWN;
+	return pk_task_enum_find_value (task_status, status);
 }
 
 /**
@@ -113,36 +155,7 @@ pk_task_status_from_text (const gchar *status)
 const gchar *
 pk_task_status_to_text (PkTaskStatus status)
 {
-	const gchar *text = NULL;
-	switch (status) {
-	case PK_TASK_STATUS_SETUP:
-		text = "setup";
-		break;
-	case PK_TASK_STATUS_QUERY:
-		text = "query";
-		break;
-	case PK_TASK_STATUS_REFRESH_CACHE:
-		text = "refresh-cache";
-		break;
-	case PK_TASK_STATUS_REMOVE:
-		text = "remove";
-		break;
-	case PK_TASK_STATUS_DOWNLOAD:
-		text = "download";
-		break;
-	case PK_TASK_STATUS_INSTALL:
-		text = "install";
-		break;
-	case PK_TASK_STATUS_UPDATE:
-		text = "update";
-		break;
-	case PK_TASK_STATUS_UNKNOWN:
-		text = "unknown";
-		break;
-	default:
-		pk_error ("status unrecognised: %i", status);
-	}
-	return text;
+	return pk_task_enum_find_string (task_status, status);
 }
 
 /**
@@ -151,21 +164,7 @@ pk_task_status_to_text (PkTaskStatus status)
 PkTaskErrorCode
 pk_task_error_code_from_text (const gchar *code)
 {
-	g_return_val_if_fail (code != NULL, PK_TASK_ERROR_CODE_UNKNOWN);
-
-	if (strcmp (code, "no-network") == 0) {
-		return PK_TASK_ERROR_CODE_NO_NETWORK;
-	}
-	if (strcmp (code, "not-supported") == 0) {
-		return PK_TASK_ERROR_CODE_NOT_SUPPORTED;
-	}
-	if (strcmp (code, "internal-error") == 0) {
-		return PK_TASK_ERROR_CODE_INTERNAL_ERROR;
-	}
-	if (strcmp (code, "gpg-failure") == 0) {
-		return PK_TASK_ERROR_CODE_GPG_FAILURE;
-	}
-	return PK_TASK_ERROR_CODE_UNKNOWN;
+	return pk_task_enum_find_value (task_error, code);
 }
 
 /**
@@ -174,24 +173,7 @@ pk_task_error_code_from_text (const gchar *code)
 const gchar *
 pk_task_error_code_to_text (PkTaskErrorCode code)
 {
-	const gchar *text = NULL;
-	switch (code) {
-	case PK_TASK_ERROR_CODE_NO_NETWORK:
-		text = "no-network";
-		break;
-	case PK_TASK_ERROR_CODE_NOT_SUPPORTED:
-		text = "not-supported";
-		break;
-	case PK_TASK_ERROR_CODE_INTERNAL_ERROR:
-		text = "internal-error";
-		break;
-	case PK_TASK_ERROR_CODE_GPG_FAILURE:
-		text = "gpg-failure";
-		break;
-	default:
-		text = "unknown";
-	}
-	return text;
+	return pk_task_enum_find_string (task_error, code);
 }
 
 /**
@@ -200,19 +182,7 @@ pk_task_error_code_to_text (PkTaskErrorCode code)
 PkTaskRestart
 pk_task_restart_from_text (const gchar *restart)
 {
-	g_return_val_if_fail (restart != NULL, PK_TASK_RESTART_NONE);
-
-	if (strcmp (restart, "system") == 0) {
-		return PK_TASK_RESTART_SYSTEM;
-	}
-	if (strcmp (restart, "session") == 0) {
-		return PK_TASK_RESTART_SESSION;
-	}
-	if (strcmp (restart, "application") == 0) {
-		return PK_TASK_RESTART_APPLICATION;
-	}
-	pk_error ("fall through: '%s'", restart);
-	return PK_TASK_RESTART_NONE;
+	return pk_task_enum_find_value (task_restart, restart);
 }
 
 /**
@@ -221,21 +191,7 @@ pk_task_restart_from_text (const gchar *restart)
 const gchar *
 pk_task_restart_to_text (PkTaskRestart restart)
 {
-	const gchar *text = NULL;
-	switch (restart) {
-	case PK_TASK_RESTART_SYSTEM:
-		text = "system";
-		break;
-	case PK_TASK_RESTART_SESSION:
-		text = "session";
-		break;
-	case PK_TASK_RESTART_APPLICATION:
-		text = "application";
-		break;
-	default:
-		pk_error ("restart unrecognised: %i", restart);
-	}
-	return text;
+	return pk_task_enum_find_string (task_restart, restart);
 }
 
 /**

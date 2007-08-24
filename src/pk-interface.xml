@@ -75,7 +75,7 @@
     </signal>
     <signal name="ErrorCode">
       <arg type="u" name="job" direction="out"/>
-      <arg type="s" name="code" direction="out"/> <!-- no-network -->
+      <arg type="s" name="code" direction="out"/> <!-- enumerated type, see helpers/README -->
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
     <signal name="RequireRestart">
