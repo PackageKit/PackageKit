@@ -23,6 +23,8 @@ import sys
 
 from packagekit import *
 import yum
+from urlgrabber.progress import BaseMeter,format_time,format_number
+
 
 class PackageKitYumBackend(PackageKitBaseBackend):
     
@@ -103,7 +105,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.yumbase.doConfigSetup()          # Setup Yum Config
+        callback = DownloadCallback(self)     # Download callback
+        self.yumbase.repos.setProgressBar( callback ) # Setup the download callback class
+        pct = 0
+        self.percentage(pct)
+        try:
+            if len(self.yumbase.repos.listEnabled()) == 0:
+                self.percentage(100)
+                return
+        
+            #work out the slice for each one
+            bump = (100/len(self.yumbase.repos.listEnabled()))/2
+        
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 0
+                self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
+                pct+=bump
+                self.percentage(pct)
+                self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
+                pct+=bump
+                self.percentage(pct)
+        
+            #we might have a rounding error
+            self.percentage(100)
+        
+        except yum.Errors.YumBaseError, e:
+            self.error(ERROR_INTERNAL_ERROR,str(e))
         
     def install(self, package):
         '''
@@ -126,4 +154,64 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
         
+class DownloadCallback( BaseMeter ):
+    """ Customized version of urlgrabber.progress.BaseMeter class """
+    def __init__( self,base):
+        BaseMeter.__init__( self )
+        self.totSize = ""
+        self.base = base
+               
+    def update( self, amount_read, now=None ):
+        BaseMeter.update( self, amount_read, now )           
+
+    def _do_start( self, now=None ):
+        name = self._getName()        
+        self.updateProgress(name,0.0,"","")        
+        if not self.size is None:
+            self.totSize = format_number( self.size )
+
+    def _do_update( self, amount_read, now=None ):
+        fread = format_number( amount_read )
+        name = self._getName()        
+        if self.size is None:
+            # Elabsed time
+            etime = self.re.elapsed_time()
+            fetime = format_time( etime )
+            frac = 0.0
+            self.updateProgress(name,frac,fread,fetime)      
+        else:
+            # Remaining time
+            rtime = self.re.remaining_time()
+            frtime = format_time( rtime )
+            frac = self.re.fraction_read()
+            self.updateProgress(name,frac,fread,frtime)      
+              
+
+    def _do_end( self, amount_read, now=None ):
+        total_time = format_time( self.re.elapsed_time() )
+        total_size = format_number( amount_read )
+        name = self._getName()        
+        self.updateProgress(name,1.0,total_size,total_time)      
+
+    def _getName(self):
+        '''
+        Get the name of the package being downloaded
+        '''
+        if self.text and type( self.text ) == type( "" ):
+            name = self.text
+        else:
+            name = self.basename
+        return name
+        
+    def updateProgress(self,name,frac,fread,ftime):
+        '''
+         Update the progressbar (Overload in child class)
+        @param name: filename
+        @param frac: Progress fracment (0 -> 1)
+        @param fread: formated string containing BytesRead
+        @param ftime : formated string containing remaining or elapsed time
+        '''
+        self.base.sub_percentage(int( frac*100 ))
+    
+    
         

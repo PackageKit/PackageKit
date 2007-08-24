@@ -49,7 +49,7 @@ class PackageKitBaseBackend:
         Write progress percentage
         @param percent: Progress percentage
         '''
-        if percent:
+        if percent != None:
             print >> sys.stderr, "percentage\t%i" % (percent)
         else:
             print >> sys.stderr, "no-percentage-updates"
