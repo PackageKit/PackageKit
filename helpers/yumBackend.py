@@ -72,7 +72,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def search_name(self,opt,key):
         '''
         Implement the {backend}-search-nam functionality
-        Needed to be implemented in a sub class
         '''
         searchlist = ['name']
         self._do_search(searchlist, opt, key)
@@ -80,7 +79,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def search_details(self,opt,key):
         '''
         Implement the {backend}-search-details functionality
-        Needed to be implemented in a sub class
         '''
         searchlist = ['name', 'summary', 'description', 'group']
         self._do_search(searchlist, opt, key)
