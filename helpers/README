@@ -32,6 +32,12 @@ do screenscraping in the backend. This option is least popular.
 The following are guidelines. Feel free to break the rules if you have to,
 you have a compiled backend to use if you need it.
 
+Error enums:
+
+If you have to handle an error, try to use "internal-error" as little as
+possible. Just ask, and I'll add some more error enums to cover the type of
+error in an abstract way as possible.
+
 ========= Find Packages ========= 
 
 FILENAME	{backend}-search-name.*
