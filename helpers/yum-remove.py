@@ -9,12 +9,12 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-import yum
+
 import sys
 
-my = yum.YumBase()
-#my.doConfigSetup()
-my.conf.cache = 1
+from yumBackend import PackageKitYumBackend
 
-sys.exit(1)
-
+package = sys.argv[1]
+backend = PackageKitYumBackend(sys.argv[1:])
+backend.remove(package)
+sys.exit(0)

@@ -16,3 +16,4 @@ from yumBackend import PackageKitYumBackend
 package = sys.argv[1]
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.get_description(package)
+sys.exit(0)

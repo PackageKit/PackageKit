@@ -109,8 +109,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-
+        self.yumbase.doConfigSetup()                         # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)     # Download callback
+        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self.percentage(0)
+        txmbr = self.yumbase.update() # Add all updates to Transaction
+        if txmbr:
+            self._runYumTransaction()
+        else:
+            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -189,7 +196,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.yumbase.doConfigSetup()                         # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)     # Download callback
+        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self.percentage(0)
+        txmbr = self.yumbase.remove(name=package)
+        if txmbr:
+            self._runYumTransaction()
+        else:
+            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+
 
     def get_description(self, package):
         '''
@@ -203,6 +219,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.description(id, "%s-%s" % (pkg.version, pkg.release),
                                  repr(pkg.description), pkg.url)
                 break
+            
+    def get_updates(self):
+        '''
+        Implement the {backend}-get-updates functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+            
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """

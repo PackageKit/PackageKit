@@ -19,5 +19,5 @@ from yumBackend import PackageKitYumBackend
 
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.search_details(options,searchterms)
-sys.exit(1)
+sys.exit(0)
 

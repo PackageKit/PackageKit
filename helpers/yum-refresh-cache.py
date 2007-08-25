@@ -16,4 +16,4 @@ from yumBackend import PackageKitYumBackend
 
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.refresh_cache()
-sys.exit(1)
+sys.exit(0)

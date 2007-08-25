@@ -16,5 +16,5 @@ from yumBackend import PackageKitYumBackend
 
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.update_system(sys.argv[1])
-sys.exit(1)
+sys.exit(0)
 
