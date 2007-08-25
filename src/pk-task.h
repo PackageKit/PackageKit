@@ -85,6 +85,8 @@ gboolean	 pk_task_refresh_cache			(PkTask		*task,
 							 gboolean	 force);
 gboolean	 pk_task_install_package		(PkTask		*task,
 							 const gchar	*package);
+gboolean	 pk_task_update_package			(PkTask		*task,
+							 const gchar	*package);
 gboolean	 pk_task_get_description		(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_cancel_job_try			(PkTask		*task);

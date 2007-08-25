@@ -272,6 +272,26 @@ pk_task_install_package (PkTask *task, const gchar *package)
 }
 
 /**
+ * pk_task_update_package:
+ **/
+gboolean
+pk_task_update_package (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	task->package = strdup (package_id);
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_package (task, 1, package_id, "The same thing");
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	return TRUE;
+}
+
+/**
  * pk_task_cancel_job_try:
  **/
 gboolean

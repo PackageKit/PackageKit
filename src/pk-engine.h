@@ -78,11 +78,11 @@ gboolean	 pk_engine_find_packages		(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_deps			(PkEngine	*engine,
-							 const gchar	*package,
+							 const gchar	*package_id,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_description		(PkEngine	*engine,
-							 const gchar	*package,
+							 const gchar	*package_id,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
@@ -93,12 +93,16 @@ void		 pk_engine_update_system		(PkEngine	*engine,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_remove_package		(PkEngine	*engine,
-							 const gchar	*package,
+							 const gchar	*package_id,
 							 gboolean	 allow_deps,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_install_package		(PkEngine	*engine,
-							 const gchar	*package,
+							 const gchar	*package_id,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
+void		 pk_engine_update_package		(PkEngine	*engine,
+							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,

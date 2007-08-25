@@ -18,6 +18,15 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.update">
+    <description>Update package</description>
+    <message>System policy prevents updating package</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_self_keep_always</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.remove">
     <description>Remove package</description>
     <message>System policy prevents removing package</message>

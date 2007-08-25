@@ -258,7 +258,7 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
  * pk_engine_package_cb:
  **/
 static void
-pk_engine_package_cb (PkTask *task, guint value, const gchar *package, const gchar *summary, PkEngine *engine)
+pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
 	guint job;
 
@@ -266,8 +266,8 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package, const gch
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	job = pk_task_get_job (task);
-	pk_debug ("emitting package job:%i value=%i %s, %s", job, value, package, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, value, package, summary);
+	pk_debug ("emitting package job:%i value=%i %s, %s", job, value, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, value, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -542,7 +542,7 @@ pk_engine_find_packages (PkEngine *engine, const gchar *search,
  * pk_engine_get_deps:
  **/
 gboolean
-pk_engine_get_deps (PkEngine *engine, const gchar *package,
+pk_engine_get_deps (PkEngine *engine, const gchar *package_id,
 		    guint *job, GError **error)
 {
 	gboolean ret;
@@ -553,7 +553,7 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_get_deps (task, package);
+	ret = pk_task_get_deps (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");
@@ -570,7 +570,7 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package,
  * pk_engine_get_description:
  **/
 gboolean
-pk_engine_get_description (PkEngine *engine, const gchar *package,
+pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 			   guint *job, GError **error)
 {
 	gboolean ret;
@@ -581,7 +581,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_get_description (task, package);
+	ret = pk_task_get_description (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");
@@ -652,7 +652,7 @@ pk_engine_update_system (PkEngine *engine,
  * pk_engine_remove_package:
  **/
 void
-pk_engine_remove_package (PkEngine *engine, const gchar *package, gboolean allow_deps,
+pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean allow_deps,
 			  DBusGMethodInvocation *context, GError **dead_error)
 {
 	guint job;
@@ -672,7 +672,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package, gboolean allow
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_remove_package (task, package, allow_deps);
+	ret = pk_task_remove_package (task, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "operation not yet supported by backend");
@@ -692,7 +692,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package, gboolean allow
  * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_install_package (PkEngine *engine, const gchar *package,
+pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
@@ -712,7 +712,47 @@ pk_engine_install_package (PkEngine *engine, const gchar *package,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_install_package (task, package);
+	ret = pk_task_install_package (task, package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "operation not yet supported by backend");
+		g_object_unref (task);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_add_task (engine, task);
+
+	job = pk_task_get_job (task);
+	dbus_g_method_return (context, job);
+}
+
+/**
+ * pk_engine_update_package:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
+pk_engine_update_package (PkEngine *engine, const gchar *package_id,
+			   DBusGMethodInvocation *context, GError **dead_error)
+{
+	gboolean ret;
+	guint job;
+	PkTask *task;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	ret = pk_task_update_package (task, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "operation not yet supported by backend");

@@ -163,6 +163,49 @@ NOTES		The installer should always install extra packages automatically
 		as the use could call GetDeps prior to the intstall if a
 		confirmation is required in the UI.
 
+========= Update Packages ========= 
+
+FILENAME	{backend}-update.*
+
+ARGUMENTS	$package_id
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+
+STDERR		percentage<tab>$value
+		value:		Percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the signal
+				NoPercentageUpdates if these are not expected.
+
+STDERR		subpercentage<tab>$value
+		$value:		Percentage complete of the sub-transaction
+		notes:		This is optional.
+
+STDERR		status<tab>$state
+		$state:		One of "download", "install", "update", "remove"
+		notes:		This is optional.
+
+STDERR		data<tab>$current_data
+		$current_data:	The current worked on package
+		notes:		This is optional, but allows the UI to show what
+				package is being installed on for that sub-transaction.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported", "package-not-installed"
+				or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	Always "1"
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+				A package_id always has to have three sections.
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
+		NOTE:		As packages are updated then emit them to the screen.
+				This allows a summary to be presented after the transaction.
+
+NOTES		The installer should always update extra packages automatically
+		if required.
+
 ========= Remove Packages ========= 
 
 FILENAME	{backend}-remove.*

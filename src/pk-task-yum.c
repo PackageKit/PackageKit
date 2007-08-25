@@ -219,6 +219,31 @@ pk_task_install_package (PkTask *task, const gchar *package_id)
 }
 
 /**
+ * pk_task_update_package:
+ **/
+gboolean
+pk_task_update_package (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* check network state */
+	if (pk_network_is_online (task->priv->network) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot update when offline");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_spawn_helper (task, "update.py", package_id);
+	return TRUE;
+}
+
+/**
  * pk_task_cancel_job_try:
  **/
 gboolean

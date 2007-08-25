@@ -42,6 +42,11 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
+    <method name="UpdatePackage">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
 
     <!-- state has changed, we want to broadcast this to all jobs -->
     <signal name="JobStatusChanged">

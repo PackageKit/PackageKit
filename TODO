@@ -16,5 +16,6 @@ Order of no particular importance:
 * Add FindPackagesByFile(s=fullpath)
 * Add files in package into Description signal
 * Add conary backend
-* install does not work for the yum backend (code error, not backend error)
+* Install does not work for the yum backend (code error, not backend error)
+* Dummy backend should use subpercent and install deps
 
