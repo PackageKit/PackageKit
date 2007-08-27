@@ -66,11 +66,6 @@ gboolean	 pk_task_filter_package_name		(PkTask		*task,
 gboolean	 pk_task_spawn_helper			(PkTask		*task,
 							 const gchar	*script,
 							 const gchar	*argument);
-gboolean	 pk_task_spawn_helper_find		(PkTask		*task,
-							 const gchar	*search,
-							 guint		 depth,
-							 gboolean	 installed,
-							 gboolean	 available);
 gboolean	 pk_task_not_implemented_yet		(PkTask		*task,
 							 const gchar	*method);
 

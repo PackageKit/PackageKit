@@ -329,49 +329,6 @@ pk_task_spawn_helper (PkTask *task, const gchar *script_ending, const gchar *arg
 }
 
 /**
- * pk_task_spawn_helper_find:
- **/
-gboolean
-pk_task_spawn_helper_find (PkTask *task, const gchar *search, guint depth,
-			   gboolean installed, gboolean available)
-{
-	gchar *command;
-	const gchar *script = NULL;
-	const gchar *mode = NULL;
-
-	if (installed == TRUE && available == TRUE) {
-		mode = "all";
-	} else if (installed == TRUE) {
-		mode = "installed";
-	} else if (available == TRUE) {
-		mode = "available";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return FALSE;
-	}
-
-	/* TODO: merge these into one script */
-	if (depth == 0) {
-		script = "search-name.py";
-	} else if (depth == 1 || depth == 2) {
-		script = "search-details.py";
-	} else {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "invalid search depth");
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return FALSE;
-	}
-
-	task->package = strdup (search);
-
-	command = g_strdup_printf ("%s %s", mode, search);
-	pk_task_spawn_helper (task, script, command);
-	g_free (command);
-
-	return TRUE;
-}
-
-/**
  * pk_task_not_implemented_yet:
  **/
 gboolean
