@@ -70,7 +70,7 @@ PkEngine	*pk_engine_new				(void);
 gboolean	 pk_engine_get_updates			(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_find_packages		(PkEngine	*engine,
+gboolean	 pk_engine_search_name			(PkEngine	*engine,
 							 const gchar	*search,
 							 guint		 depth,
 							 gboolean	 installed,

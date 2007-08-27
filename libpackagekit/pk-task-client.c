@@ -323,10 +323,10 @@ pk_task_client_update_system (PkTaskClient *tclient)
 }
 
 /**
- * pk_task_client_find_packages:
+ * pk_task_client_search_name:
  **/
 gboolean
-pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search,
+pk_task_client_search_name (PkTaskClient *tclient, const gchar *search,
 			      guint depth, gboolean installed, gboolean available)
 {
 	gboolean ret;
@@ -343,7 +343,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search,
 	tclient->priv->assigned = TRUE;
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "FindPackages", &error,
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "SearchName", &error,
 				 G_TYPE_STRING, search,
 				 G_TYPE_UINT, depth,
 				 G_TYPE_BOOLEAN, installed,
@@ -359,7 +359,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search,
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("FindPackages failed!");
+		pk_warning ("SearchName failed!");
 		return FALSE;
 	}
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
@@ -369,7 +369,7 @@ pk_task_client_find_packages (PkTaskClient *tclient, const gchar *search,
 }
 
 /**
- * pk_task_client_find_packages:
+ * pk_task_client_search_name:
  **/
 gboolean
 pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const gchar *search)

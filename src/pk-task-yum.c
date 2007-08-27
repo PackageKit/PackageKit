@@ -121,10 +121,10 @@ pk_task_update_system (PkTask *task)
 }
 
 /**
- * pk_task_find_packages:
+ * pk_task_search_name:
  **/
 gboolean
-pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
+pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);

@@ -28,7 +28,7 @@ def catchall_signal_handler(*args, **kwargs):
 
 bus.add_signal_receiver(catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member')
 
-job = pk_iface.FindPackages(argv[1],0,False,True)
+job = pk_iface.SearchName(argv[1],0,False,True)
 print "job",job
 loop = gobject.MainLoop()
 loop.run()
