@@ -63,6 +63,21 @@ typedef enum {
 	PK_TASK_ERROR_CODE_UNKNOWN
 } PkTaskErrorCode;
 
+typedef enum {
+	PK_TASK_GROUP_ACCESSIBILITY,
+	PK_TASK_GROUP_ACCESSORIES,
+	PK_TASK_GROUP_EDUCATION,
+	PK_TASK_GROUP_GAMES,
+	PK_TASK_GROUP_GRAPHICS,
+	PK_TASK_GROUP_INTERNET,
+	PK_TASK_GROUP_OFFICE,
+	PK_TASK_GROUP_OTHER,
+	PK_TASK_GROUP_PROGRAMMING,
+	PK_TASK_GROUP_SOUND_VIDEO,
+	PK_TASK_GROUP_SYSTEM,
+	PK_TASK_GROUP_UNKNOWN
+} PkTaskGroup;
+
 typedef struct {
 	gchar	*name;
 	gchar	*version;
@@ -81,6 +96,9 @@ const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);
 
 PkTaskRestart	 pk_task_restart_from_text		(const gchar	*restart);
 const gchar	*pk_task_restart_to_text		(PkTaskRestart	 restart);
+
+PkTaskGroup	 pk_task_group_from_text		(const gchar	*group);
+const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
 
 gboolean	 pk_task_check_package_id		(const gchar	*package_id);
 

@@ -46,7 +46,7 @@ gboolean	 pk_task_require_restart		(PkTask		*task,
 							 const gchar	*details);
 gboolean	 pk_task_description			(PkTask		*task,
 							 const gchar	*package,
-							 const gchar	*version,
+							 PkTaskGroup	 group,
 							 const gchar	*description,
 							 const gchar	*url);
 gboolean	 pk_task_error_code			(PkTask		*task,

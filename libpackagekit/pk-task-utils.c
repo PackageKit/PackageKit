@@ -76,6 +76,21 @@ static PkTaskEnumMatch task_restart[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_group[] = {
+	{PK_TASK_GROUP_ACCESSIBILITY,		"accessibility"},
+	{PK_TASK_GROUP_ACCESSORIES,		"accessories"},
+	{PK_TASK_GROUP_EDUCATION,		"education"},
+	{PK_TASK_GROUP_GAMES,			"games"},
+	{PK_TASK_GROUP_GRAPHICS,		"graphics"},
+	{PK_TASK_GROUP_INTERNET,		"internet"},
+	{PK_TASK_GROUP_OFFICE,			"office"},
+	{PK_TASK_GROUP_OTHER,			"other"},
+	{PK_TASK_GROUP_PROGRAMMING,		"programming"},
+	{PK_TASK_GROUP_SOUND_VIDEO,		"sound-video"},
+	{PK_TASK_GROUP_SYSTEM,			"system"},
+	{0, NULL},
+};
+
 /**
  * pk_task_enum_find_value:
  */
@@ -194,6 +209,24 @@ const gchar *
 pk_task_restart_to_text (PkTaskRestart restart)
 {
 	return pk_task_enum_find_string (task_restart, restart);
+}
+
+/**
+ * pk_task_group_from_text:
+ **/
+PkTaskGroup
+pk_task_group_from_text (const gchar *group)
+{
+	return pk_task_enum_find_value (task_group, group);
+}
+
+/**
+ * pk_task_group_to_text:
+ **/
+const gchar *
+pk_task_group_to_text (PkTaskGroup group)
+{
+	return pk_task_enum_find_string (task_group, group);
 }
 
 /**

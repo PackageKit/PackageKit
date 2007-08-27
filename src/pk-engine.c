@@ -310,6 +310,26 @@ pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *
 }
 
 /**
+ * pk_engine_description_cb:
+ **/
+static void
+pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup group,
+			  const gchar *detail, const gchar *url, PkEngine *engine)
+{
+	guint job;
+	const gchar *group_text;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+	group_text = pk_task_group_to_text (group);
+
+	pk_debug ("emitting description job:%i, '%s', %i", job, group_text);
+	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, job, package_id, group_text, detail, url);
+}
+
+/**
  * pk_engine_finished_cb:
  **/
 static void
@@ -372,6 +392,8 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_require_restart_cb), engine);
 	g_signal_connect (task, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
+	g_signal_connect (task, "description",
+			  G_CALLBACK (pk_engine_description_cb), engine);
 
 	/* track how long the job has been running for */
 	task->timer = g_timer_new ();

@@ -30,4 +30,5 @@ Order of no particular importance:
 * Add conary backend
 * Install does not work for the yum backend (code error, not backend error)
 * Dummy backend should use subpercent and install deps
+* Validate the groups accessibility, accessories, education, games, graphics, internet, office, other, programming, sound-video, system
 

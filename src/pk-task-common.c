@@ -84,8 +84,8 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 	signals [PK_TASK_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -119,6 +119,7 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 	guint value = 0;
 	gchar *command;
 	gboolean ret = TRUE;
+	PkTaskGroup group;
 
 	/* check if output line */
 	if (line == NULL || strstr (line, "\t") == NULL)
@@ -150,7 +151,8 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		pk_task_description (task, sections[1], sections[2], sections[3], sections[4]);
+		group = pk_task_group_from_text (sections[2]);
+		pk_task_description (task, sections[1], group, sections[3], sections[4]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}		
@@ -444,7 +446,7 @@ pk_task_require_restart (PkTask *task, PkTaskRestart restart, const gchar *detai
  * pk_task_description:
  **/
 gboolean
-pk_task_description (PkTask *task, const gchar *package, const gchar *group,
+pk_task_description (PkTask *task, const gchar *package, PkTaskGroup group,
 		     const gchar *description, const gchar *url)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
