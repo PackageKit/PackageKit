@@ -169,10 +169,10 @@ pk_spawn_check_child (PkSpawn *spawn)
 }
 
 /**
- * pk_spawn_command_internal:
+ * pk_spawn_command:
  **/
 gboolean
-pk_spawn_command_internal (PkSpawn *spawn, const gchar *command)
+pk_spawn_command (PkSpawn *spawn, const gchar *command)
 {
 	gboolean ret;
 	gchar **argv;
@@ -184,6 +184,8 @@ pk_spawn_command_internal (PkSpawn *spawn, const gchar *command)
 		pk_warning ("command NULL");
 		return FALSE;
 	}
+
+	pk_debug ("command '%s'", command);
 
 	/* split command line */
 	argv = g_strsplit (command, " ", 0);
@@ -212,34 +214,6 @@ pk_spawn_command_internal (PkSpawn *spawn, const gchar *command)
 	g_timeout_add (250, (GSourceFunc) pk_spawn_check_child, spawn);
 
 	return TRUE;
-}
-
-/**
- * pk_spawn_command:
- **/
-gboolean
-pk_spawn_command (PkSpawn *spawn, const gchar *script, ...)
-{
-	gboolean ret;
-	va_list args;
-	gchar *command;
-	gchar *arguments;
-
-	g_return_val_if_fail (spawn != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
-
-	/* get the argument list */
-	va_start (args, script);
-	arguments = g_strjoinv (" ", (gchar **)args);
-	va_end (args);
-
-	/* prepend with the script name */
-	command = g_strjoin (" ", script, arguments, NULL);
-	ret = pk_spawn_command_internal (spawn, command);
-
-	g_free (arguments);
-	g_free (command);
-	return ret;
 }
 
 /**
@@ -380,7 +354,7 @@ pk_st_spawn (PkSelfTest *test)
 
 	/************************************************************/
 	pk_st_title (test, "make sure return error for missing file");
-	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh", "arg1", "arg2");
+	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		pk_st_success (test, "failed to run invalid file");
 	} else {

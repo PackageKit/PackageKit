@@ -135,7 +135,7 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 
 	pk_task_no_percentage_updates (task);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_spawn_helper (task, "search-name.py", filter, search);
+	pk_task_spawn_helper (task, "search-name.py", filter, search, NULL);
 	return TRUE;
 }
 
@@ -153,7 +153,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_spawn_helper (task, "search-details.py", filter, search);
+	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
 	return TRUE;
 }
 
@@ -178,7 +178,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
  * pk_task_search_file:
  **/
 gboolean
-pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
+pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -205,7 +205,7 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_spawn_helper (task, "get-deps.py", package_id);
+	pk_task_spawn_helper (task, "get-deps.py", package_id, NULL);
 	return TRUE;
 }
 
@@ -223,7 +223,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_spawn_helper (task, "get-description.py", package_id);
+	pk_task_spawn_helper (task, "get-description.py", package_id, NULL);
 	return TRUE;
 }
 
@@ -241,7 +241,7 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
-	pk_task_spawn_helper (task, "remove.py", package_id);
+	pk_task_spawn_helper (task, "remove.py", package_id, NULL);
 	return TRUE;
 }
 
@@ -266,7 +266,7 @@ pk_task_install_package (PkTask *task, const gchar *package_id)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
-	pk_task_spawn_helper (task, "install.py", package_id);
+	pk_task_spawn_helper (task, "install.py", package_id, NULL);
 	return TRUE;
 }
 
@@ -291,7 +291,7 @@ pk_task_update_package (PkTask *task, const gchar *package_id)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
-	pk_task_spawn_helper (task, "update.py", package_id);
+	pk_task_spawn_helper (task, "update.py", package_id, NULL);
 	return TRUE;
 }
 

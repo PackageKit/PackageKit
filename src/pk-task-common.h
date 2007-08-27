@@ -64,8 +64,7 @@ gboolean	 pk_task_set_data			(PkTask		*task,
 gboolean	 pk_task_filter_package_name		(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_spawn_helper			(PkTask		*task,
-							 const gchar	*script,
-							 const gchar	*argument);
+							 const gchar	*script, ...);
 gboolean	 pk_task_not_implemented_yet		(PkTask		*task,
 							 const gchar	*method);
 

@@ -61,7 +61,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             do_print = 0;
             if opt == 'installed' and installed == '1':
                 do_print = 1
-            elif opt == '!installed' and installed == '0':
+            elif opt == '~installed' and installed == '0':
                 do_print = 1
             elif opt == 'none':
                 do_print = 1

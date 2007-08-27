@@ -113,7 +113,7 @@ pk_console_usage (const gchar *error)
 	}
 	g_print ("usage:\n");
 	g_print ("  pkcon searchname power\n");
-	g_print ("  pkcon searchdetail power\n");
+	g_print ("  pkcon searchdetails power\n");
 	g_print ("  pkcon searchgroup system\n");
 	g_print ("  pkcon searchfile power\n");
 	g_print ("  pkcon async install gtk2-devel\n");

@@ -39,15 +39,15 @@ Feel free to add this into the compiled backend if this is not possible in the
 scripted backend.
 
 Filter options are:
-  	"installed" or "!installed"	if the package is installed on the system
-  	"devel" or "!devel"		devel packages typically end -devel, -dgb and -static.
-  	"gui" or "!gui"			gui programs typically depend on gtk, libkde or libxfce.
+  	"installed" or "~installed"	if the package is installed on the system
+  	"devel" or "~devel"		devel packages typically end -devel, -dgb and -static.
+  	"gui" or "~gui"			gui programs typically depend on gtk, libkde or libxfce.
 
 So valid options would be:
 	"none"				all packages installed or available with no filtering
-	"devel;!installed"		all non-installed development packages
-	"installed;!devel"		all installed non-development packages
-	"gui;!installed;!devel"		all non-installed, non-devel gui programs
+	"devel;~installed"		all non-installed development packages
+	"installed;~devel"		all installed non-development packages
+	"gui;~installed;~devel"		all non-installed, non-devel gui programs
 
 Error enums:
 
