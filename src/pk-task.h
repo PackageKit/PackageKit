@@ -76,6 +76,9 @@ gboolean	 pk_task_search_name			(PkTask		*task,
 							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available);
+gboolean	 pk_task_search_details			(PkTask		*task,
+							 const gchar	*filter,
+							 const gchar	*search);
 gboolean	 pk_task_search_group			(PkTask		*task,
 							 const gchar	*filter,
 							 const gchar	*search);

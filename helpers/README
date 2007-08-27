@@ -44,7 +44,7 @@ Filter options are:
   	"gui" or "!gui"			gui programs typically depend on gtk, libkde or libxfce.
 
 So valid options would be:
-	""				all packages installed or available with no filtering
+	"none"				all packages installed or available with no filtering
 	"devel;!installed"		all non-installed development packages
 	"installed;!devel"		all installed non-development packages
 	"gui;!installed;!devel"		all non-installed, non-devel gui programs

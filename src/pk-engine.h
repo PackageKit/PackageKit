@@ -77,6 +77,11 @@ gboolean	 pk_engine_search_name			(PkEngine	*engine,
 							 gboolean	 available,
 							 guint		*job,
 							 GError		**error);
+gboolean	 pk_engine_search_details		(PkEngine	*engine,
+							 const gchar	*filter,
+							 const gchar	*search,
+							 guint		*job,
+							 GError		**error);
 gboolean	 pk_engine_search_group			(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*search,

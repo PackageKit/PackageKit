@@ -140,6 +140,17 @@ pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean in
 }
 
 /**
+ * pk_task_search_details:
+ **/
+gboolean
+pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_spawn_helper (task, "search-details.py none", search);
+	return TRUE;
+}
+
+/**
  * pk_task_search_group:
  **/
 gboolean

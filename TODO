@@ -5,8 +5,7 @@ Order of no particular importance:
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Write documentation for UI porters
 * Add a way to import GPG keys
-* Add SearchDetails(s=filter, s=group)
-* Add SearchFile(s=search)
+* Add SearchFile(s=filter, s=search)
 * Add enough new error enums for the yum backend
 * Add sub-percentage support into API
 * Split up PolicyKit install into different types

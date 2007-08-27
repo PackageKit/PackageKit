@@ -75,6 +75,9 @@ gboolean	 pk_task_client_search_name		(PkTaskClient	*tclient,
 							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available);
+gboolean	 pk_task_client_search_details		(PkTaskClient	*tclient,
+							 const gchar	*filter,
+							 const gchar	*search);
 gboolean	 pk_task_client_search_group		(PkTaskClient	*tclient,
 							 const gchar	*filter,
 							 const gchar	*search);

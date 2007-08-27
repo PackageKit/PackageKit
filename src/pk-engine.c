@@ -561,6 +561,34 @@ pk_engine_search_name (PkEngine *engine, const gchar *search,
 }
 
 /**
+ * pk_engine_search_details:
+ **/
+gboolean
+pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *search,
+			  guint *job, GError **error)
+{
+	gboolean ret;
+	PkTask *task;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	ret = pk_task_search_details (task, filter, search);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "operation not yet supported by backend");
+		g_object_unref (task);
+		return FALSE;
+	}
+	pk_engine_add_task (engine, task);
+	*job = pk_task_get_job (task);
+
+	return TRUE;
+}
+
+/**
  * pk_engine_search_group:
  **/
 gboolean

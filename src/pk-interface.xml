@@ -23,6 +23,11 @@
       <arg type="b" name="available" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
+    <method name="SearchDetails">
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
     <method name="SearchGroup">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>

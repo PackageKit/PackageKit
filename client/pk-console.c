@@ -112,7 +112,10 @@ pk_console_usage (const gchar *error)
 		g_print ("Error: %s\n", error);
 	}
 	g_print ("usage:\n");
-	g_print ("  pkcon search power\n");
+	g_print ("  pkcon searchname power\n");
+	g_print ("  pkcon searchdetail power\n");
+	g_print ("  pkcon searchgroup system\n");
+	g_print ("  pkcon searchfile power\n");
 	g_print ("  pkcon async install gtk2-devel\n");
 	g_print ("  pkcon install gimp update totem\n");
 	g_print ("  pkcon sync update\n");
@@ -137,12 +140,28 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 	}
 	remove_two = FALSE;
 
-	if (strcmp (mode, "search") == 0) {
+	if (strcmp (mode, "searchname") == 0) {
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a search term");
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
 			pk_task_client_search_name (tclient, value, 0, TRUE, TRUE);
+			remove_two = TRUE;
+		}
+	} if (strcmp (mode, "searchdetails") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a search term");
+		} else {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_search_details (tclient, "", value);
+			remove_two = TRUE;
+		}
+	} if (strcmp (mode, "searchgroup") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a search term");
+		} else {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_search_group (tclient, "", value);
 			remove_two = TRUE;
 		}
 	} else if (strcmp (mode, "install") == 0) {
