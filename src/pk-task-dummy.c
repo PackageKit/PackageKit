@@ -170,6 +170,18 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 }
 
 /**
+ * pk_task_search_group:
+ **/
+gboolean
+pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
+			 "The vips documentation package.");
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+	return TRUE;
+}
+
+/**
  * pk_task_get_deps:
  **/
 gboolean

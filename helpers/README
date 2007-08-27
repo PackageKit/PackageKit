@@ -32,13 +32,30 @@ do screenscraping in the backend. This option is least popular.
 The following are guidelines. Feel free to break the rules if you have to,
 you have a compiled backend to use if you need it.
 
+Filters:
+
+Search filtering on the name is done in the backend for efficiency reasons.
+Feel free to add this into the compiled backend if this is not possible in the
+scripted backend.
+
+Filter options are:
+  	"installed" or "!installed"	if the package is installed on the system
+  	"devel" or "!devel"		devel packages typically end -devel, -dgb and -static.
+  	"gui" or "!gui"			gui programs typically depend on gtk, libkde or libxfce.
+
+So valid options would be:
+	""				all packages installed or available with no filtering
+	"devel;!installed"		all non-installed development packages
+	"installed;!devel"		all installed non-development packages
+	"gui;!installed;!devel"		all non-installed, non-devel gui programs
+
 Error enums:
 
 If you have to handle an error, try to use "internal-error" as little as
 possible. Just ask, and I'll add some more error enums to cover the type of
 error in an abstract way as possible.
 
-========= Find Packages ========= 
+========= Find Packages =========
 
 FILENAME	{backend}-search-name.*
 
@@ -69,7 +86,43 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 NOTES		Do not refresh the package cache. This should be fast.
 
-========= Search Details ========= 
+========= Find Packages By Group =========
+
+FILENAME	{backend}-search-group.*
+
+ARGUMENTS	$filter $group
+		$filter		The filter applied to the search operation,
+				e.g. "gui;!installed;!devel" or ""
+		$group:		The enumerated package group description
+				This should be one of:
+				"accessibility", "accessories", "education", "games",
+				"graphics", "internet", "office", "other", "programming",
+				"sound-video", "system"
+
+STDERR		percentage<tab>$value
+		value:		Percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the DBUS
+				signal NoPercentageUpdates or use no-percentage-updates
+				if the remaining position cannot be calculated.
+
+STDERR		no-percentage-updates
+		notes:		This is optional and signifies that the helper
+				is no longer able to send percentage updates.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	"1" if installed, "0" if not
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
+
+NOTES		Do not refresh the package cache. This should be fast.
+
+========= Search Details =========
 
 FILENAME	{backend}-search-details.*
 
@@ -125,7 +178,7 @@ STDERR		error<tab>$enum<tab>description
 
 STDOUT		<none>
 
-========= Install Packages ========= 
+========= Install Packages =========
 
 FILENAME	{backend}-install.*
 
@@ -169,7 +222,7 @@ NOTES		The installer should always install extra packages automatically
 		as the use could call GetDeps prior to the intstall if a
 		confirmation is required in the UI.
 
-========= Update Packages ========= 
+========= Update Packages =========
 
 FILENAME	{backend}-update.*
 
@@ -212,7 +265,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 NOTES		The installer should always update extra packages automatically
 		if required.
 
-========= Remove Packages ========= 
+========= Remove Packages =========
 
 FILENAME	{backend}-remove.*
 
@@ -251,7 +304,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		NOTE:		as packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
-========= Get Dependancies ========= 
+========= Get Dependancies =========
 
 FILENAME	{backend}-get-deps.*
 
@@ -274,7 +327,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
 
-========= Update System ========= 
+========= Update System =========
 
 FILENAME	{backend}-update-system.*
 
@@ -309,7 +362,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		NOTE:		As packages are updated then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
-========= Get Description ========= 
+========= Get Description =========
 
 FILENAME	{backend}-get-description.*
 
@@ -334,7 +387,7 @@ STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
 				description to avoid being split for the url.
 		$url:		The upstream project homepage
 
-========= Get Updates ========= 
+========= Get Updates =========
 
 FILENAME	{backend}-get-updates.*
 

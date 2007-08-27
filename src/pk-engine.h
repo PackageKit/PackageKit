@@ -38,7 +38,7 @@ G_BEGIN_DECLS
 #define PK_IS_ENGINE_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_ENGINE))
 #define PK_ENGINE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_ENGINE, PkEngineClass))
 #define PK_ENGINE_ERROR		(pk_engine_error_quark ())
-#define PK_ENGINE_TYPE_ERROR	(pk_engine_error_get_type ()) 
+#define PK_ENGINE_TYPE_ERROR	(pk_engine_error_get_type ())
 
 typedef struct PkEnginePrivate PkEnginePrivate;
 
@@ -75,6 +75,11 @@ gboolean	 pk_engine_find_packages		(PkEngine	*engine,
 							 guint		 depth,
 							 gboolean	 installed,
 							 gboolean	 available,
+							 guint		*job,
+							 GError		**error);
+gboolean	 pk_engine_search_group			(PkEngine	*engine,
+							 const gchar	*filter,
+							 const gchar	*search,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_deps			(PkEngine	*engine,

@@ -4,24 +4,9 @@ Order of no particular importance:
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Write documentation for UI porters
-* Add FindPackagesByGroup() and GetGroupList perhaps
 * Add a way to import GPG keys
-* Add s=filter:
-  	"installed" or "!installed"	if the package is installed on the system
-  	"devel" or "!devel"		devel packages typically end -devel, -dgb and -static.
-  	"gui" or "!gui"			gui programs typically depend on gtk, libkde or libxfce.
-  So valid would be
-  ""					all packages installed or available with no filtering
-  "devel;!installed"			all non-installed development packages
-  "installed;!devel"			all installed non-development packages
-  "gui;!installed;!devel"		all non-installed, non-devel gui programs
-  Note: the filtering is done in the backend for efficiency reasons.
-  Feel free to add this into the compiled backend if this is not possible in the
-  scripted backend.
-* Add depth into FindPackage to get rid of find-details
-	s=scope
-	name				package name
-	all				any information
+* s/FindPackages/SearchName
+* Add SearchDetails(s=filter, s=group)
 * Add enough new error enums for the yum backend
 * Add sub-percentage support into API
 * Split up PolicyKit install into different types
@@ -30,5 +15,4 @@ Order of no particular importance:
 * Add conary backend
 * Install does not work for the yum backend (code error, not backend error)
 * Dummy backend should use subpercent and install deps
-* Validate the groups accessibility, accessories, education, games, graphics, internet, office, other, programming, sound-video, system
 

@@ -443,7 +443,7 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 	pk_caller = polkit_caller_new_from_dbus_name (engine->priv->connection, dbus_name, &dbus_error);
 	if (pk_caller == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_error ("error: polkit_caller_new_from_dbus_name(): %s: %s\n", 
+			pk_error ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
 				  dbus_error.name, dbus_error.message);
 		}
 	}
@@ -548,6 +548,34 @@ pk_engine_find_packages (PkEngine *engine, const gchar *search,
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_find_packages (task, search, depth, installed, available);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "operation not yet supported by backend");
+		g_object_unref (task);
+		return FALSE;
+	}
+	pk_engine_add_task (engine, task);
+	*job = pk_task_get_job (task);
+
+	return TRUE;
+}
+
+/**
+ * pk_engine_search_group:
+ **/
+gboolean
+pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *search,
+			guint *job, GError **error)
+{
+	gboolean ret;
+	PkTask *task;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	ret = pk_task_search_group (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");

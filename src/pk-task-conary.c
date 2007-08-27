@@ -140,6 +140,16 @@ pk_task_find_packages (PkTask *task, const gchar *search, guint depth, gboolean 
 }
 
 /**
+ * pk_task_search_group:
+ **/
+gboolean
+pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_not_implemented_yet (task, "SearchGroup");
+	return TRUE;
+}
+
+/**
  * pk_task_get_deps:
  **/
 gboolean
