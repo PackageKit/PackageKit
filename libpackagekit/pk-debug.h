@@ -47,7 +47,7 @@ void		pk_debug_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
 						 const gchar	*format, ...);
-void		pk_warning_real		(const gchar	*func,
+void		pk_warning_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
 						 const gchar	*format, ...);

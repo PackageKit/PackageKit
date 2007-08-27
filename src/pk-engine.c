@@ -535,9 +535,8 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
  * pk_engine_search_name:
  **/
 gboolean
-pk_engine_search_name (PkEngine *engine, const gchar *search,
-			 guint depth, gboolean installed, gboolean available,
-			 guint *job, GError **error)
+pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *search,
+		       guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -547,7 +546,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *search,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_search_name (task, search, depth, installed, available);
+	ret = pk_task_search_name (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");

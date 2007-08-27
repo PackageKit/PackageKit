@@ -17,10 +17,8 @@
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="SearchName">
+      <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="u" name="depth" direction="in"/> <!-- 0=name, 1=summary, 2=description -->
-      <arg type="b" name="installed" direction="in"/>
-      <arg type="b" name="available" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
     <method name="SearchDetails">

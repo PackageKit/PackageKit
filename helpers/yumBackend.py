@@ -61,9 +61,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             do_print = 0;
             if opt == 'installed' and installed == '1':
                 do_print = 1
-            elif opt == 'available' and installed == '0':
+            elif opt == '!installed' and installed == '0':
                 do_print = 1
-            elif opt == 'all':
+            elif opt == 'none':
                 do_print = 1
 
             # print in correct format
@@ -73,7 +73,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def search_name(self,opt,key):
         '''
-        Implement the {backend}-search-nam functionality
+        Implement the {backend}-search-name functionality
         '''
         searchlist = ['name']
         self._do_search(searchlist, opt, key)

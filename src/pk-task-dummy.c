@@ -152,7 +152,7 @@ pk_task_search_name_timeout (gpointer data)
  * pk_task_search_name:
  **/
 gboolean
-pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
+pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);

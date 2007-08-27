@@ -145,7 +145,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a search term");
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_name (tclient, value, 0, TRUE, TRUE);
+			pk_task_client_search_name (tclient, "none", value);
 			remove_two = TRUE;
 		}
 	} if (strcmp (mode, "searchdetails") == 0) {

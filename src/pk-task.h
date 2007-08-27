@@ -72,10 +72,8 @@ PkTask		*pk_task_new				(void);
 gboolean	 pk_task_get_updates			(PkTask		*task);
 gboolean	 pk_task_update_system			(PkTask		*task);
 gboolean	 pk_task_search_name			(PkTask		*task,
-							 const gchar	*search,
-							 guint		 depth,
-							 gboolean	 installed,
-							 gboolean	 available);
+							 const gchar	*filter,
+							 const gchar	*search);
 gboolean	 pk_task_search_details			(PkTask		*task,
 							 const gchar	*filter,
 							 const gchar	*search);

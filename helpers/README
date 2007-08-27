@@ -60,7 +60,8 @@ error in an abstract way as possible.
 FILENAME	{backend}-search-name.*
 
 ARGUMENTS	$options $search_term
-		options:	One of "installed", "available", "all".
+		$filter		The filter applied to the search operation,
+				e.g. "gui;!installed;!devel" or ""
 		search_term:	Single word search term with no wildcard chars.
 
 STDERR		percentage<tab>$value

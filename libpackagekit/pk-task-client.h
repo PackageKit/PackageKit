@@ -71,10 +71,8 @@ PkTaskRestart	 pk_task_client_get_require_restart	(PkTaskClient	*tclient);
 gboolean	 pk_task_client_get_updates		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_update_system		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_search_name		(PkTaskClient	*tclient,
-							 const gchar	*search,
-							 guint		 depth,
-							 gboolean	 installed,
-							 gboolean	 available);
+							 const gchar	*filter,
+							 const gchar	*search);
 gboolean	 pk_task_client_search_details		(PkTaskClient	*tclient,
 							 const gchar	*filter,
 							 const gchar	*search);

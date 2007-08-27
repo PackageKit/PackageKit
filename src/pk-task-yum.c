@@ -124,7 +124,7 @@ pk_task_update_system (PkTask *task)
  * pk_task_search_name:
  **/
 gboolean
-pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean installed, gboolean available)
+pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -135,7 +135,7 @@ pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean in
 
 	pk_task_no_percentage_updates (task);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_spawn_helper_find (task, search, depth, installed, available);
+	pk_task_spawn_helper (task, "search-name.py", filter, search);
 	return TRUE;
 }
 
@@ -145,8 +145,15 @@ pk_task_search_name (PkTask *task, const gchar *search, guint depth, gboolean in
 gboolean
 pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 {
-	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
-	pk_task_spawn_helper (task, "search-details.py none", search);
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_spawn_helper (task, "search-details.py", filter, search);
 	return TRUE;
 }
 
@@ -156,6 +163,13 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 {
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
 	pk_task_not_implemented_yet (task, "SearchGroup");
 	return TRUE;
 }
@@ -166,6 +180,13 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 {
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
 	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
 }

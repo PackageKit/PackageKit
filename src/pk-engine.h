@@ -71,10 +71,8 @@ gboolean	 pk_engine_get_updates			(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_search_name			(PkEngine	*engine,
+							 const gchar	*filter,
 							 const gchar	*search,
-							 guint		 depth,
-							 gboolean	 installed,
-							 gboolean	 available,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_search_details		(PkEngine	*engine,

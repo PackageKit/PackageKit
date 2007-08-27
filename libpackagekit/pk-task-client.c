@@ -326,8 +326,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
  * pk_task_client_search_name:
  **/
 gboolean
-pk_task_client_search_name (PkTaskClient *tclient, const gchar *search,
-			      guint depth, gboolean installed, gboolean available)
+pk_task_client_search_name (PkTaskClient *tclient, const gchar *filter, const gchar *search)
 {
 	gboolean ret;
 	GError *error;
@@ -344,10 +343,8 @@ pk_task_client_search_name (PkTaskClient *tclient, const gchar *search,
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "SearchName", &error,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_UINT, depth,
-				 G_TYPE_BOOLEAN, installed,
-				 G_TYPE_BOOLEAN, available,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &tclient->priv->job,
 				 G_TYPE_INVALID);
