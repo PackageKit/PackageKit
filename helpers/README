@@ -61,7 +61,7 @@ FILENAME	{backend}-search-name.*
 
 ARGUMENTS	$options $search_term
 		$filter		The filter applied to the search operation,
-				e.g. "gui;!installed;!devel" or ""
+				e.g. "gui;~installed;~devel" or "none"
 		search_term:	Single word search term with no wildcard chars.
 
 STDERR		percentage<tab>$value
@@ -93,7 +93,7 @@ FILENAME	{backend}-search-group.*
 
 ARGUMENTS	$filter $group
 		$filter		The filter applied to the search operation,
-				e.g. "gui;!installed;!devel" or ""
+				e.g. "gui;~installed;~devel" or "none"
 		$group:		The enumerated package group description
 				This should be one of:
 				"accessibility", "accessories", "education", "games",
@@ -129,7 +129,7 @@ FILENAME	{backend}-search-details.*
 
 ARGUMENTS	$options $search
 		$filter		The filter applied to the search operation,
-				e.g. "gui;!installed;!devel" or ""
+				e.g. "gui;~installed;~devel" or "none"
 		$search:	Single word search term with no wildcard chars.
 
 STDERR		percentage<tab>$value
@@ -163,7 +163,7 @@ FILENAME	{backend}-search-file.*
 
 ARGUMENTS	$options $search
 		$filter		The filter applied to the search operation,
-				e.g. "gui;!installed;!devel" or ""
+				e.g. "gui;~installed;~devel" or "none"
 		$search:	Single word filename with no wildcard chars.
 
 STDERR		percentage<tab>$value
