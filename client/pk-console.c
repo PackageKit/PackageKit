@@ -153,7 +153,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a search term");
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_details (tclient, "", value);
+			pk_task_client_search_details (tclient, "none", value);
 			remove_two = TRUE;
 		}
 	} if (strcmp (mode, "searchgroup") == 0) {
@@ -161,7 +161,15 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a search term");
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_group (tclient, "", value);
+			pk_task_client_search_group (tclient, "none", value);
+			remove_two = TRUE;
+		}
+	} if (strcmp (mode, "searchfile") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a search term");
+		} else {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_search_file (tclient, "none", value);
 			remove_two = TRUE;
 		}
 	} else if (strcmp (mode, "install") == 0) {

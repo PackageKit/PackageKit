@@ -55,7 +55,7 @@ If you have to handle an error, try to use "internal-error" as little as
 possible. Just ask, and I'll add some more error enums to cover the type of
 error in an abstract way as possible.
 
-========= Find Packages =========
+========= Search Name =========
 
 FILENAME	{backend}-search-name.*
 
@@ -86,7 +86,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 NOTES		Do not refresh the package cache. This should be fast.
 
-========= Find Packages By Group =========
+========= Search Group =========
 
 FILENAME	{backend}-search-group.*
 
@@ -126,9 +126,10 @@ NOTES		Do not refresh the package cache. This should be fast.
 
 FILENAME	{backend}-search-details.*
 
-ARGUMENTS	$options $search_term
-		options:	One of "installed", "available", "all".
-		search_term:	Single word search term with no wildcard chars.
+ARGUMENTS	$options $search
+		$filter		The filter applied to the search operation,
+				e.g. "gui;!installed;!devel" or ""
+		$search:	Single word search term with no wildcard chars.
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -154,6 +155,39 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 NOTES		This is very similar to find-package.
 		This should search as much data as possible, including, if possible
 		repo names, package summaries, descriptions and urls.
+
+========= Search File =========
+
+FILENAME	{backend}-search-file.*
+
+ARGUMENTS	$options $search
+		$filter		The filter applied to the search operation,
+				e.g. "gui;!installed;!devel" or ""
+		$search:	Single word filename with no wildcard chars.
+
+STDERR		percentage<tab>$value
+		value:		Percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the DBUS
+				signal NoPercentageUpdates or use no-percentage-updates
+				if the remaining position cannot be calculated.
+
+STDERR		no-percentage-updates
+		notes:		This is optional and signifies that the helper
+				is no longer able to send percentage updates.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	"1" if installed, "0" if not
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
+
+NOTES		This should allow an application to find out what package owns
+		a file on the system.
 
 ========= Refresh Cache =========
 

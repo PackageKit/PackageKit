@@ -161,6 +161,16 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 }
 
 /**
+ * pk_task_search_file:
+ **/
+gboolean
+pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_not_implemented_yet (task, "SearchFile");
+	return TRUE;
+}
+
+/**
  * pk_task_get_deps:
  **/
 gboolean
