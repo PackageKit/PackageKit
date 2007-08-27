@@ -10,6 +10,7 @@
 # (at your option) any later version.
 
 import sys
+from conaryBackend import PackageKitConaryBackend
 
-sys.exit(1)
-
+backend = PackageKitConaryBackend(sys.argv[1:])
+backend.get_updates()

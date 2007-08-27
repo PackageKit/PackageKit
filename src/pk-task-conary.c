@@ -71,7 +71,8 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_not_implemented_yet (task, "GetUpdates");
+        pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+        pk_task_spawn_helper (task, "get-updates.py", NULL);
 	return TRUE;
 }
 

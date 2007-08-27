@@ -30,6 +30,8 @@ dist_helper_DATA = 			\
 	conary-remove.py		\
 	conary-update-system.py		\
 	conary-get-description.py	\
+	conaryBackend.py		\
+	packagekit.py			\
 	$(NULL)
 endif	
 
