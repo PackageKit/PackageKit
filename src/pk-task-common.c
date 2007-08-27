@@ -287,7 +287,7 @@ pk_task_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
  * pk_task_spawn_helper_internal:
  **/
 static gboolean
-pk_task_spawn_helper_internal (PkTask *task, const gchar *argument)
+pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gchar *argument)
 {
 	PkSpawn *spawn;
 	gboolean ret;
@@ -297,9 +297,9 @@ pk_task_spawn_helper_internal (PkTask *task, const gchar *argument)
 	gchar *error_str;
 
 	/* build script */
-	script = g_strdup_printf ("%s-%s", BACKEND_PREFIX, argument);
-
+	script = g_strdup_printf ("%s-%s", BACKEND_PREFIX, script_part);
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
+
 	if (argument != NULL) {
 		command = g_strdup_printf ("%s %s", filename, argument);
 	} else {
@@ -336,7 +336,6 @@ pk_task_spawn_helper (PkTask *task, const gchar *script, ...)
 {
 	gboolean ret;
 	va_list args;
-	gchar *command;
 	gchar *arguments;
 
 	/* get the argument list */
@@ -344,12 +343,8 @@ pk_task_spawn_helper (PkTask *task, const gchar *script, ...)
 	arguments = g_strjoinv (" ", (gchar **)args);
 	va_end (args);
 
-	/* prepend with the script name */
-	command = g_strjoin (" ", script, arguments, NULL);
-	ret = pk_task_spawn_helper_internal (task, command);
-
+	ret = pk_task_spawn_helper_internal (task, script, arguments);
 	g_free (arguments);
-	g_free (command);
 	return ret;
 }
 
