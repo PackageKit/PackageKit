@@ -75,7 +75,7 @@ STDERR		no-percentage-updates
 				is no longer able to send percentage updates.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "filter-invalid"
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
@@ -111,7 +111,7 @@ STDERR		no-percentage-updates
 				is no longer able to send percentage updates.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "filter-invalid"
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
@@ -143,7 +143,7 @@ STDERR		no-percentage-updates
 				is no longer able to send percentage updates.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "filter-invalid"
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
@@ -177,7 +177,7 @@ STDERR		no-percentage-updates
 				is no longer able to send percentage updates.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "filter-invalid"
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.

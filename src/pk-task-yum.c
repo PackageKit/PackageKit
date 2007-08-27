@@ -133,6 +133,12 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
+	if (pk_task_check_filter (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
 	pk_task_no_percentage_updates (task);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-name.py", filter, search, NULL);
@@ -152,6 +158,12 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
+	if (pk_task_check_filter (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
 	return TRUE;
@@ -165,6 +177,12 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_check_filter (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
 
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;
@@ -182,6 +200,12 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_check_filter (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
 
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;

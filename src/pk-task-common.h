@@ -51,7 +51,7 @@ gboolean	 pk_task_description			(PkTask		*task,
 							 const gchar	*url);
 gboolean	 pk_task_error_code			(PkTask		*task,
 							 guint		 code,
-							 const gchar	*details);
+							 const gchar	*details, ...);
 gboolean	 pk_task_assign				(PkTask		*task);
 gboolean	 pk_task_get_job_status			(PkTask		*task,
 							 PkTaskStatus	*status);
@@ -61,8 +61,6 @@ gboolean	 pk_task_setup_signals			(GObjectClass	*object_class,
 gchar		*pk_task_get_data			(PkTask		*task);
 gboolean	 pk_task_set_data			(PkTask		*task,
 							 const gchar	*data);
-gboolean	 pk_task_filter_package_name		(PkTask		*task,
-							 const gchar	*package);
 gboolean	 pk_task_spawn_helper			(PkTask		*task,
 							 const gchar	*script, ...);
 gboolean	 pk_task_not_implemented_yet		(PkTask		*task,

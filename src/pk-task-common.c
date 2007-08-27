@@ -32,28 +32,6 @@
 #include "pk-marshal.h"
 
 /**
- * pk_task_filter_package_name:
- **/
-gboolean
-pk_task_filter_package_name (PkTask *task, const gchar *package)
-{
-	if (strstr (package, "-debuginfo") != NULL) {
-		return FALSE;
-	}
-	if (strstr (package, "-dbg") != NULL) {
-		return FALSE;
-	}
-	if (strstr (package, "-devel") != NULL) {
-		return FALSE;
-	}
-	if (strstr (package, "-dev") != NULL) {
-		return FALSE;
-	}
-	/* todo, check if package depends on any gtk/qt toolkit */
-	return TRUE;
-}
-
-/**
  * pk_task_setup_signals:
  **/
 gboolean
@@ -294,7 +272,6 @@ pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gch
 	gchar *filename;
 	gchar *command;
 	gchar *script;
-	gchar *error_str;
 
 	/* build script */
 	script = g_strdup_printf ("%s-%s", BACKEND_PREFIX, script_part);
@@ -315,12 +292,9 @@ pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gch
 			  G_CALLBACK (pk_task_spawn_stderr_cb), task);
 	ret = pk_spawn_command (spawn, command);
 	if (ret == FALSE) {
-		error_str = g_strdup_printf ("Spawn of helper '%s' failed", command);
-		pk_warning ("'%s'", error_str);
 		g_object_unref (spawn);
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, error_str);
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		g_free (error_str);
 	}
 	g_free (script);
 	g_free (filename);
@@ -354,11 +328,8 @@ pk_task_spawn_helper (PkTask *task, const gchar *script, ...)
 gboolean
 pk_task_not_implemented_yet (PkTask *task, const gchar *method)
 {
-	gchar *message;
-	message = g_strdup_printf ("the method '%s' is not implimented yet", method);
-	pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, message);
+	pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "the method '%s' is not implimented yet", method);
 	pk_task_finished (task, PK_TASK_EXIT_FAILED);
-	g_free (message);
 	return TRUE;
 }
 
@@ -439,13 +410,20 @@ pk_task_description (PkTask *task, const gchar *package, PkTaskGroup group,
  * pk_task_error_code:
  **/
 gboolean
-pk_task_error_code (PkTask *task, PkTaskErrorCode code, const gchar *details)
+pk_task_error_code (PkTask *task, PkTaskErrorCode code, const gchar *format, ...)
 {
+	va_list args;
+	gchar buffer[1025];
+
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
-	pk_debug ("emit error-code %i, %s", code, details);
-	g_signal_emit (task, task->signals [PK_TASK_ERROR_CODE], 0, code, details);
+	va_start (args, format);
+	g_vsnprintf (buffer, 1024, format, args);
+	va_end (args);
+
+	pk_debug ("emit error-code %i, %s", code, buffer);
+	g_signal_emit (task, task->signals [PK_TASK_ERROR_CODE], 0, code, buffer);
 
 	return TRUE;
 }

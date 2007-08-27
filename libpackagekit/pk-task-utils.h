@@ -60,6 +60,7 @@ typedef enum {
 	PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,
 	PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,
 	PK_TASK_ERROR_CODE_DEP_RESOLUTION_FAILED,
+	PK_TASK_ERROR_CODE_FILTER_INVALID,
 	PK_TASK_ERROR_CODE_UNKNOWN
 } PkTaskErrorCode;
 
@@ -101,6 +102,7 @@ PkTaskGroup	 pk_task_group_from_text		(const gchar	*group);
 const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
 
 gboolean	 pk_task_check_package_id		(const gchar	*package_id);
+gboolean	 pk_task_check_filter			(const gchar	*filter);
 
 /* ident parsing */
 PkPackageIdent	*pk_task_package_ident_new		(void);

@@ -61,6 +61,7 @@ static PkTaskEnumMatch task_error[] = {
 	{PK_TASK_ERROR_CODE_NOT_SUPPORTED,	"not-supported"},
 	{PK_TASK_ERROR_CODE_INTERNAL_ERROR,	"internal-error"},
 	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
+	{PK_TASK_ERROR_CODE_FILTER_INVALID,	"filter-invalid"},
 	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
@@ -254,6 +255,59 @@ pk_task_check_package_id (const gchar *package_id)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+/**
+ * pk_task_check_filter_part:
+ **/
+gboolean
+pk_task_check_filter_part (const gchar *filter)
+{
+	if (filter == NULL) {
+		return FALSE;
+	}
+	if (strlen (filter) == 0) {
+		return FALSE;
+	}
+	if (strcmp (filter, "installed") == 0) {
+		return TRUE;
+	}
+	if (strcmp (filter, "!installed") == 0) {
+		return TRUE;
+	}
+	if (strcmp (filter, "devel") == 0) {
+		return TRUE;
+	}
+	if (strcmp (filter, "!devel") == 0) {
+		return TRUE;
+	}
+	if (strcmp (filter, "gui") == 0) {
+		return TRUE;
+	}
+	if (strcmp (filter, "!gui") == 0) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_task_check_filter:
+ **/
+gboolean
+pk_task_check_filter (const gchar *filter)
+{
+	gchar **sections;
+	guint i;
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (filter, ";", 4);
+	for (i=0; i>3; i++) {
+		if (pk_task_check_filter_part (sections[3]) == FALSE) {
+			return FALSE;
+		}
+	}
+	g_strfreev (sections);
+	return TRUE;	
 }
 
 /**
