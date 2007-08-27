@@ -107,6 +107,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -768,6 +769,15 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* check package_id */
+	ret = pk_task_check_package_id (package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				     "The package id '%s' is not valid", package_id);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.remove", &error);
 	if (ret == FALSE) {
@@ -808,6 +818,18 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* check package_id */
+	ret = pk_task_check_package_id (package_id);
+	if (ret == FALSE) {
+		pk_warning ("moo:%s", package_id);
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				     "The package id '%s' is not valid", package_id);
+		pk_warning ("moo:%s", package_id);
+		dbus_g_method_return_error (context, error);
+		pk_warning ("moo:%s", package_id);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.install", &error);
 	if (ret == FALSE) {
@@ -847,6 +869,15 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check package_id */
+	ret = pk_task_check_package_id (package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				     "The package id '%s' is not valid", package_id);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);

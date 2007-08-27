@@ -62,6 +62,7 @@ static PkTaskEnumMatch task_error[] = {
 	{PK_TASK_ERROR_CODE_INTERNAL_ERROR,	"internal-error"},
 	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
 	{PK_TASK_ERROR_CODE_FILTER_INVALID,	"filter-invalid"},
+	{PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID,	"package-id-invalid"},
 	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},

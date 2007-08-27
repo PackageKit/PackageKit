@@ -723,7 +723,7 @@ pk_task_client_install_package_action (PkTaskClient *tclient, const gchar *packa
  * pk_task_client_install_package:
  **/
 gboolean
-pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
+pk_task_client_install_package (PkTaskClient *tclient, const gchar *package_id)
 {
 	gboolean ret;
 	GError *error;
@@ -739,7 +739,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 	tclient->priv->assigned = TRUE;
 
 	/* hopefully do the operation first time */
-	ret = pk_task_client_install_package_action (tclient, package, &error);
+	ret = pk_task_client_install_package_action (tclient, package_id, &error);
 
 	/* we were refused by policy then try to get auth */
 	if (ret == FALSE) {
@@ -749,7 +749,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package)
 				pk_debug ("gained priv");
 				g_error_free (error);
 				/* do it all over again */
-				ret = pk_task_client_install_package_action (tclient, package, &error);
+				ret = pk_task_client_install_package_action (tclient, package_id, &error);
 			}
 		}
 		if (error != NULL) {

@@ -239,7 +239,7 @@ STDERR		data<tab>$current_data
 				package is being installed on for that sub-transaction.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported", "package-already-installed"
 				or "internal-error"
 		description:	Long description or error
@@ -283,7 +283,7 @@ STDERR		data<tab>$current_data
 				package is being installed on for that sub-transaction.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported", "package-not-installed"
 				or "internal-error"
 		description:	Long description or error
@@ -327,7 +327,7 @@ STDERR		data<tab>$current_data
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
-				"not-supported", "package-not-installed"
+				"not-supported", "package-not-installed", "package-id-invalid"
 				or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
@@ -352,7 +352,7 @@ STDERR		percentage<tab>$value
 				NoPercentageUpdates if these are not expected.
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
@@ -405,7 +405,7 @@ ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 
 STDERR		error<tab>$enum<tab>description
-		enum:		Enumerated type, e.g. "no-network",
+		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported" or "internal-error"
 		description:	Long description or error
 		notes:		Errors should only be send on fatal abortion.
