@@ -21,7 +21,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
-
         self.client = conaryclient.ConaryClient(self.cfg)
 
     def _get_arch(self, flavor):
@@ -50,8 +49,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         db = conaryclient.ConaryClient(self.cfg).db
         affinityDb = self.client.db
         fltlist = filters.split(';')
-
-
 
         troveSpecs = [ cmdline.parseTroveSpec(searchlist, allowEmptyName=False)]
 
@@ -86,17 +83,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 flavor = troveTuple[2]
                 # We don't have summary data yet... so leave it blank for now
                 summary = " "
-                try:
-                    localInstall = db.findTrove(None, troveTuple)
-                    installed = 1
-                except:
-                    installed = 0
+                installed = self.check_installed(troveTuple)
 
                 if self._do_filtering(name,fltlist,installed):
                     id = self.get_package_id(name, version, flavor, fullVersion)
                     self.package(id, installed, summary)
         except:
             self.error('internal-error', 'An internal error has occurred')
+
+    def check_installed(self, troveTuple):
+        db = conaryclient.ConaryClient(self.cfg).db
+        try:
+            localInstall = db.findTrove(None, troveTuple)
+            installed = 1
+        except:
+            installed = 0
+        return installed
 
     def search_name(self, options, searchlist):
         '''
@@ -137,15 +139,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         totalJobs = len(jobLists)
         for num, job in enumerate(jobLists):
             status = '2'
-
             name = job[0][0]
-            version = job[0][2]
-            flavor = job[0][3]
-
+            version = job[0][2][0]
+            flavor = job[0][2][1]
+            troveTuple = []
+            troveTuple.append(name)
+            troveTuple.append(version)
+            installed = self.check_installed(troveTuple)
             id = self.get_package_id(name, version, flavor)
-            summary = self._getdescription(id)
-
-            print self.package(package_id, status, summary)
+            summary = ""
+            self.package(id, installed, summary)
 
     def _do_filtering(self,pkg,filterList,installed):
         ''' Filter the package, based on the filter in filterList '''
