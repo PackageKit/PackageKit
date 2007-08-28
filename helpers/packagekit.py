@@ -118,6 +118,11 @@ class PackageKitBaseBackend:
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)
 
+    def get_package_from_id(self,id):
+        ''' split up a package id name;ver;arch;data into a tuple
+            containing (name,ver,arch,data)
+        '''
+        return tuple(id.split(';'))
 #
 # Backend Action Methods
 #

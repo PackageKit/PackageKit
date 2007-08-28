@@ -36,6 +36,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
 
+    def _get_package_ver(self,po):        
+        ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
+        if po.epoch != '0':
+            ver = "%s:%s-%s" % (po.epoch,po.version,po.release)
+        else:
+            ver = "%s-%s" % (po.version,po.release)
+        return ver    
+
     def _do_search(self,searchlist,filters,key):
         '''
         Search for yum packages
@@ -59,7 +67,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 installed = '0'
         
             if self._do_filtering(pkg,fltlist,installed):
-                id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
+                pkgver = self._get_package_ver(pkg)
+                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
                 self.package(id,installed, pkg.summary)
 
     def _do_filtering(self,pkg,filterList,installed):
@@ -152,24 +161,60 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def _getEVR(self,idver):
+        '''
+        get the e,v,r from the package id version
+        '''
+        cpos = idver.find(':')
+        if cpos != -1:
+            epoch = idver[:cpos]
+            idver = idver[cpos:]
+        else:
+            epoch = 0
+        (version,release) = tuple(idver.split('-'))
+        return epoch,version,release
+            
+    def _findPackage(self,id):
+        '''
+        find a package based on a packahe id (name;version;arch;repoid)
+        '''
+        # Split up the id
+        (n,idver,a,d) = self.get_package_from_id(id)
+        # get e,v,r from package id version
+        e,v,r = self._getEVR(idver)
+        # search the rpmdb for the nevra
+        pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
+        # if the package is found, then return it
+        if len(pkgs) != 0:
+            return pkgs[0]
+        # search the pkgSack for the nevra
+        pkgs = self.yumbase.pkgSack.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
+        # if the package is found, then return it
+        if len(pkgs) != 0:
+            return pkgs[0]
+        else:
+            return None
+            
+
     def get_deps(self,package):
         '''
         Print a list of dependencies for a given package
         '''
-        res = self.yumbase.searchGenerator(['name'], [package])
-
-        for (pkg, name) in res:
-            if name[0] == package:
-                deps = self.yumbase.findDeps([pkg]).values()[0]
-                for deplist in deps.values():
-                    for dep in deplist:
-                        if not results.has_key(dep.name):
-                            results[dep.name] = dep
-                break
+        name = package.split(';')[0]
+        pkg = self._findPackage(package)
+        results = {}
+        if pkg:
+            deps = self.yumbase.findDeps([pkg]).values()[0]
+            for deplist in deps.values():
+                for dep in deplist:
+                    if not results.has_key(dep.name):
+                        results[dep.name] = dep
 
         for pkg in results.values():
-            id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
-            self.package(id, 1, pkg.summary)
+            if pkg.name != name:
+                pkgver = self._get_package_ver(pkg)            
+                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+                self.package(id, 1, pkg.summary)
 
     def update_system(self):
         '''
@@ -185,6 +230,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._runYumTransaction()
         else:
             self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+            
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
