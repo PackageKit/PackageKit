@@ -276,7 +276,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             txmbr = self.yumbase.install(name=package)
             self._runYumTransaction()
         except yum.Errors.InstallError,e:
-            msgs = '\n'.join(str(e))
+            msgs = ';'.join(str(e))
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)        
 
     def update(self, package):
@@ -311,13 +311,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.processTransaction(callback=callback,
                                       rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, msgs:
-                retmsg = "Error in Download\n" +"\n".join(msgs)
+                retmsg = "Error in Download;" +";".join(msgs)
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
             except yum.Errors.YumGPGCheckError, msgs:
-                retmsg = "Error in Package Signatures\n" +"\n".join(msgs)
+                retmsg = "Error in Package Signatures;" +";".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except yum.Errors.YumBaseError, msgs:
-                retmsg = "Error in Transaction Processing\n" +"\n".join(msgs)
+                retmsg = "Error in Transaction Processing;" +";".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
 
     def remove(self, allowdep, package):
