@@ -28,6 +28,7 @@ import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
+from yum.update_md import UpdateMetadata
 
 
 class PackageKitYumBackend(PackageKitBaseBackend):
@@ -67,9 +68,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 installed = '0'
         
             if self._do_filtering(pkg,fltlist,installed):
-                pkgver = self._get_package_ver(pkg)
-                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-                self.package(id,installed, pkg.summary)
+                self._show_package(pkg, installed)
 
     def _do_filtering(self,pkg,filterList,installed):
         ''' Filter the package, based on the filter in filterList '''
@@ -349,13 +348,49 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.description(id, "%s-%s" % (pkg.version, pkg.release),
                                  repr(pkg.description), pkg.url)
                 break
+    
+    def _show_package(self,pkg,status):
+        '''  Show info about package'''
+        pkgver = self._get_package_ver(pkg)
+        id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        self.package(id,status, pkg.summary)
+            
+    def _get_status(self,notice):
+        ut = notice['type']
+        # TODO : Add more types to check
+        if ut == 'security':
+            return 1
+        else:
+            return 0 
+        
             
     def get_updates(self):
         '''
         Implement the {backend}-get-updates functionality
-        Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.yumbase.doConfigSetup()                         # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)     # Download callback
+        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        md = UpdateMetadata()
+        # Added extra Update Metadata
+        for repo in self.yumbase.repos.listEnabled():
+            try:
+                md.add(repo)
+            except: 
+                pass # No updateinfo.xml.gz in repo
+        
+        self.percentage(0)
+        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')      
+        for pkg in ygl.updates:
+            # Get info about package in updates info
+            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+            if notice: 
+                status = self._get_status(notice)
+                self._show_package(pkg,status)                
+            else:
+                self._show_package(pkg,0)
+            
+                                                                                               
             
 
 class DownloadCallback( BaseMeter ):
