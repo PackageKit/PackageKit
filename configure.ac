@@ -105,14 +105,14 @@ AC_SUBST(SBINDIR, $sbindir)
 
 AC_ARG_WITH([packagekit_user],
 	    AS_HELP_STRING([--with-packagekit-user=<user>],
-	                   [User for running the PacakgeKit daemon (root)]))
+	                   [User for running the PackageKit daemon (root)]))
 if test -z "$with_packagekit_user" ; then
     PACKAGEKIT_USER=root
 else
     PACKAGEKIT_USER=$with_packagekit_user
 fi
 AC_SUBST(PACKAGEKIT_USER)
-AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PacakgeKit daemon])
+AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PackageKit daemon])
 
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
