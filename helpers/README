@@ -54,6 +54,7 @@ Error enums:
 If you have to handle an error, try to use "internal-error" as little as
 possible. Just ask, and I'll add some more error enums to cover the type of
 error in an abstract way as possible.
+For the non-translated error description use ";" to seporate the lines.
 
 ========= Search Name =========
 
