@@ -19,16 +19,13 @@ def catchall_signal_handler(*args, **kwargs):
 		   + kwargs['dbus_interface'] + "." + kwargs['member'])
 	for arg in args:
 		print "		" + str(arg)
-	if kwargs['member'] == "JobListChanged":
-		stuff = pk_iface.GetJobStatus(job)
-		print stuff
-	elif kwargs['member'] == "Finished":
+	if kwargs['member'] == "Finished":
 		if args[0] == job:
 			loop.quit()
 
 bus.add_signal_receiver(catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member')
 
-job = pk_iface.SearchName(argv[1],0,False,True)
+job = pk_iface.SearchName("",argv[1])
 print "job",job
 loop = gobject.MainLoop()
 loop.run()
