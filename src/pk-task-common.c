@@ -241,9 +241,17 @@ out:
 static void
 pk_task_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkTask *task)
 {
+	PkTaskExit exit;
 	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
 	g_object_unref (spawn);
-	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+
+	/* only emit success with a zero exit code */
+	if (exitcode == 0) {
+		exit = PK_TASK_EXIT_SUCCESS;
+	} else {
+		exit = PK_TASK_EXIT_FAILED;
+	}
+	pk_task_finished (task, exit);
 }
 
 /**
