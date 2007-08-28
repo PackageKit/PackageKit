@@ -266,7 +266,7 @@ pk_task_get_description (PkTask *task, const gchar *package)
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
-	pk_task_description (task, "gnome-power-manager", PK_TASK_GROUP_PROGRAMMING,
+	pk_task_description (task, "gnome-power-manager;2.6.19;i386;fedora", PK_TASK_GROUP_PROGRAMMING,
 			     "super long description. la la la", "http://live.gnome.org/GnomePowerManager");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 

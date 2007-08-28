@@ -344,7 +344,7 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup gro
 	job = pk_task_get_job (task);
 	group_text = pk_task_group_to_text (group);
 
-	pk_debug ("emitting description job:%i, '%s', %i", job, group_text);
+	pk_debug ("emitting description job:%i, %s, %s, %s, %s", job, package_id, group_text, detail, url);
 	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, job, package_id, group_text, detail, url);
 }
 
@@ -1091,8 +1091,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
