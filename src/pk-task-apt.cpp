@@ -444,6 +444,23 @@ gboolean pk_task_cancel_job_try(PkTask * task)
 }
 
 /**
+ * pk_task_update_package:
+ **/
+gboolean
+pk_task_update_package (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	pk_task_not_implemented_yet (task, "UpdatePackage");
+	return TRUE;
+}
+
+/**
  * pk_task_class_init:
  **/
 static void pk_task_class_init(PkTaskClass * klass)
