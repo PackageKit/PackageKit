@@ -281,7 +281,16 @@ pk_console_tidy_up_sync (PkTaskClient *tclient)
 static void
 pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, guint runtime, gpointer data)
 {
-	pk_debug ("Runtime was %i seconds", runtime);
+	g_print ("Runtime was %i seconds\n", runtime);
+}
+
+/**
+ * pk_console_error_code_cb:
+ **/
+static void
+pk_console_error_code_cb (PkTaskClient *tclient, PkTaskErrorCode error_code, const gchar *details, gpointer data)
+{
+	g_print ("Error: %s : %s\n", pk_task_error_code_to_text (error_code), details);
 }
 
 /**
@@ -326,6 +335,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 	g_signal_connect (tclient, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
+	g_signal_connect (tclient, "error-code",
+			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	/* add argv to a pointer array */
 	array = g_ptr_array_new ();
