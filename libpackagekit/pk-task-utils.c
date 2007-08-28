@@ -88,7 +88,7 @@ static PkTaskEnumMatch task_group[] = {
 	{PK_TASK_GROUP_OFFICE,			"office"},
 	{PK_TASK_GROUP_OTHER,			"other"},
 	{PK_TASK_GROUP_PROGRAMMING,		"programming"},
-	{PK_TASK_GROUP_SOUND_VIDEO,		"sound-video"},
+	{PK_TASK_GROUP_MULTIMEDIA,		"multimedia"},
 	{PK_TASK_GROUP_SYSTEM,			"system"},
 	{0, NULL},
 };

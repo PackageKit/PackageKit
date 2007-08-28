@@ -98,7 +98,7 @@ ARGUMENTS	$filter $group
 				This should be one of:
 				"accessibility", "accessories", "education", "games",
 				"graphics", "internet", "office", "other", "programming",
-				"sound-video", "system"
+				"multimedia", "system"
 
 STDERR		percentage<tab>$value
 		value:		Percentage complete of the entire transaction
@@ -416,7 +416,7 @@ STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
 				This should be one of:
 				"accessibility", "accessories", "education", "games",
 				"graphics", "internet", "office", "other", "programming",
-				"sound-video", "system"
+				"multimedia", "system"
 		$detail:	The multi line package description
 				NOTE: Tabs may have to be stripped from the
 				description to avoid being split for the url.

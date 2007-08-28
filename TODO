@@ -1,16 +1,17 @@
 Order of no particular importance:
 
-* yum-find-name.py has to emit full version and epoch, not just the version
+Core:
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
-* Write documentation for UI porters
 * Add a way to import GPG keys
-* Add enough new error enums for the yum backend
 * Add sub-percentage support into API
 * Split up PolicyKit install into different types
 * Add files in package into Description signal
+
+Backends:
 * Add conary backend
-* Install does not work for the yum backend (code error, not backend error)
 * Dummy backend should use subpercent and install deps
-* rename SOUND_VIDEO to MULTIMEDIA
+* yum-find-name.py has to emit full version and epoch, not just the version
+* Add enough new error enums for the yum backend
+* Install does not work for the yum backend (code error, not backend error)
 
