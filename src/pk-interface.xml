@@ -125,6 +125,9 @@
     <method name="CancelJobTry"> <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>
     </method>
+    <method name="GetActions">
+      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions "groups;install;remove" etc. TODO: Document -->
+    </method>
 
   </interface>
 </node>

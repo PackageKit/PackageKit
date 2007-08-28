@@ -69,6 +69,7 @@ typedef struct
 
 GType		 pk_task_get_type		  	(void);
 PkTask		*pk_task_new				(void);
+gchar		*pk_task_get_actions			(void);
 
 gboolean	 pk_task_get_updates			(PkTask		*task);
 gboolean	 pk_task_update_system			(PkTask		*task);

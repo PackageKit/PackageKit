@@ -80,6 +80,22 @@ typedef enum {
 	PK_TASK_GROUP_UNKNOWN
 } PkTaskGroup;
 
+typedef enum {
+	PK_TASK_ACTION_INSTALL = 1,
+	PK_TASK_ACTION_REMOVE,
+	PK_TASK_ACTION_UPDATE,
+	PK_TASK_ACTION_GET_UPDATES,
+	PK_TASK_ACTION_REFRESH_CACHE,
+	PK_TASK_ACTION_UPDATE_SYSTEM,
+	PK_TASK_ACTION_SEARCH_NAME,
+	PK_TASK_ACTION_SEARCH_DETAILS,
+	PK_TASK_ACTION_SEARCH_GROUP,
+	PK_TASK_ACTION_SEARCH_FILE,
+	PK_TASK_ACTION_GET_DEPS,
+	PK_TASK_ACTION_GET_DESCRIPTION,
+	PK_TASK_ACTION_UNKNOWN
+} PkTaskAction;
+
 typedef struct {
 	gchar	*name;
 	gchar	*version;
@@ -102,6 +118,9 @@ const gchar	*pk_task_restart_to_text		(PkTaskRestart	 restart);
 PkTaskGroup	 pk_task_group_from_text		(const gchar	*group);
 const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
 
+PkTaskAction	 pk_task_action_from_text		(const gchar	*action);
+const gchar	*pk_task_action_to_text			(PkTaskAction	 action);
+
 gboolean	 pk_task_check_package_id		(const gchar	*package_id);
 gboolean	 pk_task_check_filter			(const gchar	*filter);
 
@@ -114,6 +133,11 @@ gchar		*pk_task_package_ident_build		(const gchar	*name,
 							 const gchar	*data);
 gchar		*pk_task_package_ident_to_string	(PkPackageIdent *ident);
 gboolean	 pk_task_package_ident_free		(PkPackageIdent *ident);
+
+/* actions */
+gchar		*pk_task_action_build			(PkTaskAction	  action, ...);
+gboolean	 pk_task_action_contains		(const gchar	 *actions,
+							 PkTaskAction	  action);
 
 G_END_DECLS
 

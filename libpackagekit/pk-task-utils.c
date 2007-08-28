@@ -93,6 +93,22 @@ static PkTaskEnumMatch task_group[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_action[] = {
+	{PK_TASK_ACTION_INSTALL,		"install"},
+	{PK_TASK_ACTION_REMOVE,			"remove"},
+	{PK_TASK_ACTION_UPDATE,			"update"},
+	{PK_TASK_ACTION_GET_UPDATES,		"get-updates"},
+	{PK_TASK_ACTION_REFRESH_CACHE,		"refresh-cache"},
+	{PK_TASK_ACTION_UPDATE_SYSTEM,		"update-system"},
+	{PK_TASK_ACTION_SEARCH_NAME,		"search-name"},
+	{PK_TASK_ACTION_SEARCH_DETAILS,		"search-details"},
+	{PK_TASK_ACTION_SEARCH_GROUP,		"search-group"},
+	{PK_TASK_ACTION_SEARCH_FILE,		"search-file"},
+	{PK_TASK_ACTION_GET_DEPS,		"get-deps"},
+	{PK_TASK_ACTION_GET_DESCRIPTION,	"get-description"},
+	{0, NULL},
+};
+
 /**
  * pk_task_enum_find_value:
  */
@@ -229,6 +245,24 @@ const gchar *
 pk_task_group_to_text (PkTaskGroup group)
 {
 	return pk_task_enum_find_string (task_group, group);
+}
+
+/**
+ * pk_task_action_from_text:
+ **/
+PkTaskAction
+pk_task_action_from_text (const gchar *action)
+{
+	return pk_task_enum_find_value (task_action, action);
+}
+
+/**
+ * pk_task_action_to_text:
+ **/
+const gchar *
+pk_task_action_to_text (PkTaskAction action)
+{
+	return pk_task_enum_find_string (task_action, action);
 }
 
 /**
@@ -380,5 +414,58 @@ pk_task_package_ident_free (PkPackageIdent *ident)
 	g_free (ident->data);
 	g_free (ident);
 	return TRUE;
+}
+
+/**
+ * pk_task_action_build:
+ **/
+gchar *
+pk_task_action_build (PkTaskAction action, ...)
+{
+	va_list args;
+	guint i;
+	GString *string;
+	PkTaskAction action_temp;
+
+	string = g_string_new (pk_task_action_to_text (action));
+	g_string_append (string, ";");
+
+	/* process the valist */
+	va_start (args, action);
+	for (i=0;; i++) {
+		action_temp = va_arg (args, PkTaskAction);
+		if (action_temp == 0) break;
+		g_string_append (string, pk_task_action_to_text (action_temp));
+		g_string_append (string, ";");
+	}
+	va_end (args);
+
+	/* remove last ';' */
+	g_string_set_size (string, string->len - 1);
+
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_task_action_contains:
+ **/
+gboolean
+pk_task_action_contains (const gchar *actions, PkTaskAction action)
+{
+	gchar **sections;
+	guint i;
+	guint ret = FALSE;
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (actions, ";", 4);
+
+	for (i=0; sections[i]; i++) {
+		if (pk_task_action_from_text (sections[i]) == action) {
+			ret = TRUE;
+			break;
+		}
+	}
+	g_strfreev (sections);
+	return ret;	
 }
 

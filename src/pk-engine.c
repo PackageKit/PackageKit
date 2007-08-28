@@ -997,6 +997,21 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	return TRUE;
 }
 
+
+/**
+ * pk_engine_get_actions:
+ * @engine: This class instance
+ **/
+gboolean
+pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	*actions = pk_task_get_actions ();
+	return TRUE;
+}
+
 /**
  * pk_engine_get_seconds_idle:
  * @engine: This class instance

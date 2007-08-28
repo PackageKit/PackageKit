@@ -61,6 +61,29 @@ G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
 /**
  * pk_task_get_updates:
  **/
+gchar *
+pk_task_get_actions (void)
+{
+	gchar *actions;
+	actions = pk_task_action_build (PK_TASK_ACTION_INSTALL,
+				        PK_TASK_ACTION_REMOVE,
+				        PK_TASK_ACTION_UPDATE,
+				        PK_TASK_ACTION_GET_UPDATES,
+				        PK_TASK_ACTION_REFRESH_CACHE,
+				        PK_TASK_ACTION_UPDATE_SYSTEM,
+				        PK_TASK_ACTION_SEARCH_NAME,
+				        PK_TASK_ACTION_SEARCH_DETAILS,
+				        PK_TASK_ACTION_SEARCH_GROUP,
+				        PK_TASK_ACTION_SEARCH_FILE,
+				        PK_TASK_ACTION_GET_DEPS,
+				        PK_TASK_ACTION_GET_DESCRIPTION,
+				        0);
+	return actions;
+}
+
+/**
+ * pk_task_get_updates:
+ **/
 gboolean
 pk_task_get_updates (PkTask *task)
 {

@@ -130,6 +130,9 @@ gboolean	 pk_engine_get_job_status		(PkEngine	*engine,
 gboolean	 pk_engine_cancel_job_try		(PkEngine	*engine,
 							 guint		 job,
 							 GError		**error);
+gboolean	 pk_engine_get_actions			(PkEngine	*engine,
+							 gchar		**actions,
+							 GError		**error);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 G_END_DECLS
