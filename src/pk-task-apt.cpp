@@ -310,7 +310,7 @@ static void * do_search_task(gpointer data)
 
 		if (Match == true)// && pk_task_filter_package_name(st->task,P.Name().c_str()))
 		{
-			gchar *pid = pk_task_package_id(P.Name().c_str(),J->verstr,J->arch,J->repo);
+			gchar *pid = pk_task_package_ident_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
 			pk_task_package(st->task, J->installed, pid, P.ShortDesc().c_str());
 			g_free(pid);
 		}
