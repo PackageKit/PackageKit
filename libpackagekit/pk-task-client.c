@@ -794,6 +794,33 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_actions:
+ **/
+gchar *
+pk_task_client_get_actions (PkTaskClient *tclient)
+{
+	gboolean ret;
+	GError *error;
+	gchar *actions;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetActions", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &actions,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetActions failed :%s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+	return actions;
+}
+
+/**
  * pk_task_client_finished_cb:
  */
 static void
