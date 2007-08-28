@@ -247,18 +247,20 @@ pk_task_monitor_package_cb (DBusGProxy   *proxy,
 static void
 pk_task_monitor_description_cb (DBusGProxy    *proxy,
 				guint	       job,
-				const gchar   *package,
-				const gchar   *version,
+				const gchar   *package_id,
+				const gchar   *group_text,
 				const gchar   *description,
 				const gchar   *url,
 				PkTaskMonitor *tmonitor)
 {
+	PkTaskGroup group;
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
 	if (job == tmonitor->priv->job) {
-		pk_debug ("emit description %s, %s, %s, %s", package, version, description, url);
-		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_PACKAGE], 0, package, version, description, url);
+		group = pk_task_group_from_text (group_text);
+		pk_debug ("emit description %s, %i, %s, %s", package_id, group, description, url);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_DESCRIPTION], 0, package_id, group, description, url);
 	}
 }
 
@@ -342,8 +344,8 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 	signals [PK_TASK_MONITOR_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_MONITOR_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

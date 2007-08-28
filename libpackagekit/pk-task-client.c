@@ -71,6 +71,7 @@ typedef enum {
 	PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
+	PK_TASK_CLIENT_DESCRIPTION,
 	PK_TASK_CLIENT_ERROR_CODE,
 	PK_TASK_CLIENT_FINISHED,
 	PK_TASK_CLIENT_LAST_SIGNAL
@@ -932,6 +933,24 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 }
 
 /**
+ * pk_task_client_description_cb:
+ */
+static void
+pk_task_client_description_cb (PkTaskMonitor *tmonitor,
+			   const gchar   *package_id,
+			   PkTaskGroup    group,
+			   const gchar   *detail,
+			   const gchar   *url,
+			   PkTaskClient  *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	pk_debug ("emit description %s, %i, %s, %s", package_id, group, detail, url);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_DESCRIPTION], 0, package_id, group, detail, url);
+}
+
+/**
  * pk_task_client_error_code_cb:
  */
 static void
@@ -1001,6 +1020,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_CLIENT_DESCRIPTION] =
+		g_signal_new ("package",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1090,6 +1114,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "package",
 			  G_CALLBACK (pk_task_client_package_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "description",
+			  G_CALLBACK (pk_task_client_description_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "error-code",
 			  G_CALLBACK (pk_task_client_error_code_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "require-restart",
