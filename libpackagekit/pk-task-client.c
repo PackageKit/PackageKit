@@ -351,7 +351,13 @@ pk_task_client_search_name (PkTaskClient *tclient, const gchar *filter, const gc
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		if (error->domain == DBUS_GERROR && 
+			error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+			error_name = dbus_g_error_get_name (error);
+		}
+		else {
+			error_name = g_quark_to_string(error->domain);
+		}
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
