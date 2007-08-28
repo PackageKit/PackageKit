@@ -12,4 +12,5 @@ Order of no particular importance:
 * Add conary backend
 * Install does not work for the yum backend (code error, not backend error)
 * Dummy backend should use subpercent and install deps
+* rename SOUND_VIDEO to MULTIMEDIA
 
