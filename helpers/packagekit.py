@@ -122,19 +122,34 @@ class PackageKitBaseBackend:
 # Backend Action Methods
 #
 
-    def search_name(self,opt,key):
+    def search_name(self,filters,key):
         '''
         Implement the {backend}-search-name functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def search_details(self,opt,key):
+    def search_details(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def search_group(self,filters,key):
+        '''
+        Implement the {backend}-search-group functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def search_file(self,filters,key):
+        '''
+        Implement the {backend}-search-file functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
 
     def get_deps(self,package):
         '''
@@ -168,6 +183,13 @@ class PackageKitBaseBackend:
     def remove(self, allowdep, package):
         '''
         Implement the {backend}-remove functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def update(self, package):
+        '''
+        Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

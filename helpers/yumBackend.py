@@ -2,7 +2,7 @@
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# (at your filtersion) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,6 +21,7 @@
 # imports
 
 import sys
+import re
 
 from packagekit import *
 import yum
@@ -35,55 +36,121 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
 
-    def _do_search(self,searchlist,opt,key):
+    def _do_search(self,searchlist,filters,key):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
-        @param opt: package types to search (all,installed,available)
+        @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
         self.yumbase.conf.cache = 1 # Only look in cache.
         res = self.yumbase.searchGenerator(searchlist, [key])
+        fltlist = filters.split(';')
 
         count = 1
         for (pkg,values) in res:
-            print pkg
             if count > 100:
                 break
             count+=1
-            installed = '0'
-
             # are we installed?
             if self.yumbase.rpmdb.installed(pkg.name):
                 installed = '1'
-
-            # do we print to stdout?
-            do_print = 0;
-            if opt == 'installed' and installed == '1':
-                do_print = 1
-            elif opt == '~installed' and installed == '0':
-                do_print = 1
-            elif opt == 'none':
-                do_print = 1
-
-            # print in correct format
-            if do_print == 1:
+            else:
+                installed = '0'
+        
+            if self._do_filtering(pkg,fltlist,installed):
                 id = self.get_package_id(pkg.name, pkg.version, pkg.arch, pkg.repo)
                 self.package(id,installed, pkg.summary)
 
-    def search_name(self,opt,key):
+    def _do_filtering(self,pkg,filterList,installed):
+        ''' Filter the package, based on the filter in filterList '''
+
+        # do we print to stdout?
+        do_print = False;
+        if filterList == ['none']: # 'none' = all packages.
+            return True
+        elif 'installed' in filterList and installed == '1':
+            do_print = True
+        elif '~installed' in filterList and installed == '0':
+            do_print = True
+
+        if len(filterList) == 1: # Only one filter, return
+            return do_print
+
+        if do_print:
+            return self._do_extra_filtering(pkg,filterList)
+        else:
+            return do_print
+    
+    def _do_extra_filtering(self,pkg,filterList):
+        ''' do extra filtering (gui,devel etc) '''
+        
+        for flt in filterList:
+            if flt == 'installed' or flt =='~installed':
+                continue
+            elif flt == 'gui' or flt =='~gui':
+                if not self._do_gui_filtering(flt,pkg):
+                    return False
+            elif flt =='devel' or flt=='~devel':
+                if not self._do_devel_filtering(flt,pkg):
+                    return False
+        return True
+    
+    def _do_gui_filtering(self,flt,pkg):
+        isGUI = False
+        if flt == 'gui':
+            wantGUI = True
+        else:
+            wantGUI = False
+        #
+        # TODO: Add GUI detection Code here.Set isGUI = True, if it is a GUI app
+        #
+        isGUI = wantGUI # Fake it for now
+        #
+        #
+        return isGUI == wantGUI
+
+    def _do_devel_filtering(self,flt,pkg):
+        isDevel = False
+        if flt == 'devel':
+            wantDevel = True
+        else:
+            wantDevel = False
+        #
+        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a devel app
+        #
+        regex =  re.compile(r'(-devel)|(-dgb)|(-static)')
+        if regex.search(pkg.name):
+            isDevel = True
+        #
+        #
+        return isDevel == wantDevel
+
+    def search_name(self,filters,key):
         '''
         Implement the {backend}-search-name functionality
         '''
         searchlist = ['name']
-        self._do_search(searchlist, opt, key)
+        self._do_search(searchlist, filters, key)
 
-    def search_details(self,opt,key):
+    def search_details(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
         '''
         searchlist = ['name', 'summary', 'description', 'group']
-        self._do_search(searchlist, opt, key)
+        self._do_search(searchlist, filters, key)
+
+    def search_group(self,filters,key):
+        '''
+        Implement the {backend}-search-group functionality
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def search_file(self,filters,key):
+        '''
+        Implement the {backend}-search-file functionality
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def get_deps(self,package):
         '''
@@ -160,12 +227,29 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         callback = DownloadCallback(self,showNames=True)     # Download callback
         self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
         self.percentage(0)
-        txmbr = self.yumbase.install(name=package)
+        try:
+            txmbr = self.yumbase.install(name=package)
+            self._runYumTransaction()
+        except yum.Errors.InstallError,e:
+            msgs = '\n'.join(str(e))
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)        
+
+    def update(self, package):
+        '''
+        Implement the {backend}-install functionality
+        This will only work with yum 3.2.4 or higher
+        '''
+        self.yumbase.doConfigSetup()                         # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)     # Download callback
+        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self.percentage(0)
+        txmbr = self.yumbase.update(name=package)
         if txmbr:
             self._runYumTransaction()
         else:
-            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
+    
     def _runYumTransaction(self):
         '''
         Run the yum Transaction
