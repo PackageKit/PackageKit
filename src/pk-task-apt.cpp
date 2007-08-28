@@ -19,15 +19,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>
 
+#include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/pkgcache.h>
 #include <apt-pkg/cachefile.h>
 #include <apt-pkg/progress.h>
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/pkgrecords.h>
+#include <apt-pkg/sourcelist.h>
+
 #include <regex.h>
+#include <string.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
@@ -39,6 +42,8 @@ static void pk_task_class_init(PkTaskClass * klass);
 static void pk_task_init(PkTask * task);
 static void pk_task_finalize(GObject * object);
 
+pkgSourceList *SrcList = 0;
+
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
 
 static pkgCacheFile* getCache()
@@ -46,13 +51,21 @@ static pkgCacheFile* getCache()
 	static pkgCacheFile *fileCache = NULL;
 	if (fileCache == NULL)
 	{
+      	MMap *Map = 0;
+		OpTextProgress Prog;
 		if (pkgInitConfig(*_config) == false)
 			pk_debug("pkginitconfig was false");
 		if (pkgInitSystem(*_config, _system) == false)
 			pk_debug("pkginitsystem was false");
+		 // Open the cache file
+		 SrcList = new pkgSourceList;
+		 SrcList->ReadMainList();
+
+		 // Generate it and map it
+		 pkgMakeStatusCache(*SrcList,Prog,&Map,true);
+
 		fileCache = new pkgCacheFile();
 
-		OpTextProgress Prog;
 		if (fileCache->Open(Prog, FALSE) == FALSE)
 		{
 			pk_debug("I need more privelges");
@@ -136,6 +149,9 @@ typedef pkgCache::DescFile AptCompFile;
 struct ExDescFile
 {
 	AptCompFile *Df;
+	const char *verstr;
+	const char *arch;
+	char *repo;
 	bool NameMatch;
 };
 
@@ -173,6 +189,36 @@ struct search_task
 	gboolean installed;
 	gboolean available;
 };
+
+static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerIterator V)
+{
+	// Find the proper version to use. 
+	if (V.end() == false)
+	{
+	#ifdef APT_PKG_RPM
+		DFList[pid].Df = V.FileList();
+	#else	
+		DFList[pid].Df = V.DescriptionList().FileList();
+	#endif
+		DFList[pid].verstr = V.VerStr();
+		DFList[pid].arch = V.Arch();
+		for (pkgCache::VerFileIterator VF = V.FileList(); VF.end() == false; VF++)
+		{
+			// Locate the associated index files so we can derive a description
+			pkgIndexFile *Indx;
+			if (SrcList->FindIndex(VF.File(),Indx) == false &&
+			_system->FindIndex(VF.File(),Indx) == false)
+			   pk_debug("Cache is out of sync, can't x-ref a package file");
+			//printf("%s: %s\n", P.Name(),Indx->ArchiveInfo(VF).c_str());
+			gchar** items = g_strsplit_set(Indx->Describe(true).c_str()," \t",-1);
+			DFList[pid].repo = g_strdup(items[1]); // should be in format "http://ftp.nl.debian.org unstable/main Packages"
+			g_strfreev(items);
+			pk_debug("repo: %s",DFList[pid].repo);
+			return true;
+		}	 
+	}
+	return false;
+}
 
 static void * do_search_task(gpointer data)
 {
@@ -216,12 +262,7 @@ static void * do_search_task(gpointer data)
 
 		// Find the proper version to use. 
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
-		if (V.end() == false)
-		#ifdef APT_PKG_RPM
-	 		DFList[P->ID].Df = V.FileList();
-		#else	
-			DFList[P->ID].Df = V.DescriptionList().FileList();
-		#endif	
+		buildExDesc(DFList,P->ID,V);
 	}
 
 	// Include all the packages that provide matching names too
@@ -233,15 +274,8 @@ static void * do_search_task(gpointer data)
 		for (pkgCache::PrvIterator Prv = P.ProvidesList(); Prv.end() == false; Prv++)
 		{
 			pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
-			if (V.end() == false)
-			{
-				#ifdef APT_PKG_RPM
-				DFList[Prv.OwnerPkg()->ID].Df = V.FileList();
-				#else
-				DFList[Prv.OwnerPkg()->ID].Df = V.DescriptionList().FileList();
-				#endif
+			if (buildExDesc(DFList,Prv.OwnerPkg()->ID,V))
 				DFList[Prv.OwnerPkg()->ID].NameMatch = true;
-			}
 		}
 	}
 
@@ -267,12 +301,20 @@ static void * do_search_task(gpointer data)
 		}
 
 		if (Match == true && pk_task_filter_package_name(st->task,P.Name().c_str()))
-			pk_task_package(st->task, true, P.Name().c_str(), P.ShortDesc().c_str());
+		{
+			gchar *pid = pk_task_package_id(P.Name().c_str(),J->verstr,J->arch,J->repo);
+			pk_task_package(st->task, true, pid, P.ShortDesc().c_str());
+			g_free(pid);
+		}
 	}
 
 	pk_task_finished(st->task, PK_TASK_EXIT_SUCCESS);
 
 	search_task_cleanup:
+	for (ExDescFile * J = DFList; J->Df != 0; J++)
+	{
+		g_free(J->repo);	
+	}
 	delete[] DFList;
 	regfree(Pattern);
 	g_free(st->search);
