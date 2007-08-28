@@ -151,6 +151,8 @@ struct ExDescFile
 	AptCompFile *Df;
 	const char *verstr;
 	const char *arch;
+	gboolean installed;
+	gboolean available;
 	char *repo;
 	bool NameMatch;
 };
@@ -181,18 +183,20 @@ static void LocalitySort(AptCompFile **begin,
 	qsort(begin,Count,Size,LocalityCompare);
 }
 
+typedef enum {SEARCH_NAME=1, SEARCH_DETAILS} SearchDepth;
+
 struct search_task
 {
 	PkTask *task;
 	gchar *search;
-	guint depth;
-	gboolean installed;
-	gboolean available;
+	gchar *filter;
+	SearchDepth depth;
 };
 
 static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerIterator V)
 {
 	// Find the proper version to use. 
+	DFList[pid].available = false;
 	if (V.end() == false)
 	{
 	#ifdef APT_PKG_RPM
@@ -206,18 +210,22 @@ static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerI
 		{
 			// Locate the associated index files so we can derive a description
 			pkgIndexFile *Indx;
-			if (SrcList->FindIndex(VF.File(),Indx) == false &&
-			_system->FindIndex(VF.File(),Indx) == false)
+			bool hasLocal = _system->FindIndex(VF.File(),Indx);
+			if (SrcList->FindIndex(VF.File(),Indx) == false && !hasLocal)
+			{
 			   pk_debug("Cache is out of sync, can't x-ref a package file");
-			//printf("%s: %s\n", P.Name(),Indx->ArchiveInfo(VF).c_str());
+			   break;
+			}
 			gchar** items = g_strsplit_set(Indx->Describe(true).c_str()," \t",-1);
-			DFList[pid].repo = g_strdup(items[1]); // should be in format "http://ftp.nl.debian.org unstable/main Packages"
+			DFList[pid].repo = g_strdup(items[1]); // should be in format like "http://ftp.nl.debian.org unstable/main Packages"
+			DFList[pid].installed = hasLocal;
 			g_strfreev(items);
-			pk_debug("repo: %s",DFList[pid].repo);
-			return true;
+			DFList[pid].available = true;
+			if (hasLocal)
+				break;
 		}	 
 	}
-	return false;
+	return DFList[pid].available;
 }
 
 static void * do_search_task(gpointer data)
@@ -257,7 +265,7 @@ static void * do_search_task(gpointer data)
 			DFList[P->ID].NameMatch = false;
 
 		// Doing names only, drop any that dont match..
-		if (st->depth==0 && DFList[P->ID].NameMatch == false)
+		if (st->depth == SEARCH_NAME && DFList[P->ID].NameMatch == false)
 			continue;
 
 		// Find the proper version to use. 
@@ -300,10 +308,10 @@ static void * do_search_task(gpointer data)
 				Match = false;
 		}
 
-		if (Match == true && pk_task_filter_package_name(st->task,P.Name().c_str()))
+		if (Match == true)// && pk_task_filter_package_name(st->task,P.Name().c_str()))
 		{
 			gchar *pid = pk_task_package_id(P.Name().c_str(),J->verstr,J->arch,J->repo);
-			pk_task_package(st->task, true, pid, P.ShortDesc().c_str());
+			pk_task_package(st->task, J->installed, pid, P.ShortDesc().c_str());
 			g_free(pid);
 		}
 	}
@@ -323,7 +331,11 @@ static void * do_search_task(gpointer data)
 	return NULL;
 }
 
-gboolean pk_task_search_name(PkTask * task, const gchar * search, guint depth, gboolean installed, gboolean available)
+/**
+ * pk_task_search
+ **/
+static gboolean
+pk_task_search (PkTask *task, const gchar *filter, const gchar *search, SearchDepth which)
 {
 	g_return_val_if_fail(task != NULL, FALSE);
 	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
@@ -331,6 +343,12 @@ gboolean pk_task_search_name(PkTask * task, const gchar * search, guint depth, g
 	if (pk_task_assign(task) == FALSE)
 	{
 		return FALSE;
+	}
+
+	if (pk_task_check_filter (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
 	}
 
 	search_task *data = g_new(struct search_task, 1);
@@ -343,9 +361,8 @@ gboolean pk_task_search_name(PkTask * task, const gchar * search, guint depth, g
 	{
 		data->task = task;
 		data->search = g_strdup(search);
-		data->depth = depth;
-		data->installed = installed;
-		data->available = available;
+		data->filter = g_strdup(filter);
+		data->depth = which;
 
 		if (g_thread_create(do_search_task,data,false,NULL)==NULL)
 		{
@@ -353,6 +370,44 @@ gboolean pk_task_search_name(PkTask * task, const gchar * search, guint depth, g
 			pk_task_finished (task, PK_TASK_EXIT_FAILED);
 		}
 	}
+	return TRUE;
+}
+
+/**
+ * pk_task_search_details:
+ **/
+gboolean
+pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
+{
+	return pk_task_search(task,filter,search,SEARCH_DETAILS);
+}
+
+/**
+ * pk_task_search_name:
+ **/
+gboolean
+pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
+{
+	return pk_task_search(task,filter,search,SEARCH_NAME);
+}
+
+/**
+ * pk_task_search_group:
+ **/
+gboolean
+pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_not_implemented_yet (task, "SearchGroup");
+	return TRUE;
+}
+
+/**
+ * pk_task_search_file:
+ **/
+gboolean
+pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
+{
+	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
 }
 
