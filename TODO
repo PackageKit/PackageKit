@@ -1,7 +1,7 @@
 Order of no particular importance:
 
 Core:
-* Add a queing API
+* Add a queing API 
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add a way to import GPG keys
 * Split up PolicyKit install into different types
