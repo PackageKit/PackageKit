@@ -122,7 +122,10 @@ AC_MSG_CHECKING([whether to support tests])
 have_tests=no
 if test x$enable_tests = xyes ; then
     have_tests=yes
+	AC_MSG_RESULT([yes])
     AC_DEFINE(HAVE_TESTS, 1, [Define if we want to use the self tests])
+else
+	AC_MSG_RESULT([no])
 fi
 AM_CONDITIONAL([HAVE_TESTS], [test $have_tests = yes])
 
