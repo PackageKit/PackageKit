@@ -44,7 +44,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
-DBUS_REQUIRED=1.1.2
+DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.74
 LIBNM_REQUIRED=0.6.4
 POLKIT_DBUS_REQUIRED=0.5
