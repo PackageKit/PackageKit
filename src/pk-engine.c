@@ -64,6 +64,7 @@ enum {
 	PK_ENGINE_JOB_LIST_CHANGED,
 	PK_ENGINE_JOB_STATUS_CHANGED,
 	PK_ENGINE_PERCENTAGE_CHANGED,
+	PK_ENGINE_SUB_PERCENTAGE_CHANGED,
 	PK_ENGINE_NO_PERCENTAGE_UPDATES,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_ERROR_CODE,
@@ -239,6 +240,23 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 }
 
 /**
+ * pk_engine_sub_percentage_changed_cb:
+ **/
+static void
+pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
+{
+	guint job;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+	pk_debug ("emitting sub-percentage-changed job:%i %i", job, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, job, percentage);
+	pk_engine_reset_timer (engine);
+}
+
+/**
  * pk_engine_no_percentage_updates_cb:
  **/
 static void
@@ -381,8 +399,10 @@ pk_engine_new_task (PkEngine *engine)
 	/* connect up signals */
 	g_signal_connect (task, "job-status-changed",
 			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
-	g_signal_connect (task, "percentage-complete-changed",
+	g_signal_connect (task, "percentage-changed",
 			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
+	g_signal_connect (task, "sub-percentage-changed",
+			  G_CALLBACK (pk_engine_sub_percentage_changed_cb), engine);
 	g_signal_connect (task, "no-percentage-updates",
 			  G_CALLBACK (pk_engine_no_percentage_updates_cb), engine);
 	g_signal_connect (task, "package",
@@ -657,6 +677,14 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package_id,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* check package_id */
+	ret = pk_task_check_package_id (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_get_deps (task, package_id);
@@ -821,12 +849,9 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	/* check package_id */
 	ret = pk_task_check_package_id (package_id);
 	if (ret == FALSE) {
-		pk_warning ("moo:%s", package_id);
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
-		pk_warning ("moo:%s", package_id);
 		dbus_g_method_return_error (context, error);
-		pk_warning ("moo:%s", package_id);
 		return;
 	}
 
@@ -1020,6 +1045,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+	signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED] =
+		g_signal_new ("sub-percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);

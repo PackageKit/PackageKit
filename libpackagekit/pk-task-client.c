@@ -68,6 +68,7 @@ struct PkTaskClientPrivate
 typedef enum {
 	PK_TASK_CLIENT_JOB_STATUS_CHANGED,
 	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
+	PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
 	PK_TASK_CLIENT_ERROR_CODE,
@@ -824,6 +825,21 @@ pk_task_client_percentage_changed_cb (PkTaskMonitor *tmonitor,
 }
 
 /**
+ * pk_task_client_sub_percentage_changed_cb:
+ */
+static void
+pk_task_client_sub_percentage_changed_cb (PkTaskMonitor *tmonitor,
+				          guint	         percentage,
+				          PkTaskClient  *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	pk_debug ("emit sub-percentage-changed %i", percentage);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED], 0, percentage);
+}
+
+/**
  * pk_task_client_no_percentage_updates_cb:
  */
 static void
@@ -937,6 +953,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED] =
+		g_signal_new ("sub-percentage-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES] =
 		g_signal_new ("no-percentage-updates",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1028,6 +1049,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_finished_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "percentage-changed",
 			  G_CALLBACK (pk_task_client_percentage_changed_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "sub-percentage-changed",
+			  G_CALLBACK (pk_task_client_sub_percentage_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "no-percentage-updates",
 			  G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "job-status-changed",

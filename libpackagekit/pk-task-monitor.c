@@ -56,6 +56,7 @@ struct PkTaskMonitorPrivate
 typedef enum {
 	PK_TASK_MONITOR_JOB_STATUS_CHANGED,
 	PK_TASK_MONITOR_PERCENTAGE_CHANGED,
+	PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_MONITOR_NO_PERCENTAGE_UPDATES,
 	PK_TASK_MONITOR_PACKAGE,
 	PK_TASK_MONITOR_DESCRIPTION,
@@ -159,6 +160,24 @@ pk_task_monitor_percentage_changed_cb (DBusGProxy    *proxy,
 	if (job == tmonitor->priv->job) {
 		pk_debug ("emit percentage-changed %i", percentage);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_PERCENTAGE_CHANGED], 0, percentage);
+	}
+}
+
+/**
+ * pk_task_monitor_sub_percentage_changed_cb:
+ */
+static void
+pk_task_monitor_sub_percentage_changed_cb (DBusGProxy    *proxy,
+				           guint	  job,
+				           guint	  percentage,
+				           PkTaskMonitor *tmonitor)
+{
+	g_return_if_fail (tmonitor != NULL);
+	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
+
+	if (job == tmonitor->priv->job) {
+		pk_debug ("emit sub-percentage-changed %i", percentage);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	}
 }
 
@@ -305,6 +324,11 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED] =
+		g_signal_new ("sub-percentage-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_TASK_MONITOR_NO_PERCENTAGE_UPDATES] =
 		g_signal_new ("no-percentage-updates",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -417,6 +441,11 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
 				     G_CALLBACK (pk_task_monitor_percentage_changed_cb), tmonitor, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "SubPercentageChanged",
+				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "SubPercentageChanged",
+				     G_CALLBACK (pk_task_monitor_sub_percentage_changed_cb), tmonitor, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "NoPercentageUpdates",
 				 G_TYPE_UINT, G_TYPE_INVALID);

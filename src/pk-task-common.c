@@ -45,7 +45,12 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_TASK_PERCENTAGE_CHANGED] =
-		g_signal_new ("percentage-complete-changed",
+		g_signal_new ("percentage-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_TASK_SUB_PERCENTAGE_CHANGED] =
+		g_signal_new ("sub-percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -183,7 +188,7 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 			goto out;
 		}
 		percentage = atoi(sections[1]);
-		pk_warning ("Ignoring sub-percentage %i", percentage);
+		pk_task_change_sub_percentage (task, percentage);
 	} else if (strcmp (command, "error") == 0) {
 		if (size != 3) {
 			g_error ("invalid command '%s'", command);
@@ -341,8 +346,21 @@ pk_task_change_percentage (PkTask *task, guint percentage)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	pk_debug ("emit percentage-complete-changed %i", percentage);
+	pk_debug ("emit percentage-changed %i", percentage);
 	g_signal_emit (task, task->signals [PK_TASK_PERCENTAGE_CHANGED], 0, percentage);
+	return TRUE;
+}
+
+/**
+ * pk_task_change_sub_percentage:
+ **/
+gboolean
+pk_task_change_sub_percentage (PkTask *task, guint percentage)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	pk_debug ("emit sub-percentage-changed %i", percentage);
+	g_signal_emit (task, task->signals [PK_TASK_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 

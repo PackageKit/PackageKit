@@ -4,7 +4,6 @@ Core:
 * Add a queing API
 * Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add a way to import GPG keys
-* Add sub-percentage support into API
 * Split up PolicyKit install into different types
 * Add files in package into Description signal
 

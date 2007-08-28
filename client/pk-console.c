@@ -112,11 +112,11 @@ pk_console_usage (const gchar *error)
 		g_print ("Error: %s\n", error);
 	}
 	g_print ("usage:\n");
-	g_print ("  pkcon searchname power\n");
-	g_print ("  pkcon searchdetails power\n");
-	g_print ("  pkcon searchgroup system\n");
-	g_print ("  pkcon searchfile power\n");
-	g_print ("  pkcon async install gtk2-devel\n");
+	g_print ("  pkcon search name power\n");
+	g_print ("  pkcon search details power\n");
+	g_print ("  pkcon search group system\n");
+	g_print ("  pkcon search file libc.so.3\n");
+	g_print ("  pkcon sync install gtk2-devel\n");
 	g_print ("  pkcon install gimp update totem\n");
 	g_print ("  pkcon sync update\n");
 	g_print ("  pkcon refresh\n");
@@ -133,66 +133,92 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 {
 	const gchar *mode;
 	const gchar *value = NULL;
-	gboolean remove_two;
+	const gchar *details = NULL;
+	guint remove;
+
 	mode = g_ptr_array_index (array, 0);
 	if (array->len > 1) {
 		value = g_ptr_array_index (array, 1);
 	}
-	remove_two = FALSE;
+	if (array->len > 2) {
+		details = g_ptr_array_index (array, 2);
+	}
+	remove = 1;
 
-	if (strcmp (mode, "searchname") == 0) {
+	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a search term");
+			pk_console_usage ("you need to specify a search type");
+			remove = 1;
+			goto out;
+		} else if (strcmp (value, "name") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_search_name (tclient, "none", details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "details") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_search_details (tclient, "none", details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "group") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_search_group (tclient, "none", details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "file") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_search_file (tclient, "none", details);
+				remove = 3;
+			}
 		} else {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_name (tclient, "none", value);
-			remove_two = TRUE;
-		}
-	} if (strcmp (mode, "searchdetails") == 0) {
-		if (value == NULL) {
-			pk_console_usage ("you need to specify a search term");
-		} else {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_details (tclient, "none", value);
-			remove_two = TRUE;
-		}
-	} if (strcmp (mode, "searchgroup") == 0) {
-		if (value == NULL) {
-			pk_console_usage ("you need to specify a search term");
-		} else {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_group (tclient, "none", value);
-			remove_two = TRUE;
-		}
-	} if (strcmp (mode, "searchfile") == 0) {
-		if (value == NULL) {
-			pk_console_usage ("you need to specify a search term");
-		} else {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_search_file (tclient, "none", value);
-			remove_two = TRUE;
+			pk_console_usage ("invalid search type");
 		}
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package to install");
+			remove = 1;
+			goto out;
 		} else {
 			pk_task_client_install_package (tclient, value);
-			remove_two = TRUE;
+			remove = 2;
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package to remove");
+			remove = 1;
+			goto out;
 		} else {
 			pk_task_client_remove_package (tclient, value, FALSE);
-			remove_two = TRUE;
+			remove = 2;
 		}
 	} else if (strcmp (mode, "getdeps") == 0) {
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package to find the deps for");
+			goto out;
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
 			pk_task_client_get_deps (tclient, value);
-			remove_two = TRUE;
+			remove = 2;
 		}
 	} else if (strcmp (mode, "debug") == 0) {
 		pk_debug_init (TRUE);
@@ -215,9 +241,13 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		pk_console_usage ("option not yet supported");
 	}
 
+out:
 	/* remove the right number of items from the pointer index */
 	g_ptr_array_remove_index (array, 0);
-	if (remove_two == TRUE) {
+	if (remove > 1) {
+		g_ptr_array_remove_index (array, 0);
+	}
+	if (remove > 2) {
 		g_ptr_array_remove_index (array, 0);
 	}
 }

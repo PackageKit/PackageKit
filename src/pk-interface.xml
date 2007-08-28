@@ -67,7 +67,11 @@
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
       <arg type="s" name="package_id" direction="out"/>
     </signal>
-    <signal name="PercentageChanged">
+    <signal name="PercentageChanged"> <!-- progress of the whole job -->
+      <arg type="u" name="job" direction="out"/>
+      <arg type="u" name="percentage" direction="out"/>
+    </signal>
+    <signal name="SubPercentageChanged"> <!-- progress of the intervidual transaction -->
       <arg type="u" name="job" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
