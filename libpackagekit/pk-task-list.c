@@ -56,6 +56,7 @@ struct PkTaskListPrivate
 typedef enum {
 	PK_TASK_LIST_CHANGED,
 	PK_TASK_LIST_FINISHED,
+	PK_TASK_LIST_ERROR_CODE,
 	PK_TASK_LIST_LAST_SIGNAL
 } PkSignals;
 
@@ -157,6 +158,19 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, guint ru
 }
 
 /**
+ * pk_task_list_error_code_cb:
+ **/
+static void
+pk_task_list_error_code_cb (PkTaskMonitor *tmonitor, PkTaskErrorCode error_code, const gchar *details, PkTaskList *tlist)
+{
+	g_return_if_fail (tlist != NULL);
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+
+	pk_debug ("emit error-code %i, %s", error_code, details);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_ERROR_CODE], 0, error_code, details);
+}
+
+/**
  * pk_task_list_refresh:
  *
  * Not normally required, but force a refresh
@@ -198,6 +212,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
 			g_signal_connect (item->monitor, "finished",
 					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
+			g_signal_connect (item->monitor, "error-code",
+					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
 			pk_task_monitor_set_job (item->monitor, job);
 			pk_task_monitor_get_status (item->monitor, &item->status, &item->package);
 
@@ -269,6 +285,11 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_TASK_LIST_ERROR_CODE] =
+		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
 }
