@@ -457,7 +457,7 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 	guint ret = FALSE;
 
 	/* split by delimeter ';' */
-	sections = g_strsplit (actions, ";", 4);
+	sections = g_strsplit (actions, ";", 0);
 
 	for (i=0; sections[i]; i++) {
 		if (pk_task_action_from_text (sections[i]) == action) {
