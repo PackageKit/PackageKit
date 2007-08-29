@@ -341,7 +341,7 @@ pk_task_spawn_helper (PkTask *task, const gchar *script, ...)
 gboolean
 pk_task_not_implemented_yet (PkTask *task, const gchar *method)
 {
-	pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "the method '%s' is not implimented yet", method);
+	pk_task_error_code (task, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	pk_task_finished (task, PK_TASK_EXIT_FAILED);
 	return TRUE;
 }
