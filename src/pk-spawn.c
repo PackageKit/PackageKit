@@ -181,7 +181,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	gint retval;
 	guint ret;
 	pk_warning ("killing %i", spawn->priv->child_pid);
-	retval = kill (spawn->priv->child_pid, SIGTERM);
+	retval = kill (spawn->priv->child_pid, SIGKILL);
 
 	ret = TRUE;
 	if (retval == EINVAL) {
