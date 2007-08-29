@@ -267,7 +267,14 @@ pk_task_get_description (PkTask *task, const gchar *package)
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_description (task, "gnome-power-manager;2.6.19;i386;fedora", PK_TASK_GROUP_PROGRAMMING,
-			     "super long description. la la la", "http://live.gnome.org/GnomePowerManager");
+"Scribus is an desktop open source page layout program with "
+"the aim of producing commercial grade output in PDF and "
+"Postscript, primarily, though not exclusively for Linux.\n"
+"\n"
+"While the goals of the program are for ease of use and simple easy to "
+"understand tools, Scribus offers support for professional publishing "
+"features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
+"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 
 	return TRUE;
