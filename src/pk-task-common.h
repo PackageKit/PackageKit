@@ -67,6 +67,8 @@ gboolean	 pk_task_spawn_helper			(PkTask		*task,
 							 const gchar	*script, ...);
 gboolean	 pk_task_not_implemented_yet		(PkTask		*task,
 							 const gchar	*method);
+gboolean	 pk_task_allow_interrupt		(PkTask		*task,
+							 gboolean	 allow_restart);
 
 G_END_DECLS
 

@@ -163,7 +163,7 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_no_percentage_updates (task);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
@@ -191,7 +191,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
@@ -218,7 +218,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-group.py", filter, search, NULL);
@@ -245,7 +245,7 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
@@ -265,7 +265,7 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "get-deps.py", package_id, NULL);
@@ -286,7 +286,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 	}
 
 	/* only copy this code if you can kill the process with no ill effect */
-	task->is_killable = TRUE;
+	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "get-description.py", package_id, NULL);

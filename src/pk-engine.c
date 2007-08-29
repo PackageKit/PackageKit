@@ -71,6 +71,7 @@ enum {
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_DESCRIPTION,
+	PK_ENGINE_ALLOW_INTERRUPT,
 	PK_ENGINE_LAST_SIGNAL
 };
 
@@ -381,6 +382,23 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 }
 
 /**
+ * pk_engine_allow_interrupt_cb:
+ **/
+static void
+pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engine)
+{
+	guint job;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	job = pk_task_get_job (task);
+
+	pk_debug ("emitting allow-interrpt job:%i, %i", job, allow_kill);
+	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, job, allow_kill);
+}
+
+/**
  * pk_engine_new_task:
  **/
 static PkTask *
@@ -415,6 +433,8 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 	g_signal_connect (task, "description",
 			  G_CALLBACK (pk_engine_description_cb), engine);
+	g_signal_connect (task, "allow-interrupt",
+			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
 
 	/* track how long the job has been running for */
 	task->timer = g_timer_new ();
@@ -1102,6 +1122,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_ENGINE_ALLOW_INTERRUPT] =
+		g_signal_new ("allow-interrupt",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_BOOL,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOOLEAN);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }

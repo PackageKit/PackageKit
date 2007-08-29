@@ -96,6 +96,10 @@
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
       <arg type="u" name="runtime" direction="out"/> <!-- amount of time job has been running in seconds -->
     </signal>
+    <signal name="AllowInterrupt">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="b" name="allow_kill" direction="out"/> <!-- if the job can be SIGKILL'd -->
+    </signal>
     <signal name="ErrorCode">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="code" direction="out"/> <!-- enumerated type, see helpers/README -->

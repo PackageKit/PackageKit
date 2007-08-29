@@ -84,7 +84,11 @@ pk_task_setup_signals (GObjectClass *object_class, guint *signals)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-
+	signals [PK_TASK_ALLOW_INTERRUPT] =
+		g_signal_new ("allow-interrupt",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	return TRUE;
 }
 
@@ -220,6 +224,21 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		}
 		status_enum = pk_task_status_from_text (sections[1]);
 		pk_task_change_job_status (task, status_enum);
+	} else if (strcmp (command, "allow-interrupt") == 0) {
+		if (size != 2) {
+			g_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		if (strcmp (sections[1], "true") == 0) {
+			pk_task_allow_interrupt (task, TRUE);
+		} else if (strcmp (sections[1], "false") == 0) {
+			pk_task_allow_interrupt (task, FALSE);
+		} else {
+			pk_warning ("invalid section '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
 	} else if (strcmp (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
 			g_error ("invalid command '%s'", command);
@@ -511,6 +530,21 @@ pk_task_no_percentage_updates (PkTask *task)
 
 	pk_debug ("emit no-percentage-updates");
 	g_signal_emit (task, task->signals [PK_TASK_NO_PERCENTAGE_UPDATES], 0);
+	return TRUE;
+}
+
+/**
+ * pk_task_allow_interrupt:
+ **/
+gboolean
+pk_task_allow_interrupt (PkTask *task, gboolean allow_restart)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	pk_debug ("emit allow-interrupt %i", allow_restart);
+	task->is_killable = allow_restart;
+	g_signal_emit (task, task->signals [PK_TASK_ALLOW_INTERRUPT], 0);
 	return TRUE;
 }
 

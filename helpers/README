@@ -56,6 +56,16 @@ possible. Just ask, and I'll add some more error enums to cover the type of
 error in an abstract way as possible.
 For the non-translated error description use ";" to seporate the lines.
 
+Cancellation:
+
+If you have a multipart transaction that can be aborted in one phase but not
+another then the AllowInterrupt signal can be sent.
+This allows for example the yum download to be cancelled, but not the install
+transaction. By cancelling a job all subtransactions are killed.
+By default actions cannot be cancelled unless enabled in the compiled backend.
+Use "allow-interrupt<tab>true" to enable cancellation and
+"allow-interrupt<tab>false" to disable it. This can be done for any job type.
+
 ========= Search Name =========
 
 FILENAME	{backend}-search-name.*
