@@ -52,6 +52,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
         res = self.yumbase.searchGenerator(searchlist, [key])
         fltlist = filters.split(';')
@@ -169,7 +170,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             epoch = idver[:cpos]
             idver = idver[cpos:]
         else:
-            epoch = 0
+            epoch = '0'
         (version,release) = tuple(idver.split('-'))
         return epoch,version,release
             
@@ -182,25 +183,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # get e,v,r from package id version
         e,v,r = self._getEVR(idver)
         # search the rpmdb for the nevra
+        print n,e,v,r,a
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
         if len(pkgs) != 0:
-            return pkgs[0]
+            return pkgs[0],True
         # search the pkgSack for the nevra
         pkgs = self.yumbase.pkgSack.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
         if len(pkgs) != 0:
-            return pkgs[0]
+            return pkgs[0],False
         else:
-            return None
+            return None,False
             
 
     def get_deps(self,package):
         '''
         Print a list of dependencies for a given package
         '''
+        self._setup_yum()
         name = package.split(';')[0]
-        pkg = self._findPackage(package)
+        pkg,inst = self._findPackage(package)
         results = {}
         if pkg:
             deps = self.yumbase.findDeps([pkg]).values()[0]
@@ -208,6 +211,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for dep in deplist:
                     if not results.has_key(dep.name):
                         results[dep.name] = dep
+        else:
+            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
         for pkg in results.values():
             if pkg.name != name:
@@ -220,9 +225,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
         '''
-        self.yumbase.doConfigSetup()                         # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)     # Download callback
-        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self._setup_yum()
         self.percentage(0)
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
@@ -235,9 +238,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
-        self.yumbase.doConfigSetup()          # Setup Yum Config
-        callback = DownloadCallback(self)     # Download callback
-        self.yumbase.repos.setProgressBar( callback ) # Setup the download callback class
+        self._setup_yum()
         pct = 0
         self.percentage(pct)
         try:
@@ -268,29 +269,38 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.yumbase.doConfigSetup()                         # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)     # Download callback
-        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self._setup_yum()
         self.percentage(0)
-        try:
-            txmbr = self.yumbase.install(name=package)
-            self._runYumTransaction()
-        except yum.Errors.InstallError,e:
-            msgs = ';'.join(str(e))
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)        
-
+        pkg,inst = self._findPackage(package)
+        print pkg,inst
+        if pkg:
+            if inst:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')        
+            try:
+                txmbr = self.yumbase.install(name=pkg.name)
+                print txmbr
+                self._runYumTransaction()
+            except yum.Errors.InstallError,e:
+                print e
+                msgs = ';'.join(e)
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)        
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")        
+            
     def update(self, package):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.yumbase.doConfigSetup()                         # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)     # Download callback
-        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self._setup_yum()
         self.percentage(0)
-        txmbr = self.yumbase.update(name=package)
-        if txmbr:
-            self._runYumTransaction()
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            txmbr = self.yumbase.update(name=pkg.name)
+            if txmbr:
+                self._runYumTransaction()
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
@@ -302,7 +312,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
+            retmsg = "Error in Dependency Resolution;" +";".join(msgs)
             self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
             try:
@@ -325,29 +335,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self.yumbase.doConfigSetup()                         # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)     # Download callback
-        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self._setup_yum()
         self.percentage(0)
-        txmbr = self.yumbase.remove(name=package)
-        if txmbr:
-            self._runYumTransaction()
+        pkg,inst = self._findPackage( package)
+        print pkg,inst
+        if pkg and inst:        
+            txmbr = self.yumbase.remove(name=pkg.name)
+            if txmbr:
+                print txmbr[0].po
+                self._runYumTransaction()
+            else:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
         else:
-            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
 
 
     def get_description(self, package):
         '''
         Print a detailed description for a given package
         '''
-        res = self.yumbase.searchGenerator(['name'], [package])
-        for (pkg, name) in res:
-            if name[0] == package:
-                id = self.get_package_id(pkg.name, pkg.version,
-                                         pkg.arch, pkg.repo)
-                self.description(id, "%s-%s" % (pkg.version, pkg.release),
+        self._setup_yum()
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            id = self.get_package_id(pkg.name, pkg.version,pkg.arch, pkg.repo)
+            self.description(id, "%s-%s" % (pkg.version, pkg.release),
                                  repr(pkg.description), pkg.url)
-                break
+        else:
+            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
     
     def _show_package(self,pkg,status):
         '''  Show info about package'''
@@ -368,9 +382,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-updates functionality
         '''
-        self.yumbase.doConfigSetup()                         # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)     # Download callback
-        self.yumbase.repos.setProgressBar( callback )        # Setup the download callback class
+        self._setup_yum()
         md = UpdateMetadata()
         # Added extra Update Metadata
         for repo in self.yumbase.repos.listEnabled():
@@ -391,7 +403,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self._show_package(pkg,0)
             
                                                                                                
-            
+    def _setup_yum(self):
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
+        callback = DownloadCallback(self,showNames=True)      # Download callback
+        self.yumbase.repos.setProgressBar( callback )         # Setup the download callback class
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """

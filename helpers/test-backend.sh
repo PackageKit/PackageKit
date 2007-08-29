@@ -1,10 +1,12 @@
 echo "start test..."
 
-package_id="gnome-power-manager;2.19.7-0.72.20070828svn.fc7.hughsie;i386;installed"
+#package_id="gnome-power-manager;2.19.7-0.72.20070828svn.fc7.hughsie;i386;installed"
+package_id="BasiliskII;1.0-0.20060501.1.fc7;x86_64;freshrpms"
+
 backend="yum"
 
 echo "get deps $package_id"
-./$backend-get-deps.py "gnome-power-manager;2.19.7-0.72.20070828svn.fc7.hughsie;i386;installed"
+./$backend-get-deps.py $package_id 
 echo "exitcode=$?"
 
 echo "get description $package_id"
