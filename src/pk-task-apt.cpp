@@ -34,6 +34,7 @@
 
 #include <regex.h>
 #include <string.h>
+#include <math.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
@@ -45,11 +46,20 @@ static void pk_task_class_init(PkTaskClass * klass);
 static void pk_task_init(PkTask * task);
 static void pk_task_finalize(GObject * object);
 
-pkgSourceList *SrcList = 0;
-
 #define PK_TASK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK, PkTaskPrivate))
 
+struct PkTaskPrivate
+{
+	guint progress_percentage;
+	PkNetwork *network;
+};
+
+static guint signals[PK_TASK_LAST_SIGNAL] = { 0, };
+
+G_DEFINE_TYPE(PkTask, pk_task, G_TYPE_OBJECT)
+
 static pkgCacheFile *fileCache = NULL;
+pkgSourceList *SrcList = 0;
 
 static pkgCacheFile *getCache()
 {
@@ -82,15 +92,30 @@ static pkgCacheFile *getCache()
 	return fileCache;
 }
 
-struct PkTaskPrivate
+
+/**
+ * pk_task_get_actions
+ **/
+gchar *
+pk_task_get_actions (void)
 {
-	guint progress_percentage;
-	PkNetwork *network;
-};
+	gchar *actions;
+	actions = pk_task_action_build (PK_TASK_ACTION_INSTALL,
+				        PK_TASK_ACTION_REMOVE,
+				        PK_TASK_ACTION_UPDATE,
+				        PK_TASK_ACTION_GET_UPDATES,
+				        PK_TASK_ACTION_REFRESH_CACHE,
+				        PK_TASK_ACTION_UPDATE_SYSTEM,
+				        PK_TASK_ACTION_SEARCH_NAME,
+				        PK_TASK_ACTION_SEARCH_DETAILS,
+				        PK_TASK_ACTION_SEARCH_GROUP,
+				        PK_TASK_ACTION_SEARCH_FILE,
+				        PK_TASK_ACTION_GET_DEPS,
+				        PK_TASK_ACTION_GET_DESCRIPTION,
+				        0);
+	return actions;
+}
 
-static guint signals[PK_TASK_LAST_SIGNAL] = { 0, };
-
-G_DEFINE_TYPE(PkTask, pk_task, G_TYPE_OBJECT)
 /**
  * pk_task_get_updates:
  **/
@@ -115,6 +140,16 @@ typedef struct
 
 class UpdatePercentage:public pkgAcquireStatus
 {
+	double old;
+	PkTask *task;
+
+	public:
+	UpdatePercentage(PkTask *tk)
+	{
+		old = -1;
+		task = tk;
+	}
+	
 	virtual bool MediaChange(string Media,string Drive)
 	{
 		pk_debug("PANIC!: we don't handle mediachange");
@@ -123,6 +158,14 @@ class UpdatePercentage:public pkgAcquireStatus
 	
 	virtual bool Pulse(pkgAcquire *Owner)
 	{
+		pkgAcquireStatus::Pulse(Owner);
+		double percent = double(CurrentBytes*100.0)/double(TotalBytes);
+		if (old!=percent)
+		{
+			pk_task_change_percentage(task,(guint)percent);
+			pk_task_change_sub_percentage(task,((guint)(percent*100.0))%100);
+			old = percent;
+		}
 		return true;	
 	}
 };
@@ -166,7 +209,7 @@ void *DoUpdate(gpointer data)
 	}
 
 	// Create the download object
-	UpdatePercentage *Stat = new UpdatePercentage();
+	UpdatePercentage *Stat = new UpdatePercentage(ud->task);
 	pkgAcquire Fetcher(Stat);
 
 	// Populate it with the source selection

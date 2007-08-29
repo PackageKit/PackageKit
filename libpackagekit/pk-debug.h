@@ -46,15 +46,15 @@ void		pk_debug_init			(gboolean	 debug);
 void		pk_debug_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
-						 const gchar	*format, ...);
+						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
 void		pk_warning_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
-						 const gchar	*format, ...);
+						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
 void		pk_error_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
-						 const gchar	*format, ...);
+						 const gchar	*format, ...) __attribute__((format (printf,4,5)));
 
 G_END_DECLS
 
