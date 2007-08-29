@@ -326,7 +326,7 @@ pk_task_spawn_helper (PkTask *task, const gchar *script, ...)
 
 	/* get the argument list */
 	va_start (args, script);
-	arguments = g_strjoinv (" ", (gchar **)args);
+	arguments = g_strjoinv (" ", (gchar **)(void *)args);
 	va_end (args);
 
 	ret = pk_task_spawn_helper_internal (task, script, arguments);
