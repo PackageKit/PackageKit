@@ -9,6 +9,9 @@ PackageKit executes scripts written in pretty much any language
 This means we need a standard for what goes on stdin, stdout and stderr to
 try and maximise the common code between the backends.
 
+Please see the helpers/BACKENDS file for the current status of the existing 
+backends.  Backend maintainers, please keep this file updates.
+
 Package Id:
 
 One important idea is the package_id. This is the name;version;arch;data in
