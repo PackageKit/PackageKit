@@ -288,7 +288,7 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 	}
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
-	pk_task_spawn_helper (task, "remove.py", package_id, NULL);
+	pk_task_spawn_helper (task, "remove.py", "no", package_id, NULL);
 	return TRUE;
 }
 
