@@ -78,7 +78,7 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
-	pk_debug_init (TRUE);
+	pk_debug_init (FALSE);
 
 	if (!g_thread_supported ())
 		g_thread_init (NULL);

@@ -80,7 +80,7 @@ pk_job_list_refresh_array_with_data (PkJobList *jlist, GPtrArray *ptrarray)
 	g_array_set_size (jlist->priv->job_list, 0);
 
 	for (i=0; i< ptrarray->len; i++) {
-		job = (guint) g_ptr_array_index (ptrarray, i);
+		job = GPOINTER_TO_UINT (g_ptr_array_index (ptrarray, i));
 		pk_debug ("job[%i]=%i", i, job);
 		g_array_append_val (jlist->priv->job_list, job);
 	}
