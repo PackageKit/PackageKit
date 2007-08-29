@@ -183,7 +183,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # get e,v,r from package id version
         e,v,r = self._getEVR(idver)
         # search the rpmdb for the nevra
-        print n,e,v,r,a
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
         if len(pkgs) != 0:
@@ -272,13 +271,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._setup_yum()
         self.percentage(0)
         pkg,inst = self._findPackage(package)
-        print pkg,inst
         if pkg:
             if inst:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')        
             try:
                 txmbr = self.yumbase.install(name=pkg.name)
-                print txmbr
                 self._runYumTransaction()
             except yum.Errors.InstallError,e:
                 print e
@@ -338,11 +335,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._setup_yum()
         self.percentage(0)
         pkg,inst = self._findPackage( package)
-        print pkg,inst
         if pkg and inst:        
             txmbr = self.yumbase.remove(name=pkg.name)
             if txmbr:
-                print txmbr[0].po
                 self._runYumTransaction()
             else:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
@@ -483,15 +478,11 @@ class PackageKitCallback(RPMBaseCallback):
         self.base = base
         self.pct = 0
         self.curpkg = None
-        self.actions = { 'Updating' : STATE_UPDATE,
-                         'Erasing' : STATE_REMOVE,
-                         'Installing' : STATE_INSTALL}
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != self.curpkg:
             self.curpkg = str(package)
-            self.base.data(package)
-            print action
+            self.base.data(self.curpkg)
             if action in TS_INSTALL_STATES:
                 self.base.status(STATE_INSTALL)
             elif action in TS_REMOVE_STATES:
