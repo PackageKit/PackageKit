@@ -368,7 +368,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	time = g_timer_elapsed (task->timer, NULL);
 	pk_debug ("task was running for %f seconds", time);
 
-	pk_debug ("emitting finished job:%i, '%s', %i", job, exit_text);
+	pk_debug ("emitting finished job: %i, '%s', %i", job, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text, (guint) time);
 
 	/* remove from array and unref */
