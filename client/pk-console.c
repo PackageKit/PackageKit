@@ -112,18 +112,18 @@ pk_console_usage (const gchar *error)
 		g_print ("Error: %s\n", error);
 	}
 	g_print ("usage:\n");
-	g_print ("  pkcon search name power\n");
-	g_print ("  pkcon search details power\n");
-	g_print ("  pkcon search group system\n");
-	g_print ("  pkcon search file libc.so.3\n");
-	g_print ("  pkcon sync install gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
-	g_print ("  pkcon install gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
-	g_print ("  pkcon sync update\n");
-	g_print ("  pkcon refresh\n");
-	g_print ("  pkcon force-refresh\n");
-	g_print ("  pkcon get updates\n");
-	g_print ("  pkcon get deps gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
-	g_print ("  pkcon get description gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
+	g_print ("  pkcon [sync] [verbose] search name|details|group|file data\n");
+	g_print ("  pkcon [sync] [verbose] install <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] remove <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] update <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] refresh\n");
+	g_print ("  pkcon [sync] [verbose] force-refresh\n");
+	g_print ("  pkcon [sync] [verbose] update-system\n");
+	g_print ("  pkcon [sync] [verbose] get updates\n");
+	g_print ("  pkcon [sync] [verbose] get deps <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
+	g_print ("\n");
+	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 }
 
 /**
@@ -248,7 +248,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		pk_debug_init (TRUE);
 	} else if (strcmp (mode, "verbose") == 0) {
 		pk_debug_init (TRUE);
-	} else if (strcmp (mode, "update") == 0) {
+	} else if (strcmp (mode, "update-system") == 0) {
 		pk_task_client_update_system (tclient);
 	} else if (strcmp (mode, "refresh") == 0) {
 		pk_task_client_refresh_cache (tclient, FALSE);
