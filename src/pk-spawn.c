@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
+#include <signal.h>
 
 #include <string.h>
 #include <sys/time.h>
@@ -166,6 +167,31 @@ pk_spawn_check_child (PkSpawn *spawn)
 	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, WEXITSTATUS (status));
 
 	return FALSE;
+}
+
+/**
+ * pk_spawn_kill:
+ *
+ * THIS IS A VERY DANGEROUS THING TO DO!
+ *
+ **/
+gboolean
+pk_spawn_kill (PkSpawn *spawn)
+{
+	gint retval;
+	guint ret;
+	pk_warning ("killing %i", spawn->priv->child_pid);
+	retval = kill (spawn->priv->child_pid, SIGTERM);
+
+	ret = TRUE;
+	if (retval == EINVAL) {
+		pk_warning ("The signum argument is an invalid or unsupported number");
+		ret = FALSE;
+	} else if (retval == EPERM) {
+		pk_warning ("You do not have the privilege to send a signal to the process");
+		ret = FALSE;
+	}
+	return ret;
 }
 
 /**

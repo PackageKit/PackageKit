@@ -53,6 +53,7 @@ PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_command			(PkSpawn	*spawn,
 							 const gchar	*command);
+gboolean	 pk_spawn_kill				(PkSpawn	*spawn);
 
 G_END_DECLS
 

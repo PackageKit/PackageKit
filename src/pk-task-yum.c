@@ -162,6 +162,9 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 		return TRUE;
 	}
 
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
+
 	pk_task_no_percentage_updates (task);
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-name.py", filter, search, NULL);
@@ -187,6 +190,9 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 		return TRUE;
 	}
 
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
+
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
 	return TRUE;
@@ -210,6 +216,9 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;
 	}
+
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "search-group.py", filter, search, NULL);
@@ -235,6 +244,9 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
+
 	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
 }
@@ -251,6 +263,9 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;
 	}
+
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "get-deps.py", package_id, NULL);
@@ -269,6 +284,9 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 	if (pk_task_assign (task) == FALSE) {
 		return FALSE;
 	}
+
+	/* only copy this code if you can kill the process with no ill effect */
+	task->is_killable = TRUE;
 
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_spawn_helper (task, "get-description.py", package_id, NULL);
@@ -356,6 +374,8 @@ pk_task_update_package (PkTask *task, const gchar *package_id)
 gboolean
 pk_task_cancel_job_try (PkTask *task)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -365,8 +385,19 @@ pk_task_cancel_job_try (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_not_implemented_yet (task, "CancelJobTry");
-	return TRUE;
+	/* check if it's safe to kill */
+	if (task->is_killable == FALSE) {
+		pk_warning ("tried to kill a process that is not safe to kill");
+		return TRUE;
+	}
+	if (task->spawn == NULL) {
+		pk_warning ("tried to kill a process that does not exist");
+		return TRUE;
+	}
+
+	/* this feels bad... */
+	ret = pk_spawn_kill (task->spawn);
+	return ret;
 }
 
 /**

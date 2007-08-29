@@ -6,6 +6,8 @@ Core:
 * Add a way to import GPG keys
 * Split up PolicyKit install into different types
 * Add files in package into Description signal
+* Add size into description signal
+* Valgrind everything
 
 Backends:
 * Add conary backend

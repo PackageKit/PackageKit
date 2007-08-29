@@ -280,7 +280,6 @@ pk_task_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
 static gboolean
 pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gchar *argument)
 {
-	PkSpawn *spawn;
 	gboolean ret;
 	gchar *filename;
 	gchar *command;
@@ -296,16 +295,16 @@ pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gch
 		command = g_strdup (filename);
 	}
 
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
+	task->spawn = pk_spawn_new ();
+	g_signal_connect (task->spawn, "finished",
 			  G_CALLBACK (pk_task_spawn_finished_cb), task);
-	g_signal_connect (spawn, "stdout",
+	g_signal_connect (task->spawn, "stdout",
 			  G_CALLBACK (pk_task_spawn_stdout_cb), task);
-	g_signal_connect (spawn, "stderr",
+	g_signal_connect (task->spawn, "stderr",
 			  G_CALLBACK (pk_task_spawn_stderr_cb), task);
-	ret = pk_spawn_command (spawn, command);
+	ret = pk_spawn_command (task->spawn, command);
 	if (ret == FALSE) {
-		g_object_unref (spawn);
+		g_object_unref (task->spawn);
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 	}

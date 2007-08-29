@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 #include "pk-task-utils.h"
+#include "pk-spawn.h"
 
 G_BEGIN_DECLS
 
@@ -60,6 +61,8 @@ typedef struct
 	GTimer			*timer;
 	gchar			*package;
 	guint			*signals;
+	PkSpawn			*spawn;
+	gboolean		 is_killable;
 } PkTask;
 
 typedef struct

@@ -419,6 +419,10 @@ pk_engine_new_task (PkEngine *engine)
 	/* track how long the job has been running for */
 	task->timer = g_timer_new ();
 
+	/* initialise some stuff */
+	task->spawn = NULL;
+	task->is_killable = FALSE;
+
 	/* set the job ID */
 	pk_task_set_job (task, job);
 	pk_engine_reset_timer (engine);
