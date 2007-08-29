@@ -162,10 +162,6 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 	g_type_init ();
 
-	/* we don't actually need to do this, except it rules out the
-	 * 'it works from the command line but not service activation' bugs */
-	clearenv ();
-
 	context = g_option_context_new (_("PackageKit daemon"));
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
@@ -196,6 +192,10 @@ main (int argc, char *argv[])
 			   "It is <b>strongly recommended</b> you reboot "
 			   "your computer after starting this service.");
 	}
+
+	/* we don't actually need to do this, except it rules out the
+	 * 'it works from the command line but not service activation' bugs */
+	clearenv ();
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
