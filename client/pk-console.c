@@ -112,17 +112,18 @@ pk_console_usage (const gchar *error)
 		g_print ("Error: %s\n", error);
 	}
 	g_print ("usage:\n");
-	g_print ("  pkcon search name power\n");
-	g_print ("  pkcon search details power\n");
-	g_print ("  pkcon search group system\n");
-	g_print ("  pkcon search file libc.so.3\n");
-	g_print ("  pkcon sync install gtk2-devel\n");
-	g_print ("  pkcon install gimp update totem\n");
-	g_print ("  pkcon sync update\n");
-	g_print ("  pkcon refresh\n");
-	g_print ("  pkcon force-refresh\n");
-	g_print ("  pkcon getdeps gimp\n");
-	g_print ("  pkcon debug checkupdate\n");
+	g_print ("  pkcon [sync] [verbose] search name|details|group|file data\n");
+	g_print ("  pkcon [sync] [verbose] install <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] remove <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] update <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] refresh\n");
+	g_print ("  pkcon [sync] [verbose] force-refresh\n");
+	g_print ("  pkcon [sync] [verbose] update-system\n");
+	g_print ("  pkcon [sync] [verbose] get updates\n");
+	g_print ("  pkcon [sync] [verbose] get deps <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
+	g_print ("\n");
+	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 }
 
 /**
@@ -211,20 +212,43 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_task_client_remove_package (tclient, value, FALSE);
 			remove = 2;
 		}
-	} else if (strcmp (mode, "getdeps") == 0) {
+	} else if (strcmp (mode, "get") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a package to find the deps for");
+			pk_console_usage ("you need to specify a get type");
+			remove = 1;
 			goto out;
-		} else {
+		} else if (strcmp (value, "deps") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_get_deps (tclient, details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "description") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a package to find the description for");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_get_description (tclient, details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "updates") == 0) {
 			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_get_deps (tclient, value);
+			pk_task_client_get_updates (tclient);
 			remove = 2;
+		} else {
+			pk_console_usage ("invalid get type");
 		}
 	} else if (strcmp (mode, "debug") == 0) {
 		pk_debug_init (TRUE);
 	} else if (strcmp (mode, "verbose") == 0) {
 		pk_debug_init (TRUE);
-	} else if (strcmp (mode, "update") == 0) {
+	} else if (strcmp (mode, "update-system") == 0) {
 		pk_task_client_update_system (tclient);
 	} else if (strcmp (mode, "refresh") == 0) {
 		pk_task_client_refresh_cache (tclient, FALSE);
@@ -234,9 +258,6 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		pk_task_client_set_sync (tclient, TRUE);
 	} else if (strcmp (mode, "async") == 0) {
 		pk_task_client_set_sync (tclient, FALSE);
-	} else if (strcmp (mode, "checkupdate") == 0) {
-		pk_task_client_set_sync (tclient, TRUE);
-		pk_task_client_get_updates (tclient);
 	} else {
 		pk_console_usage ("option not yet supported");
 	}
