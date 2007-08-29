@@ -280,6 +280,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 gboolean
 pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_deps)
 {
+	const gchar *deps;
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -287,8 +288,14 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 		return FALSE;
 	}
 
+	if (allow_deps == TRUE) {
+		deps = "yes";
+	} else {
+		deps = "no";
+	}
+
 	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
-	pk_task_spawn_helper (task, "remove.py", "no", package_id, NULL);
+	pk_task_spawn_helper (task, "remove.py", deps, package_id, NULL);
 	return TRUE;
 }
 
