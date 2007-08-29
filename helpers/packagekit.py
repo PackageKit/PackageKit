@@ -66,13 +66,16 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr, "subpercentage\t%i" % (percent)
 
-    def error(self,err,description):
+    def error(self,err,description,exit=True):
         '''
         send 'error' 
         @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR) 
         @param description: Error description
+        @param exit: exit application with rc=1, if true 
         '''
         print >> sys.stderr,"error\t%s\t%s" % (err,description)
+        if exit:
+            sys.exit(1)
 
     def package(self,id,status,summary):
         '''
