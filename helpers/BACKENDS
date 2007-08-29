@@ -1,0 +1,14 @@
+Current status of the backends
+
+                |   conary  |   yum |   apt |
+---------------------------------------------
+refresh-cache   |     X     |       |       |
+search-name     |     X     |       |       |
+search-details  |           |       |       |
+get-updates     |     X     |       |       |
+update-system   |           |       |       |
+install         |           |       |       |
+remove          |           |       |       |
+get-deps        |           |       |       |
+get-description |           |       |       |
+search-file     |           |       |       |
