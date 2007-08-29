@@ -116,12 +116,13 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon search details power\n");
 	g_print ("  pkcon search group system\n");
 	g_print ("  pkcon search file libc.so.3\n");
-	g_print ("  pkcon sync install gtk2-devel\n");
-	g_print ("  pkcon install gimp update totem\n");
+	g_print ("  pkcon sync install gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
+	g_print ("  pkcon install gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 	g_print ("  pkcon sync update\n");
 	g_print ("  pkcon refresh\n");
 	g_print ("  pkcon force-refresh\n");
-	g_print ("  pkcon getdeps gimp\n");
+	g_print ("  pkcon getdeps gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
+	g_print ("  pkcon getdesc gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 	g_print ("  pkcon debug checkupdate\n");
 }
 
@@ -218,6 +219,15 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		} else {
 			pk_task_client_set_sync (tclient, TRUE);
 			pk_task_client_get_deps (tclient, value);
+			remove = 2;
+		}
+	} else if (strcmp (mode, "getdesc") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package to find the description for");
+			goto out;
+		} else {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_get_description (tclient, value);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "debug") == 0) {
