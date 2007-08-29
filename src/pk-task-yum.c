@@ -211,7 +211,8 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
-	pk_task_not_implemented_yet (task, "SearchGroup");
+	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_spawn_helper (task, "search-group.py", filter, search, NULL);
 	return TRUE;
 }
 
