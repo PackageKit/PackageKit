@@ -9,10 +9,12 @@
 # (at your option) any later version.
 
 import sys
+import os
 
 from conary.deps import deps
 from conary.conaryclient import cmdline
 from conary import conarycfg, conaryclient, queryrep, versions, updatecmd
+from pysqlite2 import dbapi2 as sqlite
 
 from packagekit import *
 
@@ -40,6 +42,42 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                                                     arch, fullVersion)
 
     def _do_search(self,searchlist,filters):
+        fltlist = filters.split(';')
+        troveSpecs = [ cmdline.parseTroveSpec(searchlist, allowEmptyName=False)]
+        # get a hold of cached data
+        cache = Cache()
+
+        try:
+            troveTupleList = cache.search(searchlist)
+        finally:
+            pass
+
+        # Remove dupes
+        tempDict = {}
+        for element in troveTupleList:
+            tempDict[element] = None
+            troveTupleList = tempDict.keys()
+
+        # Get the latest first
+        troveTupleList.sort()
+        troveTupleList.reverse()
+
+        for troveTuple in troveTupleList:
+            troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
+            name = troveTuple[0]
+            version = versions.ThawVersion(troveTuple[1]).trailingRevision()
+            fullVersion = versions.ThawVersion(troveTuple[1])
+            flavor = deps.ThawFlavor(troveTuple[2])
+            # We don't have summary data yet... so leave it blank for now
+            summary = " "
+            troveTuple = tuple([name, fullVersion, flavor])
+            installed = self.check_installed(troveTuple)
+
+            if self._do_filtering(name,fltlist,installed):
+                id = self.get_package_id(name, version, flavor, fullVersion)
+                self.package(id, installed, summary)
+
+    def _do_search_live(self,searchlist,filters):
         '''
         Search for conary packages
         @param searchlist: The conary package fields to search in
@@ -76,9 +114,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             for troveTuple in troveTupleList:
                 name = troveTuple[0]
                 version = troveTuple[1].trailingRevision()
-                #version = troveTuple[1].trailingRevision().asString()
-                # Hard code this until i get the flavor parsing right
-                arch = "x86"
                 fullVersion = troveTuple[1].asString()
                 flavor = troveTuple[2]
                 # We don't have summary data yet... so leave it blank for now
@@ -106,6 +141,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         self._do_search(searchlist, options)
 
+    def search_name_live(self, options, searchlist):
+        '''
+        Implement the {backend}-search-name-live functionality
+        '''
+        self._do_search_live(searchlist, options)
+
     def search_details(self, opt, key):
         pass
 
@@ -116,7 +157,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         pass
 
     def refresh_cache(self):
-        pass
+        cache = Cache()
+        cache.populate_database()
 
     def install(self, package_id):
         pass
@@ -195,3 +237,172 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #
         #
         return isDevel == wantDevel
+
+class Cache(object):
+    # Database name and path
+    dbName = 'cache.db'
+    # Someday we might want to make this writable by users
+    #if 'HOME' in os.environ:
+    #    dbPath = '%s/.conary/cache/data/' % os.environ['HOME']
+    #else:
+    #    dbPath = '/var/cache/conary/'
+    dbPath = '/var/cache/conary/'
+
+    """ Class to retrieve and cache package information from label. """
+    def __init__(self):
+        if not os.path.isdir(self.dbPath):
+            os.makedirs(self.dbPath)
+
+        self.conn = sqlite.connect(os.path.join(self.dbPath, self.dbName), isolation_level=None)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("PRAGMA count_changes=0")
+        self.cursor.execute("pragma synchronous=off")
+
+        if os.path.isfile(os.path.join(self.dbPath, self.dbName)):
+            self._validate_tables()
+
+    def _validate_tables(self):
+        """ Validates that all tables are up to date. """
+        stmt = "select tbl_name from sqlite_master where type = 'table' and tbl_name like 'conary_%'"
+        self.cursor.execute(stmt)
+        # List of all tables with names that start with "conary_"
+        tbllist = self.cursor.fetchall()
+        if tbllist != []:
+            return True
+            #print "Verified packages table"
+        else:
+            #print "Creating packages table..."
+            # Create all tables if database is empty
+            if len(tbllist) == 0:
+                self._create_database()
+                return True
+
+    def conaryquery(self):
+        self.cfg = conarycfg.ConaryConfiguration()
+        self.client = conaryclient.ConaryClient(self.cfg)
+        self.cfg.readFiles()
+        self.cfg.initializeFlavors()
+        self.repos = self.client.getRepos()
+        self.db = conaryclient.ConaryClient(self.cfg).db
+
+        troves = queryrep.getTrovesToDisplay(self.repos, None, None, None,
+            queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST, 
+            self.cfg.installLabelPath, self.cfg.flavor, None)
+
+        packages = []
+
+        for troveTuple in troves:
+            # troveTuple is probably what we want to store in the cachedb
+            # Then use the below methods to present them in a nicer fashion
+            if troveTuple[0].endswith(':source'):
+                continue
+            if ":" in troveTuple[0]:
+                fragments = troveTuple[0].split(":")
+                trove = fragments[0]
+                component = fragments[1]
+            else:
+                trove = troveTuple[0]
+                component = ""
+
+            installed = 0
+            localVersion = ""
+            flavor = troveTuple[2]
+            frozenFlavor = troveTuple[2].freeze()
+            version = str(troveTuple[1].trailingRevision())
+            frozenVersion = troveTuple[1].freeze()
+            label = str(troveTuple[1].branch().label())
+            description = ""
+            category = ""
+            packagegroup = ""
+            size = ""
+            packages.append([trove, component, frozenVersion, label, frozenFlavor, description, category, packagegroup, size])
+
+        return packages
+
+    def connect_memory(self):
+        return sqlite.connect(':memory:')
+
+    def cursor(self, connection):
+        return connection.cursor()
+
+    def _create_database(self):
+        """ Creates a blank database. """
+        sql = '''CREATE TABLE conary_packages (
+            trove text,
+            component text,
+            version text,
+            label text,
+            flavor text,
+            description text,
+            category text,
+            packagegroup text,
+            size text)'''
+
+        self.cursor.execute(sql)
+
+    def commit(self):
+        self.cursor.commit()
+
+    def getTroves(self, label=None):
+        """
+        Returns all troves for now.  Add filtering capability.
+        """
+        stmt = "select distinct trove, version, flavor, description, category, packagegroup, size" \
+            " from conary_packages"
+
+        try:
+            self.cursor.execute(stmt)
+            return self.cursor.fetchall()
+        except Exception, e:
+            print str(e)
+            return None
+
+    def search(self, package):
+        """
+        Returns all troves for now.  Add filtering capability.
+        """
+        stmt = "select distinct trove, version, flavor, description, category, packagegroup, size" \
+            " from conary_packages"
+
+        if package:
+            stmt = stmt + " where trove like '%" + package + "%' and component = '' order by version desc"
+
+        try:
+            self.cursor.execute(stmt)
+            results = self.cursor.fetchall()
+            return results
+        except Exception, e:
+            print str(e)
+            return None
+
+    def _insert(self, trove):
+        """
+        Insert trove into database.
+        """
+        values = [str(field) for field in trove]
+        cols = ",".join("?" * len(trove))
+        sql = "INSERT INTO conary_packages VALUES (%s)" % cols
+
+        try:
+            self.cursor.execute(sql, values)
+        except Exception,e:
+            print str(e)
+
+    def _clear_table(self, tableName='conary_packages'):
+        """
+        Deletes * records from table.
+        """
+        stmt = "DELETE FROM %s" % tableName
+        self.cursor.execute(stmt)
+
+    def populate_database(self):
+        try:
+            packages = self.conaryquery()
+            # Clear table first
+            self._clear_table()
+            for package in packages:
+                self._insert(package)
+        except Exception, e:
+            print str(e)
+
+
