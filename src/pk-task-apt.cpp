@@ -34,6 +34,7 @@
 
 #include <regex.h>
 #include <string.h>
+#include <math.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
@@ -139,6 +140,16 @@ typedef struct
 
 class UpdatePercentage:public pkgAcquireStatus
 {
+	double old;
+	PkTask *task;
+
+	public:
+	UpdatePercentage(PkTask *tk)
+	{
+		old = -1;
+		task = tk;
+	}
+	
 	virtual bool MediaChange(string Media,string Drive)
 	{
 		pk_debug("PANIC!: we don't handle mediachange");
@@ -147,6 +158,14 @@ class UpdatePercentage:public pkgAcquireStatus
 	
 	virtual bool Pulse(pkgAcquire *Owner)
 	{
+		pkgAcquireStatus::Pulse(Owner);
+		double percent = double(CurrentBytes*100.0)/double(TotalBytes);
+		if (old!=percent)
+		{
+			pk_task_change_percentage(task,(guint)percent);
+			pk_task_change_sub_percentage(task,((guint)(percent*100.0))%100);
+			old = percent;
+		}
 		return true;	
 	}
 };
@@ -190,7 +209,7 @@ void *DoUpdate(gpointer data)
 	}
 
 	// Create the download object
-	UpdatePercentage *Stat = new UpdatePercentage();
+	UpdatePercentage *Stat = new UpdatePercentage(ud->task);
 	pkgAcquire Fetcher(Stat);
 
 	// Populate it with the source selection
