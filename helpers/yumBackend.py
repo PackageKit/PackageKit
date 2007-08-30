@@ -29,6 +29,7 @@ from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
+from yum.callbacks import *
 
 
 class PackageKitYumBackend(PackageKitBaseBackend):
@@ -400,8 +401,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                                                                                
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
-        callback = DownloadCallback(self,showNames=True)      # Download callback
-        self.yumbase.repos.setProgressBar( callback )         # Setup the download callback class
+        self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
+        self.yumbase.repos.setProgressBar( self.dnlCallback )         # Setup the download callback class
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
@@ -412,7 +413,24 @@ class DownloadCallback( BaseMeter ):
         self.showNames = showNames
         self.oldName = None
         self.lastPct = 0
+        self.totalPct = 0
+        self.pkgs = None
+        self.numPkgs=0
+        self.bump = 0.0
 
+    def setPackages(self,pkgs,startPct,numPct):
+        self.pkgs = pkgs
+        self.numPkgs = len(self.pkgs)
+        self.bump = numPct/self.numPkgs
+        self.totalPct = startPct
+        
+    def _getPackage(self,name):
+        if self.pkgs:
+            for pkg in self.pkgs:
+                if pkg.name == name:
+                    return pkg
+        return None
+        
     def update( self, amount_read, now=None ):
         BaseMeter.update( self, amount_read, now )
 
@@ -466,11 +484,17 @@ class DownloadCallback( BaseMeter ):
         pct = int( frac*100 )
         if self.lastPct != pct:
             self.lastPct = pct
+            # bump the sub persentage for this package
             self.base.sub_percentage(int( frac*100 ))
         if name != self.oldName:
             self.oldName = name
+            if self.bump > 0.0: # Bump the total download percentage
+                self.totalPct += self.bump
+                self.base.percentage(int(self.totalPct))
             if self.showNames:
-                self.base.data(name)
+                pkg = self._getPackage(name)
+                if pkg: # show package to download
+                    self.base._show_package(pkgs,1)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -478,6 +502,13 @@ class PackageKitCallback(RPMBaseCallback):
         self.base = base
         self.pct = 0
         self.curpkg = None
+        self.startPct = 50
+        self.numPct = 50
+
+    def _calcTotalPct(self,ts_current,ts_total):
+        bump = float(self.numPct)/ts_total
+        pct = int(self.startPct + (ts_current * bump))
+        return pct
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != self.curpkg:
@@ -487,6 +518,8 @@ class PackageKitCallback(RPMBaseCallback):
                 self.base.status(STATE_INSTALL)
             elif action in TS_REMOVE_STATES:
                 self.base.status(STATE_REMOVE)
+            pct = self._calcTotalPct(ts_current, ts_total)
+            self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
         if val != self.pct:
             self.pct = val
@@ -496,19 +529,16 @@ class PackageKitCallback(RPMBaseCallback):
         # grrrrrrrr
         pass
 
-PT_DOWNLOAD        = 0
-PT_GPGCHECK        = 1
-PT_TEST_TRANS      = 2
-PT_TRANSACTION     = 3
-
 class ProcessTransPackageKitCallback:
     def __init__(self,base):
         self.base = base
 
-    def event(self,state):
-        if state == PT_DOWNLOAD:
+    def event(self,state,data=None):
+        if state == PT_DOWNLOAD:        # Start Downloading
             self.base.percentage(10)
             self.base.status(STATE_DOWNLOAD)
+        if state == PT_DOWNLOAD_PKGS:   # Packages to download 
+            self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
             self.base.percentage(40)
             pass
