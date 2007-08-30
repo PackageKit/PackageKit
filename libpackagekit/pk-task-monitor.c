@@ -487,6 +487,26 @@ pk_task_monitor_finalize (GObject *object)
 	tmonitor = PK_TASK_MONITOR (object);
 	g_return_if_fail (tmonitor->priv != NULL);
 
+	/* disconnect signal handlers */
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Finished",
+				        G_CALLBACK (pk_task_monitor_finished_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "PercentageChanged",
+				        G_CALLBACK (pk_task_monitor_percentage_changed_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "SubPercentageChanged",
+				        G_CALLBACK (pk_task_monitor_sub_percentage_changed_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "NoPercentageUpdates",
+				        G_CALLBACK (pk_task_monitor_no_percentage_updates_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "JobStatusChanged",
+				        G_CALLBACK (pk_task_monitor_job_status_changed_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Package",
+				        G_CALLBACK (pk_task_monitor_package_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Description",
+				        G_CALLBACK (pk_task_monitor_description_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "ErrorCode",
+				        G_CALLBACK (pk_task_monitor_error_code_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "RequireRestart",
+				        G_CALLBACK (pk_task_monitor_require_restart_cb), tmonitor);
+
 	/* free the proxy */
 	g_object_unref (G_OBJECT (tmonitor->priv->proxy));
 	g_object_unref (tmonitor->priv->pconnection);
