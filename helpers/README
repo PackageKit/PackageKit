@@ -10,7 +10,7 @@ This means we need a standard for what goes on stdin, stdout and stderr to
 try and maximise the common code between the backends.
 
 Please see the helpers/BACKENDS file for the current status of the existing 
-backends.  Backend maintainers, please keep this file updates.
+backends.  Backend maintainers, please keep this file updated.
 
 Package Id:
 
