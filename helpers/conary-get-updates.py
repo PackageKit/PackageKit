@@ -14,3 +14,4 @@ from conaryBackend import PackageKitConaryBackend
 
 backend = PackageKitConaryBackend(sys.argv[1:])
 backend.get_updates()
+sys.exit(1)

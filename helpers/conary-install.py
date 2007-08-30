@@ -10,6 +10,9 @@
 # (at your option) any later version.
 
 import sys
+from conaryBackend import PackageKitConaryBackend
 
+package = sys.argv[1]
+backend = PackageKitConaryBackend(sys.argv[1:])
+backend.install(package)
 sys.exit(1)
-
