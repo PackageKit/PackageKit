@@ -377,23 +377,22 @@ PkPackageIdent*
 pk_task_package_ident_from_string (const gchar *package_id)
 {
 	gchar **sections;
-	PkPackageIdent *ident;
-
-	/* create new object */
-	ident = pk_task_package_ident_new ();
+	PkPackageIdent *ident = NULL;
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (package_id, ";", 4);
-	if (g_strv_length(sections)!=4)
-	{
-		pk_debug("Package ident '%s' is invalid (sections=%d)",package_id,g_strv_length(sections));
-		pk_task_package_ident_free(ident);
-		return NULL;
+	if (g_strv_length (sections) != 4) {
+		pk_debug ("Package ident '%s' is invalid (sections=%d)", package_id, g_strv_length (sections));
+		goto out;
 	}
+
+	/* create new object */
+	ident = pk_task_package_ident_new ();
 	ident->name = g_strdup (sections[0]);
 	ident->version = g_strdup (sections[1]);
 	ident->arch = g_strdup (sections[2]);
 	ident->data = g_strdup (sections[3]);
+out:
 	g_strfreev (sections);
 	return ident;	
 }
