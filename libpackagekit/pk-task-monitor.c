@@ -93,7 +93,7 @@ pk_task_monitor_get_job (PkTaskMonitor *tmonitor)
  * pk_task_monitor_get_status:
  **/
 gboolean
-pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status, gchar **package)
+pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
 {
 	gboolean ret;
 	gchar *status_text;
@@ -108,7 +108,6 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status, gchar
 				 G_TYPE_UINT, tmonitor->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
-				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID);
 	if (error) {
 		pk_debug ("ERROR: %s", error->message);
@@ -205,7 +204,6 @@ static void
 pk_task_monitor_job_status_changed_cb (DBusGProxy   *proxy,
 				       guint	    job,
 				       const gchar  *status_text,
-				       const gchar  *package,
 				       PkTaskMonitor *tmonitor)
 {
 	PkTaskStatus status;
@@ -455,7 +453,7 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				     G_CALLBACK (pk_task_monitor_no_percentage_updates_cb), tmonitor, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "JobStatusChanged",
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "JobStatusChanged",
 				     G_CALLBACK (pk_task_monitor_job_status_changed_cb), tmonitor, NULL);
 

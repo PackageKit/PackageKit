@@ -215,7 +215,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 			g_signal_connect (item->monitor, "error-code",
 					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
 			pk_task_monitor_set_job (item->monitor, job);
-			pk_task_monitor_get_status (item->monitor, &item->status, &item->package);
+			pk_task_monitor_get_status (item->monitor, &item->status);
+			item->package = NULL;
 
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);
