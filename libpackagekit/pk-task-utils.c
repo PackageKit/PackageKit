@@ -488,15 +488,15 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 #include <libselftest.h>
 
 void
-libselftest_task_utils (LibSelfTest *test)
+libst_task_utils (LibSelfTest *test)
 {
 //	gboolean ret;
 
-	if (libselftest_start (test, "PktaskUtils", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PktaskUtils", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
-	libselftest_end (test);
+	libst_end (test);
 }
 #endif
 

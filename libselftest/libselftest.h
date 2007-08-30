@@ -50,13 +50,13 @@ typedef struct
 	gchar		*type;
 } LibSelfTest;
 
-gboolean	libselftest_start	(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
-void		libselftest_end		(LibSelfTest *test);
-void		libselftest_title	(LibSelfTest *test, const gchar *format, ...);
-void		libselftest_success	(LibSelfTest *test, const gchar *format, ...);
-void		libselftest_failed	(LibSelfTest *test, const gchar *format, ...);
-void		libselftest_init	(LibSelfTest *test);
-gint		libselftest_finish	(LibSelfTest *test);
+gboolean	libst_start	(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
+void		libst_end	(LibSelfTest *test);
+void		libst_title	(LibSelfTest *test, const gchar *format, ...);
+void		libst_success	(LibSelfTest *test, const gchar *format, ...);
+void		libst_failed	(LibSelfTest *test, const gchar *format, ...);
+void		libst_init	(LibSelfTest *test);
+gint		libst_finish	(LibSelfTest *test);
 
 #endif	/* __LIBSELFTEST_H */
 

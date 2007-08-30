@@ -28,7 +28,7 @@
 #include "libselftest.h"
 
 void
-libselftest_init (LibSelfTest *test)
+libst_init (LibSelfTest *test)
 {
 	test->total = 0;
 	test->succeeded = 0;
@@ -39,7 +39,7 @@ libselftest_init (LibSelfTest *test)
 }
 
 gint
-libselftest_finish (LibSelfTest *test)
+libst_finish (LibSelfTest *test)
 {
 	gint retval;
 	g_print ("test passes (%u/%u) : ", test->succeeded, test->total);
@@ -54,7 +54,7 @@ libselftest_finish (LibSelfTest *test)
 }
 
 gboolean
-libselftest_start (LibSelfTest *test, const gchar *name, LibSelfTestClass class)
+libst_start (LibSelfTest *test, const gchar *name, LibSelfTestClass class)
 {
 	if (class == CLASS_AUTO && test->class == CLASS_MANUAL) {
 		return FALSE;
@@ -75,7 +75,7 @@ libselftest_start (LibSelfTest *test, const gchar *name, LibSelfTestClass class)
 }
 
 void
-libselftest_end (LibSelfTest *test)
+libst_end (LibSelfTest *test)
 {
 	if (test->started == FALSE) {
 		g_print ("Not started test! Cannot finish!\n");
@@ -89,7 +89,7 @@ libselftest_end (LibSelfTest *test)
 }
 
 void
-libselftest_title (LibSelfTest *test, const gchar *format, ...)
+libst_title (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar va_args_buffer [1025];
@@ -103,7 +103,7 @@ libselftest_title (LibSelfTest *test, const gchar *format, ...)
 }
 
 void
-libselftest_success (LibSelfTest *test, const gchar *format, ...)
+libst_success (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar va_args_buffer [1025];
@@ -122,7 +122,7 @@ finish:
 }
 
 void
-libselftest_failed (LibSelfTest *test, const gchar *format, ...)
+libst_failed (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar va_args_buffer [1025];

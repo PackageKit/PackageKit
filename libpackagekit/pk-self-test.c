@@ -24,7 +24,7 @@
 #include <libselftest.h>
 
 /* prototypes */
-void libselftest_task_utils (LibSelfTest *test);
+void libst_task_utils (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -32,11 +32,11 @@ main (int argc, char **argv)
 	LibSelfTest test;
 
 	g_type_init ();
-	libselftest_init (&test);
+	libst_init (&test);
 
 	/* tests go here */
-	libselftest_task_utils (&test);
+	libst_task_utils (&test);
 
-	return (libselftest_finish (&test));
+	return (libst_finish (&test));
 }
 
