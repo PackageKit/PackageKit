@@ -92,7 +92,7 @@ pk_task_get_updates (PkTask *task)
 	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
 	pk_task_package (task, 0, "powertop;1.8-1.fc8;i386;fedora",
 			 "Power consumption monitor");
-	pk_task_package (task, 1, "kernel-2.6.23-0.115.rc3.git1.fc8;i386;installed",
+	pk_task_package (task, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 			 "The Linux kernel (the core of the Linux operating system)");
 	pk_task_package (task, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
