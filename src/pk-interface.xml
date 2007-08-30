@@ -65,7 +65,6 @@
     <signal name="JobStatusChanged">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
-      <arg type="s" name="package_id" direction="out"/>
     </signal>
     <signal name="PercentageChanged"> <!-- progress of the whole job -->
       <arg type="u" name="job" direction="out"/>
@@ -124,7 +123,6 @@
     <method name="GetJobStatus"> <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
-      <arg type="s" name="package" direction="out"/>
     </method>
     <method name="CancelJobTry"> <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>

@@ -209,17 +209,15 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 {
 	guint job;
 	const gchar *status_text;
-	const gchar *package;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	job = pk_task_get_job (task);
 	status_text = pk_task_status_to_text (status);
-	package = pk_task_get_data (task);
 
-	pk_debug ("emitting job-status-changed job:%i, '%s', '%s'", job, status_text, package);
-	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text, package);
+	pk_debug ("emitting job-status-changed job:%i, '%s'", job, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -970,7 +968,7 @@ pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
  **/
 gboolean
 pk_engine_get_job_status (PkEngine *engine, guint job,
-			  const gchar **status, const gchar **package, GError **error)
+			  const gchar **status, GError **error)
 {
 	PkTask *task;
 	PkTaskStatus status_enum;
@@ -986,7 +984,6 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 	}
 	pk_task_get_job_status (task, &status_enum);
 	*status = g_strdup (pk_task_status_to_text (status_enum));
-	*package = pk_task_get_data (task);
 
 	return TRUE;
 }
@@ -1080,8 +1077,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_ENGINE_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
