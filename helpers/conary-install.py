@@ -15,4 +15,4 @@ from conaryBackend import PackageKitConaryBackend
 package = sys.argv[1]
 backend = PackageKitConaryBackend(sys.argv[1:])
 backend.install(package)
-sys.exit(1)
+sys.exit(0)

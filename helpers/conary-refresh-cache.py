@@ -14,4 +14,4 @@ from conaryBackend import PackageKitConaryBackend
 
 backend = PackageKitConaryBackend(sys.argv[1:])
 backend.refresh_cache()
-sys.exit(1)
+sys.exit(0)
