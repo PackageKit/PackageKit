@@ -19,24 +19,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifndef __libselftest_H
+#define __libselftest_H
+
 #include <glib.h>
-#include <glib-object.h>
-#include <libselftest.h>
 
-/* prototypes */
-void libselftest_spawn (LibSelfTest *test);
-
-int
-main (int argc, char **argv)
+typedef enum
 {
-	LibSelfTest test;
+	CLASS_ALL,
+	CLASS_AUTO,
+	CLASS_MANUAL,
+	CLASS_LAST
+} LibSelfTestClass;
 
-	g_type_init ();
-	libselftest_init (&test);
+typedef enum
+{
+	LEVEL_QUIET,
+	LEVEL_NORMAL,
+	LEVEL_ALL,
+	LEVEL_LAST
+} LibSelfTestLevel;
 
-	/* tests go here */
-	libselftest_spawn (&test);
+typedef struct
+{
+	guint		 total;
+	guint		 succeeded;
+	gboolean	 started;
+	LibSelfTestClass class;
+	LibSelfTestLevel level;
+	gchar		*type;
+} LibSelfTest;
 
-	return (libselftest_finish (&test));
-}
+gboolean	libselftest_start	(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
+void		libselftest_end		(LibSelfTest *test);
+void		libselftest_title	(LibSelfTest *test, const gchar *format, ...);
+void		libselftest_success	(LibSelfTest *test, const gchar *format, ...);
+void		libselftest_failed	(LibSelfTest *test, const gchar *format, ...);
+void		libselftest_init	(LibSelfTest *test);
+gint		libselftest_finish	(LibSelfTest *test);
+
+#endif	/* __libselftest_H */
 

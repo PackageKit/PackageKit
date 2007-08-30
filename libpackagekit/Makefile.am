@@ -6,11 +6,16 @@ INCLUDES = \
 	$(DBUS_CFLAGS)						\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
+	-I$(top_srcdir)/libselftest					\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
 GBUS_LIBS =							\
 	$(top_builddir)/libgbus/libgbus.la			\
+	$(NULL)
+
+SELFTEST_LIBS =							\
+	$(top_builddir)/libselftest/libselftest.la		\
 	$(NULL)
 
 lib_LTLIBRARIES =						\
@@ -64,6 +69,27 @@ libpackagekit_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	$(NULL)
 
+check_PROGRAMS =						\
+	pk-self-test
+
+pk_self_test_SOURCES =						\
+	pk-debug.c						\
+	pk-debug.h						\
+	pk-task-utils.h						\
+	pk-task-utils.c						\
+	pk-self-test.c						\
+	$(NULL)
+
+pk_self_test_LDADD =						\
+	$(GLIB_LIBS)						\
+	$(DBUS_LIBS)						\
+	$(SELFTEST_LIBS)					\
+	$(PK_LIBS)						\
+	$(NULL)
+
+pk_self_test_CPPFLAGS=	\
+	-DPK_BUILD_TESTS
+
 EXTRA_DIST =							\
 	pk-marshal.list
 
@@ -84,4 +110,6 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = $(BUILT_SOURCES)
+
+TESTS = pk-self-test
 

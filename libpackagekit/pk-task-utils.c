@@ -481,3 +481,22 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 	return ret;
 }
 
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libselftest_task_utils (LibSelfTest *test)
+{
+//	gboolean ret;
+
+	if (libselftest_start (test, "PktaskUtils", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	libselftest_end (test);
+}
+#endif
+

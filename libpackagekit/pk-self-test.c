@@ -20,40 +20,23 @@
  */
 
 #include <glib.h>
+#include <glib-object.h>
+#include <libselftest.h>
 
-typedef enum
+/* prototypes */
+void libselftest_task_utils (LibSelfTest *test);
+
+int
+main (int argc, char **argv)
 {
-	CLASS_ALL,
-	CLASS_AUTO,
-	CLASS_MANUAL,
-	CLASS_LAST
-} PkSelfTestClass;
+	LibSelfTest test;
 
-typedef enum
-{
-	LEVEL_QUIET,
-	LEVEL_NORMAL,
-	LEVEL_ALL,
-	LEVEL_LAST
-} PkSelfTestLevel;
+	g_type_init ();
+	libselftest_init (&test);
 
-typedef struct
-{
-	guint		 total;
-	guint		 succeeded;
-	gboolean	 started;
-	PkSelfTestClass class;
-	PkSelfTestLevel level;
-	gchar		*type;
-} PkSelfTest;
+	/* tests go here */
+	libselftest_task_utils (&test);
 
-typedef void (*PkSelfTestFunc) (PkSelfTest *test);
-
-gboolean	pk_st_start	(PkSelfTest *test, const gchar *name, PkSelfTestClass class);
-void		pk_st_end	(PkSelfTest *test);
-void		pk_st_title	(PkSelfTest *test, const gchar *format, ...);
-void		pk_st_success	(PkSelfTest *test, const gchar *format, ...);
-void		pk_st_failed	(PkSelfTest *test, const gchar *format, ...);
-
-void		pk_st_spawn	(PkSelfTest *test);
+	return (libselftest_finish (&test));
+}
 

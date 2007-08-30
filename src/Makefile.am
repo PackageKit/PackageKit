@@ -14,6 +14,10 @@ PK_LIBS =						\
 	$(top_builddir)/libpackagekit/libpackagekit.la	\
 	$(NULL)
 
+SELFTEST_LIBS =						\
+	$(top_builddir)/libselftest/libselftest.la	\
+	$(NULL)
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-interface.xml				\
@@ -34,6 +38,7 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
 sbin_PROGRAMS =						\
@@ -84,7 +89,7 @@ packagekitd_LDADD =					\
 	$(NULL)
 
 if BACKEND_TYPE_APT
-INCLUDES +=					\
+INCLUDES +=						\
 	$(APT_CFLAGS)
 packagekitd_LDADD += 					\
 	$(APT_LIBS)
@@ -117,12 +122,12 @@ pk_self_test_SOURCES =					\
 	pk-spawn.h					\
 	pk-spawn.c					\
 	pk-self-test.c					\
-	pk-self-test.h					\
 	$(NULL)
 
 pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(SELFTEST_LIBS)				\
 	$(LIBNM_LIBS)					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\

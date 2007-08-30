@@ -328,7 +328,7 @@ pk_spawn_new (void)
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
-#include "pk-self-test.h"
+#include <libselftest.h>
 
 static GMainLoop *loop;
 
@@ -336,7 +336,7 @@ static GMainLoop *loop;
  * pk_test_finished_cb:
  **/
 static void
-pk_test_finished_cb (PkSpawn *spawn, gint exitcode, PkSelfTest *test)
+pk_test_finished_cb (PkSpawn *spawn, gint exitcode, LibSelfTest *test)
 {
 	pk_debug ("spawn exitcode=%i", exitcode);
 	g_main_loop_quit (loop);
@@ -346,7 +346,7 @@ pk_test_finished_cb (PkSpawn *spawn, gint exitcode, PkSelfTest *test)
  * pk_test_stdout_cb:
  **/
 static void
-pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, PkSelfTest *test)
+pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 {
 	pk_debug ("stdout '%s'", line);
 }
@@ -355,18 +355,18 @@ pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, PkSelfTest *test)
  * pk_test_stderr_cb:
  **/
 static void
-pk_test_stderr_cb (PkSpawn *spawn, const gchar *line, PkSelfTest *test)
+pk_test_stderr_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 {
 	pk_debug ("stderr '%s'", line);
 }
 
 void
-pk_st_spawn (PkSelfTest *test)
+libselftest_spawn (LibSelfTest *test)
 {
 	PkSpawn *spawn;
 	gboolean ret;
 
-	if (pk_st_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
+	if (libselftest_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
@@ -379,22 +379,22 @@ pk_st_spawn (PkSelfTest *test)
 			  G_CALLBACK (pk_test_stderr_cb), test);
 
 	/************************************************************/
-	pk_st_title (test, "make sure return error for missing file");
+	libselftest_title (test, "make sure return error for missing file");
 	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
-		pk_st_success (test, "failed to run invalid file");
+		libselftest_success (test, "failed to run invalid file");
 	} else {
-		pk_st_failed (test, "ran incorrect file");
+		libselftest_failed (test, "ran incorrect file");
 	}
 
 #if 0
 	/************************************************************/
-	pk_st_title (test, "make sure run correct helper");
+	libselftest_title (test, "make sure run correct helper");
 	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
 	if (ret == TRUE) {
-		pk_st_success (test, "ran correct file");
+		libselftest_success (test, "ran correct file");
 	} else {
-		pk_st_failed (test, "did not run helper");
+		libselftest_failed (test, "did not run helper");
 	}
 #endif
 
@@ -406,7 +406,7 @@ pk_st_spawn (PkSelfTest *test)
 
 	g_object_unref (spawn);
 
-	pk_st_end (test);
+	libselftest_end (test);
 }
 #endif
 

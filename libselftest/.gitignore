@@ -5,5 +5,4 @@
 *.lo
 *-marshal.c
 *-marshal.h
-pk-self-test
 
