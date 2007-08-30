@@ -177,7 +177,7 @@ pk_task_monitor_sub_percentage_changed_cb (DBusGProxy    *proxy,
 
 	if (job == tmonitor->priv->job) {
 		pk_debug ("emit sub-percentage-changed %i", percentage);
-		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED], 0, percentage);
+		g_signal_emit (tmonitor, signals [PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	}
 }
 

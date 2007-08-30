@@ -247,11 +247,6 @@ STDERR		status<tab>$state
 		$state:		One of "download", "install", "update", "remove"
 		notes:		This is optional.
 
-STDERR		data<tab>$current_data
-		$current_data:	The current worked on package
-		notes:		This is optional, but allows the UI to show what
-				package is being installed on for that sub-transaction.
-
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported", "package-already-installed"
@@ -260,12 +255,12 @@ STDERR		error<tab>$enum<tab>description
 		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
-		$status:	Always "1"
+		$status:	"0" if downloading, "1" if installing or updating
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
-		NOTE:		As packages are installed then emit them to the screen.
-				This allows a summary to be presented after the transaction.
+		NOTE:		As packages are downloaded or installed then emit them to the screen.
+				This allows a summary to be presented after and during the transaction.
 
 NOTES		The installer should always install extra packages automatically
 		as the use could call GetDeps prior to the intstall if a
@@ -291,11 +286,6 @@ STDERR		status<tab>$state
 		$state:		One of "download", "install", "update", "remove"
 		notes:		This is optional.
 
-STDERR		data<tab>$current_data
-		$current_data:	The current worked on package
-		notes:		This is optional, but allows the UI to show what
-				package is being installed on for that sub-transaction.
-
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
 				"not-supported", "package-not-installed"
@@ -304,12 +294,12 @@ STDERR		error<tab>$enum<tab>description
 		notes:		Errors should only be send on fatal abortion.
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
-		$status:	Always "1"
+		$status:	"0" if downloading, "1" if updating
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
-		NOTE:		As packages are updated then emit them to the screen.
-				This allows a summary to be presented after the transaction.
+		NOTE:		As packages are downloaded or updated then emit them to the screen.
+				This allows a summary to be presented after and during the transaction.
 
 NOTES		The installer should always update extra packages automatically
 		if required.
@@ -333,11 +323,6 @@ STDERR		percentage<tab>$value
 STDERR		subpercentage<tab>$value
 		$value:		Percentage complete of the sub-transaction
 		notes:		This is optional.
-
-STDERR		data<tab>$current_data
-		$current_data:	The current worked on package
-		notes:		This is optional, but allows the UI to show what
-				package is being installed on for that sub-transaction.
 
 STDERR		error<tab>$enum<tab>description
 		enum:		Enumerated type, e.g. "no-network",
@@ -405,9 +390,9 @@ STDERR		requirerestart<tab>$type<tab>$details
 				the 'worst' method in the UI notification.
 
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
-		$status:	Always "1"
+		$status:	"0" if downloading, "1" if updating or installing
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
-		$summary:	The one line package summary.
+		$summary:	The one line package summary. (optional)
 		NOTE:		As packages are updated then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
