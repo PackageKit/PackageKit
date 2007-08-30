@@ -209,13 +209,6 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		}
 		restart_enum = pk_task_restart_from_text (sections[1]);
 		pk_task_require_restart (task, restart_enum, sections[2]);
-	} else if (strcmp (command, "data") == 0) {
-		if (size != 2) {
-			g_error ("invalid command '%s'", command);
-			ret = FALSE;
-			goto out;
-		}
-		pk_task_set_data (task, sections[1]);
 	} else if (strcmp (command, "status") == 0) {
 		if (size != 2) {
 			g_error ("invalid command '%s'", command);
