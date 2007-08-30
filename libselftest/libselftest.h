@@ -23,6 +23,7 @@
 #define __LIBSELFTEST_H
 
 #include <glib.h>
+#include <string.h>
 
 typedef enum
 {

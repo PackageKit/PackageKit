@@ -490,11 +490,50 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 void
 libst_task_utils (LibSelfTest *test)
 {
-//	gboolean ret;
+	gboolean ret;
+	gchar *text;
 
-	if (libst_start (test, "PktaskUtils", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/************************************************************/
+	libst_title (test, "test the action building (single)");
+	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, 0);
+	if (strcmp (text, "install") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect single argument '%s'", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "test the action building (multiple)");
+	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPS, 0);
+	if (strcmp (text, "install;search-name;get-deps") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect multiple argument '%s'", text);
+	}
+
+	/************************************************************/
+	libst_title (test, "test the action checking (present)");
+	ret = pk_task_action_contains (text, PK_TASK_ACTION_INSTALL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "not found present");
+	}
+
+	/************************************************************/
+	libst_title (test, "test the action checking (not-present)");
+	ret = pk_task_action_contains (text, PK_TASK_ACTION_REMOVE);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "found present");
+	}
+	g_free (text);
 
 	libst_end (test);
 }
