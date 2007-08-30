@@ -66,7 +66,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1]).trailingRevision()
-            fullVersion = versions.ThawVersion(troveTuple[1])
+            fullVersion = troveTuple[1]
+            #fullVersion = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
             # We don't have summary data yet... so leave it blank for now
             summary = " "
@@ -129,6 +130,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
         try:
+            troveTuple = troveTuple[0], versions.ThawVersion(troveTuple[1]), troveTuple[2]
             localInstall = db.findTrove(None, troveTuple)
             installed = 1
         except:
@@ -161,6 +163,21 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache.populate_database()
 
     def install(self, package_id):
+        '''
+        Implement the {backend}-install functionality
+        '''
+        pkg,inst = self._findPackage(package_id)
+
+        if pkg:
+            if inst:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
+            try:
+                print "FOOOOO"
+            except:
+                pass
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+
         pass
 
     def remove(self, allowdep, package_id):
@@ -237,6 +254,19 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #
         #
         return isDevel == wantDevel
+
+    def _findPackage(self,id):
+        '''
+        find a package based on a package id (name;version;arch;repoid)
+        '''
+        # Split up the id
+        (name,version,arch,fullVersion) = self.get_package_from_id(id)
+        cache = Cache()
+        troveTuple = cache.search(name,fullVersion)
+        troveTuple = [item.encode('UTF-8') for item in troveTuple[0]]
+
+        installed = self.check_installed(troveTuple)
+        return name,installed
 
 class Cache(object):
     # Database name and path
@@ -357,14 +387,16 @@ class Cache(object):
             print str(e)
             return None
 
-    def search(self, package):
+    def search(self, package, fullVersion=None):
         """
         Returns all troves for now.  Add filtering capability.
         """
         stmt = "select distinct trove, version, flavor, description, category, packagegroup, size" \
             " from conary_packages"
 
-        if package:
+        if package and fullVersion:
+            stmt = "select distinct trove, version, flavor from conary_packages where trove ='" + package + "' and version = '" + fullVersion +"'"
+        elif package:
             stmt = stmt + " where trove like '%" + package + "%' and component = '' order by version desc"
 
         try:
