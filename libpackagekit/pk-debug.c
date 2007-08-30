@@ -21,6 +21,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -31,7 +32,6 @@
 #include "pk-debug.h"
 
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
-static gchar va_args_buffer [1025];
 
 /**
  * pk_print_line:
@@ -64,16 +64,19 @@ pk_debug_real (const gchar *func,
 		const gchar *format, ...)
 {
 	va_list args;
+	gchar *buffer = NULL;
 
 	if (do_verbose == FALSE) {
 		return;
 	}
 
 	va_start (args, format);
-	g_vsnprintf (va_args_buffer, 1024, format, args);
+	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	pk_print_line (func, file, line, va_args_buffer);
+	pk_print_line (func, file, line, buffer);
+
+	g_free(buffer);
 }
 
 /**
@@ -86,18 +89,21 @@ pk_warning_real (const gchar *func,
 		  const gchar *format, ...)
 {
 	va_list args;
+	gchar *buffer = NULL;
 
 	if (do_verbose == FALSE) {
 		return;
 	}
 
 	va_start (args, format);
-	g_vsnprintf (va_args_buffer, 1024, format, args);
+	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** WARNING ***\n");
-	pk_print_line (func, file, line, va_args_buffer);
+	pk_print_line (func, file, line, buffer);
+
+	g_free(buffer);
 }
 
 /**
@@ -110,14 +116,16 @@ pk_error_real (const gchar *func,
 		const gchar *format, ...)
 {
 	va_list args;
+	gchar *buffer = NULL;
 
 	va_start (args, format);
-	g_vsnprintf (va_args_buffer, 1024, format, args);
+	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** ERROR ***\n");
-	pk_print_line (func, file, line, va_args_buffer);
+	pk_print_line (func, file, line, buffer);
+	g_free(buffer);
 	exit (0);
 }
 
