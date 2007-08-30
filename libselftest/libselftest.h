@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __libselftest_H
-#define __libselftest_H
+#ifndef __LIBSELFTEST_H
+#define __LIBSELFTEST_H
 
 #include <glib.h>
 
@@ -58,5 +58,5 @@ void		libselftest_failed	(LibSelfTest *test, const gchar *format, ...);
 void		libselftest_init	(LibSelfTest *test);
 gint		libselftest_finish	(LibSelfTest *test);
 
-#endif	/* __libselftest_H */
+#endif	/* __LIBSELFTEST_H */
 
