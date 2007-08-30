@@ -509,6 +509,10 @@ pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context, c
 	PolKitResult pk_result;
 	const gchar *dbus_name;
 
+#ifdef IGNORE_POLKIT
+	return TRUE;
+#endif
+
 	/* get the dbus sender */
 	dbus_name = dbus_g_method_get_sender (context);
 	pk_result = pk_engine_can_do_action (engine, dbus_name, action);

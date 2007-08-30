@@ -176,6 +176,7 @@ if test x$with_backend = xyum; then
 elif test x$with_backend = xconary; then
     AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
 else
+    AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
     AC_DEFINE(BACKEND_PREFIX, "dummy", [backend prefix])
 fi
 
