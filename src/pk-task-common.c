@@ -117,7 +117,7 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 	command = sections[0];
 
 	/* get size */
-	for (size=0; sections[size]; size++);
+	size = g_strv_length (sections);
 
 	if (strcmp (command, "package") == 0) {
 		if (size != 4) {
@@ -142,7 +142,7 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 		pk_task_description (task, sections[1], group, sections[3], sections[4]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
-	}		
+	}
 out:
 	g_strfreev (sections);
 	return ret;
@@ -169,7 +169,7 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 	/* check if output line */
 	if (line == NULL || strstr (line, "\t") == NULL)
 		return FALSE;
-  
+
 	/* split by tab */
 	sections = g_strsplit (line, "\t", 0);
 	command = sections[0];
@@ -241,7 +241,7 @@ pk_task_parse_common_error (PkTask *task, const gchar *line)
 		pk_task_no_percentage_updates (task);
 	} else {
 		pk_warning ("invalid command '%s'", command);
-	}		
+	}
 out:
 	g_strfreev (sections);
 	return ret;

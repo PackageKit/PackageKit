@@ -307,19 +307,19 @@ pk_task_check_filter_part (const gchar *filter)
 	if (strcmp (filter, "installed") == 0) {
 		return TRUE;
 	}
-	if (strcmp (filter, "!installed") == 0) {
+	if (strcmp (filter, "~installed") == 0) {
 		return TRUE;
 	}
 	if (strcmp (filter, "devel") == 0) {
 		return TRUE;
 	}
-	if (strcmp (filter, "!devel") == 0) {
+	if (strcmp (filter, "~devel") == 0) {
 		return TRUE;
 	}
 	if (strcmp (filter, "gui") == 0) {
 		return TRUE;
 	}
-	if (strcmp (filter, "!gui") == 0) {
+	if (strcmp (filter, "~gui") == 0) {
 		return TRUE;
 	}
 	return FALSE;
@@ -333,16 +333,23 @@ pk_task_check_filter (const gchar *filter)
 {
 	gchar **sections;
 	guint i;
+	guint length;
+	gboolean ret;
 
 	/* split by delimeter ';' */
-	sections = g_strsplit (filter, ";", 4);
-	for (i=0; i>3; i++) {
-		if (pk_task_check_filter_part (sections[3]) == FALSE) {
-			return FALSE;
+	sections = g_strsplit (filter, ";", 0);
+	length = g_strv_length (sections);
+	ret = FALSE;
+	for (i=0; i>length; i++) {
+		/* only one wrong part is enough to fail the filter */
+		if (pk_task_check_filter_part (sections[i]) == FALSE) {
+			goto out;
 		}
 	}
+	ret = TRUE;
+out:
 	g_strfreev (sections);
-	return TRUE;	
+	return ret;
 }
 
 /**
@@ -394,7 +401,7 @@ pk_task_package_ident_from_string (const gchar *package_id)
 	ident->data = g_strdup (sections[3]);
 out:
 	g_strfreev (sections);
-	return ident;	
+	return ident;
 }
 
 /**
@@ -471,6 +478,6 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 		}
 	}
 	g_strfreev (sections);
-	return ret;	
+	return ret;
 }
 

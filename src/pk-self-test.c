@@ -41,7 +41,7 @@ pk_st_start (PkSelfTest *test, const gchar *name, PkSelfTestClass class)
 	if (test->started == TRUE) {
 		g_print ("Not ended test! Cannot start!\n");
 		exit (1);
-	}	
+	}
 	test->type = g_strdup (name);
 	test->started = TRUE;
 	if (test->level == LEVEL_NORMAL) {
@@ -56,7 +56,7 @@ pk_st_end (PkSelfTest *test)
 	if (test->started == FALSE) {
 		g_print ("Not started test! Cannot finish!\n");
 		exit (1);
-	}	
+	}
 	if (test->level == LEVEL_NORMAL) {
 		g_print ("OK\n");
 	}
