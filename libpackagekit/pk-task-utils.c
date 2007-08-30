@@ -384,6 +384,12 @@ pk_task_package_ident_from_string (const gchar *package_id)
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (package_id, ";", 4);
+	if (g_strv_length(sections)!=4)
+	{
+		pk_debug("Package ident '%s' is invalid (sections=%d)",package_id,g_strv_length(sections));
+		pk_task_package_ident_free(ident);
+		return NULL;
+	}
 	ident->name = g_strdup (sections[0]);
 	ident->version = g_strdup (sections[1]);
 	ident->arch = g_strdup (sections[2]);
