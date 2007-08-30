@@ -2,17 +2,15 @@ Order of no particular importance:
 
 Core:
 * Add a queing API
-* Add GetStatus and ::StatusChanged to get package data as string for UI
 * Add a way to import GPG keys
 * Split up PolicyKit install into different types
 * Add files in package into Description signal
-* Add size into description signal
+* Add package size into description signal
 * Valgrind everything
+* Add GetPercentage and GetSubPercentage for coldplugging
 
 Backends:
 * Add conary backend
 * Dummy backend should use subpercent and install deps
-* yum-find-name.py has to emit full version and epoch, not just the version
-* Add enough new error enums for the yum backend
-* Install does not work for the yum backend (code error, not backend error)
+* Add enough new error enums for all the backends
 
