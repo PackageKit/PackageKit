@@ -156,7 +156,7 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
-	if (pk_task_check_filter (filter) == FALSE) {
+	if (pk_task_filter_check (filter) == FALSE) {
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 		return TRUE;
@@ -184,7 +184,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
-	if (pk_task_check_filter (filter) == FALSE) {
+	if (pk_task_filter_check (filter) == FALSE) {
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 		return TRUE;
@@ -207,7 +207,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
-	if (pk_task_check_filter (filter) == FALSE) {
+	if (pk_task_filter_check (filter) == FALSE) {
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 		return TRUE;
@@ -234,7 +234,7 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
-	if (pk_task_check_filter (filter) == FALSE) {
+	if (pk_task_filter_check (filter) == FALSE) {
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 		return TRUE;
