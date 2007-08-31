@@ -85,7 +85,7 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%i %s %s", item->job, pk_task_status_to_text (item->status), item->package);
+		g_print ("%i %s %s", item->job, pk_task_status_to_text (item->role), item->package_id);
 	}
 	g_print ("\n");
 	return TRUE;
@@ -153,8 +153,8 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, guint ru
 	/* get correct item */
 	item = pk_task_list_find_existing_job (tlist, job);
 
-	pk_debug ("emit task-list-finished %i, %s, %i", item->status, item->package, runtime);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package, runtime);
+	pk_debug ("emit task-list-finished %i, %s, %i", item->status, item->package_id, runtime);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package_id, runtime);
 }
 
 /**
@@ -215,8 +215,8 @@ pk_task_list_refresh (PkTaskList *tlist)
 			g_signal_connect (item->monitor, "error-code",
 					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
 			pk_task_monitor_set_job (item->monitor, job);
+			pk_task_monitor_get_role (item->monitor, &item->role, &item->package_id);
 			pk_task_monitor_get_status (item->monitor, &item->status);
-			item->package = NULL;
 
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);
@@ -232,7 +232,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 		if (item->valid == FALSE) {
 			pk_debug ("remove %i", item->job);
 			g_object_unref (item->monitor);
-			g_free (item->package);
+			g_free (item->package_id);
 			g_ptr_array_remove (tlist->priv->task_list, item);
 			g_free (item);
 		}
@@ -321,11 +321,24 @@ pk_task_list_init (PkTaskList *tlist)
 static void
 pk_task_list_finalize (GObject *object)
 {
+	guint i;
+	PkTaskListItem *item;
 	PkTaskList *tlist;
+
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (object));
 	tlist = PK_TASK_LIST (object);
 	g_return_if_fail (tlist->priv != NULL);
+
+	/* remove all watches */
+	for (i=0; i<tlist->priv->task_list->len; i++) {
+		item = g_ptr_array_index (tlist->priv->task_list, i);
+		pk_debug ("remove %i", item->job);
+		g_object_unref (item->monitor);
+		g_free (item->package_id);
+		g_ptr_array_remove (tlist->priv->task_list, item);
+		g_free (item);
+	}
 
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
 	g_object_unref (tlist->priv->job_list);

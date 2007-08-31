@@ -41,7 +41,8 @@ typedef struct
 {
 	guint			 job;
 	PkTaskStatus		 status;
-	gchar			*package;
+	PkTaskStatus		 role;
+	gchar			*package_id;
 	PkTaskMonitor		*monitor;
 	gboolean		 valid;
 } PkTaskListItem;

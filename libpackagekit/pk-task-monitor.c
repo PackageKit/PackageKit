@@ -100,6 +100,7 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
 	GError *error;
 
 	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (status != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
 	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
 
@@ -126,13 +127,15 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
  * pk_task_monitor_get_role:
  **/
 gboolean
-pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, const gchar **package_id)
+pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, gchar **package_id)
 {
 	gboolean ret;
 	GError *error;
 	gchar *status_text;
+	gchar *package_id_temp;
 
 	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (status != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
 	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
 
@@ -140,7 +143,7 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, const g
 	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetJobRole", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRING, &package_id_temp,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
@@ -149,6 +152,9 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, const g
 		return FALSE;
 	}
 	*status = pk_task_status_from_text (status_text);
+	if (package_id != NULL) {
+		*package_id = g_strdup (package_id_temp);
+	}
 	return TRUE;
 }
 

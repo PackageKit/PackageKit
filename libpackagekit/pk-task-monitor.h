@@ -57,7 +57,7 @@ gboolean	 pk_task_monitor_get_status		(PkTaskMonitor	*tmonitor,
 							 PkTaskStatus	*status);
 gboolean	 pk_task_monitor_get_role		(PkTaskMonitor	*tmonitor,
 							 PkTaskStatus	*status,
-							 const gchar	**package_id);
+							 gchar		**package_id);
 
 G_END_DECLS
 
