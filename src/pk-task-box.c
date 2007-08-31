@@ -83,7 +83,7 @@ add_packages_from_list (PkTask *task, GList *list)
 /* TODO: rewrite and share this code */
 static void
 parse_filter(const gchar *filter,  gboolean *installed,  gboolean *available,  gboolean *devel,
-        gboolean *nondevel, gboolean *gui, gboolean *text)
+	gboolean *nondevel, gboolean *gui, gboolean *text)
 {
 	gchar **sections = NULL;
 	gint i = 0;
@@ -240,11 +240,11 @@ find_packages (PkTask *task, const gchar *search, const gchar *filter, gint mode
 	}
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, search);
 
-        if (pk_task_filter_check (filter) == FALSE) {
-                pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
-                pk_task_finished (task, PK_TASK_EXIT_FAILED);
-                return TRUE;
-        }
+	if (pk_task_filter_check (filter) == FALSE) {
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
 
 	parse_filter(filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
