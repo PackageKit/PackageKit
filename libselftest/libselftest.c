@@ -24,6 +24,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
+#include <glib/gprintf.h>
 
 #include "libselftest.h"
 
@@ -92,12 +93,13 @@ void
 libst_title (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
-	gchar va_args_buffer [1025];
+	gchar *va_args_buffer = NULL;
 	if (test->level == LEVEL_ALL) {
 		va_start (args, format);
-		g_vsnprintf (va_args_buffer, 1024, format, args);
+		g_vasprintf (&va_args_buffer, format, args);
 		va_end (args);
 		g_print ("> check #%u\t%s: \t%s...", test->total+1, test->type, va_args_buffer);
+		g_free(va_args_buffer);
 	}
 	test->total++;
 }
@@ -106,16 +108,17 @@ void
 libst_success (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
-	gchar va_args_buffer [1025];
+	gchar *va_args_buffer = NULL;
 	if (test->level == LEVEL_ALL) {
 		if (format == NULL) {
 			g_print ("...OK\n");
 			goto finish;
 		}
 		va_start (args, format);
-		g_vsnprintf (va_args_buffer, 1024, format, args);
+		g_vasprintf (&va_args_buffer, format, args);
 		va_end (args);
 		g_print ("...OK [%s]\n", va_args_buffer);
+		g_free(va_args_buffer);
 	}
 finish:
 	test->succeeded++;
@@ -125,16 +128,17 @@ void
 libst_failed (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
-	gchar va_args_buffer [1025];
+	gchar *va_args_buffer = NULL;
 	if (test->level == LEVEL_ALL || test->level == LEVEL_NORMAL) {
 		if (format == NULL) {
 			g_print ("FAILED\n");
 			goto failed;
 		}
 		va_start (args, format);
-		g_vsnprintf (va_args_buffer, 1024, format, args);
+		g_vasprintf (&va_args_buffer, format, args);
 		va_end (args);
 		g_print ("FAILED [%s]\n", va_args_buffer);
+		g_free(va_args_buffer);
 	}
 failed:
 	exit (1);
