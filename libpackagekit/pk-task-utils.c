@@ -383,13 +383,18 @@ pk_task_package_ident_new (void)
 PkPackageIdent*
 pk_task_package_ident_from_string (const gchar *package_id)
 {
-	gchar **sections;
+	gchar **sections = NULL;
 	PkPackageIdent *ident = NULL;
 
+	if (package_id == NULL) {
+		pk_warning ("Package ident is null!");
+		goto out;
+	}
+
 	/* split by delimeter ';' */
-	sections = g_strsplit (package_id, ";", 4);
+	sections = g_strsplit (package_id, ";", 0);
 	if (g_strv_length (sections) != 4) {
-		pk_debug ("Package ident '%s' is invalid (sections=%d)", package_id, g_strv_length (sections));
+		pk_warning ("Package ident '%s' is invalid (sections=%d)", package_id, g_strv_length (sections));
 		goto out;
 	}
 
@@ -400,7 +405,9 @@ pk_task_package_ident_from_string (const gchar *package_id)
 	ident->arch = g_strdup (sections[2]);
 	ident->data = g_strdup (sections[3]);
 out:
-	g_strfreev (sections);
+	if (sections != NULL) {
+		g_strfreev (sections);
+	}
 	return ident;
 }
 
@@ -492,12 +499,16 @@ libst_task_utils (LibSelfTest *test)
 {
 	gboolean ret;
 	gchar *text;
+	const gchar *temp;
+	PkPackageIdent *ident;
 
 	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
-	/************************************************************/
+	/************************************************************
+	 ****************          ACTIONS         ******************
+	 ************************************************************/
 	libst_title (test, "test the action building (single)");
 	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, 0);
 	if (strcmp (text, "install") == 0) {
@@ -534,6 +545,80 @@ libst_task_utils (LibSelfTest *test)
 		libst_failed (test, "found present");
 	}
 	g_free (text);
+
+	/************************************************************
+	 ****************          IDENT           ******************
+	 ************************************************************/
+	libst_title (test, "get an ident object");
+	ident = pk_task_package_ident_new ();
+	if (ident != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test ident freeing early");
+	ret = pk_task_package_ident_free (ident);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "parse incorrect package_id from string (null)");
+	temp = NULL;
+	ident = pk_task_package_ident_from_string (temp);
+	if (ident == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed an invalid string '%s'", temp);
+	}
+
+	/************************************************************/
+	libst_title (test, "parse incorrect package_id from string (empty)");
+	temp = "";
+	ident = pk_task_package_ident_from_string (temp);
+	if (ident == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed an invalid string '%s'", temp);
+	}
+
+	/************************************************************/
+	libst_title (test, "parse incorrect package_id from string (not enough)");
+	temp = "moo;0.0.1;i386";
+	ident = pk_task_package_ident_from_string (temp);
+	if (ident == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed an invalid string '%s'", temp);
+	}
+
+	/************************************************************/
+	libst_title (test, "parse package_id from string");
+	ident = pk_task_package_ident_from_string ("moo;0.0.1;i386;fedora");
+	if (strcmp (ident->name, "moo") == 0 &&
+	    strcmp (ident->arch, "i386") == 0 &&
+	    strcmp (ident->data, "fedora") == 0 &&
+	    strcmp (ident->version, "0.0.1") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test ident building with valid data");
+	text = pk_task_package_ident_to_string (ident);
+	if (strcmp (text, "moo;0.0.1;i386;fedora") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "package_id is '%s'", text);
+	}
+	g_free (text);
+	pk_task_package_ident_free (ident);
+
 
 	libst_end (test);
 }
