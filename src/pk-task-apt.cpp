@@ -41,6 +41,7 @@
 #include "pk-task-common.h"
 #include "config.h"
 #include "pk-network.h"
+#include "pk-package-id.h"
 
 static void pk_task_class_init(PkTaskClass * klass);
 static void pk_task_init(PkTask * task);
@@ -502,7 +503,7 @@ static void *do_search_task(gpointer data)
 
 		if (Match == true)// && pk_task_filter_package_name(st->task,P.Name().c_str()))
 		{
-			gchar *pid = pk_task_package_ident_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
+			gchar *pid = pk_package_id_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
 			pk_task_package(st->task, J->installed, pid, P.ShortDesc().c_str());
 			g_free(pid);
 		}
@@ -737,8 +738,6 @@ static void pk_task_finalize(GObject * object)
 	g_return_if_fail(PK_IS_TASK(object));
 	task = PK_TASK(object);
 	g_return_if_fail(task->priv != NULL);
-	g_free(task->package);
-	g_object_unref(task->priv->network);
 	G_OBJECT_CLASS(pk_task_parent_class)->finalize(object);
 }
 
