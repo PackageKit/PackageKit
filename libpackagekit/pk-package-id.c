@@ -69,7 +69,6 @@ pk_package_id_split (const gchar *package_id)
 	}
 
 	/* name has to be valid */
-	sections = g_strsplit (package_id, ";", 0);
 	if (strlen (sections[0]) == 0) {
 		pk_warning ("Package ident package is empty");
 		goto out;
@@ -117,10 +116,18 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 	/* create new object */
 	ident = pk_package_id_new ();
-	ident->name = g_strdup (sections[0]);
-	ident->version = g_strdup (sections[1]);
-	ident->arch = g_strdup (sections[2]);
-	ident->data = g_strdup (sections[3]);
+	if (strlen (sections[0]) > 0) {
+		ident->name = g_strdup (sections[0]);
+	}
+	if (strlen (sections[1]) > 0) {
+		ident->version = g_strdup (sections[1]);
+	}
+	if (strlen (sections[2]) > 0) {
+		ident->arch = g_strdup (sections[2]);
+	}
+	if (strlen (sections[3]) > 0) {
+		ident->data = g_strdup (sections[3]);
+	}
 	g_strfreev (sections);
 	return ident;
 }
