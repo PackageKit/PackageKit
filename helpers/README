@@ -257,7 +257,6 @@ STDERR		error<tab>$enum<tab>description
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	"0" if downloading, "1" if installing or updating
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
-				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are downloaded or installed then emit them to the screen.
 				This allows a summary to be presented after and during the transaction.
@@ -296,7 +295,6 @@ STDERR		error<tab>$enum<tab>description
 STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	"0" if downloading, "1" if updating
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
-				A package_id always has to have three sections.
 		$summary:	The one line package summary, e.g. "Clipart for OpenOffice"
 		NOTE:		As packages are downloaded or updated then emit them to the screen.
 				This allows a summary to be presented after and during the transaction.
