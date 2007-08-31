@@ -354,8 +354,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         if pkg:
             id = self.get_package_id(pkg.name, pkg.version,pkg.arch, pkg.repo)
+            desc = pkg.description
+            desc = desc.replace('\n\n',';')
+            desc = desc.replace('\n',' ')            
             self.description(id, "%s-%s" % (pkg.version, pkg.release),
-                                 repr(pkg.description), pkg.url)
+                                 desc, pkg.url)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
     
@@ -425,6 +428,7 @@ class DownloadCallback( BaseMeter ):
         self.totalPct = startPct
         
     def _getPackage(self,name):
+        name = name.split('-')[0]
         if self.pkgs:
             for pkg in self.pkgs:
                 if pkg.name == name:
@@ -494,7 +498,11 @@ class DownloadCallback( BaseMeter ):
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
-                    self.base._show_package(pkgs,1)
+                    self.base._show_package(pkg,1)
+                else:
+                    id = self.base.get_package_id(name, '', '', '')
+                    self.base.package(id,1, "Repository MetaData")
+    
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -509,15 +517,20 @@ class PackageKitCallback(RPMBaseCallback):
         bump = float(self.numPct)/ts_total
         pct = int(self.startPct + (ts_current * bump))
         return pct
+    
+    def _showName(self):
+        id = self.base.get_package_id(self.curpkg, '', '', '')
+        self.base.package(id,1, "")
+        
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != self.curpkg:
             self.curpkg = str(package)
-            self.base.data(self.curpkg)
             if action in TS_INSTALL_STATES:
                 self.base.status(STATE_INSTALL)
             elif action in TS_REMOVE_STATES:
                 self.base.status(STATE_REMOVE)
+            self._showName()
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
