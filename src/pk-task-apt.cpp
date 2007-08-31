@@ -105,6 +105,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_UPDATE_SYSTEM,
 				        PK_TASK_ACTION_SEARCH_NAME,
 				        PK_TASK_ACTION_SEARCH_DETAILS,
+				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
 }
@@ -194,7 +195,7 @@ void *DoUpdate(gpointer data)
 		Lock.Fd(GetLock(_config->FindDir("Dir::State::Lists") + "lock"));
 		if (_error->PendingError() == true)
 		{
-		    _error->DumpErrors();
+			_error->DumpErrors();
 			pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Unable to lock the list directory");
 			pk_task_finished(ud->task, PK_TASK_EXIT_FAILED);
 			return NULL;
@@ -618,6 +619,100 @@ gboolean pk_task_get_deps(PkTask * task, const gchar * package)
 	return FALSE;
 }
 
+struct desc_task
+{
+	PkTask *task;
+	PkPackageId *pi;
+};
+
+static GHashTable *PackageRecord(pkgCache::VerIterator V)
+{
+	GHashTable *ret = NULL;
+	
+	pkgCache & pkgCache = *(getCache());
+	// Find an appropriate file
+	pkgCache::VerFileIterator Vf = V.FileList();
+	for (; Vf.end() == false; Vf++)
+	{
+		if ((Vf.File()->Flags & pkgCache::Flag::NotSource) == 0)
+			break;
+		if (Vf.end() == true)
+			Vf = V.FileList();
+	}
+		
+	// Check and load the package list file
+	pkgCache::PkgFileIterator I = Vf.File();
+	if (I.IsOk() == false)
+		return NULL;
+	
+	FileFd PkgF(I.FileName(),FileFd::ReadOnly);
+	if (_error->PendingError() == true)
+		return NULL;
+	
+	// Read the record
+	char *Buffer = new char[pkgCache.HeaderP->MaxVerFileSize+1];
+	Buffer[V.FileList()->Size] = '\0';
+	if (PkgF.Seek(V.FileList()->Offset) == false ||
+		 PkgF.Read(Buffer,V.FileList()->Size) == false)
+	{
+		delete [] Buffer;
+		return NULL;
+	}
+	//pk_debug("buffer: '%s'\n",Buffer);
+	ret = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
+	gchar ** lines = g_strsplit(Buffer,"\n",-1);
+	guint i;
+	for (i=0;i<g_strv_length(lines);i++)
+	{
+		gchar ** parts = g_strsplit_set(lines[i],": ",2);
+		if (g_strv_length(parts)>1)
+		{
+			//pk_debug("entry =  '%s' : '%s'",parts[0],parts[1]);
+			if (parts[0][0]=='\0')
+			{
+				gchar *oldval = g_strdup((const gchar*)g_hash_table_lookup(ret,"Description"));
+				g_hash_table_insert(ret,g_strdup("Description"),g_strconcat(oldval, "\n",parts[1],NULL));
+				//pk_debug("new entry =  '%s'",(const gchar*)g_hash_table_lookup(ret,"Description"));
+				g_free(oldval);
+			}
+			else
+				g_hash_table_insert(ret,g_strdup(parts[0]),g_strdup(parts[1]));
+		}
+		g_strfreev(parts);
+	}
+	g_strfreev(lines);
+	return ret;
+
+}
+
+// get_desc_task
+static void *get_desc_task(gpointer data)
+{
+	desc_task *dt = (desc_task *) data;
+
+	pk_task_change_job_status(dt->task, PK_TASK_STATUS_QUERY);
+	pk_task_no_percentage_updates(dt->task);
+
+	pk_debug("finding %s", dt->pi->name);
+	pkgCache & pkgCache = *(getCache());
+	pkgDepCache::Policy Plcy;
+
+	// Map versions that we want to write out onto the VerList array.
+	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
+	{
+		if (strcmp(dt->pi->name, P.Name())!=0)
+			continue;
+
+		// Find the proper version to use. 
+		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
+		GHashTable *pkg = PackageRecord(V);
+		pk_task_description(dt->task,dt->pi->name,PK_TASK_GROUP_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
+		g_hash_table_unref(pkg);
+	}
+	pk_task_finished(dt->task, PK_TASK_EXIT_SUCCESS);
+	return NULL;
+}
+
 /**
  * pk_task_get_description:
  **/
@@ -631,8 +726,29 @@ gboolean pk_task_get_description(PkTask * task, const gchar * package)
 		return FALSE;
 	}
 
- 	pk_task_not_implemented_yet (task, "GetDescription");
-	return FALSE;
+ 	desc_task *data = g_new(struct desc_task, 1);
+	if (data == NULL)
+	{
+		pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't allocate memory for search task");
+		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+	data->task = task;
+	data->pi = pk_package_id_new_from_string(package);
+	if (data->pi == NULL)
+	{
+		pk_task_error_code(task, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "invalid package id");
+		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+	if (g_thread_create(get_desc_task, data, false, NULL) == NULL)
+	{
+		pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't spawn thread");
+		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+	}
+	return TRUE;
 }
 
 /**
