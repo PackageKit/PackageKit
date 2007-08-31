@@ -400,7 +400,6 @@ pk_task_client_search_details (PkTaskClient *tclient, const gchar *filter, const
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "SearchDetails", &error,
@@ -443,7 +442,6 @@ pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const g
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "SearchGroup", &error,
@@ -463,6 +461,8 @@ pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const g
 		pk_warning ("SearchGroup failed!");
 		return FALSE;
 	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
@@ -486,7 +486,6 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "SearchFile", &error,
@@ -506,6 +505,8 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 		pk_warning ("SearchFile failed!");
 		return FALSE;
 	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
@@ -529,7 +530,6 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDeps", &error,
@@ -548,6 +548,8 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("GetDeps failed!");
 		return FALSE;
 	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
@@ -571,7 +573,6 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDescription", &error,
@@ -590,6 +591,8 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 		pk_warning ("GetDescription failed!");
 		return FALSE;
 	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
@@ -687,7 +690,6 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 		pk_warning ("Already assigned");
 		return FALSE;
 	}
-	tclient->priv->assigned = TRUE;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "RefreshCache", &error,
@@ -706,6 +708,8 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 		pk_warning ("RefreshCache failed!");
 		return FALSE;
 	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
