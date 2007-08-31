@@ -11,6 +11,14 @@ Core:
 * Add a Launch() method to startup when pk-application is launched
 * task_client has to return GError
 
+Add:
+    <method name="GetJobTask"> <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
+      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
+      <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
+    </method>
+
+
 Backends:
 * Add conary backend
 * Dummy backend should use subpercent and install deps

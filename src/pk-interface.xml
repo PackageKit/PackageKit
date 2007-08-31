@@ -2,8 +2,6 @@
 <node name="/">
   <interface name="org.freedesktop.PackageKit">
 
-    <!-- ASYNCHRONOUS -->
-
     <!-- Schedule new jobs -->
     <method name="GetUpdates">
       <arg type="u" name="job" direction="out"/>
@@ -61,7 +59,7 @@
       <arg type="u" name="job" direction="out"/>
     </method>
 
-    <!-- state has changed, we want to broadcast this to all jobs -->
+    <!-- signals emitted from any job -->
     <signal name="JobStatusChanged">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
@@ -110,25 +108,26 @@
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
 
+    <!-- Do things or query jobs -->
+    <method name="CancelJobTry"> <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+    </method>
+    <method name="GetJobStatus"> <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
+    </method>
 
-    <!-- SYNCHRONOUS -->
-
-    <!-- Job management -->
+    <!-- Job list -->
     <method name="GetJobList">
       <arg type="au" name="jobs" direction="out"/>
     </method>
     <signal name="JobListChanged">
       <arg type="au" name="jobs" direction="out"/>
     </signal>
-    <method name="GetJobStatus"> <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
-      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
-    </method>
-    <method name="CancelJobTry"> <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
-    </method>
+
+    <!-- General methods -->
     <method name="GetActions">
-      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions "groups;install;remove" etc. TODO: Document -->
+      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions "groups;install;remove" etc -->
     </method>
 
   </interface>
