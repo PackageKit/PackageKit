@@ -724,7 +724,7 @@ static void pk_task_init(PkTask * task)
 	task->priv = PK_TASK_GET_PRIVATE(task);
 	task->priv->network = pk_network_new();
 	task->signals = signals;
-	pk_task_clear(task);
+	pk_task_common_init(task);
 }
 
 /**

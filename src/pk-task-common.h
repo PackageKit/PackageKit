@@ -27,6 +27,8 @@
 
 G_BEGIN_DECLS
 
+gboolean	 pk_task_common_init			(PkTask		*task);
+gboolean	 pk_task_common_free			(PkTask		*task);
 guint		 pk_task_get_job			(PkTask		*task);
 gboolean	 pk_task_set_job			(PkTask		*task,
 							 guint		 job);
@@ -36,12 +38,20 @@ gboolean	 pk_task_change_sub_percentage		(PkTask		*task,
 							 guint		 percentage);
 gboolean	 pk_task_change_job_status		(PkTask		*task,
 							 PkTaskStatus	 status);
+gboolean	 pk_task_get_job_status			(PkTask		*task,
+							 PkTaskStatus	*status);
+gboolean	 pk_task_set_job_role			(PkTask		*task,
+							 PkTaskStatus	 status,
+							 const gchar	*package_id);
+gboolean	 pk_task_get_job_role			(PkTask		*task,
+							 PkTaskStatus	*status,
+							 const gchar	**package_id);
 gboolean	 pk_task_no_percentage_updates		(PkTask		*task);
 gboolean	 pk_task_finished			(PkTask		*task,
 							 PkTaskExit	 exit);
 gboolean	 pk_task_package			(PkTask		*task,
 							 guint		 value,
-							 const gchar	*package,
+							 const gchar	*package_id,
 							 const gchar	*summary);
 gboolean	 pk_task_require_restart		(PkTask		*task,
 							 PkTaskRestart	 restart,
@@ -55,14 +65,8 @@ gboolean	 pk_task_error_code			(PkTask		*task,
 							 guint		 code,
 							 const gchar	*details, ...);
 gboolean	 pk_task_assign				(PkTask		*task);
-gboolean	 pk_task_get_job_status			(PkTask		*task,
-							 PkTaskStatus	*status);
-gboolean	 pk_task_clear				(PkTask		*task);
 gboolean	 pk_task_setup_signals			(GObjectClass	*object_class,
 							 guint		*signals);
-gchar		*pk_task_get_data			(PkTask		*task);
-gboolean	 pk_task_set_data			(PkTask		*task,
-							 const gchar	*data);
 gboolean	 pk_task_spawn_helper			(PkTask		*task,
 							 const gchar	*script, ...);
 gboolean	 pk_task_not_implemented_yet		(PkTask		*task,

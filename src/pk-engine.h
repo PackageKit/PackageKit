@@ -128,6 +128,11 @@ gboolean	 pk_engine_get_job_status		(PkEngine	*engine,
 							 guint		 job,
 							 const gchar	**status,
 							 GError		**error);
+gboolean	 pk_engine_get_job_role			(PkEngine	*engine,
+							 guint		 job,
+							 const gchar	**status,
+							 const gchar	**package_id,
+							 GError		**error);
 gboolean	 pk_engine_cancel_job_try		(PkEngine	*engine,
 							 guint		 job,
 							 GError		**error);

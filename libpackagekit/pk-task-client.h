@@ -83,18 +83,23 @@ gboolean	 pk_task_client_search_file		(PkTaskClient	*tclient,
 							 const gchar	*filter,
 							 const gchar	*search);
 gboolean	 pk_task_client_get_deps		(PkTaskClient	*tclient,
-							 const gchar	*package);
+							 const gchar	*package_id);
 gboolean	 pk_task_client_get_description		(PkTaskClient	*tclient,
-							 const gchar	*package);
+							 const gchar	*package_id);
 gboolean	 pk_task_client_remove_package		(PkTaskClient	*tclient,
 							 const gchar	*package,
 							 gboolean	 allow_deps);
 gboolean	 pk_task_client_refresh_cache		(PkTaskClient	*tclient,
 							 gboolean	 force);
 gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
-							 const gchar	*package);
+							 const gchar	*package_id);
 gboolean	 pk_task_client_cancel_job_try		(PkTaskClient	*tclient);
 gchar		*pk_task_client_get_actions		(PkTaskClient	*tclient);
+gboolean	 pk_task_client_get_job_role		(PkTaskClient	*tclient,
+							 PkTaskStatus	*status,
+							 const gchar	**package_id);
+gboolean	 pk_task_client_get_job_status		(PkTaskClient	*tclient,
+							 PkTaskStatus	*status);
 gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
 
 G_END_DECLS

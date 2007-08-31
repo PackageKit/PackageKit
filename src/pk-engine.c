@@ -375,7 +375,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 
 	/* remove from array and unref */
 	g_ptr_array_remove (engine->priv->array, task);
-	g_timer_destroy (task->timer);
+	pk_task_common_free (task);
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
 	pk_engine_job_list_changed (engine);
@@ -437,12 +437,8 @@ pk_engine_new_task (PkEngine *engine)
 	g_signal_connect (task, "allow-interrupt",
 			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
 
-	/* track how long the job has been running for */
-	task->timer = g_timer_new ();
-
 	/* initialise some stuff */
-	task->spawn = NULL;
-	task->is_killable = FALSE;
+	pk_task_common_init (task);
 
 	/* set the job ID */
 	pk_task_set_job (task, job);
@@ -1090,6 +1086,31 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 		return FALSE;
 	}
 	pk_task_get_job_status (task, &status_enum);
+	*status = g_strdup (pk_task_status_to_text (status_enum));
+
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_job_role:
+ **/
+gboolean
+pk_engine_get_job_role (PkEngine *engine, guint job,
+			const gchar **status, const gchar **package_id, GError **error)
+{
+	PkTask *task;
+	PkTaskStatus status_enum;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	task = pk_get_task_from_job (engine, job);
+	if (task == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_task_get_job_role (task, &status_enum, package_id);
 	*status = g_strdup (pk_task_status_to_text (status_enum));
 
 	return TRUE;

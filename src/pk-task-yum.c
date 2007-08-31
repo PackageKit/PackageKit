@@ -93,7 +93,7 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, NULL);
 	pk_task_spawn_helper (task, "get-updates.py", NULL);
 	return TRUE;
 }
@@ -119,7 +119,7 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 	}
 
 	/* easy as that */
-	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_REFRESH_CACHE, NULL);
 	pk_task_spawn_helper (task, "refresh-cache.py", NULL);
 
 	return TRUE;
@@ -138,7 +138,7 @@ pk_task_update_system (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, NULL);
 	pk_task_spawn_helper (task, "update-system.py", NULL);
 	return TRUE;
 }
@@ -156,17 +156,11 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
-	if (pk_task_filter_check (filter) == FALSE) {
-		pk_task_error_code (task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
-		pk_task_finished (task, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_no_percentage_updates (task);
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_spawn_helper (task, "search-name.py", filter, search, NULL);
 	return TRUE;
 }
@@ -193,7 +187,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
 	return TRUE;
 }
@@ -220,7 +214,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_spawn_helper (task, "search-group.py", filter, search, NULL);
 	return TRUE;
 }
@@ -246,6 +240,7 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 
 	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
@@ -267,7 +262,7 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
 	pk_task_spawn_helper (task, "get-deps.py", package_id, NULL);
 	return TRUE;
 }
@@ -288,7 +283,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 	/* only copy this code if you can kill the process with no ill effect */
 	pk_task_allow_interrupt (task, TRUE);
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
 	pk_task_spawn_helper (task, "get-description.py", package_id, NULL);
 	return TRUE;
 }
@@ -313,7 +308,7 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 		deps = "no";
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_REMOVE, package_id);
 	pk_task_spawn_helper (task, "remove.py", deps, package_id, NULL);
 	return TRUE;
 }
@@ -338,7 +333,7 @@ pk_task_install_package (PkTask *task, const gchar *package_id)
 		return TRUE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_INSTALL);
+	pk_task_set_job_role (task, PK_TASK_STATUS_INSTALL, package_id);
 	pk_task_spawn_helper (task, "install.py", package_id, NULL);
 	return TRUE;
 }
@@ -363,7 +358,7 @@ pk_task_update_package (PkTask *task, const gchar *package_id)
 		return TRUE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, package_id);
 	pk_task_spawn_helper (task, "update.py", package_id, NULL);
 	return TRUE;
 }
@@ -422,7 +417,6 @@ pk_task_init (PkTask *task)
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->signals = signals;
 	task->priv->network = pk_network_new ();
-	pk_task_clear (task);
 }
 
 /**
@@ -436,8 +430,6 @@ pk_task_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TASK (object));
 	task = PK_TASK (object);
 	g_return_if_fail (task->priv != NULL);
-	g_free (task->package);
-	g_object_unref (task->priv->network);
 	G_OBJECT_CLASS (pk_task_parent_class)->finalize (object);
 }
 

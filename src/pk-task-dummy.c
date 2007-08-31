@@ -89,7 +89,7 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, NULL);
 	pk_task_package (task, 0, "powertop;1.8-1.fc8;i386;fedora",
 			 "Power consumption monitor");
 	pk_task_package (task, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
@@ -112,7 +112,7 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_REFRESH_CACHE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_REFRESH_CACHE, NULL);
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
 }
@@ -144,7 +144,7 @@ pk_task_update_system (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, NULL);
 	task->priv->progress_percentage = 0;
 	pk_task_require_restart (task, PK_TASK_RESTART_SYSTEM, NULL);
 	g_timeout_add (1000, pk_task_update_system_timeout, task);
@@ -184,8 +184,7 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 		return FALSE;
 	}
 
-	task->package = strdup (search);
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_no_percentage_updates (task);
 
 	g_timeout_add (2000, pk_task_search_name_timeout, task);
@@ -198,6 +197,7 @@ pk_task_search_name (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 {
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
@@ -210,6 +210,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 {
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
@@ -222,6 +223,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 {
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
 	pk_task_package (task, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
@@ -232,7 +234,7 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
  * pk_task_get_deps:
  **/
 gboolean
-pk_task_get_deps (PkTask *task, const gchar *package)
+pk_task_get_deps (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -241,8 +243,7 @@ pk_task_get_deps (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	task->package = strdup (package);
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
 	pk_task_package (task, 1, "glib2;2.14.0;i386;fedora",
 			 "The GLib library");
 	pk_task_package (task, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
@@ -256,7 +257,7 @@ pk_task_get_deps (PkTask *task, const gchar *package)
  * pk_task_get_description:
  **/
 gboolean
-pk_task_get_description (PkTask *task, const gchar *package)
+pk_task_get_description (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -265,7 +266,7 @@ pk_task_get_description (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
 	pk_task_description (task, "gnome-power-manager;2.6.19;i386;fedora", PK_TASK_GROUP_PROGRAMMING,
 "Scribus is an desktop open source page layout program with "
 "the aim of producing commercial grade output in PDF and "
@@ -284,7 +285,7 @@ pk_task_get_description (PkTask *task, const gchar *package)
  * pk_task_remove_package:
  **/
 gboolean
-pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
+pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -293,8 +294,7 @@ pk_task_remove_package (PkTask *task, const gchar *package, gboolean allow_deps)
 		return FALSE;
 	}
 
-	task->package = strdup (package);
-	pk_task_change_job_status (task, PK_TASK_STATUS_REMOVE);
+	pk_task_set_job_role (task, PK_TASK_STATUS_REMOVE, package_id);
 	pk_task_error_code (task, PK_TASK_ERROR_CODE_NO_NETWORK, "No network connection available");
 	pk_task_finished (task, PK_TASK_EXIT_FAILED);
 
@@ -321,7 +321,7 @@ pk_task_install_timeout (gpointer data)
  * pk_task_install_package:
  **/
 gboolean
-pk_task_install_package (PkTask *task, const gchar *package)
+pk_task_install_package (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -330,8 +330,7 @@ pk_task_install_package (PkTask *task, const gchar *package)
 		return FALSE;
 	}
 
-	task->package = strdup (package);
-	pk_task_change_job_status (task, PK_TASK_STATUS_DOWNLOAD);
+	pk_task_set_job_role (task, PK_TASK_STATUS_INSTALL, package_id);
 	task->priv->progress_percentage = 0;
 	g_timeout_add (1000, pk_task_install_timeout, task);
 	return TRUE;
@@ -350,8 +349,7 @@ pk_task_update_package (PkTask *task, const gchar *package_id)
 		return FALSE;
 	}
 
-	task->package = strdup (package_id);
-	pk_task_change_job_status (task, PK_TASK_STATUS_QUERY);
+	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, package_id);
 	pk_task_package (task, 1, package_id, "The same thing");
 	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
@@ -371,12 +369,6 @@ pk_task_cancel_job_try (PkTask *task)
 		pk_warning ("Not assigned");
 		return FALSE;
 	}
-	/* try to cancel action */
-	if (task->status != PK_TASK_STATUS_QUERY) {
-		pk_warning ("cannot cancel as not query");
-		return FALSE;
-	}
-
 	return TRUE;
 }
 
@@ -401,7 +393,6 @@ pk_task_init (PkTask *task)
 {
 	task->priv = PK_TASK_GET_PRIVATE (task);
 	task->signals = signals;
-	pk_task_clear (task);
 }
 
 /**
@@ -415,7 +406,6 @@ pk_task_finalize (GObject *object)
 	g_return_if_fail (PK_IS_TASK (object));
 	task = PK_TASK (object);
 	g_return_if_fail (task->priv != NULL);
-	g_free (task->package);
 	G_OBJECT_CLASS (pk_task_parent_class)->finalize (object);
 }
 

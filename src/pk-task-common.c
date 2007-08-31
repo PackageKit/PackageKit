@@ -385,6 +385,26 @@ pk_task_change_sub_percentage (PkTask *task, guint percentage)
 }
 
 /**
+ * pk_task_set_job_role:
+ **/
+gboolean
+pk_task_set_job_role (PkTask *task, PkTaskStatus status, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* Should only be called once... */
+	if (task->role != PK_TASK_STATUS_UNKNOWN) {
+		pk_error ("cannot set role more than once, already %i", task->role);
+	}
+	pk_debug ("setting role to %i %s", status, package_id);
+	task->role = status;
+	task->status = status;
+	task->package_id = g_strdup (package_id);
+	return TRUE;
+}
+
+/**
  * pk_task_change_job_status:
  **/
 gboolean
@@ -481,6 +501,25 @@ pk_task_get_job_status (PkTask *task, PkTaskStatus *status)
 		return FALSE;
 	}
 	*status = task->status;
+	return TRUE;
+}
+
+/**
+ * pk_task_get_job_role:
+ **/
+gboolean
+pk_task_get_job_role (PkTask *task, PkTaskStatus *status, const gchar **package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	/* check to see if we have an action */
+	if (task->assigned == FALSE) {
+		pk_warning ("Not assigned");
+		return FALSE;
+	}
+	*status = task->role;
+	*package_id = g_strdup (task->package_id);
 	return TRUE;
 }
 
@@ -585,44 +624,37 @@ pk_task_set_job (PkTask *task, guint job)
 }
 
 /**
- * pk_task_clear:
+ * pk_task_common_init:
  **/
 gboolean
-pk_task_clear (PkTask *task)
+pk_task_common_init (PkTask *task)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
+	/* track how long the job has been running for */
+	task->timer = g_timer_new ();
+	task->job = 1;
 	task->assigned = FALSE;
+	task->is_killable = FALSE;
+	task->spawn = NULL;
+	task->package_id = NULL;
+	task->role = PK_TASK_STATUS_UNKNOWN;
 	task->status = PK_TASK_STATUS_UNKNOWN;
 	task->exit = PK_TASK_EXIT_UNKNOWN;
-	task->job = 1;
-	task->package = NULL;
 
 	return TRUE;
 }
 
 /**
- * pk_task_get_data:
- *
- * Need to g_free
- **/
-gchar *
-pk_task_get_data (PkTask *task)
-{
-	return g_strdup (task->package);
-}
-
-/**
- * pk_task_set_data:
- *
- * Need to g_free
+ * pk_task_common_init:
  **/
 gboolean
-pk_task_set_data (PkTask *task, const gchar *data)
+pk_task_common_free (PkTask *task)
 {
-	g_free (task->package);
-	task->package = g_strdup (data);
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+	g_timer_destroy (task->timer);
 	return TRUE;
 }
 
