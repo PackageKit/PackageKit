@@ -38,6 +38,12 @@ dist_helper_DATA = 			\
 	$(NULL)
 endif	
 
+if BACKEND_TYPE_BOX
+dist_helper_DATA = 			\
+	box-refresh-cache.sh		\
+	$(NULL)
+endif	
+
 if BACKEND_TYPE_YUM
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/yum*.py
@@ -46,6 +52,11 @@ endif
 if BACKEND_TYPE_CONARY
 install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/conary*.py
+endif	
+
+if BACKEND_TYPE_BOX
+install-data-hook:
+	chmod a+rx $(DESTDIR)$(helperdir)/box*.sh
 endif	
 
 clean-local :

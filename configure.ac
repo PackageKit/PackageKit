@@ -165,6 +165,8 @@ if test x$with_backend = x; then
         with_backend=apt
     elif test -f /usr/bin/conary ; then
         with_backend=conary
+    elif test -f /usr/bin/box-repos ; then
+        with_backend=box
     else
         with_backend=dummy
     fi
@@ -175,6 +177,8 @@ if test x$with_backend = xyum; then
     AC_DEFINE(BACKEND_PREFIX, "yum", [backend prefix])
 elif test x$with_backend = xconary; then
     AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
+elif test x$with_backend = xbox; then
+    AC_DEFINE(BACKEND_PREFIX, "box", [backend prefix])
 else
     AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
     AC_DEFINE(BACKEND_PREFIX, "dummy", [backend prefix])
@@ -289,10 +293,17 @@ if test x$with_backend = xapt; then
     AC_SUBST(APT_PKG_TYPE)
 fi
 
+if test x$with_backend = xbox; then
+	PKG_CHECK_MODULES(BOX, libbox)
+	AC_SUBST(BOX_CFLAGS)
+	AC_SUBST(BOX_LIBS)
+fi
+
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_backend = xconary], [using CONARY backend])
+AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_backend = xbox], [using BOX backend])
 
 
 dnl ---------------------------------------------------------------------------

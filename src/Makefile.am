@@ -80,6 +80,11 @@ packagekitd_SOURCES +=					\
 	pk-task-conary.c
 endif
 
+if BACKEND_TYPE_BOX
+packagekitd_SOURCES +=					\
+	pk-task-box.c
+endif
+
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
@@ -87,6 +92,13 @@ packagekitd_LDADD =					\
 	$(LIBNM_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
+
+if BACKEND_TYPE_BOX
+packagekitd_INCLUDES =	 				\
+	$(BOX_CFLAGS)
+packagekitd_LDADD += 					\
+	$(BOX_LIBS)
+endif
 
 if BACKEND_TYPE_APT
 INCLUDES +=						\
