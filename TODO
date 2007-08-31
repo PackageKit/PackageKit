@@ -8,6 +8,8 @@ Core:
 * Add package size into description signal
 * Valgrind everything
 * Add GetPercentage and GetSubPercentage for coldplugging
+* Add a Launch() method to startup when pk-application is launched
+* task_client has to return GError
 
 Backends:
 * Add conary backend

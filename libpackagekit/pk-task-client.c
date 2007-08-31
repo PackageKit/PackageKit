@@ -212,6 +212,22 @@ pk_task_client_reset (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_error_name:
+ **/
+static const gchar *
+pk_task_client_get_error_name (GError *error)
+{
+	const gchar *name;
+	if (error->domain == DBUS_GERROR && 
+	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+		name = dbus_g_error_get_name (error);
+	} else {
+		name = g_quark_to_string (error->domain);
+	}
+	return name;
+}
+
+/**
  * pk_task_client_get_updates:
  **/
 gboolean
@@ -237,7 +253,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -352,13 +368,7 @@ pk_task_client_search_name (PkTaskClient *tclient, const gchar *filter, const gc
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		if (error->domain == DBUS_GERROR && 
-			error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
-			error_name = dbus_g_error_get_name (error);
-		}
-		else {
-			error_name = g_quark_to_string(error->domain);
-		}
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -401,7 +411,7 @@ pk_task_client_search_details (PkTaskClient *tclient, const gchar *filter, const
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -444,7 +454,7 @@ pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const g
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -487,7 +497,7 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -529,7 +539,7 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -571,7 +581,7 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
@@ -687,7 +697,7 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
-		error_name = dbus_g_error_get_name (error);
+		error_name = pk_task_client_get_error_name (error);
 		pk_debug ("ERROR: %s: %s", error_name, error->message);
 		g_error_free (error);
 	}
