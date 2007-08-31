@@ -38,6 +38,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <polkit/polkit.h>
 #include <polkit-dbus/polkit-dbus.h>
+#include <pk-package-id.h>
 
 #include <pk-debug.h>
 #include "pk-task.h"
@@ -704,7 +705,7 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* check package_id */
-	ret = pk_task_package_id_check (package_id);
+	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				      "The package id '%s' is not valid", package_id);
@@ -824,7 +825,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* check package_id */
-	ret = pk_task_package_id_check (package_id);
+	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
@@ -873,7 +874,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* check package_id */
-	ret = pk_task_package_id_check (package_id);
+	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
@@ -922,7 +923,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* check package_id */
-	ret = pk_task_package_id_check (package_id);
+	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);

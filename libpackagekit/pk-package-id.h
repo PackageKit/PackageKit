@@ -19,26 +19,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <glib.h>
+#ifndef __PK_PACKAGE_ID_H
+#define __PK_PACKAGE_ID_H
+
 #include <glib-object.h>
-#include <libselftest.h>
 
-/* prototypes */
-void libst_task_utils (LibSelfTest *test);
-void libst_package_id (LibSelfTest *test);
+G_BEGIN_DECLS
 
-int
-main (int argc, char **argv)
-{
-	LibSelfTest test;
+typedef struct {
+	gchar	*name;
+	gchar	*version;
+	gchar	*arch;
+	gchar	*data;
+} PkPackageId;
 
-	g_type_init ();
-	libst_init (&test);
+PkPackageId	*pk_package_id_new			(void);
+PkPackageId	*pk_package_id_new_from_string		(const gchar	*package_id);
+gchar		*pk_package_id_build			(const gchar	*name,
+							 const gchar	*version,
+							 const gchar	*arch,
+							 const gchar	*data);
+gchar		*pk_package_id_to_string		(PkPackageId	*ident);
+gboolean	 pk_package_id_free			(PkPackageId	*ident);
+gboolean	 pk_package_id_check			(const gchar	*package_id);
 
-	/* tests go here */
-	libst_task_utils (&test);
-	libst_package_id (&test);
+G_END_DECLS
 
-	return (libst_finish (&test));
-}
-
+#endif /* __PK_PACKAGE_ID_H */

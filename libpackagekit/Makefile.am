@@ -27,6 +27,7 @@ libpackagekit_includedir = $(includedir)/packagekit
 libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-connection.h						\
+	pk-package-id.h						\
 	pk-task-utils.h						\
 	pk-task-common.h					\
 	pk-task-monitor.h					\
@@ -43,6 +44,8 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-connection.c						\
 	pk-connection.h						\
+	pk-package-id.h						\
+	pk-package-id.c						\
 	pk-task-utils.h						\
 	pk-task-utils.c						\
 	pk-task-common.c					\
@@ -77,6 +80,8 @@ pk_self_test_SOURCES =						\
 	pk-debug.h						\
 	pk-task-utils.h						\
 	pk-task-utils.c						\
+	pk-package-id.h						\
+	pk-package-id.c						\
 	pk-self-test.c						\
 	$(NULL)
 

@@ -30,6 +30,7 @@
 
 #include <pk-debug.h>
 #include <pk-task-client.h>
+#include <pk-package-id.h>
 
 /**
  * pk_console_package_cb:
@@ -70,8 +71,8 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 		installed = "yes ";
 	}
 
-	spacing = pk_task_package_id_new ();
-	ident = pk_task_package_id_from_string (package_id);
+	spacing = pk_package_id_new ();
+	ident = pk_package_id_new_from_string (package_id);
 
 	/* these numbers are guesses */
 	extra = 0;
@@ -89,8 +90,8 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 		 summary);
 
 	/* free all the data */
-	pk_task_package_id_free (ident);
-	pk_task_package_id_free (spacing);
+	pk_package_id_free (ident);
+	pk_package_id_free (spacing);
 }
 
 /**

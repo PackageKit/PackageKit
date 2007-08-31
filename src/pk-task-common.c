@@ -24,6 +24,7 @@
 #include <glib/gi18n.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pk-package-id.h>
 
 #include "pk-debug.h"
 #include "pk-task.h"
@@ -125,7 +126,7 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		if (pk_task_package_id_check (sections[2]) == TRUE) {
+		if (pk_package_id_check (sections[2]) == TRUE) {
 			value = atoi(sections[1]);
 			pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
 			pk_task_package (task, value, sections[2], sections[3]);
