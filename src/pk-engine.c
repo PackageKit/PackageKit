@@ -111,6 +111,8 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_FILTER_INVALID, "FilterInvalid"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -580,6 +582,58 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 }
 
 /**
+ * pk_task_search_check:
+ **/
+gboolean
+pk_engine_search_check (const gchar *search, GError **error)
+{
+	if (search == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "Search is null. This isn't supposed to happen...");
+		return FALSE;
+	}
+	if (strlen (search) == 0) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "Search string zero length");
+		return FALSE;
+	}
+	if (strlen (search) < 2) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "The search string length is too small");
+		return FALSE;
+	}
+	if (strstr (search, "*") != NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "Invalid search containing '*'");
+		return FALSE;
+	}
+	if (strstr (search, "?") != NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "Invalid search containing '?'");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_filter_check:
+ **/
+gboolean
+pk_engine_filter_check (const gchar *filter, GError **error)
+{
+	gboolean ret;
+
+	/* check for invalid filter */
+	ret = pk_task_filter_check (filter);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_FILTER_INVALID,
+			     "Filter '%s' is invalid", filter);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_engine_search_name:
  **/
 gboolean
@@ -591,6 +645,18 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* check the search term */
+	ret = pk_engine_search_check (search, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
@@ -620,6 +686,18 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* check the search term */
+	ret = pk_engine_search_check (search, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_search_details (task, filter, search);
@@ -648,6 +726,18 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* check the search term */
+	ret = pk_engine_search_check (search, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_task_search_group (task, filter, search);
@@ -675,6 +765,18 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* check the search term */
+	ret = pk_engine_search_check (search, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
