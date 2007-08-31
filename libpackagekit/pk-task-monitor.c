@@ -123,6 +123,36 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
 }
 
 /**
+ * pk_task_monitor_get_role:
+ **/
+gboolean
+pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, const gchar **package_id)
+{
+	gboolean ret;
+	GError *error;
+	gchar *status_text;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetJobRole", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &status_text,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetJobStatus failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+	*status = pk_task_status_from_text (status_text);
+	return TRUE;
+}
+
+/**
  * pk_task_monitor_finished_cb:
  */
 static void
