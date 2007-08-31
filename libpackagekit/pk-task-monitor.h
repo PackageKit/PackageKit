@@ -56,7 +56,7 @@ guint		 pk_task_monitor_get_job		(PkTaskMonitor	*tmonitor);
 gboolean	 pk_task_monitor_get_status		(PkTaskMonitor	*tmonitor,
 							 PkTaskStatus	*status);
 gboolean	 pk_task_monitor_get_role		(PkTaskMonitor	*tmonitor,
-							 PkTaskStatus	*status,
+							 PkTaskRole	*role,
 							 gchar		**package_id);
 
 G_END_DECLS

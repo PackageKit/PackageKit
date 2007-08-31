@@ -863,7 +863,7 @@ pk_engine_update_system (PkEngine *engine,
 	guint i;
 	guint job;
 	guint length;
-	PkTaskStatus status;
+	PkTaskRole role;
 	PkTask *task;
 	gboolean ret;
 	GError *error;
@@ -882,8 +882,8 @@ pk_engine_update_system (PkEngine *engine,
 	length = engine->priv->array->len;
 	for (i=0; i<length; i++) {
 		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
-		ret = pk_task_get_job_status (task, &status);
-		if (ret == TRUE && status == PK_TASK_STATUS_UPDATE) {
+		ret = pk_task_get_job_role (task, &role, NULL);
+		if (ret == TRUE && role == PK_TASK_ROLE_SYSTEM_UPDATE) {
 			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
 					     "operation not yet supported by backend");
 			dbus_g_method_return_error (context, error);
@@ -1096,10 +1096,10 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
  **/
 gboolean
 pk_engine_get_job_role (PkEngine *engine, guint job,
-			const gchar **status, const gchar **package_id, GError **error)
+			const gchar **role, const gchar **package_id, GError **error)
 {
 	PkTask *task;
-	PkTaskStatus status_enum;
+	PkTaskRole role_enum;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1110,8 +1110,8 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_task_get_job_role (task, &status_enum, package_id);
-	*status = g_strdup (pk_task_status_to_text (status_enum));
+	pk_task_get_job_role (task, &role_enum, package_id);
+	*role = g_strdup (pk_task_role_to_text (role_enum));
 
 	return TRUE;
 }

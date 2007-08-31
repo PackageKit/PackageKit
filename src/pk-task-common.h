@@ -41,10 +41,10 @@ gboolean	 pk_task_change_job_status		(PkTask		*task,
 gboolean	 pk_task_get_job_status			(PkTask		*task,
 							 PkTaskStatus	*status);
 gboolean	 pk_task_set_job_role			(PkTask		*task,
-							 PkTaskStatus	 status,
+							 PkTaskRole	 role,
 							 const gchar	*package_id);
 gboolean	 pk_task_get_job_role			(PkTask		*task,
-							 PkTaskStatus	*status,
+							 PkTaskRole	*role,
 							 const gchar	**package_id);
 gboolean	 pk_task_no_percentage_updates		(PkTask		*task);
 gboolean	 pk_task_finished			(PkTask		*task,

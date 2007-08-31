@@ -26,6 +26,18 @@
 
 G_BEGIN_DECLS
 
+/* what we asked to do */
+typedef enum {
+	PK_TASK_ROLE_QUERY,
+	PK_TASK_ROLE_REFRESH_CACHE,
+	PK_TASK_ROLE_SYSTEM_UPDATE,
+	PK_TASK_ROLE_PACKAGE_REMOVE,
+	PK_TASK_ROLE_PACKAGE_INSTALL,
+	PK_TASK_ROLE_PACKAGE_UPDATE,
+	PK_TASK_ROLE_UNKNOWN
+} PkTaskRole;
+
+/* what we are actually doing */
 typedef enum {
 	PK_TASK_STATUS_SETUP,
 	PK_TASK_STATUS_QUERY,
@@ -101,6 +113,9 @@ const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
 
 PkTaskStatus	 pk_task_status_from_text		(const gchar	*status);
 const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
+
+PkTaskRole	 pk_task_role_from_text			(const gchar	*role);
+const gchar	*pk_task_role_to_text			(PkTaskRole	 role);
 
 PkTaskErrorCode	 pk_task_error_code_from_text		(const gchar	*code);
 const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);

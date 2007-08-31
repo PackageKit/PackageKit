@@ -10,6 +10,9 @@ Core:
 * Add GetPercentage and GetSubPercentage for coldplugging
 * Add a Launch() method to startup when pk-application is launched
 * task_client has to return GError
+* Add logging so we can see what was installed/removed and when
+* Add "when installed" data into description
+* Add "installed by 'Richard Hughes'" data into description
 
 Backends:
 * Complete conary backend

@@ -388,18 +388,17 @@ pk_task_change_sub_percentage (PkTask *task, guint percentage)
  * pk_task_set_job_role:
  **/
 gboolean
-pk_task_set_job_role (PkTask *task, PkTaskStatus status, const gchar *package_id)
+pk_task_set_job_role (PkTask *task, PkTaskRole role, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
 	/* Should only be called once... */
-	if (task->role != PK_TASK_STATUS_UNKNOWN) {
+	if (task->role != PK_TASK_ROLE_UNKNOWN) {
 		pk_error ("cannot set role more than once, already %i", task->role);
 	}
-	pk_debug ("setting role to %i %s", status, package_id);
-	task->role = status;
-	task->status = status;
+	pk_debug ("setting role to %i (%s)", role, package_id);
+	task->role = role;
 	task->package_id = g_strdup (package_id);
 	return TRUE;
 }
@@ -508,7 +507,7 @@ pk_task_get_job_status (PkTask *task, PkTaskStatus *status)
  * pk_task_get_job_role:
  **/
 gboolean
-pk_task_get_job_role (PkTask *task, PkTaskStatus *status, const gchar **package_id)
+pk_task_get_job_role (PkTask *task, PkTaskRole *role, const gchar **package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -518,7 +517,7 @@ pk_task_get_job_role (PkTask *task, PkTaskStatus *status, const gchar **package_
 		pk_warning ("Not assigned");
 		return FALSE;
 	}
-	*status = task->role;
+	*role = task->role;
 	*package_id = g_strdup (task->package_id);
 	return TRUE;
 }
@@ -639,7 +638,7 @@ pk_task_common_init (PkTask *task)
 	task->is_killable = FALSE;
 	task->spawn = NULL;
 	task->package_id = NULL;
-	task->role = PK_TASK_STATUS_UNKNOWN;
+	task->role = PK_TASK_ROLE_UNKNOWN;
 	task->status = PK_TASK_STATUS_UNKNOWN;
 	task->exit = PK_TASK_EXIT_UNKNOWN;
 

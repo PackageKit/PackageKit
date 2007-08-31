@@ -55,6 +55,17 @@ static PkTaskEnumMatch task_status[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_role[] = {
+	{PK_TASK_ROLE_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_TASK_ROLE_QUERY,			"query"},
+	{PK_TASK_ROLE_REFRESH_CACHE,		"refresh-cache"},
+	{PK_TASK_ROLE_PACKAGE_REMOVE,		"package-remove"},
+	{PK_TASK_ROLE_PACKAGE_INSTALL,		"package-install"},
+	{PK_TASK_ROLE_PACKAGE_UPDATE,		"package-update"},
+	{PK_TASK_ROLE_SYSTEM_UPDATE,		"system-update"},
+	{0, NULL},
+};
+
 static PkTaskEnumMatch task_error[] = {
 	{PK_TASK_ERROR_CODE_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_TASK_ERROR_CODE_NO_NETWORK,		"no-network"},
@@ -191,6 +202,24 @@ const gchar *
 pk_task_status_to_text (PkTaskStatus status)
 {
 	return pk_task_enum_find_string (task_status, status);
+}
+
+/**
+ * pk_task_role_from_text:
+ **/
+PkTaskRole
+pk_task_role_from_text (const gchar *role)
+{
+	return pk_task_enum_find_value (task_role, role);
+}
+
+/**
+ * pk_task_role_to_text:
+ **/
+const gchar *
+pk_task_role_to_text (PkTaskRole role)
+{
+	return pk_task_enum_find_string (task_role, role);
 }
 
 /**

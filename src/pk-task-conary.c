@@ -94,7 +94,7 @@ pk_task_get_updates (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, NULL);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, NULL);
 	pk_task_spawn_helper (task, "get-updates.py", NULL);
 	return TRUE;
 }
@@ -120,7 +120,7 @@ pk_task_refresh_cache (PkTask *task, gboolean force)
 	}
 
 	/* easy as that */
-	pk_task_set_job_role (task, PK_TASK_STATUS_REFRESH_CACHE, NULL);
+	pk_task_set_job_role (task, PK_TASK_ROLE_REFRESH_CACHE, NULL);
 	pk_task_spawn_helper (task, "refresh-cache.py", NULL);
 
 	return TRUE;
@@ -139,7 +139,7 @@ pk_task_update_system (PkTask *task)
 		return FALSE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, NULL);
+	pk_task_set_job_role (task, PK_TASK_ROLE_SYSTEM_UPDATE, NULL);
 	pk_task_not_implemented_yet (task, "UpdateSystem");
 	return TRUE;
 }
@@ -188,7 +188,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 		return TRUE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, search);
 	pk_task_spawn_helper (task, "search-details.py", filter, search, NULL);
 	return TRUE;
 }
@@ -199,7 +199,7 @@ pk_task_search_details (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 {
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, search);
 	pk_task_not_implemented_yet (task, "SearchGroup");
 	return TRUE;
 }
@@ -210,7 +210,7 @@ pk_task_search_group (PkTask *task, const gchar *filter, const gchar *search)
 gboolean
 pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 {
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, search);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, search);
 	pk_task_not_implemented_yet (task, "SearchFile");
 	return TRUE;
 }
@@ -228,7 +228,7 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 		return FALSE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
 	pk_task_not_implemented_yet (task, "GetDeps");
 	return TRUE;
 }
@@ -246,7 +246,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 		return FALSE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_QUERY, package_id);
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
 	pk_task_not_implemented_yet (task, "GetDescription");
 	return TRUE;
 }
@@ -264,7 +264,7 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 		return FALSE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_REMOVE, package_id);
+	pk_task_set_job_role (task, PK_TASK_ROLE_PACKAGE_REMOVE, package_id);
 	pk_task_not_implemented_yet (task, "RemovePackage");
 	return TRUE;
 }
@@ -289,7 +289,7 @@ pk_task_install_package (PkTask *task, const gchar *package_id)
 		return TRUE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_INSTALL, package_id);
+	pk_task_set_job_role (task, PK_TASK_ROLE_PACKAGE_INSTALL, package_id);
 	pk_task_not_implemented_yet (task, "InstallPackage");
 	return TRUE;
 }
@@ -314,7 +314,7 @@ pk_task_update_package (PkTask *task, const gchar *package_id)
 		return TRUE;
 	}
 
-	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, package_id);
+	pk_task_set_job_role (task, PK_TASK_ROLE_PACKAGE_UPDATE, package_id);
 	pk_task_not_implemented_yet (task, "UpdatePackage");
 	return TRUE;
 }
