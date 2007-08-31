@@ -59,8 +59,8 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
 static void
 pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_id, const gchar *summary, gpointer data)
 {
-	PkPackageIdent *ident;
-	PkPackageIdent *spacing;
+	PkPackageId *ident;
+	PkPackageId *spacing;
 	const gchar *installed;
 	guint extra;
 
@@ -70,8 +70,8 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 		installed = "yes ";
 	}
 
-	spacing = pk_task_package_ident_new ();
-	ident = pk_task_package_ident_from_string (package_id);
+	spacing = pk_task_package_id_new ();
+	ident = pk_task_package_id_from_string (package_id);
 
 	/* these numbers are guesses */
 	extra = 0;
@@ -89,8 +89,8 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 		 summary);
 
 	/* free all the data */
-	pk_task_package_ident_free (ident);
-	pk_task_package_ident_free (spacing);
+	pk_task_package_id_free (ident);
+	pk_task_package_id_free (spacing);
 }
 
 /**

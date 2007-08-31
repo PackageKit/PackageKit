@@ -125,7 +125,7 @@ pk_task_parse_common_output (PkTask *task, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		if (pk_task_check_package_id (sections[2]) == TRUE) {
+		if (pk_task_package_id_check (sections[2]) == TRUE) {
 			value = atoi(sections[1]);
 			pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
 			pk_task_package (task, value, sections[2], sections[3]);

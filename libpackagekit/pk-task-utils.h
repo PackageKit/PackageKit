@@ -101,7 +101,7 @@ typedef struct {
 	gchar	*version;
 	gchar	*arch;
 	gchar	*data;
-} PkPackageIdent;
+} PkPackageId;
 
 PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
 const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
@@ -121,18 +121,18 @@ const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
 PkTaskAction	 pk_task_action_from_text		(const gchar	*action);
 const gchar	*pk_task_action_to_text			(PkTaskAction	 action);
 
-gboolean	 pk_task_check_package_id		(const gchar	*package_id);
 gboolean	 pk_task_check_filter			(const gchar	*filter);
 
-/* ident parsing */
-PkPackageIdent	*pk_task_package_ident_new		(void);
-PkPackageIdent	*pk_task_package_ident_from_string	(const gchar	*package_id);
-gchar		*pk_task_package_ident_build		(const gchar	*name,
+/* package_id parsing */
+PkPackageId	*pk_task_package_id_new			(void);
+PkPackageId	*pk_task_package_id_from_string		(const gchar	*package_id);
+gchar		*pk_task_package_id_build		(const gchar	*name,
 							 const gchar	*version,
 							 const gchar	*arch,
 							 const gchar	*data);
-gchar		*pk_task_package_ident_to_string	(PkPackageIdent *ident);
-gboolean	 pk_task_package_ident_free		(PkPackageIdent *ident);
+gchar		*pk_task_package_id_to_string		(PkPackageId	*ident);
+gboolean	 pk_task_package_id_free		(PkPackageId	*ident);
+gboolean	 pk_task_package_id_check		(const gchar	*package_id);
 
 /* actions */
 gchar		*pk_task_action_build			(PkTaskAction	  action, ...);

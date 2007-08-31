@@ -266,10 +266,10 @@ pk_task_action_to_text (PkTaskAction action)
 }
 
 /**
- * pk_task_check_package_id:
+ * pk_task_package_id_check:
  **/
 gboolean
-pk_task_check_package_id (const gchar *package_id)
+pk_task_package_id_check (const gchar *package_id)
 {
 	guint i;
 	guint length;
@@ -353,23 +353,23 @@ out:
 }
 
 /**
- * pk_task_package_ident_build:
+ * pk_task_package_id_build:
  **/
 gchar *
-pk_task_package_ident_build (const gchar *name, const gchar *version,
+pk_task_package_id_build (const gchar *name, const gchar *version,
 			     const gchar *arch, const gchar *data)
 {
 	return g_strdup_printf ("%s;%s;%s;%s", name, version, arch, data);
 }
 
 /**
- * pk_task_package_ident_new:
+ * pk_task_package_id_new:
  **/
-PkPackageIdent *
-pk_task_package_ident_new (void)
+PkPackageId *
+pk_task_package_id_new (void)
 {
-	PkPackageIdent *ident;
-	ident = g_new0 (PkPackageIdent, 1);
+	PkPackageId *ident;
+	ident = g_new0 (PkPackageId, 1);
 	ident->name = NULL;
 	ident->version = NULL;
 	ident->arch = NULL;
@@ -378,13 +378,13 @@ pk_task_package_ident_new (void)
 }
 
 /**
- * pk_task_package_ident_from_string:
+ * pk_task_package_id_from_string:
  **/
-PkPackageIdent*
-pk_task_package_ident_from_string (const gchar *package_id)
+PkPackageId *
+pk_task_package_id_from_string (const gchar *package_id)
 {
 	gchar **sections = NULL;
-	PkPackageIdent *ident = NULL;
+	PkPackageId *ident = NULL;
 
 	if (package_id == NULL) {
 		pk_warning ("Package ident is null!");
@@ -399,7 +399,7 @@ pk_task_package_ident_from_string (const gchar *package_id)
 	}
 
 	/* create new object */
-	ident = pk_task_package_ident_new ();
+	ident = pk_task_package_id_new ();
 	ident->name = g_strdup (sections[0]);
 	ident->version = g_strdup (sections[1]);
 	ident->arch = g_strdup (sections[2]);
@@ -412,20 +412,20 @@ out:
 }
 
 /**
- * pk_task_package_ident_to_string:
+ * pk_task_package_id_to_string:
  **/
 gchar *
-pk_task_package_ident_to_string (PkPackageIdent *ident)
+pk_task_package_id_to_string (PkPackageId *ident)
 {
 	return g_strdup_printf ("%s;%s;%s;%s", ident->name, ident->version,
 				ident->arch, ident->data);
 }
 
 /**
- * pk_task_package_ident_free:
+ * pk_task_package_id_free:
  **/
 gboolean
-pk_task_package_ident_free (PkPackageIdent *ident)
+pk_task_package_id_free (PkPackageId *ident)
 {
 	g_free (ident->name);
 	g_free (ident->arch);
@@ -500,7 +500,7 @@ libst_task_utils (LibSelfTest *test)
 	gboolean ret;
 	gchar *text;
 	const gchar *temp;
-	PkPackageIdent *ident;
+	PkPackageId *ident;
 
 	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
@@ -550,7 +550,7 @@ libst_task_utils (LibSelfTest *test)
 	 ****************          IDENT           ******************
 	 ************************************************************/
 	libst_title (test, "get an ident object");
-	ident = pk_task_package_ident_new ();
+	ident = pk_task_package_id_new ();
 	if (ident != NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -559,7 +559,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test ident freeing early");
-	ret = pk_task_package_ident_free (ident);
+	ret = pk_task_package_id_free (ident);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -569,7 +569,7 @@ libst_task_utils (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (null)");
 	temp = NULL;
-	ident = pk_task_package_ident_from_string (temp);
+	ident = pk_task_package_id_from_string (temp);
 	if (ident == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -579,7 +579,7 @@ libst_task_utils (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (empty)");
 	temp = "";
-	ident = pk_task_package_ident_from_string (temp);
+	ident = pk_task_package_id_from_string (temp);
 	if (ident == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -589,7 +589,7 @@ libst_task_utils (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse incorrect package_id from string (not enough)");
 	temp = "moo;0.0.1;i386";
-	ident = pk_task_package_ident_from_string (temp);
+	ident = pk_task_package_id_from_string (temp);
 	if (ident == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -598,7 +598,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "parse package_id from string");
-	ident = pk_task_package_ident_from_string ("moo;0.0.1;i386;fedora");
+	ident = pk_task_package_id_from_string ("moo;0.0.1;i386;fedora");
 	if (strcmp (ident->name, "moo") == 0 &&
 	    strcmp (ident->arch, "i386") == 0 &&
 	    strcmp (ident->data, "fedora") == 0 &&
@@ -610,14 +610,14 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test ident building with valid data");
-	text = pk_task_package_ident_to_string (ident);
+	text = pk_task_package_id_to_string (ident);
 	if (strcmp (text, "moo;0.0.1;i386;fedora") == 0) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "package_id is '%s'", text);
 	}
 	g_free (text);
-	pk_task_package_ident_free (ident);
+	pk_task_package_id_free (ident);
 
 
 	libst_end (test);
