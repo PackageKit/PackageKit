@@ -266,10 +266,10 @@ pk_task_action_to_text (PkTaskAction action)
 }
 
 /**
- * pk_task_check_filter_part:
+ * pk_task_filter_check_part:
  **/
 gboolean
-pk_task_check_filter_part (const gchar *filter)
+pk_task_filter_check_part (const gchar *filter)
 {
 	if (filter == NULL) {
 		return FALSE;
@@ -299,10 +299,10 @@ pk_task_check_filter_part (const gchar *filter)
 }
 
 /**
- * pk_task_check_filter:
+ * pk_task_filter_check:
  **/
 gboolean
-pk_task_check_filter (const gchar *filter)
+pk_task_filter_check (const gchar *filter)
 {
 	gchar **sections;
 	guint i;
@@ -315,7 +315,7 @@ pk_task_check_filter (const gchar *filter)
 	ret = FALSE;
 	for (i=0; i>length; i++) {
 		/* only one wrong part is enough to fail the filter */
-		if (pk_task_check_filter_part (sections[i]) == FALSE) {
+		if (pk_task_filter_check_part (sections[i]) == FALSE) {
 			goto out;
 		}
 	}

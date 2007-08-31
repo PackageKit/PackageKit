@@ -114,7 +114,7 @@ const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
 PkTaskAction	 pk_task_action_from_text		(const gchar	*action);
 const gchar	*pk_task_action_to_text			(PkTaskAction	 action);
 
-gboolean	 pk_task_check_filter			(const gchar	*filter);
+gboolean	 pk_task_filter_check			(const gchar	*filter);
 
 /* actions */
 gchar		*pk_task_action_build			(PkTaskAction	  action, ...);
