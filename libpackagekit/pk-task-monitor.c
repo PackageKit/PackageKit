@@ -141,13 +141,14 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskStatus *status, gchar *
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetJobRole", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
 				 G_TYPE_STRING, &package_id_temp,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetJobStatus failed :%s", error->message);
+		pk_warning ("GetJobRole failed :%s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}

@@ -125,6 +125,7 @@ pk_task_update_system_timeout (gpointer data)
 		pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 		return FALSE;
 	}
+	pk_task_change_job_status (task, PK_TASK_STATUS_UPDATE);
 	task->priv->progress_percentage += 10;
 	pk_task_change_percentage (task, task->priv->progress_percentage);
 	return TRUE;
@@ -145,6 +146,7 @@ pk_task_update_system (PkTask *task)
 	}
 
 	pk_task_set_job_role (task, PK_TASK_STATUS_UPDATE, NULL);
+	pk_task_change_job_status (task, PK_TASK_STATUS_DOWNLOAD);
 	task->priv->progress_percentage = 0;
 	pk_task_require_restart (task, PK_TASK_RESTART_SYSTEM, NULL);
 	g_timeout_add (1000, pk_task_update_system_timeout, task);
