@@ -548,6 +548,7 @@ class ProcessTransPackageKitCallback:
 
     def event(self,state,data=None):
         if state == PT_DOWNLOAD:        # Start Downloading
+            self.base.allow_interrupt(True)
             self.base.percentage(10)
             self.base.status(STATE_DOWNLOAD)
         if state == PT_DOWNLOAD_PKGS:   # Packages to download 
@@ -556,8 +557,10 @@ class ProcessTransPackageKitCallback:
             self.base.percentage(40)
             pass
         elif state == PT_TEST_TRANS:
+            self.base.allow_interrupt(False)
             self.base.percentage(45)
             pass
         elif state == PT_TRANSACTION:
+            self.base.allow_interrupt(False)
             self.base.percentage(50)
             pass

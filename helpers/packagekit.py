@@ -118,6 +118,17 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"requirerestart\t%s\t%s" % (restart_type,details)
 
+    def allow_interrupt(self,allow):
+        '''
+        send 'allow-interrupt' signal:
+        @param allow:  Allow the current process to be aborted.
+        '''
+        if allow:
+            data = 'true'
+        else:
+            data = 'false'
+        print >> sys.stderr,"allow-interrupt\t%s" % (data)
+
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)
 
