@@ -50,7 +50,7 @@ bus.add_signal_receiver(catchall_signal_handler, interface_keyword='dbus_interfa
 
 def search(*args):
 	patt = " ".join(args[0])
-	return pk_iface.SearchName("",patt)
+	return pk_iface.SearchName("none",patt)
 
 def desc(*args):
 	if len(args)!=1 or len(args[0])!=1:
