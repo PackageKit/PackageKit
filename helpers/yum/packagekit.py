@@ -170,9 +170,9 @@ class PackageKitBaseBackend:
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
 
-    def get_deps(self,package):
+    def get_depends(self,package):
         '''
-        Implement the {backend}-get-deps functionality
+        Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

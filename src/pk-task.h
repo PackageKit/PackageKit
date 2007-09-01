@@ -90,7 +90,7 @@ gboolean	 pk_task_search_group			(PkTask		*task,
 gboolean	 pk_task_search_file			(PkTask		*task,
 							 const gchar	*filter,
 							 const gchar	*search);
-gboolean	 pk_task_get_deps			(PkTask		*task,
+gboolean	 pk_task_get_depends			(PkTask		*task,
 							 const gchar	*package);
 gboolean	 pk_task_remove_package			(PkTask		*task,
 							 const gchar	*package,

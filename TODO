@@ -13,6 +13,16 @@ Core:
 * Add logging so we can see what was installed/removed and when
 * Add "when installed" data into description
 * Add "installed by 'Richard Hughes'" data into description
+* Add GetRequires
+* Add GetUpdateDetail(s=package_id)
+UpdateDetail(
+string url
+string restart_enum
+string updates
+string obsoletes
+string update_text
+}
+* Point to www.packagekit.org
 
 Backends:
 * Complete conary backend

@@ -6,7 +6,7 @@ NULL =
 dist_helper_DATA = 			\
 	search-name.py			\
 	search-details.py		\
-	get-deps.py			\
+	get-depends.py			\
 	get-updates.py			\
 	install.py			\
 	refresh-cache.py		\

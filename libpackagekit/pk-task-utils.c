@@ -115,7 +115,7 @@ static PkTaskEnumMatch task_action[] = {
 	{PK_TASK_ACTION_SEARCH_DETAILS,		"search-details"},
 	{PK_TASK_ACTION_SEARCH_GROUP,		"search-group"},
 	{PK_TASK_ACTION_SEARCH_FILE,		"search-file"},
-	{PK_TASK_ACTION_GET_DEPS,		"get-deps"},
+	{PK_TASK_ACTION_GET_DEPENDS,		"get-depends"},
 	{PK_TASK_ACTION_GET_DESCRIPTION,	"get-description"},
 	{0, NULL},
 };
@@ -561,8 +561,8 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action building (multiple)");
-	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPS, 0);
-	if (strcmp (text, "install;search-name;get-deps") == 0) {
+	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
+	if (strcmp (text, "install;search-name;get-depends") == 0) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "incorrect multiple argument '%s'", text);

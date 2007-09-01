@@ -152,7 +152,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def search_details(self, opt, key):
         pass
 
-    def get_deps(self, package_id):
+    def get_depends(self, package_id):
         pass
 
     def update_system(self):

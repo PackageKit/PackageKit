@@ -514,10 +514,10 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 }
 
 /**
- * pk_task_client_get_deps:
+ * pk_task_client_get_depends:
  **/
 gboolean
-pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
+pk_task_client_get_depends (PkTaskClient *tclient, const gchar *package)
 {
 	gboolean ret;
 	GError *error;
@@ -532,7 +532,7 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 	}
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDeps", &error,
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &tclient->priv->job,
@@ -545,7 +545,7 @@ pk_task_client_get_deps (PkTaskClient *tclient, const gchar *package)
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetDeps failed!");
+		pk_warning ("GetDepends failed!");
 		return FALSE;
 	}
 	/* only assign on success */

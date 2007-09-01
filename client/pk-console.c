@@ -225,7 +225,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				goto out;
 			} else {
 				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_get_deps (tclient, details);
+				pk_task_client_get_depends (tclient, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "description") == 0) {

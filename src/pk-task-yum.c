@@ -74,7 +74,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_SEARCH_DETAILS,
 				        PK_TASK_ACTION_SEARCH_GROUP,
 				        PK_TASK_ACTION_SEARCH_FILE,
-				        PK_TASK_ACTION_GET_DEPS,
+				        PK_TASK_ACTION_GET_DEPENDS,
 				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
@@ -247,10 +247,10 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 }
 
 /**
- * pk_task_get_deps:
+ * pk_task_get_depends:
  **/
 gboolean
-pk_task_get_deps (PkTask *task, const gchar *package_id)
+pk_task_get_depends (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
@@ -263,7 +263,7 @@ pk_task_get_deps (PkTask *task, const gchar *package_id)
 	pk_task_allow_interrupt (task, TRUE);
 
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
-	pk_task_spawn_helper (task, "get-deps.py", package_id, NULL);
+	pk_task_spawn_helper (task, "get-depends.py", package_id, NULL);
 	return TRUE;
 }
 

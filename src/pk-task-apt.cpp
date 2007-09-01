@@ -603,9 +603,9 @@ gboolean pk_task_search_file(PkTask * task, const gchar * filter, const gchar * 
 }
 
 /**
- * pk_task_get_deps:
+ * pk_task_get_depends:
  **/
-gboolean pk_task_get_deps(PkTask * task, const gchar * package)
+gboolean pk_task_get_depends(PkTask * task, const gchar * package)
 {
 	g_return_val_if_fail(task != NULL, FALSE);
 	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
@@ -615,7 +615,7 @@ gboolean pk_task_get_deps(PkTask * task, const gchar * package)
 		return FALSE;
 	}
 
- 	pk_task_not_implemented_yet (task, "GetDeps");
+ 	pk_task_not_implemented_yet (task, "GetDepends");
 	return FALSE;
 }
 

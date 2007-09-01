@@ -82,7 +82,7 @@ gboolean	 pk_task_client_search_group		(PkTaskClient	*tclient,
 gboolean	 pk_task_client_search_file		(PkTaskClient	*tclient,
 							 const gchar	*filter,
 							 const gchar	*search);
-gboolean	 pk_task_client_get_deps		(PkTaskClient	*tclient,
+gboolean	 pk_task_client_get_depends		(PkTaskClient	*tclient,
 							 const gchar	*package_id);
 gboolean	 pk_task_client_get_description		(PkTaskClient	*tclient,
 							 const gchar	*package_id);

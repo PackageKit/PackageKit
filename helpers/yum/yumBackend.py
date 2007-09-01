@@ -197,7 +197,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return None,False
             
 
-    def get_deps(self,package):
+    def get_depends(self,package):
         '''
         Print a list of dependencies for a given package
         '''

@@ -70,7 +70,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_SEARCH_DETAILS,
 				        PK_TASK_ACTION_SEARCH_GROUP,
 				        PK_TASK_ACTION_SEARCH_FILE,
-				        PK_TASK_ACTION_GET_DEPS,
+				        PK_TASK_ACTION_GET_DEPENDS,
 				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
@@ -233,10 +233,10 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
 }
 
 /**
- * pk_task_get_deps:
+ * pk_task_get_depends:
  **/
 gboolean
-pk_task_get_deps (PkTask *task, const gchar *package_id)
+pk_task_get_depends (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);

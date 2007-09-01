@@ -262,7 +262,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 				This allows a summary to be presented after and during the transaction.
 
 NOTES		The installer should always install extra packages automatically
-		as the use could call GetDeps prior to the intstall if a
+		as the use could call GetDepends prior to the intstall if a
 		confirmation is required in the UI.
 
 ========= Update Packages =========
@@ -336,9 +336,9 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		NOTE:		as packages are installed then emit them to the screen.
 				This allows a summary to be presented after the transaction.
 
-========= Get Dependancies =========
+========= Get Depends =========
 
-FILENAME	{backend}-get-deps.*
+FILENAME	{backend}-get-depends.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -358,6 +358,35 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 		$status:	Always "1"
 		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
 		$summary:	The one line package summary.
+
+NOTE		GetDepends should return packages that this package depends on.
+
+========= Get Requires =========
+
+FILENAME	{backend}-get-requires.*
+
+ARGUMENTS	$package_id
+		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+
+STDERR		percentage<tab>$value
+		value:		Percentage complete of the entire transaction
+		notes:		This is optional. Backends should send the signal
+				NoPercentageUpdates if these are not expected.
+
+STDERR		error<tab>$enum<tab>description
+		enum:		Enumerated type, e.g. "no-network", "package-id-invalid",
+				"not-supported" or "internal-error"
+		description:	Long description or error
+		notes:		Errors should only be send on fatal abortion.
+
+STDOUT		package<tab>$status<tab>$package_id<tab>$summary
+		$status:	Always "1"
+		$package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
+		$summary:	The one line package summary.
+
+NOTE		GetRequires should return packages that depend on this package.
+		This is useful to know, as if $package_id is being removed, we
+		can warn the user what else would be removed.
 
 ========= Update System =========
 

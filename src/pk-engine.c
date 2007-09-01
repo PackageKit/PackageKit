@@ -833,10 +833,10 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 }
 
 /**
- * pk_engine_get_deps:
+ * pk_engine_get_depends:
  **/
 gboolean
-pk_engine_get_deps (PkEngine *engine, const gchar *package_id,
+pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		    guint *job, GError **error)
 {
 	gboolean ret;
@@ -855,7 +855,7 @@ pk_engine_get_deps (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	ret = pk_task_get_deps (task, package_id);
+	ret = pk_task_get_depends (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");

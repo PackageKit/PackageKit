@@ -93,7 +93,7 @@ gboolean	 pk_engine_search_file			(PkEngine	*engine,
 							 const gchar	*search,
 							 guint		*job,
 							 GError		**error);
-gboolean	 pk_engine_get_deps			(PkEngine	*engine,
+gboolean	 pk_engine_get_depends			(PkEngine	*engine,
 							 const gchar	*package_id,
 							 guint		*job,
 							 GError		**error);
