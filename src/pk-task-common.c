@@ -291,15 +291,13 @@ pk_task_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkTask *task)
  * pk_task_spawn_helper_internal:
  **/
 static gboolean
-pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gchar *argument)
+pk_task_spawn_helper_internal (PkTask *task, const gchar *script, const gchar *argument)
 {
 	gboolean ret;
 	gchar *filename;
 	gchar *command;
-	gchar *script;
 
 	/* build script */
-	script = g_strdup_printf ("%s-%s", BACKEND_PREFIX, script_part);
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
 
 	if (argument != NULL) {
@@ -321,7 +319,6 @@ pk_task_spawn_helper_internal (PkTask *task, const gchar *script_part, const gch
 		pk_task_error_code (task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
 		pk_task_finished (task, PK_TASK_EXIT_FAILED);
 	}
-	g_free (script);
 	g_free (filename);
 	g_free (command);
 	return ret;

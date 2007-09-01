@@ -320,6 +320,9 @@ policy/Makefile
 src/Makefile
 client/Makefile
 helpers/Makefile
+helpers/box/Makefile
+helpers/conary/Makefile
+helpers/yum/Makefile
 PackageKit.conf
 ])
 
