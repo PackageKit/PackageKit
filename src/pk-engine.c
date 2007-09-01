@@ -416,6 +416,7 @@ pk_engine_load_job_count (PkEngine *engine)
 	}
 	engine->priv->job_count = atoi (contents);
 	pk_debug ("job=%i", engine->priv->job_count);
+	g_free (contents);
 	return TRUE;
 }
 
