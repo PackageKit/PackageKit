@@ -7,5 +7,4 @@ pk-interface.h
 packagekitd
 pk-self-test
 debug.log
-org.freedesktop.PackageKit.service
 

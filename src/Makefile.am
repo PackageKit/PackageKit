@@ -3,26 +3,12 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
-servicedir       = $(DBUS_SERVICES_DIR)
-service_in_files = org.freedesktop.PackageKit.service.in
-service_DATA     = $(service_in_files:.service.in=.service)
-
-$(service_DATA): $(service_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
-
 PK_LIBS =						\
 	$(top_builddir)/libpackagekit/libpackagekit.la	\
 	$(NULL)
 
 SELFTEST_LIBS =						\
 	$(top_builddir)/libselftest/libselftest.la	\
-	$(NULL)
-
-EXTRA_DIST =						\
-	pk-marshal.list					\
-	pk-interface.xml				\
-	pk-spawn-test.sh				\
-	$(service_in_files)				\
 	$(NULL)
 
 INCLUDES =						\
@@ -37,6 +23,7 @@ INCLUDES =						\
 	-DLIBDIR=\""$(libdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
+	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
@@ -148,12 +135,15 @@ pk_self_test_LDADD =					\
 pk_self_test_CPPFLAGS=	\
 	-DPK_BUILD_TESTS
 
+EXTRA_DIST =						\
+	pk-marshal.list					\
+	pk-interface.xml				\
+	pk-spawn-test.sh				\
+	$(NULL)
+
 clean-local:
 	rm -f *~
 	rm -f pk-marshal.c pk-marshal.h
-
-DISTCLEANFILES =					\
-	org.freedesktop.PackageKit.service
 
 CLEANFILES = $(BUILT_SOURCES)
 

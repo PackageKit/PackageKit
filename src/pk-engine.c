@@ -52,11 +52,13 @@ static void     pk_engine_init		(PkEngine      *engine);
 static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
+#define PK_ENGINE_JOB_LAST_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
 
 struct PkEnginePrivate
 {
 	GPtrArray		*array;
 	GTimer			*timer;
+	guint			 job_count;
 	PolKitContext		*pk_context;
 	DBusConnection		*connection;
 };
@@ -400,16 +402,53 @@ pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engin
 }
 
 /**
+ * pk_engine_load_job_count:
+ **/
+static gboolean
+pk_engine_load_job_count (PkEngine *engine)
+{
+	gboolean ret;
+	gchar *contents;
+	ret = g_file_get_contents (PK_ENGINE_JOB_LAST_COUNT_FILE, &contents, NULL, NULL);
+	if (ret == FALSE) {
+		pk_warning ("failed to get last job");
+		return FALSE;
+	}
+	engine->priv->job_count = atoi (contents);
+	pk_debug ("job=%i", engine->priv->job_count);
+	return TRUE;
+}
+
+/**
+ * pk_engine_save_job_count:
+ **/
+static gboolean
+pk_engine_save_job_count (PkEngine *engine)
+{
+	gboolean ret;
+	gchar *contents;
+
+	pk_debug ("saving %i", engine->priv->job_count);
+	contents = g_strdup_printf ("%i", engine->priv->job_count);
+	ret = g_file_set_contents (PK_ENGINE_JOB_LAST_COUNT_FILE, contents, -1, NULL);
+	g_free (contents);
+	if (ret == FALSE) {
+		pk_warning ("failed to set last job");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_engine_new_task:
  **/
 static PkTask *
 pk_engine_new_task (PkEngine *engine)
 {
 	PkTask *task;
-	static guint job = 0;
 
 	/* increment the job number - we never repeat an id */
-	job++;
+	engine->priv->job_count++;
 
 	/* allocate a new task */
 	task = pk_task_new ();
@@ -441,8 +480,11 @@ pk_engine_new_task (PkEngine *engine)
 	pk_task_common_init (task);
 
 	/* set the job ID */
-	pk_task_set_job (task, job);
+	pk_task_set_job (task, engine->priv->job_count);
 	pk_engine_reset_timer (engine);
+
+	/* in an ideal workd we don't need this, but do it in case the daemon is ctrl-c;d */
+	pk_engine_save_job_count (engine);
 
 	/* we don't add to the array or do the job-list-changed yet
 	 * as this job might fail */
@@ -1271,6 +1313,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->array = g_ptr_array_new ();
 	engine->priv->timer = g_timer_new ();
 
+	engine->priv->job_count = pk_engine_load_job_count (engine);
+
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);
 	engine->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
@@ -1303,6 +1347,9 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
+
+	/* save last job id so we don't ever repeat */
+	pk_engine_save_job_count (engine);
 
 	/* compulsory gobjects */
 	g_ptr_array_free (engine->priv->array, TRUE);

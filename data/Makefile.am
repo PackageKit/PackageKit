@@ -1,0 +1,33 @@
+## We require new-style dependency handling.
+AUTOMAKE_OPTIONS = 1.7
+
+NULL =
+
+servicedir       = $(DBUS_SERVICES_DIR)
+service_in_files = org.freedesktop.PackageKit.service.in
+service_DATA     = $(service_in_files:.service.in=.service)
+
+$(service_DATA): $(service_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
+
+localcachedir = $(localstatedir)/run/PackageKit
+localcache_DATA =					\
+	job_count.dat					\
+	$(NULL)
+
+EXTRA_DIST =						\
+	$(service_in_files)				\
+	$(localcache_DATA)				\
+	$(NULL)
+
+clean-local:
+	rm -f *~
+
+DISTCLEANFILES =					\
+	org.freedesktop.PackageKit.service
+
+MAINTAINERCLEANFILES =					\
+	*~			      			\
+	Makefile.in					\
+	$(NULL)
+

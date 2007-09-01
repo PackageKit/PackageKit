@@ -1,6 +1,7 @@
 SUBDIRS = 			\
 	policy			\
 	man			\
+	data			\
 	libselftest		\
 	libgbus			\
 	libpackagekit		\

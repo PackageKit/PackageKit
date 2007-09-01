@@ -313,6 +313,7 @@ AC_OUTPUT([
 packagekit.pc
 Makefile
 man/Makefile
+data/Makefile
 libselftest/Makefile
 libgbus/Makefile
 libpackagekit/Makefile
