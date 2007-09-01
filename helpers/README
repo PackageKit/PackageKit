@@ -71,7 +71,7 @@ Use "allow-interrupt<tab>true" to enable cancellation and
 
 ========= Search Name =========
 
-FILENAME	{backend}-search-name.*
+FILENAME	search-name.*
 
 ARGUMENTS	$options $search_term
 		$filter		The filter applied to the search operation,
@@ -103,7 +103,7 @@ NOTES		Do not refresh the package cache. This should be fast.
 
 ========= Search Group =========
 
-FILENAME	{backend}-search-group.*
+FILENAME	search-group.*
 
 ARGUMENTS	$filter $group
 		$filter		The filter applied to the search operation,
@@ -139,7 +139,7 @@ NOTES		Do not refresh the package cache. This should be fast.
 
 ========= Search Details =========
 
-FILENAME	{backend}-search-details.*
+FILENAME	search-details.*
 
 ARGUMENTS	$options $search
 		$filter		The filter applied to the search operation,
@@ -173,7 +173,7 @@ NOTES		This is very similar to find-package.
 
 ========= Search File =========
 
-FILENAME	{backend}-search-file.*
+FILENAME	search-file.*
 
 ARGUMENTS	$options $search
 		$filter		The filter applied to the search operation,
@@ -206,7 +206,7 @@ NOTES		This should allow an application to find out what package owns
 
 ========= Refresh Cache =========
 
-FILENAME	{backend}-refresh-cache.*
+FILENAME	refresh-cache.*
 
 ARGUMENTS	<none>
 
@@ -229,7 +229,7 @@ STDOUT		<none>
 
 ========= Install Packages =========
 
-FILENAME	{backend}-install.*
+FILENAME	install.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -267,7 +267,7 @@ NOTES		The installer should always install extra packages automatically
 
 ========= Update Packages =========
 
-FILENAME	{backend}-update.*
+FILENAME	update.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -304,7 +304,7 @@ NOTES		The installer should always update extra packages automatically
 
 ========= Remove Packages =========
 
-FILENAME	{backend}-remove.*
+FILENAME	remove.*
 
 ARGUMENTS	$allowdeps $package_id
 		allowdeps:	Either "yes" or "no". If yes allow other packages
@@ -338,7 +338,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 ========= Get Depends =========
 
-FILENAME	{backend}-get-depends.*
+FILENAME	get-depends.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -363,7 +363,7 @@ NOTE		GetDepends should return packages that this package depends on.
 
 ========= Get Requires =========
 
-FILENAME	{backend}-get-requires.*
+FILENAME	get-requires.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -390,7 +390,7 @@ NOTE		GetRequires should return packages that depend on this package.
 
 ========= Update System =========
 
-FILENAME	{backend}-update-system.*
+FILENAME	update-system.*
 
 ARGUMENTS	<none>
 
@@ -425,7 +425,7 @@ STDOUT		package<tab>$status<tab>$package_id<tab>$summary
 
 ========= Get Description =========
 
-FILENAME	{backend}-get-description.*
+FILENAME	get-description.*
 
 ARGUMENTS	$package_id
 		package_id:	The package ID name, e.g. openoffice;2.6.22;ppc64;fedora
@@ -450,7 +450,7 @@ STDOUT		description<tab>$package_id<tab>$group<tab>$detail<tab>$url
 
 ========= Get Updates =========
 
-FILENAME	{backend}-get-updates.*
+FILENAME	get-updates.*
 
 ARGUMENTS	<none>
 
