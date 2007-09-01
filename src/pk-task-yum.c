@@ -58,7 +58,7 @@ static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkTask, pk_task, G_TYPE_OBJECT)
 
 /**
- * pk_task_get_updates:
+ * pk_task_get_actions:
  **/
 gchar *
 pk_task_get_actions (void)
