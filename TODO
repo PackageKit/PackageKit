@@ -22,7 +22,6 @@ string updates
 string obsoletes
 string update_text
 }
-* Point to www.packagekit.org
 
 Backends:
 * Complete conary backend
