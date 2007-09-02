@@ -116,6 +116,7 @@ static PkTaskEnumMatch task_action[] = {
 	{PK_TASK_ACTION_SEARCH_GROUP,		"search-group"},
 	{PK_TASK_ACTION_SEARCH_FILE,		"search-file"},
 	{PK_TASK_ACTION_GET_DEPENDS,		"get-depends"},
+	{PK_TASK_ACTION_GET_REQUIRES,		"get-requires"},
 	{PK_TASK_ACTION_GET_DESCRIPTION,	"get-description"},
 	{0, NULL},
 };

@@ -197,9 +197,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return None,False
             
 
+    def get_requires(self,package):
+        '''
+        Print a list of requires for a given package
+        '''
+
     def get_depends(self,package):
         '''
-        Print a list of dependencies for a given package
+        Print a list of depends for a given package
         '''
         self._setup_yum()
         name = package.split(';')[0]

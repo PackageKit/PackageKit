@@ -155,6 +155,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_depends(self, package_id):
         pass
 
+    def get_requires(self, package_id):
+        pass
+
     def update_system(self):
         pass
 

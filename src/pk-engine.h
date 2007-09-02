@@ -97,6 +97,10 @@ gboolean	 pk_engine_get_depends			(PkEngine	*engine,
 							 const gchar	*package_id,
 							 guint		*job,
 							 GError		**error);
+gboolean	 pk_engine_get_requires			(PkEngine	*engine,
+							 const gchar	*package_id,
+							 guint		*job,
+							 GError		**error);
 gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 guint		*job,

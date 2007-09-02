@@ -121,7 +121,8 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] force-refresh\n");
 	g_print ("  pkcon [sync] [verbose] update-system\n");
 	g_print ("  pkcon [sync] [verbose] get updates\n");
-	g_print ("  pkcon [sync] [verbose] get deps <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get depends <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get requires <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
 	g_print ("\n");
 	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
@@ -218,7 +219,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_console_usage ("you need to specify a get type");
 			remove = 1;
 			goto out;
-		} else if (strcmp (value, "deps") == 0) {
+		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
 				pk_console_usage ("you need to specify a search term");
 				remove = 2;
@@ -226,6 +227,16 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			} else {
 				pk_task_client_set_sync (tclient, TRUE);
 				pk_task_client_get_depends (tclient, details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "requires") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_get_requires (tclient, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "description") == 0) {

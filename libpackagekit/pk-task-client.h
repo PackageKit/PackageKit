@@ -84,6 +84,8 @@ gboolean	 pk_task_client_search_file		(PkTaskClient	*tclient,
 							 const gchar	*search);
 gboolean	 pk_task_client_get_depends		(PkTaskClient	*tclient,
 							 const gchar	*package_id);
+gboolean	 pk_task_client_get_requires		(PkTaskClient	*tclient,
+							 const gchar	*package_id);
 gboolean	 pk_task_client_get_description		(PkTaskClient	*tclient,
 							 const gchar	*package_id);
 gboolean	 pk_task_client_remove_package		(PkTaskClient	*tclient,

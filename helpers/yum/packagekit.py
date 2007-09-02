@@ -177,6 +177,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def get_requires(self,package):
+        '''
+        Implement the {backend}-get-requires functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def update_system(self):
         '''
         Implement the {backend}-update-system functionality

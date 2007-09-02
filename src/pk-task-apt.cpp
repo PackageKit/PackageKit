@@ -618,6 +618,22 @@ gboolean pk_task_get_depends(PkTask * task, const gchar * package)
  	pk_task_not_implemented_yet (task, "GetDepends");
 	return FALSE;
 }
+/**
+ * pk_task_get_requires:
+ **/
+gboolean pk_task_get_requires(PkTask * task, const gchar * package)
+{
+	g_return_val_if_fail(task != NULL, FALSE);
+	g_return_val_if_fail(PK_IS_TASK(task), FALSE);
+
+	if (pk_task_assign(task) == FALSE)
+	{
+		return FALSE;
+	}
+
+ 	pk_task_not_implemented_yet (task, "GetRequires");
+	return FALSE;
+}
 
 struct desc_task
 {

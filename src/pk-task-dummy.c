@@ -71,6 +71,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_SEARCH_GROUP,
 				        PK_TASK_ACTION_SEARCH_FILE,
 				        PK_TASK_ACTION_GET_DEPENDS,
+				        PK_TASK_ACTION_GET_REQUIRES,
 				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
@@ -237,6 +238,29 @@ pk_task_search_file (PkTask *task, const gchar *filter, const gchar *search)
  **/
 gboolean
 pk_task_get_depends (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
+	pk_task_package (task, 1, "glib2;2.14.0;i386;fedora",
+			 "The GLib library");
+	pk_task_package (task, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
+			 "GTK+ Libraries for GIMP");
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
+
+	return TRUE;
+}
+
+/**
+ * pk_task_get_requires:
+ **/
+gboolean
+pk_task_get_requires (PkTask *task, const gchar *package_id)
 {
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);

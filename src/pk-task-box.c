@@ -133,6 +133,7 @@ pk_task_get_actions (void)
 				        /*PK_TASK_ACTION_SEARCH_GROUP,*/
 				        PK_TASK_ACTION_SEARCH_FILE,
 				        /*PK_TASK_ACTION_GET_DEPENDS,*/
+				        /*PK_TASK_ACTION_GET_REQUIRES,*/
 				        /*PK_TASK_ACTION_GET_DESCRIPTION,*/
 				        0);
 	return actions;
@@ -365,6 +366,24 @@ pk_task_get_depends (PkTask *task, const gchar *package_id)
 
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
 	pk_task_not_implemented_yet (task, "GetDepends");
+	return TRUE;
+}
+
+/**
+ * pk_task_get_requires:
+ **/
+gboolean
+pk_task_get_requires (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
+	pk_task_not_implemented_yet (task, "GetRequires");
 	return TRUE;
 }
 

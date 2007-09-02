@@ -7,6 +7,7 @@ dist_helper_DATA = 			\
 	search-name.py			\
 	search-details.py		\
 	get-depends.py			\
+	get-requires.py			\
 	get-updates.py			\
 	install.py			\
 	refresh-cache.py		\

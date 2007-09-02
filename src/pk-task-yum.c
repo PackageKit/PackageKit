@@ -75,6 +75,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_SEARCH_GROUP,
 				        PK_TASK_ACTION_SEARCH_FILE,
 				        PK_TASK_ACTION_GET_DEPENDS,
+				        PK_TASK_ACTION_GET_REQUIRES,
 				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
@@ -264,6 +265,27 @@ pk_task_get_depends (PkTask *task, const gchar *package_id)
 
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
 	pk_task_spawn_helper (task, "get-depends.py", package_id, NULL);
+	return TRUE;
+}
+
+/**
+ * pk_task_get_requires:
+ **/
+gboolean
+pk_task_get_requires (PkTask *task, const gchar *package_id)
+{
+	g_return_val_if_fail (task != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
+
+	if (pk_task_assign (task) == FALSE) {
+		return FALSE;
+	}
+
+	/* only copy this code if you can kill the process with no ill effect */
+	pk_task_allow_interrupt (task, TRUE);
+
+	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
+	pk_task_spawn_helper (task, "get-requires.py", package_id, NULL);
 	return TRUE;
 }
 

@@ -9,6 +9,7 @@ dist_helper_DATA = 			\
 	search-group.py			\
 	search-file.py			\
 	get-depends.py			\
+	get-requires.py			\
 	get-updates.py			\
 	get-description.py		\
 	install.py			\
