@@ -66,8 +66,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1]).trailingRevision()
-            fullVersion = troveTuple[1]
-            #fullVersion = versions.ThawVersion(troveTuple[1])
+            fullVersion = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
             # We don't have summary data yet... so leave it blank for now
             summary = " "
@@ -77,6 +76,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if self._do_filtering(name,fltlist,installed):
                 id = self.get_package_id(name, version, flavor, fullVersion)
                 self.package(id, installed, summary)
+
 
     def _do_search_live(self,searchlist,filters):
         '''
@@ -130,7 +130,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
         try:
-            troveTuple = troveTuple[0], versions.ThawVersion(troveTuple[1]), troveTuple[2]
+            troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
             localInstall = db.findTrove(None, troveTuple)
             installed = 1
         except:
@@ -175,16 +175,29 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if inst:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
             try:
-                print "FOOOOO"
+                print "Update code goes here"
             except:
                 pass
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
 
-        pass
 
-    def remove(self, allowdep, package_id):
-        pass
+    def remove(self, package_id):
+        '''
+        Implement the {backend}-remove functionality
+        '''
+        pkg,inst = self._findPackage(package_id)
+
+        if pkg:
+            if not inst:
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,'Package not installed')
+            try:
+                print "Remove code goes here"
+            except:
+                pass
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+
 
     def get_description(self, package_id):
         return ''
@@ -264,10 +277,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         # Split up the id
         (name,version,arch,fullVersion) = self.get_package_from_id(id)
-        cache = Cache()
-        troveTuple = cache.search(name,fullVersion)
-        troveTuple = [item.encode('UTF-8') for item in troveTuple[0]]
-
+        troveTuple = tuple([name, versions.VersionFromString(fullVersion), None])
         installed = self.check_installed(troveTuple)
         return name,installed
 
@@ -338,17 +348,14 @@ class Cache(object):
                 component = ""
 
             installed = 0
-            localVersion = ""
-            flavor = troveTuple[2]
-            frozenFlavor = troveTuple[2].freeze()
-            version = str(troveTuple[1].trailingRevision())
-            frozenVersion = troveTuple[1].freeze()
+            flavor = troveTuple[2].freeze()
+            fullVersion = troveTuple[1].freeze()
             label = str(troveTuple[1].branch().label())
             description = ""
             category = ""
             packagegroup = ""
             size = ""
-            packages.append([trove, component, frozenVersion, label, frozenFlavor, description, category, packagegroup, size])
+            packages.append([trove, component, fullVersion, label, flavor, description, category, packagegroup, size])
 
         return packages
 
