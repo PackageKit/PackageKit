@@ -201,6 +201,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        
 
     def get_depends(self,package):
         '''
@@ -228,7 +230,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def update_system(self):
         '''
         Implement the {backend}-update-system functionality
-        Needed to be implemented in a sub class
         '''
         self._setup_yum()
         self.percentage(0)
@@ -241,7 +242,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
-        Needed to be implemented in a sub class
         '''
         self._setup_yum()
         pct = 0
