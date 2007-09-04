@@ -596,30 +596,6 @@ pk_task_assign (PkTask *task)
 }
 
 /**
- * pk_task_get_job:
- **/
-guint
-pk_task_get_job (PkTask *task)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	return task->job;
-}
-
-/**
- * pk_task_set_job:
- **/
-gboolean
-pk_task_set_job (PkTask *task, guint job)
-{
-	g_return_val_if_fail (task != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
-	pk_debug ("set job %p=%i", task, job);
-	task->job = job;
-	return TRUE;
-}
-
-/**
  * pk_task_common_init:
  **/
 gboolean
@@ -630,7 +606,6 @@ pk_task_common_init (PkTask *task)
 
 	/* track how long the job has been running for */
 	task->timer = g_timer_new ();
-	task->job = 1;
 	task->assigned = FALSE;
 	task->is_killable = FALSE;
 	task->spawn = NULL;

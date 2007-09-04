@@ -29,9 +29,6 @@ G_BEGIN_DECLS
 
 gboolean	 pk_task_common_init			(PkTask		*task);
 gboolean	 pk_task_common_free			(PkTask		*task);
-guint		 pk_task_get_job			(PkTask		*task);
-gboolean	 pk_task_set_job			(PkTask		*task,
-							 guint		 job);
 gboolean	 pk_task_change_percentage		(PkTask		*task,
 							 guint		 percentage);
 gboolean	 pk_task_change_sub_percentage		(PkTask		*task,
