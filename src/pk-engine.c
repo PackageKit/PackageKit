@@ -243,7 +243,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -266,7 +266,7 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -287,7 +287,7 @@ pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *e
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -308,7 +308,7 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -329,7 +329,7 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -351,7 +351,7 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -374,7 +374,7 @@ pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -398,7 +398,7 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup gro
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -422,7 +422,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -458,7 +458,7 @@ pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engin
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -658,7 +658,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -691,7 +691,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -789,7 +789,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -835,7 +835,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -881,7 +881,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -927,7 +927,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -969,7 +969,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -1011,7 +1011,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -1045,7 +1045,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
 	}
@@ -1105,7 +1105,7 @@ pk_engine_update_system (PkEngine *engine,
 	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -1156,7 +1156,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -1209,7 +1209,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
@@ -1262,7 +1262,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
-	if (map == FALSE) {
+	if (map == NULL) {
 		pk_warning ("could not find task");
 		return;
 	}
