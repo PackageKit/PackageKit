@@ -78,6 +78,11 @@ enum {
 	PK_ENGINE_LAST_SIGNAL
 };
 
+typedef struct {
+	guint		 job;
+	PkTask		*task;
+} PkEngineMap;
+
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
@@ -140,9 +145,8 @@ pk_engine_create_job_list (PkEngine *engine)
 {
 	guint i;
 	guint length;
-	guint job;
-	PkTask *task;
 	GArray *job_list;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -153,23 +157,21 @@ pk_engine_create_job_list (PkEngine *engine)
 	/* find all the jobs in progress */
 	length = engine->priv->array->len;
 	for (i=0; i<length; i++) {
-		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
-		job = pk_task_get_job (task);
-		job_list = g_array_append_val (job_list, job);
+		map = (PkEngineMap *) g_ptr_array_index (engine->priv->array, i);
+		job_list = g_array_append_val (job_list, map->job);
 	}
 	return job_list;
 }
 
 /**
- * pk_get_task_from_job:
+ * pk_get_map_from_job:
  **/
-static PkTask *
-pk_get_task_from_job (PkEngine *engine, guint job)
+static PkEngineMap *
+pk_get_map_from_job (PkEngine *engine, guint job)
 {
 	guint i;
 	guint length;
-	guint job_tmp;
-	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, NULL);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
@@ -177,15 +179,37 @@ pk_get_task_from_job (PkEngine *engine, guint job)
 	/* find the task with the job ID */
 	length = engine->priv->array->len;
 	for (i=0; i<length; i++) {
-		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
-		job_tmp = pk_task_get_job (task);
-		if (job_tmp == job) {
-			return task;
+		map = (PkEngineMap *) g_ptr_array_index (engine->priv->array, i);
+		if (map->job == job) {
+			return map;
 		}
 	}
 	return NULL;
 }
 
+/**
+ * pk_get_map_from_task:
+ **/
+static PkEngineMap *
+pk_get_map_from_task (PkEngine *engine, PkTask *task)
+{
+	guint i;
+	guint length;
+	PkEngineMap *map;
+
+	g_return_val_if_fail (engine != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
+
+	/* find the task with the job ID */
+	length = engine->priv->array->len;
+	for (i=0; i<length; i++) {
+		map = (PkEngineMap *) g_ptr_array_index (engine->priv->array, i);
+		if (map->task == task) {
+			return map;
+		}
+	}
+	return NULL;
+}
 
 /**
  * pk_engine_job_list_changed:
@@ -212,17 +236,21 @@ pk_engine_job_list_changed (PkEngine *engine)
 static void
 pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 	const gchar *status_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 	status_text = pk_task_status_to_text (status);
 
-	pk_debug ("emitting job-status-changed job:%i, '%s'", job, status_text);
-	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, job, status_text);
+	pk_debug ("emitting job-status-changed job:%i, '%s'", map->job, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, map->job, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -232,14 +260,18 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 static void
 pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
-	pk_debug ("emitting percentage-changed job:%i %i", job, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, job, percentage);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	pk_debug ("emitting percentage-changed job:%i %i", map->job, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, map->job, percentage);
 	pk_engine_reset_timer (engine);
 }
 
@@ -249,14 +281,18 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 static void
 pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
-	pk_debug ("emitting sub-percentage-changed job:%i %i", job, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, job, percentage);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	pk_debug ("emitting sub-percentage-changed job:%i %i", map->job, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, map->job, percentage);
 	pk_engine_reset_timer (engine);
 }
 
@@ -266,14 +302,18 @@ pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *e
 static void
 pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
-	pk_debug ("emitting no-percentage-updates job:%i", job);
-	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, job);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	pk_debug ("emitting no-percentage-updates job:%i", map->job);
+	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, map->job);
 	pk_engine_reset_timer (engine);
 }
 
@@ -283,14 +323,18 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 static void
 pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
-	pk_debug ("emitting package job:%i value=%i %s, %s", job, value, package_id, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, job, value, package_id, summary);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	pk_debug ("emitting package job:%i value=%i %s, %s", map->job, value, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, map->job, value, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -300,16 +344,20 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const 
 static void
 pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *details, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 	const gchar *code_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 	code_text = pk_task_error_code_to_text (code);
-	pk_debug ("emitting error-code job:%i %s, '%s'", job, code_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, job, code_text, details);
+	pk_debug ("emitting error-code job:%i %s, '%s'", map->job, code_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, map->job, code_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -319,16 +367,20 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 static void
 pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *details, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 	const gchar *restart_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 	restart_text = pk_task_restart_to_text (restart);
-	pk_debug ("emitting error-code job:%i %s, '%s'", job, restart_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, job, restart_text, details);
+	pk_debug ("emitting error-code job:%i %s, '%s'", map->job, restart_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, map->job, restart_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -339,17 +391,21 @@ static void
 pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup group,
 			  const gchar *detail, const gchar *url, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 	const gchar *group_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 	group_text = pk_task_group_to_text (group);
 
-	pk_debug ("emitting description job:%i, %s, %s, %s, %s", job, package_id, group_text, detail, url);
-	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, job, package_id, group_text, detail, url);
+	pk_debug ("emitting description job:%i, %s, %s, %s, %s", map->job, package_id, group_text, detail, url);
+	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, map->job, package_id, group_text, detail, url);
 }
 
 /**
@@ -358,25 +414,31 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup gro
 static void
 pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 	const gchar *exit_text;
 	gdouble time;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 	exit_text = pk_task_exit_to_text (exit);
 
 	/* find the length of time we have been running */
 	time = g_timer_elapsed (task->timer, NULL);
 	pk_debug ("task was running for %f seconds", time);
 
-	pk_debug ("emitting finished job: %i, '%s', %i", job, exit_text, (guint) time);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, job, exit_text, (guint) time);
+	pk_debug ("emitting finished job: %i, '%s', %i", map->job, exit_text, (guint) time);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, map->job, exit_text, (guint) time);
 
 	/* remove from array and unref */
-	g_ptr_array_remove (engine->priv->array, task);
+	g_ptr_array_remove (engine->priv->array, map);
+	g_free (map);
+
 	pk_task_common_free (task);
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
@@ -390,15 +452,19 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 static void
 pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engine)
 {
-	guint job;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
 
-	pk_debug ("emitting allow-interrpt job:%i, %i", job, allow_kill);
-	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, job, allow_kill);
+	pk_debug ("emitting allow-interrpt job:%i, %i", map->job, allow_kill);
+	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, map->job, allow_kill);
 }
 
 /**
@@ -479,13 +545,7 @@ pk_engine_new_task (PkEngine *engine)
 
 	/* initialise some stuff */
 	pk_task_common_init (task);
-
-	/* set the job ID */
-	pk_task_set_job (task, engine->priv->job_count);
 	pk_engine_reset_timer (engine);
-
-	/* in an ideal workd we don't need this, but do it in case the daemon is ctrl-c;d */
-	pk_engine_save_job_count (engine);
 
 	/* we don't add to the array or do the job-list-changed yet
 	 * as this job might fail */
@@ -498,8 +558,16 @@ pk_engine_new_task (PkEngine *engine)
 static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
+	PkEngineMap *map;
+
 	/* add to the array */
-	g_ptr_array_add (engine->priv->array, task);
+	map = g_new0 (PkEngineMap, 1);
+	map->task = task;
+	map->job = engine->priv->job_count;
+	g_ptr_array_add (engine->priv->array, map);
+
+	/* in an ideal world we don't need this, but do it in case the daemon is ctrl-c;d */
+	pk_engine_save_job_count (engine);
 
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
@@ -574,6 +642,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -588,7 +657,12 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -601,6 +675,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -615,7 +690,12 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -681,6 +761,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -707,7 +788,12 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -721,6 +807,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -747,7 +834,12 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -761,6 +853,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -787,7 +880,12 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -801,6 +899,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -827,7 +926,12 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -841,6 +945,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -863,7 +968,12 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -877,6 +987,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -899,7 +1010,12 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -913,6 +1029,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -927,7 +1044,12 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	*job = pk_task_get_job (task);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = map->job;
 
 	return TRUE;
 }
@@ -940,12 +1062,12 @@ pk_engine_update_system (PkEngine *engine,
 			 DBusGMethodInvocation *context, GError **dead_error)
 {
 	guint i;
-	guint job;
 	guint length;
 	PkTaskRole role;
-	PkTask *task;
 	gboolean ret;
 	GError *error;
+	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -960,8 +1082,8 @@ pk_engine_update_system (PkEngine *engine,
 	/* check for existing job doing an update */
 	length = engine->priv->array->len;
 	for (i=0; i<length; i++) {
-		task = (PkTask *) g_ptr_array_index (engine->priv->array, i);
-		ret = pk_task_get_job_role (task, &role, NULL);
+		map = (PkEngineMap *) g_ptr_array_index (engine->priv->array, i);
+		ret = pk_task_get_job_role (map->task, &role, NULL);
 		if (ret == TRUE && role == PK_TASK_ROLE_SYSTEM_UPDATE) {
 			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
 					     "operation not yet supported by backend");
@@ -982,8 +1104,12 @@ pk_engine_update_system (PkEngine *engine,
 	}
 	pk_engine_add_task (engine, task);
 
-	job = pk_task_get_job (task);
-	dbus_g_method_return (context, job);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	dbus_g_method_return (context, map->job);
 }
 
 /**
@@ -993,7 +1119,7 @@ void
 pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean allow_deps,
 			  DBusGMethodInvocation *context, GError **dead_error)
 {
-	guint job;
+	PkEngineMap *map;
 	gboolean ret;
 	PkTask *task;
 	GError *error;
@@ -1029,8 +1155,12 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	}
 	pk_engine_add_task (engine, task);
 
-	job = pk_task_get_job (task);
-	dbus_g_method_return (context, job);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	dbus_g_method_return (context, map->job);
 }
 
 /**
@@ -1043,7 +1173,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
-	guint job;
+	PkEngineMap *map;
 	PkTask *task;
 	GError *error;
 
@@ -1078,8 +1208,12 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 
-	job = pk_task_get_job (task);
-	dbus_g_method_return (context, job);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	dbus_g_method_return (context, map->job);
 }
 
 /**
@@ -1092,7 +1226,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
-	guint job;
+	PkEngineMap *map;
 	PkTask *task;
 	GError *error;
 
@@ -1127,8 +1261,12 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 
-	job = pk_task_get_job (task);
-	dbus_g_method_return (context, job);
+	map = pk_get_map_from_task (engine, task);
+	if (map == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	dbus_g_method_return (context, map->job);
 }
 
 /**
@@ -1152,19 +1290,19 @@ gboolean
 pk_engine_get_job_status (PkEngine *engine, guint job,
 			  const gchar **status, GError **error)
 {
-	PkTask *task;
 	PkTaskStatus status_enum;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	task = pk_get_task_from_job (engine, job);
-	if (task == NULL) {
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No job:%i", map->job);
 		return FALSE;
 	}
-	pk_task_get_job_status (task, &status_enum);
+	pk_task_get_job_status (map->task, &status_enum);
 	*status = g_strdup (pk_task_status_to_text (status_enum));
 
 	return TRUE;
@@ -1177,19 +1315,19 @@ gboolean
 pk_engine_get_job_role (PkEngine *engine, guint job,
 			const gchar **role, const gchar **package_id, GError **error)
 {
-	PkTask *task;
+	PkEngineMap *map;
 	PkTaskRole role_enum;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	task = pk_get_task_from_job (engine, job);
-	if (task == NULL) {
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No job:%i", map->job);
 		return FALSE;
 	}
-	pk_task_get_job_role (task, &role_enum, package_id);
+	pk_task_get_job_role (map->task, &role_enum, package_id);
 	*role = g_strdup (pk_task_role_to_text (role_enum));
 
 	return TRUE;
@@ -1202,23 +1340,22 @@ gboolean
 pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 {
 	gboolean ret;
-	PkTask *task;
+	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	task = pk_get_task_from_job (engine, job);
-	if (task == NULL) {
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No job:%i", map->job);
 		return FALSE;
 	}
 
-	ret = pk_task_cancel_job_try (task);
+	ret = pk_task_cancel_job_try (map->task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "operation not yet supported by backend");
-		g_object_unref (task);
 		return FALSE;
 	}
 

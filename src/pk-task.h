@@ -56,7 +56,6 @@ typedef struct
 	GObject			 parent;
 	PkTaskPrivate		*priv;
 	gboolean		 assigned;
-	guint			 job;
 	PkTaskStatus		 role; /* this never changes for the lifetime of a job */
 	PkTaskStatus		 status; /* this changes */
 	gchar			*package_id; /* never changes, this is linked to role */
