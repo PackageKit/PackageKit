@@ -72,7 +72,7 @@ add_packages_from_list (PkTask *task, GList *list)
 
 	for (li = list; li != NULL; li = li->next) {
 		package = (PackageSearch*)li->data;
-		pkg_string = pk_package_id_build(package->package, package->version, package->arch, "");
+		pkg_string = pk_package_id_build(package->package, package->version, package->arch, package->reponame);
 
 		pk_task_package (task, package->installed, pkg_string, package->description);
 
