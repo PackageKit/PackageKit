@@ -13,6 +13,7 @@ Core:
 * Add logging so we can see what was installed/removed and when
 * Add "when installed" data into description
 * Add "installed by 'Richard Hughes'" data into description
+* /var/db/PackageKit/$package_id/installed_by, when_installed
 * Add GetUpdateDetail(s=package_id)
 UpdateDetail(
 string url
@@ -21,6 +22,8 @@ string updates
 string obsoletes
 string update_text
 }
+* Get the set_job and get_job out of the pk-task structure (use g_object)
+* Switch to dlopened backends and remove bodge of pk-task-common.*
 
 Backends:
 * Complete conary backend
