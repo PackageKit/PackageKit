@@ -134,7 +134,7 @@ pk_task_get_actions (void)
 				        PK_TASK_ACTION_SEARCH_FILE,
 				        /*PK_TASK_ACTION_GET_DEPENDS,*/
 				        /*PK_TASK_ACTION_GET_REQUIRES,*/
-				        /*PK_TASK_ACTION_GET_DESCRIPTION,*/
+				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
 }
@@ -296,6 +296,26 @@ find_packages (PkTask *task, const gchar *search, const gchar *filter, gint mode
 	return TRUE;
 }
 
+static GList*
+find_package_by_id (PkPackageId *pi)
+{
+	sqlite3 *db = NULL;
+	GList *list;
+
+	db = box_db_open("/");
+	box_db_attach_repo(db, "/", "core");
+	box_db_repos_init(db);
+
+	// only one element is returned
+	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
+	if (list == NULL)
+		return NULL;
+
+	box_db_detach_repo(db, "core");
+	box_db_close(db);
+
+	return list;
+}
 
 /**
  * pk_task_search_name:
@@ -393,6 +413,10 @@ pk_task_get_requires (PkTask *task, const gchar *package_id)
 gboolean
 pk_task_get_description (PkTask *task, const gchar *package_id)
 {
+	PkPackageId *pi;
+	PackageSearch *ps;
+	GList *list;
+
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -400,8 +424,33 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 		return FALSE;
 	}
 
+	pi = pk_package_id_new_from_string (package_id);
+
+	if (pi == NULL)
+	{
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "invalid package id");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+	list = find_package_by_id (pi);
+	ps = (PackageSearch*) list->data;
+
+	if (list == NULL)
+	{
+		pk_task_error_code (task, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "cannot find package by id");
+		pk_task_finished (task, PK_TASK_EXIT_FAILED);
+		return TRUE;
+	}
+
+
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
-	pk_task_not_implemented_yet (task, "GetDescription");
+	pk_task_description (task, pi->name, PK_TASK_GROUP_OTHER, ps->description, "");
+
+	pk_package_id_free (pi);
+	box_db_repos_package_list_free (list);
+
+	pk_task_finished (task, PK_TASK_EXIT_SUCCESS);
 	return TRUE;
 }
 

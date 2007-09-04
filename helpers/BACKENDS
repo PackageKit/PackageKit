@@ -10,5 +10,5 @@ update-system   |           |   X   |       |       |
 install         |           |   X   |       |       |
 remove          |           |   X   |       |       |
 get-deps        |           |   X   |       |       |
-get-description |     X     |       |   X   |       |
+get-description |     X     |       |   X   |   X   |
 search-file     |           |       |       |   X   |
