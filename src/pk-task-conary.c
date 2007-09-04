@@ -65,8 +65,8 @@ gchar *
 pk_task_get_actions (void)
 {
 	gchar *actions;
-	actions = pk_task_action_build (/*PK_TASK_ACTION_INSTALL,*/
-/*				        PK_TASK_ACTION_REMOVE,*/
+	actions = pk_task_action_build (PK_TASK_ACTION_INSTALL,
+				        PK_TASK_ACTION_REMOVE,
 /*				        PK_TASK_ACTION_UPDATE,*/
 				        PK_TASK_ACTION_GET_UPDATES,
 				        PK_TASK_ACTION_REFRESH_CACHE,
@@ -77,7 +77,7 @@ pk_task_get_actions (void)
 /*				        PK_TASK_ACTION_SEARCH_FILE,*/
 /*				        PK_TASK_ACTION_GET_DEPENDS,*/
 /*				        PK_TASK_ACTION_GET_REQUIRES,*/
-/*				        PK_TASK_ACTION_GET_DESCRIPTION,*/
+				        PK_TASK_ACTION_GET_DESCRIPTION,
 				        0);
 	return actions;
 }
@@ -265,8 +265,11 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 		return FALSE;
 	}
 
+	/* only copy this code if you can kill the process with no ill effect */
+	pk_task_allow_interrupt (task, TRUE);
+
 	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, package_id);
-	pk_task_not_implemented_yet (task, "GetDescription");
+	pk_task_spawn_helper (task, "get-description.py", package_id, NULL);
 	return TRUE;
 }
 
@@ -276,6 +279,7 @@ pk_task_get_description (PkTask *task, const gchar *package_id)
 gboolean
 pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_deps)
 {
+	const gchar *deps;
 	g_return_val_if_fail (task != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -283,11 +287,16 @@ pk_task_remove_package (PkTask *task, const gchar *package_id, gboolean allow_de
 		return FALSE;
 	}
 
+	if (allow_deps == TRUE) {
+		deps = "yes";
+	} else {
+		deps = "no";
+	}
+
 	pk_task_set_job_role (task, PK_TASK_ROLE_PACKAGE_REMOVE, package_id);
-	pk_task_not_implemented_yet (task, "RemovePackage");
+	pk_task_spawn_helper (task, "remove.py", deps, package_id, NULL);
 	return TRUE;
 }
-
 /**
  * pk_task_install_package:
  **/
@@ -309,7 +318,7 @@ pk_task_install_package (PkTask *task, const gchar *package_id)
 	}
 
 	pk_task_set_job_role (task, PK_TASK_ROLE_PACKAGE_INSTALL, package_id);
-	pk_task_not_implemented_yet (task, "InstallPackage");
+	pk_task_spawn_helper (task, "install.py", package_id, NULL);
 	return TRUE;
 }
 

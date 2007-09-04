@@ -35,9 +35,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _get_version(self, version):
         return version.asString()
 
-    def get_package_id(self, name, version, flavor, fullVersion=None):
+    def get_package_id(self, name, version, flavor=None, fullVersion=None):
         version = self._get_version(version)
-        arch = self._get_arch(flavor)
+        if not flavor == None:
+            arch = self._get_arch(flavor)
+        else:
+            arch = ""
         return PackageKitBaseBackend.get_package_id(self, name, version,
                                                     arch, fullVersion)
 
@@ -169,13 +172,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        pkg,inst = self._findPackage(package_id)
+        name,installed,version,arch,fullVersion = self._findPackage(package_id)
 
-        if pkg:
-            if inst:
+        if name:
+            if installed:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
             try:
-                print "Update code goes here"
+                self.base.status(STATE_INSTALL)
+                #print "Update code goes here"
             except:
                 pass
         else:
@@ -186,13 +190,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        pkg,inst = self._findPackage(package_id)
+        name,installed,version,arch,fullVersion = self._findPackage(package_id)
 
-        if pkg:
-            if not inst:
+        if name:
+            if not installed:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,'Package not installed')
             try:
-                print "Remove code goes here"
+                self.base.status(STATE_REMOVE)
+                #print "Remove code goes here"
             except:
                 pass
         else:
@@ -200,7 +205,24 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
 
     def get_description(self, package_id):
-        return ''
+        '''
+        Print a detailed description for a given package
+        '''
+        name,installed,version,arch,fullVersion = self._findPackage(package_id)
+        fullVersion = versions.VersionFromString(fullVersion)
+        version = fullVersion.trailingRevision()
+        if name:
+            id = self.get_package_id(name, version)
+            desc = ""
+            desc += "%s \n" % name
+            desc += "%s \n" % version
+            desc = desc.replace('\n\n',';')
+            desc = desc.replace('\n',' ')
+            url = "http://www.foresightlinux.org/packages/" + name + ".html"
+            group = "other"
+            self.description(id, group, desc, url)
+        else:
+            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
     def get_updates(self):
         updateItems = self.client.fullUpdateItemList()
@@ -279,7 +301,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         (name,version,arch,fullVersion) = self.get_package_from_id(id)
         troveTuple = tuple([name, versions.VersionFromString(fullVersion), None])
         installed = self.check_installed(troveTuple)
-        return name,installed
+        return name,installed,version,arch,fullVersion
 
 class Cache(object):
     # Database name and path
