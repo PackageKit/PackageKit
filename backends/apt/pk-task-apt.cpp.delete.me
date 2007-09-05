@@ -382,7 +382,7 @@ static void LocalitySort(AptCompFile **begin,
 	qsort(begin,Count,Size,LocalityCompare);
 }
 
-typedef enum {SEARCH_NAME=1, SEARCH_DETAILS} SearchDepth;
+typedef enum {SEARCH_NAME=1, SEARCH_DETAILS, SEARCH_FILE} SearchDepth;
 
 struct search_task
 {
@@ -600,12 +600,59 @@ gboolean pk_task_search_group(PkTask * task, const gchar * filter, const gchar *
 	return TRUE;
 }
 
+void *do_search_file(gpointer data)
+{
+	search_task *st = (search_task*)data;
+	gchar *sdir = g_path_get_dirname(_config->Find("Dir::State::status").c_str());
+	gchar *ldir = g_build_filename(sdir,"info",NULL);
+	g_free(sdir);
+	GError *error = NULL;
+	GDir *list = g_dir_open(ldir,0,&error);
+	if (error!=NULL)
+	{
+		pk_task_error_code(st->task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't open %s",ldir);
+		g_free(ldir);
+		g_error_free(error);
+		pk_task_finished(st->task, PK_TASK_EXIT_FAILED);
+		return NULL;
+	}
+	const gchar * fname = NULL;
+	while ((fname = g_dir_read_name(list))!=NULL)
+	{
+		//pk_task_package(st->task, J->installed, pid, P.ShortDesc().c_str());
+	}
+	pk_task_error_code(st->task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "search file is incomplete");
+	pk_task_finished(st->task, PK_TASK_EXIT_FAILED);
+	g_dir_close(ldir);
+	g_free(ldir);
+	//pk_task_finished(st->task, PK_TASK_EXIT_SUCCESS);
+	return NULL;
+}
+
 /**
  * pk_task_search_file:
  **/
 gboolean pk_task_search_file(PkTask * task, const gchar * filter, const gchar * search)
 {
-	pk_task_not_implemented_yet(task, "SearchFile");
+	search_task *data = g_new(struct search_task, 1);
+	if (data == NULL)
+	{
+		pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for search task");
+		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+	}
+	else
+	{
+		data->task = task;
+		data->search = g_strdup(search);
+		data->filter = g_strdup(filter);
+		data->depth = SEARCH_FILE;
+
+		if (g_thread_create(do_search_file, data, false, NULL) == NULL)
+		{
+			pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't spawn thread");
+			pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		}
+	}
 	return TRUE;
 }
 
