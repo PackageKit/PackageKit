@@ -136,11 +136,14 @@ main (int argc, char *argv[])
 	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
+	gchar *backend = NULL;
 	PkEngine *engine = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 
 	const GOptionEntry options[] = {
+		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend,
+		  "Backend to use (for debugging)", NULL },
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
 		  "Daemonize and detach", NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
@@ -155,6 +158,13 @@ main (int argc, char *argv[])
 		  "Exit after a the engine has loaded (for debugging)", NULL },
 		{ NULL}
 	};
+
+	if (backend == NULL) {
+		backend = g_strdup (BACKEND_PREFIX);
+		pk_debug ("using default backend %s", backend);
+	} else {
+		pk_debug ("trying to use backend %s", backend);
+	}
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
@@ -199,6 +209,7 @@ main (int argc, char *argv[])
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
+	pk_engine_use_backend (engine, backend);
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine))) {
 		g_error ("Already running on this machine");

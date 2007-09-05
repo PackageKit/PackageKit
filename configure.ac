@@ -175,6 +175,8 @@ fi
 # we need this for the spawn code
 if test x$with_backend = xyum; then
     AC_DEFINE(BACKEND_PREFIX, "yum", [backend prefix])
+elif test x$with_backend = xapt; then
+    AC_DEFINE(BACKEND_PREFIX, "apt", [backend prefix])
 elif test x$with_backend = xconary; then
     AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
 elif test x$with_backend = xbox; then

@@ -128,6 +128,16 @@ pk_engine_error_get_type (void)
 }
 
 /**
+ * pk_engine_use_backend:
+ **/
+gboolean
+pk_engine_use_backend (PkEngine *engine, const gchar *backend)
+{
+	pk_debug ("trying backend %s", backend);
+	return TRUE;
+}
+
+/**
  * pk_engine_reset_timer:
  **/
 static void
