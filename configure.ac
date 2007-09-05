@@ -313,6 +313,16 @@ AC_OUTPUT([
 packagekit.pc
 Makefile
 man/Makefile
+backends/Makefile
+backends/apt/Makefile
+backends/box/Makefile
+backends/box/helpers/Makefile
+backends/conary/Makefile
+backends/conary/helpers/Makefile
+backends/dummy/Makefile
+backends/test/Makefile
+backends/yum/Makefile
+backends/yum/helpers/Makefile
 data/Makefile
 libselftest/Makefile
 libgbus/Makefile
@@ -320,10 +330,6 @@ libpackagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile
-helpers/Makefile
-helpers/box/Makefile
-helpers/conary/Makefile
-helpers/yum/Makefile
 PackageKit.conf
 ])
 

@@ -7,7 +7,7 @@ SUBDIRS = 			\
 	libpackagekit		\
 	src			\
 	client			\
-	helpers			\
+	backends		\
 	$(NULL)
 
 AUTOMAKE_OPTIONS = 1.7
