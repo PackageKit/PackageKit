@@ -305,6 +305,10 @@ if test x$with_backend = xbox; then
 	AC_SUBST(BOX_LIBS)
 fi
 
+AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
+AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
+AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
+
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])
