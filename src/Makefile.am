@@ -74,6 +74,7 @@ endif
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
+	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(LIBNM_LIBS)					\
