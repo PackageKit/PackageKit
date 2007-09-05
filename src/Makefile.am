@@ -28,6 +28,11 @@ INCLUDES =						\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
+pkbackendincludedir=$(includedir)/packagekit-backend
+
+pkbackendinclude_HEADERS =				\
+	pk-backend.h
+
 sbin_PROGRAMS =						\
 	packagekitd					\
 	$(NULL)
