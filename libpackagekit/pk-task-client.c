@@ -262,7 +262,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 		pk_warning ("GetUpdates failed!");
 		return FALSE;
 	}
-pk_warning("set job");
+
 	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
 	pk_task_client_wait_if_sync (tclient);
 
