@@ -428,6 +428,120 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 	return ret;
 }
 
+/**
+ * pk_util_action_new:
+ **/
+PkActionList *
+pk_util_action_new (PkTaskAction action, ...)
+{
+	va_list args;
+	guint i;
+	PkActionList *alist;
+	PkTaskAction action_temp;
+
+	/* create a new list. A list must have at least one entry */
+	alist = g_ptr_array_new ();
+	g_ptr_array_add (alist, GUINT_TO_POINTER(action));
+
+	/* process the valist */
+	va_start (args, action);
+	for (i=0;; i++) {
+		action_temp = va_arg (args, PkTaskAction);
+		if (action_temp == 0) break;
+		g_ptr_array_add (alist, GUINT_TO_POINTER(action_temp));
+	}
+	va_end (args);
+
+	return alist;
+}
+
+
+/**
+ * pk_util_action_new_from_string:
+ **/
+PkActionList *
+pk_util_action_new_from_string (const gchar *actions)
+{
+	PkActionList *alist;
+	gchar **sections;
+	guint i;
+	PkTaskAction action_temp;
+
+	if (actions == NULL) {
+		pk_warning ("actions null");
+		return FALSE;
+	}
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (actions, ";", 0);
+
+	/* create a new list. A list must have at least one entry */
+	alist = g_ptr_array_new ();
+
+	for (i=0; sections[i]; i++) {
+		action_temp = pk_task_action_from_text (sections[i]);
+		g_ptr_array_add (alist, GUINT_TO_POINTER(action_temp));
+	}
+	g_strfreev (sections);
+	return alist;
+}
+
+/**
+ * pk_util_action_free:
+ **/
+gboolean
+pk_util_action_free (PkActionList *alist)
+{
+	g_ptr_array_free (alist, TRUE);
+	return TRUE;
+}
+
+/**
+ * pk_util_action_to_string:
+ **/
+gchar *
+pk_util_action_to_string (PkActionList *alist)
+{
+	guint i;
+	GString *string;
+
+	string = g_string_new ("");
+	for (i=0; i<alist->len; i++) {
+		g_string_append (string, g_ptr_array_index (alist, i));
+		g_string_append (string, ";");
+	}
+
+	/* remove last ';' */
+	g_string_set_size (string, string->len - 1);
+
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_util_action_append:
+ **/
+gboolean
+pk_util_action_append (PkActionList *alist, PkTaskAction action)
+{
+	g_ptr_array_add (alist, GUINT_TO_POINTER(action));
+	return TRUE;
+}
+
+/**
+ * pk_util_action_contains:
+ **/
+gboolean
+pk_util_action_contains (PkActionList *alist, PkTaskAction action)
+{
+	guint i;
+	for (i=0; i<alist->len; i++) {
+		if (GPOINTER_TO_UINT (g_ptr_array_index (alist, i)) == action) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/

@@ -23,6 +23,7 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
+#include <pk-task-utils.h>
 #include "pk-backend.h"
 
 G_BEGIN_DECLS
@@ -53,6 +54,7 @@ struct _PkBackendClass
 /* general */
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
+PkActionList	 pk_backend_get_actions			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);

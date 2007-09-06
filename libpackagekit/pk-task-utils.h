@@ -23,6 +23,7 @@
 #define __PK_TASK_UTILS_H
 
 #include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 
@@ -133,9 +134,19 @@ const gchar	*pk_task_action_to_text			(PkTaskAction	 action);
 gboolean	 pk_task_filter_check			(const gchar	*filter);
 
 /* actions */
-gchar		*pk_task_action_build			(PkTaskAction	  action, ...);
-gboolean	 pk_task_action_contains		(const gchar	 *actions,
-							 PkTaskAction	  action);
+gchar		*pk_task_action_build			(PkTaskAction	 action, ...);
+gboolean	 pk_task_action_contains		(const gchar	*actions,
+							 PkTaskAction	 action);
+
+typedef GPtrArray PkActionList;
+PkActionList	*pk_util_action_new			(PkTaskAction	 action, ...);
+PkActionList	*pk_util_action_new_from_string		(const gchar	*actions);
+gchar		*pk_util_action_to_string		(PkActionList	*alist);
+gboolean	 pk_util_action_contains		(PkActionList	*alist,
+							 PkTaskAction	 action);
+gboolean	 pk_util_action_append			(PkActionList	*alist,
+							 PkTaskAction	 action);
+gboolean	 pk_util_action_free			(PkActionList	*alist);
 
 G_END_DECLS
 
