@@ -61,6 +61,7 @@ struct PkEnginePrivate
 	guint			 job_count;
 	PolKitContext		*pk_context;
 	DBusConnection		*connection;
+	gchar			*backend;
 };
 
 enum {
@@ -134,6 +135,7 @@ gboolean
 pk_engine_use_backend (PkEngine *engine, const gchar *backend)
 {
 	pk_debug ("trying backend %s", backend);
+	engine->priv->backend = g_strdup (backend);
 	return TRUE;
 }
 
@@ -1496,6 +1498,7 @@ pk_engine_init (PkEngine *engine)
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->array = g_ptr_array_new ();
 	engine->priv->timer = g_timer_new ();
+	engine->priv->backend = NULL;
 
 	engine->priv->job_count = pk_engine_load_job_count (engine);
 
@@ -1538,6 +1541,7 @@ pk_engine_finalize (GObject *object)
 	/* compulsory gobjects */
 	g_ptr_array_free (engine->priv->array, TRUE);
 	g_timer_destroy (engine->priv->timer);
+	g_free (engine->priv->backend);
 	polkit_context_unref (engine->priv->pk_context);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
