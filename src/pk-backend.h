@@ -24,6 +24,7 @@
 
 #include <glib.h>
 #include <pk-task-utils.h>
+#include <pk-package-id.h>
 
 G_BEGIN_DECLS
 

@@ -22,11 +22,11 @@ string updates
 string obsoletes
 string update_text
 }
-* Get the set_job and get_job out of the pk-task structure (use g_object)
 * Switch to dlopened backends and remove bodge of pk-task-common.*
+* add errors OutOfMemory, CannotCreateThread
+* Remove the _TASK_ in the enums
 
 Backends:
 * Complete conary backend
 * Dummy backend should use subpercent and install deps
-* Add enough new error enums for all the backends
 
