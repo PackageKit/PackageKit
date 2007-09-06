@@ -331,7 +331,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except yum.Errors.YumBaseError, msgs:
                 retmsg = "Error in Transaction Processing;" +";".join(msgs)
-                self.error(ERROR_INTERNAL_ERROR,retmsg)
+                self.error(ERROR_TRANSACTION_ERROR,retmsg)
 
     def remove(self, allowdep, package):
         '''

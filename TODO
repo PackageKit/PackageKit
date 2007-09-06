@@ -22,8 +22,6 @@ string updates
 string obsoletes
 string update_text
 }
-* Switch to dlopened backends and remove bodge of pk-task-common.*
-* add errors OutOfMemory, CannotCreateThread
 * Remove the _TASK_ in the enums
 
 Backends:

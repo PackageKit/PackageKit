@@ -191,14 +191,14 @@ void *do_update_thread(gpointer data)
 	// Populate it with the source selection
 	if (List.GetIndexes(&Fetcher) == false)
 	{
-		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Failed to populate the source selection");
 		goto do_update_clean;
 	}
 
 	// Run it
 	if (Fetcher.Run() == pkgAcquire::Failed)
 	{
-		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Failed to run the fetcher");
 		goto do_update_clean;
 	}
 
@@ -226,7 +226,7 @@ void *do_update_thread(gpointer data)
 		if (Fetcher.Clean(_config->FindDir("Dir::State::lists")) == false ||
 		    Fetcher.Clean(_config->FindDir("Dir::State::lists") + "partial/") == false)
 		{
-			pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+			pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Failed to clean out any old list files");
 			goto do_update_clean;
 		}
 	}
@@ -235,7 +235,7 @@ void *do_update_thread(gpointer data)
 	Cache = getCache();
 	if (Cache->BuildCaches(Prog,false) == false)
 	{
-		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_backend_error_code(ud->backend, PK_TASK_ERROR_CODE_UNKNOWN, "Failed to prepare the cache");
 		goto do_update_clean;
 	}
 
@@ -273,7 +273,7 @@ gboolean pk_backend_refresh_cache(PkBackend * backend, gboolean force)
 	UpdateData *data = g_new(UpdateData, 1);
 	if (data == NULL)
 	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for update task");
+		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_OOM, "Failed to allocate memory for update task");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 	}
 	else
@@ -281,7 +281,7 @@ gboolean pk_backend_refresh_cache(PkBackend * backend, gboolean force)
 		data->backend = backend;
 		if (g_thread_create(do_update_thread, data, false, NULL) == NULL)
 		{
-			pk_backend_error_code(backend, PK_TASK_ERROR_CODE_UNKNOWN, "can't spawn update thread");
+			pk_backend_error_code(backend, PK_TASK_ERROR_CODE_CREATE_THREAD_FAILED, "Failed to create update thread");
 			pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 		}
 	}
@@ -471,7 +471,7 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 	search_task *data = g_new(struct search_task, 1);
 	if (data == NULL)
 	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for search task");
+		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_OOM, "Failed to allocate memory for search task");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 	}
 	else
@@ -483,7 +483,7 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 
 		if (g_thread_create(get_search_thread, data, false, NULL) == NULL)
 		{
-			pk_backend_error_code(backend, PK_TASK_ERROR_CODE_UNKNOWN, "can't spawn thread");
+			pk_backend_error_code(backend, PK_TASK_ERROR_CODE_UNKNOWN, "Failed to spawn thread");
 			pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 		}
 	}
@@ -589,7 +589,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	desc_task *data = g_new(struct desc_task, 1);
 	if (data == NULL)
 	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't allocate memory for search task");
+		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_INTERNAL_OOM, "Failed to allocate memory for search task");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 		return;
 	}
@@ -605,7 +605,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	if (g_thread_create(get_description_thread, data, false, NULL) == NULL)
 	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't spawn thread");
+		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_CREATE_THREAD_FAILED, "Failed to spawn description thread");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 	}
 	return;

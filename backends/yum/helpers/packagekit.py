@@ -24,6 +24,7 @@ import sys
 
 # Constants
 
+ERROR_OOM = "out-of-memory"
 ERROR_NO_NETWORK = "no-network"
 ERROR_NOT_SUPPORTED = "not-supported"
 ERROR_INTERNAL_ERROR = "internal-error"
@@ -32,6 +33,9 @@ ERROR_PACKAGE_NOT_INSTALLED = "package-not-installed"
 ERROR_PACKAGE_ALREADY_INSTALLED = "package-already-installed"
 ERROR_PACKAGE_DOWNLOAD_FAILED = "package-download-failed"
 ERROR_DEP_RESOLUTION_FAILED = "dep-resolution-failed"
+ERROR_CREATE_THREAD_FAILED = "create-thread-failed"
+ERROR_FILTER_INVALID = "filter-invalid"
+ERROR_TRANSACTION_ERROR = "transaction-error"
 
 STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"

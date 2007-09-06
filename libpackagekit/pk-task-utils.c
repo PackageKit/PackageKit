@@ -68,16 +68,19 @@ static PkTaskEnumMatch task_role[] = {
 
 static PkTaskEnumMatch task_error[] = {
 	{PK_TASK_ERROR_CODE_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_TASK_ERROR_CODE_OOM,		"out-of-memory"},
 	{PK_TASK_ERROR_CODE_NO_NETWORK,		"no-network"},
 	{PK_TASK_ERROR_CODE_NOT_SUPPORTED,	"not-supported"},
 	{PK_TASK_ERROR_CODE_INTERNAL_ERROR,	"internal-error"},
 	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
 	{PK_TASK_ERROR_CODE_FILTER_INVALID,	"filter-invalid"},
 	{PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID,	"package-id-invalid"},
+	{PK_TASK_ERROR_CODE_TRANSACTION_ERROR,	"transaction-error"},
 	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
 	{PK_TASK_ERROR_CODE_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
+	{PK_TASK_ERROR_CODE_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{0, NULL},
 };
 

@@ -128,7 +128,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     id = self.get_package_id(name, version, flavor, fullVersion)
                     self.package(id, installed, summary)
         except:
-            self.error('internal-error', 'An internal error has occurred')
+            self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
 
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
