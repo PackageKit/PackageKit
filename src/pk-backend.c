@@ -472,8 +472,6 @@ pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *packa
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("TRYING to setting role to %s (string is '%s')", pk_task_role_to_text (role), package_id);
-
 	/* Should only be called once... */
 	if (backend->priv->role != PK_TASK_ROLE_UNKNOWN) {
 		pk_error ("cannot set role more than once, already %s",
