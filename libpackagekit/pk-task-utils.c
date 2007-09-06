@@ -518,6 +518,16 @@ pk_util_action_to_string (PkActionList *alist)
 }
 
 /**
+ * pk_util_action_append:
+ **/
+gboolean
+pk_util_action_append (PkActionList *alist, PkTaskAction action)
+{
+	g_ptr_array_add (alist, GUINT_TO_POINTER(action));
+	return TRUE;
+}
+
+/**
  * pk_util_action_contains:
  **/
 gboolean

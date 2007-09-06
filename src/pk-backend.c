@@ -876,6 +876,59 @@ pk_backend_update_system (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_actions:
+ */
+PkActionLisk
+pk_backend_get_actions (PkBackend *backend)
+{
+	PkActionList *alist;
+	alist = pk_util_action_append (alist, PK_TASK_ACTION_UNKNOWN);
+	if (backend->desc->cancel_job_try != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_CANCEL_JOB);
+	}
+	if (backend->desc->get_depends != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_GET_DEPENDS);
+	}
+	if (backend->desc->get_description != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_GET_DESCRIPTION);
+	}
+	if (backend->desc->get_requires != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_GET_REQUIRES);
+	}
+	if (backend->desc->get_updates != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_GET_UPDATES);
+	}
+	if (backend->desc->install_package != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_INSTALL_PACKAGE);
+	}
+	if (backend->desc->refresh_cache != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_REFRESH_CACHE);
+	}
+	if (backend->desc->remove_package != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_REMOVE_PACKAGE);
+	}
+	if (backend->desc->search_details != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_DETAILS);
+	}
+	if (backend->desc->search_file != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_FILE);
+	}
+	if (backend->desc->search_group != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_GROUP);
+	}
+	if (backend->desc->search_name != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_NAME);
+	}
+	if (backend->desc->update_package != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_UPDATE_PACKAGE);
+	}
+	if (backend->desc->update_system != NULL) {
+		pk_util_action_append (alist, PK_TASK_ACTION_UPDATE_SYSTEM);
+	}
+	return alist;
+}
+
+/**
  * pk_backend_get_runtime:
  */
 gdouble

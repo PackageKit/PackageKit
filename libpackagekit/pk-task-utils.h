@@ -144,6 +144,8 @@ PkActionList	*pk_util_action_new_from_string		(const gchar	*actions);
 gchar		*pk_util_action_to_string		(PkActionList	*alist);
 gboolean	 pk_util_action_contains		(PkActionList	*alist,
 							 PkTaskAction	 action);
+gboolean	 pk_util_action_append			(PkActionList	*alist,
+							 PkTaskAction	 action);
 gboolean	 pk_util_action_free			(PkActionList	*alist);
 
 G_END_DECLS
