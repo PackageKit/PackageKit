@@ -54,10 +54,11 @@ struct _PkBackendClass
 /* general */
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-PkActionList	 pk_backend_get_actions			(PkBackend	*backend);
+PkActionList	*pk_backend_get_actions			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);
+gboolean	 pk_backend_unload			(PkBackend      *backend);
 const gchar	*pk_backend_get_name			(PkBackend	*backend);
 gboolean	 pk_backend_cancel_job_try		(PkBackend	*backend);
 gboolean	 pk_backend_get_depends			(PkBackend	*backend,

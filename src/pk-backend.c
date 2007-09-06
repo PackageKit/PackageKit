@@ -82,20 +82,36 @@ static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 
+/**
+ * pk_backend_build_library_path:
+ **/
+gchar *
+pk_backend_build_library_path (PkBackend *backend)
+{
+	gchar *path;
+	gchar *filename;
+
+	g_return_val_if_fail (backend != NULL, NULL);
+
+	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
+	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+	g_free (filename);
+	return path;
+}
+
+/**
+ * pk_backend_load:
+ **/
 gboolean
 pk_backend_load (PkBackend *backend, const gchar *backend_name)
 {
 	GModule *handle;
 	gchar *path;
-	gchar *filename;
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 
 	pk_debug ("Trying to load : %s", backend_name);
-
-	filename = g_strdup_printf ("libpk_backend_%s.so", backend_name);
-	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
-	g_free (filename);
+	path = pk_backend_build_library_path (backend);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
@@ -115,6 +131,20 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 	if (backend->desc->initialize) {
 		backend->desc->initialize (backend);
 	}
+	return TRUE;
+}
+
+/**
+ * pk_backend_unload:
+ **/
+gboolean
+pk_backend_unload (PkBackend *backend)
+{
+	if (backend->priv->handle == NULL) {
+		return FALSE;
+	}
+	g_module_close (backend->priv->handle);
+	backend->priv->handle = NULL;
 	return TRUE;
 }
 
@@ -879,11 +909,11 @@ pk_backend_update_system (PkBackend *backend)
 /**
  * pk_backend_get_actions:
  */
-PkActionList
+PkActionList *
 pk_backend_get_actions (PkBackend *backend)
 {
 	PkActionList *alist;
-	alist = pk_util_action_append (alist, PK_TASK_ACTION_UNKNOWN);
+	alist = pk_util_action_new (PK_TASK_ACTION_UNKNOWN);
 	if (backend->desc->cancel_job_try != NULL) {
 		pk_util_action_append (alist, PK_TASK_ACTION_CANCEL_JOB);
 	}
@@ -966,8 +996,7 @@ pk_backend_finalize (GObject *object)
 	}
 
 	g_free (backend->priv->name);
-	g_debug ("g_module_close(%p)", backend->priv->handle);
-	g_module_close (backend->priv->handle);
+	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
 	g_object_unref (backend->priv->network);
 

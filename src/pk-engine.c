@@ -1385,11 +1385,18 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
+	PkBackend *task;
+	PkActionList *alist;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-//	*actions = pk_backend_get_actions ();
-xxx
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	alist = pk_backend_get_actions (task);
+	g_object_unref (task);
+	*actions = pk_util_action_to_string (alist);
+
 	return TRUE;
 }
 
