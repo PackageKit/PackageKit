@@ -23,6 +23,9 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-debug.h>
+#include <pk-package-id.h>
+#include "config.h"
 
 #include <apt-pkg/pkgcachegen.h>
 #include <apt-pkg/pkgcache.h>
@@ -64,6 +67,14 @@ struct desc_task {
 	PkPackageId *pi;
 };
 
+#ifdef APT_PKG_RPM
+typedef pkgCache::VerFile AptCompFile;
+#elif defined(APT_PKG_DEB)
+typedef pkgCache::DescFile AptCompFile;
+#else
+#error Need either rpm or deb defined
+#endif
+
 struct ExDescFile {
 	AptCompFile *Df;
 	const char *verstr;
@@ -73,14 +84,6 @@ struct ExDescFile {
 	char *repo;
 	bool NameMatch;
 };
-
-#ifdef APT_PKG_RPM
-typedef pkgCache::VerFile AptCompFile;
-#elif defined(APT_PKG_DEB)
-typedef pkgCache::DescFile AptCompFile;
-#else
-#error Need either rpm or deb defined
-#endif
 
 
 static pkgCacheFile *getCache()
@@ -258,16 +261,16 @@ void *do_update_thread(gpointer data)
 }
 
 /**
- * pk_backend_refresh_cache:
+ * backend_refresh_cache:
  **/
-gboolean pk_backend_refresh_cache(PkBackend * backend, gboolean force)
+static void backend_refresh_cache(PkBackend * backend, gboolean force)
 {
 	/* check network state */
-	if (pk_network_is_online(backend->priv->network) == FALSE)
+	if (pk_backend_network_is_online(backend) == FALSE)
 	{
 		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
-		return TRUE;
+		return;
 	}
 
 	UpdateData *data = g_new(UpdateData, 1);
@@ -285,7 +288,6 @@ gboolean pk_backend_refresh_cache(PkBackend * backend, gboolean force)
 			pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 		}
 	}
-	return TRUE;
 }
 
 // LocalitySort - Sort a version list by package file locality		/*{{{*/
@@ -460,14 +462,6 @@ search_task_cleanup:
 static gboolean
 pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which)
 {
-
-	if (pk_backend_filter_check(filter) == FALSE)
-	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
-		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
-		return TRUE;
-	}
-
 	search_task *data = g_new(struct search_task, 1);
 	if (data == NULL)
 	{
@@ -589,13 +583,13 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	desc_task *data = g_new(struct desc_task, 1);
 	if (data == NULL)
 	{
-		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_INTERNAL_OOM, "Failed to allocate memory for search task");
+		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_OOM, "Failed to allocate memory for search task");
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 		return;
 	}
 
 	data->backend = backend;
-	data->pi = pk_package_id_new_from_string(package);
+	data->pi = pk_package_id_new_from_string(package_id);
 	if (data->pi == NULL)
 	{
 		pk_backend_error_code(backend, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "invalid package id");
@@ -609,15 +603,6 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished(backend, PK_TASK_EXIT_FAILED);
 	}
 	return;
-}
-
-/**
- * backend_refresh_cache:
- */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	g_return_if_fail (backend != NULL);
 }
 
 /**
@@ -637,10 +622,10 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_search(backend, filter, search, SEARCH_NAME);s
+	pk_backend_search(backend, filter, search, SEARCH_NAME);
 }
 
-PK_BACKEND_OPTIONS (
+extern "C" PK_BACKEND_OPTIONS (
 	"APT Backend",				/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
