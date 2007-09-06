@@ -93,6 +93,13 @@ gboolean	 pk_backend_get_job_role		(PkBackend	*backend,
 							 PkTaskRole	*role,
 							 const gchar	**package_id);
 
+/* these are external in nature, but we shouldn't be using them in helpers */
+gboolean	 pk_backend_set_job_role		(PkBackend	*backend,
+							 PkTaskRole	 role,
+							 const gchar	*package_id);
+gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
+							 const gchar	*method);
+
 G_END_DECLS
 
 #endif /* __PK_BACKEND_INTERNAL_H */

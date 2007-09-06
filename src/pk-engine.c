@@ -1314,7 +1314,7 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 	map = pk_get_map_from_job (engine, job);
 	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", map->job);
+			     "No job:%i", job);
 		return FALSE;
 	}
 	pk_backend_get_job_status (map->task, &status_enum);
@@ -1339,7 +1339,7 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 	map = pk_get_map_from_job (engine, job);
 	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", map->job);
+			     "No job:%i", job);
 		return FALSE;
 	}
 	pk_backend_get_job_role (map->task, &role_enum, package_id);
@@ -1363,7 +1363,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	map = pk_get_map_from_job (engine, job);
 	if (map == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", map->job);
+			     "No job:%i", job);
 		return FALSE;
 	}
 
