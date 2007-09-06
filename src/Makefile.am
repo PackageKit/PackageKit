@@ -39,11 +39,11 @@ sbin_PROGRAMS =						\
 
 packagekitd_SOURCES =					\
 	pk-main.c					\
-	pk-task.h					\
-	pk-task-common.h				\
-	pk-task-common.c				\
 	pk-marshal.c					\
 	pk-marshal.h					\
+	pk-backend-internal.h				\
+	pk-backend.c					\
+	pk-backend.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-engine.h					\
@@ -51,31 +51,6 @@ packagekitd_SOURCES =					\
 	pk-network.h					\
 	pk-network.c					\
 	$(NULL)
-
-if BACKEND_TYPE_DUMMY
-packagekitd_SOURCES +=					\
-	pk-task-dummy.c
-endif
-
-if BACKEND_TYPE_APT
-packagekitd_SOURCES +=					\
-	pk-task-apt.cpp
-endif
-
-if BACKEND_TYPE_YUM
-packagekitd_SOURCES +=					\
-	pk-task-yum.c
-endif
-
-if BACKEND_TYPE_CONARY
-packagekitd_SOURCES +=					\
-	pk-task-conary.c
-endif
-
-if BACKEND_TYPE_BOX
-packagekitd_SOURCES +=					\
-	pk-task-box.c
-endif
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
