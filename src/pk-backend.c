@@ -38,6 +38,7 @@
 #include <glib/gi18n.h>
 #include <gmodule.h>
 #include <pk-package-id.h>
+#include <pk-task-utils.h>
 
 #include "pk-debug.h"
 #include "pk-backend-internal.h"
@@ -878,7 +879,7 @@ pk_backend_update_system (PkBackend *backend)
 /**
  * pk_backend_get_actions:
  */
-PkActionLisk
+PkActionList
 pk_backend_get_actions (PkBackend *backend)
 {
 	PkActionList *alist;
