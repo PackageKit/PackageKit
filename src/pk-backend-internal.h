@@ -50,6 +50,7 @@ struct _PkBackendClass
 	GObjectClass	parent_class;
 };
 
+typedef PkBackend PkTask;
 
 /* general */
 GType		 pk_backend_get_type			(void);

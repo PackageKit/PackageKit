@@ -96,6 +96,8 @@ pk_backend_build_library_path (PkBackend *backend)
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
 	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
 	g_free (filename);
+	pk_debug ("dlopening '%s'", path);
+
 	return path;
 }
 
@@ -470,11 +472,14 @@ pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *packa
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	pk_debug ("TRYING to setting role to %s (string is '%s')", pk_task_role_to_text (role), package_id);
+
 	/* Should only be called once... */
 	if (backend->priv->role != PK_TASK_ROLE_UNKNOWN) {
-		pk_error ("cannot set role more than once, already %i", backend->priv->role);
+		pk_error ("cannot set role more than once, already %s",
+			  pk_task_role_to_text (backend->priv->role));
 	}
-	pk_debug ("setting role to %i (%s)", role, package_id);
+	pk_debug ("setting role to %s (string is '%s')", pk_task_role_to_text (role), package_id);
 	backend->priv->role = role;
 	backend->priv->package_id = g_strdup (package_id);
 	return TRUE;

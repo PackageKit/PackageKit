@@ -80,7 +80,7 @@ enum {
 
 typedef struct {
 	guint		 job;
-	PkBackend		*task;
+	PkTask		*task;
 } PkEngineMap;
 
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
@@ -202,7 +202,7 @@ pk_get_map_from_job (PkEngine *engine, guint job)
  * pk_get_map_from_task:
  **/
 static PkEngineMap *
-pk_get_map_from_task (PkEngine *engine, PkBackend *task)
+pk_get_map_from_task (PkEngine *engine, PkTask *task)
 {
 	guint i;
 	guint length;
@@ -245,7 +245,7 @@ pk_engine_job_list_changed (PkEngine *engine)
  * pk_engine_job_status_changed_cb:
  **/
 static void
-pk_engine_job_status_changed_cb (PkBackend *task, PkTaskStatus status, PkEngine *engine)
+pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *status_text;
@@ -269,7 +269,7 @@ pk_engine_job_status_changed_cb (PkBackend *task, PkTaskStatus status, PkEngine 
  * pk_engine_percentage_changed_cb:
  **/
 static void
-pk_engine_percentage_changed_cb (PkBackend *task, guint percentage, PkEngine *engine)
+pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
 	PkEngineMap *map;
 
@@ -290,7 +290,7 @@ pk_engine_percentage_changed_cb (PkBackend *task, guint percentage, PkEngine *en
  * pk_engine_sub_percentage_changed_cb:
  **/
 static void
-pk_engine_sub_percentage_changed_cb (PkBackend *task, guint percentage, PkEngine *engine)
+pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
 	PkEngineMap *map;
 
@@ -311,7 +311,7 @@ pk_engine_sub_percentage_changed_cb (PkBackend *task, guint percentage, PkEngine
  * pk_engine_no_percentage_updates_cb:
  **/
 static void
-pk_engine_no_percentage_updates_cb (PkBackend *task, PkEngine *engine)
+pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 {
 	PkEngineMap *map;
 
@@ -332,7 +332,7 @@ pk_engine_no_percentage_updates_cb (PkBackend *task, PkEngine *engine)
  * pk_engine_package_cb:
  **/
 static void
-pk_engine_package_cb (PkBackend *task, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
+pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
 	PkEngineMap *map;
 
@@ -353,7 +353,7 @@ pk_engine_package_cb (PkBackend *task, guint value, const gchar *package_id, con
  * pk_engine_error_code_cb:
  **/
 static void
-pk_engine_error_code_cb (PkBackend *task, PkTaskErrorCode code, const gchar *details, PkEngine *engine)
+pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *details, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *code_text;
@@ -376,7 +376,7 @@ pk_engine_error_code_cb (PkBackend *task, PkTaskErrorCode code, const gchar *det
  * pk_engine_require_restart_cb:
  **/
 static void
-pk_engine_require_restart_cb (PkBackend *task, PkTaskRestart restart, const gchar *details, PkEngine *engine)
+pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *details, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *restart_text;
@@ -399,7 +399,7 @@ pk_engine_require_restart_cb (PkBackend *task, PkTaskRestart restart, const gcha
  * pk_engine_description_cb:
  **/
 static void
-pk_engine_description_cb (PkBackend *task, const gchar *package_id, PkTaskGroup group,
+pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup group,
 			  const gchar *detail, const gchar *url, PkEngine *engine)
 {
 	PkEngineMap *map;
@@ -423,7 +423,7 @@ pk_engine_description_cb (PkBackend *task, const gchar *package_id, PkTaskGroup 
  * pk_engine_finished_cb:
  **/
 static void
-pk_engine_finished_cb (PkBackend *task, PkTaskExit exit, PkEngine *engine)
+pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *exit_text;
@@ -461,7 +461,7 @@ pk_engine_finished_cb (PkBackend *task, PkTaskExit exit, PkEngine *engine)
  * pk_engine_allow_interrupt_cb:
  **/
 static void
-pk_engine_allow_interrupt_cb (PkBackend *task, gboolean allow_kill, PkEngine *engine)
+pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engine)
 {
 	PkEngineMap *map;
 
@@ -520,10 +520,10 @@ pk_engine_save_job_count (PkEngine *engine)
 /**
  * pk_engine_new_task:
  **/
-static PkBackend *
+static PkTask *
 pk_engine_new_task (PkEngine *engine)
 {
-	PkBackend *task;
+	PkTask *task;
 	gboolean ret;
 
 	/* increment the job number - we never repeat an id */
@@ -571,7 +571,7 @@ pk_engine_new_task (PkEngine *engine)
  * pk_engine_add_task:
  **/
 static gboolean
-pk_engine_add_task (PkEngine *engine, PkBackend *task)
+pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
 	PkEngineMap *map;
 
@@ -656,7 +656,7 @@ gboolean
 pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -689,7 +689,7 @@ gboolean
 pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -775,7 +775,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		       guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -821,7 +821,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 			  guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -867,7 +867,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 			guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -913,7 +913,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		       guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -959,7 +959,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		    guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1001,7 +1001,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		        guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1043,7 +1043,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 			   guint *job, GError **error)
 {
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1081,7 +1081,7 @@ pk_engine_update_system (PkEngine *engine,
 	PkTaskRole role;
 	gboolean ret;
 	GError *error;
-	PkBackend *task;
+	PkTask *task;
 	PkEngineMap *map;
 
 	g_return_if_fail (engine != NULL);
@@ -1136,7 +1136,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 {
 	PkEngineMap *map;
 	gboolean ret;
-	PkBackend *task;
+	PkTask *task;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1189,7 +1189,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkEngineMap *map;
-	PkBackend *task;
+	PkTask *task;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1242,7 +1242,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkEngineMap *map;
-	PkBackend *task;
+	PkTask *task;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1385,7 +1385,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
-	PkBackend *task;
+	PkTask *task;
 	PkActionList *alist;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
