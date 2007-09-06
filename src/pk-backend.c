@@ -110,6 +110,9 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 
+	/* save the backend name */
+	backend->priv->name = g_strdup (backend_name);
+
 	pk_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend);
 	handle = g_module_open (path, 0);
@@ -121,7 +124,6 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 	g_free (path);
 
 	backend->priv->handle = handle;
-	backend->priv->name = g_strdup (backend_name);
 
 	if (g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc) == FALSE) {
 		g_module_close (handle);

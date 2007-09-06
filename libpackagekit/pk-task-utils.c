@@ -504,10 +504,12 @@ pk_util_action_to_string (PkActionList *alist)
 {
 	guint i;
 	GString *string;
+	PkTaskAction action;
 
 	string = g_string_new ("");
 	for (i=0; i<alist->len; i++) {
-		g_string_append (string, g_ptr_array_index (alist, i));
+		action = GPOINTER_TO_UINT (g_ptr_array_index (alist, i));
+		g_string_append (string, pk_task_action_to_text (action));
 		g_string_append (string, ";");
 	}
 

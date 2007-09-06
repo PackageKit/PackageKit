@@ -1393,6 +1393,7 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
+	pk_backend_load (task, engine->priv->backend);
 	alist = pk_backend_get_actions (task);
 	g_object_unref (task);
 	*actions = pk_util_action_to_string (alist);
