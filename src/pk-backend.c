@@ -997,6 +997,7 @@ pk_backend_finalize (GObject *object)
 		}		
 	}
 
+	pk_debug ("freeing %s", backend->priv->name);
 	g_free (backend->priv->name);
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
