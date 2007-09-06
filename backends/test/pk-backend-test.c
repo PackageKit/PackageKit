@@ -183,24 +183,24 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Dummy Backend",		/* description */
-	"0.0.1",			/* version */
-	"richard@hughsie.com",		/* author */
-	backend_initalize,		/* initalize */
-	backend_destroy,		/* destroy */
-	backend_cancel_job_try,		/* cancel_job_try */
-	backend_get_depends,		/* get_depends */
-	backend_get_description,	/* get_description */
-	backend_get_requires,		/* get_requires */
-	backend_get_updates,		/* get_updates */
-	backend_install_package,	/* install_package */
-	backend_refresh_cache,		/* refresh_cache */
-	backend_remove_package,		/* remove_package */
-	backend_search_details,		/* search_details */
-	backend_search_file,		/* search_file */
-	backend_search_group,		/* search_group */
-	backend_search_name,		/* search_name */
-	backend_update_package,		/* update_package */
-	backend_update_system		/* update_system */
+	"Test Backend",				/* description */
+	"0.0.1",				/* version */
+	"Richard Hughes <richard@hughsie.com>",	/* author */
+	backend_initalize,			/* initalize */
+	backend_destroy,			/* destroy */
+	backend_cancel_job_try,			/* cancel_job_try */
+	backend_get_depends,			/* get_depends */
+	backend_get_description,		/* get_description */
+	backend_get_requires,			/* get_requires */
+	backend_get_updates,			/* get_updates */
+	backend_install_package,		/* install_package */
+	backend_refresh_cache,			/* refresh_cache */
+	backend_remove_package,			/* remove_package */
+	backend_search_details,			/* search_details */
+	backend_search_file,			/* search_file */
+	backend_search_group,			/* search_group */
+	backend_search_name,			/* search_name */
+	backend_update_package,			/* update_package */
+	backend_update_system			/* update_system */
 );
 

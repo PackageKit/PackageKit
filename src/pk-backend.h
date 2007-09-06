@@ -37,9 +37,6 @@ gboolean	 pk_backend_change_sub_percentage	(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_change_job_status		(PkBackend	*backend,
 							 PkTaskStatus	 status);
-gboolean	 pk_backend_set_job_role		(PkBackend	*backend,
-							 PkTaskRole	 role,
-							 const gchar	*package_id);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_finished			(PkBackend	*backend,
 							 PkTaskExit	 exit);
@@ -61,8 +58,6 @@ gboolean	 pk_backend_error_code			(PkBackend	*backend,
 gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
 							 const gchar	*script, ...);
 gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);
-gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
-							 const gchar	*method);
 gboolean	 pk_backend_allow_interrupt		(PkBackend	*backend,
 							 gboolean	 allow_restart);
 gboolean	 pk_backend_network_is_online		(PkBackend	*backend);

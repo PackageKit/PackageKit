@@ -665,6 +665,7 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDepends");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
 	backend->desc->get_depends (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -681,6 +682,7 @@ pk_backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDescription");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
 	backend->desc->get_description (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -697,6 +699,7 @@ pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetRequires");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
 	backend->desc->get_requires (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -713,6 +716,7 @@ pk_backend_get_updates (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "GetUpdates");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, NULL);
 	backend->desc->get_updates (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -729,6 +733,7 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "InstallPackage");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_INSTALL, package_id);
 	backend->desc->install_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -745,6 +750,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_not_implemented_yet (backend, "RefreshCache");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_REFRESH_CACHE, NULL);
 	backend->desc->refresh_cache (backend, force);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -761,6 +767,7 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 		pk_backend_not_implemented_yet (backend, "RemovePackage");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_REMOVE, package_id);
 	backend->desc->remove_package (backend, package_id, allow_deps);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -777,6 +784,7 @@ pk_backend_search_details (PkBackend *backend, const gchar *filter, const gchar 
 		pk_backend_not_implemented_yet (backend, "SearchDetails");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
 	backend->desc->search_details (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -793,6 +801,7 @@ pk_backend_search_file (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchFile");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
 	backend->desc->search_file (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -809,6 +818,7 @@ pk_backend_search_group (PkBackend *backend, const gchar *filter, const gchar *s
 		pk_backend_not_implemented_yet (backend, "SearchGroup");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
 	backend->desc->search_group (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -825,6 +835,7 @@ pk_backend_search_name (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchName");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
 	backend->desc->search_name (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -841,6 +852,7 @@ pk_backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "UpdatePackage");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_UPDATE, package_id);
 	backend->desc->update_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -857,6 +869,7 @@ pk_backend_update_system (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "UpdateSystem");
 		return FALSE;
 	}
+	pk_backend_set_job_role (backend, PK_TASK_ROLE_SYSTEM_UPDATE, NULL);
 	backend->desc->update_system (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
