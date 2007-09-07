@@ -1,20 +1,42 @@
 Order of no particular importance:
 
-Core:
-* Add a queing API
-* Add a way to import GPG keys
-* Split up PolicyKit install into different types
-* Add files in package into Description signal
-* Add package size into description signal
-* Valgrind everything
-* Add GetPercentage and GetSubPercentage for coldplugging
-* Add a Launch() method to startup when pk-application is launched
-* task_client has to return GError
-* Add logging so we can see what was installed/removed and when
-* Add "when installed" data into description
-* Add "installed by 'Richard Hughes'" data into description
-* package_di,installed_by, when_installed into sqlite database
-* Add GetUpdateDetail(s=package_id)
+*** Add a queing API ***
+Jobs need to be queued so that read only jobs can be done in parallel,
+but write jobs are done in serial. Maybe spawn each task and put it into a
+paused state?
+
+*** Add a way to import GPG keys ***
+In fedora, if you add a signed repo you have to agree to the GPG key.
+
+*** Split up PolicyKit install into different types ***
+Have different permissions for signed and unsigned repos.
+
+*** Add files in package into Description signal ***
+We need a way to get the installed files into the UI.
+
+*** Add package size into description signal ***
+We need a way to work out how long something is going to take, and
+to expose in the UI.
+
+*** Valgrind everything ***
+We leak memory like there is no tommorrow.
+
+*** Add GetPercentage and GetSubPercentage for coldplugging ***
+We need this for the PkWatch code.
+
+*** task_client has to return GError ***
+Client programs using libpackagekit should know the error, rather than just
+"it failed"
+
+*** Add logging so we can see what was installed/removed and when ***
+Depends on transaction_id and sqlite integration.
+
+*** Add "when installed" and "installed by" data into UI ***
+Is this useful?
+We would need to store package_id,installed_by,when_installed in a sqlite database
+
+*** Add GetUpdateDetail
+GetUpdateDetail(s=package_id)
 UpdateDetail(
 string url
 string restart_enum
@@ -22,14 +44,23 @@ string updates
 string obsoletes
 string update_text
 }
-* Have to have an UpdatesChanged signal for the icon to update after we've done
-  a system upgrade
-* Have to load parameters from a conf file:
+
+*** Have to have an UpdatesChanged signal ***
+For the icon to update after we've done a system upgrade
+
+*** Have to load parameters from a conf file ***
   - autoshutdown-timeout
   - default-backend
   - logging-detail
 
-Backends:
-* Complete conary backend
-* Dummy backend should use subpercent and install deps
+*** Dummy backend should use subpercent and install deps ***
+It's not a great test case right now...
+
+*** Handle rollbacks for select backends ***
+To do rollbacks sanely in PK we need a few things:
+ * convert the job into a transaction_id
+ * save the transaction_id's and descriptions to a database
+ * add a method to get the transaction_id's in the last x transactions
+ * write an application that can see the description of the transactions
+ * use an new method to handle the rollbacks and pass it to the backend
 
