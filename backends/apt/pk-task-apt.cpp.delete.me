@@ -108,11 +108,11 @@ gchar *
 pk_task_get_actions (void)
 {
 	gchar *actions;
-	actions = pk_task_action_build (PK_TASK_ACTION_REFRESH_CACHE,
-				        PK_TASK_ACTION_UPDATE_SYSTEM,
-				        PK_TASK_ACTION_SEARCH_NAME,
-				        PK_TASK_ACTION_SEARCH_DETAILS,
-				        PK_TASK_ACTION_GET_DESCRIPTION,
+	actions = pk_task_action_build (PK_ACTION_ENUM_REFRESH_CACHE,
+				        PK_ACTION_ENUM_UPDATE_SYSTEM,
+				        PK_ACTION_ENUM_SEARCH_NAME,
+				        PK_ACTION_ENUM_SEARCH_DETAILS,
+				        PK_ACTION_ENUM_GET_DESCRIPTION,
 				        0);
 	return actions;
 }
@@ -182,7 +182,7 @@ void *DoUpdate(gpointer data)
 	OpTextProgress Prog;
 	
 	/* easy as that */
-	pk_task_change_job_status(ud->task, PK_TASK_STATUS_REFRESH_CACHE);
+	pk_task_change_job_status(ud->task, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	Cache = getCache();
 
@@ -190,8 +190,8 @@ void *DoUpdate(gpointer data)
 	pkgSourceList List;
 	if (List.ReadMainList() == false)
 	{
-		pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Failure reading lists");
-		pk_task_finished(ud->task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Failure reading lists");
+		pk_task_finished(ud->task, PK_EXIT_ENUM_FAILED);
 		return NULL;
 	}
 
@@ -203,8 +203,8 @@ void *DoUpdate(gpointer data)
 		if (_error->PendingError() == true)
 		{
 			_error->DumpErrors();
-			pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Unable to lock the list directory");
-			pk_task_finished(ud->task, PK_TASK_EXIT_FAILED);
+			pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Unable to lock the list directory");
+			pk_task_finished(ud->task, PK_EXIT_ENUM_FAILED);
 			return NULL;
 		}
 	}
@@ -216,14 +216,14 @@ void *DoUpdate(gpointer data)
 	// Populate it with the source selection
 	if (List.GetIndexes(&Fetcher) == false)
 	{
-		pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 		goto do_update_clean;
 	}
 
 	// Run it
 	if (Fetcher.Run() == pkgAcquire::Failed)
 	{
-		pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 		goto do_update_clean;
 	}
 
@@ -250,7 +250,7 @@ void *DoUpdate(gpointer data)
 	{
 		if (Fetcher.Clean(_config->FindDir("Dir::State::lists")) == false || Fetcher.Clean(_config->FindDir("Dir::State::lists") + "partial/") == false)
 		{
-			pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+			pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 			goto do_update_clean;
 		}
 	}
@@ -259,7 +259,7 @@ void *DoUpdate(gpointer data)
 	Cache = getCache();
 	if (Cache->BuildCaches(Prog,false) == false)
 	{
-		pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 		goto do_update_clean;
 	}
 
@@ -267,17 +267,17 @@ void *DoUpdate(gpointer data)
 		pk_debug("Some index files failed to download, they have been ignored, or old ones used instead.");
 	else if (Failed == true)
 	{
-		pk_task_error_code(ud->task, PK_TASK_ERROR_CODE_UNKNOWN, "Generic Error");
+		pk_task_error_code(ud->task, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 		goto do_update_clean;
 	}
 
 	delete Stat;
-	pk_task_finished(ud->task, PK_TASK_EXIT_SUCCESS);
+	pk_task_finished(ud->task, PK_EXIT_ENUM_SUCCESS);
 	return NULL;
 
 	do_update_clean:
 	delete Stat;
-	pk_task_finished(ud->task, PK_TASK_EXIT_FAILED);
+	pk_task_finished(ud->task, PK_EXIT_ENUM_FAILED);
 	return NULL;
 }
 
@@ -297,24 +297,24 @@ gboolean pk_task_refresh_cache(PkTask * task, gboolean force)
 	/* check network state */
 	if (pk_network_is_online(task->priv->network) == FALSE)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		return TRUE;
 	}
 
 	UpdateData *data = g_new(UpdateData, 1);
 	if (data == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for update task");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_UNKNOWN, "can't allocate memory for update task");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 	}
 	else
 	{
 		data->task = task;
 		if (g_thread_create(DoUpdate,data, false, NULL) == NULL)
 		{
-			pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't spawn update thread");
-			pk_task_finished(task, PK_TASK_EXIT_FAILED);
+			pk_task_error_code(task, PK_ERROR_ENUM_UNKNOWN, "can't spawn update thread");
+			pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		}
 	}
 	return TRUE;
@@ -434,7 +434,7 @@ static void *do_search_task(gpointer data)
 	search_task *st = (search_task *) data;
 	ExDescFile *DFList = NULL;
 
-	pk_task_change_job_status(st->task, PK_TASK_STATUS_QUERY);
+	pk_task_change_job_status(st->task, PK_STATUS_ENUM_QUERY);
 	pk_task_no_percentage_updates(st->task);
 
 	pk_debug("finding %s", st->search);
@@ -448,8 +448,8 @@ static void *do_search_task(gpointer data)
 	memset(Pattern, 0, sizeof(*Pattern));
 	if (regcomp(Pattern, st->search, REG_EXTENDED | REG_ICASE | REG_NOSUB) != 0)
 	{
-		pk_task_error_code(st->task, PK_TASK_ERROR_CODE_UNKNOWN, "regex compilation error");
-		pk_task_finished(st->task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(st->task, PK_ERROR_ENUM_UNKNOWN, "regex compilation error");
+		pk_task_finished(st->task, PK_EXIT_ENUM_FAILED);
 		goto search_task_cleanup;
 	}
 
@@ -517,7 +517,7 @@ static void *do_search_task(gpointer data)
 		}
 	}
 
-	pk_task_finished(st->task, PK_TASK_EXIT_SUCCESS);
+	pk_task_finished(st->task, PK_EXIT_ENUM_SUCCESS);
 
   search_task_cleanup:
 	for (ExDescFile * J = DFList; J->Df != 0; J++)
@@ -548,16 +548,16 @@ pk_task_search(PkTask * task, const gchar * filter, const gchar * search, Search
 
 	if (pk_task_filter_check(filter) == FALSE)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_FILTER_INVALID, "filter '%s' not valid", filter);
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_FILTER_INVALID, "filter '%s' not valid", filter);
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		return TRUE;
 	}
 
 	search_task *data = g_new(struct search_task, 1);
 	if (data == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for search task");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_UNKNOWN, "can't allocate memory for search task");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 	}
 	else
 	{
@@ -568,8 +568,8 @@ pk_task_search(PkTask * task, const gchar * filter, const gchar * search, Search
 
 		if (g_thread_create(do_search_task, data, false, NULL) == NULL)
 		{
-			pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't spawn thread");
-			pk_task_finished(task, PK_TASK_EXIT_FAILED);
+			pk_task_error_code(task, PK_ERROR_ENUM_UNKNOWN, "can't spawn thread");
+			pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		}
 	}
 	return TRUE;
@@ -610,10 +610,10 @@ void *do_search_file(gpointer data)
 	GDir *list = g_dir_open(ldir,0,&error);
 	if (error!=NULL)
 	{
-		pk_task_error_code(st->task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't open %s",ldir);
+		pk_task_error_code(st->task, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",ldir);
 		g_free(ldir);
 		g_error_free(error);
-		pk_task_finished(st->task, PK_TASK_EXIT_FAILED);
+		pk_task_finished(st->task, PK_EXIT_ENUM_FAILED);
 		return NULL;
 	}
 	const gchar * fname = NULL;
@@ -621,11 +621,11 @@ void *do_search_file(gpointer data)
 	{
 		//pk_task_package(st->task, J->installed, pid, P.ShortDesc().c_str());
 	}
-	pk_task_error_code(st->task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "search file is incomplete");
-	pk_task_finished(st->task, PK_TASK_EXIT_FAILED);
+	pk_task_error_code(st->task, PK_ERROR_ENUM_INTERNAL_ERROR, "search file is incomplete");
+	pk_task_finished(st->task, PK_EXIT_ENUM_FAILED);
 	g_dir_close(ldir);
 	g_free(ldir);
-	//pk_task_finished(st->task, PK_TASK_EXIT_SUCCESS);
+	//pk_task_finished(st->task, PK_EXIT_ENUM_SUCCESS);
 	return NULL;
 }
 
@@ -637,8 +637,8 @@ gboolean pk_task_search_file(PkTask * task, const gchar * filter, const gchar * 
 	search_task *data = g_new(struct search_task, 1);
 	if (data == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_UNKNOWN, "can't allocate memory for search task");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_UNKNOWN, "can't allocate memory for search task");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 	}
 	else
 	{
@@ -649,8 +649,8 @@ gboolean pk_task_search_file(PkTask * task, const gchar * filter, const gchar * 
 
 		if (g_thread_create(do_search_file, data, false, NULL) == NULL)
 		{
-			pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't spawn thread");
-			pk_task_finished(task, PK_TASK_EXIT_FAILED);
+			pk_task_error_code(task, PK_ERROR_ENUM_INTERNAL_ERROR, "can't spawn thread");
+			pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		}
 	}
 	return TRUE;
@@ -760,7 +760,7 @@ static void *get_desc_task(gpointer data)
 {
 	desc_task *dt = (desc_task *) data;
 
-	pk_task_change_job_status(dt->task, PK_TASK_STATUS_QUERY);
+	pk_task_change_job_status(dt->task, PK_STATUS_ENUM_QUERY);
 	pk_task_no_percentage_updates(dt->task);
 
 	pk_debug("finding %s", dt->pi->name);
@@ -776,10 +776,10 @@ static void *get_desc_task(gpointer data)
 		// Find the proper version to use. 
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		GHashTable *pkg = PackageRecord(V);
-		pk_task_description(dt->task,dt->pi->name,PK_TASK_GROUP_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
+		pk_task_description(dt->task,dt->pi->name,PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
 		g_hash_table_unref(pkg);
 	}
-	pk_task_finished(dt->task, PK_TASK_EXIT_SUCCESS);
+	pk_task_finished(dt->task, PK_EXIT_ENUM_SUCCESS);
 	return NULL;
 }
 
@@ -799,8 +799,8 @@ gboolean pk_task_get_description(PkTask * task, const gchar * package)
  	desc_task *data = g_new(struct desc_task, 1);
 	if (data == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't allocate memory for search task");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_INTERNAL_ERROR, "can't allocate memory for search task");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		return TRUE;
 	}
 
@@ -808,15 +808,15 @@ gboolean pk_task_get_description(PkTask * task, const gchar * package)
 	data->pi = pk_package_id_new_from_string(package);
 	if (data->pi == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "invalid package id");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 		return TRUE;
 	}
 
 	if (g_thread_create(get_desc_task, data, false, NULL) == NULL)
 	{
-		pk_task_error_code(task, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "can't spawn thread");
-		pk_task_finished(task, PK_TASK_EXIT_FAILED);
+		pk_task_error_code(task, PK_ERROR_ENUM_INTERNAL_ERROR, "can't spawn thread");
+		pk_task_finished(task, PK_EXIT_ENUM_FAILED);
 	}
 	return TRUE;
 }

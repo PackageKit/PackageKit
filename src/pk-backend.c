@@ -328,9 +328,9 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
 
 	/* only emit success with a zero exit code */
 	if (exitcode == 0) {
-		exit = PK_TASK_EXIT_SUCCESS;
+		exit = PK_EXIT_ENUM_SUCCESS;
 	} else {
-		exit = PK_TASK_EXIT_FAILED;
+		exit = PK_EXIT_ENUM_FAILED;
 	}
 	pk_backend_finished (backend, exit);
 }
@@ -384,8 +384,8 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	ret = pk_spawn_command (backend->priv->spawn, command);
 	if (ret == FALSE) {
 		g_object_unref (backend->priv->spawn);
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 	}
 	g_free (filename);
 	g_free (command);
@@ -432,8 +432,8 @@ pk_backend_spawn_helper (PkBackend *backend, const gchar *script, ...)
 gboolean
 pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
-	pk_backend_error_code (backend, PK_TASK_ERROR_CODE_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
-	pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
+	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 	return TRUE;
 }
 
@@ -473,7 +473,7 @@ pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *packa
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* Should only be called once... */
-	if (backend->priv->role != PK_TASK_ROLE_UNKNOWN) {
+	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
 		pk_error ("cannot set role more than once, already %s",
 			  pk_task_role_to_text (backend->priv->role));
 	}
@@ -701,7 +701,7 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDepends");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_depends (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -718,7 +718,7 @@ pk_backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDescription");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_description (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -735,7 +735,7 @@ pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetRequires");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_requires (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -752,7 +752,7 @@ pk_backend_get_updates (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "GetUpdates");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, NULL);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, NULL);
 	backend->desc->get_updates (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -769,7 +769,7 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "InstallPackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_INSTALL, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL, package_id);
 	backend->desc->install_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -786,7 +786,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_not_implemented_yet (backend, "RefreshCache");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_REFRESH_CACHE, NULL);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_REFRESH_CACHE, NULL);
 	backend->desc->refresh_cache (backend, force);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -803,7 +803,7 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 		pk_backend_not_implemented_yet (backend, "RemovePackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_REMOVE, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE, package_id);
 	backend->desc->remove_package (backend, package_id, allow_deps);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -820,7 +820,7 @@ pk_backend_search_details (PkBackend *backend, const gchar *filter, const gchar 
 		pk_backend_not_implemented_yet (backend, "SearchDetails");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_details (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -837,7 +837,7 @@ pk_backend_search_file (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchFile");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_file (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -854,7 +854,7 @@ pk_backend_search_group (PkBackend *backend, const gchar *filter, const gchar *s
 		pk_backend_not_implemented_yet (backend, "SearchGroup");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_group (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -871,7 +871,7 @@ pk_backend_search_name (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchName");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, search);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_name (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -888,7 +888,7 @@ pk_backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "UpdatePackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_PACKAGE_UPDATE, package_id);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE, package_id);
 	backend->desc->update_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -905,7 +905,7 @@ pk_backend_update_system (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "UpdateSystem");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_SYSTEM_UPDATE, NULL);
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE, NULL);
 	backend->desc->update_system (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -918,48 +918,48 @@ PkActionList *
 pk_backend_get_actions (PkBackend *backend)
 {
 	PkActionList *alist;
-	alist = pk_util_action_new (PK_TASK_ACTION_UNKNOWN);
+	alist = pk_util_action_new (PK_ACTION_ENUM_UNKNOWN);
 	if (backend->desc->cancel_job_try != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_CANCEL_JOB);
+		pk_util_action_append (alist, PK_ACTION_ENUM_CANCEL_JOB);
 	}
 	if (backend->desc->get_depends != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_GET_DEPENDS);
+		pk_util_action_append (alist, PK_ACTION_ENUM_GET_DEPENDS);
 	}
 	if (backend->desc->get_description != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_GET_DESCRIPTION);
+		pk_util_action_append (alist, PK_ACTION_ENUM_GET_DESCRIPTION);
 	}
 	if (backend->desc->get_requires != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_GET_REQUIRES);
+		pk_util_action_append (alist, PK_ACTION_ENUM_GET_REQUIRES);
 	}
 	if (backend->desc->get_updates != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_GET_UPDATES);
+		pk_util_action_append (alist, PK_ACTION_ENUM_GET_UPDATES);
 	}
 	if (backend->desc->install_package != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_INSTALL_PACKAGE);
+		pk_util_action_append (alist, PK_ACTION_ENUM_INSTALL_PACKAGE);
 	}
 	if (backend->desc->refresh_cache != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_REFRESH_CACHE);
+		pk_util_action_append (alist, PK_ACTION_ENUM_REFRESH_CACHE);
 	}
 	if (backend->desc->remove_package != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_REMOVE_PACKAGE);
+		pk_util_action_append (alist, PK_ACTION_ENUM_REMOVE_PACKAGE);
 	}
 	if (backend->desc->search_details != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_DETAILS);
+		pk_util_action_append (alist, PK_ACTION_ENUM_SEARCH_DETAILS);
 	}
 	if (backend->desc->search_file != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_FILE);
+		pk_util_action_append (alist, PK_ACTION_ENUM_SEARCH_FILE);
 	}
 	if (backend->desc->search_group != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_GROUP);
+		pk_util_action_append (alist, PK_ACTION_ENUM_SEARCH_GROUP);
 	}
 	if (backend->desc->search_name != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_SEARCH_NAME);
+		pk_util_action_append (alist, PK_ACTION_ENUM_SEARCH_NAME);
 	}
 	if (backend->desc->update_package != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_UPDATE_PACKAGE);
+		pk_util_action_append (alist, PK_ACTION_ENUM_UPDATE_PACKAGE);
 	}
 	if (backend->desc->update_system != NULL) {
-		pk_util_action_append (alist, PK_TASK_ACTION_UPDATE_SYSTEM);
+		pk_util_action_append (alist, PK_ACTION_ENUM_UPDATE_SYSTEM);
 	}
 	return alist;
 }
@@ -1085,9 +1085,9 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->package_id = NULL;
-	backend->priv->role = PK_TASK_ROLE_UNKNOWN;
-	backend->priv->status = PK_TASK_STATUS_UNKNOWN;
-	backend->priv->exit = PK_TASK_EXIT_UNKNOWN;
+	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
+	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
+	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->network = pk_network_new ();
 }
 

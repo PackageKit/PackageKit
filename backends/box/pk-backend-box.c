@@ -111,7 +111,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 	gboolean gui;
 	gboolean text;
 
-	pk_backend_change_job_status (backend, PK_TASK_ROLE_QUERY);
+	pk_backend_change_job_status (backend, PK_ROLE_ENUM_QUERY);
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
 	if (devel == TRUE) {
@@ -121,7 +121,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		devel_filter = devel_filter | PKG_NON_DEVEL;
 	}
 
-	pk_backend_change_job_status (backend, PK_TASK_STATUS_QUERY);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
 	db = box_db_open ("/");
@@ -134,12 +134,12 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		list = box_db_repos_search_file (db, search);
 		add_packages_from_list (backend, list);
 		box_db_repos_package_list_free (list);
-		pk_backend_finished (backend, PK_TASK_EXIT_SUCCESS);
+		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 	} else {
 
 		if (installed == FALSE && available == FALSE) {
-			pk_backend_error_code (backend, PK_TASK_ERROR_CODE_UNKNOWN, "invalid search mode");
-			pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
+			pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		} else	{
 			/* TODO: make it more async */
 			if (installed == TRUE && available == TRUE) {
@@ -151,7 +151,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
-			pk_backend_finished (backend, PK_TASK_EXIT_SUCCESS);
+			pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 		}
 	}
 
@@ -196,27 +196,27 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
 
 	list = find_package_by_id (pi);
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID, "cannot find package by id");
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
 
 
-	pk_backend_change_job_status (backend, PK_TASK_ROLE_QUERY);
-	pk_backend_description (backend, pi->name, PK_TASK_GROUP_OTHER, ps->description, "");
+	pk_backend_change_job_status (backend, PK_ROLE_ENUM_QUERY);
+	pk_backend_description (backend, pi->name, PK_GROUP_ENUM_OTHER, ps->description, "");
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (backend, PK_TASK_EXIT_SUCCESS);
+	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 	return;
 }
 
@@ -231,7 +231,7 @@ backend_get_updates (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_job_status (backend, PK_TASK_STATUS_QUERY);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 
 	db = box_db_open ("/");
 	box_db_attach_repo (db, "/", "core");
@@ -242,7 +242,7 @@ backend_get_updates (PkBackend *backend)
 	add_packages_from_list (backend, list);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (backend, PK_TASK_EXIT_SUCCESS);
+	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 
 	box_db_detach_repo (db, "core");
 	box_db_close (db);
@@ -257,11 +257,11 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
-	pk_backend_change_job_status (backend, PK_TASK_ROLE_REFRESH_CACHE);
+	pk_backend_change_job_status (backend, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 

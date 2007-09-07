@@ -55,8 +55,8 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "install.py", package_id, NULL);
@@ -71,8 +71,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_TASK_ERROR_CODE_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);

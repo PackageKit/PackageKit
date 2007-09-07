@@ -1099,7 +1099,7 @@ pk_engine_update_system (PkEngine *engine,
 	for (i=0; i<length; i++) {
 		map = (PkEngineMap *) g_ptr_array_index (engine->priv->array, i);
 		ret = pk_backend_get_job_role (map->task, &role, NULL);
-		if (ret == TRUE && role == PK_TASK_ROLE_SYSTEM_UPDATE) {
+		if (ret == TRUE && role == PK_ROLE_ENUM_SYSTEM_UPDATE) {
 			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
 					     "operation not yet supported by backend");
 			dbus_g_method_return_error (context, error);

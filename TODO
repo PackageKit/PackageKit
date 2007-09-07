@@ -13,7 +13,7 @@ Core:
 * Add logging so we can see what was installed/removed and when
 * Add "when installed" data into description
 * Add "installed by 'Richard Hughes'" data into description
-* /var/db/PackageKit/$package_id/installed_by, when_installed
+* package_di,installed_by, when_installed into sqlite database
 * Add GetUpdateDetail(s=package_id)
 UpdateDetail(
 string url
@@ -22,7 +22,13 @@ string updates
 string obsoletes
 string update_text
 }
-* Remove the _TASK_ in the enums
+* Change _TASK_ to ENUM in the enums
+* Have to have an UpdatesChanged signal for the icon to update after we've done
+  a system upgrade
+* Have to load parameters from a conf file:
+  - autoshutdown-timeout
+  - default-backend
+  - logging-detail
 
 Backends:
 * Complete conary backend

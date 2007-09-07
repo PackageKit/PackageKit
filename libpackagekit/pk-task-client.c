@@ -205,7 +205,7 @@ pk_task_client_reset (PkTaskClient *tclient)
 	tclient->priv->is_sync = FALSE;
 	tclient->priv->use_buffer = FALSE;
 	tclient->priv->job = 0;
-	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
+	tclient->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	tclient->priv->is_finished = FALSE;
 	pk_task_client_remove_package_items (tclient);
 	return TRUE;
@@ -1142,8 +1142,8 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv->is_sync = FALSE;
 	tclient->priv->use_buffer = FALSE;
 	tclient->priv->job = 0;
-	tclient->priv->last_status = PK_TASK_STATUS_UNKNOWN;
-	tclient->priv->require_restart = PK_TASK_RESTART_NONE;
+	tclient->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	tclient->priv->require_restart = PK_RESTART_ENUM_NONE;
 	tclient->priv->is_finished = FALSE;
 	tclient->priv->package_items = g_ptr_array_new ();
 

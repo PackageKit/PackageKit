@@ -36,91 +36,91 @@ typedef struct {
 } PkTaskEnumMatch;
 
 static PkTaskEnumMatch task_exit[] = {
-	{PK_TASK_EXIT_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_TASK_EXIT_SUCCESS,			"success"},
-	{PK_TASK_EXIT_FAILED,			"failed"},
-	{PK_TASK_EXIT_CANCELED,			"canceled"},
+	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_EXIT_ENUM_SUCCESS,			"success"},
+	{PK_EXIT_ENUM_FAILED,			"failed"},
+	{PK_EXIT_ENUM_CANCELED,			"canceled"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_status[] = {
-	{PK_TASK_STATUS_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_TASK_STATUS_SETUP,			"setup"},
-	{PK_TASK_STATUS_QUERY,			"query"},
-	{PK_TASK_STATUS_REFRESH_CACHE,		"refresh-cache"},
-	{PK_TASK_STATUS_REMOVE,			"remove"},
-	{PK_TASK_STATUS_DOWNLOAD,		"download"},
-	{PK_TASK_STATUS_INSTALL,		"install"},
-	{PK_TASK_STATUS_UPDATE,			"update"},
+	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_STATUS_ENUM_SETUP,			"setup"},
+	{PK_STATUS_ENUM_QUERY,			"query"},
+	{PK_STATUS_ENUM_REFRESH_CACHE,		"refresh-cache"},
+	{PK_STATUS_ENUM_REMOVE,			"remove"},
+	{PK_STATUS_ENUM_DOWNLOAD,		"download"},
+	{PK_STATUS_ENUM_INSTALL,		"install"},
+	{PK_STATUS_ENUM_UPDATE,			"update"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_role[] = {
-	{PK_TASK_ROLE_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_TASK_ROLE_QUERY,			"query"},
-	{PK_TASK_ROLE_REFRESH_CACHE,		"refresh-cache"},
-	{PK_TASK_ROLE_PACKAGE_REMOVE,		"package-remove"},
-	{PK_TASK_ROLE_PACKAGE_INSTALL,		"package-install"},
-	{PK_TASK_ROLE_PACKAGE_UPDATE,		"package-update"},
-	{PK_TASK_ROLE_SYSTEM_UPDATE,		"system-update"},
+	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_ROLE_ENUM_QUERY,			"query"},
+	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
+	{PK_ROLE_ENUM_PACKAGE_REMOVE,		"package-remove"},
+	{PK_ROLE_ENUM_PACKAGE_INSTALL,		"package-install"},
+	{PK_ROLE_ENUM_PACKAGE_UPDATE,		"package-update"},
+	{PK_ROLE_ENUM_SYSTEM_UPDATE,		"system-update"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_error[] = {
-	{PK_TASK_ERROR_CODE_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_TASK_ERROR_CODE_OOM,		"out-of-memory"},
-	{PK_TASK_ERROR_CODE_NO_NETWORK,		"no-network"},
-	{PK_TASK_ERROR_CODE_NOT_SUPPORTED,	"not-supported"},
-	{PK_TASK_ERROR_CODE_INTERNAL_ERROR,	"internal-error"},
-	{PK_TASK_ERROR_CODE_GPG_FAILURE,	"gpg-failure"},
-	{PK_TASK_ERROR_CODE_FILTER_INVALID,	"filter-invalid"},
-	{PK_TASK_ERROR_CODE_PACKAGE_ID_INVALID,	"package-id-invalid"},
-	{PK_TASK_ERROR_CODE_TRANSACTION_ERROR,	"transaction-error"},
-	{PK_TASK_ERROR_CODE_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
-	{PK_TASK_ERROR_CODE_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
-	{PK_TASK_ERROR_CODE_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
-	{PK_TASK_ERROR_CODE_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
-	{PK_TASK_ERROR_CODE_CREATE_THREAD_FAILED,	"create-thread-failed"},
+	{PK_ERROR_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_ERROR_ENUM_OOM,		"out-of-memory"},
+	{PK_ERROR_ENUM_NO_NETWORK,		"no-network"},
+	{PK_ERROR_ENUM_NOT_SUPPORTED,	"not-supported"},
+	{PK_ERROR_ENUM_INTERNAL_ERROR,	"internal-error"},
+	{PK_ERROR_ENUM_GPG_FAILURE,	"gpg-failure"},
+	{PK_ERROR_ENUM_FILTER_INVALID,	"filter-invalid"},
+	{PK_ERROR_ENUM_PACKAGE_ID_INVALID,	"package-id-invalid"},
+	{PK_ERROR_ENUM_TRANSACTION_ERROR,	"transaction-error"},
+	{PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
+	{PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
+	{PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
+	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
+	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_restart[] = {
-	{PK_TASK_RESTART_NONE,			"none"},
-	{PK_TASK_RESTART_SYSTEM,		"system"},
-	{PK_TASK_RESTART_SESSION,		"session"},
-	{PK_TASK_RESTART_APPLICATION,		"application"},
+	{PK_RESTART_ENUM_NONE,			"none"},
+	{PK_RESTART_ENUM_SYSTEM,		"system"},
+	{PK_RESTART_ENUM_SESSION,		"session"},
+	{PK_RESTART_ENUM_APPLICATION,		"application"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_group[] = {
-	{PK_TASK_GROUP_ACCESSIBILITY,		"accessibility"},
-	{PK_TASK_GROUP_ACCESSORIES,		"accessories"},
-	{PK_TASK_GROUP_EDUCATION,		"education"},
-	{PK_TASK_GROUP_GAMES,			"games"},
-	{PK_TASK_GROUP_GRAPHICS,		"graphics"},
-	{PK_TASK_GROUP_INTERNET,		"internet"},
-	{PK_TASK_GROUP_OFFICE,			"office"},
-	{PK_TASK_GROUP_OTHER,			"other"},
-	{PK_TASK_GROUP_PROGRAMMING,		"programming"},
-	{PK_TASK_GROUP_MULTIMEDIA,		"multimedia"},
-	{PK_TASK_GROUP_SYSTEM,			"system"},
+	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
+	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
+	{PK_GROUP_ENUM_EDUCATION,		"education"},
+	{PK_GROUP_ENUM_GAMES,			"games"},
+	{PK_GROUP_ENUM_GRAPHICS,		"graphics"},
+	{PK_GROUP_ENUM_INTERNET,		"internet"},
+	{PK_GROUP_ENUM_OFFICE,			"office"},
+	{PK_GROUP_ENUM_OTHER,			"other"},
+	{PK_GROUP_ENUM_PROGRAMMING,		"programming"},
+	{PK_GROUP_ENUM_MULTIMEDIA,		"multimedia"},
+	{PK_GROUP_ENUM_SYSTEM,			"system"},
 	{0, NULL},
 };
 
 static PkTaskEnumMatch task_action[] = {
-	{PK_TASK_ACTION_INSTALL,		"install"},
-	{PK_TASK_ACTION_REMOVE,			"remove"},
-	{PK_TASK_ACTION_UPDATE,			"update"},
-	{PK_TASK_ACTION_GET_UPDATES,		"get-updates"},
-	{PK_TASK_ACTION_REFRESH_CACHE,		"refresh-cache"},
-	{PK_TASK_ACTION_UPDATE_SYSTEM,		"update-system"},
-	{PK_TASK_ACTION_SEARCH_NAME,		"search-name"},
-	{PK_TASK_ACTION_SEARCH_DETAILS,		"search-details"},
-	{PK_TASK_ACTION_SEARCH_GROUP,		"search-group"},
-	{PK_TASK_ACTION_SEARCH_FILE,		"search-file"},
-	{PK_TASK_ACTION_GET_DEPENDS,		"get-depends"},
-	{PK_TASK_ACTION_GET_REQUIRES,		"get-requires"},
-	{PK_TASK_ACTION_GET_DESCRIPTION,	"get-description"},
+	{PK_ACTION_ENUM_INSTALL,		"install"},
+	{PK_ACTION_ENUM_REMOVE,			"remove"},
+	{PK_ACTION_ENUM_UPDATE,			"update"},
+	{PK_ACTION_ENUM_GET_UPDATES,		"get-updates"},
+	{PK_ACTION_ENUM_REFRESH_CACHE,		"refresh-cache"},
+	{PK_ACTION_ENUM_UPDATE_SYSTEM,		"update-system"},
+	{PK_ACTION_ENUM_SEARCH_NAME,		"search-name"},
+	{PK_ACTION_ENUM_SEARCH_DETAILS,		"search-details"},
+	{PK_ACTION_ENUM_SEARCH_GROUP,		"search-group"},
+	{PK_ACTION_ENUM_SEARCH_FILE,		"search-file"},
+	{PK_ACTION_ENUM_GET_DEPENDS,		"get-depends"},
+	{PK_ACTION_ENUM_GET_REQUIRES,		"get-requires"},
+	{PK_ACTION_ENUM_GET_DESCRIPTION,	"get-description"},
 	{0, NULL},
 };
 
@@ -671,7 +671,7 @@ libst_task_utils (LibSelfTest *test)
 	 ****************          ACTIONS         ******************
 	 ************************************************************/
 	libst_title (test, "test the action building (single)");
-	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, 0);
+	text = pk_task_action_build (PK_ACTION_ENUM_INSTALL, 0);
 	if (strcmp (text, "install") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -681,7 +681,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action building (multiple)");
-	text = pk_task_action_build (PK_TASK_ACTION_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
+	text = pk_task_action_build (PK_ACTION_ENUM_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
 	if (strcmp (text, "install;search-name;get-depends") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -690,7 +690,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action checking (present)");
-	ret = pk_task_action_contains (text, PK_TASK_ACTION_INSTALL);
+	ret = pk_task_action_contains (text, PK_ACTION_ENUM_INSTALL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -699,7 +699,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action checking (not-present)");
-	ret = pk_task_action_contains (text, PK_TASK_ACTION_REMOVE);
+	ret = pk_task_action_contains (text, PK_ACTION_ENUM_REMOVE);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
