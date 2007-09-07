@@ -67,13 +67,13 @@ static PkTaskEnumMatch task_role[] = {
 };
 
 static PkTaskEnumMatch task_error[] = {
-	{PK_ERROR_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_ERROR_ENUM_OOM,		"out-of-memory"},
+	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
 	{PK_ERROR_ENUM_NO_NETWORK,		"no-network"},
-	{PK_ERROR_ENUM_NOT_SUPPORTED,	"not-supported"},
-	{PK_ERROR_ENUM_INTERNAL_ERROR,	"internal-error"},
-	{PK_ERROR_ENUM_GPG_FAILURE,	"gpg-failure"},
-	{PK_ERROR_ENUM_FILTER_INVALID,	"filter-invalid"},
+	{PK_ERROR_ENUM_NOT_SUPPORTED,		"not-supported"},
+	{PK_ERROR_ENUM_INTERNAL_ERROR,		"internal-error"},
+	{PK_ERROR_ENUM_GPG_FAILURE,		"gpg-failure"},
+	{PK_ERROR_ENUM_FILTER_INVALID,		"filter-invalid"},
 	{PK_ERROR_ENUM_PACKAGE_ID_INVALID,	"package-id-invalid"},
 	{PK_ERROR_ENUM_TRANSACTION_ERROR,	"transaction-error"},
 	{PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,	"package-not-installed"},
