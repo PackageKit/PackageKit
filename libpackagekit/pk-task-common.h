@@ -30,6 +30,8 @@ G_BEGIN_DECLS
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
+gboolean	 pk_task_filter_check			(const gchar	*filter);
+
 G_END_DECLS
 
 #endif /* __PK_TASK_H */

@@ -41,7 +41,9 @@
 #include <pk-package-id.h>
 
 #include <pk-debug.h>
-#include "pk-task-utils.h"
+#include <pk-task-common.h>
+#include <pk-task-utils.h>
+
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
 #include "pk-marshal.h"

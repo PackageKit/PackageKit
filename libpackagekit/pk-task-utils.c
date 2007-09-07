@@ -299,81 +299,6 @@ pk_action_enum_to_text (PkTaskAction action)
 }
 
 /**
- * pk_task_filter_check_part:
- **/
-gboolean
-pk_task_filter_check_part (const gchar *filter)
-{
-	if (filter == NULL) {
-		return FALSE;
-	}
-	if (strlen (filter) == 0) {
-		return FALSE;
-	}
-	if (strcmp (filter, "none") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "installed") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~installed") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "devel") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~devel") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "gui") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~gui") == 0) {
-		return TRUE;
-	}
-	return FALSE;
-}
-
-/**
- * pk_task_filter_check:
- **/
-gboolean
-pk_task_filter_check (const gchar *filter)
-{
-	gchar **sections;
-	guint i;
-	guint length;
-	gboolean ret;
-
-	if (filter == NULL) {
-		pk_warning ("filter null");
-		return FALSE;
-	}
-	if (strlen (filter) == 0) {
-		pk_warning ("filter zero length");
-		return FALSE;
-	}
-
-	/* split by delimeter ';' */
-	sections = g_strsplit (filter, ";", 0);
-	length = g_strv_length (sections);
-	ret = FALSE;
-	for (i=0; i<length; i++) {
-		/* only one wrong part is enough to fail the filter */
-		if (strlen (sections[i]) == 0) {
-			goto out;
-		}
-		if (pk_task_filter_check_part (sections[i]) == FALSE) {
-			goto out;
-		}
-	}
-	ret = TRUE;
-out:
-	g_strfreev (sections);
-	return ret;
-}
-
-/**
  * pk_action_enum_build:
  **/
 gchar *
@@ -558,113 +483,9 @@ libst_task_utils (LibSelfTest *test)
 {
 	gboolean ret;
 	gchar *text;
-	const gchar *temp;
 
 	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
-	}
-
-
-	/************************************************************
-	 ****************          FILTERS         ******************
-	 ************************************************************/
-	temp = NULL;
-	libst_title (test, "test a fail filter (null)");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "";
-	libst_title (test, "test a fail filter ()");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = ";";
-	libst_title (test, "test a fail filter (;)");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "moo";
-	libst_title (test, "test a fail filter (invalid)");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "moo;foo";
-	libst_title (test, "test a fail filter (invalid, multiple)");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "gui;;";
-	libst_title (test, "test a fail filter (valid then zero length)");
-	ret = pk_task_filter_check (temp);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "passed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "none";
-	libst_title (test, "test a pass filter (none)");
-	ret = pk_task_filter_check (temp);
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "gui";
-	libst_title (test, "test a pass filter (single)");
-	ret = pk_task_filter_check (temp);
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "devel;~gui";
-	libst_title (test, "test a pass filter (multiple)");
-	ret = pk_task_filter_check (temp);
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed the filter '%s'", temp);
-	}
-
-	/************************************************************/
-	temp = "~gui;~installed";
-	libst_title (test, "test a pass filter (multiple2)");
-	ret = pk_task_filter_check (temp);
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "failed the filter '%s'", temp);
 	}
 
 	/************************************************************
@@ -681,7 +502,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action building (multiple)");
-	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
+	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, PK_ACTION_ENUM_SEARCH_NAME, PK_ACTION_ENUM_GET_DEPENDS, 0);
 	if (strcmp (text, "install;search-name;get-depends") == 0) {
 		libst_success (test, NULL);
 	} else {
