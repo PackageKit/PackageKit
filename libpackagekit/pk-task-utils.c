@@ -298,64 +298,6 @@ pk_action_enum_to_text (PkTaskAction action)
 	return pk_task_enum_find_string (task_action, action);
 }
 
-/**
- * pk_action_enum_build:
- **/
-gchar *
-pk_action_enum_build (PkTaskAction action, ...)
-{
-	va_list args;
-	guint i;
-	GString *string;
-	PkTaskAction action_temp;
-
-	string = g_string_new (pk_action_enum_to_text (action));
-	g_string_append (string, ";");
-
-	/* process the valist */
-	va_start (args, action);
-	for (i=0;; i++) {
-		action_temp = va_arg (args, PkTaskAction);
-		if (action_temp == 0) break;
-		g_string_append (string, pk_action_enum_to_text (action_temp));
-		g_string_append (string, ";");
-	}
-	va_end (args);
-
-	/* remove last ';' */
-	g_string_set_size (string, string->len - 1);
-
-	return g_string_free (string, FALSE);
-}
-
-/**
- * pk_action_enum_contains:
- **/
-gboolean
-pk_action_enum_contains (const gchar *actions, PkTaskAction action)
-{
-	gchar **sections;
-	guint i;
-	guint ret = FALSE;
-
-	if (actions == NULL) {
-		pk_warning ("actions null");
-		return FALSE;
-	}
-
-	/* split by delimeter ';' */
-	sections = g_strsplit (actions, ";", 0);
-
-	for (i=0; sections[i]; i++) {
-		if (pk_action_enum_from_text (sections[i]) == action) {
-			ret = TRUE;
-			break;
-		}
-	}
-	g_strfreev (sections);
-	return ret;
-}
-
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -371,46 +313,6 @@ libst_task_utils (LibSelfTest *test)
 	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
 	}
-
-	/************************************************************
-	 ****************          ACTIONS         ******************
-	 ************************************************************/
-	libst_title (test, "test the action building (single)");
-	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, 0);
-	if (strcmp (text, "install") == 0) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect single argument '%s'", text);
-	}
-	g_free (text);
-
-	/************************************************************/
-	libst_title (test, "test the action building (multiple)");
-	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, PK_ACTION_ENUM_SEARCH_NAME, PK_ACTION_ENUM_GET_DEPENDS, 0);
-	if (strcmp (text, "install;search-name;get-depends") == 0) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "incorrect multiple argument '%s'", text);
-	}
-
-	/************************************************************/
-	libst_title (test, "test the action checking (present)");
-	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_INSTALL);
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "not found present");
-	}
-
-	/************************************************************/
-	libst_title (test, "test the action checking (not-present)");
-	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_REMOVE);
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "found present");
-	}
-	g_free (text);
 
 	libst_end (test);
 }

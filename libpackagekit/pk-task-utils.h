@@ -138,11 +138,6 @@ const gchar	*pk_group_enum_to_text			(PkTaskGroup	 group);
 PkTaskAction	 pk_action_enum_from_text		(const gchar	*action);
 const gchar	*pk_action_enum_to_text			(PkTaskAction	 action);
 
-/* actions */
-gchar		*pk_action_enum_build			(PkTaskAction	 action, ...);
-gboolean	 pk_action_enum_contains		(const gchar	*actions,
-							 PkTaskAction	 action);
-
 G_END_DECLS
 
 #endif /* __PK_TASK_UTILS_H */

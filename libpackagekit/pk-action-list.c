@@ -158,6 +158,47 @@ libst_action_list (LibSelfTest *test)
 	if (libst_start (test, "PkActionList", CLASS_AUTO) == FALSE) {
 		return;
 	}
+#if 0
+	/************************************************************
+	 ****************          ACTIONS         ******************
+	 ************************************************************/
+	libst_title (test, "test the action building (single)");
+	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, 0);
+	if (strcmp (text, "install") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect single argument '%s'", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "test the action building (multiple)");
+	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, PK_ACTION_ENUM_SEARCH_NAME, PK_ACTION_ENUM_GET_DEPENDS, 0);
+	if (strcmp (text, "install;search-name;get-depends") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect multiple argument '%s'", text);
+	}
+
+	/************************************************************/
+	libst_title (test, "test the action checking (present)");
+	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_INSTALL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "not found present");
+	}
+
+	/************************************************************/
+	libst_title (test, "test the action checking (not-present)");
+	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_REMOVE);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "found present");
+	}
+	g_free (text);
+#endif
 	libst_end (test);
 }
 #endif
