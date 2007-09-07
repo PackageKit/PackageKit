@@ -666,7 +666,6 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_refresh_cache (task, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -674,6 +673,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -699,7 +699,6 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_get_updates (task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -707,6 +706,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -797,7 +797,6 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_search_name (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -805,6 +804,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -843,7 +843,6 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_search_details (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -851,6 +850,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -889,7 +889,6 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_search_group (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -897,6 +896,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -935,7 +935,6 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_search_file (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -943,6 +942,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -977,7 +977,6 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_get_depends (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -985,6 +984,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -1019,7 +1019,6 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_get_requires (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1027,6 +1026,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -1053,7 +1053,6 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_get_description (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1061,6 +1060,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 		g_object_unref (task);
 		return FALSE;
 	}
+	pk_engine_add_task (engine, task);
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
 		pk_warning ("could not find task");
@@ -1111,7 +1111,6 @@ pk_engine_update_system (PkEngine *engine,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_update_system (task);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1120,6 +1119,7 @@ pk_engine_update_system (PkEngine *engine,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
@@ -1162,7 +1162,6 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_remove_package (task, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1171,6 +1170,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
@@ -1215,7 +1215,6 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_install_package (task, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1224,6 +1223,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
@@ -1268,7 +1268,6 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
-	pk_engine_add_task (engine, task);
 	ret = pk_backend_update_package (task, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1277,6 +1276,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_add_task (engine, task);
 
 	map = pk_get_map_from_task (engine, task);
 	if (map == NULL) {
