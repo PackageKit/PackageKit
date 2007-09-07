@@ -1,5 +1,6 @@
 SUBDIRS = 			\
 	policy			\
+	etc			\
 	man			\
 	data			\
 	libselftest		\

@@ -305,6 +305,7 @@ if test x$with_backend = xbox; then
 	AC_SUBST(BOX_LIBS)
 fi
 
+AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
@@ -322,6 +323,7 @@ dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
 packagekit.pc
 Makefile
+etc/Makefile
 man/Makefile
 backends/Makefile
 backends/apt/Makefile

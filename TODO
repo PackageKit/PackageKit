@@ -4,6 +4,12 @@ Order of no particular importance:
 Jobs need to be queued so that read only jobs can be done in parallel,
 but write jobs are done in serial. Maybe spawn each task and put it into a
 paused state?
+NOTE: RELEASE BLOCKER
+
+*** Write some XML documentation ***
+The backends/README file is woefully inadaquate for backend writers or even
+people who just want to know how PK works.
+NOTE: RELEASE BLOCKER
 
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
@@ -47,6 +53,7 @@ string update_text
 
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
+NOTE: RELEASE BLOCKER
 
 *** Have to load parameters from a conf file ***
   - autoshutdown-timeout

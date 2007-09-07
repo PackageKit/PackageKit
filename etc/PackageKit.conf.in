@@ -1,0 +1,18 @@
+# Only the system administrator should modify this file, ordinary users
+# should not have to change anything.
+
+[Daemon]
+
+# Log transactions to the database
+# default=yes
+TransactionLogging=yes
+
+# Shut down the daemon after this many seconds idle. 0 means don't shutdown.
+# default=60
+ShutdownTimeout=60
+
+# Default backend, as chosen in the configure script. This will be used where
+# no --backend="foo" option is given to the daemon.
+# default=@defaultbackend@
+DefaultBackend=@defaultbackend@
+
