@@ -28,6 +28,7 @@ libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
+	pk-action-list.h					\
 	pk-task-utils.h						\
 	pk-task-common.h					\
 	pk-task-monitor.h					\
@@ -46,6 +47,8 @@ libpackagekit_la_SOURCES =					\
 	pk-connection.h						\
 	pk-package-id.h						\
 	pk-package-id.c						\
+	pk-action-list.c					\
+	pk-action-list.h					\
 	pk-task-utils.h						\
 	pk-task-utils.c						\
 	pk-task-common.c					\

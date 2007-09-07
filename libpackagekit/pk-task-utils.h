@@ -143,16 +143,6 @@ gchar		*pk_action_enum_build			(PkTaskAction	 action, ...);
 gboolean	 pk_action_enum_contains		(const gchar	*actions,
 							 PkTaskAction	 action);
 
-typedef GPtrArray PkActionList;
-PkActionList	*pk_util_action_new			(PkTaskAction	 action, ...);
-PkActionList	*pk_util_action_new_from_string		(const gchar	*actions);
-gchar		*pk_util_action_to_string		(PkActionList	*alist);
-gboolean	 pk_util_action_contains		(PkActionList	*alist,
-							 PkTaskAction	 action);
-gboolean	 pk_util_action_append			(PkActionList	*alist,
-							 PkTaskAction	 action);
-gboolean	 pk_util_action_free			(PkActionList	*alist);
-
 G_END_DECLS
 
 #endif /* __PK_TASK_UTILS_H */

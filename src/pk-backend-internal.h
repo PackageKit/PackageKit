@@ -23,7 +23,7 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
-#include <pk-task-utils.h>
+#include <pk-action-list.h>
 #include "pk-backend.h"
 
 G_BEGIN_DECLS
