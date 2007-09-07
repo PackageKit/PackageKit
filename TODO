@@ -22,7 +22,6 @@ string updates
 string obsoletes
 string update_text
 }
-* Change _TASK_ to ENUM in the enums
 * Have to have an UpdatesChanged signal for the icon to update after we've done
   a system upgrade
 * Have to load parameters from a conf file:

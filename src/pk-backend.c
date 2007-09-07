@@ -207,7 +207,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		group = pk_task_group_from_text (sections[2]);
+		group = pk_group_enum_from_text (sections[2]);
 		pk_backend_description (backend, sections[1], group, sections[3], sections[4]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
@@ -268,7 +268,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		error_enum = pk_task_error_code_from_text (sections[1]);
+		error_enum = pk_error_enum_from_text (sections[1]);
 		pk_backend_error_code (backend, error_enum, sections[2]);
 	} else if (strcmp (command, "requirerestart") == 0) {
 		if (size != 3) {
@@ -276,7 +276,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		restart_enum = pk_task_restart_from_text (sections[1]);
+		restart_enum = pk_restart_enum_from_text (sections[1]);
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
 	} else if (strcmp (command, "status") == 0) {
 		if (size != 2) {
@@ -284,7 +284,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		status_enum = pk_task_status_from_text (sections[1]);
+		status_enum = pk_status_enum_from_text (sections[1]);
 		pk_backend_change_job_status (backend, status_enum);
 	} else if (strcmp (command, "allow-interrupt") == 0) {
 		if (size != 2) {
@@ -475,9 +475,9 @@ pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *packa
 	/* Should only be called once... */
 	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
 		pk_error ("cannot set role more than once, already %s",
-			  pk_task_role_to_text (backend->priv->role));
+			  pk_role_enum_to_text (backend->priv->role));
 	}
-	pk_debug ("setting role to %s (string is '%s')", pk_task_role_to_text (role), package_id);
+	pk_debug ("setting role to %s (string is '%s')", pk_role_enum_to_text (role), package_id);
 	backend->priv->role = role;
 	backend->priv->package_id = g_strdup (package_id);
 	return TRUE;

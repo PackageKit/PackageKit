@@ -1051,7 +1051,7 @@ pk_task_client_require_restart_cb (PkTaskMonitor  *tmonitor,
 	/* always use the 'worst' possible restart scenario */
 	if (restart > tclient->priv->require_restart) {
 		tclient->priv->require_restart = restart;
-		pk_debug ("restart status now %s", pk_task_restart_to_text (restart));
+		pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
 }
 

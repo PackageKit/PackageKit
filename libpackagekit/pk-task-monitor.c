@@ -119,7 +119,7 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
 		pk_warning ("GetJobStatus failed!");
 		return FALSE;
 	}
-	*status = pk_task_status_from_text (status_text);
+	*status = pk_status_enum_from_text (status_text);
 	return TRUE;
 }
 
@@ -152,7 +152,7 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskRole *role, gchar **pac
 		g_error_free (error);
 		return FALSE;
 	}
-	*role = pk_task_role_from_text (role_text);
+	*role = pk_role_enum_from_text (role_text);
 	if (package_id != NULL) {
 		*package_id = g_strdup (package_id_temp);
 	}
@@ -175,7 +175,7 @@ pk_task_monitor_finished_cb (DBusGProxy    *proxy,
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
 	if (job == tmonitor->priv->job) {
-		exit = pk_task_exit_from_text (exit_text);
+		exit = pk_exit_enum_from_text (exit_text);
 		pk_debug ("emit finished %i, %i", exit, runtime);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, exit, runtime);
 	}
@@ -248,7 +248,7 @@ pk_task_monitor_job_status_changed_cb (DBusGProxy   *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	status = pk_task_status_from_text (status_text);
+	status = pk_status_enum_from_text (status_text);
 
 	if (job == tmonitor->priv->job) {
 		pk_debug ("emit job-status-changed %i", status);
@@ -293,7 +293,7 @@ pk_task_monitor_description_cb (DBusGProxy    *proxy,
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
 	if (job == tmonitor->priv->job) {
-		group = pk_task_group_from_text (group_text);
+		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %i, %s, %s", package_id, group, description, url);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_DESCRIPTION], 0, package_id, group, description, url);
 	}
@@ -314,7 +314,7 @@ pk_task_monitor_error_code_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
 	if (job == tmonitor->priv->job) {
-		code = pk_task_error_code_from_text (code_text);
+		code = pk_error_enum_from_text (code_text);
 		pk_debug ("emit error-code %i, %s", code, details);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_ERROR_CODE], 0, code, details);
 	}
@@ -335,7 +335,7 @@ pk_task_monitor_require_restart_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
 	if (job == tmonitor->priv->job) {
-		restart = pk_task_restart_from_text (restart_text);
+		restart = pk_restart_enum_from_text (restart_text);
 		pk_debug ("emit require-restart %i, %s", restart, details);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_REQUIRE_RESTART], 0, restart, details);
 	}

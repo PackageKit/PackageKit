@@ -258,7 +258,7 @@ pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *en
 		pk_warning ("could not find task");
 		return;
 	}
-		status_text = pk_task_status_to_text (status);
+		status_text = pk_status_enum_to_text (status);
 
 	pk_debug ("emitting job-status-changed job:%i, '%s'", map->job, status_text);
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, map->job, status_text);
@@ -366,7 +366,7 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
 		pk_warning ("could not find task");
 		return;
 	}
-	code_text = pk_task_error_code_to_text (code);
+	code_text = pk_error_enum_to_text (code);
 	pk_debug ("emitting error-code job:%i %s, '%s'", map->job, code_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, map->job, code_text, details);
 	pk_engine_reset_timer (engine);
@@ -389,7 +389,7 @@ pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *
 		pk_warning ("could not find task");
 		return;
 	}
-	restart_text = pk_task_restart_to_text (restart);
+	restart_text = pk_restart_enum_to_text (restart);
 	pk_debug ("emitting error-code job:%i %s, '%s'", map->job, restart_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, map->job, restart_text, details);
 	pk_engine_reset_timer (engine);
@@ -413,7 +413,7 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup gro
 		pk_warning ("could not find task");
 		return;
 	}
-	group_text = pk_task_group_to_text (group);
+	group_text = pk_group_enum_to_text (group);
 
 	pk_debug ("emitting description job:%i, %s, %s, %s, %s", map->job, package_id, group_text, detail, url);
 	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, map->job, package_id, group_text, detail, url);
@@ -437,7 +437,7 @@ pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
 		pk_warning ("could not find task");
 		return;
 	}
-	exit_text = pk_task_exit_to_text (exit);
+	exit_text = pk_exit_enum_to_text (exit);
 
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (task);
@@ -1318,7 +1318,7 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 		return FALSE;
 	}
 	pk_backend_get_job_status (map->task, &status_enum);
-	*status = g_strdup (pk_task_status_to_text (status_enum));
+	*status = g_strdup (pk_status_enum_to_text (status_enum));
 
 	return TRUE;
 }
@@ -1343,7 +1343,7 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 		return FALSE;
 	}
 	pk_backend_get_job_role (map->task, &role_enum, package_id);
-	*role = g_strdup (pk_task_role_to_text (role_enum));
+	*role = g_strdup (pk_role_enum_to_text (role_enum));
 
 	return TRUE;
 }

@@ -173,127 +173,127 @@ pk_task_enum_find_string (PkTaskEnumMatch *table, guint value)
 }
 
 /**
- * pk_task_exit_from_text:
+ * pk_exit_enum_from_text:
  */
 PkTaskExit
-pk_task_exit_from_text (const gchar *exit)
+pk_exit_enum_from_text (const gchar *exit)
 {
 	return pk_task_enum_find_value (task_exit, exit);
 }
 
 /**
- * pk_task_exit_to_text:
+ * pk_exit_enum_to_text:
  **/
 const gchar *
-pk_task_exit_to_text (PkTaskExit exit)
+pk_exit_enum_to_text (PkTaskExit exit)
 {
 	return pk_task_enum_find_string (task_exit, exit);
 }
 
 /**
- * pk_task_status_from_text:
+ * pk_status_enum_from_text:
  **/
 PkTaskStatus
-pk_task_status_from_text (const gchar *status)
+pk_status_enum_from_text (const gchar *status)
 {
 	return pk_task_enum_find_value (task_status, status);
 }
 
 /**
- * pk_task_status_to_text:
+ * pk_status_enum_to_text:
  **/
 const gchar *
-pk_task_status_to_text (PkTaskStatus status)
+pk_status_enum_to_text (PkTaskStatus status)
 {
 	return pk_task_enum_find_string (task_status, status);
 }
 
 /**
- * pk_task_role_from_text:
+ * pk_role_enum_from_text:
  **/
 PkTaskRole
-pk_task_role_from_text (const gchar *role)
+pk_role_enum_from_text (const gchar *role)
 {
 	return pk_task_enum_find_value (task_role, role);
 }
 
 /**
- * pk_task_role_to_text:
+ * pk_role_enum_to_text:
  **/
 const gchar *
-pk_task_role_to_text (PkTaskRole role)
+pk_role_enum_to_text (PkTaskRole role)
 {
 	return pk_task_enum_find_string (task_role, role);
 }
 
 /**
- * pk_task_error_code_from_text:
+ * pk_error_enum_from_text:
  **/
 PkTaskErrorCode
-pk_task_error_code_from_text (const gchar *code)
+pk_error_enum_from_text (const gchar *code)
 {
 	return pk_task_enum_find_value (task_error, code);
 }
 
 /**
- * pk_task_error_code_to_text:
+ * pk_error_enum_to_text:
  **/
 const gchar *
-pk_task_error_code_to_text (PkTaskErrorCode code)
+pk_error_enum_to_text (PkTaskErrorCode code)
 {
 	return pk_task_enum_find_string (task_error, code);
 }
 
 /**
- * pk_task_restart_from_text:
+ * pk_restart_enum_from_text:
  **/
 PkTaskRestart
-pk_task_restart_from_text (const gchar *restart)
+pk_restart_enum_from_text (const gchar *restart)
 {
 	return pk_task_enum_find_value (task_restart, restart);
 }
 
 /**
- * pk_task_restart_to_text:
+ * pk_restart_enum_to_text:
  **/
 const gchar *
-pk_task_restart_to_text (PkTaskRestart restart)
+pk_restart_enum_to_text (PkTaskRestart restart)
 {
 	return pk_task_enum_find_string (task_restart, restart);
 }
 
 /**
- * pk_task_group_from_text:
+ * pk_group_enum_from_text:
  **/
 PkTaskGroup
-pk_task_group_from_text (const gchar *group)
+pk_group_enum_from_text (const gchar *group)
 {
 	return pk_task_enum_find_value (task_group, group);
 }
 
 /**
- * pk_task_group_to_text:
+ * pk_group_enum_to_text:
  **/
 const gchar *
-pk_task_group_to_text (PkTaskGroup group)
+pk_group_enum_to_text (PkTaskGroup group)
 {
 	return pk_task_enum_find_string (task_group, group);
 }
 
 /**
- * pk_task_action_from_text:
+ * pk_action_enum_from_text:
  **/
 PkTaskAction
-pk_task_action_from_text (const gchar *action)
+pk_action_enum_from_text (const gchar *action)
 {
 	return pk_task_enum_find_value (task_action, action);
 }
 
 /**
- * pk_task_action_to_text:
+ * pk_action_enum_to_text:
  **/
 const gchar *
-pk_task_action_to_text (PkTaskAction action)
+pk_action_enum_to_text (PkTaskAction action)
 {
 	return pk_task_enum_find_string (task_action, action);
 }
@@ -374,17 +374,17 @@ out:
 }
 
 /**
- * pk_task_action_build:
+ * pk_action_enum_build:
  **/
 gchar *
-pk_task_action_build (PkTaskAction action, ...)
+pk_action_enum_build (PkTaskAction action, ...)
 {
 	va_list args;
 	guint i;
 	GString *string;
 	PkTaskAction action_temp;
 
-	string = g_string_new (pk_task_action_to_text (action));
+	string = g_string_new (pk_action_enum_to_text (action));
 	g_string_append (string, ";");
 
 	/* process the valist */
@@ -392,7 +392,7 @@ pk_task_action_build (PkTaskAction action, ...)
 	for (i=0;; i++) {
 		action_temp = va_arg (args, PkTaskAction);
 		if (action_temp == 0) break;
-		g_string_append (string, pk_task_action_to_text (action_temp));
+		g_string_append (string, pk_action_enum_to_text (action_temp));
 		g_string_append (string, ";");
 	}
 	va_end (args);
@@ -404,10 +404,10 @@ pk_task_action_build (PkTaskAction action, ...)
 }
 
 /**
- * pk_task_action_contains:
+ * pk_action_enum_contains:
  **/
 gboolean
-pk_task_action_contains (const gchar *actions, PkTaskAction action)
+pk_action_enum_contains (const gchar *actions, PkTaskAction action)
 {
 	gchar **sections;
 	guint i;
@@ -422,7 +422,7 @@ pk_task_action_contains (const gchar *actions, PkTaskAction action)
 	sections = g_strsplit (actions, ";", 0);
 
 	for (i=0; sections[i]; i++) {
-		if (pk_task_action_from_text (sections[i]) == action) {
+		if (pk_action_enum_from_text (sections[i]) == action) {
 			ret = TRUE;
 			break;
 		}
@@ -482,7 +482,7 @@ pk_util_action_new_from_string (const gchar *actions)
 	alist = g_ptr_array_new ();
 
 	for (i=0; sections[i]; i++) {
-		action_temp = pk_task_action_from_text (sections[i]);
+		action_temp = pk_action_enum_from_text (sections[i]);
 		g_ptr_array_add (alist, GUINT_TO_POINTER(action_temp));
 	}
 	g_strfreev (sections);
@@ -512,7 +512,7 @@ pk_util_action_to_string (PkActionList *alist)
 	string = g_string_new ("");
 	for (i=0; i<alist->len; i++) {
 		action = GPOINTER_TO_UINT (g_ptr_array_index (alist, i));
-		g_string_append (string, pk_task_action_to_text (action));
+		g_string_append (string, pk_action_enum_to_text (action));
 		g_string_append (string, ";");
 	}
 
@@ -671,7 +671,7 @@ libst_task_utils (LibSelfTest *test)
 	 ****************          ACTIONS         ******************
 	 ************************************************************/
 	libst_title (test, "test the action building (single)");
-	text = pk_task_action_build (PK_ACTION_ENUM_INSTALL, 0);
+	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, 0);
 	if (strcmp (text, "install") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -681,7 +681,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action building (multiple)");
-	text = pk_task_action_build (PK_ACTION_ENUM_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
+	text = pk_action_enum_build (PK_ACTION_ENUM_INSTALL, PK_TASK_ACTION_SEARCH_NAME, PK_TASK_ACTION_GET_DEPENDS, 0);
 	if (strcmp (text, "install;search-name;get-depends") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -690,7 +690,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action checking (present)");
-	ret = pk_task_action_contains (text, PK_ACTION_ENUM_INSTALL);
+	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_INSTALL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -699,7 +699,7 @@ libst_task_utils (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test the action checking (not-present)");
-	ret = pk_task_action_contains (text, PK_ACTION_ENUM_REMOVE);
+	ret = pk_action_enum_contains (text, PK_ACTION_ENUM_REMOVE);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {

@@ -117,32 +117,32 @@ typedef enum {
 	PK_ACTION_ENUM_UNKNOWN
 } PkTaskAction;
 
-PkTaskExit	 pk_task_exit_from_text			(const gchar	*exit);
-const gchar	*pk_task_exit_to_text			(PkTaskExit	 exit);
+PkTaskExit	 pk_exit_enum_from_text			(const gchar	*exit);
+const gchar	*pk_exit_enum_to_text			(PkTaskExit	 exit);
 
-PkTaskStatus	 pk_task_status_from_text		(const gchar	*status);
-const gchar	*pk_task_status_to_text			(PkTaskStatus	 status);
+PkTaskStatus	 pk_status_enum_from_text		(const gchar	*status);
+const gchar	*pk_status_enum_to_text			(PkTaskStatus	 status);
 
-PkTaskRole	 pk_task_role_from_text			(const gchar	*role);
-const gchar	*pk_task_role_to_text			(PkTaskRole	 role);
+PkTaskRole	 pk_role_enum_from_text			(const gchar	*role);
+const gchar	*pk_role_enum_to_text			(PkTaskRole	 role);
 
-PkTaskErrorCode	 pk_task_error_code_from_text		(const gchar	*code);
-const gchar	*pk_task_error_code_to_text		(PkTaskErrorCode code);
+PkTaskErrorCode	 pk_error_enum_from_text		(const gchar	*code);
+const gchar	*pk_error_enum_to_text			(PkTaskErrorCode code);
 
-PkTaskRestart	 pk_task_restart_from_text		(const gchar	*restart);
-const gchar	*pk_task_restart_to_text		(PkTaskRestart	 restart);
+PkTaskRestart	 pk_restart_enum_from_text		(const gchar	*restart);
+const gchar	*pk_restart_enum_to_text		(PkTaskRestart	 restart);
 
-PkTaskGroup	 pk_task_group_from_text		(const gchar	*group);
-const gchar	*pk_task_group_to_text			(PkTaskGroup	 group);
+PkTaskGroup	 pk_group_enum_from_text		(const gchar	*group);
+const gchar	*pk_group_enum_to_text			(PkTaskGroup	 group);
 
-PkTaskAction	 pk_task_action_from_text		(const gchar	*action);
-const gchar	*pk_task_action_to_text			(PkTaskAction	 action);
+PkTaskAction	 pk_action_enum_from_text		(const gchar	*action);
+const gchar	*pk_action_enum_to_text			(PkTaskAction	 action);
 
 gboolean	 pk_task_filter_check			(const gchar	*filter);
 
 /* actions */
-gchar		*pk_task_action_build			(PkTaskAction	 action, ...);
-gboolean	 pk_task_action_contains		(const gchar	*actions,
+gchar		*pk_action_enum_build			(PkTaskAction	 action, ...);
+gboolean	 pk_action_enum_contains		(const gchar	*actions,
 							 PkTaskAction	 action);
 
 typedef GPtrArray PkActionList;

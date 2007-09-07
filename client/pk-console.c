@@ -323,7 +323,7 @@ pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, guint runtim
 static void
 pk_console_error_code_cb (PkTaskClient *tclient, PkTaskErrorCode error_code, const gchar *details, gpointer data)
 {
-	g_print ("Error: %s : %s\n", pk_task_error_code_to_text (error_code), details);
+	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
 }
 
 /**

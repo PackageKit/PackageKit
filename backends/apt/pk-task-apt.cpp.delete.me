@@ -108,7 +108,7 @@ gchar *
 pk_task_get_actions (void)
 {
 	gchar *actions;
-	actions = pk_task_action_build (PK_ACTION_ENUM_REFRESH_CACHE,
+	actions = pk_action_enum_build (PK_ACTION_ENUM_REFRESH_CACHE,
 				        PK_ACTION_ENUM_UPDATE_SYSTEM,
 				        PK_ACTION_ENUM_SEARCH_NAME,
 				        PK_ACTION_ENUM_SEARCH_DETAILS,

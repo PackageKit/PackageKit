@@ -85,7 +85,7 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%i %s %s", item->job, pk_task_status_to_text (item->role), item->package_id);
+		g_print ("%i %s %s", item->job, pk_status_enum_to_text (item->role), item->package_id);
 	}
 	g_print ("\n");
 	return TRUE;
