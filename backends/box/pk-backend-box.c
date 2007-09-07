@@ -111,7 +111,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 	gboolean gui;
 	gboolean text;
 
-	pk_task_set_job_role (task, PK_TASK_ROLE_QUERY, search);
+	pk_backend_change_job_status (backend, PK_TASK_ROLE_QUERY);
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
 	if (devel == TRUE) {
@@ -210,7 +210,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
 
 
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, package_id);
+	pk_backend_change_job_status (backend, PK_TASK_ROLE_QUERY);
 	pk_backend_description (backend, pi->name, PK_TASK_GROUP_OTHER, ps->description, "");
 
 	pk_package_id_free (pi);
@@ -231,7 +231,6 @@ backend_get_updates (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_QUERY, NULL);
 	pk_backend_change_job_status (backend, PK_TASK_STATUS_QUERY);
 
 	db = box_db_open ("/");
@@ -262,7 +261,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend, PK_TASK_EXIT_FAILED);
 		return;
 	}
-	pk_backend_set_job_role (backend, PK_TASK_ROLE_REFRESH_CACHE, NULL);
+	pk_backend_change_job_status (backend, PK_TASK_ROLE_REFRESH_CACHE);
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 
@@ -287,7 +286,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 PK_BACKEND_OPTIONS (
-	"Dummy Backend",			/* description */
+	"Box Backend",				/* description */
 	"0.0.1",				/* version */
 	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
 	backend_initalize,			/* initalize */
