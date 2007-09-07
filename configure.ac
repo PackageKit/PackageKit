@@ -160,7 +160,7 @@ dnl - Compile time choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([backend],
 	    AS_HELP_STRING([--with-backend=<option>],
-			   [Backend to use dummy,apt,yum,conary (dummy)]))
+			   [Default backend to use dummy,apt,yum,conary (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_backend = x; then
     if test -f /usr/bin/yum ; then
@@ -173,22 +173,16 @@ if test x$with_backend = x; then
         with_backend=box
     else
         with_backend=dummy
+        AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
     fi
 fi
 
-# we need this for the spawn code
-if test x$with_backend = xyum; then
-    AC_DEFINE(BACKEND_PREFIX, "yum", [backend prefix])
-elif test x$with_backend = xapt; then
-    AC_DEFINE(BACKEND_PREFIX, "apt", [backend prefix])
-elif test x$with_backend = xconary; then
-    AC_DEFINE(BACKEND_PREFIX, "conary", [backend prefix])
-elif test x$with_backend = xbox; then
-    AC_DEFINE(BACKEND_PREFIX, "box", [backend prefix])
-else
-    AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
-    AC_DEFINE(BACKEND_PREFIX, "dummy", [backend prefix])
-fi
+# remove when we have the config file parsing working
+AC_DEFINE(BACKEND_PREFIX, "$with_backend", [backend prefix])
+AC_SUBST(BACKEND_PREFIX, "$with_backend")
+
+AC_DEFINE(DEFAULT_BACKEND, "$with_backend", [backend prefix])
+AC_SUBST(DEFAULT_BACKEND, "$with_backend")
 
 AC_DEFUN([APT_BACKEND],
 [
