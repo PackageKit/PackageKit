@@ -42,7 +42,7 @@
 
 #include <pk-debug.h>
 #include <pk-task-common.h>
-#include <pk-task-utils.h>
+#include <pk-enum.h>
 
 #include "pk-backend-internal.h"
 #include "pk-engine.h"

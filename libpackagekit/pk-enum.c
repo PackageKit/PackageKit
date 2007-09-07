@@ -28,7 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
-#include "pk-task-utils.h"
+#include "pk-enum.h"
 
 typedef struct {
 	guint		 value;
@@ -307,9 +307,6 @@ pk_action_enum_to_text (PkTaskAction action)
 void
 libst_task_utils (LibSelfTest *test)
 {
-	gboolean ret;
-	gchar *text;
-
 	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
 		return;
 	}

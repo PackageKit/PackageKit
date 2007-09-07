@@ -38,12 +38,12 @@
 #include <glib/gi18n.h>
 #include <gmodule.h>
 #include <pk-package-id.h>
-#include <pk-task-utils.h>
+#include <pk-enum.h>
 
 #include "pk-debug.h"
 #include "pk-backend-internal.h"
 #include "pk-marshal.h"
-#include "pk-task-utils.h"
+#include "pk-enum.h"
 #include "pk-spawn.h"
 #include "pk-network.h"
 

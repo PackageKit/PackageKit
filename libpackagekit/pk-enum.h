@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_TASK_UTILS_H
-#define __PK_TASK_UTILS_H
+#ifndef __PK_ENUM_H
+#define __PK_ENUM_H
 
 #include <glib-object.h>
 #include <glib.h>
@@ -140,4 +140,4 @@ const gchar	*pk_action_enum_to_text			(PkTaskAction	 action);
 
 G_END_DECLS
 
-#endif /* __PK_TASK_UTILS_H */
+#endif /* __PK_ENUM_H */

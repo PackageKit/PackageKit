@@ -23,7 +23,7 @@
 #define __PK_ACTION_LIST_H
 
 #include <glib-object.h>
-#include <pk-task-utils.h>
+#include <pk-enum.h>
 
 G_BEGIN_DECLS
 
