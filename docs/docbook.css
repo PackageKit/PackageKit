@@ -1,0 +1,50 @@
+body {
+	font-family: luxi sans,sans-serif;
+}
+
+table {
+	border: 0px; 
+	width: 100%;
+}
+
+div.informaltable {
+	border: solid 1px; 
+	background: #eeeeff; 
+	width: 60%;
+}
+
+code.email {
+	color: #a00000;
+}
+
+th {
+	padding: 2px;
+	border: 0px;
+}
+
+hr {
+	border: 0;
+	width: 80%;
+	background-color: #a00000;
+	height: 1px;
+}
+
+td {
+	border: 0px;
+	padding: 5px;
+}
+
+tr {
+	border: 0px;
+	padding: 5px;
+}
+
+a {
+	color: #000000;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #a00000;
+	text-decoration: none;
+}
