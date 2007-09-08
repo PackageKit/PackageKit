@@ -1,4 +1,5 @@
 SUBDIRS = 			\
+	docs			\
 	policy			\
 	etc			\
 	man			\

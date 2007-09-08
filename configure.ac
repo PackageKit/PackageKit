@@ -341,6 +341,7 @@ packagekit.pc
 Makefile
 etc/Makefile
 man/Makefile
+docs/Makefile
 backends/Makefile
 backends/apt/Makefile
 backends/box/Makefile

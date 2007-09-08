@@ -1,0 +1,1129 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="introduction">
+  <title>PackageKit Introduction</title>
+
+  <sect1 id="introduction-description">
+    <title>Overall Description</title>
+
+    <para>
+      PackageKit is a small open source systems abstracts out common package
+      management tasks such as:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Checking for updates and installing in the background.
+        </para>
+        <para>
+          Automatically installing new or add-on software.
+        </para>
+        <para>
+          Monitoring the state of the system.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>
+      PackageKit is a modular design with an asyncronous API for client programs,
+      a flexible queing module, and run-time selectable backends.
+    </para>
+
+    <mediaobject id="pk-structure">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-structure.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+ 
+    <para>
+      PackageKit is GPL licensed.
+    </para>
+
+    <para>
+      PackageKit comprises:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          The <literal>packagekitd</literal> system daemon which runs using
+          system activation as the root user and queues and performs the package
+          actions. It quits after a small period of inactivity.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+           The <literal>pkcon</literal> text client access program.
+           This allows you to interact with PackageKit on the command line
+           either in an async or sync mode. e.g.
+           <literal>pkcon async check updates</literal> or
+           <literal>pkcon sync search description power</literal>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+           The <literal>pkmon</literal> text client monitor program.
+           This allows you to monitor what PackageKit is doing on the command
+           line.
+        </para>
+      </listitem>
+    </itemizedlist>
+
+    <para>
+      What PackageKit is not:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          A huge daemon with lots of dependencies.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          API or ABI stable. Expect the ABI and API to change on a regular
+          basis until we ship 1.0.0.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Targeted to a particular architecture or platform.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Produced by any one vendor.
+          There are many contributors helping to get this done.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect1>
+
+  <sect1 id="introduction-backends">
+    <title>Backends</title>
+    <para>
+      The following sections explain what a backend is, and how it is implimented.
+    </para>
+    <sect2 id="introduction-backends-overview">
+      <title>Overview</title>
+      <para>
+        A backend is just a compiled <literal>.so</literal> object that is
+        loaded at runtime and provides an interface to the underlying package
+        commands.
+        A backend converts an async request into either a new thread which
+        in the same process, or using external "glue" files that can be written
+        in any language.
+      </para>
+      <para>
+        Please see the <literal>helpers/BACKENDS</literal> file for the current
+        status of the existing backends.
+        Backend maintainers, please keep this file updated.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-backends-compiled-backends">
+      <title>Compiled backeds</title>
+      <para>
+        If you have got a C or C++ binding for your package system then you can
+        use a compiled backend, which is more efficient than using helpers as
+        described below.
+        You can include the headers in the backend (with extra libraries) and
+        then just write the simple code to interface with the set methods of
+        PackageKit.
+        A C example can be found in <literal>backends/box</literal> and a
+        C++ example in <literal>backends/apt</literal>.
+      </para>
+      <para>
+        You will have to use threading if your backend does not support async
+        operation as requests have to return immediatly.
+        This is very important. Do any significant processing in a thread, and
+        certainly don't return package results without creating a thread.
+        By keeping the backends async we can make sure that there is no blocking
+        which means the command line and UI do not freeze.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-backends-helpers">
+      <title>Backends with helpers</title>
+      <para>
+        If you do not have a C or C++ language binding PackageKit executes
+        helper scripts written in pretty much any language.
+        It then watches the standard out and standard error and parses the
+        output into compiled backend commands.
+        This means a python library can be interfaced easily with a C backend.
+      </para>
+      <para>
+        Even when using helpers, a compiled backed is still used for two reasons:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            It is still needed for the dlopen internally in PackageKit.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            You can add cleverness in the C backend that you might not want to
+            do in the scripted backend, for example using a hashtable in C
+            rather than checking all the names in awk.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </sect2>
+  </sect1>
+
+  <sect1 id="introduction-ideas">
+    <title>Important Ideas</title>
+    <para>
+      The following sections explain key concepts used internally in PackageKit.
+    </para>
+    <sect2 id="introduction-ideas-packageid">
+      <title>Package ID</title>
+      <para>
+        One important idea is the <literal>package_id</literal>.
+        This is the <literal>name;version;arch;data</literal> in
+        a single string and is meant to represent a single package.
+        This is important when multiple versions of a package are installed and
+        only one is removed.
+      </para>
+      <para>
+        The <literal>package_id</literal> is parsed and checked carefully in
+        the helper code.
+        The package arch and data is optional, but 3 <literal>;</literal>'s must
+        be present.
+        For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
+        valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
+        The data field can be used for the repository name or any other purpose.
+        It is designed to make the life of a backend writer a little bit easier.
+      </para>
+      <para>
+        The backend must ensure that it only matches on one single package.
+        A single package_id must be enough to uniquely identify a single object
+        in any repository used on the system.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-filters">
+      <title>Filters</title>
+      <para>
+        Search filtering on the name is done in the backend for efficiency reasons.
+        This can be added into the compiled backend if this is not possible
+        in any new backend design.
+      </para>
+      <para>
+        Filter options are:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>installed</literal> or <literal>~installed</literal></entry>
+              <entry>If the package is installed on the system</entry>
+            </row>
+            <row>
+              <entry><literal>devel</literal> or <literal>~devel</literal></entry>
+              <entry>Development packages typically end -devel, -dgb and -static.</entry>
+            </row>
+            <row>
+              <entry><literal>gui</literal> or <literal>~gui</literal></entry>
+              <entry>GUI programs typically depend on gtk, libkde or libxfce.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>
+        So valid options would be:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>none</literal></entry>
+              <entry>All packages installed or available with no filtering</entry>
+            </row>
+            <row>
+              <entry><literal>devel;~installed</literal></entry>
+              <entry>All non-installed development packages</entry>
+            </row>
+            <row>
+              <entry><literal>installed;~devel</literal></entry>
+              <entry>All installed non-development packages</entry>
+            </row>
+            <row>
+              <entry><literal>gui;~installed;~devel</literal></entry>
+              <entry>All non-installed, non-devel gui programs.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect2>
+
+    <sect2 id="introduction-errors">
+      <title>Error Enums</title>
+      <para>
+        If you have to handle an error, try to use <literal>internal-error</literal>
+        as little as possible.
+        Just ask on the mailing list, and we can add some more error enums to
+        cover the type of error in an abstract way as possible.
+      </para>
+      <para>
+        Every error should have an enumerated type
+        (e.g. <literal>out-of-memory</literal>) and also an error dscription.
+        The error description is not translated and not converted into the users
+        locale.
+        The error description should be descriptive, as it's for power users
+        and people trying to debug the problem.
+        For instance, "Out of memory" is not helpful as an error description,
+        but "Could not create database index" is.
+        For the description use <literal>;</literal> to seporate the lines if
+        required.
+      </para>
+      <para>
+        The following error enumerated types are available for use in all
+        backends:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Error</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>out-of-memory</literal></entry>
+              <entry>There is an out of memory condition</entry>
+            </row>
+            <row>
+              <entry><literal>no-network</literal></entry>
+              <entry>There is no network connection</entry>
+            </row>
+            <row>
+              <entry><literal>not-supported</literal></entry>
+              <entry>
+                Not supported by the backend.
+                NOTE: You shouldn't be setting non-NULL in the compiled
+                backend symbol table if you find yourself using this.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>internal-error</literal></entry>
+              <entry>
+                There was an unspecified internal error.
+                NOTE: Please try and be more specific.
+                If you are using this then we should probably add a new type.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>gpg-failure</literal></entry>
+              <entry>There was a GPG failure in the transaction</entry>
+            </row>
+            <row>
+              <entry><literal>package-id-invalid</literal></entry>
+              <entry>The package ID is not valid for this transaction</entry>
+            </row>
+            <row>
+              <entry><literal>package-not-installed</literal></entry>
+              <entry>
+                The package that is trying to be removed or updated is not
+                installed
+              </entry>
+            </row>
+            <row>
+              <entry><literal>package-already-installed</literal></entry>
+              <entry>
+                The package that is trying to be installed or updated is already
+                installed
+              </entry>
+            </row>
+            <row>
+              <entry><literal>package-download-failed</literal></entry>
+              <entry>A package failed to download correctly</entry>
+            </row>
+            <row>
+              <entry><literal>dep-resolution-failed</literal></entry>
+              <entry>Dependancy resolution failed</entry>
+            </row>
+            <row>
+              <entry><literal>filter-invalid</literal></entry>
+              <entry>
+                The filter was invalid.
+                NOTE: syntax checking is done in the backend loader, so you
+                should only use this if the filter is not supported by the
+                backend.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>create-thread-failed</literal></entry>
+              <entry>Failed to create a thread</entry>
+            </row>
+            <row>
+              <entry><literal>transaction-error</literal></entry>
+              <entry>There was a generic transaction error</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="introduction-group-type">
+      <title>Group type</title>
+      <para>
+        Groups are enumerated for localisation.
+        Backends should try to put packages in different groups if possible,
+        else just don't advertise SearchGroup and the options should not be
+        shown in the UI.
+      </para>
+      <para>
+        The following group enumerated types are available:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Group</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>accessibility</literal></entry>
+              <entry>Accessibility</entry>
+            </row>
+            <row>
+              <entry><literal>accessories</literal></entry>
+              <entry>Accessories</entry>
+            </row>
+            <row>
+              <entry><literal>education</literal></entry>
+              <entry>Education</entry>
+            </row>
+            <row>
+              <entry><literal>games</literal></entry>
+              <entry>Games</entry>
+            </row>
+            <row>
+              <entry><literal>graphics</literal></entry>
+              <entry>Graphics</entry>
+            </row>
+            <row>
+              <entry><literal>internet</literal></entry>
+              <entry>Internet</entry>
+            </row>
+            <row>
+              <entry><literal>office</literal></entry>
+              <entry>Office</entry>
+            </row>
+            <row>
+              <entry><literal>other</literal></entry>
+              <entry>Other</entry>
+            </row>
+            <row>
+              <entry><literal>programming</literal></entry>
+              <entry>Programming</entry>
+            </row>
+            <row>
+              <entry><literal>multimedia</literal></entry>
+              <entry>Multimedia</entry>
+            </row>
+            <row>
+              <entry><literal>system</literal></entry>
+              <entry>System</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="introduction-cancellation">
+      <title>Cancellation</title>
+      <para>
+        If you have a multipart transaction that can be aborted in one phase but
+        not another then the AllowInterrupt signal can be sent.
+        This allows for example the yum download to be cancelled, but not the
+        install transaction.
+        By cancelling a job all subtransactions are killed.
+        By default actions cannot be cancelled unless enabled in the compiled backend.
+        Use <literal>AllowInterrupt(true)</literal> to enable cancellation
+        and <literal>AllowInterrupt(false)</literal> to disable it.
+        This can be done for any job type.
+      </para>
+    </sect2>
+  </sect1>
+
+  <sect1 id="api-method-reference">
+    <title>API Method Reference</title>
+    <para>
+      Methods used by the backends are as follows:
+    </para>
+    <sect2 id="api-search-name">
+      <title>Search Name</title>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>search_term</literal></entry>
+              <entry>A single word search term with no wildcard chars.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        Do not refresh the package cache. This should be fast.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-search-group">
+      <title>Search Group</title>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>group_type</literal></entry>
+              <entry>An enumerated group_type, or <literal>unknown</literal>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        Do not refresh the package cache. This should be fast.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-search-details">
+      <title>Search Details</title>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>search_term</literal></entry>
+              <entry>A single word search term with no wildcard chars.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        Do not refresh the package cache. This should be fast.
+        This is very similar to find-package.
+        This should search as much data as possible, including, if possible
+        repo names, package summaries, descriptions and urls.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-search-file">
+      <title>Search File</title>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>search_term</literal></entry>
+              <entry>A single word search term with no wildcard chars.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This should search for files.
+        This should allow an application to find out what package owns
+		    a file on the system.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-install">
+      <title>Install Package</title>
+      <para>
+        The installer should always install extra packages automatically
+        as the use could call GetDepends prior to the install if a confirmation
+        is required in the UI.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This should search for files.
+        This should allow an application to find out what package owns
+		    a file on the system.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-remove">
+      <title>Remove Package</title>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>allow_deps</literal></entry>
+              <entry>
+                Either "yes" or "no". If yes allow other packages to be
+                removed with the package, but "no" should cause the script
+                to abort if other packages are dependant on the package.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-get-depends">
+      <title>Get Depends</title>
+      <para>
+        GetDepends should return packages that this package depends on.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-get-requires">
+      <title>Get Requires</title>
+      <para>
+        GetRequires should return packages that depend on this package.
+        This is useful to know, as if <literal>package_id</literal> is being
+        removed, we can warn the user what else would be removed.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-get-description">
+      <title>Get Description</title>
+      <para>
+        GetDescription should return the description of that
+        <literal>package_id</literal>.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Description</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-update">
+      <title>Update Package</title>
+      <para>
+        The installer should always update extra packages automatically.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This should search for files.
+        This should allow an application to find out what package owns
+		    a file on the system.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-update-system">
+      <title>Update System</title>
+      <para>
+        There are no arguments.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>RequireRestart</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-get-updates">
+      <title>Get Updates</title>
+      <para>
+        There are no arguments.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-refresh-cache">
+      <title>Refresh Cache</title>
+      <para>
+        There are no arguments.
+      </para>
+      <para>
+        This should search for files.
+        This should allow an application to find out what package owns
+		    a file on the system.
+      </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+  </sect1>
+
+  <sect1 id="api-signal-reference">
+    <title>API Signal Reference</title>
+    <para>
+      Signals used by the backends are as follows:
+    </para>
+    <sect2 id="api-percentage">
+      <title>Percentage</title>
+      <para>
+        This is optional.
+        Backends should send the DBUS signal NoPercentageUpdates or use
+        no-percentage-updates if the remaining position cannot be calculated.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>value</literal></entry>
+              <entry>The percentage complete of the entire transaction</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="api-subpercentage">
+      <title>Subpercentage</title>
+      <para>
+        This is optional.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>value</literal></entry>
+              <entry>Percentage complete of the sub-transaction.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="api-no-percentage-updates">
+      <title>NoPercentageUpdates</title>
+      <para>
+        This is optional and signifies that the helper is no longer able to
+        send percentage updates.
+      </para>
+    </sect2>
+
+    <sect2 id="api-error">
+      <title>Error</title>
+      <para>
+        Errors should only be send on fatal abortion.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>enum</literal></entry>
+              <entry>Enumerated type, e.g. <literal>no-network</literal>.</entry>
+            </row>
+            <row>
+              <entry><literal>description</literal></entry>
+              <entry>Long description or error, e.g. "<literal>failed to connect to mytry.xml</literal>"</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="api-status">
+      <title>Status</title>
+      <para>
+        This is optional, but highly recommended.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>status</literal></entry>
+              <entry>
+                One of "<literal>download</literal>",
+                "<literal>install</literal>",
+                "<literal>update</literal>",
+                "<literal>remove</literal>".
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="api-requirerestart">
+      <title>RequireRestart</title>
+      <para>
+        This is optional, but highly recommended.
+      </para>
+      <para>
+        This can be sent as many times as needed by the backend script.
+        PackageKit will always choose the 'worst' method in the UI notification.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>type</literal></entry>
+              <entry>
+                One of "<literal>system</literal>",
+                "<literal>application</literal>",
+                "<literal>session</literal>".
+              </entry>
+            </row>
+            <row>
+              <entry><literal>detail</literal></entry>
+              <entry>Optional details about the restart</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="backends-spawn-package">
+      <title>Package</title>
+      <para>
+        If updating, as packages are updated then emit them to the screen.
+				This allows a summary to be presented after the transaction.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>status</literal></entry>
+              <entry>
+                <para>
+                  When searching: "1" if installed, "0" if not
+                </para>
+                <para>
+                  When getting updates:  "0" for normal priority updates,
+                  "1" for security updates, "2" for important updates,
+                  "3" for low priority updates.
+                </para>
+                <para>
+                  When processing packages: "0" if downloading,
+                  "1" if updating or installing.
+                </para>
+                <para>
+                  Else, set as "1"
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A valid package ID string with as much data as known</entry>
+            </row>
+            <row>
+              <entry><literal>summary</literal></entry>
+              <entry>The one line package summary, e.g. "Clipart for OpenOffice"</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="backends-spawn-description">
+      <title>Description</title>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>The package ID</entry>
+            </row>
+            <row>
+              <entry><literal>group</literal></entry>
+              <entry>The enumerated package group description</entry>
+            </row>
+            <row>
+              <entry><literal>detail</literal></entry>
+              <entry>
+                The multi line package description.
+                NOTE: Tabs may have to be stripped from the description to
+                avoid being split.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>url</literal></entry>
+              <entry>The upstream project homepage</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+  </sect1>
+
+</chapter>
