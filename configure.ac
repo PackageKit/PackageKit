@@ -156,6 +156,32 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 dnl ---------------------------------------------------------------------------
+dnl - DocBook Documentation
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(docbook-docs, [  --enable-docbook-docs   build documentation (requires xmlto)],enable_docbook_docs=$enableval,enable_docbook_docs=auto)
+AC_PATH_PROG(XMLTO, xmlto, no)
+AC_MSG_CHECKING([whether to build DocBook documentation])
+if test x$XMLTO = xno ; then
+    have_docbook=no
+else
+    have_docbook=yes
+fi
+if test x$enable_docbook_docs = xauto ; then
+    if test x$have_docbook = xno ; then
+        enable_docbook_docs=no
+    else
+        enable_docbook_docs=yes
+    fi
+fi
+if test x$enable_docbook_docs = xyes; then
+    if test x$have_docbook = xno; then
+	AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
+    fi
+fi
+AM_CONDITIONAL(DOCBOOK_DOCS_ENABLED, test x$enable_docbook_docs = xyes)
+AC_MSG_RESULT(yes)
+
+dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([backend],
