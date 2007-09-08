@@ -31,10 +31,11 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include <pk-debug.h>
+#include "pk-conf.h"
 #include "pk-engine.h"
 #include "pk-interface.h"
 
-#define PK_MAIN_EXIT_IDLE_TIME	60 /* seconds */
+static guint exit_idle_time;
 
 /**
  * pk_object_register:
@@ -115,7 +116,7 @@ pk_main_timeout_check_cb (PkEngine *engine)
 	guint idle;
 	idle = pk_engine_get_seconds_idle (engine);
 	pk_debug ("idle is %i", idle);
-	if (idle > PK_MAIN_EXIT_IDLE_TIME) {
+	if (idle > exit_idle_time) {
 		pk_warning ("exit!!");
 		exit (0);
 	}
@@ -137,6 +138,7 @@ main (int argc, char *argv[])
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
 	gchar *backend = NULL;
+	PkConf *conf = NULL;
 	PkEngine *engine = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
@@ -207,6 +209,11 @@ main (int argc, char *argv[])
 	 * 'it works from the command line but not service activation' bugs */
 	clearenv ();
 
+	/* use the config file */
+	conf = pk_conf_new ();
+	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
+	pk_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+
 	/* create a new engine object */
 	engine = pk_engine_new ();
 	pk_engine_use_backend (engine, backend);
@@ -225,7 +232,7 @@ main (int argc, char *argv[])
 	}
 
 	/* only poll every 10 seconds when we are alive */
-	if (disable_timer == FALSE) {
+	if (exit_idle_time != 0 && disable_timer == FALSE) {
 		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
 	}
 
@@ -234,6 +241,7 @@ main (int argc, char *argv[])
 	}
 
 	g_main_loop_unref (loop);
+	g_object_unref (conf);
 	g_object_unref (engine);
 
 unref_program:

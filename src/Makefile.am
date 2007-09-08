@@ -44,6 +44,8 @@ packagekitd_SOURCES =					\
 	pk-backend-internal.h				\
 	pk-backend.c					\
 	pk-backend.h					\
+	pk-conf.c					\
+	pk-conf.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-engine.h					\
