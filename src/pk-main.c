@@ -161,13 +161,6 @@ main (int argc, char *argv[])
 		{ NULL}
 	};
 
-	if (backend == NULL) {
-		backend = g_strdup (BACKEND_PREFIX);
-		pk_debug ("using default backend %s", backend);
-	} else {
-		pk_debug ("trying to use backend %s", backend);
-	}
-
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
@@ -209,10 +202,15 @@ main (int argc, char *argv[])
 	 * 'it works from the command line but not service activation' bugs */
 	clearenv ();
 
-	/* use the config file */
+	/* get values from the config file */
 	conf = pk_conf_new ();
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
 	pk_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+
+	if (backend == NULL) {
+		backend = pk_conf_get_string (conf, "DefaultBackend");
+		pk_debug ("using default backend %s", backend);
+	}
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
@@ -243,6 +241,7 @@ main (int argc, char *argv[])
 	g_main_loop_unref (loop);
 	g_object_unref (conf);
 	g_object_unref (engine);
+	g_free (backend);
 
 unref_program:
 	return 0;

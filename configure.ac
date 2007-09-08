@@ -156,33 +156,29 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_SUBST(DBUS_SERVICES_DIR)
 
 dnl ---------------------------------------------------------------------------
-dnl - Compile time choice of backend
+dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([backend],
-	    AS_HELP_STRING([--with-backend=<option>],
+	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use dummy,apt,yum,conary (dummy)]))
 # default to a sane option for the installed tool
-if test x$with_backend = x; then
+if test x$with_default_backend = x; then
     if test -f /usr/bin/yum ; then
-        with_backend=yum
+        with_default_backend=yum
     elif test -f /usr/bin/apt-get ; then
-        with_backend=apt
+        with_default_backend=apt
     elif test -f /usr/bin/conary ; then
-        with_backend=conary
+        with_default_backend=conary
     elif test -f /usr/bin/box-repos ; then
-        with_backend=box
+        with_default_backend=box
     else
-        with_backend=dummy
+        with_default_backend=dummy
         AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
     fi
 fi
 
-# remove when we have the config file parsing working
-AC_DEFINE(BACKEND_PREFIX, "$with_backend", [backend prefix])
-AC_SUBST(BACKEND_PREFIX, "$with_backend")
-
-AC_DEFINE(DEFAULT_BACKEND, "$with_backend", [backend prefix])
-AC_SUBST(DEFAULT_BACKEND, "$with_backend")
+AC_DEFINE(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
+AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 AC_DEFUN([APT_BACKEND],
 [
@@ -348,6 +344,6 @@ echo "
         datadir:                   ${datadir}
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
-        Backend:                   ${with_backend}
+        Default backend:           ${with_default_backend}
 "
 
