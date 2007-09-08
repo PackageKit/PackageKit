@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <unistd.h>
 
 #include <sqlite3.h>
 #include <libbox/libbox-db.h>
@@ -162,6 +163,8 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
+			// FIXME: temporary workaround
+			sleep(1);
 			pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 		}
 	}
