@@ -39,7 +39,8 @@ typedef struct {
 
 typedef struct {
 	PkBackend *backend;
-} UpdateData;
+	gchar *package_id;
+} ThreadData;
 
 
 static sqlite3*
@@ -237,7 +238,7 @@ get_updates_thread(gpointer data)
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
-	UpdateData *d = (UpdateData*) data;
+	ThreadData *d = (ThreadData*) data;
 
 	pk_backend_change_job_status (d->backend, PK_STATUS_ENUM_QUERY);
 
@@ -255,6 +256,41 @@ get_updates_thread(gpointer data)
 	return NULL;
 }
 
+static void*
+get_description_thread(gpointer data)
+{
+	PkPackageId *pi;
+	PackageSearch *ps;
+	GList *list;
+	ThreadData *d = (ThreadData*) data;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (d->backend, PK_EXIT_ENUM_FAILED);
+		return NULL;
+	}
+
+	pk_backend_change_job_status (d->backend, PK_STATUS_ENUM_QUERY);
+	list = find_package_by_id (pi);
+	ps = (PackageSearch*) list->data;
+	if (list == NULL) {
+		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
+		pk_backend_finished (d->backend, PK_EXIT_ENUM_FAILED);
+		return NULL;
+	}
+
+	pk_backend_description (d->backend, pi->name, PK_GROUP_ENUM_OTHER, ps->description, "");
+
+	pk_package_id_free (pi);
+	box_db_repos_package_list_free (list);
+
+	pk_backend_finished (d->backend, PK_EXIT_ENUM_SUCCESS);
+	g_free (d->package_id);
+	g_free (d);
+
+	return NULL;
+}
 
 /* ===================================================================== */
 
@@ -282,35 +318,23 @@ backend_destroy (PkBackend *backend)
 static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
-	PkPackageId *pi;
-	PackageSearch *ps;
-	GList *list;
+	ThreadData *data = g_new0(ThreadData, 1);
 
 	g_return_if_fail (backend != NULL);
 
-	pi = pk_package_id_new_from_string (package_id);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
-		return;
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+	} else {
+		data->backend = backend;
+		data->package_id = g_strdup(package_id);
+
+		if (g_thread_create(get_description_thread, data, FALSE, NULL) == NULL) {
+			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
+			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		}
 	}
 
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
-	list = find_package_by_id (pi);
-	ps = (PackageSearch*) list->data;
-	if (list == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
-		return;
-	}
-
-
-	pk_backend_description (backend, pi->name, PK_GROUP_ENUM_OTHER, ps->description, "");
-
-	pk_package_id_free (pi);
-	box_db_repos_package_list_free (list);
-
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 	return;
 }
 
@@ -320,7 +344,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_updates (PkBackend *backend)
 {
-	UpdateData *data = g_new0(UpdateData, 1);
+	ThreadData *data = g_new0(ThreadData, 1);
 
 	g_return_if_fail (backend != NULL);
 
@@ -334,7 +358,6 @@ backend_get_updates (PkBackend *backend)
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
 			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
 		}
-		
 	}
 }
 
