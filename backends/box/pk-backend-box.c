@@ -112,7 +112,7 @@ parse_filter (const gchar *filter, gboolean *installed, gboolean *available,
 	g_strfreev (sections);
 }
 
-static gboolean
+static void
 find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
 {
 	GList *list = NULL;
@@ -124,6 +124,8 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	gboolean nondevel;
 	gboolean gui;
 	gboolean text;
+
+	g_return_if_fail (backend != NULL);
 
 	pk_backend_change_job_status (backend, PK_ROLE_ENUM_QUERY);
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
@@ -147,7 +149,6 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		box_db_repos_package_list_free (list);
 		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 	} else {
-
 		if (installed == FALSE && available == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
 			pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
@@ -166,14 +167,14 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	}
 
 	db_close(db);
-
-	return TRUE;
 }
 
 void*
 find_packages_thread (gpointer data)
 {
 	FindData *d = (FindData*) data;
+
+	g_return_val_if_fail (d->backend != NULL, NULL);
 
 	find_packages_real (d->backend, d->search, d->filter, d->mode);
 
@@ -185,10 +186,12 @@ find_packages_thread (gpointer data)
 }
 
 
-static gboolean
+static void
 find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
 {
 	FindData *data = g_new0(FindData, 1);
+
+	g_return_if_fail (backend != NULL);
 
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
@@ -205,7 +208,6 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		}
 		
 	}
-	return TRUE;
 }
 
 static GList*
