@@ -29,23 +29,37 @@
 #include <libbox/libbox-db-utils.h>
 #include <libbox/libbox-db-repos.h>
 
-/**
- * backend_initalize:
- */
-static void
-backend_initalize (PkBackend *backend)
+typedef struct {
+	PkBackend *backend;
+	gchar *search;
+	gchar *filter;
+	gint mode;
+} FindData;
+
+typedef struct {
+	PkBackend *backend;
+} UpdateData;
+
+
+static sqlite3*
+db_open()
 {
-	g_return_if_fail (backend != NULL);
+	sqlite3 *db;
+
+	db = box_db_open("/");
+	box_db_attach_repo(db, "/", "core");
+	box_db_repos_init(db);
+
+	return db;
 }
 
-/**
- * backend_destroy:
- */
 static void
-backend_destroy (PkBackend *backend)
+db_close(sqlite3 *db)
 {
-	g_return_if_fail (backend != NULL);
+	box_db_detach_repo(db, "core");
+	box_db_close(db);
 }
+
 
 static void
 add_packages_from_list (PkBackend *backend, GList *list)
@@ -99,7 +113,7 @@ parse_filter (const gchar *filter, gboolean *installed, gboolean *available,
 }
 
 static gboolean
-find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
@@ -124,13 +138,10 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	db = box_db_open ("/");
-	box_db_attach_repo (db, "/", "core");
-	box_db_repos_init (db);
+	db = db_open();
 
 	if (mode == 1) {
 		/* TODO: allow filtering */
-		/* TODO: make it more async */
 		list = box_db_repos_search_file (db, search);
 		add_packages_from_list (backend, list);
 		box_db_repos_package_list_free (list);
@@ -141,7 +152,6 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
 			pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		} else	{
-			/* TODO: make it more async */
 			if (installed == TRUE && available == TRUE) {
 				list = box_db_repos_packages_search_all(db, (gchar *)search, devel_filter);
 			} else if (installed == TRUE) {
@@ -155,9 +165,46 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		}
 	}
 
-	box_db_detach_repo(db, "core");
-	box_db_close(db);
+	db_close(db);
 
+	return TRUE;
+}
+
+void*
+find_packages_thread (gpointer data)
+{
+	FindData *d = (FindData*) data;
+
+	find_packages_real (d->backend, d->search, d->filter, d->mode);
+
+	g_free(d->search);
+	g_free(d->filter);
+	g_free(d);
+
+	return NULL;
+}
+
+
+static gboolean
+find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+{
+	FindData *data = g_new0(FindData, 1);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+	} else {
+		data->backend = backend;
+		data->search = g_strdup(search);
+		data->filter = g_strdup(filter);
+		data->mode = mode;
+
+		if (g_thread_create(find_packages_thread, data, FALSE, NULL) == NULL) {
+			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
+			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		}
+		
+	}
 	return TRUE;
 }
 
@@ -167,19 +214,59 @@ find_package_by_id (PkPackageId *pi)
 	sqlite3 *db = NULL;
 	GList *list;
 
-	db = box_db_open("/");
-	box_db_attach_repo(db, "/", "core");
-	box_db_repos_init(db);
+	db = db_open();
 
 	/* only one element is returned */
 	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
 	if (list == NULL)
 		return NULL;
 
-	box_db_detach_repo(db, "core");
-	box_db_close(db);
+	db_close(db);
 
 	return list;
+}
+
+
+static void*
+get_updates_thread(gpointer data)
+{
+	GList *list = NULL;
+	sqlite3 *db = NULL;
+	UpdateData *d = (UpdateData*) data;
+
+	db = db_open ();
+
+	list = box_db_repos_packages_for_upgrade (db);
+	add_packages_from_list (d->backend, list);
+	box_db_repos_package_list_free (list);
+
+	pk_backend_finished (d->backend, PK_EXIT_ENUM_SUCCESS);
+
+	g_free(d);
+	db_close (db);
+
+	return NULL;
+}
+
+
+/* ===================================================================== */
+
+/**
+ * backend_initalize:
+ */
+static void
+backend_initalize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+}
+
+/**
+ * backend_destroy:
+ */
+static void
+backend_destroy (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
 }
 
 /**
@@ -226,26 +313,24 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_updates (PkBackend *backend)
 {
-	GList *list = NULL;
-	sqlite3 *db = NULL;
+	UpdateData *data = g_new0(UpdateData, 1);
 
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 
-	db = box_db_open ("/");
-	box_db_attach_repo (db, "/", "core");
-	box_db_repos_init (db);
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+	} else {
+		data->backend = backend;
 
-	/* TODO: make it more async */
-	list = box_db_repos_packages_for_upgrade (db);
-	add_packages_from_list (backend, list);
-	box_db_repos_package_list_free (list);
-
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
-
-	box_db_detach_repo (db, "core");
-	box_db_close (db);
+		if (g_thread_create(get_updates_thread, data, FALSE, NULL) == NULL) {
+			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
+			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		}
+		
+	}
 }
 
 /**
