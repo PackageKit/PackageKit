@@ -55,11 +55,6 @@ string update_text
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
 
-*** Have to load parameters from a conf file ***
-  - autoshutdown-timeout
-  - default-backend
-  - logging-detail
-
 *** Dummy backend should use subpercent and install deps ***
 It's not a great test case right now...
 
