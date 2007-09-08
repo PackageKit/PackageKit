@@ -128,7 +128,8 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_job_status (backend, PK_ROLE_ENUM_QUERY);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
+
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
 	if (devel == TRUE) {
@@ -138,7 +139,6 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		devel_filter = devel_filter | PKG_NON_DEVEL;
 	}
 
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
 	db = db_open();
@@ -239,6 +239,8 @@ get_updates_thread(gpointer data)
 	sqlite3 *db = NULL;
 	UpdateData *d = (UpdateData*) data;
 
+	pk_backend_change_job_status (d->backend, PK_STATUS_ENUM_QUERY);
+
 	db = db_open ();
 
 	list = box_db_repos_packages_for_upgrade (db);
@@ -293,6 +295,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 	list = find_package_by_id (pi);
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
@@ -302,7 +305,6 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
 
 
-	pk_backend_change_job_status (backend, PK_ROLE_ENUM_QUERY);
 	pk_backend_description (backend, pi->name, PK_GROUP_ENUM_OTHER, ps->description, "");
 
 	pk_package_id_free (pi);
@@ -321,8 +323,6 @@ backend_get_updates (PkBackend *backend)
 	UpdateData *data = g_new0(UpdateData, 1);
 
 	g_return_if_fail (backend != NULL);
-
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
@@ -351,7 +351,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		return;
 	}
-	pk_backend_change_job_status (backend, PK_ROLE_ENUM_REFRESH_CACHE);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 
