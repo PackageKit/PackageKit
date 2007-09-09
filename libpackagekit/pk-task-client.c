@@ -892,6 +892,61 @@ pk_task_client_get_actions (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_groups:
+ **/
+gchar *
+pk_task_client_get_groups (PkTaskClient *tclient)
+{
+	gboolean ret;
+	GError *error;
+	gchar *groups;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetGroups", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &groups,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetGroups failed :%s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+	return groups;
+}
+
+/**
+ * pk_task_client_get_filters:
+ * TODO: convert to enumerated types here...
+ **/
+gchar *
+pk_task_client_get_filters (PkTaskClient *tclient)
+{
+	gboolean ret;
+	GError *error;
+	gchar *filters;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetFilters", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &filters,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetFilters failed :%s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+	return filters;
+}
+
+/**
  * pk_task_client_finished_cb:
  */
 static void

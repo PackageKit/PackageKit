@@ -58,6 +58,13 @@ typedef enum {
 } PkTaskExit;
 
 typedef enum {
+	PK_FILTER_ENUM_DEVELOPMENT,
+	PK_FILTER_ENUM_INSTALLED,
+	PK_FILTER_ENUM_GUI,
+	PK_FILTER_ENUM_UNKNOWN
+} PkTaskFilter;
+
+typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
@@ -134,6 +141,9 @@ const gchar	*pk_restart_enum_to_text		(PkTaskRestart	 restart);
 
 PkTaskGroup	 pk_group_enum_from_text		(const gchar	*group);
 const gchar	*pk_group_enum_to_text			(PkTaskGroup	 group);
+
+PkTaskFilter	 pk_filter_enum_from_text		(const gchar	*filter);
+const gchar	*pk_filter_enum_to_text			(PkTaskFilter	 filter);
 
 PkTaskAction	 pk_action_enum_from_text		(const gchar	*action);
 const gchar	*pk_action_enum_to_text			(PkTaskAction	 action);

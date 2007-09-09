@@ -1379,7 +1379,6 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	return TRUE;
 }
 
-
 /**
  * pk_engine_get_actions:
  * @engine: This class instance
@@ -1398,6 +1397,54 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 	pk_backend_load (task, engine->priv->backend);
 	elist = pk_backend_get_actions (task);
 	*actions = pk_enum_list_to_string (elist);
+	g_object_unref (task);
+	g_object_unref (elist);
+
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_groups:
+ * @engine: This class instance
+ **/
+gboolean
+pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
+{
+	PkTask *task;
+	PkEnumList *elist;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_backend_load (task, engine->priv->backend);
+	elist = pk_backend_get_groups (task);
+	*groups = pk_enum_list_to_string (elist);
+	g_object_unref (task);
+	g_object_unref (elist);
+
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_filters:
+ * @engine: This class instance
+ **/
+gboolean
+pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
+{
+	PkTask *task;
+	PkEnumList *elist;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	pk_backend_load (task, engine->priv->backend);
+	elist = pk_backend_get_filters (task);
+	*filters = pk_enum_list_to_string (elist);
 	g_object_unref (task);
 	g_object_unref (elist);
 

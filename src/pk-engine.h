@@ -145,6 +145,12 @@ gboolean	 pk_engine_cancel_job_try		(PkEngine	*engine,
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
 							 gchar		**actions,
 							 GError		**error);
+gboolean	 pk_engine_get_groups			(PkEngine	*engine,
+							 gchar		**groups,
+							 GError		**error);
+gboolean	 pk_engine_get_filters			(PkEngine	*engine,
+							 gchar		**filters,
+							 GError		**error);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 G_END_DECLS

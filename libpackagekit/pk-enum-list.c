@@ -106,6 +106,10 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 	for (i=0; sections[i]; i++) {
 		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
 			value_temp = pk_action_enum_from_text (sections[i]);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+			value_temp = pk_group_enum_from_text (sections[i]);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+			value_temp = pk_filter_enum_from_text (sections[i]);
 		} else {
 			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
 		}
@@ -137,6 +141,10 @@ pk_enum_list_to_string (PkEnumList *elist)
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
 		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
 			text = pk_action_enum_to_text (value);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+			text = pk_group_enum_to_text (value);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+			text = pk_filter_enum_to_text (value);
 		} else {
 			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
 		}
@@ -162,11 +170,19 @@ pk_enum_list_print (PkEnumList *elist)
 
 	if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
 		g_print ("Printing actions:\n");
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+		g_print ("Printing groups:\n");
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+		g_print ("Printing filters:\n");
 	}
 	for (i=0; i<elist->priv->data->len; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
 		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
 			text = pk_action_enum_to_text (value);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+			text = pk_group_enum_to_text (value);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+			text = pk_filter_enum_to_text (value);
 		} else {
 			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
 		}

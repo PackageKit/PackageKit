@@ -25,6 +25,34 @@
 #include <pk-backend.h>
 
 /**
+ * backend_get_groups:
+ */
+static void
+backend_get_groups (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				      PK_GROUP_ENUM_ACCESSIBILITY,
+				      PK_GROUP_ENUM_GAMES,
+				      PK_GROUP_ENUM_SYSTEM,
+				      0);
+}
+
+/**
+ * backend_get_filters:
+ */
+static void
+backend_get_filters (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				      PK_FILTER_ENUM_GUI,
+				      PK_FILTER_ENUM_INSTALLED,
+				      PK_FILTER_ENUM_DEVELOPMENT,
+				      0);
+}
+
+/**
  * backend_cancel_job_try:
  */
 static void
@@ -192,6 +220,8 @@ PK_BACKEND_OPTIONS (
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */
+	backend_get_groups,			/* get_groups */
+	backend_get_filters,			/* get_filters */
 	backend_cancel_job_try,			/* cancel_job_try */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */

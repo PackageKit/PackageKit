@@ -9,9 +9,6 @@ NOTE: RELEASE BLOCKER
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
-*** Add methods so backends can advertise filters and groups ***
-Add GetFilters and GetGroups into the API and command line tools
-
 *** Split up PolicyKit install into different types ***
 Have different permissions for signed and unsigned repos.
 

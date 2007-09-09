@@ -139,7 +139,13 @@
 
     <!-- General methods -->
     <method name="GetActions">
-      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions "groups;install;remove" etc -->
+      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions -->
+    </method>
+    <method name="GetGroups">
+      <arg type="s" name="groups" direction="out"/> <!-- list of supported groups -->
+    </method>
+    <method name="GetFilters">
+      <arg type="s" name="filters" direction="out"/> <!-- list of supported filters -->
     </method>
 
   </interface>

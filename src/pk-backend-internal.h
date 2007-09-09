@@ -56,6 +56,8 @@ typedef PkBackend PkTask;
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
 PkEnumList	*pk_backend_get_actions			(PkBackend	*backend);
+PkEnumList	*pk_backend_get_groups			(PkBackend	*backend);
+PkEnumList	*pk_backend_get_filters			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);

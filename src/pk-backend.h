@@ -24,6 +24,7 @@
 
 #include <glib.h>
 #include <pk-enum.h>
+#include <pk-enum-list.h>
 #include <pk-package-id.h>
 
 G_BEGIN_DECLS
@@ -72,6 +73,8 @@ struct _PkBackendDesc {
 	const char	*author;
 	void		(*initialize)		(PkBackend *backend);
 	void		(*destroy)		(PkBackend *backend);
+	void		(*get_groups)		(PkBackend *backend, PkEnumList *elist);
+	void		(*get_filters)		(PkBackend *backend, PkEnumList *elist);
 	void		(*cancel_job_try)	(PkBackend *backend);
 	void		(*get_depends)		(PkBackend *backend, const gchar *package_id);
 	void		(*get_description)	(PkBackend *backend, const gchar *package_id);
@@ -90,6 +93,7 @@ struct _PkBackendDesc {
 };
 
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
+			   get_groups, get_filters, \
 			   cancel_job_try, get_depends, get_description, \
 			   get_requires, get_updates, install_package, \
 			   refresh_cache, remove_package, search_details, \
@@ -101,6 +105,8 @@ struct _PkBackendDesc {
 		author, \
 		initialize, \
 		destroy, \
+		get_groups, \
+		get_filters, \
 		cancel_job_try, \
 		get_depends, \
 		get_description, \

@@ -97,6 +97,8 @@ gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
 							 const gchar	*package_id);
 gboolean	 pk_task_client_cancel_job_try		(PkTaskClient	*tclient);
 gchar		*pk_task_client_get_actions		(PkTaskClient	*tclient);
+gchar		*pk_task_client_get_filters		(PkTaskClient	*tclient);
+gchar		*pk_task_client_get_groups		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
 
 G_END_DECLS

@@ -48,6 +48,8 @@ typedef struct
 
 typedef enum {
 	PK_ENUM_LIST_TYPE_ACTION,
+	PK_ENUM_LIST_TYPE_GROUP,
+	PK_ENUM_LIST_TYPE_FILTER,
 	PK_ENUM_LIST_TYPE_UNKNOWN
 } PkEnumListType;
 

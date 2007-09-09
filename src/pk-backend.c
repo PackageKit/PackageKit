@@ -968,6 +968,40 @@ pk_backend_get_actions (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_groups:
+ *
+ * You need to g_object_unref the returned object
+ */
+PkEnumList *
+pk_backend_get_groups (PkBackend *backend)
+{
+	PkEnumList *elist;
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
+	if (backend->desc->get_groups != NULL) {
+		backend->desc->get_groups (backend, elist);
+	}
+	return elist;
+}
+
+/**
+ * pk_backend_get_filters:
+ *
+ * You need to g_object_unref the returned object
+ */
+PkEnumList *
+pk_backend_get_filters (PkBackend *backend)
+{
+	PkEnumList *elist;
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
+	if (backend->desc->get_filters != NULL) {
+		backend->desc->get_filters (backend, elist);
+	}
+	return elist;
+}
+
+/**
  * pk_backend_get_runtime:
  */
 gdouble

@@ -92,6 +92,13 @@ static PkTaskEnumMatch task_restart[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_filter[] = {
+	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
+	{PK_FILTER_ENUM_INSTALLED,		"installed"},
+	{PK_FILTER_ENUM_GUI,			"gui"},
+	{0, NULL},
+};
+
 static PkTaskEnumMatch task_group[] = {
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
@@ -278,6 +285,24 @@ const gchar *
 pk_group_enum_to_text (PkTaskGroup group)
 {
 	return pk_task_enum_find_string (task_group, group);
+}
+
+/**
+ * pk_filter_enum_from_text:
+ **/
+PkTaskFilter
+pk_filter_enum_from_text (const gchar *filter)
+{
+	return pk_task_enum_find_value (task_filter, filter);
+}
+
+/**
+ * pk_filter_enum_to_text:
+ **/
+const gchar *
+pk_filter_enum_to_text (PkTaskFilter filter)
+{
+	return pk_task_enum_find_string (task_filter, filter);
 }
 
 /**
