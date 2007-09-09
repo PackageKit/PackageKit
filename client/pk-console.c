@@ -125,6 +125,9 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] get depends <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get requires <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get actions\n");
+	g_print ("  pkcon [sync] [verbose] get groups\n");
+	g_print ("  pkcon [sync] [verbose] get filters\n");
 	g_print ("\n");
 	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 }
