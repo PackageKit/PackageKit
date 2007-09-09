@@ -98,6 +98,12 @@ gboolean	 pk_backend_get_job_status		(PkBackend	*backend,
 gboolean	 pk_backend_get_job_role		(PkBackend	*backend,
 							 PkRoleEnum	*role,
 							 const gchar	**package_id);
+gboolean	 pk_backend_get_percentage		(PkBackend	*backend,
+							 guint		*percentage);
+gboolean	 pk_backend_get_sub_percentage		(PkBackend	*backend,
+							 guint		*percentage);
+gboolean	 pk_backend_get_package			(PkBackend	*backend,
+							 gchar		**package_id);
 
 /* these are external in nature, but we shouldn't be using them in helpers */
 gboolean	 pk_backend_set_job_role		(PkBackend	*backend,

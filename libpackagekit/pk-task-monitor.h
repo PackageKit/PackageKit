@@ -58,6 +58,12 @@ gboolean	 pk_task_monitor_get_status		(PkTaskMonitor	*tmonitor,
 gboolean	 pk_task_monitor_get_role		(PkTaskMonitor	*tmonitor,
 							 PkRoleEnum	*role,
 							 gchar		**package_id);
+gboolean	 pk_task_monitor_get_percentage		(PkTaskMonitor	*tmonitor,
+							 guint		*percentage);
+gboolean	 pk_task_monitor_get_sub_percentage	(PkTaskMonitor	*tmonitor,
+							 guint		*percentage);
+gboolean	 pk_task_monitor_get_package		(PkTaskMonitor	*tmonitor,
+							 gchar		**package_id);
 
 G_END_DECLS
 

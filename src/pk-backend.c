@@ -62,6 +62,10 @@ struct _PkBackendPrivate
 	gboolean		 is_killable;
 	gboolean		 assigned;
 	PkNetwork		*network;
+	/* needed for gui coldplugging */
+	guint			 last_percentage;
+	guint			 last_subpercentage;
+	gchar			*last_package;
 };
 
 enum {
@@ -445,6 +449,10 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* save in case we need this from coldplug */
+	backend->priv->last_subpercentage = percentage;
+
 	pk_debug ("emit percentage-changed %i", percentage);
 	g_signal_emit (backend, signals [PK_TASK_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
@@ -458,6 +466,10 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* save in case we need this from coldplug */
+	backend->priv->last_subpercentage = percentage;
+
 	pk_debug ("emit sub-percentage-changed %i", percentage);
 	g_signal_emit (backend, signals [PK_TASK_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
@@ -507,9 +519,49 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* save in case we need this from coldplug */
+	g_free (backend->priv->last_package);
+	backend->priv->last_package = g_strdup (package);
+
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
 	g_signal_emit (backend, signals [PK_TASK_PACKAGE], 0, value, package, summary);
 
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_percentage:
+ **/
+gboolean
+pk_backend_get_percentage (PkBackend	*backend, guint *percentage)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	*percentage = backend->priv->last_percentage;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_sub_percentage:
+ **/
+gboolean
+pk_backend_get_sub_percentage (PkBackend *backend, guint *percentage)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	*percentage = backend->priv->last_subpercentage;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_package:
+ **/
+gboolean
+pk_backend_get_package (PkBackend *backend, gchar **package_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	*package_id = g_strdup (backend->priv->last_package);
 	return TRUE;
 }
 
@@ -1042,6 +1094,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
+	g_free (backend->priv->last_package);
 	g_object_unref (backend->priv->network);
 
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
@@ -1123,6 +1176,9 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->package_id = NULL;
+	backend->priv->last_percentage = 0;
+	backend->priv->last_subpercentage = 0;
+	backend->priv->last_package = NULL;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;

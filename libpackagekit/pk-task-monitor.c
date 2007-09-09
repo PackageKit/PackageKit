@@ -124,6 +124,102 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkStatusEnum *status)
 }
 
 /**
+ * pk_task_monitor_get_package:
+ **/
+gboolean
+pk_task_monitor_get_package (PkTaskMonitor *tmonitor, gchar **package)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetPackage", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetPackage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_monitor_get_percentage:
+ **/
+gboolean
+pk_task_monitor_get_percentage (PkTaskMonitor *tmonitor, guint *percentage)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (percentage != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetPercentage", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, percentage,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetPercentage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_monitor_get_sub_percentage:
+ **/
+gboolean
+pk_task_monitor_get_sub_percentage (PkTaskMonitor *tmonitor, guint *percentage)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (percentage != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetSubPercentage", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, percentage,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetSubPercentage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_monitor_get_role:
  **/
 gboolean

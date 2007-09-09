@@ -1351,6 +1351,69 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 }
 
 /**
+ * pk_engine_get_percentage:
+ **/
+gboolean
+pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
+{
+	PkEngineMap *map;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_backend_get_percentage (map->task, percentage);
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_sub_percentage:
+ **/
+gboolean
+pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
+{
+	PkEngineMap *map;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_backend_get_sub_percentage (map->task, percentage);
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_package:
+ **/
+gboolean
+pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **error)
+{
+	PkEngineMap *map;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	map = pk_get_map_from_job (engine, job);
+	if (map == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+			     "No job:%i", job);
+		return FALSE;
+	}
+	pk_backend_get_package (map->task, package);
+	return TRUE;
+}
+
+/**
  * pk_engine_cancel_job_try:
  **/
 gboolean

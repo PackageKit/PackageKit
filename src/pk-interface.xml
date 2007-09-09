@@ -124,9 +124,24 @@
     </method>
     <method name="GetJobRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/> 
+      <arg type="u" name="job" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
+    </method>
+    <method name="GetPercentage">
+      <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+      <arg type="u" name="percentage" direction="out"/>
+    </method>
+    <method name="GetSubPercentage">
+      <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+      <arg type="u" name="percentage" direction="out"/>
+    </method>
+    <method name="GetPackage">
+      <!-- throws NoSuchJob -->
+      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="package" direction="out"/>
     </method>
 
     <!-- Job list -->

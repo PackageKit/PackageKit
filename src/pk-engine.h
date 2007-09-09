@@ -153,6 +153,19 @@ gboolean	 pk_engine_get_filters			(PkEngine	*engine,
 							 GError		**error);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
+gboolean	 pk_engine_get_percentage		(PkEngine	*engine,
+							 guint		 job,
+							 guint		*percentage,
+							 GError		**error);
+gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
+							 guint		 job,
+							 guint		*percentage,
+							 GError		**error);
+gboolean	 pk_engine_get_package			(PkEngine	*engine,
+							 guint		 job,
+							 gchar		**package,
+							 GError		**error);
+
 G_END_DECLS
 
 #endif /* __PK_ENGINE_H */
