@@ -31,6 +31,7 @@
 #include <pk-debug.h>
 #include <pk-task-client.h>
 #include <pk-package-id.h>
+#include <pk-enum-list.h>
 
 /**
  * pk_console_package_cb:
@@ -138,6 +139,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	guint remove;
+	PkEnumList *elist;
+	gchar *text;
 
 	mode = g_ptr_array_index (array, 0);
 	if (array->len > 1) {
@@ -252,6 +255,20 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 		} else if (strcmp (value, "updates") == 0) {
 			pk_task_client_set_sync (tclient, TRUE);
 			pk_task_client_get_updates (tclient);
+			remove = 2;
+		} else if (strcmp (value, "actions") == 0) {
+			/* get backend actions */
+			text = pk_task_client_get_actions (tclient);
+
+			/* push into a PkEnumList */
+			elist = pk_enum_list_new ();
+			pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
+			pk_enum_list_from_string (elist, text);
+			pk_enum_list_print (elist);
+
+			/* don't leak */
+			g_free (text);
+			g_object_unref (elist);
 			remove = 2;
 		} else {
 			pk_console_usage ("invalid get type");

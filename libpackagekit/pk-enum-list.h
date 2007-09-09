@@ -58,11 +58,12 @@ gboolean	 pk_enum_list_set_type			(PkEnumList	*elist,
 							 PkEnumListType	 type);
 gboolean	 pk_enum_list_from_string		(PkEnumList	*elist,
 							 const gchar	*enums);
-gchar		*pk_enum_list_to_string			(PkEnumList	*alist);
-gboolean	 pk_enum_list_contains			(PkEnumList	*alist,
+gchar		*pk_enum_list_to_string			(PkEnumList	*elist);
+gboolean	 pk_enum_list_contains			(PkEnumList	*elist,
 							 guint		 value);
-gboolean	 pk_enum_list_append			(PkEnumList	*alist,
+gboolean	 pk_enum_list_append			(PkEnumList	*elist,
 							 guint		 value);
+gboolean	 pk_enum_list_print			(PkEnumList	*elist);
 gboolean	 pk_enum_list_append_multiple		(PkEnumList	*elist,
 							 guint		 value, ...);
 

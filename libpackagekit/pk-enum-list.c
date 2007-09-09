@@ -151,6 +151,32 @@ pk_enum_list_to_string (PkEnumList *elist)
 }
 
 /**
+ * pk_enum_list_print:
+ **/
+gboolean
+pk_enum_list_print (PkEnumList *elist)
+{
+	guint i;
+	guint value;
+	const gchar *text = NULL;
+
+	if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
+		g_print ("Printing actions:\n");
+	}
+	for (i=0; i<elist->priv->data->len; i++) {
+		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
+		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
+			text = pk_action_enum_to_text (value);
+		} else {
+			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
+		}
+		g_print ("%s\n", text);
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_enum_list_append:
  **/
 gboolean
