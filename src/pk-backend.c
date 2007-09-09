@@ -480,6 +480,7 @@ pk_backend_set_job_role (PkBackend *backend, PkRoleEnum role, const gchar *packa
 	pk_debug ("setting role to %s (string is '%s')", pk_role_enum_to_text (role), package_id);
 	backend->priv->role = role;
 	backend->priv->package_id = g_strdup (package_id);
+	backend->priv->status = PK_STATUS_ENUM_SETUP;
 	return TRUE;
 }
 
