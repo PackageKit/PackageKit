@@ -867,15 +867,19 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 /**
  * pk_task_client_get_actions:
  **/
-gchar *
+PkEnumList *
 pk_task_client_get_actions (PkTaskClient *tclient)
 {
 	gboolean ret;
 	GError *error;
 	gchar *actions;
+	PkEnumList *elist;
 
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetActions", &error,
@@ -886,23 +890,31 @@ pk_task_client_get_actions (PkTaskClient *tclient)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetActions failed :%s", error->message);
 		g_error_free (error);
-		return NULL;
+		return elist;
 	}
-	return actions;
+
+	/* convert to enumerated types */
+	pk_enum_list_from_string (elist, actions);
+	g_free (actions);
+	return elist;
 }
 
 /**
  * pk_task_client_get_groups:
  **/
-gchar *
+PkEnumList *
 pk_task_client_get_groups (PkTaskClient *tclient)
 {
 	gboolean ret;
 	GError *error;
 	gchar *groups;
+	PkEnumList *elist;
 
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetGroups", &error,
@@ -913,24 +925,31 @@ pk_task_client_get_groups (PkTaskClient *tclient)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetGroups failed :%s", error->message);
 		g_error_free (error);
-		return NULL;
+		return elist;
 	}
-	return groups;
+
+	/* convert to enumerated types */
+	pk_enum_list_from_string (elist, groups);
+	g_free (groups);
+	return elist;
 }
 
 /**
  * pk_task_client_get_filters:
- * TODO: convert to enumerated types here...
  **/
-gchar *
+PkEnumList *
 pk_task_client_get_filters (PkTaskClient *tclient)
 {
 	gboolean ret;
 	GError *error;
 	gchar *filters;
+	PkEnumList *elist;
 
 	g_return_val_if_fail (tclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetFilters", &error,
@@ -941,9 +960,13 @@ pk_task_client_get_filters (PkTaskClient *tclient)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetFilters failed :%s", error->message);
 		g_error_free (error);
-		return NULL;
+		return elist;
 	}
-	return filters;
+
+	/* convert to enumerated types */
+	pk_enum_list_from_string (elist, filters);
+	g_free (filters);
+	return elist;
 }
 
 /**

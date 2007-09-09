@@ -140,7 +140,6 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 	const gchar *details = NULL;
 	guint remove;
 	PkEnumList *elist;
-	gchar *text;
 
 	mode = g_ptr_array_index (array, 0);
 	if (array->len > 1) {
@@ -257,45 +256,18 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_task_client_get_updates (tclient);
 			remove = 2;
 		} else if (strcmp (value, "actions") == 0) {
-			/* get backend actions */
-			text = pk_task_client_get_actions (tclient);
-
-			/* push into a PkEnumList */
-			elist = pk_enum_list_new ();
-			pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
-			pk_enum_list_from_string (elist, text);
+			elist = pk_task_client_get_actions (tclient);
 			pk_enum_list_print (elist);
-
-			/* don't leak */
-			g_free (text);
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "filters") == 0) {
-			/* get backend filters */
-			text = pk_task_client_get_filters (tclient);
-
-			/* push into a PkEnumList */
-			elist = pk_enum_list_new ();
-			pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
-			pk_enum_list_from_string (elist, text);
+			elist = pk_task_client_get_filters (tclient);
 			pk_enum_list_print (elist);
-
-			/* don't leak */
-			g_free (text);
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "groups") == 0) {
-			/* get backend groups */
-			text = pk_task_client_get_groups (tclient);
-
-			/* push into a PkEnumList */
-			elist = pk_enum_list_new ();
-			pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
-			pk_enum_list_from_string (elist, text);
+			elist = pk_task_client_get_groups (tclient);
 			pk_enum_list_print (elist);
-
-			/* don't leak */
-			g_free (text);
 			g_object_unref (elist);
 			remove = 2;
 		} else {
