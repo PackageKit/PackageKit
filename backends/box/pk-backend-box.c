@@ -24,6 +24,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <unistd.h>
+#include <pk-debug.h>
 
 #include <sqlite3.h>
 #include <libbox/libbox-db.h>
@@ -119,7 +120,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
-	gint devel_filter = 0;
+	gint search_filter = 0;
 	gboolean installed;
 	gboolean available;
 	gboolean devel;
@@ -134,11 +135,18 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
 	if (devel == TRUE) {
-		devel_filter = devel_filter | PKG_DEVEL;
+		search_filter = search_filter | PKG_DEVEL;
 	}
 	if (nondevel == TRUE) {
-		devel_filter = devel_filter | PKG_NON_DEVEL;
+		search_filter = search_filter | PKG_NON_DEVEL;
 	}
+	if (gui == TRUE) {
+		search_filter = search_filter | PKG_GUI;
+	}
+	if (text == TRUE) {
+		search_filter = search_filter | PKG_TEXT;
+	}
+	pk_debug("filter: %d", search_filter);
 
 	pk_backend_no_percentage_updates (backend);
 
@@ -156,11 +164,11 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 		} else	{
 			if (installed == TRUE && available == TRUE) {
-				list = box_db_repos_packages_search_all(db, (gchar *)search, devel_filter);
+				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
 			} else if (installed == TRUE) {
-				list = box_db_repos_packages_search_installed(db, (gchar *)search, devel_filter);
+				list = box_db_repos_packages_search_installed(db, (gchar *)search, search_filter);
 			} else if (available == TRUE) {
-				list = box_db_repos_packages_search_available(db, (gchar *)search, devel_filter);
+				list = box_db_repos_packages_search_available(db, (gchar *)search, search_filter);
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
