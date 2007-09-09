@@ -133,6 +133,7 @@ pk_conf_init (PkConf *conf)
 	conf->priv->keyfile = g_key_file_new ();
 	ret = g_key_file_load_from_file (conf->priv->keyfile, path,
 					 G_KEY_FILE_KEEP_COMMENTS, NULL);
+	g_free (path);
 	if (ret == FALSE) {
 		pk_error ("failed to parse config file!");
 	}
