@@ -56,7 +56,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 				      PK_GROUP_ENUM_ACCESSIBILITY,
 				      PK_GROUP_ENUM_GAMES,
 				      PK_GROUP_ENUM_SYSTEM,
-				      0);
+				      -1);
 }
 
 /**
@@ -70,7 +70,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      PK_FILTER_ENUM_GUI,
 				      PK_FILTER_ENUM_INSTALLED,
 				      PK_FILTER_ENUM_DEVELOPMENT,
-				      0);
+				      -1);
 }
 
 /**

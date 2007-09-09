@@ -67,7 +67,7 @@ gboolean	 pk_enum_list_append			(PkEnumList	*elist,
 							 guint		 value);
 gboolean	 pk_enum_list_print			(PkEnumList	*elist);
 gboolean	 pk_enum_list_append_multiple		(PkEnumList	*elist,
-							 guint		 value, ...);
+							 gint		 value, ...);
 
 G_END_DECLS
 

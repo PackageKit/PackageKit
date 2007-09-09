@@ -22,8 +22,9 @@ to expose in the UI.
 *** Valgrind everything ***
 We leak memory like there is no tommorrow.
 
-*** Add GetPercentage and GetSubPercentage for coldplugging ***
-We need this for the PkWatch code.
+*** Add methods for coldplugging ***
+We need GetLastPackage, GetLastPercentage and GetLastSubPercentage for the PkWatch code.
+NOTE: RELEASE BLOCKER
 
 *** task_client has to return GError ***
 Client programs using libpackagekit should know the error, rather than just

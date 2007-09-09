@@ -64,20 +64,20 @@ pk_enum_list_set_type (PkEnumList *elist, PkEnumListType type)
  * pk_enum_list_append_multiple:
  **/
 gboolean
-pk_enum_list_append_multiple (PkEnumList *elist, guint value, ...)
+pk_enum_list_append_multiple (PkEnumList *elist, gint value, ...)
 {
 	va_list args;
 	guint i;
 	guint value_temp;
 
 	/* create a new list. A list must have at least one entry */
-	g_ptr_array_add (elist->priv->data, GUINT_TO_POINTER(value));
+	g_ptr_array_add (elist->priv->data, GINT_TO_POINTER(value));
 
 	/* process the valist */
 	va_start (args, value);
 	for (i=0;; i++) {
-		value_temp = va_arg (args, guint);
-		if (value_temp == 0) break;
+		value_temp = va_arg (args, gint);
+		if (value_temp == -1) break;
 		g_ptr_array_add (elist->priv->data, GUINT_TO_POINTER(value_temp));
 	}
 	va_end (args);
@@ -335,7 +335,7 @@ libst_enum_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add multiple");
-	ret = pk_enum_list_append_multiple (elist, PK_ACTION_ENUM_SEARCH_DETAILS, PK_ACTION_ENUM_SEARCH_GROUP, 0);
+	ret = pk_enum_list_append_multiple (elist, PK_ACTION_ENUM_SEARCH_DETAILS, PK_ACTION_ENUM_SEARCH_GROUP, -1);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
