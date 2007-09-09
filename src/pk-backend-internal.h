@@ -23,7 +23,7 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
-#include <pk-action-list.h>
+#include <pk-enum-list.h>
 #include "pk-backend.h"
 
 G_BEGIN_DECLS
@@ -55,7 +55,7 @@ typedef PkBackend PkTask;
 /* general */
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-PkActionList	*pk_backend_get_actions			(PkBackend	*backend);
+PkEnumList	*pk_backend_get_actions			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);

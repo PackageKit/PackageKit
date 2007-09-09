@@ -305,9 +305,9 @@ pk_action_enum_to_text (PkTaskAction action)
 #include <libselftest.h>
 
 void
-libst_task_utils (LibSelfTest *test)
+libst_enum (LibSelfTest *test)
 {
-	if (libst_start (test, "PkTaskUtils", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
 	}
 

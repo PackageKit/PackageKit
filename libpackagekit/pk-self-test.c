@@ -24,8 +24,9 @@
 #include <libselftest.h>
 
 /* prototypes */
-void libst_task_utils (LibSelfTest *test);
 void libst_package_id (LibSelfTest *test);
+void libst_enum (LibSelfTest *test);
+void libst_enum_list (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -36,8 +37,9 @@ main (int argc, char **argv)
 	libst_init (&test);
 
 	/* tests go here */
-	libst_task_utils (&test);
 	libst_package_id (&test);
+	libst_enum (&test);
+	libst_enum_list (&test);
 
 	return (libst_finish (&test));
 }

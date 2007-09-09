@@ -1388,7 +1388,7 @@ gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
 	PkTask *task;
-	PkActionList *alist;
+	PkEnumList *elist;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1396,9 +1396,10 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	pk_backend_load (task, engine->priv->backend);
-	alist = pk_backend_get_actions (task);
+	elist = pk_backend_get_actions (task);
+	*actions = pk_enum_list_to_string (elist);
 	g_object_unref (task);
-	*actions = pk_action_list_to_string (alist);
+	g_object_unref (elist);
 
 	return TRUE;
 }

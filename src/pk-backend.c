@@ -913,55 +913,58 @@ pk_backend_update_system (PkBackend *backend)
 
 /**
  * pk_backend_get_actions:
+ *
+ * You need to g_object_unref the returned object
  */
-PkActionList *
+PkEnumList *
 pk_backend_get_actions (PkBackend *backend)
 {
-	PkActionList *alist;
-	alist = pk_action_list_new (PK_ACTION_ENUM_UNKNOWN);
+	PkEnumList *elist;
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
 	if (backend->desc->cancel_job_try != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_CANCEL_JOB);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_CANCEL_JOB);
 	}
 	if (backend->desc->get_depends != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_GET_DEPENDS);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_GET_DEPENDS);
 	}
 	if (backend->desc->get_description != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_GET_DESCRIPTION);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_GET_DESCRIPTION);
 	}
 	if (backend->desc->get_requires != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_GET_REQUIRES);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_GET_REQUIRES);
 	}
 	if (backend->desc->get_updates != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_GET_UPDATES);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_GET_UPDATES);
 	}
 	if (backend->desc->install_package != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_INSTALL_PACKAGE);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_INSTALL_PACKAGE);
 	}
 	if (backend->desc->refresh_cache != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_REFRESH_CACHE);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_REFRESH_CACHE);
 	}
 	if (backend->desc->remove_package != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_REMOVE_PACKAGE);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_REMOVE_PACKAGE);
 	}
 	if (backend->desc->search_details != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_SEARCH_DETAILS);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_SEARCH_DETAILS);
 	}
 	if (backend->desc->search_file != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_SEARCH_FILE);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_SEARCH_FILE);
 	}
 	if (backend->desc->search_group != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_SEARCH_GROUP);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_SEARCH_GROUP);
 	}
 	if (backend->desc->search_name != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_SEARCH_NAME);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_SEARCH_NAME);
 	}
 	if (backend->desc->update_package != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_UPDATE_PACKAGE);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_UPDATE_PACKAGE);
 	}
 	if (backend->desc->update_system != NULL) {
-		pk_action_list_append (alist, PK_ACTION_ENUM_UPDATE_SYSTEM);
+		pk_enum_list_append (elist, PK_ACTION_ENUM_UPDATE_SYSTEM);
 	}
-	return alist;
+	return elist;
 }
 
 /**
