@@ -93,7 +93,7 @@ pk_task_monitor_get_job (PkTaskMonitor *tmonitor)
  * pk_task_monitor_get_status:
  **/
 gboolean
-pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
+pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkStatusEnum *status)
 {
 	gboolean ret;
 	gchar *status_text;
@@ -127,7 +127,7 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkTaskStatus *status)
  * pk_task_monitor_get_role:
  **/
 gboolean
-pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkTaskRole *role, gchar **package_id)
+pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkRoleEnum *role, gchar **package_id)
 {
 	gboolean ret;
 	GError *error;
@@ -169,7 +169,7 @@ pk_task_monitor_finished_cb (DBusGProxy    *proxy,
 			     guint          runtime,
 			     PkTaskMonitor *tmonitor)
 {
-	PkTaskExit exit;
+	PkExitEnum exit;
 
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
@@ -243,7 +243,7 @@ pk_task_monitor_job_status_changed_cb (DBusGProxy   *proxy,
 				       const gchar  *status_text,
 				       PkTaskMonitor *tmonitor)
 {
-	PkTaskStatus status;
+	PkStatusEnum status;
 
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
@@ -288,7 +288,7 @@ pk_task_monitor_description_cb (DBusGProxy    *proxy,
 				const gchar   *url,
 				PkTaskMonitor *tmonitor)
 {
-	PkTaskGroup group;
+	PkGroupEnum group;
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
@@ -309,7 +309,7 @@ pk_task_monitor_error_code_cb (DBusGProxy   *proxy,
 			   const gchar  *details,
 			   PkTaskMonitor *tmonitor)
 {
-	PkTaskErrorCode code;
+	PkErrorCodeEnum code;
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
@@ -330,7 +330,7 @@ pk_task_monitor_require_restart_cb (DBusGProxy   *proxy,
 			   const gchar  *details,
 			   PkTaskMonitor *tmonitor)
 {
-	PkTaskRestart restart;
+	PkRestartEnum restart;
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 

@@ -53,10 +53,10 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	gchar			*name;
-	PkTaskStatus		 role; /* this never changes for the lifetime of a job */
-	PkTaskStatus		 status; /* this changes */
+	PkStatusEnum		 role; /* this never changes for the lifetime of a job */
+	PkStatusEnum		 status; /* this changes */
 	gchar			*package_id; /* never changes, this is linked to role */
-	PkTaskExit		 exit;
+	PkExitEnum		 exit;
 	GTimer			*timer;
 	PkSpawn			*spawn;
 	gboolean		 is_killable;
@@ -175,7 +175,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 	guint value = 0;
 	gchar *command;
 	gboolean ret = TRUE;
-	PkTaskGroup group;
+	PkGroupEnum group;
 
 	/* check if output line */
 	if (line == NULL || strstr (line, "\t") == NULL)
@@ -230,9 +230,9 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 	guint size;
 	guint percentage;
 	gchar *command;
-	PkTaskErrorCode error_enum;
-	PkTaskStatus status_enum;
-	PkTaskRestart restart_enum;
+	PkErrorCodeEnum error_enum;
+	PkStatusEnum status_enum;
+	PkRestartEnum restart_enum;
 	gboolean ret = TRUE;
 
 	/* check if output line */
@@ -322,7 +322,7 @@ out:
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
 {
-	PkTaskExit exit;
+	PkExitEnum exit;
 	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
 	g_object_unref (spawn);
 
@@ -467,7 +467,7 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
  * pk_backend_set_job_role:
  **/
 gboolean
-pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *package_id)
+pk_backend_set_job_role (PkBackend *backend, PkRoleEnum role, const gchar *package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -487,7 +487,7 @@ pk_backend_set_job_role (PkBackend *backend, PkTaskRole role, const gchar *packa
  * pk_backend_change_job_status:
  **/
 gboolean
-pk_backend_change_job_status (PkBackend *backend, PkTaskStatus status)
+pk_backend_change_job_status (PkBackend *backend, PkStatusEnum status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -516,7 +516,7 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
  * pk_backend_require_restart:
  **/
 gboolean
-pk_backend_require_restart (PkBackend *backend, PkTaskRestart restart, const gchar *details)
+pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -531,7 +531,7 @@ pk_backend_require_restart (PkBackend *backend, PkTaskRestart restart, const gch
  * pk_backend_description:
  **/
 gboolean
-pk_backend_description (PkBackend *backend, const gchar *package, PkTaskGroup group,
+pk_backend_description (PkBackend *backend, const gchar *package, PkGroupEnum group,
 		     const gchar *description, const gchar *url)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
@@ -547,7 +547,7 @@ pk_backend_description (PkBackend *backend, const gchar *package, PkTaskGroup gr
  * pk_backend_error_code:
  **/
 gboolean
-pk_backend_error_code (PkBackend *backend, PkTaskErrorCode code, const gchar *format, ...)
+pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *format, ...)
 {
 	va_list args;
 	gchar buffer[1025];
@@ -569,7 +569,7 @@ pk_backend_error_code (PkBackend *backend, PkTaskErrorCode code, const gchar *fo
  * pk_backend_get_job_status:
  **/
 gboolean
-pk_backend_get_job_status (PkBackend *backend, PkTaskStatus *status)
+pk_backend_get_job_status (PkBackend *backend, PkStatusEnum *status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -587,7 +587,7 @@ pk_backend_get_job_status (PkBackend *backend, PkTaskStatus *status)
  * pk_backend_get_job_role:
  **/
 gboolean
-pk_backend_get_job_role (PkBackend *backend, PkTaskRole *role, const gchar **package_id)
+pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -618,7 +618,7 @@ pk_backend_finished_idle (gpointer data)
  * pk_backend_finished:
  **/
 gboolean
-pk_backend_finished (PkBackend *backend, PkTaskExit exit)
+pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);

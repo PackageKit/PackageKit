@@ -329,7 +329,7 @@ pk_console_tidy_up_sync (PkTaskClient *tclient)
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, guint runtime, gpointer data)
+pk_console_finished_cb (PkTaskClient *tclient, PkStatusEnum status, guint runtime, gpointer data)
 {
 	g_print ("Runtime was %i seconds\n", runtime);
 }
@@ -338,7 +338,7 @@ pk_console_finished_cb (PkTaskClient *tclient, PkTaskStatus status, guint runtim
  * pk_console_error_code_cb:
  **/
 static void
-pk_console_error_code_cb (PkTaskClient *tclient, PkTaskErrorCode error_code, const gchar *details, gpointer data)
+pk_console_error_code_cb (PkTaskClient *tclient, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
 }

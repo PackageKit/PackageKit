@@ -36,7 +36,7 @@ typedef enum {
 	PK_ROLE_ENUM_PACKAGE_INSTALL,
 	PK_ROLE_ENUM_PACKAGE_UPDATE,
 	PK_ROLE_ENUM_UNKNOWN
-} PkTaskRole;
+} PkRoleEnum;
 
 /* what we are actually doing */
 typedef enum {
@@ -48,28 +48,28 @@ typedef enum {
 	PK_STATUS_ENUM_INSTALL,
 	PK_STATUS_ENUM_UPDATE,
 	PK_STATUS_ENUM_UNKNOWN
-} PkTaskStatus;
+} PkStatusEnum;
 
 typedef enum {
 	PK_EXIT_ENUM_SUCCESS,
 	PK_EXIT_ENUM_FAILED,
 	PK_EXIT_ENUM_CANCELED,
 	PK_EXIT_ENUM_UNKNOWN
-} PkTaskExit;
+} PkExitEnum;
 
 typedef enum {
 	PK_FILTER_ENUM_DEVELOPMENT,
 	PK_FILTER_ENUM_INSTALLED,
 	PK_FILTER_ENUM_GUI,
 	PK_FILTER_ENUM_UNKNOWN
-} PkTaskFilter;
+} PkFilterEnum;
 
 typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
 	PK_RESTART_ENUM_SYSTEM
-} PkTaskRestart;
+} PkRestartEnum;
 
 typedef enum {
 	PK_ERROR_ENUM_OOM,
@@ -86,7 +86,7 @@ typedef enum {
 	PK_ERROR_ENUM_CREATE_THREAD_FAILED,
 	PK_ERROR_ENUM_TRANSACTION_ERROR,
 	PK_ERROR_ENUM_UNKNOWN
-} PkTaskErrorCode;
+} PkErrorCodeEnum;
 
 typedef enum {
 	PK_GROUP_ENUM_ACCESSIBILITY,
@@ -101,7 +101,7 @@ typedef enum {
 	PK_GROUP_ENUM_MULTIMEDIA,
 	PK_GROUP_ENUM_SYSTEM,
 	PK_GROUP_ENUM_UNKNOWN
-} PkTaskGroup;
+} PkGroupEnum;
 
 typedef enum {
 	PK_ACTION_ENUM_INSTALL = 1,
@@ -122,31 +122,31 @@ typedef enum {
 	PK_ACTION_ENUM_REMOVE_PACKAGE,
 	PK_ACTION_ENUM_UPDATE_PACKAGE,
 	PK_ACTION_ENUM_UNKNOWN
-} PkTaskAction;
+} PkActionEnum;
 
-PkTaskExit	 pk_exit_enum_from_text			(const gchar	*exit);
-const gchar	*pk_exit_enum_to_text			(PkTaskExit	 exit);
+PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
+const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
 
-PkTaskStatus	 pk_status_enum_from_text		(const gchar	*status);
-const gchar	*pk_status_enum_to_text			(PkTaskStatus	 status);
+PkStatusEnum	 pk_status_enum_from_text		(const gchar	*status);
+const gchar	*pk_status_enum_to_text			(PkStatusEnum	 status);
 
-PkTaskRole	 pk_role_enum_from_text			(const gchar	*role);
-const gchar	*pk_role_enum_to_text			(PkTaskRole	 role);
+PkRoleEnum	 pk_role_enum_from_text			(const gchar	*role);
+const gchar	*pk_role_enum_to_text			(PkRoleEnum	 role);
 
-PkTaskErrorCode	 pk_error_enum_from_text		(const gchar	*code);
-const gchar	*pk_error_enum_to_text			(PkTaskErrorCode code);
+PkErrorCodeEnum	 pk_error_enum_from_text		(const gchar	*code);
+const gchar	*pk_error_enum_to_text			(PkErrorCodeEnum code);
 
-PkTaskRestart	 pk_restart_enum_from_text		(const gchar	*restart);
-const gchar	*pk_restart_enum_to_text		(PkTaskRestart	 restart);
+PkRestartEnum	 pk_restart_enum_from_text		(const gchar	*restart);
+const gchar	*pk_restart_enum_to_text		(PkRestartEnum	 restart);
 
-PkTaskGroup	 pk_group_enum_from_text		(const gchar	*group);
-const gchar	*pk_group_enum_to_text			(PkTaskGroup	 group);
+PkGroupEnum	 pk_group_enum_from_text		(const gchar	*group);
+const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 
-PkTaskFilter	 pk_filter_enum_from_text		(const gchar	*filter);
-const gchar	*pk_filter_enum_to_text			(PkTaskFilter	 filter);
+PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
+const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);
 
-PkTaskAction	 pk_action_enum_from_text		(const gchar	*action);
-const gchar	*pk_action_enum_to_text			(PkTaskAction	 action);
+PkActionEnum	 pk_action_enum_from_text		(const gchar	*action);
+const gchar	*pk_action_enum_to_text			(PkActionEnum	 action);
 
 G_END_DECLS
 

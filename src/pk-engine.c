@@ -247,7 +247,7 @@ pk_engine_job_list_changed (PkEngine *engine)
  * pk_engine_job_status_changed_cb:
  **/
 static void
-pk_engine_job_status_changed_cb (PkTask *task, PkTaskStatus status, PkEngine *engine)
+pk_engine_job_status_changed_cb (PkTask *task, PkStatusEnum status, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *status_text;
@@ -355,7 +355,7 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const 
  * pk_engine_error_code_cb:
  **/
 static void
-pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *details, PkEngine *engine)
+pk_engine_error_code_cb (PkTask *task, PkErrorCodeEnum code, const gchar *details, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *code_text;
@@ -378,7 +378,7 @@ pk_engine_error_code_cb (PkTask *task, PkTaskErrorCode code, const gchar *detail
  * pk_engine_require_restart_cb:
  **/
 static void
-pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *details, PkEngine *engine)
+pk_engine_require_restart_cb (PkTask *task, PkRestartEnum restart, const gchar *details, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *restart_text;
@@ -401,7 +401,7 @@ pk_engine_require_restart_cb (PkTask *task, PkTaskRestart restart, const gchar *
  * pk_engine_description_cb:
  **/
 static void
-pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup group,
+pk_engine_description_cb (PkTask *task, const gchar *package_id, PkGroupEnum group,
 			  const gchar *detail, const gchar *url, PkEngine *engine)
 {
 	PkEngineMap *map;
@@ -425,7 +425,7 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, PkTaskGroup gro
  * pk_engine_finished_cb:
  **/
 static void
-pk_engine_finished_cb (PkTask *task, PkTaskExit exit, PkEngine *engine)
+pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 {
 	PkEngineMap *map;
 	const gchar *exit_text;
@@ -1080,7 +1080,7 @@ pk_engine_update_system (PkEngine *engine,
 {
 	guint i;
 	guint length;
-	PkTaskRole role;
+	PkRoleEnum role;
 	gboolean ret;
 	GError *error;
 	PkTask *task;
@@ -1307,7 +1307,7 @@ gboolean
 pk_engine_get_job_status (PkEngine *engine, guint job,
 			  const gchar **status, GError **error)
 {
-	PkTaskStatus status_enum;
+	PkStatusEnum status_enum;
 	PkEngineMap *map;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1333,7 +1333,7 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 			const gchar **role, const gchar **package_id, GError **error)
 {
 	PkEngineMap *map;
-	PkTaskRole role_enum;
+	PkRoleEnum role_enum;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);

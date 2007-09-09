@@ -46,7 +46,7 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
  * pk_monitor_error_code_cb:
  **/
 static void
-pk_monitor_error_code_cb (PkTaskList *tlist, PkTaskErrorCode error_code, const gchar *details, gpointer data)
+pk_monitor_error_code_cb (PkTaskList *tlist, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
 }

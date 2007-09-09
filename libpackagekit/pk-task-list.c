@@ -116,7 +116,7 @@ pk_task_list_find_existing_job (PkTaskList *tlist, guint job)
  * pk_task_list_job_status_changed_cb:
  **/
 static void
-pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkTaskStatus status, PkTaskList *tlist)
+pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status, PkTaskList *tlist)
 {
 	guint job;
 	PkTaskListItem *item;
@@ -139,7 +139,7 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkTaskStatus status
  * pk_task_list_job_finished_cb:
  **/
 static void
-pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, guint runtime, PkTaskList *tlist)
+pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint runtime, PkTaskList *tlist)
 {
 	guint job;
 	PkTaskListItem *item;
@@ -161,7 +161,7 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkTaskExit exit, guint ru
  * pk_task_list_error_code_cb:
  **/
 static void
-pk_task_list_error_code_cb (PkTaskMonitor *tmonitor, PkTaskErrorCode error_code, const gchar *details, PkTaskList *tlist)
+pk_task_list_error_code_cb (PkTaskMonitor *tmonitor, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));

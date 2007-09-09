@@ -56,11 +56,11 @@ struct PkTaskClientPrivate
 	gboolean		 use_buffer;
 	guint			 job;
 	GMainLoop		*loop;
-	PkTaskStatus		 last_status;
+	PkStatusEnum		 last_status;
 	PkTaskMonitor		*tmonitor;
 	PkConnection		*pconnection;
 	PkPolkitClient		*polkit;
-	PkTaskRestart		 require_restart;
+	PkRestartEnum		 require_restart;
 	gboolean		 is_finished;
 	GPtrArray		*package_items;
 };
@@ -109,7 +109,7 @@ pk_task_client_get_use_buffer (PkTaskClient *tclient)
 /**
  * pk_task_client_get_use_buffer:
  **/
-PkTaskRestart
+PkRestartEnum
 pk_task_client_get_require_restart (PkTaskClient *tclient)
 {
 	g_return_val_if_fail (tclient != NULL, FALSE);
@@ -974,7 +974,7 @@ pk_task_client_get_filters (PkTaskClient *tclient)
  */
 static void
 pk_task_client_finished_cb (PkTaskMonitor *tmonitor,
-			    PkTaskExit     exit,
+			    PkExitEnum     exit,
 			    guint          runtime,
 			    PkTaskClient  *tclient)
 {
@@ -1040,7 +1040,7 @@ pk_task_client_no_percentage_updates_cb (PkTaskMonitor *tmonitor,
  */
 static void
 pk_task_client_job_status_changed_cb (PkTaskMonitor *tmonitor,
-				      PkTaskStatus   status,
+				      PkStatusEnum   status,
 				      PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
@@ -1086,7 +1086,7 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 static void
 pk_task_client_description_cb (PkTaskMonitor *tmonitor,
 			   const gchar   *package_id,
-			   PkTaskGroup    group,
+			   PkGroupEnum    group,
 			   const gchar   *detail,
 			   const gchar   *url,
 			   PkTaskClient  *tclient)
@@ -1103,7 +1103,7 @@ pk_task_client_description_cb (PkTaskMonitor *tmonitor,
  */
 static void
 pk_task_client_error_code_cb (PkTaskMonitor  *tmonitor,
-			      PkTaskErrorCode code,
+			      PkErrorCodeEnum code,
 			      const gchar    *details,
 			      PkTaskClient   *tclient)
 {
@@ -1119,7 +1119,7 @@ pk_task_client_error_code_cb (PkTaskMonitor  *tmonitor,
  */
 static void
 pk_task_client_require_restart_cb (PkTaskMonitor  *tmonitor,
-				   PkTaskRestart   restart,
+				   PkRestartEnum   restart,
 				   const gchar    *details,
 				   PkTaskClient   *tclient)
 {

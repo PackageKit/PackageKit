@@ -38,20 +38,20 @@ gboolean	 pk_backend_change_percentage		(PkBackend	*backend,
 gboolean	 pk_backend_change_sub_percentage	(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_change_job_status		(PkBackend	*backend,
-							 PkTaskStatus	 status);
+							 PkStatusEnum	 status);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_finished			(PkBackend	*backend,
-							 PkTaskExit	 exit);
+							 PkExitEnum	 exit);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 guint		 value,
 							 const gchar	*package_id,
 							 const gchar	*summary);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
-							 PkTaskRestart	 restart,
+							 PkRestartEnum	 restart,
 							 const gchar	*details);
 gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*package,
-							 PkTaskGroup	 group,
+							 PkGroupEnum	 group,
 							 const gchar	*description,
 							 const gchar	*url);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,

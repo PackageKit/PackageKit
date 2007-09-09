@@ -40,8 +40,8 @@ typedef struct PkTaskListPrivate PkTaskListPrivate;
 typedef struct
 {
 	guint			 job;
-	PkTaskStatus		 status;
-	PkTaskRole		 role;
+	PkStatusEnum		 status;
+	PkRoleEnum		 role;
 	gchar			*package_id;
 	PkTaskMonitor		*monitor;
 	gboolean		 valid;

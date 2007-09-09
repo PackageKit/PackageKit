@@ -68,7 +68,7 @@ gboolean	 pk_task_client_set_use_buffer		(PkTaskClient	*tclient,
 gboolean	 pk_task_client_get_use_buffer		(PkTaskClient	*tclient);
 GPtrArray	*pk_task_client_get_package_buffer	(PkTaskClient	*tclient);
 
-PkTaskRestart	 pk_task_client_get_require_restart	(PkTaskClient	*tclient);
+PkRestartEnum	 pk_task_client_get_require_restart	(PkTaskClient	*tclient);
 gboolean	 pk_task_client_get_updates		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_update_system		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_search_name		(PkTaskClient	*tclient,
