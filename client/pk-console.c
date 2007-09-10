@@ -34,7 +34,7 @@
 #include <pk-enum-list.h>
 
 /**
- * pk_console_package_cb:
+ * pk_console_make_space:
  **/
 static gchar *
 pk_console_make_space (const gchar *data, guint length, guint *extra)
@@ -93,6 +93,24 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 	/* free all the data */
 	pk_package_id_free (ident);
 	pk_package_id_free (spacing);
+}
+
+/**
+ * pk_console_update_detail_cb:
+ **/
+static void
+pk_console_update_detail_cb (PkTaskClient *tclient, const gchar *package_id,
+			     const gchar *updates, const gchar *obsoletes,
+			     const gchar *url, const gchar *restart,
+			     const gchar *update_text, gpointer data)
+{
+	g_print ("update-detail\n");
+	g_print ("  package:    '%s'\n", package_id);
+	g_print ("  updates:    '%s'\n", updates);
+	g_print ("  obsoletes:  '%s'\n", obsoletes);
+	g_print ("  url:        '%s'\n", url);
+	g_print ("  restart:    '%s'\n", restart);
+	g_print ("  update_text:'%s'\n", update_text);
 }
 
 /**
@@ -395,6 +413,8 @@ main (int argc, char *argv[])
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
+	g_signal_connect (tclient, "update-detail",
+			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (tclient, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 	g_signal_connect (tclient, "finished",

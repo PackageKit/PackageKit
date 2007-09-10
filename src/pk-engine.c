@@ -274,6 +274,32 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const 
 }
 
 /**
+ * pk_engine_update_detail_cb:
+ **/
+static void
+pk_engine_update_detail_cb (PkTask *task, const gchar *package_id,
+			    const gchar *updates, const gchar *obsoletes,
+			    const gchar *url, const gchar *restart,
+			    const gchar *update_text, PkEngine *engine)
+{
+	PkJobListItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	if (item == NULL) {
+		pk_warning ("could not find task");
+		return;
+	}
+	pk_debug ("emitting package job:%i value=%s, %s, %s, %s, %s, %s", item->job,
+		  package_id, updates, obsoletes, url, restart, update_text);
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, item->job,
+		       package_id, updates, obsoletes, url, restart, update_text);
+	pk_engine_reset_timer (engine);
+}
+
+/**
  * pk_engine_error_code_cb:
  **/
 static void
@@ -429,6 +455,8 @@ pk_engine_new_task (PkEngine *engine)
 			  G_CALLBACK (pk_engine_no_percentage_updates_cb), engine);
 	g_signal_connect (task, "package",
 			  G_CALLBACK (pk_engine_package_cb), engine);
+	g_signal_connect (task, "update-detail",
+			  G_CALLBACK (pk_engine_update_detail_cb), engine);
 	g_signal_connect (task, "error-code",
 			  G_CALLBACK (pk_engine_error_code_cb), engine);
 	g_signal_connect (task, "require-restart",
@@ -914,7 +942,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
  **/
 gboolean
 pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
-		       guint *job, GError **error)
+		             guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;

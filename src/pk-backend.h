@@ -103,8 +103,7 @@ struct _PkBackendDesc {
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
 			   get_groups, get_filters, \
 			   cancel_job_try, get_depends, get_description, \
-			   get_update_detail, \
-			   get_requires, get_updates, install_package, \
+			   get_requires, get_update_detail, get_updates, install_package, \
 			   refresh_cache, remove_package, search_details, \
 			   search_file, search_group, search_name, \
 			   update_package, update_system) \
