@@ -184,15 +184,15 @@ AC_MSG_RESULT(yes)
 dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
-AC_ARG_WITH([backend],
+AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use dummy,apt,yum,conary (dummy)]))
+			   [Default backend to use alpm,apt,box,conary,dummy,yum (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
     if test -f /usr/bin/yum ; then
         with_default_backend=yum
-#    elif test -f /usr/lib/libalpm.so; then
-#	with_default_backend=alpm
+    elif test -f /usr/lib/libalpm.so; then
+	with_default_backend=alpm
     elif test -f /usr/bin/apt-get ; then
         with_default_backend=apt
     elif test -f /usr/bin/conary ; then
@@ -251,7 +251,7 @@ AC_DEFUN([APT_BACKEND],
  	fi
 ])
 
-if test x$with_backend = xapt; then
+if test x$with_default_backend = xapt; then
    
    AC_ARG_WITH(libapt-pkg-lib,
      AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
@@ -317,17 +317,17 @@ if test x$with_backend = xapt; then
     AC_SUBST(APT_PKG_TYPE)
 fi
 
-if test x$with_backend = xbox; then
+if test x$with_default_backend = xbox; then
 	PKG_CHECK_MODULES(BOX, libbox)
 	AC_SUBST(BOX_CFLAGS)
 	AC_SUBST(BOX_LIBS)
 fi
 
-if test x$with_backend = xalpm; then
-    with_backend=dummy
+if test x$with_default_backend = xalpm; then
+    with_default_backend=dummy
     AC_MSG_WARN([The alpm backend doesn't work at all!])
     AC_CHECK_HEADER([alpm.h],
-		    [with_backend=alpm],
+		    [with_default_backend=alpm],
 		    [AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
     
@@ -337,12 +337,12 @@ AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 
-AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_backend = xdummy], [using dummy backend])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_backend = xapt], [using APT backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_backend = xyum], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_backend = xconary], [using CONARY backend])
-AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_backend = xbox], [using BOX backend])
-AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_backend = xalpm], [using ALPM backend])
+AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_default_backend = xdummy], [using dummy backend])
+AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_default_backend = xapt], [using APT backend])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_default_backend = xyum], [using YUM backend])
+AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_default_backend = xconary], [using CONARY backend])
+AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BOX backend])
+AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
 
 
 dnl ---------------------------------------------------------------------------
