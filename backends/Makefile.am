@@ -1,5 +1,9 @@
 SUBDIRS = dummy test
 
+if BACKEND_TYPE_ALPM
+SUBDIRS += alpm
+endif
+
 if BACKEND_TYPE_APT
 SUBDIRS += apt
 endif
