@@ -112,6 +112,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_DENIED, "PermissionDenied"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE, "JobExistsWithRole"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
@@ -539,7 +540,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 	ret = pk_backend_refresh_cache (task, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -572,7 +573,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 	ret = pk_backend_get_updates (task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -670,7 +671,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 	ret = pk_backend_search_name (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -716,7 +717,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 	ret = pk_backend_search_details (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -762,7 +763,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 	ret = pk_backend_search_group (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -808,7 +809,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 	ret = pk_backend_search_file (task, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -850,7 +851,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 	ret = pk_backend_get_depends (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -892,7 +893,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 	ret = pk_backend_get_requires (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -926,7 +927,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 	ret = pk_backend_get_description (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		g_object_unref (task);
 		return FALSE;
 	}
@@ -963,30 +964,20 @@ pk_engine_update_system (PkEngine *engine,
 		return;
 	}
 
-#if 0
-	guint i;
-	guint length;
-	PkRoleEnum role;
-	/* check for existing job doing an update */
-	length = engine->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkJobListItem *) g_ptr_array_index (engine->priv->array, i);
-		ret = pk_backend_get_job_role (item->task, &role, NULL);
-		if (ret == TRUE && role == PK_ROLE_ENUM_SYSTEM_UPDATE) {
-			error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
-					     "operation not yet supported by backend");
-			dbus_g_method_return_error (context, error);
-			return;
-		}
+	/* are we already performing an update? */
+	if (pk_job_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_SYSTEM_UPDATE) == TRUE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
+				     "Already performing system update");
+		dbus_g_method_return_error (context, error);
+		return;
 	}
-#endif
 
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_backend_update_system (task);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "operation not yet supported by backend");
+				     "Operation not yet supported by backend");
 		g_object_unref (task);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1037,7 +1028,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	ret = pk_backend_remove_package (task, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "operation not yet supported by backend");
+				     "Operation not yet supported by backend");
 		g_object_unref (task);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1090,7 +1081,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	ret = pk_backend_install_package (task, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "operation not yet supported by backend");
+				     "Operation not yet supported by backend");
 		g_object_unref (task);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1143,7 +1134,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	ret = pk_backend_update_package (task, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "operation not yet supported by backend");
+				     "Operation not yet supported by backend");
 		g_object_unref (task);
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1307,7 +1298,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 	ret = pk_backend_cancel_job_try (item->task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "operation not yet supported by backend");
+			     "Operation not yet supported by backend");
 		return FALSE;
 	}
 
