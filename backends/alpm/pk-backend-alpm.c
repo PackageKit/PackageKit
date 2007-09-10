@@ -386,8 +386,8 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
 
-	gboolean installed = FALSE;
-	gboolean ninstalled = FALSE;
+	gboolean installed = TRUE;
+	gboolean ninstalled = TRUE;
 	pmdb_t *localdb = NULL;
 	alpm_list_t *syncdbs = NULL;
 	gchar **sections = NULL;
@@ -419,7 +419,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	needle = alpm_list_add (NULL, (void *)search);
 
-	pk_debug ("alpm: searching for \"%s\" - filter installed: %i, ~installed: %i",
+	pk_debug ("alpm: searching for \"%s\" - searchin in installed: %i, ~installed: %i",
 		  (char *)needle->data, installed, ninstalled);
 
 	if (ninstalled)
