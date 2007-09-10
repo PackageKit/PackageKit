@@ -32,8 +32,22 @@
 
 static int progress_percentage;
 
+typedef struct _PackageSource 
+{
+  pmpkg_t *pkg;
+  gchar *repo;
+  guint installed;
+} PackageSource;
+
+
+static void
+package_source_free (PackageSource *source)
+{
+  alpm_pkg_free (source->pkg);
+}
+
 alpm_list_t *
-my_list_mmerge(alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
+my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
 {
   alpm_list_t *newlist, *lp;
 
@@ -90,7 +104,7 @@ pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
 }
 
 alpm_list_t *
-my_list_remove_node(alpm_list_t *node)
+my_list_remove_node (alpm_list_t *node)
 {
   if(!node) return(NULL);
 
@@ -110,45 +124,103 @@ my_list_remove_node(alpm_list_t *node)
   return(ret);
 }
 
-
-/*static int 
+static int 
 list_cmp_fn (const void *n1, const void *n2)
 {
   return 0;
-}*/
-
-
+}
 
 static void
-add_package (PkBackend *backend, pmpkg_t *package, pmdb_t *db, guint installed)
+add_package (PkBackend *backend, PackageSource *package)
 { 
   gchar *pkg_string;
-  pkg_string = pk_package_id_build(alpm_pkg_get_name (package), 
-				     alpm_pkg_get_version (package), 
-				     alpm_pkg_get_arch (package), 
-				     alpm_db_get_name (db));
+  pkg_string = pk_package_id_build(alpm_pkg_get_name (package->pkg), 
+				     alpm_pkg_get_version (package->pkg), 
+				     alpm_pkg_get_arch (package->pkg), 
+				     package->repo);
 
-  pk_backend_package (backend, installed, pkg_string, alpm_pkg_get_desc (package));
+  pk_backend_package (backend, package->installed, pkg_string, alpm_pkg_get_desc (package->pkg));
 
   g_free(pkg_string);
 }
 
-
-
-
 static void
-add_packages_from_list (PkBackend *backend, alpm_list_t *list, pmdb_t *db, guint installed)
+add_packages_from_list (PkBackend *backend, alpm_list_t *list)
 {
-  pmpkg_t *package = NULL;
+  PackageSource *package = NULL;
   alpm_list_t *li = NULL;
 
   for (li = list; li != NULL; li = alpm_list_next (li)) {
-    package = (pmpkg_t *)li->data;
-    add_package (backend, package, db, installed);
+    package = (PackageSource *)li->data;
+    add_package (backend, package);
   }
 }
 
+alpm_list_t *
+find_packages ( const gchar *name, pmdb_t *db)
+{
+  if (db == NULL || name == NULL) return NULL;
 
+  alpm_list_t *needle = NULL;
+  alpm_list_t *result = NULL;
+  alpm_list_t *localresult = NULL;
+  pmdb_t *localdb = NULL;
+  const gchar *dbname = NULL;
+
+  needle = alpm_list_add (needle, (gchar *)name);
+  dbname = alpm_db_get_name (db);
+  result = alpm_db_search (db, needle);
+
+  alpm_list_t *i = NULL;
+
+  if (db != localdb)
+    {
+      localdb = alpm_option_get_localdb ();
+      if (localdb != NULL)
+	localresult = alpm_db_search (localdb, needle);
+    }
+
+  for (i = result; i; i = alpm_list_next (i))
+    {
+      PackageSource *source = g_malloc (sizeof (PackageSource));
+
+      source->pkg = (pmpkg_t *)i->data;
+      source->repo = (gchar *)dbname;
+
+      if (localresult != NULL)
+	{
+	  alpm_list_t *icmp = NULL;
+	  for (icmp = localresult; icmp; icmp = alpm_list_next (icmp))
+	    if (pkg_equal ((pmpkg_t *)icmp->data, (pmpkg_t *)i->data))
+	      source->installed = TRUE;
+	    else source->installed = FALSE;
+	}
+      else if (localdb == db) source->installed = TRUE;
+      else  source->installed = FALSE;
+
+      i->data = source;
+    }
+
+  return result;
+}
+
+static void
+filter_packages_installed (alpm_list_t *packages, gboolean filter)
+{
+  alpm_list_t *i;
+  for (i = packages; i; )
+    {
+      if (((PackageSource *)i->data)->installed == filter)
+	{
+	  alpm_list_t *temp = i;
+	  i = alpm_list_next (i);
+	  package_source_free ((PackageSource *)temp->data);
+	  my_list_remove_node (temp);
+	  continue;
+	}
+      i = alpm_list_next (i);
+    }
+}
 
 /**
  * backend_destroy:
@@ -233,15 +305,13 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", PK_GROUP_ENUM_PROGRAMMING,
-"Scribus is an desktop open source page layout program with "
-"the aim of producing commercial grade output in PDF and "
-"Postscript, primarily, though not exclusively for Linux.\n"
-"\n"
-"While the goals of the program are for ease of use and simple easy to "
-"understand tools, Scribus offers support for professional publishing "
-"features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager");
+	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	if (id == NULL)
+	  {
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }
+	//pk_backend_description (backend, package_id, PK_GROUP_ENUM_PROGRAMMING, "sdgd");
 	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 }
 
@@ -384,22 +454,11 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_no_percentage_updates (backend);
-
-	gboolean installed = TRUE;
-	gboolean ninstalled = TRUE;
-	pmdb_t *localdb = NULL;
-	alpm_list_t *syncdbs = NULL;
+	alpm_list_t *result = NULL;
+	alpm_list_t *dbs = NULL;
 	gchar **sections = NULL;
-	alpm_list_t *needle = NULL;
-	alpm_list_t *localresult = NULL;
+	gboolean installed = TRUE, ninstalled = TRUE;
 
-	localdb = alpm_option_get_localdb ();
-	if (localdb == NULL)
-	  {
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
-	    return;
-	  }
 
 	sections = g_strsplit (filter, ";", 0);
 	int i = 0;
@@ -417,61 +476,19 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	}
 	g_strfreev (sections);
 
-	needle = alpm_list_add (NULL, (void *)search);
-
 	pk_debug ("alpm: searching for \"%s\" - searchin in installed: %i, ~installed: %i",
-		  (char *)needle->data, installed, ninstalled);
+		  search, installed, ninstalled);
 
-	if (ninstalled)
-	  {
-	    syncdbs = alpm_option_get_syncdbs ();
-	    if (syncdbs != NULL && alpm_list_count (syncdbs) != 0)
-	      {
-		alpm_list_t *i;
-		localresult = alpm_db_search (localdb, needle);
-		for (i = syncdbs; i; i = alpm_list_next (i))
-		  {
-		    alpm_list_t *curresult = alpm_db_search ((pmdb_t *)syncdbs->data, needle);
+	if (installed) dbs = alpm_list_add (dbs, alpm_option_get_localdb ());
+	if (ninstalled) dbs = my_list_mmerge (dbs, alpm_option_get_syncdbs (), list_cmp_fn);
 
-		    if (curresult != NULL && localresult != NULL)
-		      {
-			alpm_list_t *icmp;
-			alpm_list_t *icmp2;
-			for (icmp = curresult; icmp; icmp = alpm_list_next (icmp))
-			  {
+	for (; dbs; dbs = alpm_list_next (dbs))
+	  result = my_list_mmerge (result, find_packages (search, (pmdb_t *)dbs->data), list_cmp_fn);
 
-			    for (icmp2 = localresult; icmp2; icmp2 = alpm_list_next (icmp2))
-			      {
-				gboolean success = FALSE;
-				if (pkg_equal (icmp->data, icmp2->data))
-				  {
-				    if (installed)
-				      {
-					success = TRUE;
-					add_package (backend, (pmpkg_t *)icmp->data, (pmdb_t *)i->data, TRUE);
-					break;
-				      }
-				  }
-				if (success == FALSE)
-				  add_package (backend, (pmpkg_t *)icmp->data, (pmdb_t *)i->data, FALSE);
-			      }
-			  }
-			alpm_list_free (curresult);
-		      }
-		  }
-	      }
-	  }
-
-	if (installed && ninstalled)
-	  {
-	      {
-		pk_debug ("searching in local db");
-		alpm_list_t * localresult = alpm_db_search (localdb, needle);
-		//pk_debug (alpm_pkg_get_name (localresult->data));
-		pk_debug ("%i", (int)localresult);
-		add_packages_from_list (backend, localresult, localdb, TRUE);
-	      }
-	  }
+	if (!installed) filter_packages_installed (result, TRUE);
+	if (!ninstalled) filter_packages_installed (result, FALSE);	
+	
+	add_packages_from_list (backend, result);
 	pk_backend_finished  (backend, PK_EXIT_ENUM_SUCCESS); 
 }
 
