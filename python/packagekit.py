@@ -65,16 +65,17 @@ def dbusException(func):
 			raise
 	return wrapper
 
-def job_id(func):
-	def wrapper(*args,**kwargs):
-		jid = func(*args,**kwargs)
-		if jid == -1:
-			raise PackageKitJobFailure
-		else:
-			return jid
-	return wrapper
 
 class PackageKit:
+	def job_id(func):
+		def wrapper(*args,**kwargs):
+			jid = func(*args,**kwargs)
+			if jid == -1:
+				raise PackageKitJobFailure
+			else:
+				return jid
+		return wrapper
+
 	def __init__(self):
 		DBusGMainLoop(set_as_default=True)
 		bus = dbus.SystemBus()
@@ -87,7 +88,7 @@ class PackageKit:
 			else:
 				raise PackageKitException(e)
 
-		self.job = None
+		#self.job = None
 		self.progress = 0.0
 		bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface="org.freedesktop.PackageKit")
 	
@@ -96,10 +97,11 @@ class PackageKit:
 		self.loop.run()
 
 	def catchall_signal_handler(self,*args, **kwargs):
-		if args[0] != self.job and kwargs['member']!="JobListChanged":
-			return
+		#if args[0] != self.job and kwargs['member']!="JobListChanged":
+		#	print "args",args,kwargs
+		#	return
 		if kwargs['member'] == "Finished":
-			loop.quit()
+			self.loop.quit()
 			self.Finish()
 		elif kwargs['member'] == "PercentageChanged":
 			progress = float(args[1])+(progress%1.0)
@@ -143,5 +145,5 @@ class PackageKit:
 		return pk_iface.RefreshCache(force)
 
 # hack to avoid exporting them
-del job_id
+#del job_id
 del dbusException

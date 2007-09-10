@@ -52,7 +52,8 @@ typedef struct {
 
 typedef enum {
 	SEARCH_NAME = 1,
-	SEARCH_DETAILS
+	SEARCH_DETAILS,
+	SEARCH_FILE
 } SearchDepth;
 
 struct search_task {
@@ -461,7 +462,7 @@ static void *get_search_thread(gpointer data)
 				Match = false;
 		}
 
-		if (Match == true)// && pk_task_filter_package_name(st->backend,P.Name().c_str()))
+		if (Match == true)// && pk_backend_filter_package_name(st->backend,P.Name().c_str()))
 		{
 			gchar *pid = pk_package_id_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
 			pk_backend_package(st->backend, J->installed, pid, P.ShortDesc().c_str());
@@ -487,9 +488,10 @@ search_task_cleanup:
 /**
  * pk_backend_search
  **/
-static gboolean
-pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which)
+static void
+pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, void *(*search_thread)(gpointer data))
 {
+	g_return_if_fail (backend != NULL);
 	search_task *data = g_new(struct search_task, 1);
 	if (data == NULL)
 	{
@@ -503,13 +505,12 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 		data->filter = g_strdup(filter);
 		data->depth = which;
 
-		if (g_thread_create(get_search_thread, data, false, NULL) == NULL)
+		if (g_thread_create(search_thread, data, false, NULL) == NULL)
 		{
-			pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to spawn thread");
+			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to spawn thread");
 			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
 		}
 	}
-	return TRUE;
 }
 
 static GHashTable *PackageRecord(pkgCache::VerIterator V)
@@ -639,8 +640,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_search(backend, filter, search, SEARCH_DETAILS);
+	pk_backend_search(backend, filter, search, SEARCH_DETAILS, get_search_thread);
 }
 
 /**
@@ -649,8 +649,44 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_search(backend, filter, search, SEARCH_NAME);
+	pk_backend_search(backend, filter, search, SEARCH_NAME, get_search_thread);
+}
+
+static void *do_search_file(gpointer data)
+{
+	search_task *st = (search_task*)data;
+	gchar *sdir = g_path_get_dirname(_config->Find("Dir::State::status").c_str());
+	gchar *ldir = g_build_filename(sdir,"info",NULL);
+	g_free(sdir);
+	GError *error = NULL;
+	GDir *list = g_dir_open(ldir,0,&error);
+	if (error!=NULL)
+	{
+		pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",ldir);
+		g_free(ldir);
+		g_error_free(error);
+		pk_backend_finished(st->backend, PK_EXIT_ENUM_FAILED);
+		return NULL;
+	}
+	const gchar * fname = NULL;
+	while ((fname = g_dir_read_name(list))!=NULL)
+	{
+		//pk_backend_package(st->backend, J->installed, pid, P.ShortDesc().c_str());
+	}
+	pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "search file is incomplete");
+	pk_backend_finished(st->backend, PK_EXIT_ENUM_FAILED);
+	g_dir_close(list);
+	g_free(ldir);
+	//pk_backend_finished(st->backend, PK_EXIT_ENUM_SUCCESS);
+	return NULL;
+}
+
+/**
+ * backend_search_file:
+ **/
+static void backend_search_file(PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	pk_backend_search(backend, filter, search, SEARCH_FILE, do_search_file);
 }
 
 extern "C" PK_BACKEND_OPTIONS (
@@ -670,7 +706,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
+	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
