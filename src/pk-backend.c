@@ -530,6 +530,21 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 }
 
 /**
+ * pk_backend_update_detail:
+ **/
+gboolean
+pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
+			  const gchar *updates, const gchar *obsoletes,
+			  const gchar *url, const gchar *restart,
+			  const gchar *update_text)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return TRUE;
+}
+
+
+/**
  * pk_backend_get_percentage:
  **/
 gboolean
@@ -756,6 +771,23 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 	}
 	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_depends (backend, package_id);
+	backend->priv->assigned = TRUE;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_update_detail:
+ */
+gboolean
+pk_backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->get_update_detail == NULL) {
+		pk_backend_not_implemented_yet (backend, "GetUpdateDetail");
+		return FALSE;
+	}
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	backend->desc->get_update_detail (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
 }

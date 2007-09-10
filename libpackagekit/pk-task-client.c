@@ -600,6 +600,49 @@ pk_task_client_get_requires (PkTaskClient *tclient, const gchar *package)
 }
 
 /**
+ * pk_task_client_get_update_detail:
+ **/
+gboolean
+pk_task_client_get_update_detail (PkTaskClient *tclient, const gchar *package)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	/* check to see if we already have an action */
+	if (tclient->priv->assigned == TRUE) {
+		pk_warning ("Already assigned");
+		return FALSE;
+	}
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetUpdateDetail", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		const gchar *error_name;
+		error_name = pk_task_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetUpdateDetail failed!");
+		return FALSE;
+	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_client_wait_if_sync (tclient);
+
+	return TRUE;
+}
+
+/**
  * pk_task_client_get_description:
  **/
 gboolean

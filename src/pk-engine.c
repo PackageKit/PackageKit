@@ -74,6 +74,7 @@ enum {
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_FINISHED,
+	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_ALLOW_INTERRUPT,
 	PK_ENGINE_LAST_SIGNAL
@@ -829,7 +830,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
  **/
 gboolean
 pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
-		    guint *job, GError **error)
+		       guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -891,6 +892,48 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 	/* create a new task and start it */
 	task = pk_engine_new_task (engine);
 	ret = pk_backend_get_requires (task, package_id);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "Operation not yet supported by backend");
+		g_object_unref (task);
+		return FALSE;
+	}
+	pk_engine_add_task (engine, task);
+	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	if (item == NULL) {
+		pk_warning ("could not find task");
+		return FALSE;
+	}
+	*job = item->job;
+
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_update_detail:
+ **/
+gboolean
+pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
+		       guint *job, GError **error)
+{
+	gboolean ret;
+	PkTask *task;
+	PkJobListItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
+	/* create a new task and start it */
+	task = pk_engine_new_task (engine);
+	ret = pk_backend_get_update_detail (task, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -1463,6 +1506,12 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_ENGINE_UPDATE_DETAIL] =
+		g_signal_new ("update-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

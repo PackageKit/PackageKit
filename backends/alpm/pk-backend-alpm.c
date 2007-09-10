@@ -542,6 +542,7 @@ PK_BACKEND_OPTIONS (
  	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
 	backend_get_requires,				/* get_requires */
+	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
 	backend_refresh_cache,				/* refresh_cache */

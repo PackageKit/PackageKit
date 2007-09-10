@@ -46,6 +46,13 @@ gboolean	 pk_backend_package			(PkBackend	*backend,
 							 guint		 value,
 							 const gchar	*package_id,
 							 const gchar	*summary);
+gboolean	 pk_backend_update_detail		(PkBackend	*backend,
+							 const gchar	*package_id,
+							 const gchar	*updates,
+							 const gchar	*obsoletes,
+							 const gchar	*url,
+							 const gchar	*restart,
+							 const gchar	*update_text);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
 							 const gchar	*details);
@@ -79,6 +86,7 @@ struct _PkBackendDesc {
 	void		(*get_depends)		(PkBackend *backend, const gchar *package_id);
 	void		(*get_description)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_requires)		(PkBackend *backend, const gchar *package_id);
+	void		(*get_update_detail)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_updates)		(PkBackend *backend);
 	void		(*install_package)	(PkBackend *backend, const gchar *package_id);
 	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
@@ -95,6 +103,7 @@ struct _PkBackendDesc {
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
 			   get_groups, get_filters, \
 			   cancel_job_try, get_depends, get_description, \
+			   get_update_detail, \
 			   get_requires, get_updates, install_package, \
 			   refresh_cache, remove_package, search_details, \
 			   search_file, search_group, search_name, \
@@ -111,6 +120,7 @@ struct _PkBackendDesc {
 		get_depends, \
 		get_description, \
 		get_requires, \
+		get_update_detail, \
 		get_updates, \
 		install_package, \
 		refresh_cache, \

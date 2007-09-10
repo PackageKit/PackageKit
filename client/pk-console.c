@@ -125,6 +125,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] get depends <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get requires <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get updatedetail <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get actions\n");
 	g_print ("  pkcon [sync] [verbose] get groups\n");
 	g_print ("  pkcon [sync] [verbose] get filters\n");
@@ -232,6 +233,16 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			} else {
 				pk_task_client_set_sync (tclient, TRUE);
 				pk_task_client_get_depends (tclient, details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "updatedetail") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_get_update_detail (tclient, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "requires") == 0) {

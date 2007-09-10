@@ -66,6 +66,8 @@ const gchar	*pk_backend_get_name			(PkBackend	*backend);
 gboolean	 pk_backend_cancel_job_try		(PkBackend	*backend);
 gboolean	 pk_backend_get_depends			(PkBackend	*backend,
 							 const gchar	*package_id);
+gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
+							 const gchar	*package_id);
 gboolean	 pk_backend_get_description		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_requires		(PkBackend	*backend,
