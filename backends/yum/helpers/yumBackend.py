@@ -363,7 +363,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')            
             self.description(id, "%s-%s" % (pkg.version, pkg.release),
-                                 desc, pkg.url)
+                                 "unknown", desc, pkg.url)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
     

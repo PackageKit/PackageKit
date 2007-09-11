@@ -1152,6 +1152,7 @@ pk_task_client_update_detail_cb (PkTaskMonitor *tmonitor,
 static void
 pk_task_client_description_cb (PkTaskMonitor *tmonitor,
 			   const gchar   *package_id,
+			   const gchar   *licence,
 			   PkGroupEnum    group,
 			   const gchar   *detail,
 			   const gchar   *url,
@@ -1160,8 +1161,8 @@ pk_task_client_description_cb (PkTaskMonitor *tmonitor,
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	pk_debug ("emit description %s, %i, %s, %s", package_id, group, detail, url);
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_DESCRIPTION], 0, package_id, group, detail, url);
+	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, detail, url);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_DESCRIPTION], 0, package_id, licence, group, detail, url);
 }
 
 /**
@@ -1243,8 +1244,8 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 	signals [PK_TASK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

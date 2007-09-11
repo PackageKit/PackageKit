@@ -207,13 +207,13 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			pk_warning ("invalid package_id");
 		}
 	} else if (strcmp (command, "description") == 0) {
-		if (size != 5) {
+		if (size != 6) {
 			g_error ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		group = pk_group_enum_from_text (sections[2]);
-		pk_backend_description (backend, sections[1], group, sections[3], sections[4]);
+		group = pk_group_enum_from_text (sections[3]);
+		pk_backend_description (backend, sections[1], sections[2], group, sections[4], sections[5]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
@@ -605,14 +605,15 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
  * pk_backend_description:
  **/
 gboolean
-pk_backend_description (PkBackend *backend, const gchar *package, PkGroupEnum group,
-		     const gchar *description, const gchar *url)
+pk_backend_description (PkBackend *backend, const gchar *package_id,
+			const gchar *licence, PkGroupEnum group,
+			const gchar *description, const gchar *url)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit description %s, %i, %s, %s", package, group, description, url);
-	g_signal_emit (backend, signals [PK_TASK_DESCRIPTION], 0, package, group, description, url);
+	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
+	g_signal_emit (backend, signals [PK_TASK_DESCRIPTION], 0, package_id, licence, group, description, url);
 
 	return TRUE;
 }
@@ -1182,8 +1183,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_TASK_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

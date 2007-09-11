@@ -92,6 +92,7 @@
     <signal name="Description">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="licence" direction="out"/>
       <arg type="s" name="group" direction="out"/>
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>

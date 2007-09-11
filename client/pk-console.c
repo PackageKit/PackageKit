@@ -376,6 +376,22 @@ pk_console_error_code_cb (PkTaskClient *tclient, PkErrorCodeEnum error_code, con
 }
 
 /**
+ * pk_console_description_cb:
+ **/
+static void
+pk_console_description_cb (PkTaskClient *tclient, const gchar *package_id,
+			   const gchar *licence, PkGroupEnum group,
+			   const gchar *description, const gchar *url, gpointer data)
+{
+	g_print ("description\n");
+	g_print ("  package:     '%s'\n", package_id);
+	g_print ("  licence:     '%s'\n", licence);
+	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
+	g_print ("  description: '%s'\n", description);
+	g_print ("  url:         '%s'\n", url);
+}
+
+/**
  * main:
  **/
 int
@@ -413,6 +429,8 @@ main (int argc, char *argv[])
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
+	g_signal_connect (tclient, "description",
+			  G_CALLBACK (pk_console_description_cb), NULL);
 	g_signal_connect (tclient, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (tclient, "percentage-changed",

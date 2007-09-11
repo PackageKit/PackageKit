@@ -393,7 +393,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 	    return;
 	  }
-	//pk_backend_description (backend, package_id, PK_GROUP_ENUM_PROGRAMMING, "sdgd");
+	//pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_PROGRAMMING, "sdgd");
 	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 }
 

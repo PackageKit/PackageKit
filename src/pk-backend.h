@@ -57,7 +57,8 @@ gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
 							 const gchar	*details);
 gboolean	 pk_backend_description			(PkBackend	*backend,
-							 const gchar	*package,
+							 const gchar	*package_id,
+							 const gchar	*licence,
 							 PkGroupEnum	 group,
 							 const gchar	*description,
 							 const gchar	*url);

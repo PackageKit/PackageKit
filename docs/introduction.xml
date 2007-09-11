@@ -1136,6 +1136,14 @@
               <entry>The package ID</entry>
             </row>
             <row>
+              <entry><literal>licence</literal></entry>
+              <entry>
+                The licence, e.g. "GPL2" or "proprietary".
+                If you need to add a EULA then do it like this:
+                "proprietary;By installing this software\nyou may kill a kitten."
+              </entry>
+            </row>
+            <row>
               <entry><literal>group</literal></entry>
               <entry>The enumerated package group description</entry>
             </row>

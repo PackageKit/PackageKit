@@ -288,7 +288,7 @@ get_description_thread(gpointer data)
 		return NULL;
 	}
 
-	pk_backend_description (d->backend, pi->name, PK_GROUP_ENUM_OTHER, ps->description, "");
+	pk_backend_description (d->backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "");
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
