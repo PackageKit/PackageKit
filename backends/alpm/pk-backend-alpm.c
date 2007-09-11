@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007 Andreas Obergrusberger <tradiaz@yahoo.de>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,6 +20,7 @@
  */
 
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
+#define PROGRESS_UPDATE_INTERVAL 400
 
 #include <gmodule.h>
 #include <glib.h>
@@ -31,6 +32,7 @@
 #include <alpm_list.h>
 
 static int progress_percentage;
+static int subprogress_percentage;
 
 typedef struct _PackageSource 
 {
@@ -39,17 +41,60 @@ typedef struct _PackageSource
   guint installed;
 } PackageSource;
 
-
-static void
+void
 package_source_free (PackageSource *source)
 {
   alpm_pkg_free (source->pkg);
+}
+
+void
+trans_event_cb (pmtransevt_t event, void *data1, void *data2)
+{
+}
+
+void 
+trans_conv_cb (pmtransconv_t conv, 
+	       void *data1, void *data2, void *data3, 
+	       int *response)
+{
+}
+
+void 
+trans_prog_cb (pmtransprog_t prog, const char *pkgname, int percent,
+                       int n, int remain)
+{
+  subprogress_percentage = percent;
+}
+
+gboolean
+update_subprogress (void *data)
+{
+  if (subprogress_percentage == -1)
+    return FALSE;
+
+  pk_debug ("alpm: subprogress is %i", subprogress_percentage);  
+
+  pk_backend_change_percentage ((PkBackend *)data, subprogress_percentage);
+  return TRUE;
+}
+
+gboolean
+update_progress (void *data)
+{
+  if (progress_percentage == -1)
+    return FALSE;
+
+  pk_backend_change_percentage ((PkBackend *)data, progress_percentage);
+  return TRUE;
 }
 
 alpm_list_t *
 my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
 {
   alpm_list_t *newlist, *lp;
+
+  if (left == NULL && right == NULL)
+    return NULL;
 
   if (left == NULL) 
     return right;
@@ -134,9 +179,13 @@ static void
 add_package (PkBackend *backend, PackageSource *package)
 { 
   gchar *pkg_string;
+  gchar *arch = (gchar *)alpm_pkg_get_arch (package->pkg);
+
+  if (arch == NULL) arch = "lala";
+
   pkg_string = pk_package_id_build(alpm_pkg_get_name (package->pkg), 
 				     alpm_pkg_get_version (package->pkg), 
-				     alpm_pkg_get_arch (package->pkg), 
+				     arch, 
 				     package->repo);
 
   pk_backend_package (backend, package->installed, pkg_string, alpm_pkg_get_desc (package->pkg));
@@ -170,12 +219,12 @@ find_packages ( const gchar *name, pmdb_t *db)
   needle = alpm_list_add (needle, (gchar *)name);
   dbname = alpm_db_get_name (db);
   result = alpm_db_search (db, needle);
+  localdb = alpm_option_get_localdb ();
 
   alpm_list_t *i = NULL;
 
   if (db != localdb)
     {
-      localdb = alpm_option_get_localdb ();
       if (localdb != NULL)
 	localresult = alpm_db_search (localdb, needle);
     }
@@ -201,7 +250,35 @@ find_packages ( const gchar *name, pmdb_t *db)
       i->data = source;
     }
 
+  alpm_list_free (needle);
+  if (localresult != NULL)
+    alpm_list_free_inner (localresult, (alpm_list_fn_free)alpm_pkg_free);
   return result;
+}
+
+gboolean
+pkg_is_installed (const gchar *name, const gchar *version)
+{
+  pmdb_t *localdb = NULL;
+  alpm_list_t *result = NULL;
+
+  if (name == NULL) return FALSE;
+  localdb = alpm_option_get_localdb ();
+  if (localdb == NULL) return FALSE;
+
+  result = find_packages (name, localdb);
+  if (result == NULL) return FALSE;
+  if (!alpm_list_count (result)) return FALSE; 
+
+  if (version == NULL)
+    return TRUE;
+
+  alpm_list_t *icmp = NULL;
+  for (icmp = result; icmp; icmp = alpm_list_next (icmp))
+    if (strcmp (alpm_pkg_get_version ((pmpkg_t *)icmp->data), version) == 0)
+      return TRUE;
+
+  return FALSE;
 }
 
 static void
@@ -221,6 +298,11 @@ filter_packages_installed (alpm_list_t *packages, gboolean filter)
       i = alpm_list_next (i);
     }
 }
+
+/*static void
+filter_packages_multiavail (alpm_list_t *packages, gboolean)
+{*/
+
 
 /**
  * backend_destroy:
@@ -378,6 +460,49 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
+	alpm_list_t *dbs = alpm_option_get_syncdbs ();
+	//alpm_list_t *problems = NULL;
+
+	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0,
+		        trans_event_cb, trans_conv_cb, 
+			trans_prog_cb) != 0)
+	   {
+	    pk_backend_error_code (backend,
+				   PK_ERROR_ENUM_TRANSACTION_ERROR,
+				   alpm_strerror (pm_errno));
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }
+
+	pk_debug ("alpm: %s", "transaction initialized");
+
+/*	if (alpm_trans_prepare (&problems) != 0)
+	  {
+	    pk_backend_error_code (backend,
+				   PK_ERROR_ENUM_TRANSACTION_ERROR,
+				   alpm_strerror (pm_errno));
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }*/
+
+	alpm_list_t *i = NULL;
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE); 
+	g_timeout_add (PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
+	for (i = dbs; i; i = alpm_list_next (i))	
+	  {
+	    if (alpm_db_update (force, (pmdb_t *)i->data))
+	      {
+		pk_backend_error_code (backend, 
+				       PK_ERROR_ENUM_TRANSACTION_ERROR,  
+				       alpm_strerror (pm_errno));
+		alpm_list_free (dbs);
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		subprogress_percentage = -1;
+		return;
+	      }
+	    subprogress_percentage = -1;
+	  }
+
 	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 }
 
@@ -429,25 +554,6 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 }
 
 /**
- * backend_search_name_timeout:
- **/
-gboolean
-backend_search_name_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	pk_backend_package (backend, 1, "evince;0.9.3-5.fc8;i386;installed",
-			 "PDF Document viewer");
-	pk_backend_package (backend, 1, "tetex;3.0-41.fc8;i386;fedora",
-			 "TeTeX is an implementation of TeX for Linux or UNIX systems.");
-	pk_backend_package (backend, 0, "scribus;1.3.4-1.fc8;i386;fedora",
-			 "Scribus is an desktop open source page layout program");
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
-	return FALSE;
-}
-
-/**
  * backend_search_name:
  */
 static void
@@ -455,6 +561,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	alpm_list_t *result = NULL;
+	alpm_list_t *localresult = NULL;
 	alpm_list_t *dbs = NULL;
 	gchar **sections = NULL;
 	gboolean installed = TRUE, ninstalled = TRUE;
@@ -476,19 +583,44 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	}
 	g_strfreev (sections);
 
-	pk_debug ("alpm: searching for \"%s\" - searchin in installed: %i, ~installed: %i",
+	pk_debug ("alpm: searching for \"%s\" - searching in installed: %i, ~installed: %i",
 		  search, installed, ninstalled);
 
-	if (installed) dbs = alpm_list_add (dbs, alpm_option_get_localdb ());
+	if (installed && !ninstalled) dbs = alpm_list_add (dbs, alpm_option_get_localdb ());
 	if (ninstalled) dbs = my_list_mmerge (dbs, alpm_option_get_syncdbs (), list_cmp_fn);
 
 	for (; dbs; dbs = alpm_list_next (dbs))
-	  result = my_list_mmerge (result, find_packages (search, (pmdb_t *)dbs->data), list_cmp_fn);
+	  result  = my_list_mmerge (result, find_packages (search, (pmdb_t *)dbs->data), list_cmp_fn);
+
+	if (ninstalled && installed)
+	  {
+	   pmdb_t *localdb = alpm_option_get_localdb ();
+	   if (localdb != NULL)
+	     {
+	       localresult = find_packages (search, localdb);
+	       alpm_list_t *i = NULL;
+	       for (i = alpm_list_first (result); i; i = alpm_list_next (i))
+		 {
+		   alpm_list_t *icmp = NULL;
+		   for (icmp = localresult; icmp; )
+		     if (pkg_equal ((pmpkg_t *)icmp->data, (pmpkg_t *)i->data))
+		       {
+			 alpm_list_t *tmp = icmp;
+			 icmp = alpm_list_next (icmp);
+			 my_list_remove_node (tmp);
+		       }
+		     else icmp = alpm_list_next (icmp);
+		 }
+	     }
+	   else  pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+					"Could not find local db");
+	   result = my_list_mmerge (result, localresult, list_cmp_fn);
+	  }
 
 	if (!installed) filter_packages_installed (result, TRUE);
 	if (!ninstalled) filter_packages_installed (result, FALSE);	
 	
-	add_packages_from_list (backend, result);
+	add_packages_from_list (backend, alpm_list_first (result));
 	pk_backend_finished  (backend, PK_EXIT_ENUM_SUCCESS); 
 }
 
