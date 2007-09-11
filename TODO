@@ -6,6 +6,10 @@ but write jobs are done in serial. Maybe spawn each task and put it into a
 paused state?
 NOTE: RELEASE BLOCKER
 
+*** Have to have an UpdatesChanged signal ***
+For the icon to update after we've done a system upgrade
+NOTE: RELEASE BLOCKER
+
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
@@ -31,25 +35,8 @@ Depends on transaction_id and sqlite integration.
 
 *** Add "when installed" and "installed by" data into UI ***
 Is this useful?
+
 We would need to store package_id,installed_by,when_installed in a sqlite database
-
-*** Add GetUpdateDetail
-update_detail
-GetUpdateDetail(s=package_id)
-UpdateDetail(
-string package_id
-string updates
-string obsoletes
-string url
-string restart_enum
-string update_text
-}
-NOTE: RELEASE BLOCKER
-
-*** Have to have an UpdatesChanged signal ***
-For the icon to update after we've done a system upgrade
-NOTE: RELEASE BLOCKER
-
 *** Dummy backend should use subpercent and install deps ***
 It's not a great test case right now...
 
