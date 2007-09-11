@@ -64,6 +64,8 @@ gboolean	 pk_job_list_remove			(PkJobList	*job_list,
 							 PkTask		*task);
 gboolean	 pk_job_list_commit			(PkJobList	*job_list,
 							 PkTask		*task);
+gboolean	 pk_job_list_role_present		(PkJobList	*job_list,
+							 PkRoleEnum	 role);
 GArray		*pk_job_list_get_array			(PkJobList	*job_list);
 guint		 pk_job_list_get_size			(PkJobList	*job_list);
 PkJobListItem	*pk_job_list_get_item_from_job		(PkJobList	*job_list,

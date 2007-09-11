@@ -42,6 +42,10 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
     </method>
+    <method name="GetUpdateDetail">
+      <arg type="s" name="package_id" direction="in"/>
+      <arg type="u" name="job" direction="out"/>
+    </method>
     <method name="GetDescription"> <!-- orders Description signals for the package -->
       <arg type="s" name="package_id" direction="in"/>
       <arg type="u" name="job" direction="out"/>
@@ -88,9 +92,18 @@
     <signal name="Description">
       <arg type="u" name="job" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="group" direction="out"/> <!-- enumerated type, see helpers/README -->
+      <arg type="s" name="group" direction="out"/>
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>
+    </signal>
+    <signal name="UpdateDetail">
+      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="updates" direction="out"/>
+      <arg type="s" name="obsoletes" direction="out"/>
+      <arg type="s" name="url" direction="out"/>
+      <arg type="s" name="restart" direction="out"/>
+      <arg type="s" name="update_text" direction="out"/>
     </signal>
     <signal name="Finished">
       <arg type="u" name="job" direction="out"/>

@@ -726,6 +726,37 @@
       </para>
     </sect2>
 
+    <sect2 id="api-get-update-detail">
+      <title>Get Update Detail</title>
+      <para>
+        GetUpdateDetail should return details about the update.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>UpdateDetail</literal> and
+        <literal>Error</literal>
+      </para>
+    </sect2>
+
     <sect2 id="api-get-requires">
       <title>Get Requires</title>
       <para>
@@ -1119,6 +1150,49 @@
             <row>
               <entry><literal>url</literal></entry>
               <entry>The upstream project homepage</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="backends-spawn-update-detail">
+      <title>UpdateDetail</title>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>The package ID</entry>
+            </row>
+            <row>
+              <entry><literal>updates</literal></entry>
+              <entry>A list of package_id's that are to be updated</entry>
+            </row>
+            <row>
+              <entry><literal>obsoletes</literal></entry>
+              <entry>A list of package_id's that are to be obsoletes</entry>
+            </row>
+            <row>
+              <entry><literal>url</literal></entry>
+              <entry>A URL with more details on the update, e.g. a security advisory</entry>
+            </row>
+            <row>
+              <entry><literal>restart_enum</literal></entry>
+              <entry>A valid restart type, e.g. "system"</entry>
+            </row>
+            <row>
+              <entry><literal>update_text</literal></entry>
+              <entry>
+                The update text describing the update in a non-localised way.
+                Newlines should be converted to ";"
+              </entry>
             </row>
           </tbody>
         </tgroup>

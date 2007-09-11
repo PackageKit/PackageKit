@@ -71,6 +71,7 @@ typedef enum {
 	PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
+	PK_TASK_CLIENT_UPDATE_DETAIL,
 	PK_TASK_CLIENT_DESCRIPTION,
 	PK_TASK_CLIENT_ERROR_CODE,
 	PK_TASK_CLIENT_FINISHED,
@@ -600,6 +601,49 @@ pk_task_client_get_requires (PkTaskClient *tclient, const gchar *package)
 }
 
 /**
+ * pk_task_client_get_update_detail:
+ **/
+gboolean
+pk_task_client_get_update_detail (PkTaskClient *tclient, const gchar *package)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	/* check to see if we already have an action */
+	if (tclient->priv->assigned == TRUE) {
+		pk_warning ("Already assigned");
+		return FALSE;
+	}
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetUpdateDetail", &error,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_INVALID);
+	if (error) {
+		const gchar *error_name;
+		error_name = pk_task_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetUpdateDetail failed!");
+		return FALSE;
+	}
+	/* only assign on success */
+	tclient->priv->assigned = TRUE;
+	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_client_wait_if_sync (tclient);
+
+	return TRUE;
+}
+
+/**
  * pk_task_client_get_description:
  **/
 gboolean
@@ -1081,6 +1125,28 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 }
 
 /**
+ * pk_task_client_update_detail_cb:
+ */
+static void
+pk_task_client_update_detail_cb (PkTaskMonitor *tmonitor,
+			         const gchar *package_id,
+			         const gchar *updates,
+			         const gchar *obsoletes,
+			         const gchar *url,
+			         const gchar *restart,
+			         const gchar *update_text,
+			         PkTaskClient  *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	pk_debug ("update-detail package='%s', updates='%s', obsoletes='%s', url='%s', restart='%s', update='%s'",
+		  package_id, updates, obsoletes, url, restart, update_text);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_UPDATE_DETAIL], 0,
+		       package_id, updates, obsoletes, url, restart, update_text);
+}
+
+/**
  * pk_task_client_description_cb:
  */
 static void
@@ -1168,6 +1234,12 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_CLIENT_UPDATE_DETAIL] =
+		g_signal_new ("update-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1262,6 +1334,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "package",
 			  G_CALLBACK (pk_task_client_package_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "update-detail",
+			  G_CALLBACK (pk_task_client_update_detail_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "description",
 			  G_CALLBACK (pk_task_client_description_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "error-code",

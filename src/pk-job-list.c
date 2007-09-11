@@ -100,6 +100,35 @@ pk_job_list_save_job_count (PkJobList *job_list)
 }
 
 /**
+ * pk_job_list_role_present:
+ *
+ * if there is a queued job with this role, useful to avoid having
+ * multiple system updates queued
+ **/
+gboolean
+pk_job_list_role_present (PkJobList *job_list, PkRoleEnum role)
+{
+	guint i;
+	guint length;
+	PkRoleEnum role_temp;
+	PkJobListItem *item;
+
+	g_return_val_if_fail (job_list != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), FALSE);
+
+	/* check for existing job doing an update */
+	length = job_list->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = (PkJobListItem *) g_ptr_array_index (job_list->priv->array, i);
+		pk_backend_get_job_role (item->task, &role_temp, NULL);
+		if (role_temp == role) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/**
  * pk_job_list_add:
  **/
  /* create transaction_id, add to array, mark changed */

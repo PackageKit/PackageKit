@@ -34,12 +34,14 @@ Is this useful?
 We would need to store package_id,installed_by,when_installed in a sqlite database
 
 *** Add GetUpdateDetail
+update_detail
 GetUpdateDetail(s=package_id)
 UpdateDetail(
-string url
-string restart_enum
+string package_id
 string updates
 string obsoletes
+string url
+string restart_enum
 string update_text
 }
 NOTE: RELEASE BLOCKER

@@ -75,6 +75,7 @@ enum {
 	PK_TASK_NO_PERCENTAGE_UPDATES,
 	PK_TASK_DESCRIPTION,
 	PK_TASK_PACKAGE,
+	PK_TASK_UPDATE_DETAIL,
 	PK_TASK_ERROR_CODE,
 	PK_TASK_REQUIRE_RESTART,
 	PK_TASK_FINISHED,
@@ -530,6 +531,26 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 }
 
 /**
+ * pk_backend_update_detail:
+ **/
+gboolean
+pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
+			  const gchar *updates, const gchar *obsoletes,
+			  const gchar *url, const gchar *restart,
+			  const gchar *update_text)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, url, restart, update_text);
+	g_signal_emit (backend, signals [PK_TASK_UPDATE_DETAIL], 0,
+		       package_id, updates, obsoletes, url, restart, update_text);
+	return TRUE;
+}
+
+
+/**
  * pk_backend_get_percentage:
  **/
 gboolean
@@ -756,6 +777,23 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 	}
 	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_depends (backend, package_id);
+	backend->priv->assigned = TRUE;
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_update_detail:
+ */
+gboolean
+pk_backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->get_update_detail == NULL) {
+		pk_backend_not_implemented_yet (backend, "GetUpdateDetail");
+		return FALSE;
+	}
+	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	backend->desc->get_update_detail (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
 }
@@ -1130,6 +1168,12 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_UPDATE_DETAIL] =
+		g_signal_new ("update-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

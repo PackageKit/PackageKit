@@ -59,6 +59,7 @@ typedef enum {
 	PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_MONITOR_NO_PERCENTAGE_UPDATES,
 	PK_TASK_MONITOR_PACKAGE,
+	PK_TASK_MONITOR_UPDATE_DETAIL,
 	PK_TASK_MONITOR_DESCRIPTION,
 	PK_TASK_MONITOR_ERROR_CODE,
 	PK_TASK_MONITOR_REQUIRE_RESTART,
@@ -373,6 +374,31 @@ pk_task_monitor_package_cb (DBusGProxy   *proxy,
 }
 
 /**
+ * pk_task_monitor_update_detail_cb:
+ */
+static void
+pk_task_monitor_update_detail_cb (DBusGProxy  *proxy,
+			          guint	       job,
+			          const gchar *package_id,
+			          const gchar *updates,
+			          const gchar *obsoletes,
+			          const gchar *url,
+			          const gchar *restart,
+			          const gchar *update_text,
+			          PkTaskMonitor *tmonitor)
+{
+	g_return_if_fail (tmonitor != NULL);
+	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
+
+	if (job == tmonitor->priv->job) {
+		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
+			  package_id, updates, obsoletes, url, restart, update_text);
+		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_UPDATE_DETAIL], 0,
+			       package_id, updates, obsoletes, url, restart, update_text);
+	}
+}
+
+/**
  * pk_task_monitor_description_cb:
  */
 static void
@@ -472,6 +498,12 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_MONITOR_UPDATE_DETAIL] =
+		g_signal_new ("update-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TASK_MONITOR_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -564,6 +596,9 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -594,6 +629,11 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_task_monitor_package_cb), tmonitor, NULL);
+	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
+				     G_CALLBACK (pk_task_monitor_update_detail_cb), tmonitor, NULL);
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Description",

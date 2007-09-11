@@ -111,6 +111,16 @@ backend_get_requires (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+}
+
+/**
  * backend_get_updates:
  */
 static void
@@ -222,6 +232,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	backend_refresh_cache,			/* refresh_cache */

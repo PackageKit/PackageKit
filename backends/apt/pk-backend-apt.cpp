@@ -701,6 +701,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_requires */
+	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
 	backend_refresh_cache,			/* refresh_cache */

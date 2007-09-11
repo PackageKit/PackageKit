@@ -75,6 +75,10 @@
             <entry><literal>get-requires.*</literal></entry>
           </row>
           <row>
+            <entry>Get Update Detail</entry>
+            <entry><literal>get-update-detail.*</literal></entry>
+          </row>
+          <row>
             <entry>Get Description</entry>
             <entry><literal>get-description.*</literal></entry>
           </row>
@@ -149,12 +153,17 @@
           </row>
           <row>
             <entry>Package</entry>
-            <entry><literal>package[tab]status[tab]package_id[tab]summary</literal></entry>
+            <entry><literal>package_id[tab]status[tab]package_id[tab]summary</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>Description</entry>
             <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url</literal></entry>
+            <entry><literal>stdout</literal></entry>
+          </row>
+          <row>
+            <entry>UpdateDetail</entry>
+            <entry><literal>package_id[tab]updates[tab]obsoletes[tab]url[tab]restart[tab]update_text</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
         </tbody>

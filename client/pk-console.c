@@ -34,7 +34,7 @@
 #include <pk-enum-list.h>
 
 /**
- * pk_console_package_cb:
+ * pk_console_make_space:
  **/
 static gchar *
 pk_console_make_space (const gchar *data, guint length, guint *extra)
@@ -96,6 +96,24 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 }
 
 /**
+ * pk_console_update_detail_cb:
+ **/
+static void
+pk_console_update_detail_cb (PkTaskClient *tclient, const gchar *package_id,
+			     const gchar *updates, const gchar *obsoletes,
+			     const gchar *url, const gchar *restart,
+			     const gchar *update_text, gpointer data)
+{
+	g_print ("update-detail\n");
+	g_print ("  package:    '%s'\n", package_id);
+	g_print ("  updates:    '%s'\n", updates);
+	g_print ("  obsoletes:  '%s'\n", obsoletes);
+	g_print ("  url:        '%s'\n", url);
+	g_print ("  restart:    '%s'\n", restart);
+	g_print ("  update_text:'%s'\n", update_text);
+}
+
+/**
  * pk_console_percentage_changed_cb:
  **/
 static void
@@ -125,6 +143,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] get depends <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get requires <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
+	g_print ("  pkcon [sync] [verbose] get updatedetail <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] get actions\n");
 	g_print ("  pkcon [sync] [verbose] get groups\n");
 	g_print ("  pkcon [sync] [verbose] get filters\n");
@@ -232,6 +251,16 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			} else {
 				pk_task_client_set_sync (tclient, TRUE);
 				pk_task_client_get_depends (tclient, details);
+				remove = 3;
+			}
+		} else if (strcmp (value, "updatedetail") == 0) {
+			if (details == NULL) {
+				pk_console_usage ("you need to specify a search term");
+				remove = 2;
+				goto out;
+			} else {
+				pk_task_client_set_sync (tclient, TRUE);
+				pk_task_client_get_update_detail (tclient, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "requires") == 0) {
@@ -384,6 +413,8 @@ main (int argc, char *argv[])
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
+	g_signal_connect (tclient, "update-detail",
+			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (tclient, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 	g_signal_connect (tclient, "finished",

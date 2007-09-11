@@ -58,6 +58,7 @@ typedef enum
 	PK_ENGINE_ERROR_DENIED,
 	PK_ENGINE_ERROR_NOT_SUPPORTED,
 	PK_ENGINE_ERROR_NO_SUCH_JOB,
+	PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
 	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
 	PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 	PK_ENGINE_ERROR_SEARCH_INVALID,
@@ -96,6 +97,10 @@ gboolean	 pk_engine_search_file			(PkEngine	*engine,
 							 guint		*job,
 							 GError		**error);
 gboolean	 pk_engine_get_depends			(PkEngine	*engine,
+							 const gchar	*package_id,
+							 guint		*job,
+							 GError		**error);
+gboolean	 pk_engine_get_update_detail		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 guint		*job,
 							 GError		**error);
