@@ -31,6 +31,13 @@
 #include <libbox/libbox-db-utils.h>
 #include <libbox/libbox-db-repos.h>
 
+enum PkgSearchType {
+    SEARCH_TYPE_NAME = 0,
+    SEARCH_TYPE_DETAILS = 1,
+    SEARCH_TYPE_FILE = 2
+};
+
+
 typedef struct {
 	PkBackend *backend;
 	gchar *search;
@@ -146,13 +153,15 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	if (text == TRUE) {
 		search_filter = search_filter | PKG_TEXT;
 	}
-	pk_debug("filter: %d", search_filter);
+	if (mode == SEARCH_TYPE_DETAILS) {
+		search_filter = search_filter | PKG_SEARCH_DETAILS;
+	}
 
 	pk_backend_no_percentage_updates (backend);
 
 	db = db_open();
 
-	if (mode == 1) {
+	if (mode == SEARCH_TYPE_FILE) {
 		/* TODO: allow filtering */
 		list = box_db_repos_search_file (db, search);
 		add_packages_from_list (backend, list);
@@ -414,6 +423,17 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 
+
+/**
+ * backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
+}
+
 /**
  * backend_search_file:
  */
@@ -421,7 +441,7 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	find_packages (backend, search, filter, 1);
+	find_packages (backend, search, filter, SEARCH_TYPE_FILE);
 }
 
 /**
@@ -431,7 +451,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	find_packages (backend, search, filter, 0);
+	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
 }
 
 PK_BACKEND_OPTIONS (
@@ -451,7 +471,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_package */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
-	NULL,					/* search_details */
+	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */

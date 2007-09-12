@@ -6,7 +6,7 @@ refresh-cache     |   X    |  X  |  X  |  X  |      |
 get-updates       |   X    |  X  |     |  X  |      |
 update-system     |        |  X  |     |     |      |
 search-name       |   X    |  X  |  X  |  X  |  X   |
-search-details    |        |  X  |  X  |     |      |
+search-details    |        |  X  |  X  |  X  |      |
 search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
 install           |        |  X  |     |     |      |
