@@ -129,13 +129,13 @@ class UpdatePercentage:public pkgAcquireStatus
 		old = -1;
 		backend = tk;
 	}
-	
+
 	virtual bool MediaChange(string Media,string Drive)
 	{
 		pk_debug("PANIC!: we don't handle mediachange");
 		return FALSE;
 	}
-	
+
 	virtual bool Pulse(pkgAcquire *Owner)
 	{
 		pkgAcquireStatus::Pulse(Owner);
@@ -146,11 +146,11 @@ class UpdatePercentage:public pkgAcquireStatus
 			pk_backend_change_sub_percentage(backend,((guint)(percent*100.0))%100);
 			old = percent;
 		}
-		return true;	
+		return true;
 	}
 };
 
-// do_update_thread - Update the package lists 
+// do_update_thread - Update the package lists
 // Swiped from apt-get's update mode
 void *do_update_thread(gpointer data)
 {
@@ -159,7 +159,7 @@ void *do_update_thread(gpointer data)
 	bool Failed = false;
 	bool TransientNetworkFailure = false;
 	OpTextProgress Prog;
-	
+
 	/* easy as that */
 	pk_backend_change_job_status(ud->backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
@@ -235,7 +235,7 @@ void *do_update_thread(gpointer data)
 		}
 	}
 
-	// Prepare the cache.   
+	// Prepare the cache.
 	Cache = getCache();
 	if (Cache->BuildCaches(Prog,false) == false)
 	{
@@ -347,13 +347,13 @@ static void LocalitySort(AptCompFile **begin,
 
 static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerIterator V)
 {
-	// Find the proper version to use. 
+	// Find the proper version to use.
 	DFList[pid].available = false;
 	if (V.end() == false)
 	{
 	#ifdef APT_PKG_RPM
 		DFList[pid].Df = V.FileList();
-	#else	
+	#else
 		DFList[pid].Df = V.DescriptionList().FileList();
 	#endif
 		DFList[pid].verstr = V.VerStr();
@@ -375,7 +375,7 @@ static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerI
 			DFList[pid].available = true;
 			if (hasLocal)
 				break;
-		}	 
+		}
 	}
 	return DFList[pid].available;
 }
@@ -422,7 +422,7 @@ static void *get_search_thread(gpointer data)
 		if (st->depth == SEARCH_NAME && DFList[P->ID].NameMatch == false)
 			continue;
 
-		// Find the proper version to use. 
+		// Find the proper version to use.
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		buildExDesc(DFList, P->ID, V);
 	}
@@ -516,7 +516,7 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 static GHashTable *PackageRecord(pkgCache::VerIterator V)
 {
 	GHashTable *ret = NULL;
-	
+
 	pkgCache & pkgCache = *(getCache());
 	// Find an appropriate file
 	pkgCache::VerFileIterator Vf = V.FileList();
@@ -527,16 +527,16 @@ static GHashTable *PackageRecord(pkgCache::VerIterator V)
 		if (Vf.end() == true)
 			Vf = V.FileList();
 	}
-		
+
 	// Check and load the package list file
 	pkgCache::PkgFileIterator I = Vf.File();
 	if (I.IsOk() == false)
 		return NULL;
-	
+
 	FileFd PkgF(I.FileName(),FileFd::ReadOnly);
 	if (_error->PendingError() == true)
 		return NULL;
-	
+
 	// Read the record
 	char *Buffer = new char[pkgCache.HeaderP->MaxVerFileSize+1];
 	Buffer[V.FileList()->Size] = '\0';
@@ -591,7 +591,7 @@ static void *get_description_thread(gpointer data)
 		if (strcmp(dt->pi->name, P.Name())!=0)
 			continue;
 
-		// Find the proper version to use. 
+		// Find the proper version to use.
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		GHashTable *pkg = PackageRecord(V);
 		pk_backend_description(dt->backend,dt->pi->name,

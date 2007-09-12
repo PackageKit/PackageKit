@@ -34,7 +34,7 @@
 static int progress_percentage;
 static int subprogress_percentage;
 
-typedef struct _PackageSource 
+typedef struct _PackageSource
 {
   pmpkg_t *pkg;
   gchar *repo;
@@ -52,14 +52,14 @@ trans_event_cb (pmtransevt_t event, void *data1, void *data2)
 {
 }
 
-void 
-trans_conv_cb (pmtransconv_t conv, 
-	       void *data1, void *data2, void *data3, 
+void
+trans_conv_cb (pmtransconv_t conv,
+	       void *data1, void *data2, void *data3,
 	       int *response)
 {
 }
 
-void 
+void
 trans_prog_cb (pmtransprog_t prog, const char *pkgname, int percent,
                        int n, int remain)
 {
@@ -72,7 +72,7 @@ update_subprogress (void *data)
   if (subprogress_percentage == -1)
     return FALSE;
 
-  pk_debug ("alpm: subprogress is %i", subprogress_percentage);  
+  pk_debug ("alpm: subprogress is %i", subprogress_percentage);
 
   pk_backend_change_percentage ((PkBackend *)data, subprogress_percentage);
   return TRUE;
@@ -96,7 +96,7 @@ my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
   if (left == NULL && right == NULL)
     return NULL;
 
-  if (left == NULL) 
+  if (left == NULL)
     return right;
   if (right == NULL)
     return left;
@@ -118,7 +118,7 @@ my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
       lp->next = left;
       left->prev = lp;
       left = left->next;
-    } 
+    }
     else {
       lp->next = right;
       right->prev = lp;
@@ -169,7 +169,7 @@ my_list_remove_node (alpm_list_t *node)
   return(ret);
 }
 
-static int 
+static int
 list_cmp_fn (const void *n1, const void *n2)
 {
   return 0;
@@ -177,15 +177,15 @@ list_cmp_fn (const void *n1, const void *n2)
 
 static void
 add_package (PkBackend *backend, PackageSource *package)
-{ 
+{
   gchar *pkg_string;
   gchar *arch = (gchar *)alpm_pkg_get_arch (package->pkg);
 
   if (arch == NULL) arch = "lala";
 
-  pkg_string = pk_package_id_build(alpm_pkg_get_name (package->pkg), 
-				     alpm_pkg_get_version (package->pkg), 
-				     arch, 
+  pkg_string = pk_package_id_build(alpm_pkg_get_name (package->pkg),
+				     alpm_pkg_get_version (package->pkg),
+				     arch,
 				     package->repo);
 
   pk_backend_package (backend, package->installed, pkg_string, alpm_pkg_get_desc (package->pkg));
@@ -268,7 +268,7 @@ pkg_is_installed (const gchar *name, const gchar *version)
 
   result = find_packages (name, localdb);
   if (result == NULL) return FALSE;
-  if (!alpm_list_count (result)) return FALSE; 
+  if (!alpm_list_count (result)) return FALSE;
 
   if (version == NULL)
     return TRUE;
@@ -312,8 +312,8 @@ backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	if (alpm_release () == -1)
-	  pk_backend_error_code (backend, 
-				 PK_ERROR_ENUM_INTERNAL_ERROR,  
+	  pk_backend_error_code (backend,
+				 PK_ERROR_ENUM_INTERNAL_ERROR,
 				 "Failed to release control");
 }
 
@@ -328,28 +328,28 @@ backend_initalize (PkBackend *backend)
 
 	if (alpm_initialize () == -1)
 	  {
-	    pk_backend_error_code (backend, 
-				 PK_ERROR_ENUM_INTERNAL_ERROR,  
+	    pk_backend_error_code (backend,
+				 PK_ERROR_ENUM_INTERNAL_ERROR,
 				 "Failed to initialize package manager");
 	    pk_debug ("alpm: %s", alpm_strerror (pm_errno));
 	    //return;
 	  }
-	
+
 	if (alpm_parse_config ("/etc/pacman.conf", NULL, "") != 0)
 	  {
-	    pk_backend_error_code (backend, 
-				 PK_ERROR_ENUM_INTERNAL_ERROR,  
+	    pk_backend_error_code (backend,
+				 PK_ERROR_ENUM_INTERNAL_ERROR,
 				 "Failed to parse config file");
 	    pk_debug ("alpm: %s", alpm_strerror (pm_errno));
 	    backend_destroy (backend);
 	    return;
 	  }
-	
+
 
 	if (alpm_db_register ("local") == NULL)
 	  {
-	    pk_backend_error_code (backend, 
-				 PK_ERROR_ENUM_INTERNAL_ERROR,  
+	    pk_backend_error_code (backend,
+				 PK_ERROR_ENUM_INTERNAL_ERROR,
 				 "Failed to load local database");
 	    backend_destroy (backend);
 	    return;
@@ -464,7 +464,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	//alpm_list_t *problems = NULL;
 
 	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0,
-		        trans_event_cb, trans_conv_cb, 
+		        trans_event_cb, trans_conv_cb,
 			trans_prog_cb) != 0)
 	   {
 	    pk_backend_error_code (backend,
@@ -486,14 +486,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	  }*/
 
 	alpm_list_t *i = NULL;
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE); 
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_timeout_add (PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
-	for (i = dbs; i; i = alpm_list_next (i))	
+	for (i = dbs; i; i = alpm_list_next (i))
 	  {
 	    if (alpm_db_update (force, (pmdb_t *)i->data))
 	      {
-		pk_backend_error_code (backend, 
-				       PK_ERROR_ENUM_TRANSACTION_ERROR,  
+		pk_backend_error_code (backend,
+				       PK_ERROR_ENUM_TRANSACTION_ERROR,
 				       alpm_strerror (pm_errno));
 		alpm_list_free (dbs);
 		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
@@ -618,10 +618,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	  }
 
 	if (!installed) filter_packages_installed (result, TRUE);
-	if (!ninstalled) filter_packages_installed (result, FALSE);	
-	
+	if (!ninstalled) filter_packages_installed (result, FALSE);
+
 	add_packages_from_list (backend, alpm_list_first (result));
-	pk_backend_finished  (backend, PK_EXIT_ENUM_SUCCESS); 
+	pk_backend_finished  (backend, PK_EXIT_ENUM_SUCCESS);
 }
 
 /**

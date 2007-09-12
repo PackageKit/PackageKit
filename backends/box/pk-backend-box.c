@@ -218,7 +218,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
 			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
 		}
-		
+
 	}
 }
 
