@@ -672,8 +672,12 @@ pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **pac
 		pk_warning ("Not assigned");
 		return FALSE;
 	}
-	*role = backend->priv->role;
-	*package_id = g_strdup (backend->priv->package_id);
+	if (role != NULL) {
+		*role = backend->priv->role;
+	}
+	if (package_id != NULL) {
+		*package_id = g_strdup (backend->priv->package_id);
+	}
 	return TRUE;
 }
 
