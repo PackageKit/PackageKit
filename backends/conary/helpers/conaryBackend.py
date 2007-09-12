@@ -218,9 +218,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             desc += "%s \n" % version
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')
+            detail = ""
             url = "http://www.foresightlinux.org/packages/" + name + ".html"
             group = "other"
-            self.description(id, group, desc, url)
+            self.description(desc, id, group, detail, url)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
