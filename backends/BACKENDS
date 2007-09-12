@@ -11,7 +11,7 @@ install         |           |   X   |       |       |       |
 remove          |           |   X   |       |       |       |
 get-deps        |           |   X   |       |       |       |
 get-description |     X     |   X   |   X   |   X   |       |
-search-file     |           |       |       |   X   |       |
+search-file     |           |   X   |       |   X   |       |
 get-requeres    |           |       |       |       |       |
 search-group    |           |       |       |       |       |
                 |           |       |       |       |       |

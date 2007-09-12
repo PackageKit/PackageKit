@@ -135,6 +135,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         #
         #
         return isDevel == wantDevel
+    
 
     def search_name(self,filters,key):
         '''
@@ -160,8 +161,29 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-file functionality
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-
+        self._setup_yum()
+        #self.yumbase.conf.cache = 1 # Only look in cache.
+        fltlist = filters.split(';')        
+        found = {}
+        if not '~installed' in fltlist:
+            # Check installed for file
+            for pkg in self.yumbase.rpmdb:
+                filelist = pkg.filelist
+                for fn in filelist:
+                    if key in fn and not found.has_key(str(pkg)):
+                        self._show_package(pkg, 1)
+                        found[str(pkg)] = 1
+        if not 'installed' in fltlist:
+            # Check available for file                
+            self.yumbase.repos.populateSack(mdtype='filelists')
+            for pkg in self.yumbase.pkgSack:
+                filelist = pkg.filelist
+                for fn in filelist:
+                    if key in fn and not found.has_key(str(pkg)):
+                        self._show_package(pkg, 1)
+                        found[str(pkg)] = 1
+        
+                
     def _getEVR(self,idver):
         '''
         get the e,v,r from the package id version
