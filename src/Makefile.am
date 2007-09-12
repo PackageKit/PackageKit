@@ -14,6 +14,7 @@ SELFTEST_LIBS =						\
 INCLUDES =						\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
+	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	$(NM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
@@ -60,6 +61,7 @@ packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
+	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
 	$(LIBNM_LIBS)					\
 	$(POLKIT_LIBS)					\
