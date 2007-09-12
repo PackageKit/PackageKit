@@ -166,6 +166,17 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 }
 
 /**
+ * backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "search-file.py", filter, search, NULL);
+}
+
+/**
  * backend_search_group:
  */
 static void
@@ -232,7 +243,7 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
+	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */

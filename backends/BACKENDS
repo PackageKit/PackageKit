@@ -1,18 +1,18 @@
 Current status of the backends
 
-                |   conary  |   yum |   apt |   box |   alpm|
--------------------------------------------------------------
-refresh-cache   |     X     |   X   |   X   |   X   |       |
-search-name     |     X     |   X   |   X   |   X   |   X   |
-search-details  |           |   X   |   X   |       |       |
-get-updates     |     X     |   X   |       |   X   |       |
-update-system   |           |   X   |       |       |       |
-install         |           |   X   |       |       |       |
-remove          |           |   X   |       |       |       |
-get-deps        |           |   X   |       |       |       |
-get-description |     X     |   X   |   X   |   X   |       |
-search-file     |           |   X   |       |   X   |       |
-get-requeres    |           |       |       |       |       |
-search-group    |           |       |       |       |       |
-                |           |       |       |       |       |
-                
+                  | conary | yum | apt | box | alpm |
+-----------------------------------------------------
+refresh-cache     |   X    |  X  |  X  |  X  |      |
+get-updates       |   X    |  X  |     |  X  |      |
+update-system     |        |  X  |     |     |      |
+search-name       |   X    |  X  |  X  |  X  |  X   |
+search-details    |        |  X  |  X  |     |      |
+search-file       |        |  X  |     |  X  |      |
+search-group      |        |     |     |     |      |
+install           |        |  X  |     |     |      |
+remove            |        |  X  |     |     |      |
+get-depends       |        |  X  |     |     |      |
+get-requires      |        |     |     |     |      |
+get-description   |   X    |  X  |  X  |  X  |      |
+get-update-detail |        |     |     |     |      |
+
