@@ -110,6 +110,7 @@ AC_SUBST(SYSCONFDIR, $sysconfdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 AC_SUBST(SBINDIR, $sbindir)
+AC_SUBST(LOCALSTATEDIR, $localstatedir)
 
 AC_ARG_WITH([packagekit_user],
 	    AS_HELP_STRING([--with-packagekit-user=<user>],
@@ -337,6 +338,7 @@ fi
     
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
+AC_SUBST(PK_DB_DIR, "\$(localstatedir)/db/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")

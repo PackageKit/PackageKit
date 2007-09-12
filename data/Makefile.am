@@ -15,9 +15,16 @@ localcache_DATA =					\
 	job_count.dat					\
 	$(NULL)
 
+databasedir = $(PK_DB_DIR)
+database_DATA =						\
+	packages.db					\
+	transactions.db					\
+	$(NULL)
+
 EXTRA_DIST =						\
 	$(service_in_files)				\
 	$(localcache_DATA)				\
+	$(database_DATA)				\
 	$(NULL)
 
 clean-local:

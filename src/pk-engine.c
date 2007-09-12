@@ -46,6 +46,7 @@
 
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
+#include "pk-transaction-db.h"
 #include "pk-job-list.h"
 #include "pk-marshal.h"
 
@@ -62,6 +63,7 @@ struct PkEnginePrivate
 	DBusConnection		*connection;
 	gchar			*backend;
 	PkJobList		*job_list;
+	PkTransactionDb		*transaction_db;
 };
 
 enum {
@@ -1456,14 +1458,16 @@ guint
 pk_engine_get_seconds_idle (PkEngine *engine)
 {
 	guint idle;
+	guint size;
 
 	g_return_val_if_fail (engine != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
 
 	/* check for jobs running - a job that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
-	if (pk_job_list_get_size (engine->priv->job_list) != 0) {
-		pk_debug ("engine idle zero as jobs in progress");
+	size = pk_job_list_get_size (engine->priv->job_list);
+	if (size != 0) {
+		pk_debug ("engine idle zero as %i jobs in progress", size);
 		return 0;
 	}
 
@@ -1562,6 +1566,7 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->job_list = pk_job_list_new ();
+	engine->priv->transaction_db = pk_transaction_db_new ();
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
 
@@ -1603,6 +1608,7 @@ pk_engine_finalize (GObject *object)
 	g_free (engine->priv->backend);
 	polkit_context_unref (engine->priv->pk_context);
 	g_object_unref (engine->priv->job_list);
+	g_object_unref (engine->priv->transaction_db);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

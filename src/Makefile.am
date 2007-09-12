@@ -25,6 +25,7 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
+	-DDATABASEDIR=\""$(PK_DB_DIR)"\"		\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
@@ -55,6 +56,8 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	pk-network.h					\
 	pk-network.c					\
+	pk-transaction-db.h				\
+	pk-transaction-db.c				\
 	$(NULL)
 
 packagekitd_LDADD =					\
