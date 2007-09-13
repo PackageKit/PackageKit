@@ -706,7 +706,7 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to idle loop", backend);
 	backend->priv->exit = exit;
-	g_idle_add (pk_backend_finished_idle, backend);
+	g_timeout_add (500, pk_backend_finished_idle, backend);
 	return TRUE;
 }
 
