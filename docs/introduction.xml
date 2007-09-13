@@ -16,9 +16,13 @@
         <para>
           Checking for updates and installing in the background.
         </para>
+      </listitem>
+      <listitem>
         <para>
           Automatically installing new or add-on software.
         </para>
+      </listitem>
+      <listitem>
         <para>
           Monitoring the state of the system.
         </para>
@@ -463,6 +467,65 @@
         Use <literal>AllowInterrupt(true)</literal> to enable cancellation
         and <literal>AllowInterrupt(false)</literal> to disable it.
         This can be done for any job type.
+      </para>
+    </sect2>
+
+    <sect2 id="introduction-ideas-transactionid">
+      <title>Transaction ID</title>
+      <para>
+        A <literal>transaction_id</literal> is a unique identifier that
+        identifies the present or past transaction.
+        A transaction is made up of one or more sub-transactions.
+        A transaction has one <literal>role</literal> for the entire lifetime,
+        but the transaction can different values of <literal>status</literal>
+        as the transaction is processed.
+      </para>
+      <para>
+        For example, if the user "Installed OpenOffice" and the backend has to:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            update libxml as a dependancy
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            install java as dependancy
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            install openoffice-bin
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            install openoffice-clipart
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        This is one single transaction with the role <literal>install</literal>,
+        with 4 different sub-transactions.
+        This allows the user to rollback transactions with selected backends,
+        rather than select sub-transactions which may need complex complict
+        resolution.
+      </para>
+      <para>
+        The <literal>transaction_id</literal> must be of the format
+        <literal>job;identifier;data</literal> where the daemon controls
+        all parameters.
+        <literal>job</literal> is a monotonically updating number and is
+        retained over reboots.
+        <literal>identifier</literal> is random data used by the daemon to
+        ensure jobs started in parallel cannot race, and also to make a
+        malicious client program harder to write.
+        <literal>data</literal> can be used for refcounting in the backend or
+        for any other purpose.
+        It is designed to make the life of a backend writer a little bit easier.
+        An example <literal>transaction_id</literal> would be
+        <literal>45;dafeca;checkpoint32</literal>
       </para>
     </sect2>
   </sect1>
