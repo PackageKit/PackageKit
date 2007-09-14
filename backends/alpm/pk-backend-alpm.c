@@ -321,9 +321,11 @@ backend_destroy (PkBackend *backend)
  * backend_initalize:
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	progress_percentage = -1;
+	subprogress_percentage = -1;
 	pk_debug ("alpm: hi!");
 
 	if (alpm_initialize () == -1)
@@ -356,15 +358,6 @@ backend_initalize (PkBackend *backend)
 	  }
 	pk_debug ("alpm: ready to go");
 }
-
-/**
- * backend_cancel_job_try:
- */
-/*static void
-backend_cancel_job_try (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-}*/
 
 /**
  * backend_get_depends:
@@ -666,7 +659,7 @@ PK_BACKEND_OPTIONS (
 	"alpm backend",					/* description */
 	"0.0.1",					/* version */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
-	backend_initalize,				/* initalize */
+	backend_initialize,				/* initalize */
 	backend_destroy,				/* destroy */
 	NULL,						/* get_groups */
 	NULL,						/* get_filters */
