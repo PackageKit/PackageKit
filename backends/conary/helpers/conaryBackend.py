@@ -46,7 +46,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _do_search(self,searchlist,filters):
         fltlist = filters.split(';')
-        troveSpecs = [ cmdline.parseTroveSpec(searchlist, allowEmptyName=False)]
+        troveSpecs = [ cmdline.parseTroveSpec(searchlist,
+                                              allowEmptyName=False) ]
         # get a hold of cached data
         cache = Cache()
 
@@ -92,7 +93,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         affinityDb = self.client.db
         fltlist = filters.split(';')
 
-        troveSpecs = [ cmdline.parseTroveSpec(searchlist, allowEmptyName=False)]
+        troveSpecs = [ cmdline.parseTroveSpec(searchlist,
+                                              allowEmptyName=False) ]
 
         try:
             # Look for packages with affinity
@@ -172,43 +174,51 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        name,installed,version,arch,fullVersion = self._findPackage(package_id)
+        name, installed, version, arch, fullVersion = \
+            self._findPackage(package_id)
 
         if name:
             if installed:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                    'Package already installed')
             try:
                 self.base.status(STATE_INSTALL)
                 #print "Update code goes here"
             except:
                 pass
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                'Package was not found')
 
 
     def remove(self, package_id):
         '''
         Implement the {backend}-remove functionality
         '''
-        name,installed,version,arch,fullVersion = self._findPackage(package_id)
+        name, installed, version, arch, fullVersion = \
+            self._findPackage(package_id)
 
         if name:
             if not installed:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,'Package not installed')
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,
+                    'Package not installed')
             try:
                 self.base.status(STATE_REMOVE)
                 #print "Remove code goes here"
             except:
                 pass
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                'Package was not found')
 
 
     def get_description(self, package_id):
         '''
         Print a detailed description for a given package
         '''
-        name,installed,version,arch,fullVersion = self._findPackage(package_id)
+        name, installed, version, arch, fullVersion = \
+            self._findPackage(package_id)
+
         fullVersion = versions.VersionFromString(fullVersion)
         version = fullVersion.trailingRevision()
         if name:
@@ -285,7 +295,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             wantDevel = False
         #
-        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a devel app
+        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a
+        #       devel app.
         #
         regex =  re.compile(r'(:devel)')
         if regex.search(pkg.name):
@@ -300,7 +311,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         # Split up the id
         (name,version,arch,fullVersion) = self.get_package_from_id(id)
-        troveTuple = tuple([name, versions.VersionFromString(fullVersion), None])
+        troveTuple = tuple([name,
+                            versions.VersionFromString(fullVersion),
+                            None])
         installed = self.check_installed(troveTuple)
         return name,installed,version,arch,fullVersion
 
@@ -319,7 +332,8 @@ class Cache(object):
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
 
-        self.conn = sqlite.connect(os.path.join(self.dbPath, self.dbName), isolation_level=None)
+        self.conn = sqlite.connect(os.path.join(self.dbPath, self.dbName),
+                                   isolation_level=None)
         self.cursor = self.conn.cursor()
         self.cursor.execute("PRAGMA count_changes=0")
         self.cursor.execute("pragma synchronous=off")
@@ -329,7 +343,8 @@ class Cache(object):
 
     def _validate_tables(self):
         """ Validates that all tables are up to date. """
-        stmt = "select tbl_name from sqlite_master where type = 'table' and tbl_name like 'conary_%'"
+        stmt = ("select tbl_name from sqlite_master "
+                "where type = 'table' and tbl_name like 'conary_%'")
         self.cursor.execute(stmt)
         # List of all tables with names that start with "conary_"
         tbllist = self.cursor.fetchall()
@@ -378,7 +393,8 @@ class Cache(object):
             category = ""
             packagegroup = ""
             size = ""
-            packages.append([trove, component, fullVersion, label, flavor, description, category, packagegroup, size])
+            packages.append([trove, component, fullVersion, label, flavor,
+                             description, category, packagegroup, size])
 
         return packages
 
@@ -410,8 +426,8 @@ class Cache(object):
         """
         Returns all troves for now.  Add filtering capability.
         """
-        stmt = "select distinct trove, version, flavor, description, category, packagegroup, size" \
-            " from conary_packages"
+        stmt = ("select distinct trove, version, flavor, description, "
+                "category, packagegroup, size from conary_packages")
 
         try:
             self.cursor.execute(stmt)
@@ -424,13 +440,16 @@ class Cache(object):
         """
         Returns all troves for now.  Add filtering capability.
         """
-        stmt = "select distinct trove, version, flavor, description, category, packagegroup, size" \
-            " from conary_packages"
+        stmt = ("select distinct trove, version, flavor, description, "
+                "category, packagegroup, size from conary_packages")
 
         if package and fullVersion:
-            stmt = "select distinct trove, version, flavor from conary_packages where trove ='" + package + "' and version = '" + fullVersion +"'"
+            stmt = ("select distinct trove, version, flavor from "
+                    "conary_packages where trove ='%s' and version = '%s'"
+                    % (package, fullVersion))
         elif package:
-            stmt = stmt + " where trove like '%" + package + "%' and component = '' order by version desc"
+            stmt += (" where trove like '%%%s%%' and component = '' order by "
+                     "version desc" % package)
 
         try:
             self.cursor.execute(stmt)
@@ -469,5 +488,3 @@ class Cache(object):
                 self._insert(package)
         except Exception, e:
             print str(e)
-
-
