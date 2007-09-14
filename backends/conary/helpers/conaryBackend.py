@@ -44,7 +44,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return PackageKitBaseBackend.get_package_id(self, name, version,
                                                     arch, fullVersion)
 
-    def _do_search(self,searchlist,filters):
+    def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
         troveSpecs = [ cmdline.parseTroveSpec(searchlist,
                                               allowEmptyName=False) ]
@@ -81,8 +81,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 id = self.get_package_id(name, version, flavor, fullVersion)
                 self.package(id, installed, summary)
 
-
-    def _do_search_live(self,searchlist,filters):
+    def _do_search_live(self, searchlist, filters):
         '''
         Search for conary packages
         @param searchlist: The conary package fields to search in
@@ -190,7 +189,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
-
     def remove(self, package_id):
         '''
         Implement the {backend}-remove functionality
@@ -210,7 +208,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
-
 
     def get_description(self, package_id):
         '''
@@ -258,7 +255,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             summary = ""
             self.package(id, installed, summary)
 
-    def _do_filtering(self,pkg,filterList,installed):
+    def _do_filtering(self, pkg, filterList, installed):
         ''' Filter the package, based on the filter in filterList '''
         # do we print to stdout?
         do_print = False;
@@ -277,7 +274,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             return do_print
 
-    def _do_extra_filtering(self,pkg,filterList):
+    def _do_extra_filtering(self, pkg, filterList):
         ''' do extra filtering (devel etc) '''
 
         for flt in filterList:
@@ -288,7 +285,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     return False
         return True
 
-    def _do_devel_filtering(self,flt,pkg):
+    def _do_devel_filtering(self, flt, pkg):
         isDevel = False
         if flt == 'devel':
             wantDevel = True
@@ -305,7 +302,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #
         return isDevel == wantDevel
 
-    def _findPackage(self,id):
+    def _findPackage(self, id):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
@@ -316,6 +313,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                             None])
         installed = self.check_installed(troveTuple)
         return name,installed,version,arch,fullVersion
+
 
 class Cache(object):
     # Database name and path
