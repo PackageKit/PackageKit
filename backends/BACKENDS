@@ -9,7 +9,7 @@ search-name       |   X    |  X  |  X  |  X  |  X   |
 search-details    |        |  X  |  X  |  X  |      |
 search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
-install           |        |  X  |     |  X  |      |
+install           |        |  X  |     |  X  |  X   |
 remove            |        |  X  |     |  X  |  X   |
 get-depends       |        |  X  |     |     |      |
 get-requires      |        |     |     |     |      |
