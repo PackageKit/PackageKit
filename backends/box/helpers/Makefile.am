@@ -4,6 +4,7 @@ helperdir = $(datadir)/PackageKit/helpers
 NULL =
 
 dist_helper_DATA = 			\
+	install-package.sh		\
 	refresh-cache.sh		\
 	$(NULL)
 

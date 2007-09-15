@@ -181,8 +181,6 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
-			// FIXME: temporary workaround
-			sleep(1);
 			pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 		}
 	}
@@ -406,6 +404,23 @@ backend_get_updates (PkBackend *backend)
 	}
 }
 
+
+/**
+ * backend_install_package:
+ */
+static void
+backend_install_package (PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+        /* check network state */
+        if (pk_backend_network_is_online (backend) == FALSE) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+                pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+                return;
+        }
+        pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
+}
+
 /**
  * backend_refresh_cache:
  */
@@ -468,7 +483,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_package */
+	backend_install_package,		/* install_package */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	backend_search_details,			/* search_details */
