@@ -10,7 +10,7 @@ search-details    |        |  X  |  X  |  X  |      |
 search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
 install           |        |  X  |     |  X  |      |
-remove            |        |  X  |     |  X  |      |
+remove            |        |  X  |     |  X  |  X   |
 get-depends       |        |  X  |     |     |      |
 get-requires      |        |     |     |     |      |
 get-description   |   X    |  X  |  X  |  X  |      |

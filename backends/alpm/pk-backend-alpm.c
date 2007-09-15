@@ -505,9 +505,70 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
+  	pk_debug ("I am %i", (int)backend);
 	g_return_if_fail (backend != NULL);
-	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	pmdb_t *localdb = alpm_option_get_localdb ();
+	alpm_list_t *result = find_packages (id->name, localdb);
+	pmtransflag_t flags = 0;
+	alpm_list_t *problems = NULL;
+	pk_debug ("I'm not null");
+
+	if (result == NULL)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
+				  "Package is not installed");
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }
+	else if (alpm_list_count (result) != 1 || 
+		 strcmp (alpm_pkg_get_name(((PackageSource *)result->data)->pkg), id->name) != 0)
+	  {	    
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
+				  "Package is not installed");
+	    alpm_list_free_inner (result, (alpm_list_fn_free)package_source_free);
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }
+
+	if (allow_deps) flags |= PM_TRANS_FLAG_CASCADE;
+
+	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags,
+			 trans_event_cb, trans_conv_cb,
+			 trans_prog_cb) == -1)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    return;
+	  }
+
+	alpm_trans_addtarget (id->name);
+
+	if (alpm_trans_prepare (&problems) != 0)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    alpm_trans_release ();
+	    return;
+	  }
+
+	if (alpm_trans_commit (&problems) != 0)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    alpm_trans_release ();
+	    return;
+	  }
+	alpm_trans_release ();
+	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 }
 
 /**
