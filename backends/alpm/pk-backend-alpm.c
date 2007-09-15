@@ -505,14 +505,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
-  	pk_debug ("I am %i", (int)backend);
 	g_return_if_fail (backend != NULL);
 	PkPackageId *id = pk_package_id_new_from_string (package_id);
 	pmdb_t *localdb = alpm_option_get_localdb ();
 	alpm_list_t *result = find_packages (id->name, localdb);
 	pmtransflag_t flags = 0;
 	alpm_list_t *problems = NULL;
-	pk_debug ("I'm not null");
 
 	if (result == NULL)
 	  {
