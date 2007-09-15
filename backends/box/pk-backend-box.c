@@ -438,6 +438,22 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 
+/**
+ * backend_remove_package:
+ */
+static void
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+{
+        g_return_if_fail (backend != NULL);
+        const gchar *deps;
+        if (allow_deps == TRUE) {
+                deps = "yes";
+        } else {
+                deps = "no";
+        }
+        pk_backend_spawn_helper (backend, "remove-package.sh", deps, package_id, NULL);
+}
+
 
 /**
  * backend_search_details:
@@ -485,7 +501,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_remove_package,			/* remove_package */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */

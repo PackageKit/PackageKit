@@ -11,5 +11,5 @@
 
 echo "no-percentage-updates" > /dev/stderr
 echo "status	install" > /dev/stderr
-pkg=$(echo "$@" | cut -f1 -d';')
+pkg=$(echo "$1" | cut -f1 -d';')
 box -i "$pkg" 2>&1 >/dev/null
