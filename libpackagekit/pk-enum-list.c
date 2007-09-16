@@ -101,6 +101,12 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 		return FALSE;
 	}
 
+	/* check if we have nothing */
+	if (strcmp (enums, "none") == 0) {
+		pk_debug ("no values");
+		return TRUE;
+	}
+
 	/* split by delimeter ';' */
 	sections = g_strsplit (enums, ";", 0);
 	for (i=0; sections[i]; i++) {
@@ -351,6 +357,29 @@ libst_enum_list (LibSelfTest *test)
 		libst_failed (test, "invalid '%s', should be 'search-name;search-details;search-group'", text);
 	}
 	g_free (text);
+	g_object_unref (elist);
+
+	/************************************************************/
+	libst_title (test, "set none enum list");
+	elist = pk_enum_list_new ();
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
+	pk_enum_list_from_string (elist, "none");
+	if (elist->priv->data->len == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid length %i", elist->priv->data->len);
+	}
+
+	/************************************************************/
+	libst_title (test, "get none enum list");
+	text = pk_enum_list_to_string (elist);
+	if (strcmp (text, "none") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid '%s', should be 'none'", text);
+	}
+	g_free (text);
+
 
 	g_object_unref (elist);
 	libst_end (test);
