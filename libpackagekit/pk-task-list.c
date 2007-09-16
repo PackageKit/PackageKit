@@ -153,8 +153,8 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint ru
 	/* get correct item */
 	item = pk_task_list_find_existing_job (tlist, job);
 
-	pk_debug ("emit task-list-finished %i, %s, %i", item->status, item->package_id, runtime);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package_id, runtime);
+	pk_debug ("emit task-list-finished %i, %s, %i", item->role, item->package_id, runtime);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->role, item->package_id, runtime);
 }
 
 /**
