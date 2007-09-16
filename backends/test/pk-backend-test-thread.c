@@ -221,7 +221,7 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Test Backend",				/* description */
+	"Test Thread Backend",			/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initalize,			/* initalize */
