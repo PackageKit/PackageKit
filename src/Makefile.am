@@ -56,6 +56,8 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	pk-network.h					\
 	pk-network.c					\
+	pk-thread-list.h				\
+	pk-thread-list.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
 	$(NULL)
@@ -110,6 +112,8 @@ check_PROGRAMS =					\
 pk_self_test_SOURCES =					\
 	pk-spawn.h					\
 	pk-spawn.c					\
+	pk-thread-list.h				\
+	pk-thread-list.c				\
 	pk-self-test.c					\
 	$(NULL)
 

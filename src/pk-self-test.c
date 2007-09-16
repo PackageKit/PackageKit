@@ -22,20 +22,27 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <libselftest.h>
+#include <pk-debug.h>
 
 /* prototypes */
 void libst_spawn (LibSelfTest *test);
+void libst_thread_list (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
 {
 	LibSelfTest test;
 
+	if (! g_thread_supported ()) {
+		g_thread_init (NULL);
+	}
 	g_type_init ();
 	libst_init (&test);
+	pk_debug_init (TRUE);
 
 	/* tests go here */
 	libst_spawn (&test);
+	libst_thread_list (&test);
 
 	return (libst_finish (&test));
 }

@@ -46,6 +46,7 @@
 #include "pk-enum.h"
 #include "pk-spawn.h"
 #include "pk-network.h"
+#include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -66,6 +67,7 @@ struct _PkBackendPrivate
 	guint			 last_percentage;
 	guint			 last_subpercentage;
 	gchar			*last_package;
+	PkThreadList		*thread_list;
 };
 
 enum {
@@ -165,6 +167,14 @@ pk_backend_get_name (PkBackend *backend)
 	return backend->priv->name;
 }
 
+/**
+ * pk_backend_thread_create:
+ **/
+gboolean
+pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
+{
+	return pk_thread_list_create (backend->priv->thread_list, (PkThreadFunc) func, backend, data);
+}
 
 /**
  * pk_backend_parse_common_output:
@@ -702,6 +712,9 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	pk_debug ("waiting for all threads");
+	pk_thread_list_wait (backend->priv->thread_list);
+
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to idle loop", backend);
@@ -1139,6 +1152,7 @@ pk_backend_finalize (GObject *object)
 	g_timer_destroy (backend->priv->timer);
 	g_free (backend->priv->last_package);
 	g_object_unref (backend->priv->network);
+	g_object_unref (backend->priv->thread_list);
 
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
@@ -1232,6 +1246,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->network = pk_network_new ();
+	backend->priv->thread_list = pk_thread_list_new ();
 }
 
 /**

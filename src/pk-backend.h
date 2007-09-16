@@ -72,6 +72,12 @@ gboolean	 pk_backend_allow_interrupt		(PkBackend	*backend,
 							 gboolean	 allow_restart);
 gboolean	 pk_backend_network_is_online		(PkBackend	*backend);
 
+typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend,
+							 gpointer	 data);
+gboolean	 pk_backend_thread_create		(PkBackend	*backend,
+							 PkBackendThreadFunc func,
+							 gpointer	 data);
+
 /**
  * PkBackendDesc:
  */
