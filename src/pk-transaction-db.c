@@ -316,12 +316,6 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	/* add extra tables */
 	statement = "ALTER table transactions ADD timespec TEXT;";
 	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
-
-	/* ick */
-	pk_transaction_db_print (tdb);
-
-	statement = "SELECT time date FROM transactions WHERE transaction_id = \"13;acaef\"";
-	pk_transaction_db_sql_statement (tdb, statement);
 }
 
 /**
