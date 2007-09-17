@@ -49,6 +49,7 @@
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
+#define PK_BACKEND_PERCENTAGE_INVALID	101
 
 struct _PkBackendPrivate
 {
@@ -524,7 +525,7 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* save in case we need this from coldplug */
-	backend->priv->last_subpercentage = percentage;
+	backend->priv->last_percentage = percentage;
 
 	pk_debug ("emit percentage-changed %i", percentage);
 	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
@@ -626,10 +627,15 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
  * pk_backend_get_percentage:
  **/
 gboolean
-pk_backend_get_percentage (PkBackend	*backend, guint *percentage)
+pk_backend_get_percentage (PkBackend *backend, guint *percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* no data yet... */
+	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
+		return FALSE;
+	}
 	*percentage = backend->priv->last_percentage;
 	return TRUE;
 }
@@ -642,6 +648,11 @@ pk_backend_get_sub_percentage (PkBackend *backend, guint *percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* no data yet... */
+	if (backend->priv->last_subpercentage == PK_BACKEND_PERCENTAGE_INVALID) {
+		return FALSE;
+	}
 	*percentage = backend->priv->last_subpercentage;
 	return TRUE;
 }
@@ -806,6 +817,9 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* invalidate previous percentage */
+	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 
 	pk_debug ("emit no-percentage-updates");
 	g_signal_emit (backend, signals [PK_BACKEND_NO_PERCENTAGE_UPDATES], 0);
@@ -1317,8 +1331,8 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->package_id = NULL;
-	backend->priv->last_percentage = 0;
-	backend->priv->last_subpercentage = 0;
+	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_package = NULL;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;

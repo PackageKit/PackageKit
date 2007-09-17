@@ -120,6 +120,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_FILTER_INVALID, "FilterInvalid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -1326,6 +1327,7 @@ gboolean
 pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1336,7 +1338,12 @@ pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_percentage (item->task, percentage);
+	ret = pk_backend_get_percentage (item->task, percentage);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No percentage data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -1347,6 +1354,7 @@ gboolean
 pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1357,7 +1365,12 @@ pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GE
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_sub_percentage (item->task, percentage);
+	ret = pk_backend_get_sub_percentage (item->task, percentage);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No sub-percentage data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 
