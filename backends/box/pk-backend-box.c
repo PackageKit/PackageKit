@@ -411,14 +411,14 @@ backend_get_updates (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        /* check network state */
-        if (pk_backend_network_is_online (backend) == FALSE) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-                pk_backend_finished (backend);
-                return;
-        }
-        pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
+	g_return_if_fail (backend != NULL);
+	/* check network state */
+	if (pk_backend_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		return;
+	}
+	pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
 }
 
 /**
@@ -444,14 +444,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
-        g_return_if_fail (backend != NULL);
-        const gchar *deps;
-        if (allow_deps == TRUE) {
-                deps = "yes";
-        } else {
-                deps = "no";
-        }
-        pk_backend_spawn_helper (backend, "remove-package.sh", deps, package_id, NULL);
+	g_return_if_fail (backend != NULL);
+	const gchar *deps;
+	if (allow_deps == TRUE) {
+		deps = "yes";
+	} else {
+		deps = "no";
+	}
+	pk_backend_spawn_helper (backend, "remove-package.sh", deps, package_id, NULL);
 }
 
 
@@ -485,6 +485,23 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
 }
 
+/**
+ * backend_update_package:
+ */
+static void
+backend_update_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	/* check network state */
+	if (pk_backend_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		return;
+	}
+	pk_backend_spawn_helper (backend, "update-package.sh", package_id, NULL);
+}
+
+
 PK_BACKEND_OPTIONS (
 	"Box Backend",				/* description */
 	"0.0.1",				/* version */
@@ -506,7 +523,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	backend_update_package,			/* update_package */
 	NULL					/* update_system */
 );
 

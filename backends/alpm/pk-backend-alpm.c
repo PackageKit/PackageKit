@@ -148,6 +148,18 @@ pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
   return TRUE;
 }
 
+gboolean
+pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
+{
+  if (strcmp (alpm_pkg_get_name (pkg), name) != 0)
+    return FALSE;
+  if (version != NULL)
+    if (strcmp (alpm_pkg_get_version (pkg), version) != 0)
+      return FALSE;
+  return TRUE;
+}
+
+
 alpm_list_t *
 my_list_remove_node (alpm_list_t *node)
 {
@@ -414,31 +426,96 @@ backend_get_updates (PkBackend *backend)
 	pk_backend_finished (backend);
 }
 
-static gboolean
-backend_install_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	if (progress_percentage == 100) {
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	if (progress_percentage == 50) {
-		pk_backend_change_job_status (backend, PK_STATUS_ENUM_INSTALL);
-	}
-	progress_percentage += 10;
-	pk_backend_change_percentage (backend, progress_percentage);
-	return TRUE;
-}
-
 /**
  * backend_install_package:
  */
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-	progress_percentage = 0;
-	g_timeout_add (1000, backend_install_timeout, backend);
+  g_return_if_fail (backend != NULL);
+  //alpm_list_t *syncdbs = alpm_option_get_syncdbs ();
+  alpm_list_t *result = NULL;
+  alpm_list_t *problems = NULL;
+  PkPackageId *id = pk_package_id_new_from_string (package_id);
+  pmtransflag_t flags = 0;
+
+  flags |= PM_TRANS_FLAG_NODEPS;
+
+  // Next generation code?
+  /*for (; syncdbs; syncdbs = alpm_list_next (syncdbs))
+    result = my_list_mmerge (result, find_packages (id->name, (pmdb_t *)syncdbs->data), list_cmp_fn);
+
+  if (result == NULL)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+			     "Package not found");
+      pk_backend_finished (backend);
+      alpm_list_free (result);
+      alpm_list_free (syncdbs);
+      pk_package_id_free (id);
+      return;
+    }
+
+  for (; result; result = alpm_list_next (result))
+    if (pkg_equals_to ((pmpkg_t *)result->data, id->name, id->version))
+      break;
+
+  if (!result)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+			     "Package not found");
+      pk_backend_finished (backend);
+      alpm_list_free (result);
+      alpm_list_free (syncdbs);
+      pk_package_id_free (id);
+      return;
+    }*/
+
+  if (alpm_trans_init (PM_TRANS_TYPE_SYNC, flags,
+		       trans_event_cb, trans_conv_cb,
+		       trans_prog_cb) == -1)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_list_free (result);
+      pk_package_id_free (id);
+      return;
+    }
+
+  alpm_trans_addtarget (id->name);
+
+  if (alpm_trans_prepare (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      alpm_list_free (result);
+      pk_package_id_free (id);
+      return;
+    }
+
+  if (alpm_trans_commit (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      alpm_list_free (result);
+      pk_package_id_free (id);
+      return;
+    }
+
+  alpm_trans_release ();
+  alpm_list_free (result);
+  pk_package_id_free (id);
+  pk_backend_finished (backend);
 }
 
 /**
@@ -501,7 +578,78 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
+	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	pmdb_t *localdb = alpm_option_get_localdb ();
+	alpm_list_t *result = find_packages (id->name, localdb);
+	pmtransflag_t flags = 0;
+	alpm_list_t *problems = NULL;
+
+	if (result == NULL)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
+				  "Package is not installed");
+	    pk_backend_finished (backend);
+	    pk_package_id_free (id);
+	    return;
+	  }
+	else if (alpm_list_count (result) != 1 || 
+		 strcmp (alpm_pkg_get_name(((PackageSource *)result->data)->pkg), id->name) != 0)
+	  {	    
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
+				  "Package is not installed");
+	    alpm_list_free_inner (result, (alpm_list_fn_free)package_source_free);
+	    pk_backend_finished (backend);
+	    pk_package_id_free (id);
+	    alpm_list_free (result);
+	    return;
+	  }
+
+	if (allow_deps) flags |= PM_TRANS_FLAG_CASCADE;
+
+	if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags,
+			 trans_event_cb, trans_conv_cb,
+			 trans_prog_cb) == -1)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend);
+	    alpm_list_free (result);
+	    pk_package_id_free (id);
+	    return;
+	  }
+
+	alpm_trans_addtarget (id->name);
+
+	if (alpm_trans_prepare (&problems) != 0)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend);
+	    alpm_trans_release ();
+	    alpm_list_free (result);
+	    pk_package_id_free (id);
+	    return;
+	  }
+
+	if (alpm_trans_commit (&problems) != 0)
+	  {
+	    pk_backend_error_code (backend,
+				  PK_ERROR_ENUM_TRANSACTION_ERROR,
+				  alpm_strerror (pm_errno));
+	    pk_backend_finished (backend);
+	    alpm_trans_release ();
+	    alpm_list_free (result);
+	    pk_package_id_free (id);
+	    return;
+	  }
+
+	alpm_list_free (result);
+	pk_package_id_free (id);
+	alpm_trans_release ();
 	pk_backend_finished (backend);
 }
 
