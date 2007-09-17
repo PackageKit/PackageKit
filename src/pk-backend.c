@@ -105,7 +105,11 @@ pk_backend_build_library_path (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
-	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+	path = g_build_filename ("..", "backends", backend->priv->name, ".libs", filename, NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
+		g_free (path);
+		path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+	}
 	g_free (filename);
 	pk_debug ("dlopening '%s'", path);
 
