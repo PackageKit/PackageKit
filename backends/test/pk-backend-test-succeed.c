@@ -191,13 +191,27 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 }
 
 /**
+ * backend_search_name_timeout:
+ **/
+gboolean
+backend_search_name_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
+/**
  * backend_search_name:
+ *
+ * A really long wait........
  */
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend);
+	pk_backend_no_percentage_updates (backend);
+	g_timeout_add (200000, backend_search_name_timeout, backend);
 }
 
 /**
