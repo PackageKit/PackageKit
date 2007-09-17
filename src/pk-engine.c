@@ -489,6 +489,13 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 	/* commit, so it appears in the JobList */
 	pk_job_list_commit (engine->priv->job_list, task);
 
+#if 0
+	/* add to database */
+	pk_transaction_db_add (engine->priv->transaction_db, "45;mom;data");
+	pk_transaction_db_set_role (engine->priv->transaction_db, "45;mom;data", PK_ROLE_ENUM_SYSTEM_UPDATE);
+	pk_transaction_db_set_finished (engine->priv->transaction_db, "45;mom;data", 1, 123);
+#endif
+
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
 	return TRUE;
