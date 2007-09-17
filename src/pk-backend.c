@@ -480,6 +480,9 @@ pk_backend_spawn_helper (PkBackend *backend, const gchar *script, ...)
 	return ret;
 }
 
+/* ick, we need to call this directly... */
+static gboolean
+pk_backend_finished_delay (gpointer data);
 /**
  * pk_backend_not_implemented_yet:
  **/
@@ -487,7 +490,9 @@ gboolean
 pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	/* don't wait, do this now */
+	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+	pk_backend_finished_delay (backend);
 	return TRUE;
 }
 
@@ -731,10 +736,12 @@ pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **pac
 }
 
 /**
- * pk_backend_finished_idle:
+ * pk_backend_finished_delay:
+ *
+ * We can call into this function if we *know* it's safe. 
  **/
 static gboolean
-pk_backend_finished_idle (gpointer data)
+pk_backend_finished_delay (gpointer data)
 {
 	PkBackend *backend = PK_BACKEND (data);
 	pk_debug ("emit finished %i", backend->priv->exit);
@@ -758,7 +765,7 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
 	backend->priv->exit = exit;
-	g_timeout_add (500, pk_backend_finished_idle, backend);
+	g_timeout_add (500, pk_backend_finished_delay, backend);
 	return TRUE;
 }
 
@@ -1185,7 +1192,7 @@ pk_backend_finalize (GObject *object)
 		}		
 	}
 
-	pk_debug ("freeing %s", backend->priv->name);
+	pk_debug ("freeing %s (%p)", backend->priv->name, backend);
 	g_free (backend->priv->name);
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);

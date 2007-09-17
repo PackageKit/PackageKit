@@ -519,8 +519,11 @@ pk_engine_delete_task (PkEngine *engine, PkTask *task)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("removing task %p as it failed", task);
 	pk_job_list_remove (engine->priv->job_list, task);
-	g_object_unref (task);
+
+	/* we don't do g_object_unref (task) here as it is done in the
+	   ::finished handler */
 	return TRUE;
 }
 
