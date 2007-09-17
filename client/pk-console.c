@@ -96,6 +96,20 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
 }
 
 /**
+ * pk_console_transaction_cb:
+ **/
+static void
+pk_console_transaction_cb (PkTaskClient *tclient, const gchar *tid, const gchar *timespec,
+			   gboolean succeeded, const gchar *role, guint duration, gpointer data)
+{
+	g_print ("tid          : %s\n", tid);
+	g_print (" timespec    : %s\n", timespec);
+	g_print (" succeeded   : %i\n", succeeded);
+	g_print (" role        : %s\n", role /*pk_role_enum_to_text (role)*/);
+	g_print (" duration    : %i (seconds)\n", duration);
+}
+
+/**
  * pk_console_update_detail_cb:
  **/
 static void
@@ -147,6 +161,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] get actions\n");
 	g_print ("  pkcon [sync] [verbose] get groups\n");
 	g_print ("  pkcon [sync] [verbose] get filters\n");
+	g_print ("  pkcon [sync] [verbose] get transactions\n");
 	g_print ("\n");
 	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 }
@@ -302,6 +317,10 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 			remove = 2;
+		} else if (strcmp (value, "transactions") == 0) {
+			pk_task_client_set_sync (tclient, TRUE);
+			pk_task_client_get_old_transactions (tclient, 10);
+			remove = 2;
 		} else {
 			pk_console_usage ("invalid get type");
 		}
@@ -429,6 +448,8 @@ main (int argc, char *argv[])
 	tclient = pk_task_client_new ();
 	g_signal_connect (tclient, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
+	g_signal_connect (tclient, "transaction",
+			  G_CALLBACK (pk_console_transaction_cb), NULL);
 	g_signal_connect (tclient, "description",
 			  G_CALLBACK (pk_console_description_cb), NULL);
 	g_signal_connect (tclient, "update-detail",
