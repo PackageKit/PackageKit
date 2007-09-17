@@ -71,21 +71,21 @@ struct _PkBackendPrivate
 };
 
 enum {
-	PK_TASK_JOB_STATUS_CHANGED,
-	PK_TASK_PERCENTAGE_CHANGED,
-	PK_TASK_SUB_PERCENTAGE_CHANGED,
-	PK_TASK_NO_PERCENTAGE_UPDATES,
-	PK_TASK_DESCRIPTION,
-	PK_TASK_PACKAGE,
-	PK_TASK_UPDATE_DETAIL,
-	PK_TASK_ERROR_CODE,
-	PK_TASK_REQUIRE_RESTART,
-	PK_TASK_FINISHED,
-	PK_TASK_ALLOW_INTERRUPT,
-	PK_TASK_LAST_SIGNAL
+	PK_BACKEND_JOB_STATUS_CHANGED,
+	PK_BACKEND_PERCENTAGE_CHANGED,
+	PK_BACKEND_SUB_PERCENTAGE_CHANGED,
+	PK_BACKEND_NO_PERCENTAGE_UPDATES,
+	PK_BACKEND_DESCRIPTION,
+	PK_BACKEND_PACKAGE,
+	PK_BACKEND_UPDATE_DETAIL,
+	PK_BACKEND_ERROR_CODE,
+	PK_BACKEND_REQUIRE_RESTART,
+	PK_BACKEND_FINISHED,
+	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_LAST_SIGNAL
 };
 
-static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
+static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 
@@ -381,7 +381,8 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	gchar *command;
 
 	/* build script */
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	pk_debug ("using spawn filename %s", filename);
 
 	if (argument != NULL) {
 		command = g_strdup_printf ("%s %s", filename, argument);
@@ -465,7 +466,7 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 	backend->priv->last_subpercentage = percentage;
 
 	pk_debug ("emit percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_TASK_PERCENTAGE_CHANGED], 0, percentage);
+	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 
@@ -482,7 +483,7 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
 	backend->priv->last_subpercentage = percentage;
 
 	pk_debug ("emit sub-percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_TASK_SUB_PERCENTAGE_CHANGED], 0, percentage);
+	g_signal_emit (backend, signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 
@@ -517,7 +518,7 @@ pk_backend_change_job_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	backend->priv->status = status;
 	pk_debug ("emiting job-status-changed %i", status);
-	g_signal_emit (backend, signals [PK_TASK_JOB_STATUS_CHANGED], 0, status);
+	g_signal_emit (backend, signals [PK_BACKEND_JOB_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
 
@@ -535,7 +536,7 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 	backend->priv->last_package = g_strdup (package);
 
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
-	g_signal_emit (backend, signals [PK_TASK_PACKAGE], 0, value, package, summary);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, value, package, summary);
 
 	return TRUE;
 }
@@ -554,7 +555,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, url, restart, update_text);
-	g_signal_emit (backend, signals [PK_TASK_UPDATE_DETAIL], 0,
+	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, url, restart, update_text);
 	return TRUE;
 }
@@ -606,7 +607,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit require-restart %i, %s", restart, details);
-	g_signal_emit (backend, signals [PK_TASK_REQUIRE_RESTART], 0, restart, details);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
 	return TRUE;
 }
@@ -623,7 +624,7 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
-	g_signal_emit (backend, signals [PK_TASK_DESCRIPTION], 0, package_id, licence, group, description, url);
+	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url);
 
 	return TRUE;
 }
@@ -645,7 +646,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	va_end (args);
 
 	pk_debug ("emit error-code %i, %s", code, buffer);
-	g_signal_emit (backend, signals [PK_TASK_ERROR_CODE], 0, code, buffer);
+	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
 	return TRUE;
 }
@@ -697,9 +698,9 @@ pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **pac
 static gboolean
 pk_backend_finished_idle (gpointer data)
 {
-	PkBackend *backend = (PkBackend *) data;
+	PkBackend *backend = PK_BACKEND (data);
 	pk_debug ("emit finished %i", backend->priv->exit);
-	g_signal_emit (backend, signals [PK_TASK_FINISHED], 0, backend->priv->exit);
+	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	return FALSE;
 }
 
@@ -717,9 +718,9 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
-	pk_debug ("adding finished %p to idle loop", backend);
+	pk_debug ("adding finished %p to timeout loop", backend);
 	backend->priv->exit = exit;
-	g_timeout_add (500, pk_backend_finished_idle, backend);
+	g_timeout_add (10500, pk_backend_finished_idle, backend);
 	return TRUE;
 }
 
@@ -733,7 +734,7 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit no-percentage-updates");
-	g_signal_emit (backend, signals [PK_TASK_NO_PERCENTAGE_UPDATES], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_NO_PERCENTAGE_UPDATES], 0);
 	return TRUE;
 }
 
@@ -748,7 +749,7 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 
 	pk_debug ("emit allow-interrupt %i", allow_restart);
 	backend->priv->is_killable = allow_restart;
-	g_signal_emit (backend, signals [PK_TASK_ALLOW_INTERRUPT], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0);
 	return TRUE;
 }
 
@@ -1167,58 +1168,58 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	object_class->finalize = pk_backend_finalize;
 
-	signals [PK_TASK_JOB_STATUS_CHANGED] =
+	signals [PK_BACKEND_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PERCENTAGE_CHANGED] =
+	signals [PK_BACKEND_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_SUB_PERCENTAGE_CHANGED] =
+	signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED] =
 		g_signal_new ("sub-percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PACKAGE] =
+	signals [PK_BACKEND_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_UPDATE_DETAIL] =
+	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_REQUIRE_RESTART] =
+	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_TASK_DESCRIPTION] =
+	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
 			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_ERROR_CODE] =
+	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_TASK_FINISHED] =
+	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_NO_PERCENTAGE_UPDATES] =
+	signals [PK_BACKEND_NO_PERCENTAGE_UPDATES] =
 		g_signal_new ("no-percentage-updates",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_TASK_ALLOW_INTERRUPT] =
+	signals [PK_BACKEND_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
