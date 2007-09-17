@@ -52,6 +52,13 @@ struct PkTransactionDbPrivate
 	sqlite3			*db;
 };
 
+enum {
+	PK_TRANSACTION_DB_TRANSACTION,
+	PK_TRANSACTION_DB_LAST_SIGNAL
+};
+
+static guint signals [PK_TRANSACTION_DB_LAST_SIGNAL] = { 0, };
+
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
 
 /**
@@ -99,14 +106,17 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 			pk_warning ("%s = %s\n", col, value);
 		}
 	}
-//	g_print ("\n");
+
 	g_print ("tid          : %s\n", tid);
+	g_print (" timespec    : %s\n", timespec);
 	g_print (" succeeded   : %i\n", succeeded);
 	g_print (" role        : %s\n", pk_role_enum_to_text (role));
 	g_print (" duration    : %i (seconds)\n", duration);
-	g_print (" timespec    : %s\n", timespec);
+
 	/* emit signal */
-	//TODO
+	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
+		       tid, timespec, succeeded, role, duration);
+
 	g_free (tid);
 	g_free (timespec);
 	return 0;
@@ -245,6 +255,11 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_transaction_db_finalize;
+	signals [PK_TRANSACTION_DB_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_UINT_UINT,
+			      G_TYPE_NONE, 0);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
