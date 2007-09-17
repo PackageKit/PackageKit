@@ -561,7 +561,7 @@ static gboolean backend_get_description_thread (PkBackend *backend, gpointer dat
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		GHashTable *pkg = PackageRecord(V);
 		pk_backend_description(backend,dt->pi->name,
-					PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
+			"unknown", PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
 		g_hash_table_unref(pkg);
 	}
 	return NULL;
@@ -614,7 +614,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 static gboolean backend_search_file_thread (PkBackend *backend, gpointer data)
 {
-	search_task *st = (search_task*)data;
+	//search_task *st = (search_task*)data;
 	gchar *sdir = g_path_get_dirname(_config->Find("Dir::State::status").c_str());
 	gchar *ldir = g_build_filename(sdir,"info",NULL);
 	g_free(sdir);
