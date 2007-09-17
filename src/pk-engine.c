@@ -438,6 +438,9 @@ pk_engine_new_task (PkEngine *engine)
 	PkTask *task;
 	gboolean ret;
 
+	g_return_val_if_fail (engine != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
+
 	/* allocate a new task */
 	task = pk_backend_new ();
 	ret = pk_backend_load (task, engine->priv->backend);
@@ -486,6 +489,9 @@ pk_engine_new_task (PkEngine *engine)
 static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
 	/* commit, so it appears in the JobList */
 	pk_job_list_commit (engine->priv->job_list, task);
 
@@ -498,6 +504,23 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
+	return TRUE;
+}
+
+/**
+ * pk_engine_delete_task:
+ *
+ * Use this function when a function failed, and we just want to get rid
+ * of all references to it.
+ **/
+gboolean
+pk_engine_delete_task (PkEngine *engine, PkTask *task)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_job_list_remove (engine->priv->job_list, task);
+	g_object_unref (task);
 	return TRUE;
 }
 
@@ -579,7 +602,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -612,7 +635,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -710,7 +733,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -756,7 +779,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -802,7 +825,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -848,7 +871,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -890,7 +913,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -932,7 +955,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -974,7 +997,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -1008,7 +1031,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -1058,7 +1081,7 @@ pk_engine_update_system (PkEngine *engine,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1109,7 +1132,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1162,7 +1185,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1215,7 +1238,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
