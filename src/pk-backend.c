@@ -781,7 +781,14 @@ pk_backend_finished (PkBackend *backend)
 
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
-		pk_error ("you have to use pk_backend_thread_helper or use pk_thread_list_wait!");
+		g_print ("ERROR: There are threads running and the task has been asked to finish!\n");
+		g_print ("If you are using :\n");
+		g_print ("* pk_backend_thread_helper\n");
+		g_print ("   - You should _not_ use pk_backend_finished directly");
+		g_print ("   - Return from the function like normal\n");
+		g_print ("* pk_thread_list_create:\n");
+		g_print ("   -  If used internally you _have_ to use pk_thread_list_wait\n");
+		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
 	}
 
 	/* we have to run this idle as the command may finish before the job
