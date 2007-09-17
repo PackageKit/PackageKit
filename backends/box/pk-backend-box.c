@@ -164,11 +164,9 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		list = box_db_repos_search_file (db, search);
 		add_packages_from_list (backend, list);
 		box_db_repos_package_list_free (list);
-		pk_backend_finished (backend);
 	} else {
 		if (installed == FALSE && available == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-			pk_backend_finished (backend);
 		} else	{
 			if (installed == TRUE && available == TRUE) {
 				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
@@ -179,7 +177,6 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
-			pk_backend_finished (backend);
 		}
 	}
 
@@ -191,7 +188,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer data)
 {
 	FindData *d = (FindData*) data;
 
-	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (backend != NULL, FALSE);
 
 	find_packages_real (backend, d->search, d->filter, d->mode);
 
@@ -379,7 +376,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
@@ -459,7 +456,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "update-package.sh", package_id, NULL);
