@@ -1381,6 +1381,7 @@ gboolean
 pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1391,7 +1392,12 @@ pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **er
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_package (item->task, package);
+	ret = pk_backend_get_package (item->task, package);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No package data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 

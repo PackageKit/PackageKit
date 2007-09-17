@@ -665,6 +665,10 @@ pk_backend_get_package (PkBackend *backend, gchar **package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	if (backend->priv->last_package == NULL) {
+		return FALSE;
+	}
 	*package_id = g_strdup (backend->priv->last_package);
 	return TRUE;
 }
