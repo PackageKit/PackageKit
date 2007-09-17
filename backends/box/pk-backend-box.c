@@ -166,11 +166,11 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		list = box_db_repos_search_file (db, search);
 		add_packages_from_list (backend, list);
 		box_db_repos_package_list_free (list);
-		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+		pk_backend_finished (backend);
 	} else {
 		if (installed == FALSE && available == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-			pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished (backend);
 		} else	{
 			if (installed == TRUE && available == TRUE) {
 				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
@@ -181,7 +181,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			}
 			add_packages_from_list (backend, list);
 			box_db_repos_package_list_free (list);
-			pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+			pk_backend_finished (backend);
 		}
 	}
 
@@ -214,7 +214,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 	} else {
 		data->backend = backend;
 		data->search = g_strdup(search);
@@ -223,7 +223,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 
 		if (g_thread_create(find_packages_thread, data, FALSE, NULL) == NULL) {
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished (backend);
 		}
 
 	}
@@ -263,7 +263,7 @@ get_updates_thread(gpointer data)
 	add_packages_from_list (d->backend, list);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (d->backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (d->backend);
 
 	g_free(d);
 	db_close (db);
@@ -282,7 +282,7 @@ get_description_thread(gpointer data)
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (d->backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (d->backend);
 		return NULL;
 	}
 
@@ -291,7 +291,7 @@ get_description_thread(gpointer data)
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
 		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
-		pk_backend_finished (d->backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (d->backend);
 		return NULL;
 	}
 
@@ -300,7 +300,7 @@ get_description_thread(gpointer data)
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (d->backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (d->backend);
 	g_free (d->package_id);
 	g_free (d);
 
@@ -367,14 +367,14 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 	} else {
 		data->backend = backend;
 		data->package_id = g_strdup(package_id);
 
 		if (g_thread_create(get_description_thread, data, FALSE, NULL) == NULL) {
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished (backend);
 		}
 	}
 
@@ -393,13 +393,13 @@ backend_get_updates (PkBackend *backend)
 
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 	} else {
 		data->backend = backend;
 
 		if (g_thread_create(get_updates_thread, data, FALSE, NULL) == NULL) {
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished (backend);
 		}
 	}
 }
@@ -415,7 +415,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
         /* check network state */
         if (pk_backend_network_is_online (backend) == FALSE) {
                 pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-                pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+                pk_backend_finished (backend);
                 return;
         }
         pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
@@ -431,7 +431,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);

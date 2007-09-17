@@ -77,7 +77,7 @@ static void
 backend_cancel_job_try (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -87,7 +87,7 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -97,7 +97,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -107,7 +107,7 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -117,7 +117,7 @@ static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -127,7 +127,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -137,7 +137,7 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -147,7 +147,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -157,7 +157,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -167,7 +167,7 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -177,7 +177,7 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -187,7 +187,7 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -197,7 +197,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -207,7 +207,7 @@ static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -217,7 +217,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 PK_BACKEND_OPTIONS (

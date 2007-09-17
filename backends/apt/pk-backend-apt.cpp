@@ -170,7 +170,7 @@ void *do_update_thread(gpointer data)
 	if (List.ReadMainList() == false)
 	{
 		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failure reading lists");
-		pk_backend_finished(ud->backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(ud->backend);
 		return NULL;
 	}
 
@@ -183,7 +183,7 @@ void *do_update_thread(gpointer data)
 		{
 			_error->DumpErrors();
 			pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Unable to lock the list directory");
-			pk_backend_finished(ud->backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished(ud->backend);
 			return NULL;
 		}
 	}
@@ -252,12 +252,12 @@ void *do_update_thread(gpointer data)
 	}
 
 	delete Stat;
-	pk_backend_finished(ud->backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished(ud->backend);
 	return NULL;
 
 	do_update_clean:
 	delete Stat;
-	pk_backend_finished(ud->backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished(ud->backend);
 	return NULL;
 }
 
@@ -298,7 +298,7 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 	if (pk_backend_network_is_online(backend) == FALSE)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 		return;
 	}
 
@@ -306,7 +306,7 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 	if (data == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for update task");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 	}
 	else
 	{
@@ -314,7 +314,7 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 		if (g_thread_create(do_update_thread, data, false, NULL) == NULL)
 		{
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create update thread");
-			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished(backend);
 		}
 	}
 }
@@ -402,7 +402,7 @@ static void *get_search_thread(gpointer data)
 	if (regcomp(Pattern, st->search, REG_EXTENDED | REG_ICASE | REG_NOSUB) != 0)
 	{
 		pk_backend_error_code(st->backend, PK_ERROR_ENUM_UNKNOWN, "regex compilation error");
-		pk_backend_finished(st->backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(st->backend);
 		goto search_task_cleanup;
 	}
 
@@ -470,7 +470,7 @@ static void *get_search_thread(gpointer data)
 		}
 	}
 
-	pk_backend_finished(st->backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished(st->backend);
 
 search_task_cleanup:
 	for (ExDescFile * J = DFList; J->Df != 0; J++)
@@ -496,7 +496,7 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 	if (data == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 	}
 	else
 	{
@@ -508,7 +508,7 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 		if (g_thread_create(search_thread, data, false, NULL) == NULL)
 		{
 			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to spawn thread");
-			pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+			pk_backend_finished(backend);
 		}
 	}
 }
@@ -613,7 +613,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	if (data == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 		return;
 	}
 
@@ -622,14 +622,14 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	if (data->pi == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 		return;
 	}
 
 	if (g_thread_create(get_description_thread, data, false, NULL) == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to spawn description thread");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(backend);
 	}
 	return;
 }
@@ -665,7 +665,7 @@ static void *do_search_file(gpointer data)
 		pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",ldir);
 		g_free(ldir);
 		g_error_free(error);
-		pk_backend_finished(st->backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished(st->backend);
 		return NULL;
 	}
 	const gchar * fname = NULL;
@@ -674,10 +674,10 @@ static void *do_search_file(gpointer data)
 		//pk_backend_package(st->backend, J->installed, pid, P.ShortDesc().c_str());
 	}
 	pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "search file is incomplete");
-	pk_backend_finished(st->backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished(st->backend);
 	g_dir_close(list);
 	g_free(ldir);
-	//pk_backend_finished(st->backend, PK_EXIT_ENUM_SUCCESS);
+	//pk_backend_finished(st->backend);
 	return NULL;
 }
 

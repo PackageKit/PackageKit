@@ -41,8 +41,7 @@ gboolean	 pk_backend_change_sub_percentage	(PkBackend	*backend,
 gboolean	 pk_backend_change_job_status		(PkBackend	*backend,
 							 PkStatusEnum	 status);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
-gboolean	 pk_backend_finished			(PkBackend	*backend,
-							 PkExitEnum	 exit);
+gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 guint		 value,
 							 const gchar	*package_id,

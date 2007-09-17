@@ -358,17 +358,16 @@ pk_backend_spawn_helper_delete (PkBackend *backend)
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
 {
-	PkExitEnum exit;
 	pk_debug ("deleting spawn %p, exit code %i", spawn, exitcode);
 	pk_backend_spawn_helper_delete (backend);
 
-	/* only emit success with a zero exit code */
-	if (exitcode == 0) {
-		exit = PK_EXIT_ENUM_SUCCESS;
-	} else {
-		exit = PK_EXIT_ENUM_FAILED;
+	/* check shit scripts returned an error on failure */
+	if (exitcode != 0 && backend->priv->exit != PK_EXIT_ENUM_FAILED) {
+		pk_warning ("script returned false but did not return error");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Helper returned non-zero return value but did not set error");
 	}
-	pk_backend_finished (backend, exit);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -439,7 +438,7 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	if (ret == FALSE) {
 		pk_backend_spawn_helper_delete (backend);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 	}
 	g_free (filename);
 	g_free (command);
@@ -688,6 +687,9 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	g_vsnprintf (buffer, 1024, format, args);
 	va_end (args);
 
+	/* we mark any transaction with errors as failed */
+	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+
 	pk_debug ("emit error-code %i, %s", code, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
@@ -753,7 +755,7 @@ pk_backend_finished_delay (gpointer data)
  * pk_backend_finished:
  **/
 gboolean
-pk_backend_finished (PkBackend *backend, PkExitEnum exit)
+pk_backend_finished (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -764,7 +766,6 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
-	backend->priv->exit = exit;
 	g_timeout_add (500, pk_backend_finished_delay, backend);
 	return TRUE;
 }
@@ -1293,7 +1294,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->last_package = NULL;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
+	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
 	backend->priv->network = pk_network_new ();
 	backend->priv->thread_list = pk_thread_list_new ();
 }
