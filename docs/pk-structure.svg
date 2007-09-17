@@ -97,9 +97,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="349.65521"
-     inkscape:cy="293.55497"
+     inkscape:zoom="0.7"
+     inkscape:cx="367.26656"
+     inkscape:cy="499.46921"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -226,14 +226,19 @@
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="82.074219"
-       y="333.14343"
+       x="98.583984"
+       y="327.07898"
        id="text3217"><tspan
          sodipodi:role="line"
-         x="82.074219"
-         y="333.14343"
-         style="font-size:28px;text-align:center;text-anchor:middle"
-         id="tspan3221">DBUS</tspan></text>
+         x="98.583984"
+         y="327.07898"
+         style="font-size:20px;text-align:center;text-anchor:middle"
+         id="tspan3221">SYSTEM</tspan><tspan
+         sodipodi:role="line"
+         x="98.583984"
+         y="352.07898"
+         style="font-size:20px;text-align:center;text-anchor:middle"
+         id="tspan2229">DBUS</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:5.81893778;stroke-linecap:square;stroke-linejoin:miter;marker-start:url(#Arrow1Sstart);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 325.32143,484.35568 C 325.32143,454.46904 325.32143,454.46904 325.32143,454.46904"
@@ -265,26 +270,26 @@
     <rect
        style="opacity:1;fill:#ff9955;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect5383"
-       width="245"
+       width="135"
        height="80"
        x="340"
        y="612.36218" />
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="458.54688"
+       x="402.6875"
        y="643.63562"
        id="text5385"><tspan
          sodipodi:role="line"
-         x="458.54688"
+         x="402.6875"
          y="643.63562"
          style="font-size:28px;text-align:center;text-anchor:middle"
          id="tspan5387">Backend</tspan><tspan
          sodipodi:role="line"
-         x="458.54688"
+         x="402.6875"
          y="678.63562"
          style="font-size:28px;text-align:center;text-anchor:middle"
-         id="tspan5389">Task (compiled)</tspan></text>
+         id="tspan5389">Task</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Send);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 172.5,292.36218 L 277.5,372.36218"
@@ -308,7 +313,7 @@
        inkscape:connection-end="#rect5369" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Send);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 367.5,572.36218 L 415,612.36218"
+       d="M 349.16667,572.36218 L 378.33333,612.36218"
        id="path5403"
        inkscape:connector-type="polyline"
        inkscape:connection-start="#rect1884"
@@ -362,23 +367,23 @@
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
-       x="401.85352"
-       y="723.14343"
+       x="378.4668"
+       y="727.20593"
        id="text8348"><tspan
          sodipodi:role="line"
-         x="401.85352"
-         y="723.14343"
-         style="font-size:28px;text-align:center;text-anchor:middle"
+         x="378.4668"
+         y="727.20593"
+         style="font-size:20px;text-align:center;text-anchor:middle"
          id="tspan8350">STDIN</tspan><tspan
          sodipodi:role="line"
-         x="401.85352"
-         y="758.14343"
-         style="font-size:28px;text-align:center;text-anchor:middle"
+         x="378.4668"
+         y="752.20593"
+         style="font-size:20px;text-align:center;text-anchor:middle"
          id="tspan2216">STDERR</tspan><tspan
          sodipodi:role="line"
-         x="401.85352"
-         y="793.14343"
-         style="font-size:28px;text-align:center;text-anchor:middle"
+         x="378.4668"
+         y="777.20593"
+         style="font-size:20px;text-align:center;text-anchor:middle"
          id="tspan2218">STDOUT</tspan></text>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:6;stroke-linecap:butt;stroke-linejoin:miter;marker-end:url(#Arrow1Send);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -394,5 +399,41 @@
        inkscape:connector-type="polyline"
        inkscape:connection-start="#rect8340"
        inkscape:connection-end="#rect1876" />
+    <rect
+       style="opacity:1;fill:#c8b7b7;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2213"
+       width="125"
+       height="25"
+       x="475"
+       y="612.36218" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="537.91016"
+       y="632.36218"
+       id="text2215"><tspan
+         sodipodi:role="line"
+         x="537.91016"
+         y="632.36218"
+         style="font-size:20px;text-align:center;text-anchor:middle"
+         id="tspan2219">Thread #1</tspan></text>
+    <rect
+       style="opacity:1;fill:#916f6f;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect2223"
+       width="125"
+       height="25.101501"
+       x="475"
+       y="637.26068" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="537.91016"
+       y="657.36218"
+       id="text2225"><tspan
+         sodipodi:role="line"
+         x="537.91016"
+         y="657.36218"
+         style="font-size:20px;text-align:center;text-anchor:middle"
+         id="tspan2227">Thread #2</tspan></text>
   </g>
 </svg>
