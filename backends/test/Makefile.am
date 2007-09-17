@@ -1,3 +1,4 @@
+SUBDIRS = helpers
 plugindir = @PK_PLUGIN_DIR@
 plugin_LTLIBRARIES =			\
 	libpk_backend_test_nop.la	\
