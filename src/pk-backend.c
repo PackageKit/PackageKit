@@ -180,6 +180,25 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer
 }
 
 /**
+ * pk_backend_thread_helper:
+ **/
+gboolean
+pk_backend_thread_helper (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
+{
+	if (pk_backend_thread_create (backend, func, NULL) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	pk_debug ("waiting for all threads in this backend");
+	pk_thread_list_wait (backend->priv->thread_list);
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
  * pk_backend_parse_common_output:
  *
  * If you are editing this function creating a new backend,
@@ -760,8 +779,10 @@ pk_backend_finished (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("waiting for all threads");
-	pk_thread_list_wait (backend->priv->thread_list);
+	/* check we have no threads running */
+	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
+		pk_error ("you have to use pk_backend_thread_helper or use pk_thread_list_wait!");
+	}
 
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */

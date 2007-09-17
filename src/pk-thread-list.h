@@ -57,6 +57,7 @@ gboolean	 pk_thread_list_create			(PkThreadList	*tlist,
 							 gpointer	 param,
 							 gpointer	 data);
 gboolean	 pk_thread_list_wait			(PkThreadList	*tlist);
+guint		 pk_thread_list_number_running		(PkThreadList	*tlist);
 
 G_END_DECLS
 

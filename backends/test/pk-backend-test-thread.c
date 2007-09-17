@@ -44,11 +44,7 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	if (pk_backend_thread_create (backend, backend_search_group_thread, NULL) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create search-group thread");
-		pk_backend_finished (backend);
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_helper (backend, backend_search_group_thread, NULL);
 }
 
 /**
@@ -84,11 +80,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	if (pk_backend_thread_create (backend, backend_search_name_thread, NULL) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create search-name thread");
-		pk_backend_finished (backend);
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_helper (backend, backend_search_name_thread, NULL);
 }
 
 PK_BACKEND_OPTIONS (
