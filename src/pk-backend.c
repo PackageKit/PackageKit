@@ -186,7 +186,7 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer
 gboolean
 pk_backend_thread_helper (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
 {
-	if (pk_backend_thread_create (backend, func, NULL) == FALSE) {
+	if (pk_backend_thread_create (backend, func, data) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
 		pk_backend_finished (backend);
 		return FALSE;
