@@ -61,12 +61,46 @@ static guint signals [PK_TRANSACTION_DB_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
 
+typedef struct {
+	gboolean succeeded;
+	guint duration;
+	PkRoleEnum role;
+	gchar *tid;
+	gchar *timespec;
+} PkTransactionDbItem;
+
+/**
+ * pk_transaction_db_item_clear:
+ **/
+static gboolean
+pk_transaction_db_item_clear (PkTransactionDbItem *item)
+{
+	item->succeeded = FALSE;
+	item->duration = 0;
+	item->role = PK_ROLE_ENUM_UNKNOWN;
+	item->tid = NULL;
+	item->timespec = NULL;
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_item_free:
+ **/
+static gboolean
+pk_transaction_db_item_free (PkTransactionDbItem *item)
+{
+	g_free (item->tid);
+	g_free (item->timespec);
+	return TRUE;
+}
+
 /**
  * pk_transaction_sqlite_callback:
  **/
 static gint
 pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
 {
+	PkTransactionDbItem item;
 	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
 	gint i;
 	gchar *col;
@@ -75,50 +109,45 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
 
-	gboolean succeeded = FALSE;
-	guint duration = 0;
-	PkRoleEnum role = PK_ROLE_ENUM_UNKNOWN;
-	gchar *tid = NULL;
-	gchar *timespec = NULL;
+	pk_transaction_db_item_clear (&item);
 
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
 		if (strcmp (col, "succeeded") == 0) {
-			succeeded = atoi (value);
+			item.succeeded = atoi (value);
 		} else if (strcmp (col, "role") == 0) {
 			if (value != NULL) {
-				role = pk_role_enum_from_text (value);
+				item.role = pk_role_enum_from_text (value);
 			}
 		} else if (strcmp (col, "transaction_id") == 0) {
 			if (value != NULL) {
-				tid = g_strdup (value);
+				item.tid = g_strdup (value);
 			}
 		} else if (strcmp (col, "timespec") == 0) {
 			if (value != NULL) {
-				timespec = g_strdup (value);
+				item.timespec = g_strdup (value);
 			}
 		} else if (strcmp (col, "duration") == 0) {
 			if (value != NULL) {
-				duration = atoi (value);
+				item.duration = atoi (value);
 			}
 		} else {
 			pk_warning ("%s = %s\n", col, value);
 		}
 	}
 
-	g_print ("tid          : %s\n", tid);
-	g_print (" timespec    : %s\n", timespec);
-	g_print (" succeeded   : %i\n", succeeded);
-	g_print (" role        : %s\n", pk_role_enum_to_text (role));
-	g_print (" duration    : %i (seconds)\n", duration);
+	g_print ("tid          : %s\n", item.tid);
+	g_print (" timespec    : %s\n", item.timespec);
+	g_print (" succeeded   : %i\n", item.succeeded);
+	g_print (" role        : %s\n", pk_role_enum_to_text (item.role));
+	g_print (" duration    : %i (seconds)\n", item.duration);
 
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
-		       tid, timespec, succeeded, role, duration);
+		       item.tid, item.timespec, item.succeeded, pk_role_enum_to_text (item.role), item.duration);
 
-	g_free (tid);
-	g_free (timespec);
+	pk_transaction_db_item_free (&item);
 	return 0;
 }
 
@@ -258,8 +287,8 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 	signals [PK_TRANSACTION_DB_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_UINT_UINT,
-			      G_TYPE_NONE, 0);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
