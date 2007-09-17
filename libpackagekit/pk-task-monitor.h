@@ -64,6 +64,7 @@ gboolean	 pk_task_monitor_get_sub_percentage	(PkTaskMonitor	*tmonitor,
 							 guint		*percentage);
 gboolean	 pk_task_monitor_get_package		(PkTaskMonitor	*tmonitor,
 							 gchar		**package_id);
+gboolean	 pk_task_monitor_cancel			(PkTaskMonitor	*tmonitor);
 
 G_END_DECLS
 

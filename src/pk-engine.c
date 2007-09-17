@@ -396,6 +396,7 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	time = pk_backend_get_runtime (task);
 
 	pk_debug ("task was running for %f seconds", time);
+	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
 	pk_debug ("emitting finished job: %i, '%s', %i", item->job, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->job, exit_text, (guint) time);
@@ -490,18 +491,24 @@ pk_engine_new_task (PkEngine *engine)
 static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
+	PkRoleEnum role;
+	PkJobListItem *item;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
 	pk_job_list_commit (engine->priv->job_list, task);
 
-#if 0
+	/* get all the data we know */
+	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+
 	/* add to database */
-	pk_transaction_db_add (engine->priv->transaction_db, "45;mom;data");
-	pk_transaction_db_set_role (engine->priv->transaction_db, "45;mom;data", PK_ROLE_ENUM_SYSTEM_UPDATE);
-	pk_transaction_db_set_finished (engine->priv->transaction_db, "45;mom;data", 1, 123);
-#endif
+	pk_transaction_db_add (engine->priv->transaction_db, item->tid);
+
+	/* save role in the database */
+	pk_backend_get_role (task, &role, NULL);
+	pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
 
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);

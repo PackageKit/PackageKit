@@ -157,6 +157,36 @@ pk_task_monitor_get_package (PkTaskMonitor *tmonitor, gchar **package)
 }
 
 /**
+ * pk_task_monitor_cancel:
+ **/
+gboolean
+pk_task_monitor_cancel (PkTaskMonitor *tmonitor)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "Cancel", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("Cancel failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_monitor_get_percentage:
  **/
 gboolean

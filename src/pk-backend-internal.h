@@ -95,9 +95,9 @@ gboolean	 pk_backend_search_name			(PkBackend	*backend,
 gboolean	 pk_backend_update_package		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_update_system		(PkBackend	*backend);
-gboolean	 pk_backend_get_status		(PkBackend	*backend,
+gboolean	 pk_backend_get_status			(PkBackend	*backend,
 							 PkStatusEnum	*status);
-gboolean	 pk_backend_get_role		(PkBackend	*backend,
+gboolean	 pk_backend_get_role			(PkBackend	*backend,
 							 PkRoleEnum	*role,
 							 const gchar	**package_id);
 gboolean	 pk_backend_get_percentage		(PkBackend	*backend,
