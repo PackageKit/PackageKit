@@ -68,6 +68,9 @@ struct _PkBackendPrivate
 	guint			 last_subpercentage;
 	gchar			*last_package;
 	PkThreadList		*thread_list;
+	gulong			 signal_finished;
+	gulong			 signal_stdout;
+	gulong			 signal_stderr;
 };
 
 enum {
@@ -332,14 +335,32 @@ out:
 }
 
 /**
+ * pk_backend_spawn_helper_new:
+ **/
+static gboolean
+pk_backend_spawn_helper_delete (PkBackend *backend)
+{
+	if (backend->priv->spawn == NULL) {
+		pk_error ("spawn object not in use");
+	}
+	pk_debug ("deleting spawn %p", backend->priv->spawn);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_finished);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_stdout);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_stderr);
+	g_object_unref (backend->priv->spawn);
+	backend->priv->spawn = NULL;
+	return TRUE;
+}
+
+/**
  * pk_backend_spawn_finished_cb:
  **/
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
 {
 	PkExitEnum exit;
-	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
-	g_object_unref (spawn);
+	pk_debug ("deleting spawn %p, exit code %i", spawn, exitcode);
+	pk_backend_spawn_helper_delete (backend);
 
 	/* only emit success with a zero exit code */
 	if (exitcode == 0) {
@@ -371,6 +392,29 @@ pk_backend_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkBackend *backen
 }
 
 /**
+ * pk_backend_spawn_helper_new:
+ **/
+static gboolean
+pk_backend_spawn_helper_new (PkBackend *backend)
+{
+	if (backend->priv->spawn != NULL) {
+		pk_error ("spawn object already in use");
+	}
+	backend->priv->spawn = pk_spawn_new ();
+	pk_debug ("allocating spawn %p", backend->priv->spawn);
+	backend->priv->signal_finished =
+		g_signal_connect (backend->priv->spawn, "finished",
+				  G_CALLBACK (pk_backend_spawn_finished_cb), backend);
+	backend->priv->signal_stdout =
+		g_signal_connect (backend->priv->spawn, "stdout",
+				  G_CALLBACK (pk_backend_spawn_stdout_cb), backend);
+	backend->priv->signal_stderr =
+		g_signal_connect (backend->priv->spawn, "stderr",
+				  G_CALLBACK (pk_backend_spawn_stderr_cb), backend);
+	return TRUE;
+}
+
+/**
  * pk_backend_spawn_helper_internal:
  **/
 static gboolean
@@ -390,16 +434,10 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 		command = g_strdup (filename);
 	}
 
-	backend->priv->spawn = pk_spawn_new ();
-	g_signal_connect (backend->priv->spawn, "finished",
-			  G_CALLBACK (pk_backend_spawn_finished_cb), backend);
-	g_signal_connect (backend->priv->spawn, "stdout",
-			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend);
-	g_signal_connect (backend->priv->spawn, "stderr",
-			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend);
+	pk_backend_spawn_helper_new (backend);
 	ret = pk_spawn_command (backend->priv->spawn, command);
 	if (ret == FALSE) {
-		g_object_unref (backend->priv->spawn);
+		pk_backend_spawn_helper_delete (backend);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
 		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 	}
@@ -720,7 +758,7 @@ pk_backend_finished (PkBackend *backend, PkExitEnum exit)
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
 	backend->priv->exit = exit;
-	g_timeout_add (10500, pk_backend_finished_idle, backend);
+	g_timeout_add (500, pk_backend_finished_idle, backend);
 	return TRUE;
 }
 
@@ -1152,6 +1190,9 @@ pk_backend_finalize (GObject *object)
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
 	g_free (backend->priv->last_package);
+	if (backend->priv->spawn != NULL) {
+		pk_backend_spawn_helper_delete (backend);
+	}
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->thread_list);
 
