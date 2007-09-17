@@ -26,6 +26,7 @@
 #include <pk-enum.h>
 #include <pk-enum-list.h>
 #include <pk-package-id.h>
+#include <pk-debug.h>
 
 G_BEGIN_DECLS
 

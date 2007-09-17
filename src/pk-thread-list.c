@@ -230,7 +230,6 @@ test_func2 (PkThreadList *tlist, gpointer data)
 	timer = g_timer_new ();
 	do {
 		g_usleep (1000*100);
-		g_thread_yield ();
 		elapsed = g_timer_elapsed (timer, NULL);
 		pk_debug ("elapsed task (%p,%p) = %f", tlist, data, elapsed);
 	} while (elapsed < 1.0);
