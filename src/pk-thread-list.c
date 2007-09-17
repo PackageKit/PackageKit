@@ -71,7 +71,7 @@ pk_thread_list_item_new (gpointer data)
 	gboolean ret;
 	pk_debug ("running %p", item->func);
 	ret = item->func (item->param, item->data);
-	pk_debug ("ret is %i", ret);
+	pk_debug ("finished %p, ret is %i", item->func, ret);
 	item->running = FALSE;
 	return NULL;
 }

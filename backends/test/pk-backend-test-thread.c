@@ -25,6 +25,33 @@
 #include <pk-backend.h>
 
 /**
+ * backend_search_group_thread:
+ */
+static gboolean
+backend_search_group_thread (PkBackend *backend, gpointer data)
+{
+	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
+			 "The GLib library");
+	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
+			 "GTK+ Libraries for GIMP");
+	return TRUE;
+}
+
+/**
+ * backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	if (pk_backend_thread_create (backend, backend_search_group_thread, NULL) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create search-group thread");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	}
+	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+}
+
+/**
  * backend_search_name_thread:
  */
 static gboolean
@@ -47,7 +74,6 @@ backend_search_name_thread (PkBackend *backend, gpointer data)
 			 "The GLib library");
 	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
-	pk_backend_finished(backend, PK_EXIT_ENUM_SUCCESS);
 	return TRUE;
 }
 
@@ -58,10 +84,11 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	if (pk_backend_thread_create(backend, backend_search_name_thread, NULL) == FALSE) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create search-name thread");
-		pk_backend_finished(backend, PK_EXIT_ENUM_FAILED);
+	if (pk_backend_thread_create (backend, backend_search_name_thread, NULL) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create search-name thread");
+		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
 	}
+	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
 }
 
 PK_BACKEND_OPTIONS (
@@ -83,7 +110,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* remove_package */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
 	NULL					/* update_system */
