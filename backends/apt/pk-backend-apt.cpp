@@ -46,10 +46,6 @@
 static pkgCacheFile *fileCache = NULL;
 pkgSourceList *SrcList = 0;
 
-typedef struct {
-	PkBackend *backend;
-} UpdateData;
-
 typedef enum {
 	SEARCH_NAME = 1,
 	SEARCH_DETAILS,
@@ -57,14 +53,12 @@ typedef enum {
 } SearchDepth;
 
 struct search_task {
-	PkBackend *backend;
 	gchar *search;
 	gchar *filter;
 	SearchDepth depth;
 };
 
 struct desc_task {
-	PkBackend *backend;
 	PkPackageId *pi;
 };
 
@@ -150,18 +144,17 @@ class UpdatePercentage:public pkgAcquireStatus
 	}
 };
 
-// do_update_thread - Update the package lists
+// backend_refresh_cache_thread - Update the package lists
 // Swiped from apt-get's update mode
-void *do_update_thread(gpointer data)
+static gboolean backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 {
-	UpdateData *ud = (UpdateData*)data;
 	pkgCacheFile *Cache;
 	bool Failed = false;
 	bool TransientNetworkFailure = false;
 	OpTextProgress Prog;
 
 	/* easy as that */
-	pk_backend_change_job_status(ud->backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_change_job_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	Cache = getCache();
 
@@ -169,9 +162,8 @@ void *do_update_thread(gpointer data)
 	pkgSourceList List;
 	if (List.ReadMainList() == false)
 	{
-		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failure reading lists");
-		pk_backend_finished(ud->backend);
-		return NULL;
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failure reading lists");
+		return FALSE;
 	}
 
 	// Lock the list directory
@@ -182,27 +174,26 @@ void *do_update_thread(gpointer data)
 		if (_error->PendingError() == true)
 		{
 			_error->DumpErrors();
-			pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Unable to lock the list directory");
-			pk_backend_finished(ud->backend);
-			return NULL;
+			pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Unable to lock the list directory");
+			return FALSE;
 		}
 	}
 
 	// Create the download object
-	UpdatePercentage *Stat = new UpdatePercentage(ud->backend);
+	UpdatePercentage *Stat = new UpdatePercentage(backend);
 	pkgAcquire Fetcher(Stat);
 
 	// Populate it with the source selection
 	if (List.GetIndexes(&Fetcher) == false)
 	{
-		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failed to populate the source selection");
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to populate the source selection");
 		goto do_update_clean;
 	}
 
 	// Run it
 	if (Fetcher.Run() == pkgAcquire::Failed)
 	{
-		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failed to run the fetcher");
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to run the fetcher");
 		goto do_update_clean;
 	}
 
@@ -230,7 +221,7 @@ void *do_update_thread(gpointer data)
 		if (Fetcher.Clean(_config->FindDir("Dir::State::lists")) == false ||
 		    Fetcher.Clean(_config->FindDir("Dir::State::lists") + "partial/") == false)
 		{
-			pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failed to clean out any old list files");
+			pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to clean out any old list files");
 			goto do_update_clean;
 		}
 	}
@@ -239,7 +230,7 @@ void *do_update_thread(gpointer data)
 	Cache = getCache();
 	if (Cache->BuildCaches(Prog,false) == false)
 	{
-		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Failed to prepare the cache");
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to prepare the cache");
 		goto do_update_clean;
 	}
 
@@ -247,18 +238,16 @@ void *do_update_thread(gpointer data)
 		pk_debug("Some index files failed to download, they have been ignored, or old ones used instead.");
 	else if (Failed == true)
 	{
-		pk_backend_error_code(ud->backend, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Generic Error");
 		goto do_update_clean;
 	}
 
 	delete Stat;
-	pk_backend_finished(ud->backend);
-	return NULL;
+	return TRUE;
 
 	do_update_clean:
 	delete Stat;
-	pk_backend_finished(ud->backend);
-	return NULL;
+	return FALSE;
 }
 
 /**
@@ -302,21 +291,7 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 		return;
 	}
 
-	UpdateData *data = g_new(UpdateData, 1);
-	if (data == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for update task");
-		pk_backend_finished(backend);
-	}
-	else
-	{
-		data->backend = backend;
-		if (g_thread_create(do_update_thread, data, false, NULL) == NULL)
-		{
-			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create update thread");
-			pk_backend_finished(backend);
-		}
-	}
+	pk_backend_thread_helper(backend, backend_refresh_cache_thread, NULL);
 }
 
 // LocalitySort - Sort a version list by package file locality		/*{{{*/
@@ -380,15 +355,15 @@ static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerI
 	return DFList[pid].available;
 }
 
-// get_search_thread
+// backend_search_packages_thread
 // Swiped from apt-cache's search mode
-static void *get_search_thread(gpointer data)
+static gboolean backend_search_packages_thread (PkBackend *backend, gpointer data)
 {
 	search_task *st = (search_task *) data;
 	ExDescFile *DFList = NULL;
 
-	pk_backend_change_job_status(st->backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(st->backend);
+	pk_backend_change_job_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", st->search);
 	pkgCache & pkgCache = *(getCache());
@@ -401,8 +376,7 @@ static void *get_search_thread(gpointer data)
 	memset(Pattern, 0, sizeof(*Pattern));
 	if (regcomp(Pattern, st->search, REG_EXTENDED | REG_ICASE | REG_NOSUB) != 0)
 	{
-		pk_backend_error_code(st->backend, PK_ERROR_ENUM_UNKNOWN, "regex compilation error");
-		pk_backend_finished(st->backend);
+		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "regex compilation error");
 		goto search_task_cleanup;
 	}
 
@@ -462,15 +436,13 @@ static void *get_search_thread(gpointer data)
 				Match = false;
 		}
 
-		if (Match == true)// && pk_backend_filter_package_name(st->backend,P.Name().c_str()))
+		if (Match == true)// && pk_backend_filter_package_name(backend,P.Name().c_str()))
 		{
 			gchar *pid = pk_package_id_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
-			pk_backend_package(st->backend, J->installed, pid, P.ShortDesc().c_str());
+			pk_backend_package(backend, J->installed, pid, P.ShortDesc().c_str());
 			g_free(pid);
 		}
 	}
-
-	pk_backend_finished(st->backend);
 
 search_task_cleanup:
 	for (ExDescFile * J = DFList; J->Df != 0; J++)
@@ -482,14 +454,14 @@ search_task_cleanup:
 	g_free(st->search);
 	g_free(st);
 
-	return NULL;
+	return TRUE;
 }
 
 /**
- * pk_backend_search
+ * backend_search_common
  **/
 static void
-pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, void *(*search_thread)(gpointer data))
+backend_search_common(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, PkBackendThreadFunc func)
 {
 	g_return_if_fail (backend != NULL);
 	search_task *data = g_new(struct search_task, 1);
@@ -500,16 +472,10 @@ pk_backend_search(PkBackend * backend, const gchar * filter, const gchar * searc
 	}
 	else
 	{
-		data->backend = backend;
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->depth = which;
-
-		if (g_thread_create(search_thread, data, false, NULL) == NULL)
-		{
-			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to spawn thread");
-			pk_backend_finished(backend);
-		}
+		pk_backend_thread_helper (backend, func, data);
 	}
 }
 
@@ -573,13 +539,13 @@ static GHashTable *PackageRecord(pkgCache::VerIterator V)
 
 }
 
-// get_description_thread
-static void *get_description_thread(gpointer data)
+// backend_get_description_thread
+static gboolean backend_get_description_thread (PkBackend *backend, gpointer data)
 {
 	desc_task *dt = (desc_task *) data;
 
-	pk_backend_change_job_status(dt->backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(dt->backend);
+	pk_backend_change_job_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", dt->pi->name);
 	pkgCache & pkgCache = *(getCache());
@@ -594,11 +560,10 @@ static void *get_description_thread(gpointer data)
 		// Find the proper version to use.
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
 		GHashTable *pkg = PackageRecord(V);
-		pk_backend_description(dt->backend,dt->pi->name,
+		pk_backend_description(backend,dt->pi->name,
 					PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
 		g_hash_table_unref(pkg);
 	}
-	pk_backend_finished(dt->backend, PK_EXIT_ENUM_SUCCESS);
 	return NULL;
 }
 
@@ -617,7 +582,6 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	data->backend = backend;
 	data->pi = pk_package_id_new_from_string(package_id);
 	if (data->pi == NULL)
 	{
@@ -626,11 +590,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	if (g_thread_create(get_description_thread, data, false, NULL) == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to spawn description thread");
-		pk_backend_finished(backend);
-	}
+	pk_backend_thread_helper (backend, backend_get_description_thread, data);
 	return;
 }
 
@@ -640,7 +600,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	pk_backend_search(backend, filter, search, SEARCH_DETAILS, get_search_thread);
+	backend_search_common(backend, filter, search, SEARCH_DETAILS, backend_search_packages_thread);
 }
 
 /**
@@ -649,10 +609,10 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	pk_backend_search(backend, filter, search, SEARCH_NAME, get_search_thread);
+	backend_search_common(backend, filter, search, SEARCH_NAME, backend_search_packages_thread);
 }
 
-static void *do_search_file(gpointer data)
+static gboolean backend_search_file_thread (PkBackend *backend, gpointer data)
 {
 	search_task *st = (search_task*)data;
 	gchar *sdir = g_path_get_dirname(_config->Find("Dir::State::status").c_str());
@@ -662,23 +622,20 @@ static void *do_search_file(gpointer data)
 	GDir *list = g_dir_open(ldir,0,&error);
 	if (error!=NULL)
 	{
-		pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",ldir);
+		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",ldir);
 		g_free(ldir);
 		g_error_free(error);
-		pk_backend_finished(st->backend);
-		return NULL;
+		return FALSE;
 	}
 	const gchar * fname = NULL;
 	while ((fname = g_dir_read_name(list))!=NULL)
 	{
-		//pk_backend_package(st->backend, J->installed, pid, P.ShortDesc().c_str());
+		//pk_backend_package(backend, J->installed, pid, P.ShortDesc().c_str());
 	}
-	pk_backend_error_code(st->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "search file is incomplete");
-	pk_backend_finished(st->backend);
+	pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "search file is incomplete");
 	g_dir_close(list);
 	g_free(ldir);
-	//pk_backend_finished(st->backend);
-	return NULL;
+	return TRUE;
 }
 
 /**
@@ -686,7 +643,7 @@ static void *do_search_file(gpointer data)
  **/
 static void backend_search_file(PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	pk_backend_search(backend, filter, search, SEARCH_FILE, do_search_file);
+	backend_search_common(backend, filter, search, SEARCH_FILE, backend_search_file_thread);
 }
 
 extern "C" PK_BACKEND_OPTIONS (

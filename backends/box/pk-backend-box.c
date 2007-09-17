@@ -39,14 +39,12 @@ enum PkgSearchType {
 
 
 typedef struct {
-	PkBackend *backend;
 	gchar *search;
 	gchar *filter;
 	gint mode;
 } FindData;
 
 typedef struct {
-	PkBackend *backend;
 	gchar *package_id;
 } ThreadData;
 
@@ -188,20 +186,20 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	db_close(db);
 }
 
-void*
-find_packages_thread (gpointer data)
+static gboolean
+backend_find_packages_thread (PkBackend *backend, gpointer data)
 {
 	FindData *d = (FindData*) data;
 
-	g_return_val_if_fail (d->backend != NULL, NULL);
+	g_return_val_if_fail (backend != NULL, NULL);
 
-	find_packages_real (d->backend, d->search, d->filter, d->mode);
+	find_packages_real (backend, d->search, d->filter, d->mode);
 
 	g_free(d->search);
 	g_free(d->filter);
 	g_free(d);
 
-	return NULL;
+	return TRUE;
 }
 
 
@@ -216,16 +214,10 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
 		pk_backend_finished (backend);
 	} else {
-		data->backend = backend;
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->mode = mode;
-
-		if (g_thread_create(find_packages_thread, data, FALSE, NULL) == NULL) {
-			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished (backend);
-		}
-
+		pk_backend_thread_helper (backend, backend_find_packages_thread, data);
 	}
 }
 
@@ -248,31 +240,26 @@ find_package_by_id (PkPackageId *pi)
 }
 
 
-static void*
-get_updates_thread(gpointer data)
+static gboolean
+backend_get_updates_thread (PkBackend *backend, gpointer data)
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
-	ThreadData *d = (ThreadData*) data;
 
-	pk_backend_change_job_status (d->backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 
 	db = db_open ();
 
 	list = box_db_repos_packages_for_upgrade (db);
-	add_packages_from_list (d->backend, list);
+	add_packages_from_list (backend, list);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (d->backend);
-
-	g_free(d);
 	db_close (db);
-
-	return NULL;
+	return TRUE;
 }
 
-static void*
-get_description_thread(gpointer data)
+static gboolean
+backend_get_description_thread (PkBackend *backend, gpointer data)
 {
 	PkPackageId *pi;
 	PackageSearch *ps;
@@ -281,30 +268,27 @@ get_description_thread(gpointer data)
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
-		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (d->backend);
-		return NULL;
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		return FALSE;
 	}
 
-	pk_backend_change_job_status (d->backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
 	list = find_package_by_id (pi);
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
-		pk_backend_error_code (d->backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
-		pk_backend_finished (d->backend);
-		return NULL;
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
+		return FALSE;
 	}
 
-	pk_backend_description (d->backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "");
+	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "");
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
 
-	pk_backend_finished (d->backend);
 	g_free (d->package_id);
 	g_free (d);
 
-	return NULL;
+	return TRUE;
 }
 
 /* ===================================================================== */
@@ -369,16 +353,9 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
 		pk_backend_finished (backend);
 	} else {
-		data->backend = backend;
 		data->package_id = g_strdup(package_id);
-
-		if (g_thread_create(get_description_thread, data, FALSE, NULL) == NULL) {
-			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished (backend);
-		}
+		pk_backend_thread_helper (backend, backend_get_description_thread, data);
 	}
-
-	return;
 }
 
 /**
@@ -387,21 +364,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_updates (PkBackend *backend)
 {
-	ThreadData *data = g_new0(ThreadData, 1);
-
 	g_return_if_fail (backend != NULL);
-
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->backend = backend;
-
-		if (g_thread_create(get_updates_thread, data, FALSE, NULL) == NULL) {
-			pk_backend_error_code(backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-			pk_backend_finished (backend);
-		}
-	}
+	pk_backend_thread_helper (backend, backend_get_updates_thread, NULL);
 }
 
 
