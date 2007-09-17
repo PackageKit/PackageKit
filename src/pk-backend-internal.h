@@ -63,7 +63,7 @@ gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);
 gboolean	 pk_backend_unload			(PkBackend      *backend);
 const gchar	*pk_backend_get_name			(PkBackend	*backend);
-gboolean	 pk_backend_cancel_job_try		(PkBackend	*backend);
+gboolean	 pk_backend_cancel		(PkBackend	*backend);
 gboolean	 pk_backend_get_depends			(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
@@ -95,9 +95,9 @@ gboolean	 pk_backend_search_name			(PkBackend	*backend,
 gboolean	 pk_backend_update_package		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_update_system		(PkBackend	*backend);
-gboolean	 pk_backend_get_job_status		(PkBackend	*backend,
+gboolean	 pk_backend_get_status		(PkBackend	*backend,
 							 PkStatusEnum	*status);
-gboolean	 pk_backend_get_job_role		(PkBackend	*backend,
+gboolean	 pk_backend_get_role		(PkBackend	*backend,
 							 PkRoleEnum	*role,
 							 const gchar	**package_id);
 gboolean	 pk_backend_get_percentage		(PkBackend	*backend,
@@ -108,7 +108,7 @@ gboolean	 pk_backend_get_package			(PkBackend	*backend,
 							 gchar		**package_id);
 
 /* these are external in nature, but we shouldn't be using them in helpers */
-gboolean	 pk_backend_set_job_role		(PkBackend	*backend,
+gboolean	 pk_backend_set_role		(PkBackend	*backend,
 							 PkRoleEnum	 role,
 							 const gchar	*package_id);
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,

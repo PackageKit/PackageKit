@@ -120,7 +120,7 @@ pk_job_list_role_present (PkJobList *job_list, PkRoleEnum role)
 	length = job_list->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkJobListItem *) g_ptr_array_index (job_list->priv->array, i);
-		pk_backend_get_job_role (item->task, &role_temp, NULL);
+		pk_backend_get_role (item->task, &role_temp, NULL);
 		if (role_temp == role) {
 			return TRUE;
 		}

@@ -106,7 +106,7 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkStatusEnum *status)
 	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetJobStatus", &error,
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetStatus", &error,
 				 G_TYPE_UINT, tmonitor->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
@@ -117,7 +117,7 @@ pk_task_monitor_get_status (PkTaskMonitor *tmonitor, PkStatusEnum *status)
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetJobStatus failed!");
+		pk_warning ("GetStatus failed!");
 		return FALSE;
 	}
 	*status = pk_status_enum_from_text (status_text);
@@ -237,7 +237,7 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkRoleEnum *role, gchar **pac
 	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetJobRole", &error,
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "GetRole", &error,
 				 G_TYPE_UINT, tmonitor->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &role_text,
@@ -245,7 +245,7 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkRoleEnum *role, gchar **pac
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetJobRole failed :%s", error->message);
+		pk_warning ("GetRole failed :%s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}

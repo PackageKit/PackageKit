@@ -878,10 +878,10 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package_id)
 }
 
 /**
- * pk_task_client_cancel_job_try:
+ * pk_task_client_cancel:
  **/
 gboolean
-pk_task_client_cancel_job_try (PkTaskClient *tclient)
+pk_task_client_cancel (PkTaskClient *tclient)
 {
 	gboolean ret;
 	GError *error;
@@ -896,13 +896,13 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 	}
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "CancelJobTry", &error,
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "Cancel", &error,
 				 G_TYPE_UINT, tclient->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("CancelJobTry failed :%s", error->message);
+		pk_warning ("Cancel failed :%s", error->message);
 		g_error_free (error);
 	}
 	return ret;

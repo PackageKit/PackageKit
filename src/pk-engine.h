@@ -136,16 +136,16 @@ void		 pk_engine_update_package		(PkEngine	*engine,
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
 							 GArray		**job_list,
 							 GError		**error);
-gboolean	 pk_engine_get_job_status		(PkEngine	*engine,
+gboolean	 pk_engine_get_status		(PkEngine	*engine,
 							 guint		 job,
 							 const gchar	**status,
 							 GError		**error);
-gboolean	 pk_engine_get_job_role			(PkEngine	*engine,
+gboolean	 pk_engine_get_role			(PkEngine	*engine,
 							 guint		 job,
 							 const gchar	**status,
 							 const gchar	**package_id,
 							 GError		**error);
-gboolean	 pk_engine_cancel_job_try		(PkEngine	*engine,
+gboolean	 pk_engine_cancel		(PkEngine	*engine,
 							 guint		 job,
 							 GError		**error);
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,

@@ -1271,10 +1271,10 @@ pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
 }
 
 /**
- * pk_engine_get_job_status:
+ * pk_engine_get_status:
  **/
 gboolean
-pk_engine_get_job_status (PkEngine *engine, guint job,
+pk_engine_get_status (PkEngine *engine, guint job,
 			  const gchar **status, GError **error)
 {
 	PkStatusEnum status_enum;
@@ -1289,17 +1289,17 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_job_status (item->task, &status_enum);
+	pk_backend_get_status (item->task, &status_enum);
 	*status = g_strdup (pk_status_enum_to_text (status_enum));
 
 	return TRUE;
 }
 
 /**
- * pk_engine_get_job_role:
+ * pk_engine_get_role:
  **/
 gboolean
-pk_engine_get_job_role (PkEngine *engine, guint job,
+pk_engine_get_role (PkEngine *engine, guint job,
 			const gchar **role, const gchar **package_id, GError **error)
 {
 	PkJobListItem *item;
@@ -1314,7 +1314,7 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_job_role (item->task, &role_enum, package_id);
+	pk_backend_get_role (item->task, &role_enum, package_id);
 	*role = g_strdup (pk_role_enum_to_text (role_enum));
 
 	return TRUE;
@@ -1402,10 +1402,10 @@ pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **er
 }
 
 /**
- * pk_engine_cancel_job_try:
+ * pk_engine_cancel:
  **/
 gboolean
-pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
+pk_engine_cancel (PkEngine *engine, guint job, GError **error)
 {
 	gboolean ret;
 	PkJobListItem *item;
@@ -1420,7 +1420,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 		return FALSE;
 	}
 
-	ret = pk_backend_cancel_job_try (item->task);
+	ret = pk_backend_cancel (item->task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");

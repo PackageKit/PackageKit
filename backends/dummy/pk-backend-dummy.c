@@ -74,10 +74,10 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
- * backend_cancel_job_try:
+ * backend_cancel:
  */
 static void
-backend_cancel_job_try (PkBackend *backend)
+backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 }
@@ -318,7 +318,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel_job_try,			/* cancel_job_try */
+	backend_cancel,			/* cancel_job_try */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */
