@@ -47,7 +47,7 @@
 #include "pk-backend-internal.h"
 #include "pk-engine.h"
 #include "pk-transaction-db.h"
-#include "pk-job-list.h"
+#include "pk-transaction-list.h"
 #include "pk-marshal.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
@@ -62,7 +62,7 @@ struct PkEnginePrivate
 	PolKitContext		*pk_context;
 	DBusConnection		*connection;
 	gchar			*backend;
-	PkJobList		*job_list;
+	PkTransactionList	*job_list;
 	PkTransactionDb		*transaction_db;
 };
 
@@ -161,7 +161,7 @@ pk_engine_job_list_changed (PkEngine *engine)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	job_list = pk_job_list_get_array (engine->priv->job_list);
+	job_list = pk_transaction_list_get_array (engine->priv->job_list);
 
 	pk_debug ("emitting job-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_LIST_CHANGED], 0, job_list);
@@ -175,13 +175,13 @@ pk_engine_job_list_changed (PkEngine *engine)
 static void
 pk_engine_job_status_changed_cb (PkTask *task, PkStatusEnum status, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	const gchar *status_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -199,12 +199,12 @@ pk_engine_job_status_changed_cb (PkTask *task, PkStatusEnum status, PkEngine *en
 static void
 pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -220,12 +220,12 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 static void
 pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -241,12 +241,12 @@ pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *e
 static void
 pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -262,12 +262,12 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 static void
 pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -286,12 +286,12 @@ pk_engine_update_detail_cb (PkTask *task, const gchar *package_id,
 			    const gchar *url, const gchar *restart,
 			    const gchar *update_text, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -309,13 +309,13 @@ pk_engine_update_detail_cb (PkTask *task, const gchar *package_id,
 static void
 pk_engine_error_code_cb (PkTask *task, PkErrorCodeEnum code, const gchar *details, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	const gchar *code_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -332,13 +332,13 @@ pk_engine_error_code_cb (PkTask *task, PkErrorCodeEnum code, const gchar *detail
 static void
 pk_engine_require_restart_cb (PkTask *task, PkRestartEnum restart, const gchar *details, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	const gchar *restart_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -356,13 +356,13 @@ static void
 pk_engine_description_cb (PkTask *task, const gchar *package_id, const gchar *licence, PkGroupEnum group,
 			  const gchar *detail, const gchar *url, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	const gchar *group_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -379,14 +379,14 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, const gchar *li
 static void
 pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	const gchar *exit_text;
 	gdouble time;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -403,7 +403,7 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->job, exit_text, (guint) time);
 
 	/* remove from array and unref */
-	pk_job_list_remove (engine->priv->job_list, task);
+	pk_transaction_list_remove (engine->priv->job_list, task);
 
 	g_object_unref (task);
 	pk_debug ("removed task %p", task);
@@ -417,12 +417,12 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 static void
 pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engine)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -479,7 +479,7 @@ pk_engine_new_task (PkEngine *engine)
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
 
-	pk_job_list_add (engine->priv->job_list, task);
+	pk_transaction_list_add (engine->priv->job_list, task);
 
 	/* we don't add to the array or do the job-list-changed yet
 	 * as this job might fail */
@@ -493,16 +493,16 @@ static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
 	PkRoleEnum role;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
-	pk_job_list_commit (engine->priv->job_list, task);
+	pk_transaction_list_commit (engine->priv->job_list, task);
 
 	/* get all the data we know */
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 
 	/* add to database */
 	pk_transaction_db_add (engine->priv->transaction_db, item->tid);
@@ -529,7 +529,7 @@ pk_engine_delete_task (PkEngine *engine, PkTask *task)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("removing task %p as it failed", task);
-	pk_job_list_remove (engine->priv->job_list, task);
+	pk_transaction_list_remove (engine->priv->job_list, task);
 
 	/* we don't do g_object_unref (task) here as it is done in the
 	   ::finished handler */
@@ -603,7 +603,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -618,7 +618,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -636,7 +636,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -651,7 +651,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -722,7 +722,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -749,7 +749,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -768,7 +768,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -795,7 +795,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -814,7 +814,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -841,7 +841,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -860,7 +860,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -887,7 +887,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -906,7 +906,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -929,7 +929,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -948,7 +948,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -971,7 +971,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -990,7 +990,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1013,7 +1013,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -1032,7 +1032,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 {
 	gboolean ret;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1047,7 +1047,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return FALSE;
@@ -1067,7 +1067,7 @@ pk_engine_update_system (PkEngine *engine,
 	gboolean ret;
 	GError *error;
 	PkTask *task;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1080,7 +1080,7 @@ pk_engine_update_system (PkEngine *engine,
 	}
 
 	/* are we already performing an update? */
-	if (pk_job_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_SYSTEM_UPDATE) == TRUE) {
+	if (pk_transaction_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_SYSTEM_UPDATE) == TRUE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
@@ -1099,7 +1099,7 @@ pk_engine_update_system (PkEngine *engine,
 	}
 	pk_engine_add_task (engine, task);
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -1114,7 +1114,7 @@ void
 pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean allow_deps,
 			  DBusGMethodInvocation *context, GError **dead_error)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	gboolean ret;
 	PkTask *task;
 	GError *error;
@@ -1150,7 +1150,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	}
 	pk_engine_add_task (engine, task);
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -1168,7 +1168,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	PkTask *task;
 	GError *error;
 
@@ -1203,7 +1203,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -1221,7 +1221,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	PkTask *task;
 	GError *error;
 
@@ -1256,7 +1256,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_task (engine, task);
 
-	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 	if (item == NULL) {
 		pk_warning ("could not find task");
 		return;
@@ -1273,7 +1273,7 @@ pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	*job_list = pk_job_list_get_array (engine->priv->job_list);
+	*job_list = pk_transaction_list_get_array (engine->priv->job_list);
 
 	return TRUE;
 }
@@ -1286,12 +1286,12 @@ pk_engine_get_status (PkEngine *engine, guint job,
 			  const gchar **status, GError **error)
 {
 	PkStatusEnum status_enum;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1310,13 +1310,13 @@ gboolean
 pk_engine_get_role (PkEngine *engine, guint job,
 			const gchar **role, const gchar **package_id, GError **error)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	PkRoleEnum role_enum;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1334,13 +1334,13 @@ pk_engine_get_role (PkEngine *engine, guint job,
 gboolean
 pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1361,13 +1361,13 @@ pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError
 gboolean
 pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1388,13 +1388,13 @@ pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GE
 gboolean
 pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **error)
 {
-	PkJobListItem *item;
+	PkTransactionItem *item;
 	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1429,12 +1429,12 @@ gboolean
 pk_engine_cancel (PkEngine *engine, guint job, GError **error)
 {
 	gboolean ret;
-	PkJobListItem *item;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_job_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
 			     "No job:%i", job);
@@ -1549,7 +1549,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 
 	/* check for jobs running - a job that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
-	size = pk_job_list_get_size (engine->priv->job_list);
+	size = pk_transaction_list_get_size (engine->priv->job_list);
 	if (size != 0) {
 		pk_debug ("engine idle zero as %i jobs in progress", size);
 		return 0;
@@ -1654,7 +1654,7 @@ pk_engine_init (PkEngine *engine)
 	PolKitError *pk_error;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-	engine->priv->job_list = pk_job_list_new ();
+	engine->priv->job_list = pk_transaction_list_new ();
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
 
