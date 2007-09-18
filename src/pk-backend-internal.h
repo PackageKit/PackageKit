@@ -61,9 +61,10 @@ PkEnumList	*pk_backend_get_filters			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);
+gboolean	 pk_backend_run				(PkBackend      *backend);
 gboolean	 pk_backend_unload			(PkBackend      *backend);
 const gchar	*pk_backend_get_name			(PkBackend	*backend);
-gboolean	 pk_backend_cancel		(PkBackend	*backend);
+gboolean	 pk_backend_cancel			(PkBackend	*backend);
 gboolean	 pk_backend_get_depends			(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
@@ -108,9 +109,8 @@ gboolean	 pk_backend_get_package			(PkBackend	*backend,
 							 gchar		**package_id);
 
 /* these are external in nature, but we shouldn't be using them in helpers */
-gboolean	 pk_backend_set_role		(PkBackend	*backend,
-							 PkRoleEnum	 role,
-							 const gchar	*package_id);
+gboolean	 pk_backend_set_role			(PkBackend	*backend,
+							 PkRoleEnum	 role);
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
 

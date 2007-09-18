@@ -57,7 +57,11 @@ struct _PkBackendPrivate
 	gchar			*name;
 	PkStatusEnum		 role; /* this never changes for the lifetime of a job */
 	PkStatusEnum		 status; /* this changes */
-	gchar			*package_id; /* never changes, this is linked to role */
+	gboolean		 xcached_force;
+	gboolean		 xcached_allow_deps;
+	gchar			*xcached_package_id;
+	gchar			*xcached_filter;
+	gchar			*xcached_search;
 	PkExitEnum		 exit;
 	GTimer			*timer;
 	PkSpawn			*spawn;
@@ -557,7 +561,7 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
  * pk_backend_set_role:
  **/
 gboolean
-pk_backend_set_role (PkBackend *backend, PkRoleEnum role, const gchar *package_id)
+pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -567,9 +571,9 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role, const gchar *package_i
 		pk_error ("cannot set role more than once, already %s",
 			  pk_role_enum_to_text (backend->priv->role));
 	}
-	pk_debug ("setting role to %s (string is '%s')", pk_role_enum_to_text (role), package_id);
+	pk_debug ("setting role to %s", pk_role_enum_to_text (role));
+	backend->priv->assigned = TRUE;
 	backend->priv->role = role;
-	backend->priv->package_id = g_strdup (package_id);
 	backend->priv->status = PK_STATUS_ENUM_SETUP;
 	return TRUE;
 }
@@ -770,7 +774,7 @@ pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package
 		*role = backend->priv->role;
 	}
 	if (package_id != NULL) {
-		*package_id = g_strdup (backend->priv->package_id);
+		*package_id = g_strdup (backend->priv->xcached_package_id);
 	}
 	return TRUE;
 }
@@ -880,6 +884,64 @@ pk_backend_cancel (PkBackend *backend)
 }
 
 /**
+ * pk_backend_run:
+ */
+gboolean
+pk_backend_run (PkBackend *backend)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		backend->desc->get_depends (backend,
+					    backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		backend->desc->get_update_detail (backend,
+						  backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
+		backend->desc->get_description (backend,
+						backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		backend->desc->get_requires (backend,
+					     backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+		backend->desc->get_updates (backend);
+	} else if (backend->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		backend->desc->search_details (backend,
+					       backend->priv->xcached_filter,
+					       backend->priv->xcached_search);
+	} else if (backend->priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+		backend->desc->search_file (backend,
+					    backend->priv->xcached_filter,
+					    backend->priv->xcached_search);
+	} else if (backend->priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		backend->desc->search_group (backend,
+					     backend->priv->xcached_filter,
+					     backend->priv->xcached_search);
+	} else if (backend->priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+		backend->desc->search_name (backend,
+					    backend->priv->xcached_filter,
+					    backend->priv->xcached_search);
+	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_INSTALL) {
+		backend->desc->install_package (backend,
+						backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		backend->desc->refresh_cache (backend,
+					      backend->priv->xcached_force);
+	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_REMOVE) {
+		backend->desc->remove_package (backend,
+					       backend->priv->xcached_package_id,
+					       backend->priv->xcached_allow_deps);
+	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_UPDATE) {
+		backend->desc->update_package (backend,
+					       backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_SYSTEM_UPDATE) {
+		backend->desc->update_system (backend);
+	} else {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_get_depends:
  */
 gboolean
@@ -890,9 +952,8 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDepends");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
-	backend->desc->get_depends (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_DEPENDS);
 	return TRUE;
 }
 
@@ -907,9 +968,8 @@ pk_backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetUpdateDetail");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
-	backend->desc->get_update_detail (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	return TRUE;
 }
 
@@ -924,9 +984,8 @@ pk_backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDescription");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
-	backend->desc->get_description (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_DESCRIPTION);
 	return TRUE;
 }
 
@@ -941,9 +1000,8 @@ pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetRequires");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
-	backend->desc->get_requires (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_REQUIRES);
 	return TRUE;
 }
 
@@ -958,9 +1016,7 @@ pk_backend_get_updates (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "GetUpdates");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, NULL);
-	backend->desc->get_updates (backend);
-	backend->priv->assigned = TRUE;
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_UPDATES);
 	return TRUE;
 }
 
@@ -975,9 +1031,8 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "InstallPackage");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL, package_id);
-	backend->desc->install_package (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL);
 	return TRUE;
 }
 
@@ -992,9 +1047,8 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_not_implemented_yet (backend, "RefreshCache");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_REFRESH_CACHE, NULL);
-	backend->desc->refresh_cache (backend, force);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_force = force;
+	pk_backend_set_role (backend, PK_ROLE_ENUM_REFRESH_CACHE);
 	return TRUE;
 }
 
@@ -1009,9 +1063,9 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 		pk_backend_not_implemented_yet (backend, "RemovePackage");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE, package_id);
-	backend->desc->remove_package (backend, package_id, allow_deps);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_allow_deps = allow_deps;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE);
 	return TRUE;
 }
 
@@ -1026,9 +1080,9 @@ pk_backend_search_details (PkBackend *backend, const gchar *filter, const gchar 
 		pk_backend_not_implemented_yet (backend, "SearchDetails");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
-	backend->desc->search_details (backend, filter, search);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_filter = g_strdup (filter);
+	backend->priv->xcached_search = g_strdup (search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SEARCH_DETAILS);
 	return TRUE;
 }
 
@@ -1043,9 +1097,9 @@ pk_backend_search_file (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchFile");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
-	backend->desc->search_file (backend, filter, search);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_filter = g_strdup (filter);
+	backend->priv->xcached_search = g_strdup (search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SEARCH_FILE);
 	return TRUE;
 }
 
@@ -1060,9 +1114,9 @@ pk_backend_search_group (PkBackend *backend, const gchar *filter, const gchar *s
 		pk_backend_not_implemented_yet (backend, "SearchGroup");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
-	backend->desc->search_group (backend, filter, search);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_filter = g_strdup (filter);
+	backend->priv->xcached_search = g_strdup (search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SEARCH_GROUP);
 	return TRUE;
 }
 
@@ -1077,9 +1131,9 @@ pk_backend_search_name (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchName");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
-	backend->desc->search_name (backend, filter, search);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_filter = g_strdup (filter);
+	backend->priv->xcached_search = g_strdup (search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SEARCH_NAME);
 	return TRUE;
 }
 
@@ -1094,9 +1148,8 @@ pk_backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "UpdatePackage");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE, package_id);
-	backend->desc->update_package (backend, package_id);
-	backend->priv->assigned = TRUE;
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE);
 	return TRUE;
 }
 
@@ -1111,9 +1164,7 @@ pk_backend_update_system (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "UpdateSystem");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE, NULL);
-	backend->desc->update_system (backend);
-	backend->priv->assigned = TRUE;
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE);
 	return TRUE;
 }
 
@@ -1245,9 +1296,14 @@ pk_backend_finalize (GObject *object)
 
 	pk_debug ("freeing %s (%p)", backend->priv->name, backend);
 	g_free (backend->priv->name);
+	g_free (backend->priv->last_package);
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
-	g_free (backend->priv->last_package);
+
+	g_free (backend->priv->xcached_package_id);
+	g_free (backend->priv->xcached_filter);
+	g_free (backend->priv->xcached_search);
+
 	if (backend->priv->spawn != NULL) {
 		pk_backend_spawn_helper_delete (backend);
 	}
@@ -1338,7 +1394,9 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->assigned = FALSE;
 	backend->priv->is_killable = FALSE;
 	backend->priv->spawn = NULL;
-	backend->priv->package_id = NULL;
+	backend->priv->xcached_package_id = NULL;
+	backend->priv->xcached_filter = NULL;
+	backend->priv->xcached_search = NULL;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_package = NULL;

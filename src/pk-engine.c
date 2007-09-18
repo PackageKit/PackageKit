@@ -501,6 +501,9 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 	/* commit, so it appears in the JobList */
 	pk_transaction_list_commit (engine->priv->job_list, task);
 
+	/* do the transaction now. TODO: schedule!!! */
+	pk_backend_run (task);
+
 	/* get all the data we know */
 	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 
