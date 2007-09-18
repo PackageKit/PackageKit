@@ -528,6 +528,42 @@
         <literal>45;dafeca;checkpoint32</literal>
       </para>
     </sect2>
+    <sect2 id="config-main">
+      <title>Daemon Config Options</title>
+      <para>
+        The config file <literal>/etc/PackageKit.conf</literal>allows to the
+        administrator to change system daemon options.
+        In normal use this file does not have to be changed, but it may be
+        useful to people debugging the daemon or developing backends.
+      </para>
+      <para>
+        The options are:
+      </para>
+      <sect3 id="config-main-logging">
+        <title>TransactionLogging</title>
+        <para>
+          This logs all transactions to a database so old transactions can be viewed.
+        </para>
+      </sect3>
+      <sect3 id="config-main-timeout">
+        <title>ShutdownTimeout</title>
+        <para>
+          This is the time that the daemon waits when idle before shutting down.
+          A smaller number will result in slower response times when running
+          many transactions in a small amount of time.
+          A longer timeout will lock the underlying packaging backend for longer,
+          although the daemon will start and stop less often.
+        </para>
+      </sect3>
+      <sect3 id="config-main-default">
+        <title>DefaultBackend</title>
+        <para>
+          The default backend that the daemon should use.
+          The default is set at compile time to the
+          <literal>--default-backend=</literal> configure setting.
+        </para>
+      </sect3>
+    </sect2>
   </sect1>
 
   <sect1 id="api-method-reference">
