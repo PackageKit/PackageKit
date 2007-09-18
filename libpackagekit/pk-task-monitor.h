@@ -29,7 +29,7 @@ G_BEGIN_DECLS
 
 #define PK_TYPE_TASK_MONITOR		(pk_task_monitor_get_type ())
 #define PK_TASK_MONITOR(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TASK_MONITOR, PkTaskMonitor))
-#define PK_TASK_MONITOR_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TASK_MONITOR, PkTaskMonitorClass))
+#define PK_TASK_MONITOR_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TASK_MONITOR, PkTaskMonitorClass))
 #define PK_IS_TASK_MONITOR(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK_MONITOR))
 #define PK_IS_TASK_MONITOR_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK_MONITOR))
 #define PK_TASK_MONITOR_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_MONITOR, PkTaskMonitorClass))
@@ -50,9 +50,9 @@ typedef struct
 GType		 pk_task_monitor_get_type		(void);
 PkTaskMonitor	*pk_task_monitor_new			(void);
 
-gboolean	 pk_task_monitor_set_job		(PkTaskMonitor	*tmonitor,
-							 guint		 job);
-guint		 pk_task_monitor_get_job		(PkTaskMonitor	*tmonitor);
+gboolean	 pk_task_monitor_set_tid		(PkTaskMonitor	*tmonitor,
+							 const gchar	*tid);
+gchar		*pk_task_monitor_get_tid		(PkTaskMonitor	*tmonitor);
 gboolean	 pk_task_monitor_get_status		(PkTaskMonitor	*tmonitor,
 							 PkStatusEnum	*status);
 gboolean	 pk_task_monitor_get_role		(PkTaskMonitor	*tmonitor,

@@ -67,10 +67,10 @@ gboolean	 pk_transaction_list_commit		(PkTransactionList	*job_list,
 							 PkTask		*task);
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*job_list,
 							 PkRoleEnum	 role);
-GArray		*pk_transaction_list_get_array		(PkTransactionList	*job_list);
+gchar		**pk_transaction_list_get_array		(PkTransactionList	*job_list);
 guint		 pk_transaction_list_get_size		(PkTransactionList	*job_list);
-PkTransactionItem *pk_transaction_list_get_item_from_job(PkTransactionList	*job_list,
-							 guint		 job);
+PkTransactionItem *pk_transaction_list_get_item_from_tid(PkTransactionList	*job_list,
+							 const gchar	*tid);
 PkTransactionItem *pk_transaction_list_get_item_from_task(PkTransactionList	*job_list,
 							 PkTask		*task);
 

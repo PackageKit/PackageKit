@@ -156,7 +156,7 @@ pk_engine_reset_timer (PkEngine *engine)
 static gboolean
 pk_engine_job_list_changed (PkEngine *engine)
 {
-	GArray *job_list;
+	gchar **job_list;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -188,8 +188,8 @@ pk_engine_job_status_changed_cb (PkTask *task, PkStatusEnum status, PkEngine *en
 	}
 		status_text = pk_status_enum_to_text (status);
 
-	pk_debug ("emitting job-status-changed job:%i, '%s'", item->job, status_text);
-	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, item->job, status_text);
+	pk_debug ("emitting job-status-changed tid:%s, '%s'", item->tid, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, item->tid, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -209,8 +209,8 @@ pk_engine_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *engin
 		pk_warning ("could not find task");
 		return;
 	}
-	pk_debug ("emitting percentage-changed job:%i %i", item->job, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, item->job, percentage);
+	pk_debug ("emitting percentage-changed tid:%s %i", item->tid, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, item->tid, percentage);
 	pk_engine_reset_timer (engine);
 }
 
@@ -230,8 +230,8 @@ pk_engine_sub_percentage_changed_cb (PkTask *task, guint percentage, PkEngine *e
 		pk_warning ("could not find task");
 		return;
 	}
-	pk_debug ("emitting sub-percentage-changed job:%i %i", item->job, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, item->job, percentage);
+	pk_debug ("emitting sub-percentage-changed tid:%s %i", item->tid, percentage);
+	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, item->tid, percentage);
 	pk_engine_reset_timer (engine);
 }
 
@@ -251,8 +251,8 @@ pk_engine_no_percentage_updates_cb (PkTask *task, PkEngine *engine)
 		pk_warning ("could not find task");
 		return;
 	}
-	pk_debug ("emitting no-percentage-updates job:%i", item->job);
-	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, item->job);
+	pk_debug ("emitting no-percentage-updates tid:%s", item->tid);
+	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, item->tid);
 	pk_engine_reset_timer (engine);
 }
 
@@ -272,8 +272,8 @@ pk_engine_package_cb (PkTask *task, guint value, const gchar *package_id, const 
 		pk_warning ("could not find task");
 		return;
 	}
-	pk_debug ("emitting package job:%i value=%i %s, %s", item->job, value, package_id, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->job, value, package_id, summary);
+	pk_debug ("emitting package tid:%s value=%i %s, %s", item->tid, value, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, value, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -296,9 +296,9 @@ pk_engine_update_detail_cb (PkTask *task, const gchar *package_id,
 		pk_warning ("could not find task");
 		return;
 	}
-	pk_debug ("emitting package job:%i value=%s, %s, %s, %s, %s, %s", item->job,
+	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s", item->tid,
 		  package_id, updates, obsoletes, url, restart, update_text);
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, item->job,
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, item->tid,
 		       package_id, updates, obsoletes, url, restart, update_text);
 	pk_engine_reset_timer (engine);
 }
@@ -321,8 +321,8 @@ pk_engine_error_code_cb (PkTask *task, PkErrorCodeEnum code, const gchar *detail
 		return;
 	}
 	code_text = pk_error_enum_to_text (code);
-	pk_debug ("emitting error-code job:%i %s, '%s'", item->job, code_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, item->job, code_text, details);
+	pk_debug ("emitting error-code tid:%s %s, '%s'", item->tid, code_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, item->tid, code_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -344,8 +344,8 @@ pk_engine_require_restart_cb (PkTask *task, PkRestartEnum restart, const gchar *
 		return;
 	}
 	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting error-code job:%i %s, '%s'", item->job, restart_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, item->job, restart_text, details);
+	pk_debug ("emitting error-code tid:%s %s, '%s'", item->tid, restart_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, item->tid, restart_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -369,8 +369,8 @@ pk_engine_description_cb (PkTask *task, const gchar *package_id, const gchar *li
 	}
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting description job:%i, %s, %s, %s, %s, %s", item->job, package_id, licence, group_text, detail, url);
-	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, item->job, package_id, licence, group_text, detail, url);
+	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s", item->tid, package_id, licence, group_text, detail, url);
+	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, item->tid, package_id, licence, group_text, detail, url);
 }
 
 /**
@@ -399,8 +399,8 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	pk_debug ("task was running for %f seconds", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
-	pk_debug ("emitting finished job: %i, '%s', %i", item->job, exit_text, (guint) time);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->job, exit_text, (guint) time);
+	pk_debug ("emitting finished job:%s, '%s', %i", item->tid, exit_text, (guint) time);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
 
 	/* remove from array and unref */
 	pk_transaction_list_remove (engine->priv->job_list, task);
@@ -428,8 +428,8 @@ pk_engine_allow_interrupt_cb (PkTask *task, gboolean allow_kill, PkEngine *engin
 		return;
 	}
 
-	pk_debug ("emitting allow-interrpt job:%i, %i", item->job, allow_kill);
-	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, item->job, allow_kill);
+	pk_debug ("emitting allow-interrpt tid:%s, %i", item->tid, allow_kill);
+	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, item->tid, allow_kill);
 }
 
 /**
@@ -602,7 +602,7 @@ pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context, c
  * pk_engine_refresh_cache:
  **/
 gboolean
-pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **error)
+pk_engine_refresh_cache (PkEngine *engine, gboolean force, gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -626,7 +626,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -635,7 +635,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
  * pk_engine_get_updates:
  **/
 gboolean
-pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
+pk_engine_get_updates (PkEngine *engine, gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -659,7 +659,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -721,7 +721,7 @@ pk_engine_filter_check (const gchar *filter, GError **error)
  **/
 gboolean
 pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *search,
-		       guint *job, GError **error)
+		       gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -757,7 +757,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -767,7 +767,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
  **/
 gboolean
 pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *search,
-			  guint *job, GError **error)
+			  gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -803,7 +803,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -813,7 +813,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
  **/
 gboolean
 pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *search,
-			guint *job, GError **error)
+			gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -849,7 +849,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -859,7 +859,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
  **/
 gboolean
 pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *search,
-		       guint *job, GError **error)
+		       gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -895,7 +895,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -905,7 +905,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
  **/
 gboolean
 pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
-		       guint *job, GError **error)
+		       gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -937,7 +937,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -947,7 +947,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
  **/
 gboolean
 pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
-		        guint *job, GError **error)
+		        gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -979,7 +979,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -989,7 +989,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
  **/
 gboolean
 pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
-		             guint *job, GError **error)
+		             gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -1021,7 +1021,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -1031,7 +1031,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
  **/
 gboolean
 pk_engine_get_description (PkEngine *engine, const gchar *package_id,
-			   guint *job, GError **error)
+			   gchar **tid, GError **error)
 {
 	gboolean ret;
 	PkTask *task;
@@ -1055,7 +1055,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return FALSE;
 	}
-	*job = item->job;
+	*tid = g_strdup (item->tid);
 
 	return TRUE;
 }
@@ -1107,7 +1107,7 @@ pk_engine_update_system (PkEngine *engine,
 		pk_warning ("could not find task");
 		return;
 	}
-	dbus_g_method_return (context, item->job);
+	dbus_g_method_return (context, item->tid);
 }
 
 /**
@@ -1158,7 +1158,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 		pk_warning ("could not find task");
 		return;
 	}
-	dbus_g_method_return (context, item->job);
+	dbus_g_method_return (context, item->tid);
 }
 
 /**
@@ -1211,7 +1211,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return;
 	}
-	dbus_g_method_return (context, item->job);
+	dbus_g_method_return (context, item->tid);
 }
 
 /**
@@ -1264,18 +1264,19 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 		pk_warning ("could not find task");
 		return;
 	}
-	dbus_g_method_return (context, item->job);
+	dbus_g_method_return (context, item->tid);
 }
 
 /**
  * pk_engine_get_job_list:
  **/
 gboolean
-pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
+pk_engine_get_job_list (PkEngine *engine, gchar ***job_list, GError **error)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("getting job list");
 	*job_list = pk_transaction_list_get_array (engine->priv->job_list);
 
 	return TRUE;
@@ -1285,8 +1286,8 @@ pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
  * pk_engine_get_status:
  **/
 gboolean
-pk_engine_get_status (PkEngine *engine, guint job,
-			  const gchar **status, GError **error)
+pk_engine_get_status (PkEngine *engine, const gchar *tid,
+		      const gchar **status, GError **error)
 {
 	PkStatusEnum status_enum;
 	PkTransactionItem *item;
@@ -1294,10 +1295,10 @@ pk_engine_get_status (PkEngine *engine, guint job,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 	pk_backend_get_status (item->task, &status_enum);
@@ -1310,8 +1311,8 @@ pk_engine_get_status (PkEngine *engine, guint job,
  * pk_engine_get_role:
  **/
 gboolean
-pk_engine_get_role (PkEngine *engine, guint job,
-			const gchar **role, const gchar **package_id, GError **error)
+pk_engine_get_role (PkEngine *engine, const gchar *tid,
+		    const gchar **role, const gchar **package_id, GError **error)
 {
 	PkTransactionItem *item;
 	PkRoleEnum role_enum;
@@ -1319,10 +1320,10 @@ pk_engine_get_role (PkEngine *engine, guint job,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 	pk_backend_get_role (item->task, &role_enum, package_id);
@@ -1335,7 +1336,7 @@ pk_engine_get_role (PkEngine *engine, guint job,
  * pk_engine_get_percentage:
  **/
 gboolean
-pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
+pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage, GError **error)
 {
 	PkTransactionItem *item;
 	gboolean ret;
@@ -1343,10 +1344,10 @@ pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 	ret = pk_backend_get_percentage (item->task, percentage);
@@ -1362,7 +1363,7 @@ pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError
  * pk_engine_get_sub_percentage:
  **/
 gboolean
-pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
+pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percentage, GError **error)
 {
 	PkTransactionItem *item;
 	gboolean ret;
@@ -1370,10 +1371,10 @@ pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GE
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 	ret = pk_backend_get_sub_percentage (item->task, percentage);
@@ -1389,7 +1390,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GE
  * pk_engine_get_package:
  **/
 gboolean
-pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **error)
+pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GError **error)
 {
 	PkTransactionItem *item;
 	gboolean ret;
@@ -1397,10 +1398,10 @@ pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **er
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 	ret = pk_backend_get_package (item->task, package);
@@ -1429,7 +1430,7 @@ pk_engine_get_old_transactions (PkEngine *engine, guint number, GError **error)
  * pk_engine_cancel:
  **/
 gboolean
-pk_engine_cancel (PkEngine *engine, guint job, GError **error)
+pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -1437,10 +1438,10 @@ pk_engine_cancel (PkEngine *engine, guint job, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_job (engine->priv->job_list, job);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
-			     "No job:%i", job);
+			     "No tid:%s", tid);
 		return FALSE;
 	}
 
@@ -1579,63 +1580,64 @@ pk_engine_class_init (PkEngineClass *klass)
 		g_signal_new ("job-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
-			      G_TYPE_NONE, 1, dbus_g_type_get_collection ("GArray", G_TYPE_UINT));
+			      G_TYPE_NONE, 1, G_TYPE_STRV);
 	signals [PK_ENGINE_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED] =
 		g_signal_new ("sub-percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_ENGINE_NO_PERCENTAGE_UPDATES] =
 		g_signal_new ("no-percentage-updates",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_ENGINE_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 7, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_BOOL,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOOLEAN);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_BOOL,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_BOOLEAN);
 	signals [PK_ENGINE_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

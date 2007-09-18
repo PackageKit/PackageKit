@@ -39,7 +39,7 @@ typedef struct PkTaskListPrivate PkTaskListPrivate;
 
 typedef struct
 {
-	guint			 job;
+	gchar			*tid;
 	PkStatusEnum		 status;
 	PkRoleEnum		 role;
 	gchar			*package_id;

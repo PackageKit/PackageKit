@@ -6,6 +6,10 @@ but write jobs are done in serial. Maybe spawn each task and put it into a
 paused state?
 NOTE: RELEASE BLOCKER
 
+*** API Changes ***
+s/GetJobList/GetActiveTransactions
+s/JobListChanged/ActiveTransactionsChanged
+
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER

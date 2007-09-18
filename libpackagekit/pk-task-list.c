@@ -85,17 +85,16 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%i %s %s\n", item->job, pk_role_enum_to_text (item->role), item->package_id);
+		g_print ("%s %s %s\n", item->tid, pk_role_enum_to_text (item->role), item->package_id);
 	}
-	g_print ("\n");
 	return TRUE;
 }
 
 /**
- * pk_task_list_find_existing_job:
+ * pk_task_list_find_existing_tid:
  **/
 static PkTaskListItem *
-pk_task_list_find_existing_job (PkTaskList *tlist, guint job)
+pk_task_list_find_existing_tid (PkTaskList *tlist, const gchar *tid)
 {
 	guint i;
 	guint length;
@@ -105,7 +104,7 @@ pk_task_list_find_existing_job (PkTaskList *tlist, guint job)
 	/* mark previous tasks as non-valid */
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		if (item->job == job) {
+		if (strcmp (item->tid, tid) == 0) {
 			return item;
 		}
 	}
@@ -118,18 +117,19 @@ pk_task_list_find_existing_job (PkTaskList *tlist, guint job)
 static void
 pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status, PkTaskList *tlist)
 {
-	guint job;
+	gchar *tid;
 	PkTaskListItem *item;
 
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
-	job = pk_task_monitor_get_job (tmonitor);
-	pk_debug ("job %i is now %i", job, status);
+	tid = pk_task_monitor_get_tid (tmonitor);
+	pk_debug ("tid %s is now %i", tid, status);
 
 	/* get correct item */
-	item = pk_task_list_find_existing_job (tlist, job);
+	item = pk_task_list_find_existing_tid (tlist, tid);
 	item->status = status;
+	g_free (tid);
 
 	pk_debug ("emit task-list-changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
@@ -141,20 +141,21 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status
 static void
 pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint runtime, PkTaskList *tlist)
 {
-	guint job;
+	gchar *tid;
 	PkTaskListItem *item;
 
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
-	job = pk_task_monitor_get_job (tmonitor);
-	pk_debug ("job %i exited with %i", job, exit);
+	tid = pk_task_monitor_get_tid (tmonitor);
+	pk_debug ("tid %s exited with %i", tid, exit);
 
 	/* get correct item */
-	item = pk_task_list_find_existing_job (tlist, job);
+	item = pk_task_list_find_existing_tid (tlist, tid);
+	g_free (tid);
 
 	pk_debug ("emit task-list-finished %i, %s, %i", item->role, item->package_id, runtime);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->role, item->package_id, runtime);
+	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, item->role, item->package_id, runtime);
 }
 
 /**
@@ -180,9 +181,9 @@ pk_task_list_refresh (PkTaskList *tlist)
 {
 	guint i;
 	PkTaskListItem *item;
-	guint job;
 	guint length;
-	GArray *array;
+	const gchar *tid;
+	const gchar **array;
 
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
@@ -198,15 +199,15 @@ pk_task_list_refresh (PkTaskList *tlist)
 	}
 
 	/* copy tasks */
-	length = array->len;
+	length = g_strv_length ((gchar **) array);
 	for (i=0; i<length; i++) {
-		job = g_array_index (array, guint, i);
+		tid = array[i];
 
-		item = pk_task_list_find_existing_job (tlist, job);
+		item = pk_task_list_find_existing_tid (tlist, tid);
 		if (item == NULL) {
-			pk_debug ("new job, have to create %i", job);
+			pk_debug ("new job, have to create %s", tid);
 			item = g_new0 (PkTaskListItem, 1);
-			item->job = job;
+			item->tid = g_strdup (tid);
 			item->monitor = pk_task_monitor_new ();
 			g_signal_connect (item->monitor, "job-status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
@@ -214,7 +215,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
 			g_signal_connect (item->monitor, "error-code",
 					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
-			pk_task_monitor_set_job (item->monitor, job);
+			pk_task_monitor_set_tid (item->monitor, tid);
 			pk_task_monitor_get_role (item->monitor, &item->role, &item->package_id);
 			pk_task_monitor_get_status (item->monitor, &item->status);
 
@@ -230,10 +231,11 @@ pk_task_list_refresh (PkTaskList *tlist)
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
 		if (item->valid == FALSE) {
-			pk_debug ("remove %i", item->job);
+			pk_debug ("remove %s", item->tid);
 			g_object_unref (item->monitor);
-			g_free (item->package_id);
 			g_ptr_array_remove (tlist->priv->task_list, item);
+			g_free (item->tid);
+			g_free (item->package_id);
 			g_free (item);
 		}
 	}
@@ -333,7 +335,7 @@ pk_task_list_finalize (GObject *object)
 	/* remove all watches */
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		pk_debug ("remove %i", item->job);
+		pk_debug ("remove %s", item->tid);
 		g_object_unref (item->monitor);
 		g_free (item->package_id);
 		g_ptr_array_remove (tlist->priv->task_list, item);

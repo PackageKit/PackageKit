@@ -230,7 +230,7 @@ pk_transaction_list_commit (PkTransactionList *job_list, PkTask *task)
 	if (item == NULL) {
 		return FALSE;
 	}
-	pk_debug ("marking job %i as valid", item->job);
+	pk_debug ("marking job %s as valid", item->tid);
 	item->valid = TRUE;
 	return TRUE;
 }
@@ -238,27 +238,31 @@ pk_transaction_list_commit (PkTransactionList *job_list, PkTask *task)
 /**
  * pk_transaction_list_get_array:
  **/
-GArray *
+gchar **
 pk_transaction_list_get_array (PkTransactionList *job_list)
 {
 	guint i;
+	guint count = 0;
 	guint length;
-	GArray *array;
+	gchar **array;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (job_list != NULL, NULL);
 	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), NULL);
 
-	/* create new list */
-	array = g_array_new (FALSE, FALSE, sizeof (guint));
-
 	/* find all the jobs in progress */
 	length = job_list->priv->array->len;
+
+	/* create new strv list */
+	array = g_new0 (gchar *, length);
+
+	pk_debug ("%i active jobs", length);
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
 		/* only return in the list if it worked */
 		if (item->valid == TRUE) {
-			array = g_array_append_val (array, item->job);
+			array[count] = g_strdup (item->tid);
+			count++;
 		}
 	}
 	return array;
@@ -276,10 +280,20 @@ pk_transaction_list_get_size (PkTransactionList *job_list)
 }
 
 /**
- * pk_transaction_list_get_item_from_job:
+ * pk_tid_equal:
+ * TODO: only compare first two sections...
+ **/
+static gboolean
+pk_tid_equal (const gchar *tid1, const gchar *tid2)
+{
+	return (strcmp (tid1, tid2) == 0);
+}
+
+/**
+ * pk_transaction_list_get_item_from_tid:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_job (PkTransactionList *job_list, guint job)
+pk_transaction_list_get_item_from_tid (PkTransactionList *job_list, const gchar *tid)
 {
 	guint i;
 	guint length;
@@ -292,7 +306,7 @@ pk_transaction_list_get_item_from_job (PkTransactionList *job_list, guint job)
 	length = job_list->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
-		if (item->job == job) {
+		if (pk_tid_equal (item->tid, tid)) {
 			return item;
 		}
 	}

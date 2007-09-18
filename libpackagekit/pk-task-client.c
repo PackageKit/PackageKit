@@ -54,7 +54,7 @@ struct PkTaskClientPrivate
 	gboolean		 assigned;
 	gboolean		 is_sync;
 	gboolean		 use_buffer;
-	guint			 job;
+	gchar			*tid;
 	GMainLoop		*loop;
 	PkStatusEnum		 last_status;
 	PkTaskMonitor		*tmonitor;
@@ -206,7 +206,7 @@ pk_task_client_reset (PkTaskClient *tclient)
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;
 	tclient->priv->use_buffer = FALSE;
-	tclient->priv->job = 0;
+	tclient->priv->tid = NULL;
 	tclient->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	tclient->priv->is_finished = FALSE;
 	pk_task_client_remove_package_items (tclient);
@@ -251,7 +251,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetUpdates", &error,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -265,7 +265,7 @@ pk_task_client_get_updates (PkTaskClient *tclient)
 		return FALSE;
 	}
 
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -285,7 +285,7 @@ pk_task_client_update_system_action (PkTaskClient *tclient, GError **error)
 	*error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "UpdateSystem", error,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
@@ -334,7 +334,7 @@ pk_task_client_update_system (PkTaskClient *tclient)
 		}
 	}
 
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	if (ret == TRUE) {
 		pk_task_client_wait_if_sync (tclient);
 	}
@@ -366,7 +366,7 @@ pk_task_client_search_name (PkTaskClient *tclient, const gchar *filter, const gc
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -379,7 +379,7 @@ pk_task_client_search_name (PkTaskClient *tclient, const gchar *filter, const gc
 		pk_warning ("SearchName failed!");
 		return FALSE;
 	}
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -408,7 +408,7 @@ pk_task_client_search_details (PkTaskClient *tclient, const gchar *filter, const
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -421,7 +421,7 @@ pk_task_client_search_details (PkTaskClient *tclient, const gchar *filter, const
 		pk_warning ("SearchDetails failed!");
 		return FALSE;
 	}
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -450,7 +450,7 @@ pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const g
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -465,7 +465,7 @@ pk_task_client_search_group (PkTaskClient *tclient, const gchar *filter, const g
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -494,7 +494,7 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -509,7 +509,7 @@ pk_task_client_search_file (PkTaskClient *tclient, const gchar *filter, const gc
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -537,7 +537,7 @@ pk_task_client_get_depends (PkTaskClient *tclient, const gchar *package)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -552,7 +552,7 @@ pk_task_client_get_depends (PkTaskClient *tclient, const gchar *package)
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -580,7 +580,7 @@ pk_task_client_get_requires (PkTaskClient *tclient, const gchar *package)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetRequires", &error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -595,7 +595,7 @@ pk_task_client_get_requires (PkTaskClient *tclient, const gchar *package)
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -623,7 +623,7 @@ pk_task_client_get_update_detail (PkTaskClient *tclient, const gchar *package)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetUpdateDetail", &error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -638,7 +638,7 @@ pk_task_client_get_update_detail (PkTaskClient *tclient, const gchar *package)
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -666,7 +666,7 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetDescription", &error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -681,7 +681,7 @@ pk_task_client_get_description (PkTaskClient *tclient, const gchar *package)
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -704,7 +704,7 @@ pk_task_client_remove_package_action (PkTaskClient *tclient, const gchar *packag
 				 G_TYPE_STRING, package,
 				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
@@ -753,7 +753,7 @@ pk_task_client_remove_package (PkTaskClient *tclient, const gchar *package, gboo
 		}
 	}
 
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	if (ret == TRUE) {
 		pk_task_client_wait_if_sync (tclient);
 	}
@@ -783,7 +783,7 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "RefreshCache", &error,
 				 G_TYPE_BOOLEAN, force,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (error) {
 		const gchar *error_name;
@@ -798,7 +798,7 @@ pk_task_client_refresh_cache (PkTaskClient *tclient, gboolean force)
 	}
 	/* only assign on success */
 	tclient->priv->assigned = TRUE;
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 	pk_task_client_wait_if_sync (tclient);
 
 	return TRUE;
@@ -819,7 +819,7 @@ pk_task_client_install_package_action (PkTaskClient *tclient, const gchar *packa
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "InstallPackage", error,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
-				 G_TYPE_UINT, &tclient->priv->job,
+				 G_TYPE_STRING, &tclient->priv->tid,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
@@ -868,7 +868,7 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package_id)
 		}
 	}
 
-	pk_task_monitor_set_job (tclient->priv->tmonitor, tclient->priv->job);
+	pk_task_monitor_set_tid (tclient->priv->tmonitor, tclient->priv->tid);
 
 	/* only wait if the command succeeded. False is usually due to PolicyKit auth failure */
 	if (ret == TRUE) {
@@ -898,7 +898,7 @@ pk_task_client_cancel (PkTaskClient *tclient)
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "Cancel", &error,
-				 G_TYPE_UINT, tclient->priv->job,
+				 G_TYPE_STRING, tclient->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
@@ -1341,7 +1341,7 @@ pk_task_client_init (PkTaskClient *tclient)
 	tclient->priv->assigned = FALSE;
 	tclient->priv->is_sync = FALSE;
 	tclient->priv->use_buffer = FALSE;
-	tclient->priv->job = 0;
+	tclient->priv->tid = NULL;
 	tclient->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	tclient->priv->require_restart = PK_RESTART_ENUM_NONE;
 	tclient->priv->is_finished = FALSE;

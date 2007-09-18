@@ -4,93 +4,93 @@
 
     <!-- Schedule new jobs -->
     <method name="GetUpdates">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="RefreshCache">
       <arg type="b" name="force" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="UpdateSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchName">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchDetails">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchGroup">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchFile">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetDepends">
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetRequires">
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetUpdateDetail">
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetDescription"> <!-- orders Description signals for the package -->
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="RemovePackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="allow_deps" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="InstallPackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="UpdatePackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
 
     <!-- signals emitted from any job -->
     <signal name="JobStatusChanged">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
     </signal>
     <signal name="PercentageChanged"> <!-- progress of the whole job -->
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
     <signal name="SubPercentageChanged"> <!-- progress of the intervidual transaction -->
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
     <signal name="NoPercentageUpdates"> <!-- if we are not emmitting PercentageChanged, the UI has to spin -->
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
     </signal>
     <signal name="Package">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="value" direction="out"/> <!-- installed=1, not-installed=0 | security=1, normal=0 -->
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>
     <signal name="Description">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="licence" direction="out"/>
       <arg type="s" name="group" direction="out"/>
@@ -98,7 +98,7 @@
       <arg type="s" name="url" direction="out"/>
     </signal>
     <signal name="UpdateDetail">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="updates" direction="out"/>
       <arg type="s" name="obsoletes" direction="out"/>
@@ -107,21 +107,21 @@
       <arg type="s" name="update_text" direction="out"/>
     </signal>
     <signal name="Finished">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
       <arg type="u" name="runtime" direction="out"/> <!-- amount of time job has been running in seconds -->
     </signal>
     <signal name="AllowInterrupt">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="b" name="allow_kill" direction="out"/> <!-- if the job can be SIGKILL'd -->
     </signal>
     <signal name="ErrorCode">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="code" direction="out"/> <!-- enumerated type, see helpers/README -->
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
     <signal name="RequireRestart">
-      <arg type="u" name="job" direction="out"/>
+      <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="type" direction="out"/> <!-- system,application,session -->
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
@@ -129,41 +129,41 @@
     <!-- Do things or query jobs -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="GetStatus"> <!-- this is what the job is currrently doing, and might change -->
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
     </method>
     <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
     </method>
     <method name="GetPercentage">
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetSubPercentage">
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetPackage">
       <!-- throws NoSuchJob -->
-      <arg type="u" name="job" direction="in"/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package" direction="out"/>
     </method>
 
     <!-- Job list -->
     <method name="GetJobList">
-      <arg type="au" name="jobs" direction="out"/>
+      <arg type="as" name="transactions" direction="out"/>
     </method>
     <signal name="JobListChanged">
-      <arg type="au" name="jobs" direction="out"/>
+      <arg type="as" name="transactions" direction="out"/>
     </signal>
 
     <!-- Transaction methods -->
