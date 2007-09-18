@@ -51,6 +51,7 @@ typedef struct
 
 typedef struct {
 	gboolean		 committed;
+	gboolean		 running;
 	PkBackend		*backend;
 	gchar			*tid;
 } PkTransactionItem;

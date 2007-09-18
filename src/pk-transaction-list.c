@@ -102,6 +102,7 @@ pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
 	item->committed = FALSE;
+	item->running = FALSE;
 	item->backend = backend;
 	item->tid = pk_transaction_id_generate ();
 	g_ptr_array_add (tlist->priv->array, item);
@@ -157,7 +158,9 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE) {
+		if (item->committed == TRUE && item->running == FALSE) {
+			pk_debug ("running %s", item->tid);
+			item->running = TRUE;
 			pk_backend_run (item->backend);
 			break;
 		}
@@ -165,10 +168,10 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 }
 
 /**
- * pk_transaction_list_number_committed:
+ * pk_transaction_list_number_running:
  **/
 static guint
-pk_transaction_list_number_committed (PkTransactionList *tlist)
+pk_transaction_list_number_running (PkTransactionList *tlist)
 {
 	guint i;
 	guint count = 0;
@@ -182,7 +185,7 @@ pk_transaction_list_number_committed (PkTransactionList *tlist)
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE) {
+		if (item->committed == TRUE && item->running == TRUE) {
 			count++;
 		}
 	}
@@ -221,12 +224,16 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	    role == PK_ROLE_ENUM_SEARCH_FILE ||
 	    role == PK_ROLE_ENUM_SEARCH_GROUP ||
 	    role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		pk_debug ("running %s", item->tid);
+		item->running = TRUE;
 		pk_backend_run (backend);
 		return TRUE;
 	}
 
 	/* do the transaction now if we have no other in progress */
-	if (pk_transaction_list_number_committed (tlist) == 0) {
+	if (pk_transaction_list_number_running (tlist) == 0) {
+		pk_debug ("running %s", item->tid);
+		item->running = TRUE;
 		pk_backend_run (backend);
 	}
 
