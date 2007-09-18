@@ -5,6 +5,9 @@ s/GetJobList/GetActiveTransactions
 s/JobListChanged/ActiveTransactionsChanged
 s/PkTask/PkBackend (and local variables)
 
+*** Put the pk-application taskbar in the status section ***
+It looks wrong where it is...
+
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
