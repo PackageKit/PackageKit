@@ -23,6 +23,7 @@
 #define __PK_TRANSACTION_DB_H
 
 #include <glib-object.h>
+#include <pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -50,6 +51,16 @@ GType		 pk_transaction_db_get_type		(void);
 PkTransactionDb	*pk_transaction_db_new			(void);
 gboolean	 pk_transaction_db_add			(PkTransactionDb	*tdb,
 							 const gchar		*tid);
+gboolean	 pk_transaction_db_print		(PkTransactionDb	*tdb);
+gboolean	 pk_transaction_db_set_role		(PkTransactionDb	*tdb,
+							 const gchar		*tid,
+							 PkRoleEnum		 role);
+gboolean	 pk_transaction_db_set_finished		(PkTransactionDb	*tdb,
+							 const gchar		*tid,
+							 gboolean		 success,
+							 guint			 runtime);
+gboolean	 pk_transaction_db_get_list		(PkTransactionDb	*tdb,
+							 guint			 limit);
 
 G_END_DECLS
 

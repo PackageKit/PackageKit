@@ -85,7 +85,7 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%i %s %s", item->job, pk_status_enum_to_text (item->role), item->package_id);
+		g_print ("%i %s %s\n", item->job, pk_role_enum_to_text (item->role), item->package_id);
 	}
 	g_print ("\n");
 	return TRUE;
@@ -153,8 +153,8 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint ru
 	/* get correct item */
 	item = pk_task_list_find_existing_job (tlist, job);
 
-	pk_debug ("emit task-list-finished %i, %s, %i", item->status, item->package_id, runtime);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->status, item->package_id, runtime);
+	pk_debug ("emit task-list-finished %i, %s, %i", item->role, item->package_id, runtime);
+	g_signal_emit (tlist , signals [PK_TASK_LIST_FINISHED], 0, item->role, item->package_id, runtime);
 }
 
 /**

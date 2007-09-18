@@ -127,16 +127,16 @@
     </signal>
 
     <!-- Do things or query jobs -->
-    <method name="CancelJobTry"> <!-- might not succeed for all manner or reasons -->
+    <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
       <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>
     </method>
-    <method name="GetJobStatus"> <!-- this is what the job is currrently doing, and might change -->
+    <method name="GetStatus"> <!-- this is what the job is currrently doing, and might change -->
       <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
     </method>
-    <method name="GetJobRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
+    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
       <!-- throws NoSuchJob -->
       <arg type="u" name="job" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
@@ -164,6 +164,18 @@
     </method>
     <signal name="JobListChanged">
       <arg type="au" name="jobs" direction="out"/>
+    </signal>
+
+    <!-- Transaction methods -->
+    <method name="GetOldTransactions">
+      <arg type="u" name="number" direction="in"/>
+    </method>
+    <signal name="Transaction">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="timespec" direction="out"/>
+      <arg type="b" name="succeeded" direction="out"/>
+      <arg type="s" name="role" direction="out"/>
+      <arg type="u" name="duration" direction="out"/>
     </signal>
 
     <!-- General methods -->

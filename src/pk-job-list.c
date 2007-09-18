@@ -120,7 +120,7 @@ pk_job_list_role_present (PkJobList *job_list, PkRoleEnum role)
 	length = job_list->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkJobListItem *) g_ptr_array_index (job_list->priv->array, i);
-		pk_backend_get_job_role (item->task, &role_temp, NULL);
+		pk_backend_get_role (item->task, &role_temp, NULL);
 		if (role_temp == role) {
 			return TRUE;
 		}
@@ -129,9 +129,49 @@ pk_job_list_role_present (PkJobList *job_list, PkRoleEnum role)
 }
 
 /**
+ * pk_job_list_tid_get_random_hex_string:
+ **/
+static gchar *
+pk_job_list_tid_get_random_hex_string (guint length)
+{
+	GRand *rand;
+	gint32 num;
+	gchar *string;
+	guint i;
+
+	rand = g_rand_new ();
+
+	/* allocate a string with the correct size */
+	string = g_strnfill (length, 'x');
+	for (i=0; i<length; i++) {
+		num = g_rand_int_range (rand, (gint32) 'a', (gint32) 'f');
+		/* assign a random number as a char */
+		string[i] = (gchar) num;
+	}
+	g_rand_free (rand);
+	return string;
+}
+
+/**
+ * pk_job_list_tid_id_generate:
+ **/
+gchar *
+pk_job_list_tid_id_generate (void)
+{
+	gchar *random;
+	gchar *job;
+	gchar *tid;
+	random = pk_job_list_tid_get_random_hex_string (8);
+	job = g_strdup_printf ("%i", 0);
+	tid = g_strjoin (";", job, random, "data", NULL);
+	g_free (random);
+	g_free (job);
+	return tid;
+}
+
+/**
  * pk_job_list_add:
  **/
- /* create transaction_id, add to array, mark changed */
 PkJobListItem *
 pk_job_list_add (PkJobList *job_list, PkTask *task)
 {
@@ -148,6 +188,7 @@ pk_job_list_add (PkJobList *job_list, PkTask *task)
 	item->valid = FALSE;
 	item->task = task;
 	item->job = job_list->priv->job_count;
+	item->tid = pk_job_list_tid_id_generate ();
 	g_ptr_array_add (job_list->priv->array, item);
 
 	/* in an ideal world we don't need this, but do it in case the daemon is ctrl-c;d */
@@ -170,6 +211,7 @@ pk_job_list_remove (PkJobList *job_list, PkTask *task)
 		return FALSE;
 	}
 	g_ptr_array_remove (job_list->priv->array, item);
+	g_free (item->tid);
 	g_free (item);
 	return TRUE;
 }
@@ -355,13 +397,11 @@ pk_job_list_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
-static GMainLoop *loop;
-
 void
 libst_job_list (LibSelfTest *test)
 {
 	PkJobList *job_list;
-	gboolean ret;
+	gchar *tid;
 
 	if (libst_start (test, "PkJobList", CLASS_AUTO) == FALSE) {
 		return;
@@ -370,13 +410,14 @@ libst_job_list (LibSelfTest *test)
 	job_list = pk_job_list_new ();
 
 	/************************************************************/
-	libst_title (test, "make sure return error for missing file");
-	ret = pk_job_list_foo (job_list, " ");
-	if (ret == FALSE) {
-		libst_success (test, "failed to run invalid file");
+	libst_title (test, "make sure we get a valid tid");
+	tid = pk_job_list_tid_id_generate ();
+	if (tid != NULL) {
+		libst_success (test, "got tid %s", tid);
 	} else {
-		libst_failed (test, "ran incorrect file");
+		libst_failed (test, "failed to get tid");
 	}
+	g_free (tid);
 
 	g_object_unref (job_list);
 

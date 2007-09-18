@@ -46,8 +46,10 @@
 #include "pk-enum.h"
 #include "pk-spawn.h"
 #include "pk-network.h"
+#include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
+#define PK_BACKEND_PERCENTAGE_INVALID	101
 
 struct _PkBackendPrivate
 {
@@ -66,24 +68,28 @@ struct _PkBackendPrivate
 	guint			 last_percentage;
 	guint			 last_subpercentage;
 	gchar			*last_package;
+	PkThreadList		*thread_list;
+	gulong			 signal_finished;
+	gulong			 signal_stdout;
+	gulong			 signal_stderr;
 };
 
 enum {
-	PK_TASK_JOB_STATUS_CHANGED,
-	PK_TASK_PERCENTAGE_CHANGED,
-	PK_TASK_SUB_PERCENTAGE_CHANGED,
-	PK_TASK_NO_PERCENTAGE_UPDATES,
-	PK_TASK_DESCRIPTION,
-	PK_TASK_PACKAGE,
-	PK_TASK_UPDATE_DETAIL,
-	PK_TASK_ERROR_CODE,
-	PK_TASK_REQUIRE_RESTART,
-	PK_TASK_FINISHED,
-	PK_TASK_ALLOW_INTERRUPT,
-	PK_TASK_LAST_SIGNAL
+	PK_BACKEND_JOB_STATUS_CHANGED,
+	PK_BACKEND_PERCENTAGE_CHANGED,
+	PK_BACKEND_SUB_PERCENTAGE_CHANGED,
+	PK_BACKEND_NO_PERCENTAGE_UPDATES,
+	PK_BACKEND_DESCRIPTION,
+	PK_BACKEND_PACKAGE,
+	PK_BACKEND_UPDATE_DETAIL,
+	PK_BACKEND_ERROR_CODE,
+	PK_BACKEND_REQUIRE_RESTART,
+	PK_BACKEND_FINISHED,
+	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_LAST_SIGNAL
 };
 
-static guint signals [PK_TASK_LAST_SIGNAL] = { 0, };
+static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 
@@ -99,7 +105,11 @@ pk_backend_build_library_path (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
-	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+	path = g_build_filename ("..", "backends", backend->priv->name, ".libs", filename, NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
+		g_free (path);
+		path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+	}
 	g_free (filename);
 	pk_debug ("dlopening '%s'", path);
 
@@ -165,6 +175,33 @@ pk_backend_get_name (PkBackend *backend)
 	return backend->priv->name;
 }
 
+/**
+ * pk_backend_thread_create:
+ **/
+gboolean
+pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
+{
+	return pk_thread_list_create (backend->priv->thread_list, (PkThreadFunc) func, backend, data);
+}
+
+/**
+ * pk_backend_thread_helper:
+ **/
+gboolean
+pk_backend_thread_helper (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
+{
+	if (pk_backend_thread_create (backend, func, data) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	pk_debug ("waiting for all threads in this backend");
+	pk_thread_list_wait (backend->priv->thread_list);
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
 
 /**
  * pk_backend_parse_common_output:
@@ -322,22 +359,39 @@ out:
 }
 
 /**
+ * pk_backend_spawn_helper_new:
+ **/
+static gboolean
+pk_backend_spawn_helper_delete (PkBackend *backend)
+{
+	if (backend->priv->spawn == NULL) {
+		pk_error ("spawn object not in use");
+	}
+	pk_debug ("deleting spawn %p", backend->priv->spawn);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_finished);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_stdout);
+	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_stderr);
+	g_object_unref (backend->priv->spawn);
+	backend->priv->spawn = NULL;
+	return TRUE;
+}
+
+/**
  * pk_backend_spawn_finished_cb:
  **/
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
 {
-	PkExitEnum exit;
-	pk_debug ("unref'ing spawn %p, exit code %i", spawn, exitcode);
-	g_object_unref (spawn);
+	pk_debug ("deleting spawn %p, exit code %i", spawn, exitcode);
+	pk_backend_spawn_helper_delete (backend);
 
-	/* only emit success with a zero exit code */
-	if (exitcode == 0) {
-		exit = PK_EXIT_ENUM_SUCCESS;
-	} else {
-		exit = PK_EXIT_ENUM_FAILED;
+	/* check shit scripts returned an error on failure */
+	if (exitcode != 0 && backend->priv->exit != PK_EXIT_ENUM_FAILED) {
+		pk_warning ("script returned false but did not return error");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Helper returned non-zero return value but did not set error");
 	}
-	pk_backend_finished (backend, exit);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -361,6 +415,29 @@ pk_backend_spawn_stderr_cb (PkSpawn *spawn, const gchar *line, PkBackend *backen
 }
 
 /**
+ * pk_backend_spawn_helper_new:
+ **/
+static gboolean
+pk_backend_spawn_helper_new (PkBackend *backend)
+{
+	if (backend->priv->spawn != NULL) {
+		pk_error ("spawn object already in use");
+	}
+	backend->priv->spawn = pk_spawn_new ();
+	pk_debug ("allocating spawn %p", backend->priv->spawn);
+	backend->priv->signal_finished =
+		g_signal_connect (backend->priv->spawn, "finished",
+				  G_CALLBACK (pk_backend_spawn_finished_cb), backend);
+	backend->priv->signal_stdout =
+		g_signal_connect (backend->priv->spawn, "stdout",
+				  G_CALLBACK (pk_backend_spawn_stdout_cb), backend);
+	backend->priv->signal_stderr =
+		g_signal_connect (backend->priv->spawn, "stderr",
+				  G_CALLBACK (pk_backend_spawn_stderr_cb), backend);
+	return TRUE;
+}
+
+/**
  * pk_backend_spawn_helper_internal:
  **/
 static gboolean
@@ -371,7 +448,8 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	gchar *command;
 
 	/* build script */
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", script, NULL);
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	pk_debug ("using spawn filename %s", filename);
 
 	if (argument != NULL) {
 		command = g_strdup_printf ("%s %s", filename, argument);
@@ -379,18 +457,12 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 		command = g_strdup (filename);
 	}
 
-	backend->priv->spawn = pk_spawn_new ();
-	g_signal_connect (backend->priv->spawn, "finished",
-			  G_CALLBACK (pk_backend_spawn_finished_cb), backend);
-	g_signal_connect (backend->priv->spawn, "stdout",
-			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend);
-	g_signal_connect (backend->priv->spawn, "stderr",
-			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend);
+	pk_backend_spawn_helper_new (backend);
 	ret = pk_spawn_command (backend->priv->spawn, command);
 	if (ret == FALSE) {
-		g_object_unref (backend->priv->spawn);
+		pk_backend_spawn_helper_delete (backend);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 	}
 	g_free (filename);
 	g_free (command);
@@ -431,6 +503,9 @@ pk_backend_spawn_helper (PkBackend *backend, const gchar *script, ...)
 	return ret;
 }
 
+/* ick, we need to call this directly... */
+static gboolean
+pk_backend_finished_delay (gpointer data);
 /**
  * pk_backend_not_implemented_yet:
  **/
@@ -438,7 +513,9 @@ gboolean
 pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	/* don't wait, do this now */
+	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+	pk_backend_finished_delay (backend);
 	return TRUE;
 }
 
@@ -452,10 +529,10 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* save in case we need this from coldplug */
-	backend->priv->last_subpercentage = percentage;
+	backend->priv->last_percentage = percentage;
 
 	pk_debug ("emit percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_TASK_PERCENTAGE_CHANGED], 0, percentage);
+	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 
@@ -472,15 +549,15 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
 	backend->priv->last_subpercentage = percentage;
 
 	pk_debug ("emit sub-percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_TASK_SUB_PERCENTAGE_CHANGED], 0, percentage);
+	g_signal_emit (backend, signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	return TRUE;
 }
 
 /**
- * pk_backend_set_job_role:
+ * pk_backend_set_role:
  **/
 gboolean
-pk_backend_set_job_role (PkBackend *backend, PkRoleEnum role, const gchar *package_id)
+pk_backend_set_role (PkBackend *backend, PkRoleEnum role, const gchar *package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -507,7 +584,7 @@ pk_backend_change_job_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	backend->priv->status = status;
 	pk_debug ("emiting job-status-changed %i", status);
-	g_signal_emit (backend, signals [PK_TASK_JOB_STATUS_CHANGED], 0, status);
+	g_signal_emit (backend, signals [PK_BACKEND_JOB_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
 
@@ -525,7 +602,7 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 	backend->priv->last_package = g_strdup (package);
 
 	pk_debug ("emit package %i, %s, %s", value, package, summary);
-	g_signal_emit (backend, signals [PK_TASK_PACKAGE], 0, value, package, summary);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, value, package, summary);
 
 	return TRUE;
 }
@@ -544,7 +621,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, url, restart, update_text);
-	g_signal_emit (backend, signals [PK_TASK_UPDATE_DETAIL], 0,
+	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, url, restart, update_text);
 	return TRUE;
 }
@@ -554,10 +631,15 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
  * pk_backend_get_percentage:
  **/
 gboolean
-pk_backend_get_percentage (PkBackend	*backend, guint *percentage)
+pk_backend_get_percentage (PkBackend *backend, guint *percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* no data yet... */
+	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
+		return FALSE;
+	}
 	*percentage = backend->priv->last_percentage;
 	return TRUE;
 }
@@ -570,6 +652,11 @@ pk_backend_get_sub_percentage (PkBackend *backend, guint *percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* no data yet... */
+	if (backend->priv->last_subpercentage == PK_BACKEND_PERCENTAGE_INVALID) {
+		return FALSE;
+	}
 	*percentage = backend->priv->last_subpercentage;
 	return TRUE;
 }
@@ -582,6 +669,10 @@ pk_backend_get_package (PkBackend *backend, gchar **package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	if (backend->priv->last_package == NULL) {
+		return FALSE;
+	}
 	*package_id = g_strdup (backend->priv->last_package);
 	return TRUE;
 }
@@ -596,7 +687,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit require-restart %i, %s", restart, details);
-	g_signal_emit (backend, signals [PK_TASK_REQUIRE_RESTART], 0, restart, details);
+	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
 	return TRUE;
 }
@@ -613,7 +704,7 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
-	g_signal_emit (backend, signals [PK_TASK_DESCRIPTION], 0, package_id, licence, group, description, url);
+	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url);
 
 	return TRUE;
 }
@@ -634,17 +725,20 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	g_vsnprintf (buffer, 1024, format, args);
 	va_end (args);
 
+	/* we mark any transaction with errors as failed */
+	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+
 	pk_debug ("emit error-code %i, %s", code, buffer);
-	g_signal_emit (backend, signals [PK_TASK_ERROR_CODE], 0, code, buffer);
+	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
 	return TRUE;
 }
 
 /**
- * pk_backend_get_job_status:
+ * pk_backend_get_status:
  **/
 gboolean
-pk_backend_get_job_status (PkBackend *backend, PkStatusEnum *status)
+pk_backend_get_status (PkBackend *backend, PkStatusEnum *status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -659,10 +753,10 @@ pk_backend_get_job_status (PkBackend *backend, PkStatusEnum *status)
 }
 
 /**
- * pk_backend_get_job_role:
+ * pk_backend_get_role:
  **/
 gboolean
-pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **package_id)
+pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package_id)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -682,14 +776,16 @@ pk_backend_get_job_role (PkBackend *backend, PkRoleEnum *role, const gchar **pac
 }
 
 /**
- * pk_backend_finished_idle:
+ * pk_backend_finished_delay:
+ *
+ * We can call into this function if we *know* it's safe. 
  **/
 static gboolean
-pk_backend_finished_idle (gpointer data)
+pk_backend_finished_delay (gpointer data)
 {
-	PkBackend *backend = (PkBackend *) data;
+	PkBackend *backend = PK_BACKEND (data);
 	pk_debug ("emit finished %i", backend->priv->exit);
-	g_signal_emit (backend, signals [PK_TASK_FINISHED], 0, backend->priv->exit);
+	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	return FALSE;
 }
 
@@ -697,16 +793,27 @@ pk_backend_finished_idle (gpointer data)
  * pk_backend_finished:
  **/
 gboolean
-pk_backend_finished (PkBackend *backend, PkExitEnum exit)
+pk_backend_finished (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* check we have no threads running */
+	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
+		g_print ("ERROR: There are threads running and the task has been asked to finish!\n");
+		g_print ("If you are using :\n");
+		g_print ("* pk_backend_thread_helper\n");
+		g_print ("   - You should _not_ use pk_backend_finished directly");
+		g_print ("   - Return from the function like normal\n");
+		g_print ("* pk_thread_list_create:\n");
+		g_print ("   -  If used internally you _have_ to use pk_thread_list_wait\n");
+		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
+	}
+
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
-	pk_debug ("adding finished %p to idle loop", backend);
-	backend->priv->exit = exit;
-	g_timeout_add (500, pk_backend_finished_idle, backend);
+	pk_debug ("adding finished %p to timeout loop", backend);
+	g_timeout_add (500, pk_backend_finished_delay, backend);
 	return TRUE;
 }
 
@@ -719,8 +826,11 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* invalidate previous percentage */
+	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
+
 	pk_debug ("emit no-percentage-updates");
-	g_signal_emit (backend, signals [PK_TASK_NO_PERCENTAGE_UPDATES], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_NO_PERCENTAGE_UPDATES], 0);
 	return TRUE;
 }
 
@@ -735,20 +845,20 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 
 	pk_debug ("emit allow-interrupt %i", allow_restart);
 	backend->priv->is_killable = allow_restart;
-	g_signal_emit (backend, signals [PK_TASK_ALLOW_INTERRUPT], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0);
 	return TRUE;
 }
 
 
 /**
- * pk_backend_cancel_job_try:
+ * pk_backend_cancel:
  */
 gboolean
-pk_backend_cancel_job_try (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	if (backend->desc->cancel_job_try == NULL) {
-		pk_backend_not_implemented_yet (backend, "CancelJobTry");
+		pk_backend_not_implemented_yet (backend, "Cancel");
 		return FALSE;
 	}
 	/* check to see if we have an action */
@@ -780,7 +890,7 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDepends");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_depends (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -797,7 +907,7 @@ pk_backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetUpdateDetail");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_update_detail (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -814,7 +924,7 @@ pk_backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetDescription");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_description (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -831,7 +941,7 @@ pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "GetRequires");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, package_id);
 	backend->desc->get_requires (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -848,7 +958,7 @@ pk_backend_get_updates (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "GetUpdates");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, NULL);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, NULL);
 	backend->desc->get_updates (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -865,7 +975,7 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "InstallPackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL, package_id);
 	backend->desc->install_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -882,7 +992,7 @@ pk_backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_not_implemented_yet (backend, "RefreshCache");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_REFRESH_CACHE, NULL);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_REFRESH_CACHE, NULL);
 	backend->desc->refresh_cache (backend, force);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -899,7 +1009,7 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 		pk_backend_not_implemented_yet (backend, "RemovePackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE, package_id);
 	backend->desc->remove_package (backend, package_id, allow_deps);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -916,7 +1026,7 @@ pk_backend_search_details (PkBackend *backend, const gchar *filter, const gchar 
 		pk_backend_not_implemented_yet (backend, "SearchDetails");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_details (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -933,7 +1043,7 @@ pk_backend_search_file (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchFile");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_file (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -950,7 +1060,7 @@ pk_backend_search_group (PkBackend *backend, const gchar *filter, const gchar *s
 		pk_backend_not_implemented_yet (backend, "SearchGroup");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_group (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -967,7 +1077,7 @@ pk_backend_search_name (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_not_implemented_yet (backend, "SearchName");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_QUERY, search);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_QUERY, search);
 	backend->desc->search_name (backend, filter, search);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -984,7 +1094,7 @@ pk_backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_not_implemented_yet (backend, "UpdatePackage");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE, package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE, package_id);
 	backend->desc->update_package (backend, package_id);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -1001,7 +1111,7 @@ pk_backend_update_system (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "UpdateSystem");
 		return FALSE;
 	}
-	pk_backend_set_job_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE, NULL);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE, NULL);
 	backend->desc->update_system (backend);
 	backend->priv->assigned = TRUE;
 	return TRUE;
@@ -1133,12 +1243,16 @@ pk_backend_finalize (GObject *object)
 		}		
 	}
 
-	pk_debug ("freeing %s", backend->priv->name);
+	pk_debug ("freeing %s (%p)", backend->priv->name, backend);
 	g_free (backend->priv->name);
 	pk_backend_unload (backend);
 	g_timer_destroy (backend->priv->timer);
 	g_free (backend->priv->last_package);
+	if (backend->priv->spawn != NULL) {
+		pk_backend_spawn_helper_delete (backend);
+	}
 	g_object_unref (backend->priv->network);
+	g_object_unref (backend->priv->thread_list);
 
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
@@ -1153,58 +1267,58 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	object_class->finalize = pk_backend_finalize;
 
-	signals [PK_TASK_JOB_STATUS_CHANGED] =
+	signals [PK_BACKEND_JOB_STATUS_CHANGED] =
 		g_signal_new ("job-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PERCENTAGE_CHANGED] =
+	signals [PK_BACKEND_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_SUB_PERCENTAGE_CHANGED] =
+	signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED] =
 		g_signal_new ("sub-percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_PACKAGE] =
+	signals [PK_BACKEND_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_UPDATE_DETAIL] =
+	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_REQUIRE_RESTART] =
+	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_TASK_DESCRIPTION] =
+	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
 			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_TASK_ERROR_CODE] =
+	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_TASK_FINISHED] =
+	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_TASK_NO_PERCENTAGE_UPDATES] =
+	signals [PK_BACKEND_NO_PERCENTAGE_UPDATES] =
 		g_signal_new ("no-percentage-updates",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_TASK_ALLOW_INTERRUPT] =
+	signals [PK_BACKEND_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
@@ -1225,13 +1339,14 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->package_id = NULL;
-	backend->priv->last_percentage = 0;
-	backend->priv->last_subpercentage = 0;
+	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_package = NULL;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
+	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
 	backend->priv->network = pk_network_new ();
+	backend->priv->thread_list = pk_thread_list_new ();
 }
 
 /**

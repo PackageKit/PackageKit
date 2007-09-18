@@ -1,5 +1,5 @@
 
-helperdir = $(datadir)/PackageKit/helpers
+helperdir = $(datadir)/PackageKit/helpers/yum
 
 NULL =
 

@@ -63,6 +63,7 @@ typedef enum
 	PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 	PK_ENGINE_ERROR_SEARCH_INVALID,
 	PK_ENGINE_ERROR_FILTER_INVALID,
+	PK_ENGINE_ERROR_INVALID_STATE,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
@@ -135,16 +136,16 @@ void		 pk_engine_update_package		(PkEngine	*engine,
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
 							 GArray		**job_list,
 							 GError		**error);
-gboolean	 pk_engine_get_job_status		(PkEngine	*engine,
+gboolean	 pk_engine_get_status		(PkEngine	*engine,
 							 guint		 job,
 							 const gchar	**status,
 							 GError		**error);
-gboolean	 pk_engine_get_job_role			(PkEngine	*engine,
+gboolean	 pk_engine_get_role			(PkEngine	*engine,
 							 guint		 job,
 							 const gchar	**status,
 							 const gchar	**package_id,
 							 GError		**error);
-gboolean	 pk_engine_cancel_job_try		(PkEngine	*engine,
+gboolean	 pk_engine_cancel		(PkEngine	*engine,
 							 guint		 job,
 							 GError		**error);
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
@@ -169,6 +170,9 @@ gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
 gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 guint		 job,
 							 gchar		**package,
+							 GError		**error);
+gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
+							 guint		 number,
 							 GError		**error);
 
 G_END_DECLS

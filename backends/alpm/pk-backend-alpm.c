@@ -382,7 +382,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id)
 			 "The GLib library");
 	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -393,13 +393,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	PkPackageId *id = pk_package_id_new_from_string (package_id);
-	if (id == NULL)
-	  {
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
-	    return;
-	  }
 	//pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_PROGRAMMING, "sdgd");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -413,7 +408,7 @@ backend_get_requires (PkBackend *backend, const gchar *package_id)
 			 "The GLib library");
 	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -428,7 +423,7 @@ backend_get_updates (PkBackend *backend)
 	pk_backend_package (backend, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 			 "The Linux kernel (the core of the Linux operating system)");
 	pk_backend_package (backend, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -455,7 +450,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_backend_error_code (backend,
 			     PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 			     "Package not found");
-      pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+      pk_backend_finished (backend);
       alpm_list_free (result);
       alpm_list_free (syncdbs);
       pk_package_id_free (id);
@@ -471,7 +466,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_backend_error_code (backend,
 			     PK_ERROR_ENUM_PACKAGE_ID_INVALID,
 			     "Package not found");
-      pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+      pk_backend_finished (backend);
       alpm_list_free (result);
       alpm_list_free (syncdbs);
       pk_package_id_free (id);
@@ -485,7 +480,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_backend_error_code (backend,
 			     PK_ERROR_ENUM_TRANSACTION_ERROR,
 			     alpm_strerror (pm_errno));
-      pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+      pk_backend_finished (backend);
       alpm_list_free (result);
       pk_package_id_free (id);
       return;
@@ -498,7 +493,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_backend_error_code (backend,
 			     PK_ERROR_ENUM_TRANSACTION_ERROR,
 			     alpm_strerror (pm_errno));
-      pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+      pk_backend_finished (backend);
       alpm_trans_release ();
       alpm_list_free (result);
       pk_package_id_free (id);
@@ -510,7 +505,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_backend_error_code (backend,
 			     PK_ERROR_ENUM_TRANSACTION_ERROR,
 			     alpm_strerror (pm_errno));
-      pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+      pk_backend_finished (backend);
       alpm_trans_release ();
       alpm_list_free (result);
       pk_package_id_free (id);
@@ -520,7 +515,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
   alpm_trans_release ();
   alpm_list_free (result);
   pk_package_id_free (id);
-  pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+  pk_backend_finished (backend);
 }
 
 /**
@@ -540,7 +535,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	    pk_backend_error_code (backend,
 				   PK_ERROR_ENUM_TRANSACTION_ERROR,
 				   alpm_strerror (pm_errno));
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    return;
 	  }
 
@@ -551,7 +546,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	    pk_backend_error_code (backend,
 				   PK_ERROR_ENUM_TRANSACTION_ERROR,
 				   alpm_strerror (pm_errno));
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    return;
 	  }*/
 
@@ -566,14 +561,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 				       PK_ERROR_ENUM_TRANSACTION_ERROR,
 				       alpm_strerror (pm_errno));
 		alpm_list_free (dbs);
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		subprogress_percentage = -1;
 		return;
 	      }
 	    subprogress_percentage = -1;
 	  }
 
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -594,7 +589,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	    pk_backend_error_code (backend,
 				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
 				  "Package is not installed");
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    pk_package_id_free (id);
 	    return;
 	  }
@@ -605,7 +600,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
 				  "Package is not installed");
 	    alpm_list_free_inner (result, (alpm_list_fn_free)package_source_free);
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    pk_package_id_free (id);
 	    alpm_list_free (result);
 	    return;
@@ -620,7 +615,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	    pk_backend_error_code (backend,
 				  PK_ERROR_ENUM_TRANSACTION_ERROR,
 				  alpm_strerror (pm_errno));
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    alpm_list_free (result);
 	    pk_package_id_free (id);
 	    return;
@@ -633,7 +628,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	    pk_backend_error_code (backend,
 				  PK_ERROR_ENUM_TRANSACTION_ERROR,
 				  alpm_strerror (pm_errno));
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    alpm_trans_release ();
 	    alpm_list_free (result);
 	    pk_package_id_free (id);
@@ -645,7 +640,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	    pk_backend_error_code (backend,
 				  PK_ERROR_ENUM_TRANSACTION_ERROR,
 				  alpm_strerror (pm_errno));
-	    pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	    pk_backend_finished (backend);
 	    alpm_trans_release ();
 	    alpm_list_free (result);
 	    pk_package_id_free (id);
@@ -655,7 +650,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	alpm_list_free (result);
 	pk_package_id_free (id);
 	alpm_trans_release ();
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -667,7 +662,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -679,7 +674,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -691,7 +686,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -762,7 +757,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	if (!ninstalled) filter_packages_installed (result, FALSE);
 
 	add_packages_from_list (backend, alpm_list_first (result));
-	pk_backend_finished  (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -773,7 +768,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 1, package_id, "The same thing");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 static gboolean
@@ -781,7 +776,7 @@ backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (progress_percentage == 100) {
-		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 	pk_backend_change_job_status (backend, PK_STATUS_ENUM_UPDATE);

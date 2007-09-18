@@ -25,24 +25,6 @@
 #include <pk-backend.h>
 
 /**
- * backend_initalize:
- */
-static void
-backend_initalize (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-}
-
-/**
- * backend_destroy:
- */
-static void
-backend_destroy (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-}
-
-/**
  * backend_get_groups:
  */
 static void
@@ -71,13 +53,13 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
- * backend_cancel_job_try:
+ * backend_cancel:
  */
 static void
-backend_cancel_job_try (PkBackend *backend)
+backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -87,7 +69,7 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -97,7 +79,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -107,7 +89,7 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -117,7 +99,7 @@ static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -127,7 +109,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -137,7 +119,7 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -147,7 +129,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -157,7 +139,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -167,7 +149,7 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -177,7 +159,7 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -187,7 +169,7 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -197,7 +179,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -207,7 +189,7 @@ static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -217,18 +199,18 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 PK_BACKEND_OPTIONS (
-	"Test Backend",				/* description */
+	"Test Fail Backend",			/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initalize,			/* initalize */
-	backend_destroy,			/* destroy */
+	NULL,					/* initalize */
+	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel_job_try,			/* cancel_job_try */
+	backend_cancel,			/* cancel_job_try */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */

@@ -56,6 +56,8 @@ packagekitd_SOURCES =					\
 	pk-engine.c					\
 	pk-network.h					\
 	pk-network.c					\
+	pk-thread-list.h				\
+	pk-thread-list.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
 	$(NULL)
@@ -108,13 +110,22 @@ check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
+	pk-backend.h					\
+	pk-backend.c					\
 	pk-spawn.h					\
 	pk-spawn.c					\
+	pk-network.h					\
+	pk-network.c					\
+	pk-thread-list.h				\
+	pk-thread-list.c				\
+	pk-job-list.h					\
+	pk-job-list.c					\
 	pk-self-test.c					\
 	$(NULL)
 
 pk_self_test_LDADD =					\
 	$(GLIB_LIBS)					\
+	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
 	$(LIBNM_LIBS)					\

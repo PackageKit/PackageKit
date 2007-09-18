@@ -73,6 +73,7 @@ enum {
 	PK_ENGINE_SUB_PERCENTAGE_CHANGED,
 	PK_ENGINE_NO_PERCENTAGE_UPDATES,
 	PK_ENGINE_PACKAGE,
+	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_FINISHED,
@@ -120,6 +121,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_FILTER_INVALID, "FilterInvalid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -395,6 +397,7 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	time = pk_backend_get_runtime (task);
 
 	pk_debug ("task was running for %f seconds", time);
+	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
 	pk_debug ("emitting finished job: %i, '%s', %i", item->job, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->job, exit_text, (guint) time);
@@ -437,6 +440,9 @@ pk_engine_new_task (PkEngine *engine)
 {
 	PkTask *task;
 	gboolean ret;
+
+	g_return_val_if_fail (engine != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
 
 	/* allocate a new task */
 	task = pk_backend_new ();
@@ -486,11 +492,47 @@ pk_engine_new_task (PkEngine *engine)
 static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
+	PkRoleEnum role;
+	PkJobListItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
 	/* commit, so it appears in the JobList */
 	pk_job_list_commit (engine->priv->job_list, task);
 
+	/* get all the data we know */
+	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+
+	/* add to database */
+	pk_transaction_db_add (engine->priv->transaction_db, item->tid);
+
+	/* save role in the database */
+	pk_backend_get_role (task, &role, NULL);
+	pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
+
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
+	return TRUE;
+}
+
+/**
+ * pk_engine_delete_task:
+ *
+ * Use this function when a function failed, and we just want to get rid
+ * of all references to it.
+ **/
+gboolean
+pk_engine_delete_task (PkEngine *engine, PkTask *task)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("removing task %p as it failed", task);
+	pk_job_list_remove (engine->priv->job_list, task);
+
+	/* we don't do g_object_unref (task) here as it is done in the
+	   ::finished handler */
 	return TRUE;
 }
 
@@ -572,7 +614,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, guint *job, GError **
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -605,7 +647,7 @@ pk_engine_get_updates (PkEngine *engine, guint *job, GError **error)
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -703,7 +745,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -749,7 +791,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -795,7 +837,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -841,7 +883,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -883,7 +925,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -925,7 +967,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -967,7 +1009,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -1001,7 +1043,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		return FALSE;
 	}
 	pk_engine_add_task (engine, task);
@@ -1051,7 +1093,7 @@ pk_engine_update_system (PkEngine *engine,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1102,7 +1144,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1155,7 +1197,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1208,7 +1250,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		g_object_unref (task);
+		pk_engine_delete_task (engine, task);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1237,10 +1279,10 @@ pk_engine_get_job_list (PkEngine *engine, GArray **job_list, GError **error)
 }
 
 /**
- * pk_engine_get_job_status:
+ * pk_engine_get_status:
  **/
 gboolean
-pk_engine_get_job_status (PkEngine *engine, guint job,
+pk_engine_get_status (PkEngine *engine, guint job,
 			  const gchar **status, GError **error)
 {
 	PkStatusEnum status_enum;
@@ -1255,17 +1297,17 @@ pk_engine_get_job_status (PkEngine *engine, guint job,
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_job_status (item->task, &status_enum);
+	pk_backend_get_status (item->task, &status_enum);
 	*status = g_strdup (pk_status_enum_to_text (status_enum));
 
 	return TRUE;
 }
 
 /**
- * pk_engine_get_job_role:
+ * pk_engine_get_role:
  **/
 gboolean
-pk_engine_get_job_role (PkEngine *engine, guint job,
+pk_engine_get_role (PkEngine *engine, guint job,
 			const gchar **role, const gchar **package_id, GError **error)
 {
 	PkJobListItem *item;
@@ -1280,7 +1322,7 @@ pk_engine_get_job_role (PkEngine *engine, guint job,
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_job_role (item->task, &role_enum, package_id);
+	pk_backend_get_role (item->task, &role_enum, package_id);
 	*role = g_strdup (pk_role_enum_to_text (role_enum));
 
 	return TRUE;
@@ -1293,6 +1335,7 @@ gboolean
 pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1303,7 +1346,12 @@ pk_engine_get_percentage (PkEngine *engine, guint job, guint *percentage, GError
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_percentage (item->task, percentage);
+	ret = pk_backend_get_percentage (item->task, percentage);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No percentage data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -1314,6 +1362,7 @@ gboolean
 pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1324,7 +1373,12 @@ pk_engine_get_sub_percentage (PkEngine *engine, guint job, guint *percentage, GE
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_sub_percentage (item->task, percentage);
+	ret = pk_backend_get_sub_percentage (item->task, percentage);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No sub-percentage data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -1335,6 +1389,7 @@ gboolean
 pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **error)
 {
 	PkJobListItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1345,15 +1400,33 @@ pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **er
 			     "No job:%i", job);
 		return FALSE;
 	}
-	pk_backend_get_package (item->task, package);
+	ret = pk_backend_get_package (item->task, package);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "No package data available");
+		return FALSE;
+	}
 	return TRUE;
 }
 
 /**
- * pk_engine_cancel_job_try:
+ * pk_engine_get_old_transactions:
  **/
 gboolean
-pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
+pk_engine_get_old_transactions (PkEngine *engine, guint number, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("get %i old transactions", number);
+	return pk_transaction_db_get_list (engine->priv->transaction_db, number);
+}
+
+/**
+ * pk_engine_cancel:
+ **/
+gboolean
+pk_engine_cancel (PkEngine *engine, guint job, GError **error)
 {
 	gboolean ret;
 	PkJobListItem *item;
@@ -1368,7 +1441,7 @@ pk_engine_cancel_job_try (PkEngine *engine, guint job, GError **error)
 		return FALSE;
 	}
 
-	ret = pk_backend_cancel_job_try (item->task);
+	ret = pk_backend_cancel (item->task);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -1448,6 +1521,17 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 	g_object_unref (elist);
 
 	return TRUE;
+}
+
+/**
+ * pk_engine_transaction_cb:
+ **/
+static void
+pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *tid, const gchar *timespec,
+			  gboolean succeeded, const gchar *role, guint duration, PkEngine *engine)
+{
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
 }
 
 /**
@@ -1549,6 +1633,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_BOOL,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOOLEAN);
+	signals [PK_ENGINE_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
@@ -1566,9 +1655,13 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->job_list = pk_job_list_new ();
-	engine->priv->transaction_db = pk_transaction_db_new ();
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
+
+	/* we use a trasaction db to store old transactions and to do rollbacks */
+	engine->priv->transaction_db = pk_transaction_db_new ();
+	g_signal_connect (engine->priv->transaction_db, "transaction",
+			  G_CALLBACK (pk_engine_transaction_cb), engine);
 
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);

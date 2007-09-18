@@ -19,33 +19,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <gmodule.h>
 #include <glib.h>
-#include <glib-object.h>
-#include <libselftest.h>
-#include <pk-debug.h>
+#include <pk-backend.h>
 
-/* prototypes */
-void libst_spawn (LibSelfTest *test);
-void libst_thread_list (LibSelfTest *test);
-void libst_job_list (LibSelfTest *test);
-
-int
-main (int argc, char **argv)
-{
-	LibSelfTest test;
-
-	if (! g_thread_supported ()) {
-		g_thread_init (NULL);
-	}
-	g_type_init ();
-	libst_init (&test);
-	pk_debug_init (TRUE);
-
-	/* tests go here */
-	libst_spawn (&test);
-	libst_thread_list (&test);
-	libst_job_list (&test);
-
-	return (libst_finish (&test));
-}
+PK_BACKEND_OPTIONS (
+	"Test NOP Backend",			/* description */
+	"0.0.1",				/* version */
+	"Richard Hughes <richard@hughsie.com>",	/* author */
+	NULL,					/* initalize */
+	NULL,					/* destroy */
+	NULL,					/* get_groups */
+	NULL,					/* get_filters */
+	NULL,					/* cancel_job_try */
+	NULL,					/* get_depends */
+	NULL,					/* get_description */
+	NULL,					/* get_requires */
+	NULL,					/* get_update_detail */
+	NULL,					/* get_updates */
+	NULL,					/* install_package */
+	NULL,					/* refresh_cache */
+	NULL,					/* remove_package */
+	NULL,					/* search_details */
+	NULL,					/* search_file */
+	NULL,					/* search_group */
+	NULL,					/* search_name */
+	NULL,					/* update_package */
+	NULL					/* update_system */
+);
 

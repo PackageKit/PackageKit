@@ -71,6 +71,7 @@ typedef enum {
 	PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_TASK_CLIENT_PACKAGE,
+	PK_TASK_CLIENT_TRANSACTION,
 	PK_TASK_CLIENT_UPDATE_DETAIL,
 	PK_TASK_CLIENT_DESCRIPTION,
 	PK_TASK_CLIENT_ERROR_CODE,
@@ -878,10 +879,10 @@ pk_task_client_install_package (PkTaskClient *tclient, const gchar *package_id)
 }
 
 /**
- * pk_task_client_cancel_job_try:
+ * pk_task_client_cancel:
  **/
 gboolean
-pk_task_client_cancel_job_try (PkTaskClient *tclient)
+pk_task_client_cancel (PkTaskClient *tclient)
 {
 	gboolean ret;
 	GError *error;
@@ -896,13 +897,13 @@ pk_task_client_cancel_job_try (PkTaskClient *tclient)
 	}
 
 	error = NULL;
-	ret = dbus_g_proxy_call (tclient->priv->proxy, "CancelJobTry", &error,
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "Cancel", &error,
 				 G_TYPE_UINT, tclient->priv->job,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("CancelJobTry failed :%s", error->message);
+		pk_warning ("Cancel failed :%s", error->message);
 		g_error_free (error);
 	}
 	return ret;
@@ -976,6 +977,33 @@ pk_task_client_get_groups (PkTaskClient *tclient)
 	pk_enum_list_from_string (elist, groups);
 	g_free (groups);
 	return elist;
+}
+
+/**
+ * pk_task_client_get_old_transactions:
+ **/
+gboolean
+pk_task_client_get_old_transactions (PkTaskClient *tclient, guint number)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetOldTransactions", &error,
+				 G_TYPE_UINT, number,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetOldTransactions failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+	pk_task_client_wait_if_sync (tclient);
+	return TRUE;
 }
 
 /**
@@ -1125,6 +1153,22 @@ pk_task_client_package_cb (PkTaskMonitor *tmonitor,
 }
 
 /**
+ * pk_task_client_transaction_cb:
+ */
+static void
+pk_task_client_transaction_cb (PkTaskMonitor *tmonitor,
+				const gchar *tid, const gchar *timespec,
+				gboolean succeeded, const gchar *role, guint duration,
+			       PkTaskClient  *tclient)
+{
+	g_return_if_fail (tclient != NULL);
+	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
+
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
+	g_signal_emit (tclient, signals [PK_TASK_CLIENT_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+}
+
+/**
  * pk_task_client_update_detail_cb:
  */
 static void
@@ -1235,6 +1279,11 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_CLIENT_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_TASK_CLIENT_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1335,6 +1384,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "package",
 			  G_CALLBACK (pk_task_client_package_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "transaction",
+			  G_CALLBACK (pk_task_client_transaction_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "update-detail",
 			  G_CALLBACK (pk_task_client_update_detail_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "description",

@@ -53,10 +53,10 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
- * backend_cancel_job_try:
+ * backend_cancel:
  */
 static void
-backend_cancel_job_try (PkBackend *backend)
+backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	/* this feels bad... */
@@ -116,7 +116,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "install.py", package_id, NULL);
@@ -132,7 +132,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
@@ -209,7 +209,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+		pk_backend_finished (backend);
 		return;
 	}
 	pk_backend_spawn_helper (backend, "update.py", package_id, NULL);
@@ -233,7 +233,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel_job_try,			/* cancel_job_try */
+	backend_cancel,			/* cancel_job_try */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */

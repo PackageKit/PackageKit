@@ -369,6 +369,7 @@ backends/conary/Makefile
 backends/conary/helpers/Makefile
 backends/dummy/Makefile
 backends/test/Makefile
+backends/test/helpers/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 data/Makefile

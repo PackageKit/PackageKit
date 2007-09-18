@@ -52,7 +52,145 @@ struct PkTransactionDbPrivate
 	sqlite3			*db;
 };
 
+enum {
+	PK_TRANSACTION_DB_TRANSACTION,
+	PK_TRANSACTION_DB_LAST_SIGNAL
+};
+
+static guint signals [PK_TRANSACTION_DB_LAST_SIGNAL] = { 0, };
+
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
+
+typedef struct {
+	gboolean succeeded;
+	guint duration;
+	PkRoleEnum role;
+	gchar *tid;
+	gchar *timespec;
+} PkTransactionDbItem;
+
+/**
+ * pk_transaction_db_item_clear:
+ **/
+static gboolean
+pk_transaction_db_item_clear (PkTransactionDbItem *item)
+{
+	item->succeeded = FALSE;
+	item->duration = 0;
+	item->role = PK_ROLE_ENUM_UNKNOWN;
+	item->tid = NULL;
+	item->timespec = NULL;
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_item_free:
+ **/
+static gboolean
+pk_transaction_db_item_free (PkTransactionDbItem *item)
+{
+	g_free (item->tid);
+	g_free (item->timespec);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_sqlite_callback:
+ **/
+static gint
+pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkTransactionDbItem item;
+	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
+	gint i;
+	gchar *col;
+	gchar *value;
+
+	g_return_val_if_fail (tdb != NULL, 0);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
+
+	pk_transaction_db_item_clear (&item);
+
+	for (i=0; i<argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		if (strcmp (col, "succeeded") == 0) {
+			item.succeeded = atoi (value);
+		} else if (strcmp (col, "role") == 0) {
+			if (value != NULL) {
+				item.role = pk_role_enum_from_text (value);
+			}
+		} else if (strcmp (col, "transaction_id") == 0) {
+			if (value != NULL) {
+				item.tid = g_strdup (value);
+			}
+		} else if (strcmp (col, "timespec") == 0) {
+			if (value != NULL) {
+				item.timespec = g_strdup (value);
+			}
+		} else if (strcmp (col, "duration") == 0) {
+			if (value != NULL) {
+				item.duration = atoi (value);
+			}
+		} else {
+			pk_warning ("%s = %s\n", col, value);
+		}
+	}
+
+	g_print ("tid          : %s\n", item.tid);
+	g_print (" timespec    : %s\n", item.timespec);
+	g_print (" succeeded   : %i\n", item.succeeded);
+	g_print (" role        : %s\n", pk_role_enum_to_text (item.role));
+	g_print (" duration    : %i (seconds)\n", item.duration);
+
+	/* emit signal */
+	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
+		       item.tid, item.timespec, item.succeeded, pk_role_enum_to_text (item.role), item.duration);
+
+	pk_transaction_db_item_free (&item);
+	return 0;
+}
+
+/**
+ * pk_transaction_db_sql_statement:
+ **/
+static gboolean
+pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
+{
+	gchar *error_msg = NULL;
+	gint rc;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	pk_debug ("statement=%s", sql);
+	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_get_list:
+ **/
+gboolean
+pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role "
+				     "FROM transactions ORDER BY transaction_id DESC LIMIT %i", limit);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+
+	return TRUE;
+}
 
 /**
  * pk_transaction_db_add:
@@ -60,6 +198,80 @@ G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
 gboolean
 pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 {
+	GTimeVal timeval;
+	gchar *timespec;
+	gchar *statement;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	pk_debug ("adding transaction %s", tid);
+
+	/* get current time */
+	g_get_current_time (&timeval);
+	timespec = g_time_val_to_iso8601 (&timeval);
+	pk_debug ("timespec=%s", timespec);
+
+	statement = g_strdup_printf ("INSERT INTO transactions (transaction_id, timespec) VALUES ('%s', '%s')", tid, timespec);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+
+	g_free (timespec);
+
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_role:
+ **/
+gboolean
+pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum role)
+{
+	gchar *statement;
+	const gchar *role_text;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	role_text = pk_role_enum_to_text (role);
+	statement = g_strdup_printf ("UPDATE transactions SET role = '%s' WHERE transaction_id = '%s'", role_text, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_finished:
+ **/
+gboolean
+pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean success, guint runtime)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET succeeded = %i, duration = %i WHERE transaction_id = '%s'",
+				     success, runtime, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_print:
+ **/
+gboolean
+pk_transaction_db_print (PkTransactionDb *tdb)
+{
+	const gchar *statement;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = "SELECT transaction_id, timespec, succeeded, duration, role FROM transactions";
+	pk_transaction_db_sql_statement (tdb, statement);
+
 	return TRUE;
 }
 
@@ -72,22 +284,12 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_transaction_db_finalize;
+	signals [PK_TRANSACTION_DB_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
-}
-
-/**
- * pk_transaction_sqlite_callback:
- **/
-static gint
-pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
-{
-//	PkTransactionDb *tdb = PK_TRANSACTION_DB (data);
-	gint i;
-	for (i=0; i<argc; i++) {
-		g_print ("%s = %s\n", col_name[i], argv[i]);
-	}
-	g_print ("\n");
-	return 0;
 }
 
 /**
@@ -97,8 +299,10 @@ static void
 pk_transaction_db_init (PkTransactionDb *tdb)
 {
 	const gchar *statement;
-	gchar *error_msg = NULL;
 	gint rc;
+
+	g_return_if_fail (tdb != NULL);
+	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
@@ -109,12 +313,9 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		return;
 	}
 
-	statement = "SELECT time date FROM transactions WHERE transaction_id = \"13;acaef\"";
-	rc = sqlite3_exec (tdb->priv->db, statement, pk_transaction_sqlite_callback, 0, &error_msg);
-	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-	}
+	/* add extra tables */
+	statement = "ALTER table transactions ADD timespec TEXT;";
+	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
 }
 
 /**

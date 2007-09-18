@@ -74,10 +74,10 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
- * backend_cancel_job_try:
+ * backend_cancel:
  */
 static void
-backend_cancel_job_try (PkBackend *backend)
+backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 }
@@ -93,7 +93,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id)
 			 "The GLib library");
 	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -112,7 +112,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 "understand tools, Scribus offers support for professional publishing "
 "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
 "import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -126,7 +126,7 @@ backend_get_requires (PkBackend *backend, const gchar *package_id)
 			 "The GLib library");
 	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
 			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -140,7 +140,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 				  "glib2;2.12.0;i386;fedora", "",
 				  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381",
 				  "system", "Update to newest upstream source");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -155,7 +155,7 @@ backend_get_updates (PkBackend *backend)
 	pk_backend_package (backend, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 			 "The Linux kernel (the core of the Linux operating system)");
 	pk_backend_package (backend, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 static gboolean
@@ -163,7 +163,7 @@ backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (progress_percentage == 100) {
-		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 	if (progress_percentage == 50) {
@@ -192,7 +192,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -203,7 +203,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
-	pk_backend_finished (backend, PK_EXIT_ENUM_FAILED);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -215,7 +215,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -227,7 +227,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -239,7 +239,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -257,7 +257,7 @@ backend_search_name_timeout (gpointer data)
 			 "Scribus is an desktop open source page layout program");
 	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
 			 "The vips documentation package.");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 	return FALSE;
 }
 
@@ -280,7 +280,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, 1, package_id, "The same thing");
-	pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+	pk_backend_finished (backend);
 }
 
 static gboolean
@@ -288,7 +288,7 @@ backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
 	if (progress_percentage == 100) {
-		pk_backend_finished (backend, PK_EXIT_ENUM_SUCCESS);
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 	pk_backend_change_job_status (backend, PK_STATUS_ENUM_UPDATE);
@@ -318,7 +318,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel_job_try,			/* cancel_job_try */
+	backend_cancel,			/* cancel_job_try */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */

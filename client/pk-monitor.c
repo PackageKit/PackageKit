@@ -78,7 +78,7 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
-	pk_debug_init (FALSE);
+	pk_debug_init (TRUE);
 
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
@@ -98,6 +98,7 @@ main (int argc, char *argv[])
 	g_signal_connect (tlist, "error-code",
 			  G_CALLBACK (pk_monitor_error_code_cb), NULL);
 
+	pk_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
 	if (ret == FALSE) {
 		g_error ("cannot refresh job list");

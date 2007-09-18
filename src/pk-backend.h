@@ -26,6 +26,7 @@
 #include <pk-enum.h>
 #include <pk-enum-list.h>
 #include <pk-package-id.h>
+#include <pk-debug.h>
 
 G_BEGIN_DECLS
 
@@ -40,8 +41,7 @@ gboolean	 pk_backend_change_sub_percentage	(PkBackend	*backend,
 gboolean	 pk_backend_change_job_status		(PkBackend	*backend,
 							 PkStatusEnum	 status);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
-gboolean	 pk_backend_finished			(PkBackend	*backend,
-							 PkExitEnum	 exit);
+gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 guint		 value,
 							 const gchar	*package_id,
@@ -71,6 +71,15 @@ gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);
 gboolean	 pk_backend_allow_interrupt		(PkBackend	*backend,
 							 gboolean	 allow_restart);
 gboolean	 pk_backend_network_is_online		(PkBackend	*backend);
+
+typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend,
+							 gpointer	 data);
+gboolean	 pk_backend_thread_create		(PkBackend	*backend,
+							 PkBackendThreadFunc func,
+							 gpointer	 data);
+gboolean	 pk_backend_thread_helper		(PkBackend	*backend,
+							 PkBackendThreadFunc func,
+							 gpointer	 data);
 
 /**
  * PkBackendDesc:

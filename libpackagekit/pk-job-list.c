@@ -249,6 +249,8 @@ pk_job_list_init (PkJobList *jlist)
 			  G_CALLBACK (pk_connection_changed_cb), jlist);
 	if (pk_connection_valid (jlist->priv->pconnection)) {
 		pk_job_list_connect (jlist);
+	} else {
+		pk_warning ("no PK instance on the bus");
 	}
 
 	/* get a connection */
@@ -269,7 +271,7 @@ pk_job_list_init (PkJobList *jlist)
 				     G_CALLBACK(pk_job_list_changed_cb), jlist, NULL);
 
 	/* force a refresh so we have valid data*/
-	pk_job_list_get_latest (jlist);
+	pk_job_list_refresh (jlist);
 }
 
 /**

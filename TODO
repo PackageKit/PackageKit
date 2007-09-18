@@ -23,8 +23,9 @@ We need a way to get the installed files into the UI.
 We need a way to work out how long something is going to take, and
 to expose in the UI.
 
-*** Valgrind everything ***
-We leak memory like there is no tommorrow.
+*** Get Transactions ***
+Do we use a job number? Finished?
+Need to convert the role to an enum
 
 *** task_client has to return GError ***
 Client programs using libpackagekit should know the error, rather than just

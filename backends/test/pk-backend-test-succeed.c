@@ -1,7 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2007 Ken VanDine <ken@vandine.org>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -24,6 +23,24 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+
+/**
+ * backend_initalize:
+ */
+static void
+backend_initalize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+}
+
+/**
+ * backend_destroy:
+ */
+static void
+backend_destroy (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+}
 
 /**
  * backend_get_groups:
@@ -54,14 +71,53 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
+ * backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_description:
  */
 static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -71,7 +127,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -81,13 +137,7 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "install.py", package_id, NULL);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -97,13 +147,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -113,13 +157,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	const gchar *deps;
-	if (allow_deps == TRUE) {
-		deps = "yes";
-	} else {
-		deps = "no";
-	}
-	pk_backend_spawn_helper (backend, "remove.py", deps, package_id, NULL);
+	pk_backend_finished (backend);
 }
 
 /**
@@ -129,44 +167,95 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_search_name_timeout:
+ **/
+gboolean
+backend_search_name_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	pk_backend_finished (backend);
+	return FALSE;
 }
 
 /**
  * backend_search_name:
+ *
+ * A really long wait........
  */
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_no_percentage_updates (backend);
-	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
+	g_timeout_add (200000, backend_search_name_timeout, backend);
+}
+
+/**
+ * backend_update_package:
+ */
+static void
+backend_update_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
 }
 
 PK_BACKEND_OPTIONS (
-	"Conary Backend",			/* description */
+	"Test Succeed Backend",			/* description */
 	"0.0.1",				/* version */
-	"Ken VanDine <ken@vandine.org>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	"Richard Hughes <richard@hughsie.com>",	/* author */
+	backend_initalize,			/* initalize */
+	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel_job_try */
-	NULL,					/* get_depends */
+	backend_cancel,			/* cancel_job_try */
+	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_requires,			/* get_requires */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_file,			/* search_file */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
-	NULL					/* update_system */
+	backend_update_package,			/* update_package */
+	backend_update_system			/* update_system */
 );
 
