@@ -3,6 +3,7 @@ Order of no particular importance:
 *** API Changes ***
 s/GetJobList/GetActiveTransactions
 s/JobListChanged/ActiveTransactionsChanged
+s/PkTask/PkBackend (and local variables)
 
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade

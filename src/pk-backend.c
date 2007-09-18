@@ -817,7 +817,7 @@ pk_backend_finished (PkBackend *backend)
 	/* we have to run this idle as the command may finish before the job
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
-	g_timeout_add (500, pk_backend_finished_delay, backend);
+	g_timeout_add (50, pk_backend_finished_delay, backend);
 	return TRUE;
 }
 
