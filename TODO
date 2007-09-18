@@ -1,21 +1,11 @@
 Order of no particular importance:
 
-*** Add a queing API ***
-Jobs need to be queued so that read only jobs can be done in parallel,
-but write jobs are done in serial. Maybe spawn each task and put it into a
-paused state?
-NOTE: RELEASE BLOCKER
-
 *** API Changes ***
 s/GetJobList/GetActiveTransactions
 s/JobListChanged/ActiveTransactionsChanged
 
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
-NOTE: RELEASE BLOCKER
-
-*** Don't log QUERY, ever ***
-There's no point...
 NOTE: RELEASE BLOCKER
 
 *** Add a way to import GPG keys ***

@@ -499,12 +499,19 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 	/* get all the data we know */
 	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 
-	/* add to database */
-	pk_transaction_db_add (engine->priv->transaction_db, item->tid);
-
-	/* save role in the database */
+	/* only save into the database for useful stuff */
 	pk_backend_get_role (task, &role, NULL);
-	pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
+	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
+	    role == PK_ROLE_ENUM_SYSTEM_UPDATE ||
+	    role == PK_ROLE_ENUM_PACKAGE_REMOVE ||
+	    role == PK_ROLE_ENUM_PACKAGE_INSTALL ||
+	    role == PK_ROLE_ENUM_PACKAGE_UPDATE) {
+		/* add to database */
+		pk_transaction_db_add (engine->priv->transaction_db, item->tid);
+
+		/* save role in the database */
+		pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
+	}
 	return TRUE;
 }
 
