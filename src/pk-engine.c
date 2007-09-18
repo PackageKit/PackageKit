@@ -151,22 +151,21 @@ pk_engine_reset_timer (PkEngine *engine)
 }
 
 /**
- * pk_engine_job_list_changed:
+ * pk_engine_transaction_list_changed_cb:
  **/
-static gboolean
-pk_engine_job_list_changed (PkEngine *engine)
+static void
+pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engine)
 {
 	gchar **job_list;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	job_list = pk_transaction_list_get_array (engine->priv->job_list);
 
 	pk_debug ("emitting job-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_JOB_LIST_CHANGED], 0, job_list);
 	pk_engine_reset_timer (engine);
-	return TRUE;
 }
 
 /**
@@ -402,12 +401,8 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	pk_debug ("emitting finished job:%s, '%s', %i", item->tid, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
 
-	/* remove from array and unref */
-	pk_transaction_list_remove (engine->priv->job_list, task);
-
+	/* unref */
 	g_object_unref (task);
-	pk_debug ("removed task %p", task);
-	pk_engine_job_list_changed (engine);
 	pk_engine_reset_timer (engine);
 }
 
@@ -501,9 +496,6 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 	/* commit, so it appears in the JobList */
 	pk_transaction_list_commit (engine->priv->job_list, task);
 
-	/* do the transaction now. TODO: schedule!!! */
-	pk_backend_run (task);
-
 	/* get all the data we know */
 	item = pk_transaction_list_get_item_from_task (engine->priv->job_list, task);
 
@@ -513,9 +505,6 @@ pk_engine_add_task (PkEngine *engine, PkTask *task)
 	/* save role in the database */
 	pk_backend_get_role (task, &role, NULL);
 	pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
-
-	/* emit a signal */
-	pk_engine_job_list_changed (engine);
 	return TRUE;
 }
 
@@ -1659,9 +1648,12 @@ pk_engine_init (PkEngine *engine)
 	PolKitError *pk_error;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-	engine->priv->job_list = pk_transaction_list_new ();
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
+
+	engine->priv->job_list = pk_transaction_list_new ();
+	g_signal_connect (engine->priv->job_list, "changed",
+			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 
 	/* we use a trasaction db to store old transactions and to do rollbacks */
 	engine->priv->transaction_db = pk_transaction_db_new ();

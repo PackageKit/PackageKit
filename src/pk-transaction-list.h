@@ -50,7 +50,7 @@ typedef struct
 } PkTransactionListClass;
 
 typedef struct {
-	gboolean		 valid;
+	gboolean		 committed;
 	PkBackend		*backend;
 	gchar			*tid;
 } PkTransactionItem;

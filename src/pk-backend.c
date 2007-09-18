@@ -574,7 +574,7 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 	pk_debug ("setting role to %s", pk_role_enum_to_text (role));
 	backend->priv->assigned = TRUE;
 	backend->priv->role = role;
-	backend->priv->status = PK_STATUS_ENUM_SETUP;
+	backend->priv->status = PK_STATUS_ENUM_WAIT;
 	return TRUE;
 }
 
@@ -890,6 +890,11 @@ gboolean
 pk_backend_run (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	/* we are no longer waiting, we are setting up */
+	backend->priv->status = PK_STATUS_ENUM_SETUP;
+
+	/* do the correct action with the cached parameters */
 	if (backend->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
 		backend->desc->get_depends (backend,
 					    backend->priv->xcached_package_id);

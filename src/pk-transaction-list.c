@@ -101,7 +101,7 @@ pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
 
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
-	item->valid = FALSE;
+	item->committed = FALSE;
 	item->backend = backend;
 	item->tid = pk_transaction_id_generate ();
 	g_ptr_array_add (tlist->priv->array, item);
@@ -125,7 +125,68 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
 	g_ptr_array_remove (tlist->priv->array, item);
 	g_free (item->tid);
 	g_free (item);
+
+	/* we have changed what is running */
+	pk_debug ("emmitting ::changed");
+	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
+
 	return TRUE;
+}
+
+/**
+ * pk_transaction_list_backend_finished_cb:
+ **/
+static void
+pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransactionList *tlist)
+{
+	guint i;
+	guint length;
+	PkTransactionItem *item;
+
+	g_return_if_fail (tlist != NULL);
+	g_return_if_fail (PK_IS_JOB_LIST (tlist));
+
+	item = pk_transaction_list_get_item_from_task (tlist, backend);
+	if (item == NULL) {
+		pk_error ("moo!");
+	}
+	pk_debug ("job %s completed, removing", item->tid);
+	pk_transaction_list_remove (tlist, backend);
+
+	/* do the next transaction now if we have another queued */
+	length = tlist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->committed == TRUE) {
+			pk_backend_run (item->backend);
+			break;
+		}
+	}
+}
+
+/**
+ * pk_transaction_list_number_committed:
+ **/
+static guint
+pk_transaction_list_number_committed (PkTransactionList *tlist)
+{
+	guint i;
+	guint count = 0;
+	guint length;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (tlist != NULL, 0);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), 0);
+
+	/* find all the jobs in progress */
+	length = tlist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->committed == TRUE) {
+			count++;
+		}
+	}
+	return count;
 }
 
 /**
@@ -134,6 +195,7 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
 gboolean
 pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 {
+	PkRoleEnum role;
 	PkTransactionItem *item;
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
@@ -142,8 +204,32 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	if (item == NULL) {
 		return FALSE;
 	}
-	pk_debug ("marking job %s as valid", item->tid);
-	item->valid = TRUE;
+	pk_debug ("marking job %s as committed", item->tid);
+	item->committed = TRUE;
+
+	/* we will changed what is running */
+	pk_debug ("emmitting ::changed");
+	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
+
+	/* connect up finished so we can start the next task */
+	g_signal_connect (backend, "finished",
+			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
+
+	/* if it's a query then just do the action (it's always safe) */
+	pk_backend_get_role (backend, &role, NULL);
+	if (role == PK_ROLE_ENUM_SEARCH_NAME ||
+	    role == PK_ROLE_ENUM_SEARCH_FILE ||
+	    role == PK_ROLE_ENUM_SEARCH_GROUP ||
+	    role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		pk_backend_run (backend);
+		return TRUE;
+	}
+
+	/* do the transaction now if we have no other in progress */
+	if (pk_transaction_list_number_committed (tlist) == 0) {
+		pk_backend_run (backend);
+	}
+
 	return TRUE;
 }
 
@@ -172,7 +258,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if it worked */
-		if (item->valid == TRUE) {
+		if (item->committed == TRUE) {
 			array[count] = g_strdup (item->tid);
 			count++;
 		}
