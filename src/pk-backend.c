@@ -331,7 +331,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		status_enum = pk_status_enum_from_text (sections[1]);
-		pk_backend_change_job_status (backend, status_enum);
+		pk_backend_change_status (backend, status_enum);
 	} else if (strcmp (command, "allow-interrupt") == 0) {
 		if (size != 2) {
 			g_error ("invalid command '%s'", command);
@@ -579,10 +579,10 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 }
 
 /**
- * pk_backend_change_job_status:
+ * pk_backend_change_status:
  **/
 gboolean
-pk_backend_change_job_status (PkBackend *backend, PkStatusEnum status)
+pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -861,7 +861,7 @@ gboolean
 pk_backend_cancel (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
-	if (backend->desc->cancel_job_try == NULL) {
+	if (backend->desc->cancel == NULL) {
 		pk_backend_not_implemented_yet (backend, "Cancel");
 		return FALSE;
 	}
@@ -879,7 +879,7 @@ pk_backend_cancel (PkBackend *backend)
 		pk_warning ("tried to kill a process that does not exist");
 		return FALSE;
 	}
-	backend->desc->cancel_job_try (backend);
+	backend->desc->cancel (backend);
 	return TRUE;
 }
 
@@ -1179,8 +1179,8 @@ pk_backend_get_actions (PkBackend *backend)
 	PkEnumList *elist;
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
-	if (backend->desc->cancel_job_try != NULL) {
-		pk_enum_list_append (elist, PK_ACTION_ENUM_CANCEL_JOB);
+	if (backend->desc->cancel != NULL) {
+		pk_enum_list_append (elist, PK_ACTION_ENUM_CANCEL);
 	}
 	if (backend->desc->get_depends != NULL) {
 		pk_enum_list_append (elist, PK_ACTION_ENUM_GET_DEPENDS);

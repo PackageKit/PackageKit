@@ -31,7 +31,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
-	NULL,					/* cancel_job_try */
+	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	NULL,					/* get_description */
 	NULL,					/* get_requires */

@@ -135,7 +135,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
@@ -243,7 +243,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 	GList *list = NULL;
 	sqlite3 *db = NULL;
 
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	db = db_open ();
 
@@ -269,7 +269,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	list = find_package_by_id (pi);
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
@@ -395,7 +395,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
 }
 
@@ -471,7 +471,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel_job_try */
+	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_requires */
