@@ -58,6 +58,8 @@ packagekitd_SOURCES =					\
 	pk-thread-list.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
+	pk-transaction-id.h				\
+	pk-transaction-id.c				\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
@@ -118,6 +120,8 @@ pk_self_test_SOURCES =					\
 	pk-network.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
+	pk-transaction-id.h				\
+	pk-transaction-id.c				\
 	pk-transaction-list.h				\
 	pk-transaction-list.c				\
 	pk-self-test.c					\

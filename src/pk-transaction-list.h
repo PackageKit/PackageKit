@@ -50,7 +50,6 @@ typedef struct
 } PkTransactionListClass;
 
 typedef struct {
-	guint		 job;
 	gboolean	 valid;
 	PkTask		*task;
 	gchar		*tid;
