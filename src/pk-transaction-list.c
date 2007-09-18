@@ -199,6 +199,7 @@ gboolean
 pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 {
 	PkRoleEnum role;
+	gboolean search_okay = TRUE;
 	PkTransactionItem *item;
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
@@ -218,16 +219,24 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	g_signal_connect (backend, "finished",
 			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
 
-	/* if it's a query then just do the action (it's always safe) */
-	pk_backend_get_role (backend, &role, NULL);
-	if (role == PK_ROLE_ENUM_SEARCH_NAME ||
-	    role == PK_ROLE_ENUM_SEARCH_FILE ||
-	    role == PK_ROLE_ENUM_SEARCH_GROUP ||
-	    role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		pk_debug ("running %s", item->tid);
-		item->running = TRUE;
-		pk_backend_run (backend);
-		return TRUE;
+	/* if we are refreshing the cache then nothing is sacred */
+	if (pk_transaction_list_role_present (tlist, PK_ROLE_ENUM_REFRESH_CACHE) == TRUE) {
+		search_okay = FALSE;
+		/* TODO: other backends might be different, need to abstract */
+	}
+
+	/* if it's a query then just do the action (if safe) */
+	if (search_okay == TRUE) {
+		pk_backend_get_role (backend, &role, NULL);
+		if (role == PK_ROLE_ENUM_SEARCH_NAME ||
+		    role == PK_ROLE_ENUM_SEARCH_FILE ||
+		    role == PK_ROLE_ENUM_SEARCH_GROUP ||
+		    role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+			pk_debug ("running %s", item->tid);
+			item->running = TRUE;
+			pk_backend_run (backend);
+			return TRUE;
+		}
 	}
 
 	/* do the transaction now if we have no other in progress */
