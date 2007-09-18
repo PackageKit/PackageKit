@@ -10,6 +10,10 @@ NOTE: RELEASE BLOCKER
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
 
+*** Don't log QUERY, ever ***
+There's no point...
+NOTE: RELEASE BLOCKER
+
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
