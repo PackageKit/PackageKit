@@ -1301,7 +1301,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	pk_backend_get_status (item->task, &status_enum);
+	pk_backend_get_status (item->backend, &status_enum);
 	*status = g_strdup (pk_status_enum_to_text (status_enum));
 
 	return TRUE;
@@ -1326,7 +1326,7 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	pk_backend_get_role (item->task, &role_enum, package_id);
+	pk_backend_get_role (item->backend, &role_enum, package_id);
 	*role = g_strdup (pk_role_enum_to_text (role_enum));
 
 	return TRUE;
@@ -1350,7 +1350,7 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_percentage (item->task, percentage);
+	ret = pk_backend_get_percentage (item->backend, percentage);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No percentage data available");
@@ -1377,7 +1377,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percent
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_sub_percentage (item->task, percentage);
+	ret = pk_backend_get_sub_percentage (item->backend, percentage);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No sub-percentage data available");
@@ -1404,7 +1404,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_package (item->task, package);
+	ret = pk_backend_get_package (item->backend, package);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No package data available");
@@ -1445,7 +1445,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 		return FALSE;
 	}
 
-	ret = pk_backend_cancel (item->task);
+	ret = pk_backend_cancel (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");

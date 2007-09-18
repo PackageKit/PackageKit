@@ -40,7 +40,7 @@
 #include "pk-transaction-list.h"
 
 static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
-static void     pk_transaction_list_init	(PkTransactionList      *job_list);
+static void     pk_transaction_list_init	(PkTransactionList      *tlist);
 static void     pk_transaction_list_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_JOB_LIST, PkTransactionListPrivate))
@@ -66,21 +66,21 @@ G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
  * multiple system updates queued
  **/
 gboolean
-pk_transaction_list_role_present (PkTransactionList *job_list, PkRoleEnum role)
+pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 {
 	guint i;
 	guint length;
 	PkRoleEnum role_temp;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (job_list != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), FALSE);
+	g_return_val_if_fail (tlist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
 
 	/* check for existing job doing an update */
-	length = job_list->priv->array->len;
+	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
-		pk_backend_get_role (item->task, &role_temp, NULL);
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		pk_backend_get_role (item->backend, &role_temp, NULL);
 		if (role_temp == role) {
 			return TRUE;
 		}
@@ -92,19 +92,19 @@ pk_transaction_list_role_present (PkTransactionList *job_list, PkRoleEnum role)
  * pk_transaction_list_add:
  **/
 PkTransactionItem *
-pk_transaction_list_add (PkTransactionList *job_list, PkTask *task)
+pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
 {
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (job_list != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), NULL);
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
 
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
 	item->valid = FALSE;
-	item->task = task;
+	item->backend = backend;
 	item->tid = pk_transaction_id_generate ();
-	g_ptr_array_add (job_list->priv->array, item);
+	g_ptr_array_add (tlist->priv->array, item);
 	return item;
 }
 
@@ -112,17 +112,17 @@ pk_transaction_list_add (PkTransactionList *job_list, PkTask *task)
  * pk_transaction_list_remove:
  **/
 gboolean
-pk_transaction_list_remove (PkTransactionList *job_list, PkTask *task)
+pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
 {
 	PkTransactionItem *item;
-	g_return_val_if_fail (job_list != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), FALSE);
+	g_return_val_if_fail (tlist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_task (job_list, task);
+	item = pk_transaction_list_get_item_from_task (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
-	g_ptr_array_remove (job_list->priv->array, item);
+	g_ptr_array_remove (tlist->priv->array, item);
 	g_free (item->tid);
 	g_free (item);
 	return TRUE;
@@ -132,13 +132,13 @@ pk_transaction_list_remove (PkTransactionList *job_list, PkTask *task)
  * pk_transaction_list_commit:
  **/
 gboolean
-pk_transaction_list_commit (PkTransactionList *job_list, PkTask *task)
+pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 {
 	PkTransactionItem *item;
-	g_return_val_if_fail (job_list != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), FALSE);
+	g_return_val_if_fail (tlist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_task (job_list, task);
+	item = pk_transaction_list_get_item_from_task (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
@@ -151,7 +151,7 @@ pk_transaction_list_commit (PkTransactionList *job_list, PkTask *task)
  * pk_transaction_list_get_array:
  **/
 gchar **
-pk_transaction_list_get_array (PkTransactionList *job_list)
+pk_transaction_list_get_array (PkTransactionList *tlist)
 {
 	guint i;
 	guint count = 0;
@@ -159,18 +159,18 @@ pk_transaction_list_get_array (PkTransactionList *job_list)
 	gchar **array;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (job_list != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), NULL);
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
 
 	/* find all the jobs in progress */
-	length = job_list->priv->array->len;
+	length = tlist->priv->array->len;
 
 	/* create new strv list */
 	array = g_new0 (gchar *, length);
 
 	pk_debug ("%i active jobs", length);
 	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if it worked */
 		if (item->valid == TRUE) {
 			array[count] = g_strdup (item->tid);
@@ -184,30 +184,30 @@ pk_transaction_list_get_array (PkTransactionList *job_list)
  * pk_transaction_list_get_size:
  **/
 guint
-pk_transaction_list_get_size (PkTransactionList *job_list)
+pk_transaction_list_get_size (PkTransactionList *tlist)
 {
-	g_return_val_if_fail (job_list != NULL, 0);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), 0);
-	return job_list->priv->array->len;
+	g_return_val_if_fail (tlist != NULL, 0);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), 0);
+	return tlist->priv->array->len;
 }
 
 /**
  * pk_transaction_list_get_item_from_tid:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_tid (PkTransactionList *job_list, const gchar *tid)
+pk_transaction_list_get_item_from_tid (PkTransactionList *tlist, const gchar *tid)
 {
 	guint i;
 	guint length;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (job_list != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), NULL);
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
 
-	/* find the task with the job ID */
-	length = job_list->priv->array->len;
+	/* find the backend with the job ID */
+	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		if (pk_transaction_id_equal (item->tid, tid)) {
 			return item;
 		}
@@ -219,20 +219,20 @@ pk_transaction_list_get_item_from_tid (PkTransactionList *job_list, const gchar 
  * pk_transaction_list_get_item_from_task:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_task (PkTransactionList *job_list, PkTask *task)
+pk_transaction_list_get_item_from_task (PkTransactionList *tlist, PkBackend *backend)
 {
 	guint i;
 	guint length;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (job_list != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (job_list), NULL);
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
 
-	/* find the task with the job ID */
-	length = job_list->priv->array->len;
+	/* find the backend with the job ID */
+	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (job_list->priv->array, i);
-		if (item->task == task) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->backend == backend) {
 			return item;
 		}
 	}
@@ -261,13 +261,13 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 
 /**
  * pk_transaction_list_init:
- * @job_list: This class instance
+ * @tlist: This class instance
  **/
 static void
-pk_transaction_list_init (PkTransactionList *job_list)
+pk_transaction_list_init (PkTransactionList *tlist)
 {
-	job_list->priv = PK_TRANSACTION_LIST_GET_PRIVATE (job_list);
-	job_list->priv->array = g_ptr_array_new ();
+	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
+	tlist->priv->array = g_ptr_array_new ();
 }
 
 /**
@@ -277,16 +277,16 @@ pk_transaction_list_init (PkTransactionList *job_list)
 static void
 pk_transaction_list_finalize (GObject *object)
 {
-	PkTransactionList *job_list;
+	PkTransactionList *tlist;
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_JOB_LIST (object));
 
-	job_list = PK_TRANSACTION_LIST (object);
+	tlist = PK_TRANSACTION_LIST (object);
 
-	g_return_if_fail (job_list->priv != NULL);
+	g_return_if_fail (tlist->priv != NULL);
 
-	g_ptr_array_free (job_list->priv->array, TRUE);
+	g_ptr_array_free (tlist->priv->array, TRUE);
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }
 
@@ -298,9 +298,9 @@ pk_transaction_list_finalize (GObject *object)
 PkTransactionList *
 pk_transaction_list_new (void)
 {
-	PkTransactionList *job_list;
-	job_list = g_object_new (PK_TYPE_JOB_LIST, NULL);
-	return PK_TRANSACTION_LIST (job_list);
+	PkTransactionList *tlist;
+	tlist = g_object_new (PK_TYPE_JOB_LIST, NULL);
+	return PK_TRANSACTION_LIST (tlist);
 }
 
 /***************************************************************************
@@ -312,14 +312,14 @@ pk_transaction_list_new (void)
 void
 libst_transaction_list (LibSelfTest *test)
 {
-	PkTransactionList *job_list;
+	PkTransactionList *tlist;
 	gchar *tid;
 
 	if (libst_start (test, "PkTransactionList", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
-	job_list = pk_transaction_list_new ();
+	tlist = pk_transaction_list_new ();
 
 	/************************************************************/
 	libst_title (test, "make sure we get a valid tid");
@@ -331,7 +331,7 @@ libst_transaction_list (LibSelfTest *test)
 	}
 	g_free (tid);
 
-	g_object_unref (job_list);
+	g_object_unref (tlist);
 
 	libst_end (test);
 }

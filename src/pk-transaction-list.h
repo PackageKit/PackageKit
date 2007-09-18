@@ -50,28 +50,28 @@ typedef struct
 } PkTransactionListClass;
 
 typedef struct {
-	gboolean	 valid;
-	PkTask		*task;
-	gchar		*tid;
+	gboolean		 valid;
+	PkBackend		*backend;
+	gchar			*tid;
 } PkTransactionItem;
 
 GType		 pk_transaction_list_get_type	  	(void);
 PkTransactionList *pk_transaction_list_new		(void);
 
-PkTransactionItem *pk_transaction_list_add		(PkTransactionList	*job_list,
-							 PkTask		*task);
-gboolean	 pk_transaction_list_remove		(PkTransactionList	*job_list,
-							 PkTask		*task);
-gboolean	 pk_transaction_list_commit		(PkTransactionList	*job_list,
-							 PkTask		*task);
-gboolean	 pk_transaction_list_role_present	(PkTransactionList	*job_list,
-							 PkRoleEnum	 role);
-gchar		**pk_transaction_list_get_array		(PkTransactionList	*job_list);
-guint		 pk_transaction_list_get_size		(PkTransactionList	*job_list);
-PkTransactionItem *pk_transaction_list_get_item_from_tid(PkTransactionList	*job_list,
-							 const gchar	*tid);
-PkTransactionItem *pk_transaction_list_get_item_from_task(PkTransactionList	*job_list,
-							 PkTask		*task);
+PkTransactionItem *pk_transaction_list_add		(PkTransactionList	*tlist,
+							 PkBackend		*backend);
+gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
+							 PkBackend		*backend);
+gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
+							 PkBackend		*backend);
+gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
+							 PkRoleEnum		 role);
+gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist);
+guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
+PkTransactionItem *pk_transaction_list_get_item_from_tid(PkTransactionList	*tlist,
+							 const gchar		*tid);
+PkTransactionItem *pk_transaction_list_get_item_from_task(PkTransactionList	*tlist,
+							 PkBackend		*backend);
 
 G_END_DECLS
 
