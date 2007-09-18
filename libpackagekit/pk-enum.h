@@ -41,6 +41,7 @@ typedef enum {
 /* what we are actually doing */
 typedef enum {
 	PK_STATUS_ENUM_SETUP,
+	PK_STATUS_ENUM_WAIT,
 	PK_STATUS_ENUM_QUERY,
 	PK_STATUS_ENUM_REMOVE,
 	PK_STATUS_ENUM_REFRESH_CACHE,
