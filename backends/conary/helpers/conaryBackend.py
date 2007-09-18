@@ -12,8 +12,8 @@ import sys
 import os
 
 from conary.deps import deps
-from conary import conarycfg, conaryclient, queryrep, versions, updatecmd
-from pysqlite2 import dbapi2 as sqlite
+from conary import conarycfg, conaryclient
+from conary import dbstore, queryrep, versions, updatecmd
 
 from packagekit import *
 
@@ -329,11 +329,9 @@ class Cache(object):
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
 
-        self.conn = sqlite.connect(os.path.join(self.dbPath, self.dbName),
-                                   isolation_level=None)
+        self.conn = dbstore.connect(os.path.join(self.dbPath, self.dbName))
         self.cursor = self.conn.cursor()
         self.cursor.execute("PRAGMA count_changes=0")
-        self.cursor.execute("pragma synchronous=off")
 
         if os.path.isfile(os.path.join(self.dbPath, self.dbName)):
             self._validate_tables()
