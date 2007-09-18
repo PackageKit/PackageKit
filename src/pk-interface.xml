@@ -166,6 +166,18 @@
       <arg type="au" name="jobs" direction="out"/>
     </signal>
 
+    <!-- Transaction methods -->
+    <method name="GetOldTransactions">
+      <arg type="u" name="number" direction="in"/>
+    </method>
+    <signal name="Transaction">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="timespec" direction="out"/>
+      <arg type="b" name="succeeded" direction="out"/>
+      <arg type="s" name="role" direction="out"/>
+      <arg type="u" name="duration" direction="out"/>
+    </signal>
+
     <!-- General methods -->
     <method name="GetActions">
       <arg type="s" name="actions" direction="out"/> <!-- list of supported actions -->

@@ -53,6 +53,7 @@ typedef struct {
 	guint		 job;
 	gboolean	 valid;
 	PkTask		*task;
+	gchar		*tid;
 } PkJobListItem;
 
 GType		 pk_job_list_get_type		  	(void);

@@ -98,11 +98,13 @@ gboolean	 pk_task_client_refresh_cache		(PkTaskClient	*tclient,
 							 gboolean	 force);
 gboolean	 pk_task_client_install_package		(PkTaskClient	*tclient,
 							 const gchar	*package_id);
-gboolean	 pk_task_client_cancel		(PkTaskClient	*tclient);
+gboolean	 pk_task_client_cancel			(PkTaskClient	*tclient);
 PkEnumList	*pk_task_client_get_actions		(PkTaskClient	*tclient);
 PkEnumList	*pk_task_client_get_filters		(PkTaskClient	*tclient);
 PkEnumList	*pk_task_client_get_groups		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
+gboolean	 pk_task_client_get_old_transactions	(PkTaskClient	*tclient,
+							 guint		 number);
 
 G_END_DECLS
 

@@ -73,6 +73,7 @@ enum {
 	PK_ENGINE_SUB_PERCENTAGE_CHANGED,
 	PK_ENGINE_NO_PERCENTAGE_UPDATES,
 	PK_ENGINE_PACKAGE,
+	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_FINISHED,
@@ -396,6 +397,7 @@ pk_engine_finished_cb (PkTask *task, PkExitEnum exit, PkEngine *engine)
 	time = pk_backend_get_runtime (task);
 
 	pk_debug ("task was running for %f seconds", time);
+	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
 	pk_debug ("emitting finished job: %i, '%s', %i", item->job, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->job, exit_text, (guint) time);
@@ -490,18 +492,24 @@ pk_engine_new_task (PkEngine *engine)
 static gboolean
 pk_engine_add_task (PkEngine *engine, PkTask *task)
 {
+	PkRoleEnum role;
+	PkJobListItem *item;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
 	pk_job_list_commit (engine->priv->job_list, task);
 
-#if 0
+	/* get all the data we know */
+	item = pk_job_list_get_item_from_task (engine->priv->job_list, task);
+
 	/* add to database */
-	pk_transaction_db_add (engine->priv->transaction_db, "45;mom;data");
-	pk_transaction_db_set_role (engine->priv->transaction_db, "45;mom;data", PK_ROLE_ENUM_SYSTEM_UPDATE);
-	pk_transaction_db_set_finished (engine->priv->transaction_db, "45;mom;data", 1, 123);
-#endif
+	pk_transaction_db_add (engine->priv->transaction_db, item->tid);
+
+	/* save role in the database */
+	pk_backend_get_role (task, &role, NULL);
+	pk_transaction_db_set_role (engine->priv->transaction_db, item->tid, role);
 
 	/* emit a signal */
 	pk_engine_job_list_changed (engine);
@@ -1402,6 +1410,19 @@ pk_engine_get_package (PkEngine *engine, guint job, gchar **package, GError **er
 }
 
 /**
+ * pk_engine_get_old_transactions:
+ **/
+gboolean
+pk_engine_get_old_transactions (PkEngine *engine, guint number, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("get %i old transactions", number);
+	return pk_transaction_db_get_list (engine->priv->transaction_db, number);
+}
+
+/**
  * pk_engine_cancel:
  **/
 gboolean
@@ -1503,6 +1524,17 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 }
 
 /**
+ * pk_engine_transaction_cb:
+ **/
+static void
+pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *tid, const gchar *timespec,
+			  gboolean succeeded, const gchar *role, guint duration, PkEngine *engine)
+{
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+}
+
+/**
  * pk_engine_get_seconds_idle:
  * @engine: This class instance
  **/
@@ -1601,6 +1633,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_BOOL,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOOLEAN);
+	signals [PK_ENGINE_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
@@ -1618,9 +1655,13 @@ pk_engine_init (PkEngine *engine)
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->job_list = pk_job_list_new ();
-	engine->priv->transaction_db = pk_transaction_db_new ();
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
+
+	/* we use a trasaction db to store old transactions and to do rollbacks */
+	engine->priv->transaction_db = pk_transaction_db_new ();
+	g_signal_connect (engine->priv->transaction_db, "transaction",
+			  G_CALLBACK (pk_engine_transaction_cb), engine);
 
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);

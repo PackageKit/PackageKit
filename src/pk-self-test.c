@@ -27,6 +27,7 @@
 /* prototypes */
 void libst_spawn (LibSelfTest *test);
 void libst_thread_list (LibSelfTest *test);
+void libst_job_list (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -43,6 +44,7 @@ main (int argc, char **argv)
 	/* tests go here */
 	libst_spawn (&test);
 	libst_thread_list (&test);
+	libst_job_list (&test);
 
 	return (libst_finish (&test));
 }

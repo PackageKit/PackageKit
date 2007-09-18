@@ -12,15 +12,14 @@ import sys
 import os
 
 from conary.deps import deps
-from conary.conaryclient import cmdline
-from conary import conarycfg, conaryclient, queryrep, versions, updatecmd
-from pysqlite2 import dbapi2 as sqlite
+from conary import conarycfg, conaryclient
+from conary import dbstore, queryrep, versions, updatecmd
 
 from packagekit import *
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
     def __init__(self, args):
-        PackageKitBaseBackend.__init__(self,args)
+        PackageKitBaseBackend.__init__(self, args)
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
         self.client = conaryclient.ConaryClient(self.cfg)
@@ -46,8 +45,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
-        troveSpecs = [ cmdline.parseTroveSpec(searchlist,
-                                              allowEmptyName=False) ]
+        troveSpecs = [ updatecmd.parseTroveSpec(searchlist,
+                                                allowEmptyName=False) ]
         # get a hold of cached data
         cache = Cache()
 
@@ -92,8 +91,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         affinityDb = self.client.db
         fltlist = filters.split(';')
 
-        troveSpecs = [ cmdline.parseTroveSpec(searchlist,
-                                              allowEmptyName=False) ]
+        troveSpecs = [ updatecmd.parseTroveSpec(searchlist,
+                                                allowEmptyName=False) ]
 
         try:
             # Look for packages with affinity
@@ -309,12 +308,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         find a package based on a package id (name;version;arch;repoid)
         '''
         # Split up the id
-        (name,version,arch,fullVersion) = self.get_package_from_id(id)
+        (name, version, arch, fullVersion) = self.get_package_from_id(id)
         troveTuple = tuple([name,
                             versions.VersionFromString(fullVersion),
                             None])
         installed = self.check_installed(troveTuple)
-        return name,installed,version,arch,fullVersion
+        return name, installed, version, arch, fullVersion
 
 
 class Cache(object):
@@ -332,11 +331,9 @@ class Cache(object):
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
 
-        self.conn = sqlite.connect(os.path.join(self.dbPath, self.dbName),
-                                   isolation_level=None)
+        self.conn = dbstore.connect(os.path.join(self.dbPath, self.dbName))
         self.cursor = self.conn.cursor()
         self.cursor.execute("PRAGMA count_changes=0")
-        self.cursor.execute("pragma synchronous=off")
 
         if os.path.isfile(os.path.join(self.dbPath, self.dbName)):
             self._validate_tables()

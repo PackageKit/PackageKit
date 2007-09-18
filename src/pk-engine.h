@@ -171,6 +171,9 @@ gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 guint		 job,
 							 gchar		**package,
 							 GError		**error);
+gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
+							 guint		 number,
+							 GError		**error);
 
 G_END_DECLS
 

@@ -59,6 +59,7 @@ typedef enum {
 	PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_MONITOR_NO_PERCENTAGE_UPDATES,
 	PK_TASK_MONITOR_PACKAGE,
+	PK_TASK_MONITOR_TRANSACTION,
 	PK_TASK_MONITOR_UPDATE_DETAIL,
 	PK_TASK_MONITOR_DESCRIPTION,
 	PK_TASK_MONITOR_ERROR_CODE,
@@ -151,6 +152,36 @@ pk_task_monitor_get_package (PkTaskMonitor *tmonitor, gchar **package)
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetPackage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_task_monitor_cancel:
+ **/
+gboolean
+pk_task_monitor_cancel (PkTaskMonitor *tmonitor)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (tmonitor != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_MONITOR (tmonitor), FALSE);
+	g_return_val_if_fail (tmonitor->priv->job != 0, FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tmonitor->priv->proxy, "Cancel", &error,
+				 G_TYPE_UINT, tmonitor->priv->job,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error) {
+		pk_debug ("ERROR: %s", error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("Cancel failed!");
 		return FALSE;
 	}
 	return TRUE;
@@ -374,6 +405,22 @@ pk_task_monitor_package_cb (DBusGProxy   *proxy,
 }
 
 /**
+ * pk_task_monitor_transaction_cb:
+ */
+static void
+pk_task_monitor_transaction_cb (DBusGProxy   *proxy,
+				const gchar *tid, const gchar *timespec,
+				gboolean succeeded, const gchar *role, guint duration,
+				PkTaskMonitor *tmonitor)
+{
+	g_return_if_fail (tmonitor != NULL);
+	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
+
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
+	g_signal_emit (tmonitor, signals [PK_TASK_MONITOR_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+}
+
+/**
  * pk_task_monitor_update_detail_cb:
  */
 static void
@@ -499,6 +546,11 @@ pk_task_monitor_class_init (PkTaskMonitorClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TASK_MONITOR_TRANSACTION] =
+		g_signal_new ("transaction",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_TASK_MONITOR_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -605,6 +657,10 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	/* transaction */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
+					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -635,20 +691,29 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				 G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_task_monitor_package_cb), tmonitor, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "Transaction",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "Transaction",
+				     G_CALLBACK (pk_task_monitor_transaction_cb), tmonitor, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_task_monitor_update_detail_cb), tmonitor, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Description",
 				     G_CALLBACK (pk_task_monitor_description_cb), tmonitor, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "ErrorCode",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
 				     G_CALLBACK (pk_task_monitor_error_code_cb), tmonitor, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "RequireRestart",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
@@ -680,6 +745,8 @@ pk_task_monitor_finalize (GObject *object)
 				        G_CALLBACK (pk_task_monitor_job_status_changed_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Package",
 				        G_CALLBACK (pk_task_monitor_package_cb), tmonitor);
+	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Transaction",
+				        G_CALLBACK (pk_task_monitor_transaction_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Description",
 				        G_CALLBACK (pk_task_monitor_description_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "ErrorCode",
