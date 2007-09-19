@@ -1,12 +1,9 @@
 Order of no particular importance:
 
 *** API Changes ***
-s/GetJobList/GetActiveTransactions
-s/JobListChanged/ActiveTransactionsChanged
-s/PkTask/PkBackend (and local variables)
-
-*** Put the pk-application taskbar in the status section ***
-It looks wrong where it is...
+s/GetJobList/GetTransactions
+s/JobListChanged/TransactionListChanged
+s/GetOldTransactions/GetTransactionDetails
 
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
@@ -36,21 +33,18 @@ Need to convert the role to an enum
 Client programs using libpackagekit should know the error, rather than just
 "it failed"
 
-*** Add logging so we can see what was installed/removed and when ***
-Depends on transaction_id and sqlite integration.
+*** Log what was installed/removed and when ***
+Need to monitor the Package's emitted by the task and encoded to a string
 
 *** Add "when installed" and "installed by" data into UI ***
 Is this useful?
-
 We would need to store package_id,installed_by,when_installed in a sqlite database
+
 *** Dummy backend should use subpercent and install deps ***
 It's not a great test case right now...
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
- * convert the job into a transaction_id
- * save the transaction_id's and descriptions to a database
- * add a method to get the transaction_id's in the last x transactions
  * write an application that can see the description of the transactions
  * use an new method to handle the rollbacks and pass it to the backend
 
