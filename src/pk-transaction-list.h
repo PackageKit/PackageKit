@@ -71,7 +71,7 @@ gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist);
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransactionItem *pk_transaction_list_get_item_from_tid(PkTransactionList	*tlist,
 							 const gchar		*tid);
-PkTransactionItem *pk_transaction_list_get_item_from_task(PkTransactionList	*tlist,
+PkTransactionItem *pk_transaction_list_get_item_from_backend(PkTransactionList	*tlist,
 							 PkBackend		*backend);
 
 G_END_DECLS

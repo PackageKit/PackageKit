@@ -119,7 +119,7 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_task (tlist, backend);
+	item = pk_transaction_list_get_item_from_backend (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
@@ -147,7 +147,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	item = pk_transaction_list_get_item_from_task (tlist, backend);
+	item = pk_transaction_list_get_item_from_backend (tlist, backend);
 	if (item == NULL) {
 		pk_error ("moo!");
 	}
@@ -204,7 +204,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_task (tlist, backend);
+	item = pk_transaction_list_get_item_from_backend (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
@@ -215,7 +215,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	pk_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
-	/* connect up finished so we can start the next task */
+	/* connect up finished so we can start the next backend */
 	g_signal_connect (backend, "finished",
 			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
 
@@ -318,10 +318,10 @@ pk_transaction_list_get_item_from_tid (PkTransactionList *tlist, const gchar *ti
 }
 
 /**
- * pk_transaction_list_get_item_from_task:
+ * pk_transaction_list_get_item_from_backend:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_task (PkTransactionList *tlist, PkBackend *backend)
+pk_transaction_list_get_item_from_backend (PkTransactionList *tlist, PkBackend *backend)
 {
 	guint i;
 	guint length;
