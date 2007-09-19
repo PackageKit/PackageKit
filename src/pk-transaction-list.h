@@ -27,12 +27,12 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_JOB_LIST		(pk_transaction_list_get_type ())
-#define PK_TRANSACTION_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_JOB_LIST, PkTransactionList))
-#define PK_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_JOB_LIST, PkTransactionListClass))
-#define PK_IS_JOB_LIST(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_JOB_LIST))
-#define PK_IS_JOB_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_JOB_LIST))
-#define PK_TRANSACTION_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_JOB_LIST, PkTransactionListClass))
+#define PK_TYPE_TRANSACTION_LIST		(pk_transaction_list_get_type ())
+#define PK_TRANSACTION_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionList))
+#define PK_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
+#define PK_IS_TRANSACTION_LIST(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION_LIST))
+#define PK_IS_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_LIST))
+#define PK_TRANSACTION_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
 #define PK_TRANSACTION_LIST_ERROR		(pk_transaction_list_error_quark ())
 #define PK_TRANSACTION_LIST_TYPE_ERROR		(pk_transaction_list_error_get_type ()) 
 
@@ -40,7 +40,7 @@ typedef struct PkTransactionListPrivate PkTransactionListPrivate;
 
 typedef struct
 {
-	 GObject		 parent;
+	 GObject			 parent;
 	 PkTransactionListPrivate	*priv;
 } PkTransactionList;
 

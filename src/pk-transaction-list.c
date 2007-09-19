@@ -43,7 +43,7 @@ static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
 static void     pk_transaction_list_init	(PkTransactionList      *tlist);
 static void     pk_transaction_list_finalize	(GObject        *object);
 
-#define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_JOB_LIST, PkTransactionListPrivate))
+#define PK_TRANSACTION_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListPrivate))
 
 struct PkTransactionListPrivate
 {
@@ -62,7 +62,7 @@ G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 /**
  * pk_transaction_list_role_present:
  *
- * if there is a queued job with this role, useful to avoid having
+ * if there is a queued transaction with this role, useful to avoid having
  * multiple system updates queued
  **/
 gboolean
@@ -74,9 +74,9 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	/* check for existing job doing an update */
+	/* check for existing transaction doing an update */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
@@ -97,7 +97,7 @@ pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
@@ -117,7 +117,7 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
 {
 	PkTransactionItem *item;
 	g_return_val_if_fail (tlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	item = pk_transaction_list_get_item_from_task (tlist, backend);
 	if (item == NULL) {
@@ -145,13 +145,13 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	PkTransactionItem *item;
 
 	g_return_if_fail (tlist != NULL);
-	g_return_if_fail (PK_IS_JOB_LIST (tlist));
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
 	item = pk_transaction_list_get_item_from_task (tlist, backend);
 	if (item == NULL) {
 		pk_error ("moo!");
 	}
-	pk_debug ("job %s completed, removing", item->tid);
+	pk_debug ("transaction %s completed, removing", item->tid);
 	pk_transaction_list_remove (tlist, backend);
 
 	/* do the next transaction now if we have another queued */
@@ -179,9 +179,9 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, 0);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), 0);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 
-	/* find all the jobs in progress */
+	/* find all the transactions in progress */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
@@ -202,13 +202,13 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	gboolean search_okay = TRUE;
 	PkTransactionItem *item;
 	g_return_val_if_fail (tlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	item = pk_transaction_list_get_item_from_task (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
-	pk_debug ("marking job %s as committed", item->tid);
+	pk_debug ("marking transaction %s as committed", item->tid);
 	item->committed = TRUE;
 
 	/* we will changed what is running */
@@ -262,15 +262,15 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find all the jobs in progress */
+	/* find all the transactions in progress */
 	length = tlist->priv->array->len;
 
 	/* create new strv list */
 	array = g_new0 (gchar *, length);
 
-	pk_debug ("%i active jobs", length);
+	pk_debug ("%i active transactions", length);
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if it worked */
@@ -289,7 +289,7 @@ guint
 pk_transaction_list_get_size (PkTransactionList *tlist)
 {
 	g_return_val_if_fail (tlist != NULL, 0);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), 0);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 	return tlist->priv->array->len;
 }
 
@@ -304,9 +304,9 @@ pk_transaction_list_get_item_from_tid (PkTransactionList *tlist, const gchar *ti
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find the backend with the job ID */
+	/* find the backend with the transaction ID */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
@@ -328,9 +328,9 @@ pk_transaction_list_get_item_from_task (PkTransactionList *tlist, PkBackend *bac
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (tlist != NULL, NULL);
-	g_return_val_if_fail (PK_IS_JOB_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find the backend with the job ID */
+	/* find the backend with the transaction ID */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
@@ -382,7 +382,7 @@ pk_transaction_list_finalize (GObject *object)
 	PkTransactionList *tlist;
 
 	g_return_if_fail (object != NULL);
-	g_return_if_fail (PK_IS_JOB_LIST (object));
+	g_return_if_fail (PK_IS_TRANSACTION_LIST (object));
 
 	tlist = PK_TRANSACTION_LIST (object);
 
@@ -401,7 +401,7 @@ PkTransactionList *
 pk_transaction_list_new (void)
 {
 	PkTransactionList *tlist;
-	tlist = g_object_new (PK_TYPE_JOB_LIST, NULL);
+	tlist = g_object_new (PK_TYPE_TRANSACTION_LIST, NULL);
 	return PK_TRANSACTION_LIST (tlist);
 }
 
