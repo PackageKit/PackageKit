@@ -66,6 +66,7 @@ struct _PkBackendPrivate
 	GTimer			*timer;
 	PkSpawn			*spawn;
 	gboolean		 is_killable;
+	gboolean		 during_initialize;
 	gboolean		 assigned;
 	gboolean		 set_error;
 	PkNetwork		*network;
@@ -157,9 +158,12 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 		pk_error ("could not find description in plugin %s, not loading", backend_name);
 	}
 
+	/* initialize, but protect against dodgy backends */
+	backend->priv->during_initialize = TRUE;
 	if (backend->desc->initialize) {
 		backend->desc->initialize (backend);
 	}
+	backend->priv->during_initialize = FALSE;
 
 	/* did we fail? */
 	if (backend->priv->set_error == TRUE) {
@@ -824,9 +828,15 @@ pk_backend_finished (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* are we trying to finish in init? */
+	if (backend->priv->during_initialize == TRUE) {
+		g_print ("You can't call pk_backend_finished in backend_initialize!\n");
+		pk_error ("Internal error, cannot continue");
+	}
+
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
-		g_print ("ERROR: There are threads running and the task has been asked to finish!\n");
+		g_print ("There are threads running and the task has been asked to finish!\n");
 		g_print ("If you are using :\n");
 		g_print ("* pk_backend_thread_helper\n");
 		g_print ("   - You should _not_ use pk_backend_finished directly");
@@ -1421,6 +1431,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->assigned = FALSE;
 	backend->priv->is_killable = FALSE;
 	backend->priv->set_error = FALSE;
+	backend->priv->during_initialize = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
 	backend->priv->xcached_package_id = NULL;
