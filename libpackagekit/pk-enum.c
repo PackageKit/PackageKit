@@ -58,6 +58,7 @@ static PkTaskEnumMatch task_status[] = {
 
 static PkTaskEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
+	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
 	{PK_ROLE_ENUM_GET_DESCRIPTION,		"get-description"},
@@ -120,23 +121,6 @@ static PkTaskEnumMatch task_group[] = {
 	{PK_GROUP_ENUM_PROGRAMMING,		"programming"},
 	{PK_GROUP_ENUM_MULTIMEDIA,		"multimedia"},
 	{PK_GROUP_ENUM_SYSTEM,			"system"},
-	{0, NULL},
-};
-
-static PkTaskEnumMatch task_action[] = {
-	{PK_ACTION_ENUM_INSTALL,		"install"},
-	{PK_ACTION_ENUM_REMOVE,			"remove"},
-	{PK_ACTION_ENUM_UPDATE,			"update"},
-	{PK_ACTION_ENUM_GET_UPDATES,		"get-updates"},
-	{PK_ACTION_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ACTION_ENUM_UPDATE_SYSTEM,		"update-system"},
-	{PK_ACTION_ENUM_SEARCH_NAME,		"search-name"},
-	{PK_ACTION_ENUM_SEARCH_DETAILS,		"search-details"},
-	{PK_ACTION_ENUM_SEARCH_GROUP,		"search-group"},
-	{PK_ACTION_ENUM_SEARCH_FILE,		"search-file"},
-	{PK_ACTION_ENUM_GET_DEPENDS,		"get-depends"},
-	{PK_ACTION_ENUM_GET_REQUIRES,		"get-requires"},
-	{PK_ACTION_ENUM_GET_DESCRIPTION,	"get-description"},
 	{0, NULL},
 };
 
@@ -312,24 +296,6 @@ const gchar *
 pk_filter_enum_to_text (PkFilterEnum filter)
 {
 	return pk_task_enum_find_string (task_filter, filter);
-}
-
-/**
- * pk_action_enum_from_text:
- **/
-PkActionEnum
-pk_action_enum_from_text (const gchar *action)
-{
-	return pk_task_enum_find_value (task_action, action);
-}
-
-/**
- * pk_action_enum_to_text:
- **/
-const gchar *
-pk_action_enum_to_text (PkActionEnum action)
-{
-	return pk_task_enum_find_string (task_action, action);
 }
 
 /***************************************************************************

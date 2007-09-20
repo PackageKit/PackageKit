@@ -110,8 +110,8 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 	/* split by delimeter ';' */
 	sections = g_strsplit (enums, ";", 0);
 	for (i=0; sections[i]; i++) {
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
-			value_temp = pk_action_enum_from_text (sections[i]);
+		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
+			value_temp = pk_role_enum_from_text (sections[i]);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
 			value_temp = pk_group_enum_from_text (sections[i]);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
@@ -145,8 +145,8 @@ pk_enum_list_to_string (PkEnumList *elist)
 	string = g_string_new ("");
 	for (i=0; i<length; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
-			text = pk_action_enum_to_text (value);
+		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
+			text = pk_role_enum_to_text (value);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
 			text = pk_group_enum_to_text (value);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
@@ -174,7 +174,7 @@ pk_enum_list_print (PkEnumList *elist)
 	guint value;
 	const gchar *text = NULL;
 
-	if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
+	if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
 		g_print ("Printing actions:\n");
 	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
 		g_print ("Printing groups:\n");
@@ -183,8 +183,8 @@ pk_enum_list_print (PkEnumList *elist)
 	}
 	for (i=0; i<elist->priv->data->len; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ACTION) {
-			text = pk_action_enum_to_text (value);
+		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
+			text = pk_role_enum_to_text (value);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
 			text = pk_group_enum_to_text (value);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
@@ -303,7 +303,7 @@ libst_enum_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "set action builder");
-	ret = pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
+	ret = pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -322,7 +322,7 @@ libst_enum_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "append single");
-	ret = pk_enum_list_append (elist, PK_ACTION_ENUM_SEARCH_NAME);
+	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -341,7 +341,7 @@ libst_enum_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add multiple");
-	ret = pk_enum_list_append_multiple (elist, PK_ACTION_ENUM_SEARCH_DETAILS, PK_ACTION_ENUM_SEARCH_GROUP, -1);
+	ret = pk_enum_list_append_multiple (elist, PK_ROLE_ENUM_SEARCH_DETAILS, PK_ACTION_ENUM_SEARCH_GROUP, -1);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -362,7 +362,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set none enum list");
 	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
 	pk_enum_list_from_string (elist, "none");
 	if (elist->priv->data->len == 0) {
 		libst_success (test, NULL);

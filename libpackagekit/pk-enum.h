@@ -29,6 +29,7 @@ G_BEGIN_DECLS
 
 /* what we asked to do */
 typedef enum {
+	PK_ROLE_ENUM_CANCEL,
 	PK_ROLE_ENUM_GET_DEPENDS,
 	PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 	PK_ROLE_ENUM_GET_DESCRIPTION,
@@ -112,27 +113,6 @@ typedef enum {
 	PK_GROUP_ENUM_UNKNOWN
 } PkGroupEnum;
 
-typedef enum {
-	PK_ACTION_ENUM_INSTALL = 1,
-	PK_ACTION_ENUM_REMOVE,
-	PK_ACTION_ENUM_UPDATE,
-	PK_ACTION_ENUM_GET_UPDATES,
-	PK_ACTION_ENUM_CANCEL,
-	PK_ACTION_ENUM_REFRESH_CACHE,
-	PK_ACTION_ENUM_UPDATE_SYSTEM,
-	PK_ACTION_ENUM_SEARCH_NAME,
-	PK_ACTION_ENUM_SEARCH_DETAILS,
-	PK_ACTION_ENUM_SEARCH_GROUP,
-	PK_ACTION_ENUM_SEARCH_FILE,
-	PK_ACTION_ENUM_GET_DEPENDS,
-	PK_ACTION_ENUM_GET_REQUIRES,
-	PK_ACTION_ENUM_GET_DESCRIPTION,
-	PK_ACTION_ENUM_INSTALL_PACKAGE,
-	PK_ACTION_ENUM_REMOVE_PACKAGE,
-	PK_ACTION_ENUM_UPDATE_PACKAGE,
-	PK_ACTION_ENUM_UNKNOWN
-} PkActionEnum;
-
 PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
 const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
 
@@ -153,9 +133,6 @@ const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);
-
-PkActionEnum	 pk_action_enum_from_text		(const gchar	*action);
-const gchar	*pk_action_enum_to_text			(PkActionEnum	 action);
 
 G_END_DECLS
 

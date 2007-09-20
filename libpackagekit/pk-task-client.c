@@ -924,7 +924,7 @@ pk_task_client_get_actions (PkTaskClient *tclient)
 	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
 
 	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ACTION);
+	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetActions", &error,
