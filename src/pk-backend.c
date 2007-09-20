@@ -132,6 +132,11 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 
+	if (backend->priv->handle != NULL) {
+		pk_warning ("pk_backend_load called multiple times. This is bad");
+		return FALSE;
+	}
+
 	/* save the backend name */
 	backend->priv->name = g_strdup (backend_name);
 
@@ -155,6 +160,13 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 	if (backend->desc->initialize) {
 		backend->desc->initialize (backend);
 	}
+
+	/* did we fail? */
+	if (backend->priv->set_error == TRUE) {
+		pk_debug ("init failed...");
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -1410,6 +1422,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->set_error = FALSE;
 	backend->priv->spawn = NULL;
+	backend->priv->handle = NULL;
 	backend->priv->xcached_package_id = NULL;
 	backend->priv->xcached_filter = NULL;
 	backend->priv->xcached_search = NULL;

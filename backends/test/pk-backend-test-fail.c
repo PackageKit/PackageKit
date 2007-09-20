@@ -33,8 +33,6 @@ backend_initialize (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 			       "Failed to initialize package manager");
-	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-			       "Failed to initialize package manager");
 }
 
 /**

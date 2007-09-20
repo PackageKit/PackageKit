@@ -122,6 +122,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_FILTER_INVALID, "FilterInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -443,7 +444,8 @@ pk_engine_new_backend (PkEngine *engine)
 	backend = pk_backend_new ();
 	ret = pk_backend_load (backend, engine->priv->backend);
 	if (ret == FALSE) {
-		pk_error ("Cannot use backend '%s'", engine->priv->backend);
+		pk_warning ("Cannot use backend '%s'", engine->priv->backend);
+		return NULL;
 	}
 	pk_debug ("adding backend %p", backend);
 
@@ -609,6 +611,12 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, gchar **tid, GError *
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_refresh_cache (backend, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -642,6 +650,12 @@ pk_engine_get_updates (PkEngine *engine, gchar **tid, GError **error)
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_get_updates (backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -740,6 +754,12 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_search_name (backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -786,6 +806,12 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_search_details (backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -832,6 +858,12 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_search_group (backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -878,6 +910,12 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_search_file (backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -920,6 +958,12 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_get_depends (backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -962,6 +1006,12 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_get_requires (backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1004,6 +1054,12 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_get_update_detail (backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1038,6 +1094,12 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	ret = pk_backend_get_description (backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1088,6 +1150,13 @@ pk_engine_update_system (PkEngine *engine,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	ret = pk_backend_update_system (backend);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1139,6 +1208,13 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	ret = pk_backend_remove_package (backend, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1192,6 +1268,13 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	ret = pk_backend_install_package (backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1245,6 +1328,13 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	ret = pk_backend_update_package (backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1466,7 +1556,12 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
-	pk_backend_load (backend, engine->priv->backend);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	elist = pk_backend_get_actions (backend);
 	*actions = pk_enum_list_to_string (elist);
 	g_object_unref (backend);
@@ -1490,7 +1585,12 @@ pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
-	pk_backend_load (backend, engine->priv->backend);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	elist = pk_backend_get_groups (backend);
 	*groups = pk_enum_list_to_string (elist);
 	g_object_unref (backend);
@@ -1514,7 +1614,12 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 
 	/* create a new backend and start it */
 	backend = pk_engine_new_backend (engine);
-	pk_backend_load (backend, engine->priv->backend);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
 	elist = pk_backend_get_filters (backend);
 	*filters = pk_enum_list_to_string (elist);
 	g_object_unref (backend);
