@@ -67,6 +67,7 @@ struct _PkBackendPrivate
 	PkSpawn			*spawn;
 	gboolean		 is_killable;
 	gboolean		 assigned;
+	gboolean		 set_error;
 	PkNetwork		*network;
 	/* needed for gui coldplugging */
 	guint			 last_percentage;
@@ -728,6 +729,15 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	va_start (args, format);
 	g_vsnprintf (buffer, 1024, format, args);
 	va_end (args);
+
+	/* did we set a duplicate error? */
+	if (backend->priv->set_error == TRUE) {
+		g_print ("pk_backend_error_code was used more than once in the same backend instance!\n");
+		g_print ("You tried to set '%s'\n", buffer);
+		pk_error ("Internal error, cannot continue");
+		return FALSE;
+	}
+	backend->priv->set_error = TRUE;
 
 	/* we mark any transaction with errors as failed */
 	backend->priv->exit = PK_EXIT_ENUM_FAILED;
@@ -1398,6 +1408,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->timer = g_timer_new ();
 	backend->priv->assigned = FALSE;
 	backend->priv->is_killable = FALSE;
+	backend->priv->set_error = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->xcached_package_id = NULL;
 	backend->priv->xcached_filter = NULL;
