@@ -341,7 +341,7 @@ libst_enum_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add multiple");
-	ret = pk_enum_list_append_multiple (elist, PK_ROLE_ENUM_SEARCH_DETAILS, PK_ACTION_ENUM_SEARCH_GROUP, -1);
+	ret = pk_enum_list_append_multiple (elist, PK_ROLE_ENUM_SEARCH_DETAILS, PK_ROLE_ENUM_SEARCH_GROUP, -1);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
