@@ -115,6 +115,10 @@ gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 gchar		**tid,
 							 GError		**error);
+gboolean	 pk_engine_resolve			(PkEngine	*engine,
+							 const gchar	*package,
+							 gchar		**tid,
+							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
 							 gboolean	 force,
 							 gchar		**tid,

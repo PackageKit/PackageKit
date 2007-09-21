@@ -862,6 +862,38 @@
       </para>
     </sect2>
 
+    <sect2 id="api-resolve">
+      <title>Resolve</title>
+      <para>
+        Resolve turns a single package name into a package_id suitable for the
+        other methods.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package</literal></entry>
+              <entry>A single package name, e.g. <literal>art-clipart</literal>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
     <sect2 id="api-get-update-detail">
       <title>Get Update Detail</title>
       <para>

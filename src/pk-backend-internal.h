@@ -84,6 +84,8 @@ gboolean	 pk_backend_remove_package		(PkBackend	*backend,
 gboolean	 pk_backend_search_details		(PkBackend	*backend,
 							 const gchar	*filter,
 							 const gchar	*search);
+gboolean	 pk_backend_resolve			(PkBackend	*backend,
+							 const gchar	*package);
 gboolean	 pk_backend_search_file			(PkBackend	*backend,
 							 const gchar	*filter,
 							 const gchar	*search);

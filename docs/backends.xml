@@ -75,6 +75,10 @@
             <entry><literal>get-depends.*</literal></entry>
           </row>
           <row>
+            <entry>Resolve</entry>
+            <entry><literal>resolve.*</literal></entry>
+          </row>
+          <row>
             <entry>Get Requires</entry>
             <entry><literal>get-requires.*</literal></entry>
           </row>

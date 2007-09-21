@@ -942,6 +942,45 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 }
 
 /**
+ * pk_engine_resolve:
+ **/
+gboolean
+pk_engine_resolve (PkEngine *engine, const gchar *package, gchar **tid, GError **error)
+{
+	gboolean ret;
+	PkBackend *backend;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new backend and start it */
+	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
+	ret = pk_backend_resolve (backend, package);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "Operation not yet supported by backend");
+		pk_engine_delete_backend (engine, backend);
+		return FALSE;
+	}
+	pk_engine_add_backend (engine, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return FALSE;
+	}
+	*tid = g_strdup (item->tid);
+
+	return TRUE;
+}
+
+/**
  * pk_engine_get_depends:
  **/
 gboolean

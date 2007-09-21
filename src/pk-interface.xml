@@ -14,6 +14,10 @@
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="out"/>
     </method>
+    <method name="Resolve">
+      <arg type="s" name="package" direction="in"/>
+      <arg type="s" name="tid" direction="out"/>
+    </method>
     <method name="SearchName">
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>

@@ -163,6 +163,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	NULL,					/* resolve */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */

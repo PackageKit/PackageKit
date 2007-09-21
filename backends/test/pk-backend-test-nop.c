@@ -41,6 +41,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_package */
+	NULL,					/* resolve */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
