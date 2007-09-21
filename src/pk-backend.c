@@ -82,7 +82,7 @@ struct _PkBackendPrivate
 };
 
 enum {
-	PK_BACKEND_JOB_STATUS_CHANGED,
+	PK_BACKEND_TRANSACTION_STATUS_CHANGED,
 	PK_BACKEND_PERCENTAGE_CHANGED,
 	PK_BACKEND_SUB_PERCENTAGE_CHANGED,
 	PK_BACKEND_NO_PERCENTAGE_UPDATES,
@@ -605,8 +605,8 @@ pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	backend->priv->status = status;
-	pk_debug ("emiting job-status-changed %i", status);
-	g_signal_emit (backend, signals [PK_BACKEND_JOB_STATUS_CHANGED], 0, status);
+	pk_debug ("emiting transaction-status-changed %i", status);
+	g_signal_emit (backend, signals [PK_BACKEND_TRANSACTION_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
 
@@ -1383,8 +1383,8 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	object_class->finalize = pk_backend_finalize;
 
-	signals [PK_BACKEND_JOB_STATUS_CHANGED] =
-		g_signal_new ("job-status-changed",
+	signals [PK_BACKEND_TRANSACTION_STATUS_CHANGED] =
+		g_signal_new ("transaction-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);

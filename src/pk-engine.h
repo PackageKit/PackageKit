@@ -139,8 +139,8 @@ void		 pk_engine_update_package		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
-gboolean	 pk_engine_get_transaction_list			(PkEngine	*engine,
-							 gchar		***job_list,
+gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
+							 gchar		***transaction_list,
 							 GError		**error);
 gboolean	 pk_engine_get_status			(PkEngine	*engine,
 							 const gchar	*tid,

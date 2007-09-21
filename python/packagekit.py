@@ -109,7 +109,7 @@ class PackageKit:
 		elif kwargs['member'] == "SubPercentageChanged":
 			progress = (float(args[1])/100.0)+int(progress)
 			self.Percentage(progress)
-		elif kwargs['member'] == "JobStatusChanged":
+		elif kwargs['member'] == "TransactionStatusChanged":
 			self.JobStatus(args[1])
 		elif kwargs['member'] == "Package":
 			self.Package(args[2],args[3])

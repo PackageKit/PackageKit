@@ -62,13 +62,13 @@ struct PkEnginePrivate
 	PolKitContext		*pk_context;
 	DBusConnection		*connection;
 	gchar			*backend;
-	PkTransactionList	*job_list;
+	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 };
 
 enum {
-	PK_ENGINE_JOB_LIST_CHANGED,
-	PK_ENGINE_JOB_STATUS_CHANGED,
+	PK_ENGINE_TRANSACTION_LIST_CHANGED,
+	PK_ENGINE_TRANSACTION_STATUS_CHANGED,
 	PK_ENGINE_PERCENTAGE_CHANGED,
 	PK_ENGINE_SUB_PERCENTAGE_CHANGED,
 	PK_ENGINE_NO_PERCENTAGE_UPDATES,
@@ -158,15 +158,15 @@ pk_engine_reset_timer (PkEngine *engine)
 static void
 pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engine)
 {
-	gchar **job_list;
+	gchar **transaction_list;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	job_list = pk_transaction_list_get_array (engine->priv->job_list);
+	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
-	pk_debug ("emitting job-list-changed");
-	g_signal_emit (engine, signals [PK_ENGINE_JOB_LIST_CHANGED], 0, job_list);
+	pk_debug ("emitting transaction-list-changed");
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
 }
 
@@ -182,15 +182,15 @@ pk_engine_job_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngi
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
 	}
 		status_text = pk_status_enum_to_text (status);
 
-	pk_debug ("emitting job-status-changed tid:%s, '%s'", item->tid, status_text);
-	g_signal_emit (engine, signals [PK_ENGINE_JOB_STATUS_CHANGED], 0, item->tid, status_text);
+	pk_debug ("emitting transaction-status-changed tid:%s, '%s'", item->tid, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_STATUS_CHANGED], 0, item->tid, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -205,7 +205,7 @@ pk_engine_percentage_changed_cb (PkBackend *backend, guint percentage, PkEngine 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -226,7 +226,7 @@ pk_engine_sub_percentage_changed_cb (PkBackend *backend, guint percentage, PkEng
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -247,7 +247,7 @@ pk_engine_no_percentage_updates_cb (PkBackend *backend, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -268,7 +268,7 @@ pk_engine_package_cb (PkBackend *backend, guint value, const gchar *package_id, 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -292,7 +292,7 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -316,7 +316,7 @@ pk_engine_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -339,7 +339,7 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -363,7 +363,7 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -387,7 +387,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -419,7 +419,7 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -451,7 +451,7 @@ pk_engine_new_backend (PkEngine *engine)
 	pk_debug ("adding backend %p", backend);
 
 	/* connect up signals */
-	g_signal_connect (backend, "job-status-changed",
+	g_signal_connect (backend, "transaction-status-changed",
 			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
 	g_signal_connect (backend, "percentage-changed",
 			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
@@ -477,9 +477,9 @@ pk_engine_new_backend (PkEngine *engine)
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
 
-	pk_transaction_list_add (engine->priv->job_list, backend);
+	pk_transaction_list_add (engine->priv->transaction_list, backend);
 
-	/* we don't add to the array or do the job-list-changed yet
+	/* we don't add to the array or do the transaction-list-changed yet
 	 * as this job might fail */
 	return backend;
 }
@@ -497,10 +497,10 @@ pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
-	pk_transaction_list_commit (engine->priv->job_list, backend);
+	pk_transaction_list_commit (engine->priv->transaction_list, backend);
 
 	/* get all the data we know */
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (backend, &role, NULL);
@@ -531,7 +531,7 @@ pk_engine_delete_backend (PkEngine *engine, PkBackend *backend)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("removing backend %p as it failed", backend);
-	pk_transaction_list_remove (engine->priv->job_list, backend);
+	pk_transaction_list_remove (engine->priv->transaction_list, backend);
 
 	/* we don't do g_object_unref (backend) here as it is done in the
 	   ::finished handler */
@@ -626,7 +626,7 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, gchar **tid, GError *
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -665,7 +665,7 @@ pk_engine_get_updates (PkEngine *engine, gchar **tid, GError **error)
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -769,7 +769,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -821,7 +821,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -873,7 +873,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -925,7 +925,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -973,7 +973,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -1021,7 +1021,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -1069,7 +1069,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -1109,7 +1109,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return FALSE;
@@ -1142,7 +1142,7 @@ pk_engine_update_system (PkEngine *engine,
 	}
 
 	/* are we already performing an update? */
-	if (pk_transaction_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
+	if (pk_transaction_list_role_present (engine->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
@@ -1168,7 +1168,7 @@ pk_engine_update_system (PkEngine *engine,
 	}
 	pk_engine_add_backend (engine, backend);
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -1226,7 +1226,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 	}
 	pk_engine_add_backend (engine, backend);
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -1286,7 +1286,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_backend (engine, backend);
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -1346,7 +1346,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *full_path,
 	}
 	pk_engine_add_backend (engine, backend);
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -1406,7 +1406,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 	}
 	pk_engine_add_backend (engine, backend);
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -1418,13 +1418,13 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
  * pk_engine_get_transaction_list:
  **/
 gboolean
-pk_engine_get_transaction_list (PkEngine *engine, gchar ***job_list, GError **error)
+pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GError **error)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("getting job list");
-	*job_list = pk_transaction_list_get_array (engine->priv->job_list);
+	*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	return TRUE;
 }
@@ -1442,7 +1442,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1467,7 +1467,7 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1491,7 +1491,7 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1518,7 +1518,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percent
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1545,7 +1545,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1585,7 +1585,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1715,7 +1715,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 
 	/* check for jobs running - a job that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
-	size = pk_transaction_list_get_size (engine->priv->job_list);
+	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size != 0) {
 		pk_debug ("engine idle zero as %i jobs in progress", size);
 		return 0;
@@ -1738,13 +1738,13 @@ pk_engine_class_init (PkEngineClass *klass)
 	object_class->finalize = pk_engine_finalize;
 
 	/* set up signal that emits 'au' */
-	signals [PK_ENGINE_JOB_LIST_CHANGED] =
-		g_signal_new ("job-list-changed",
+	signals [PK_ENGINE_TRANSACTION_LIST_CHANGED] =
+		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, G_TYPE_STRV);
-	signals [PK_ENGINE_JOB_STATUS_CHANGED] =
-		g_signal_new ("job-status-changed",
+	signals [PK_ENGINE_TRANSACTION_STATUS_CHANGED] =
+		g_signal_new ("transaction-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
@@ -1824,8 +1824,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
 
-	engine->priv->job_list = pk_transaction_list_new ();
-	g_signal_connect (engine->priv->job_list, "changed",
+	engine->priv->transaction_list = pk_transaction_list_new ();
+	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
 
 	/* we use a trasaction db to store old transactions and to do rollbacks */
@@ -1870,7 +1870,7 @@ pk_engine_finalize (GObject *object)
 	g_timer_destroy (engine->priv->timer);
 	g_free (engine->priv->backend);
 	polkit_context_unref (engine->priv->pk_context);
-	g_object_unref (engine->priv->job_list);
+	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);

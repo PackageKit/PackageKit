@@ -1118,7 +1118,7 @@ pk_task_client_job_status_changed_cb (PkTaskMonitor *tmonitor,
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	pk_debug ("emit job-status-changed %i", status);
+	pk_debug ("emit transaction-status-changed %i", status);
 	g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
 	tclient->priv->last_status = status;
 }
@@ -1255,7 +1255,7 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 	object_class->finalize = pk_task_client_finalize;
 
 	signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED] =
-		g_signal_new ("job-status-changed",
+		g_signal_new ("transaction-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -1380,7 +1380,7 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_sub_percentage_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "no-percentage-updates",
 			  G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient);
-	g_signal_connect (tclient->priv->tmonitor, "job-status-changed",
+	g_signal_connect (tclient->priv->tmonitor, "transaction-status-changed",
 			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "package",
 			  G_CALLBACK (pk_task_client_package_cb), tclient);

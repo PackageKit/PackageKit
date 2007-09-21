@@ -2,7 +2,7 @@
 <node name="/">
   <interface name="org.freedesktop.PackageKit">
 
-    <!-- Schedule new jobs -->
+    <!-- Schedule new transactions -->
     <method name="GetUpdates">
       <arg type="s" name="tid" direction="out"/>
     </method>
@@ -72,12 +72,12 @@
       <arg type="s" name="tid" direction="out"/>
     </method>
 
-    <!-- signals emitted from any job -->
-    <signal name="JobStatusChanged">
+    <!-- signals emitted from any transaction -->
+    <signal name="TransactionStatusChanged">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
     </signal>
-    <signal name="PercentageChanged"> <!-- progress of the whole job -->
+    <signal name="PercentageChanged"> <!-- progress of the whole transaction -->
       <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
@@ -114,11 +114,11 @@
     <signal name="Finished">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
-      <arg type="u" name="runtime" direction="out"/> <!-- amount of time job has been running in seconds -->
+      <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in seconds -->
     </signal>
     <signal name="AllowInterrupt">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="allow_kill" direction="out"/> <!-- if the job can be SIGKILL'd -->
+      <arg type="b" name="allow_kill" direction="out"/> <!-- if the transaction can be SIGKILL'd -->
     </signal>
     <signal name="ErrorCode">
       <arg type="s" name="tid" direction="out"/>
@@ -131,17 +131,17 @@
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
 
-    <!-- Do things or query jobs -->
+    <!-- Do things or query transactions -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
       <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
     </method>
-    <method name="GetStatus"> <!-- this is what the job is currrently doing, and might change -->
+    <method name="GetStatus"> <!-- this is what the transaction is currrently doing, and might change -->
       <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
     </method>
-    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
+    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the transaction -->
       <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
