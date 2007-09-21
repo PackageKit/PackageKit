@@ -102,6 +102,10 @@ pk_transaction_id_save_job_count (guint job_count)
 gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
+	if (tid1 == NULL || tid2 == NULL) {
+		pk_warning ("transaction id compare invalid '%s' and '%s'", tid1, tid2);
+		return FALSE;
+	}
 	return (strcmp (tid1, tid2) == 0);
 }
 

@@ -288,6 +288,20 @@ pk_task_monitor_get_role (PkTaskMonitor *tmonitor, PkRoleEnum *role, gchar **pac
 }
 
 /**
+ * pk_transaction_id_equal:
+ * TODO: only compare first two sections...
+ **/
+static gboolean
+pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
+{
+	if (tid1 == NULL || tid2 == NULL) {
+		pk_warning ("tid compare invalid '%s' and '%s'", tid1, tid2);
+		return FALSE;
+	}
+	return (strcmp (tid1, tid2) == 0);
+}
+
+/**
  * pk_task_monitor_finished_cb:
  */
 static void
@@ -302,7 +316,7 @@ pk_task_monitor_finished_cb (DBusGProxy    *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		exit = pk_exit_enum_from_text (exit_text);
 		pk_debug ("emit finished %i, %i", exit, runtime);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_FINISHED], 0, exit, runtime);
@@ -321,7 +335,7 @@ pk_task_monitor_percentage_changed_cb (DBusGProxy    *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit percentage-changed %i", percentage);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_PERCENTAGE_CHANGED], 0, percentage);
 	}
@@ -339,7 +353,7 @@ pk_task_monitor_sub_percentage_changed_cb (DBusGProxy    *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit sub-percentage-changed %i", percentage);
 		g_signal_emit (tmonitor, signals [PK_TASK_MONITOR_SUB_PERCENTAGE_CHANGED], 0, percentage);
 	}
@@ -356,7 +370,7 @@ pk_task_monitor_no_percentage_updates_cb (DBusGProxy    *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit no-percentage-updates");
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_NO_PERCENTAGE_UPDATES], 0);
 	}
@@ -378,7 +392,7 @@ pk_task_monitor_job_status_changed_cb (DBusGProxy   *proxy,
 
 	status = pk_status_enum_from_text (status_text);
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit job-status-changed %i", status);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_JOB_STATUS_CHANGED], 0, status);
 	}
@@ -398,7 +412,7 @@ pk_task_monitor_package_cb (DBusGProxy   *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit package %i, %s, %s", value, package, summary);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_PACKAGE], 0, value, package, summary);
 	}
@@ -437,7 +451,7 @@ pk_task_monitor_update_detail_cb (DBusGProxy  *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
 			  package_id, updates, obsoletes, url, restart, update_text);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_UPDATE_DETAIL], 0,
@@ -462,7 +476,7 @@ pk_task_monitor_description_cb (DBusGProxy    *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_DESCRIPTION], 0, package_id, licence, group, description, url);
@@ -483,7 +497,7 @@ pk_task_monitor_error_code_cb (DBusGProxy   *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		code = pk_error_enum_from_text (code_text);
 		pk_debug ("emit error-code %i, %s", code, details);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_ERROR_CODE], 0, code, details);
@@ -504,7 +518,7 @@ pk_task_monitor_require_restart_cb (DBusGProxy   *proxy,
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	if (strcmp (tid, tmonitor->priv->tid) == 0) {
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
 		restart = pk_restart_enum_from_text (restart_text);
 		pk_debug ("emit require-restart %i, %s", restart, details);
 		g_signal_emit (tmonitor , signals [PK_TASK_MONITOR_REQUIRE_RESTART], 0, restart, details);
