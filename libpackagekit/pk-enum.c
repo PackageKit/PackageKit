@@ -69,11 +69,11 @@ static PkTaskEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_SEARCH_GROUP,		"search-group"},
 	{PK_ROLE_ENUM_SEARCH_NAME,		"search-name"},
 	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ROLE_ENUM_PACKAGE_REMOVE,		"package-remove"},
-	{PK_ROLE_ENUM_PACKAGE_INSTALL,		"package-install"},
-	{PK_ROLE_ENUM_FILE_INSTALL,		"file-install"},
-	{PK_ROLE_ENUM_PACKAGE_UPDATE,		"package-update"},
-	{PK_ROLE_ENUM_SYSTEM_UPDATE,		"system-update"},
+	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
+	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
+	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
+	{PK_ROLE_ENUM_UPDATE_PACKAGE,		"update-package"},
+	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{0, NULL},
 };
 

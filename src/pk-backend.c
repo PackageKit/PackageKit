@@ -958,23 +958,23 @@ pk_backend_run (PkBackend *backend)
 		backend->desc->search_name (backend,
 					    backend->priv->xcached_filter,
 					    backend->priv->xcached_search);
-	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_INSTALL) {
+	} else if (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		backend->desc->install_package (backend,
 						backend->priv->xcached_package_id);
-	} else if (backend->priv->role == PK_ROLE_ENUM_FILE_INSTALL) {
+	} else if (backend->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		backend->desc->install_file (backend,
 					     backend->priv->xcached_full_path);
 	} else if (backend->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		backend->desc->refresh_cache (backend,
 					      backend->priv->xcached_force);
-	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_REMOVE) {
+	} else if (backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		backend->desc->remove_package (backend,
 					       backend->priv->xcached_package_id,
 					       backend->priv->xcached_allow_deps);
-	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_UPDATE) {
+	} else if (backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		backend->desc->update_package (backend,
 					       backend->priv->xcached_package_id);
-	} else if (backend->priv->role == PK_ROLE_ENUM_SYSTEM_UPDATE) {
+	} else if (backend->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		backend->desc->update_system (backend);
 	} else {
 		return FALSE;
@@ -1073,7 +1073,7 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 		return FALSE;
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_INSTALL_PACKAGE);
 	return TRUE;
 }
 
@@ -1089,7 +1089,7 @@ pk_backend_install_file (PkBackend *backend, const gchar *full_path)
 		return FALSE;
 	}
 	backend->priv->xcached_full_path = g_strdup (full_path);
-	pk_backend_set_role (backend, PK_ROLE_ENUM_FILE_INSTALL);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_INSTALL_FILE);
 	return TRUE;
 }
 
@@ -1122,7 +1122,7 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 	}
 	backend->priv->xcached_allow_deps = allow_deps;
 	backend->priv->xcached_package_id = g_strdup (package_id);
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_REMOVE);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_REMOVE_PACKAGE);
 	return TRUE;
 }
 
@@ -1206,7 +1206,7 @@ pk_backend_update_package (PkBackend *backend, const gchar *package_id)
 		return FALSE;
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
-	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_UPDATE);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_UPDATE_PACKAGE);
 	return TRUE;
 }
 
@@ -1221,7 +1221,7 @@ pk_backend_update_system (PkBackend *backend)
 		pk_backend_not_implemented_yet (backend, "UpdateSystem");
 		return FALSE;
 	}
-	pk_backend_set_role (backend, PK_ROLE_ENUM_SYSTEM_UPDATE);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	return TRUE;
 }
 
@@ -1252,16 +1252,16 @@ pk_backend_get_actions (PkBackend *backend)
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATES);
 	}
 	if (backend->desc->install_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_PACKAGE_INSTALL);
+		pk_enum_list_append (elist, PK_ROLE_ENUM_INSTALL_PACKAGE);
 	}
 	if (backend->desc->install_file != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_FILE_INSTALL);
+		pk_enum_list_append (elist, PK_ROLE_ENUM_INSTALL_FILE);
 	}
 	if (backend->desc->refresh_cache != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_REFRESH_CACHE);
 	}
 	if (backend->desc->remove_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_PACKAGE_REMOVE);
+		pk_enum_list_append (elist, PK_ROLE_ENUM_REMOVE_PACKAGE);
 	}
 	if (backend->desc->search_details != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
@@ -1276,10 +1276,10 @@ pk_backend_get_actions (PkBackend *backend)
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
 	}
 	if (backend->desc->update_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_PACKAGE_UPDATE);
+		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_PACKAGE);
 	}
 	if (backend->desc->update_system != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_SYSTEM_UPDATE);
+		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	}
 	return elist;
 }

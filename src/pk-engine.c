@@ -505,10 +505,10 @@ pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (backend, &role, NULL);
 	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
-	    role == PK_ROLE_ENUM_SYSTEM_UPDATE ||
-	    role == PK_ROLE_ENUM_PACKAGE_REMOVE ||
-	    role == PK_ROLE_ENUM_PACKAGE_INSTALL ||
-	    role == PK_ROLE_ENUM_PACKAGE_UPDATE) {
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
+	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		/* add to database */
 		pk_transaction_db_add (engine->priv->transaction_db, item->tid);
 
@@ -1142,7 +1142,7 @@ pk_engine_update_system (PkEngine *engine,
 	}
 
 	/* are we already performing an update? */
-	if (pk_transaction_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_SYSTEM_UPDATE) == TRUE) {
+	if (pk_transaction_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
