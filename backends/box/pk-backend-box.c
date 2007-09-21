@@ -34,7 +34,8 @@
 enum PkgSearchType {
     SEARCH_TYPE_NAME = 0,
     SEARCH_TYPE_DETAILS = 1,
-    SEARCH_TYPE_FILE = 2
+    SEARCH_TYPE_FILE = 2,
+    SEARCH_TYPE_RESOLVE = 3
 };
 
 
@@ -162,6 +163,10 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	if (mode == SEARCH_TYPE_FILE) {
 		/* TODO: allow filtering */
 		list = box_db_repos_search_file (db, search);
+		add_packages_from_list (backend, list);
+		box_db_repos_package_list_free (list);
+	} else if (mode == SEARCH_TYPE_RESOLVE) {
+		list = box_db_repos_packages_search_one (db, (gchar *)search);
 		add_packages_from_list (backend, list);
 		box_db_repos_package_list_free (list);
 	} else {
@@ -425,6 +430,15 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	pk_backend_spawn_helper (backend, "remove-package.sh", deps, package_id, NULL);
 }
 
+/**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, const gchar *package)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, package, "none", SEARCH_TYPE_RESOLVE);
+}
 
 /**
  * backend_search_details:
@@ -491,7 +505,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_file,			/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
-	NULL,					/* resolve */
+	backend_resolve,			/* resolve */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
