@@ -1564,13 +1564,23 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
  * pk_engine_get_old_transactions:
  **/
 gboolean
-pk_engine_get_old_transactions (PkEngine *engine, guint number, GError **error)
+pk_engine_get_old_transactions (PkEngine *engine, guint number, gchar **tid, GError **error)
 {
+	PkTransactionItem *item;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("get %i old transactions", number);
-	return pk_transaction_db_get_list (engine->priv->transaction_db, number);
+	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
+	pk_transaction_db_get_list (engine->priv->transaction_db, number);
+	*tid = g_strdup (item->tid);
+//	pk_engine_finished_cb ();
+
+	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, "", 0);
+
+	return TRUE;
+//xxx
 }
 
 /**

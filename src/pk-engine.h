@@ -179,6 +179,7 @@ gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 GError		**error);
 gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
 							 guint		 number,
+							 gchar		**tid,
 							 GError		**error);
 
 G_END_DECLS

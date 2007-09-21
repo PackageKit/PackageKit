@@ -174,9 +174,11 @@
     <!-- Transaction methods -->
     <method name="GetOldTransactions">
       <arg type="u" name="number" direction="in"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <signal name="Transaction">
       <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="old_tid" direction="out"/>
       <arg type="s" name="timespec" direction="out"/>
       <arg type="b" name="succeeded" direction="out"/>
       <arg type="s" name="role" direction="out"/>
