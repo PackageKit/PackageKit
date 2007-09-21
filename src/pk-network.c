@@ -37,7 +37,7 @@
 #include <fcntl.h>
 
 #include <glib/gi18n.h>
-#include <libnm-glib/libnm_glib.h>
+#include <libnm_glib.h>
 
 #include "pk-debug.h"
 #include "pk-network.h"
