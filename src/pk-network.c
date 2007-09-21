@@ -144,7 +144,7 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
-	libnm_glib_unregister_callback	(network->priv->ctx, network->priv->callbackid);
+	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callbackid);
 	libnm_glib_shutdown (network->priv->ctx);
 
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
