@@ -309,8 +309,47 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 void
 libst_enum (LibSelfTest *test)
 {
+	const gchar *string;
+	PkRoleEnum value;
+
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "find value");
+	value = pk_task_enum_find_value (task_role, "search-file");
+	if (PK_ROLE_ENUM_SEARCH_FILE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "find string");
+	string = pk_task_enum_find_string (task_role, PK_ROLE_ENUM_SEARCH_FILE);
+	if (strcmp (string, "search-file") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "find value");
+	value = pk_role_enum_from_text ("search-file");
+	if (PK_ROLE_ENUM_SEARCH_FILE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "find string");
+	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
+	if (strcmp (string, "search-file") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
 	}
 
 	libst_end (test);
