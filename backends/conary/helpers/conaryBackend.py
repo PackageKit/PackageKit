@@ -111,8 +111,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.cfg.flavor, None))
             # Remove dupes
             tempDict = {}
-            for element in troveTupleList:
-                tempDict[element] = None
+            try:
+                for element in troveTupleList:
+                    tempDict[element] = None
+            except TypeError:
+                del tempDict  # move on to the next method
+            else:
                 troveTupleList = tempDict.keys()
 
             # Get the latest first
