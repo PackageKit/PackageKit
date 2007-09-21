@@ -171,10 +171,10 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 }
 
 /**
- * pk_engine_job_status_changed_cb:
+ * pk_engine_transaction_status_changed_cb:
  **/
 static void
-pk_engine_job_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *engine)
+pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *engine)
 {
 	PkTransactionItem *item;
 	const gchar *status_text;
@@ -400,7 +400,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	pk_debug ("backend was running for %f seconds", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
-	pk_debug ("emitting finished job:%s, '%s', %i", item->tid, exit_text, (guint) time);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
 
 	/* unref */
@@ -452,7 +452,7 @@ pk_engine_new_backend (PkEngine *engine)
 
 	/* connect up signals */
 	g_signal_connect (backend, "transaction-status-changed",
-			  G_CALLBACK (pk_engine_job_status_changed_cb), engine);
+			  G_CALLBACK (pk_engine_transaction_status_changed_cb), engine);
 	g_signal_connect (backend, "percentage-changed",
 			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
 	g_signal_connect (backend, "sub-percentage-changed",
@@ -480,7 +480,7 @@ pk_engine_new_backend (PkEngine *engine)
 	pk_transaction_list_add (engine->priv->transaction_list, backend);
 
 	/* we don't add to the array or do the transaction-list-changed yet
-	 * as this job might fail */
+	 * as this transaction might fail */
 	return backend;
 }
 
@@ -1423,7 +1423,7 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("getting job list");
+	pk_debug ("getting transaction list");
 	*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	return TRUE;
@@ -1713,11 +1713,11 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	g_return_val_if_fail (engine != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
 
-	/* check for jobs running - a job that takes a *long* time might not
+	/* check for transactions running - a transaction that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
 	size = pk_transaction_list_get_size (engine->priv->transaction_list);
 	if (size != 0) {
-		pk_debug ("engine idle zero as %i jobs in progress", size);
+		pk_debug ("engine idle zero as %i transactions in progress", size);
 		return 0;
 	}
 

@@ -43,7 +43,7 @@ class PackageKitNotStarted(PackageKitException):
 class PackageKitAccessDenied(PackageKitException):
 	pass
 
-class PackageKitJobFailure(PackageKitException):
+class PackageKitTransactionFailure(PackageKitException):
 	pass
 
 class PackageKitBackendFailure(PackageKitException):
@@ -71,7 +71,7 @@ class PackageKit:
 		def wrapper(*args,**kwargs):
 			jid = func(*args,**kwargs)
 			if jid == -1:
-				raise PackageKitJobFailure
+				raise PackageKitTransactionFailure
 			else:
 				return jid
 		return wrapper

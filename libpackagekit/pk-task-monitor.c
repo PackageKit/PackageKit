@@ -377,10 +377,10 @@ pk_task_monitor_no_percentage_updates_cb (DBusGProxy    *proxy,
 }
 
 /**
- * pk_task_monitor_job_status_changed_cb:
+ * pk_task_monitor_transaction_status_changed_cb:
  */
 static void
-pk_task_monitor_job_status_changed_cb (DBusGProxy   *proxy,
+pk_task_monitor_transaction_status_changed_cb (DBusGProxy   *proxy,
 				       const gchar  *tid,
 				       const gchar  *status_text,
 				       PkTaskMonitor *tmonitor)
@@ -701,7 +701,7 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 	dbus_g_proxy_add_signal (proxy, "TransactionStatusChanged",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "TransactionStatusChanged",
-				     G_CALLBACK (pk_task_monitor_job_status_changed_cb), tmonitor, NULL);
+				     G_CALLBACK (pk_task_monitor_transaction_status_changed_cb), tmonitor, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -758,7 +758,7 @@ pk_task_monitor_finalize (GObject *object)
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "NoPercentageUpdates",
 				        G_CALLBACK (pk_task_monitor_no_percentage_updates_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "TransactionStatusChanged",
-				        G_CALLBACK (pk_task_monitor_job_status_changed_cb), tmonitor);
+				        G_CALLBACK (pk_task_monitor_transaction_status_changed_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Package",
 				        G_CALLBACK (pk_task_monitor_package_cb), tmonitor);
 	dbus_g_proxy_disconnect_signal (tmonitor->priv->proxy, "Transaction",

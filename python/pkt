@@ -39,19 +39,19 @@ def search(*args):
 	patt = " ".join(args[0])
 	if len(patt)==0:
 		print "need something to search for"
-		raise PackageKitJobFailure
+		raise PackageKitTransactionFailure
 	return p.SearchName(patt)
 
 def desc(*args):
 	if len(args)!=1 or len(args[0])!=1:
 		print "desc only takes single arg"
-		raise PackageKitJobFailure
+		raise PackageKitTransactionFailure
 	return p.GetDescription(args[0][0])
 
 def update(args):
 	if len(args)>0 and len(args[0])>0:
 		print "update doesn't take args"
-		raise PackageKitJobFailure
+		raise PackageKitTransactionFailure
 	return p.RefreshCache()
 
 def usage():
@@ -80,7 +80,7 @@ try:
 except PackageKitAccessDenied:
 	print "You don't have sufficient permissions to access PackageKit (on the org.freedesktop.PackageKit dbus service)"
 	exit(1)
-except PackageKitJobFailure:
+except PackageKitTransactionFailure:
 	usage()
 
 p.run()

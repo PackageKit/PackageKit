@@ -55,7 +55,7 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	gchar			*name;
-	PkStatusEnum		 role; /* this never changes for the lifetime of a job */
+	PkStatusEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
@@ -847,7 +847,7 @@ pk_backend_finished (PkBackend *backend)
 		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
 	}
 
-	/* we have to run this idle as the command may finish before the job
+	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
 	g_timeout_add (50, pk_backend_finished_delay, backend);

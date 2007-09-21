@@ -101,7 +101,7 @@ main (int argc, char *argv[])
 	pk_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
 	if (ret == FALSE) {
-		g_error ("cannot refresh job list");
+		g_error ("cannot refresh transaction list");
 	}
 	task_list = pk_task_list_get_latest (tlist);
 	pk_task_list_print (tlist);
