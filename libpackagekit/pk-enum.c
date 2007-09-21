@@ -71,6 +71,7 @@ static PkTaskEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
 	{PK_ROLE_ENUM_PACKAGE_REMOVE,		"package-remove"},
 	{PK_ROLE_ENUM_PACKAGE_INSTALL,		"package-install"},
+	{PK_ROLE_ENUM_FILE_INSTALL,		"file-install"},
 	{PK_ROLE_ENUM_PACKAGE_UPDATE,		"package-update"},
 	{PK_ROLE_ENUM_SYSTEM_UPDATE,		"system-update"},
 	{0, NULL},

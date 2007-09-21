@@ -12,9 +12,6 @@ NOTE: RELEASE BLOCKER
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
-*** Add a way to locally install packages ***
-We have to be very careful with this, and not allow automatic installs.
-
 *** Split up PolicyKit install into different types ***
 Have different permissions for signed and unsigned repos.
 

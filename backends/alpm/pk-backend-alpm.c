@@ -813,6 +813,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
+	NULL,						/* install_file */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_package,				/* remove_package */
 	backend_search_details,				/* search_details */

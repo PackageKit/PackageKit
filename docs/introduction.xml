@@ -708,7 +708,7 @@
       </para>
     </sect2>
 
-    <sect2 id="api-install">
+    <sect2 id="api-install-package">
       <title>Install Package</title>
       <para>
         The installer should always install extra packages automatically
@@ -739,6 +739,43 @@
         This should allow an application to find out what package owns
 		    a file on the system.
       </para>
+      <para>
+        This method typically emits
+        <literal>Percentage</literal>,
+        <literal>Subpercentage</literal>,
+        <literal>NoPercentageUpdates</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Package</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-install-file">
+      <title>Install File</title>
+      <para>
+        The installer should always install extra packages automatically
+        as the use could call GetDepends prior to the install if a confirmation
+        is required in the UI.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>full_path</literal></entry>
+              <entry>A full path and filename to a single package.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
       <para>
         This method typically emits
         <literal>Percentage</literal>,

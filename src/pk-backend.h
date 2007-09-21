@@ -99,6 +99,7 @@ struct _PkBackendDesc {
 	void		(*get_update_detail)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_updates)		(PkBackend *backend);
 	void		(*install_package)	(PkBackend *backend, const gchar *package_id);
+	void		(*install_file)		(PkBackend *backend, const gchar *full_path);
 	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
 	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps);
 	void		(*search_details)	(PkBackend *backend, const gchar *filter, const gchar *search);
@@ -111,9 +112,8 @@ struct _PkBackendDesc {
 };
 
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
-			   get_groups, get_filters, \
-			   cancel, get_depends, get_description, \
-			   get_requires, get_update_detail, get_updates, install_package, \
+			   get_groups, get_filters, cancel, get_depends, get_description, \
+			   get_requires, get_update_detail, get_updates, install_package, install_file, \
 			   refresh_cache, remove_package, search_details, \
 			   search_file, search_group, search_name, \
 			   update_package, update_system) \
@@ -132,6 +132,7 @@ struct _PkBackendDesc {
 		get_update_detail, \
 		get_updates, \
 		install_package, \
+		install_file, \
 		refresh_cache, \
 		remove_package, \
 		search_details, \

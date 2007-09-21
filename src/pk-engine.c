@@ -116,6 +116,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_DENIED, "PermissionDenied"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_FILE, "NoSuchFile"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE, "JobExistsWithRole"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
@@ -1276,6 +1277,66 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 	}
 
 	ret = pk_backend_install_package (backend, package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_delete_backend (engine, backend);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_add_backend (engine, backend);
+
+	item = pk_transaction_list_get_item_from_backend (engine->priv->job_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+	dbus_g_method_return (context, item->tid);
+}
+
+/**
+ * pk_engine_install_file:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
+pk_engine_install_file (PkEngine *engine, const gchar *full_path,
+			DBusGMethodInvocation *context, GError **dead_error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	PkBackend *backend;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check file exists */
+	ret = g_file_test (full_path, G_FILE_TEST_EXISTS);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_FILE,
+				     "No such file '%s'", full_path);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.localinstall", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend and start it */
+	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	ret = pk_backend_install_file (backend, full_path);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

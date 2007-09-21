@@ -66,6 +66,11 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="s" name="tid" direction="out"/>
     </method>
+    <method name="InstallFile">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="full_path" direction="in"/>
+      <arg type="s" name="tid" direction="out"/>
+    </method>
 
     <!-- signals emitted from any job -->
     <signal name="JobStatusChanged">

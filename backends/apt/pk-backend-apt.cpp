@@ -661,6 +661,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
+	NULL,					/* install_name */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	backend_search_details,			/* search_details */

@@ -98,6 +98,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
+	NULL,					/* install_file */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_package */
 	NULL,					/* search_details */

@@ -74,6 +74,8 @@ gboolean	 pk_backend_get_requires		(PkBackend	*backend,
 gboolean	 pk_backend_get_updates			(PkBackend	*backend);
 gboolean	 pk_backend_install_package		(PkBackend	*backend,
 							 const gchar	*package_id);
+gboolean	 pk_backend_install_file		(PkBackend	*backend,
+							 const gchar	*full_path);
 gboolean	 pk_backend_refresh_cache		(PkBackend	*backend,
 							 gboolean	 force);
 gboolean	 pk_backend_remove_package		(PkBackend	*backend,

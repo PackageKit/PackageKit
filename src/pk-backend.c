@@ -60,6 +60,7 @@ struct _PkBackendPrivate
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
 	gchar			*xcached_package_id;
+	gchar			*xcached_full_path;
 	gchar			*xcached_filter;
 	gchar			*xcached_search;
 	PkExitEnum		 exit;
@@ -960,6 +961,9 @@ pk_backend_run (PkBackend *backend)
 	} else if (backend->priv->role == PK_ROLE_ENUM_PACKAGE_INSTALL) {
 		backend->desc->install_package (backend,
 						backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_FILE_INSTALL) {
+		backend->desc->install_file (backend,
+					     backend->priv->xcached_full_path);
 	} else if (backend->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		backend->desc->refresh_cache (backend,
 					      backend->priv->xcached_force);
@@ -1070,6 +1074,22 @@ pk_backend_install_package (PkBackend *backend, const gchar *package_id)
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
 	pk_backend_set_role (backend, PK_ROLE_ENUM_PACKAGE_INSTALL);
+	return TRUE;
+}
+
+/**
+ * pk_backend_install_file:
+ */
+gboolean
+pk_backend_install_file (PkBackend *backend, const gchar *full_path)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->install_file == NULL) {
+		pk_backend_not_implemented_yet (backend, "InstallFile");
+		return FALSE;
+	}
+	backend->priv->xcached_full_path = g_strdup (full_path);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_FILE_INSTALL);
 	return TRUE;
 }
 
@@ -1233,6 +1253,9 @@ pk_backend_get_actions (PkBackend *backend)
 	}
 	if (backend->desc->install_package != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_PACKAGE_INSTALL);
+	}
+	if (backend->desc->install_file != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_FILE_INSTALL);
 	}
 	if (backend->desc->refresh_cache != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_REFRESH_CACHE);
@@ -1435,6 +1458,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
 	backend->priv->xcached_package_id = NULL;
+	backend->priv->xcached_full_path = NULL;
 	backend->priv->xcached_filter = NULL;
 	backend->priv->xcached_search = NULL;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
