@@ -502,6 +502,11 @@ pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
 	/* get all the data we know */
 	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
 
+	/* we might not have a backend */
+	if (backend == NULL) {
+		return TRUE;
+	}
+
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (backend, &role, NULL);
 	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
