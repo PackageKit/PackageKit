@@ -422,16 +422,18 @@ pk_task_monitor_package_cb (DBusGProxy   *proxy,
  * pk_task_monitor_transaction_cb:
  */
 static void
-pk_task_monitor_transaction_cb (DBusGProxy   *proxy,
-				const gchar *tid, const gchar *timespec,
+pk_task_monitor_transaction_cb (DBusGProxy *proxy,
+				const gchar *tid, const gchar *old_tid, const gchar *timespec,
 				gboolean succeeded, const gchar *role, guint duration,
 				PkTaskMonitor *tmonitor)
 {
 	g_return_if_fail (tmonitor != NULL);
 	g_return_if_fail (PK_IS_TASK_MONITOR (tmonitor));
 
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
-	g_signal_emit (tmonitor, signals [PK_TASK_MONITOR_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+	if (pk_transaction_id_equal (tid, tmonitor->priv->tid) == TRUE) {
+		pk_debug ("emitting transaction %s, %s, %i, %s, %i", old_tid, timespec, succeeded, role, duration);
+		g_signal_emit (tmonitor, signals [PK_TASK_MONITOR_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+	}
 }
 
 /**
@@ -674,8 +676,8 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* transaction */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
 					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
@@ -709,7 +711,8 @@ pk_task_monitor_init (PkTaskMonitor *tmonitor)
 				     G_CALLBACK (pk_task_monitor_package_cb), tmonitor, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Transaction",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_task_monitor_transaction_cb), tmonitor, NULL);
 
