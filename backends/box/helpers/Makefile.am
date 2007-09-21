@@ -4,6 +4,7 @@ helperdir = $(datadir)/PackageKit/helpers/box
 NULL =
 
 dist_helper_DATA = 			\
+	install-file.sh			\
 	install-package.sh		\
 	refresh-cache.sh		\
 	remove-package.sh		\
