@@ -54,7 +54,7 @@ struct PkJobListPrivate
 };
 
 typedef enum {
-	PK_JOB_LIST_CHANGED,
+	PK_TRANSACTION_LIST_CHANGED,
 	PK_JOB_LIST_LAST_SIGNAL
 } PkSignals;
 
@@ -154,8 +154,8 @@ pk_job_list_changed_cb (DBusGProxy *proxy,
 		g_strfreev (jlist->priv->array);
 	}
 	jlist->priv->array = g_strdupv (array);
-	pk_debug ("emit job-list-changed");
-	g_signal_emit (jlist , signals [PK_JOB_LIST_CHANGED], 0);
+	pk_debug ("emit transaction-list-changed");
+	g_signal_emit (jlist , signals [PK_TRANSACTION_LIST_CHANGED], 0);
 }
 
 /**
@@ -168,8 +168,8 @@ pk_job_list_class_init (PkJobListClass *klass)
 
 	object_class->finalize = pk_job_list_finalize;
 
-	signals [PK_JOB_LIST_CHANGED] =
-		g_signal_new ("job-list-changed",
+	signals [PK_TRANSACTION_LIST_CHANGED] =
+		g_signal_new ("transaction-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
