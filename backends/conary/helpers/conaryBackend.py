@@ -16,6 +16,7 @@ from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
 
 from packagekit import *
+from conaryCallback import UpdateCallback
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
     def __init__(self, args):
@@ -23,6 +24,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
         self.client = conaryclient.ConaryClient(self.cfg)
+        self.callback = UpdateCallback(self.cfg)
+        self.client.setUpdateCallback(self.callback)
 
     def _get_arch(self, flavor):
         isdep = deps.InstructionSetDependency
@@ -130,6 +133,20 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         except:
             self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
 
+    def _do_update(self, applyList, apply=True):
+        self.cfg.autoResolve = True
+
+        updJob = self.client.newUpdateJob()
+        suggMap = self.client.prepareUpdateJob(updJob, applyList)
+
+        if apply:
+            restartDir = self.client.applyUpdateJob(updJob)
+
+        return updJob, suggMap
+
+    def _do_package_update(self, package):
+        pass
+
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
         try:
@@ -234,10 +251,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_updates(self):
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        updJob = self.client.newUpdateJob()
-        suggMap = self.client.prepareUpdateJob(updJob, applyList,
-                                               resolveDeps=True,
-                                               migrate=False)
+        updJob, suggMap = self._do_update(applyList, apply=False)
+
         jobLists = updJob.getJobs()
 
         totalJobs = len(jobLists)
