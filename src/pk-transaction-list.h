@@ -62,7 +62,7 @@ PkTransactionList *pk_transaction_list_new		(void);
 PkTransactionItem *pk_transaction_list_add		(PkTransactionList	*tlist,
 							 PkBackend		*backend);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
-							 PkBackend		*backend);
+							 PkTransactionItem	*item);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
 							 PkBackend		*backend);
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,

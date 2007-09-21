@@ -527,11 +527,17 @@ pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
 gboolean
 pk_engine_delete_backend (PkEngine *engine, PkBackend *backend)
 {
+	PkTransactionItem *item;
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* get item, and remove it */
+	item = pk_transaction_list_get_item_from_backend(engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		return FALSE;
+	}
 	pk_debug ("removing backend %p as it failed", backend);
-	pk_transaction_list_remove (engine->priv->transaction_list, backend);
+	pk_transaction_list_remove (engine->priv->transaction_list, item);
 
 	/* we don't do g_object_unref (backend) here as it is done in the
 	   ::finished handler */
@@ -1578,6 +1584,8 @@ pk_engine_get_old_transactions (PkEngine *engine, guint number, gchar **tid, GEr
 
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, "", 0);
+
+	pk_transaction_list_remove (engine->priv->transaction_list, item);
 
 	return TRUE;
 //xxx
