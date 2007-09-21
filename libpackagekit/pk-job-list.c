@@ -49,7 +49,7 @@ struct PkJobListPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
-	GArray			*job_list;
+	gchar			**array;
 	PkConnection		*pconnection;
 };
 
@@ -63,54 +63,28 @@ static guint signals [PK_JOB_LIST_LAST_SIGNAL] = { 0, };
 G_DEFINE_TYPE (PkJobList, pk_job_list, G_TYPE_OBJECT)
 
 /**
- * pk_job_list_refresh_array_with_data:
- **/
-gboolean
-pk_job_list_refresh_array_with_data (PkJobList *jlist, GPtrArray *ptrarray)
-{
-	guint i;
-	guint job;
-
-	g_return_val_if_fail (jlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
-
-	pk_debug ("ptrarray->len=%i", ptrarray->len);
-
-	/* reset the array */
-	g_array_set_size (jlist->priv->job_list, 0);
-
-	for (i=0; i< ptrarray->len; i++) {
-		job = GPOINTER_TO_UINT (g_ptr_array_index (ptrarray, i));
-		pk_debug ("job[%i]=%i", i, job);
-		g_array_append_val (jlist->priv->job_list, job);
-	}
-	return TRUE;
-}
-
-/**
  * pk_job_list_print:
  **/
 gboolean
 pk_job_list_print (PkJobList *jlist)
 {
 	guint i;
-	guint job;
+	gchar *tid;
 	guint length;
 
 	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
 
-	length = jlist->priv->job_list->len;
+	length = g_strv_length (jlist->priv->array);
 	if (length == 0) {
 		g_print ("no jobs...\n");
 		return TRUE;
 	}
 	g_print ("jobs: ");
 	for (i=0; i<length; i++) {
-		job = g_array_index (jlist->priv->job_list, guint, i);
-		g_print ("%i, ", job);
+		tid = jlist->priv->array[i];
+		g_print ("%s\n", tid);
 	}
-	g_print ("\n");
 	return TRUE;
 }
 
@@ -124,17 +98,20 @@ pk_job_list_refresh (PkJobList *jlist)
 {
 	gboolean ret;
 	GError *error;
-	GPtrArray *ptrarray = NULL;
-	GType g_type_ptrarray;
+	gchar **array;
 
 	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
 
+	/* clear old data */
+	if (jlist->priv->array != NULL) {
+		g_strfreev (jlist->priv->array);
+		jlist->priv->array = NULL;
+	}
 	error = NULL;
-	g_type_ptrarray = dbus_g_type_get_collection ("GPtrArray", G_TYPE_UINT);
 	ret = dbus_g_proxy_call (jlist->priv->proxy, "GetJobList", &error,
 				 G_TYPE_INVALID,
-				 g_type_ptrarray, &ptrarray,
+				 G_TYPE_STRV, &array,
 				 G_TYPE_INVALID);
 	if (error) {
 		pk_debug ("ERROR: %s", error->message);
@@ -143,24 +120,22 @@ pk_job_list_refresh (PkJobList *jlist)
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetJobList failed!");
+		jlist->priv->array = NULL;
 		return FALSE;
 	}
-	pk_job_list_refresh_array_with_data (jlist, ptrarray);
-	g_ptr_array_free (ptrarray, TRUE);
+	jlist->priv->array = g_strdupv (array);
 	return TRUE;
 }
 
 /**
  * pk_job_list_get_latest:
- *
- * DO NOT FREE THIS.
  **/
-GArray *
+const gchar **
 pk_job_list_get_latest (PkJobList *jlist)
 {
 	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
-	return jlist->priv->job_list;
+	return (const gchar **) jlist->priv->array;
 }
 
 /**
@@ -168,13 +143,17 @@ pk_job_list_get_latest (PkJobList *jlist)
  */
 static void
 pk_job_list_changed_cb (DBusGProxy *proxy,
-				  GPtrArray  *job_list,
-				  PkJobList *jlist)
+			gchar     **array,
+			PkJobList  *jlist)
 {
 	g_return_if_fail (jlist != NULL);
 	g_return_if_fail (PK_IS_JOB_LIST (jlist));
 
-	pk_job_list_refresh_array_with_data (jlist, job_list);
+	/* clear old data */
+	if (jlist->priv->array != NULL) {
+		g_strfreev (jlist->priv->array);
+	}
+	jlist->priv->array = g_strdupv (array);
 	pk_debug ("emit job-list-changed");
 	g_signal_emit (jlist , signals [PK_JOB_LIST_CHANGED], 0);
 }
@@ -214,10 +193,11 @@ static void
 pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkJobList *jlist)
 {
 	pk_debug ("connected=%i", connected);
-	/* clear job array */
-	g_array_set_size (jlist->priv->job_list, 0);
+	/* force a refresh so we have valid data*/
+	if (connected == TRUE) {
+		pk_job_list_refresh (jlist);
+	}
 }
-
 
 /**
  * pk_job_list_init:
@@ -227,7 +207,6 @@ pk_job_list_init (PkJobList *jlist)
 {
 	GError *error = NULL;
 	DBusGProxy *proxy = NULL;
-	GType struct_array_type;
 
 	jlist->priv = PK_JOB_LIST_GET_PRIVATE (jlist);
 	jlist->priv->proxy = NULL;
@@ -241,7 +220,7 @@ pk_job_list_init (PkJobList *jlist)
 	}
 
 	/* we maintain a local copy */
-	jlist->priv->job_list = g_array_new (FALSE, FALSE, sizeof (guint));
+	jlist->priv->array = NULL;
 
 	/* watch for PackageKit on the bus, and try to connect up at start */
 	jlist->priv->pconnection = pk_connection_new ();
@@ -261,12 +240,8 @@ pk_job_list_init (PkJobList *jlist)
 	}
 	jlist->priv->proxy = proxy;
 
-	struct_array_type = dbus_g_type_get_collection ("GArray", G_TYPE_UINT);
-
-	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOXED,
-					   G_TYPE_NONE, struct_array_type, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "JobListChanged",
-				 struct_array_type, G_TYPE_INVALID);
+				 G_TYPE_STRV, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "JobListChanged",
 				     G_CALLBACK(pk_job_list_changed_cb), jlist, NULL);
 
@@ -289,7 +264,9 @@ pk_job_list_finalize (GObject *object)
 	/* free the proxy */
 	g_object_unref (G_OBJECT (jlist->priv->proxy));
 	g_object_unref (jlist->priv->pconnection);
-	g_array_free (jlist->priv->job_list, TRUE);
+	if (jlist->priv->array != NULL) {
+		g_strfreev (jlist->priv->array);
+	}
 
 	G_OBJECT_CLASS (pk_job_list_parent_class)->finalize (object);
 }

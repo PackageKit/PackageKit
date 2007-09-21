@@ -48,8 +48,6 @@ packagekitd_SOURCES =					\
 	pk-backend.h					\
 	pk-conf.c					\
 	pk-conf.h					\
-	pk-job-list.c					\
-	pk-job-list.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-engine.h					\
@@ -60,6 +58,10 @@ packagekitd_SOURCES =					\
 	pk-thread-list.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
+	pk-transaction-id.h				\
+	pk-transaction-id.c				\
+	pk-transaction-list.c				\
+	pk-transaction-list.h				\
 	$(NULL)
 
 packagekitd_LDADD =					\
@@ -118,8 +120,10 @@ pk_self_test_SOURCES =					\
 	pk-network.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
-	pk-job-list.h					\
-	pk-job-list.c					\
+	pk-transaction-id.h				\
+	pk-transaction-id.c				\
+	pk-transaction-list.h				\
+	pk-transaction-list.c				\
 	pk-self-test.c					\
 	$(NULL)
 

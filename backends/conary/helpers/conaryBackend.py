@@ -182,6 +182,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         pass
 
     def refresh_cache(self):
+        self.percentage()
         cache = Cache()
         cache.populate_database()
 
@@ -249,6 +250,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
     def get_updates(self):
+        self.percentage()
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._do_update(applyList, apply=False)

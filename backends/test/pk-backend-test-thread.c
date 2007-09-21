@@ -91,13 +91,14 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
-	NULL,					/* cancel_job_try */
+	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	NULL,					/* get_description */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
+	NULL,					/* install_file */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_package */
 	NULL,					/* search_details */

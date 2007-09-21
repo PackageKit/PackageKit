@@ -58,12 +58,14 @@ typedef enum
 	PK_ENGINE_ERROR_DENIED,
 	PK_ENGINE_ERROR_NOT_SUPPORTED,
 	PK_ENGINE_ERROR_NO_SUCH_JOB,
+	PK_ENGINE_ERROR_NO_SUCH_FILE,
 	PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
 	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
 	PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 	PK_ENGINE_ERROR_SEARCH_INVALID,
 	PK_ENGINE_ERROR_FILTER_INVALID,
 	PK_ENGINE_ERROR_INVALID_STATE,
+	PK_ENGINE_ERROR_INITIALIZE_FAILED,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
@@ -75,47 +77,47 @@ gboolean	 pk_engine_use_backend			(PkEngine	*engine,
 							 const gchar	*backend);
 
 gboolean	 pk_engine_get_updates			(PkEngine	*engine,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_name			(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_details		(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_group			(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_file			(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_depends			(PkEngine	*engine,
 							 const gchar	*package_id,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_update_detail		(PkEngine	*engine,
 							 const gchar	*package_id,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_requires			(PkEngine	*engine,
 							 const gchar	*package_id,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*package_id,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
 							 gboolean	 force,
-							 guint		*job,
+							 gchar		**tid,
 							 GError		**error);
 void		 pk_engine_update_system		(PkEngine	*engine,
 							 DBusGMethodInvocation *context,
@@ -129,24 +131,28 @@ void		 pk_engine_install_package		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
+void		 pk_engine_install_file			(PkEngine	*engine,
+							 const gchar	*full_path,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
 void		 pk_engine_update_package		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
-							 GArray		**job_list,
+							 gchar		***job_list,
 							 GError		**error);
-gboolean	 pk_engine_get_status		(PkEngine	*engine,
-							 guint		 job,
+gboolean	 pk_engine_get_status			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	**status,
 							 GError		**error);
 gboolean	 pk_engine_get_role			(PkEngine	*engine,
-							 guint		 job,
+							 const gchar	*tid,
 							 const gchar	**status,
 							 const gchar	**package_id,
 							 GError		**error);
-gboolean	 pk_engine_cancel		(PkEngine	*engine,
-							 guint		 job,
+gboolean	 pk_engine_cancel			(PkEngine	*engine,
+							 const gchar	*tid,
 							 GError		**error);
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
 							 gchar		**actions,
@@ -160,15 +166,15 @@ gboolean	 pk_engine_get_filters			(PkEngine	*engine,
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 gboolean	 pk_engine_get_percentage		(PkEngine	*engine,
-							 guint		 job,
+							 const gchar	*tid,
 							 guint		*percentage,
 							 GError		**error);
 gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
-							 guint		 job,
+							 const gchar	*tid,
 							 guint		*percentage,
 							 GError		**error);
 gboolean	 pk_engine_get_package			(PkEngine	*engine,
-							 guint		 job,
+							 const gchar	*tid,
 							 gchar		**package,
 							 GError		**error);
 gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,

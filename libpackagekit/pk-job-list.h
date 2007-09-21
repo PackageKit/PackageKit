@@ -51,7 +51,7 @@ PkJobList	*pk_job_list_new			(void);
 
 gboolean	 pk_job_list_refresh			(PkJobList	*jlist);
 gboolean	 pk_job_list_print			(PkJobList	*jlist);
-GArray		*pk_job_list_get_latest			(PkJobList	*jlist);
+const gchar	**pk_job_list_get_latest		(PkJobList	*jlist);
 
 G_END_DECLS
 

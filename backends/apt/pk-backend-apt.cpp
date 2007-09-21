@@ -154,7 +154,7 @@ static gboolean backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 	OpTextProgress Prog;
 
 	/* easy as that */
-	pk_backend_change_job_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_change_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
 	Cache = getCache();
 
@@ -362,7 +362,7 @@ static gboolean backend_search_packages_thread (PkBackend *backend, gpointer dat
 	search_task *st = (search_task *) data;
 	ExDescFile *DFList = NULL;
 
-	pk_backend_change_job_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", st->search);
@@ -544,7 +544,7 @@ static gboolean backend_get_description_thread (PkBackend *backend, gpointer dat
 {
 	desc_task *dt = (desc_task *) data;
 
-	pk_backend_change_job_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", dt->pi->name);
@@ -654,13 +654,14 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel_job_try */
+	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
+	NULL,					/* install_name */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	backend_search_details,			/* search_details */

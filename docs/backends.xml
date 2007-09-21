@@ -63,6 +63,10 @@
             <entry><literal>install.*</literal></entry>
           </row>
           <row>
+            <entry>Install File</entry>
+            <entry><literal>install-file.*</literal></entry>
+          </row>
+          <row>
             <entry>Remove Package</entry>
             <entry><literal>remove.*</literal></entry>
           </row>

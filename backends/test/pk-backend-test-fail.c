@@ -25,6 +25,28 @@
 #include <pk-backend.h>
 
 /**
+ * backend_initalize:
+ */
+static void
+backend_initialize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "Failed to initialize package manager");
+}
+
+/**
+ * backend_destroy:
+ */
+static void
+backend_destroy (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "Failed to release control");
+}
+
+/**
  * backend_get_groups:
  */
 static void
@@ -123,6 +145,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_install_file:
+ */
+static void
+backend_install_file (PkBackend *backend, const gchar *full_path)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -159,6 +191,10 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "Error number 1");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "Duplicate error");
 	pk_backend_finished (backend);
 }
 
@@ -179,6 +215,8 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+			       "Error number 1");
 	pk_backend_finished (backend);
 }
 
@@ -206,17 +244,18 @@ PK_BACKEND_OPTIONS (
 	"Test Fail Backend",			/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	backend_initialize,			/* initalize */
+	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel,			/* cancel_job_try */
+	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
+	backend_install_file,			/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_search_details,			/* search_details */

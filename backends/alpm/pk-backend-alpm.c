@@ -551,7 +551,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	  }*/
 
 	alpm_list_t *i = NULL;
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_timeout_add (PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
 	for (i = dbs; i; i = alpm_list_next (i))
 	  {
@@ -779,7 +779,7 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
 	progress_percentage += 10;
 	pk_backend_change_percentage (backend, progress_percentage);
 	return TRUE;
@@ -792,7 +792,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_job_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
 	g_timeout_add (1000, backend_update_system_timeout, backend);
@@ -806,13 +806,14 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,				/* destroy */
 	NULL,						/* get_groups */
 	NULL,						/* get_filters */
-	NULL,						/* cancel_job_try */
+	NULL,						/* cancel */
  	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
 	backend_get_requires,				/* get_requires */
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
+	NULL,						/* install_file */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_package,				/* remove_package */
 	backend_search_details,				/* search_details */

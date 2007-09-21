@@ -19,33 +19,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
-#include <pk-backend.h>
+#ifndef __PK_TRANSACTION_ID_H
+#define __PK_TRANSACTION_ID_H
 
-PK_BACKEND_OPTIONS (
-	"Test NOP Backend",			/* description */
-	"0.0.1",				/* version */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
-	NULL,					/* get_groups */
-	NULL,					/* get_filters */
-	NULL,					/* cancel */
-	NULL,					/* get_depends */
-	NULL,					/* get_description */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
-	NULL,					/* install_package */
-	NULL,					/* install_file */
-	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
-	NULL,					/* search_details */
-	NULL,					/* search_file */
-	NULL,					/* search_group */
-	NULL,					/* search_name */
-	NULL,					/* update_package */
-	NULL					/* update_system */
-);
+G_BEGIN_DECLS
 
+gchar		*pk_transaction_id_generate		(void);
+gboolean	 pk_transaction_id_check		(const gchar	*tid);
+gboolean	 pk_transaction_id_equal		(const gchar	*tid1,
+							 const gchar	*tid2);
+
+G_END_DECLS
+
+#endif /* __PK_TRANSACTION_ID_H */

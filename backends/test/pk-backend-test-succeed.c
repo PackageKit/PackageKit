@@ -141,6 +141,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_install_file:
+ */
+static void
+backend_install_file (PkBackend *backend, const gchar *full_path)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -242,13 +252,14 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel,			/* cancel_job_try */
+	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
+	backend_install_file,			/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_search_details,			/* search_details */
