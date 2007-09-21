@@ -16,7 +16,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
-	$(NM_CFLAGS)					\
+	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
