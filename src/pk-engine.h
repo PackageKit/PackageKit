@@ -57,9 +57,9 @@ typedef enum
 {
 	PK_ENGINE_ERROR_DENIED,
 	PK_ENGINE_ERROR_NOT_SUPPORTED,
-	PK_ENGINE_ERROR_NO_SUCH_JOB,
+	PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 	PK_ENGINE_ERROR_NO_SUCH_FILE,
-	PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
+	PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 	PK_ENGINE_ERROR_REFUSED_BY_POLICY,
 	PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 	PK_ENGINE_ERROR_SEARCH_INVALID,
@@ -139,7 +139,7 @@ void		 pk_engine_update_package		(PkEngine	*engine,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
-gboolean	 pk_engine_get_job_list			(PkEngine	*engine,
+gboolean	 pk_engine_get_transaction_list			(PkEngine	*engine,
 							 gchar		***job_list,
 							 GError		**error);
 gboolean	 pk_engine_get_status			(PkEngine	*engine,

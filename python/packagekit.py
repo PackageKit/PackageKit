@@ -97,7 +97,7 @@ class PackageKit:
 		self.loop.run()
 
 	def catchall_signal_handler(self,*args, **kwargs):
-		#if args[0] != self.job and kwargs['member']!="JobListChanged":
+		#if args[0] != self.job and kwargs['member']!="TransactionListChanged":
 		#	print "args",args,kwargs
 		#	return
 		if kwargs['member'] == "Finished":
@@ -113,7 +113,7 @@ class PackageKit:
 			self.JobStatus(args[1])
 		elif kwargs['member'] == "Package":
 			self.Package(args[2],args[3])
-		elif kwargs['member'] in ["NoPercentageUpdates","JobListChanged"]:
+		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged"]:
 			pass
 		else:
 			print "Caught signal %s"% kwargs['member']

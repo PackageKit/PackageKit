@@ -115,9 +115,9 @@ pk_engine_error_get_type (void)
 		{
 			ENUM_ENTRY (PK_ENGINE_ERROR_DENIED, "PermissionDenied"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NOT_SUPPORTED, "NotSupported"),
-			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_JOB, "NoSuchJob"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_TRANSACTION, "NoSuchTransaction"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_NO_SUCH_FILE, "NoSuchFile"),
-			ENUM_ENTRY (PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE, "JobExistsWithRole"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE, "TransactionExistsWithRole"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
@@ -1143,7 +1143,7 @@ pk_engine_update_system (PkEngine *engine,
 
 	/* are we already performing an update? */
 	if (pk_transaction_list_role_present (engine->priv->job_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_JOB_EXISTS_WITH_ROLE,
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1415,10 +1415,10 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 }
 
 /**
- * pk_engine_get_job_list:
+ * pk_engine_get_transaction_list:
  **/
 gboolean
-pk_engine_get_job_list (PkEngine *engine, gchar ***job_list, GError **error)
+pk_engine_get_transaction_list (PkEngine *engine, gchar ***job_list, GError **error)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -1444,7 +1444,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
@@ -1469,7 +1469,7 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
@@ -1493,7 +1493,7 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
@@ -1520,7 +1520,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percent
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
@@ -1547,7 +1547,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
@@ -1587,7 +1587,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 
 	item = pk_transaction_list_get_item_from_tid (engine->priv->job_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_JOB,
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
 		return FALSE;
 	}

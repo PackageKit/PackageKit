@@ -109,7 +109,7 @@ pk_job_list_refresh (PkJobList *jlist)
 		jlist->priv->array = NULL;
 	}
 	error = NULL;
-	ret = dbus_g_proxy_call (jlist->priv->proxy, "GetJobList", &error,
+	ret = dbus_g_proxy_call (jlist->priv->proxy, "GetTransactionList", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRV, &array,
 				 G_TYPE_INVALID);
@@ -119,7 +119,7 @@ pk_job_list_refresh (PkJobList *jlist)
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetJobList failed!");
+		pk_warning ("GetTransactionList failed!");
 		jlist->priv->array = NULL;
 		return FALSE;
 	}
@@ -240,9 +240,9 @@ pk_job_list_init (PkJobList *jlist)
 	}
 	jlist->priv->proxy = proxy;
 
-	dbus_g_proxy_add_signal (proxy, "JobListChanged",
+	dbus_g_proxy_add_signal (proxy, "TransactionListChanged",
 				 G_TYPE_STRV, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "JobListChanged",
+	dbus_g_proxy_connect_signal (proxy, "TransactionListChanged",
 				     G_CALLBACK(pk_job_list_changed_cb), jlist, NULL);
 
 	/* force a refresh so we have valid data*/

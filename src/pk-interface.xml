@@ -133,41 +133,41 @@
 
     <!-- Do things or query jobs -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="GetStatus"> <!-- this is what the job is currrently doing, and might change -->
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
     </method>
     <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
     </method>
     <method name="GetPercentage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetSubPercentage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetPackage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package" direction="out"/>
     </method>
 
-    <!-- Job list -->
-    <method name="GetJobList">
+    <!-- Transaction list -->
+    <method name="GetTransactionList">
       <arg type="as" name="transactions" direction="out"/>
     </method>
-    <signal name="JobListChanged">
+    <signal name="TransactionListChanged">
       <arg type="as" name="transactions" direction="out"/>
     </signal>
 
