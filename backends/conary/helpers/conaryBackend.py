@@ -57,8 +57,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         # Remove dupes
         tempDict = {}
-        for element in troveTupleList:
-            tempDict[element] = None
+        try:
+            for element in troveTupleList:
+                tempDict[element] = None
+        except TypeError:
+            del tempDict  # move on to the next method
+        else:
             troveTupleList = tempDict.keys()
 
         # Get the latest first
@@ -333,7 +337,7 @@ class Cache(object):
 
         self.conn = dbstore.connect(os.path.join(self.dbPath, self.dbName))
         self.cursor = self.conn.cursor()
-        self.cursor.execute("PRAGMA count_changes=0")
+        self.cursor.execute("PRAGMA count_changes=0", start_transaction=False)
 
         if os.path.isfile(os.path.join(self.dbPath, self.dbName)):
             self._validate_tables()
@@ -466,6 +470,7 @@ class Cache(object):
 
         try:
             self.cursor.execute(sql, values)
+            self.conn.commit()
         except Exception,e:
             print str(e)
 
