@@ -488,7 +488,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 
 
 PK_BACKEND_OPTIONS (
-	"Box Backend",				/* description */
+	"Box",					/* description */
 	"0.0.1",				/* version */
 	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
 	backend_initalize,			/* initalize */

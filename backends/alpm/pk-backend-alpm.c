@@ -799,7 +799,7 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"alpm backend",					/* description */
+	"alpm",						/* description */
 	"0.0.1",					/* version */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initalize */

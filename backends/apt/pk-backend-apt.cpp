@@ -647,7 +647,7 @@ static void backend_search_file(PkBackend *backend, const gchar *filter, const g
 }
 
 extern "C" PK_BACKEND_OPTIONS (
-	"APT Backend",				/* description */
+	"APT",					/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	NULL,					/* initalize */

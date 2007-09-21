@@ -945,6 +945,50 @@ pk_task_client_get_actions (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_backend_detail:
+ **/
+gboolean
+pk_task_client_get_backend_detail (PkTaskClient *tclient, gchar **name, gchar **author, gchar **version)
+{
+	gboolean ret;
+	GError *error;
+	gchar *tname;
+	gchar *tauthor;
+	gchar *tversion;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetBackendDetail", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &tname,
+				 G_TYPE_STRING, &tauthor,
+				 G_TYPE_STRING, &tversion,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetBackendDetail failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	/* copy needed bits */
+	if (name != NULL) {
+		*name = g_strdup (tname);
+	}
+	/* copy needed bits */
+	if (author != NULL) {
+		*author = g_strdup (tauthor);
+	}
+	/* copy needed bits */
+	if (version != NULL) {
+		*version = g_strdup (tversion);
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_client_get_groups:
  **/
 PkEnumList *

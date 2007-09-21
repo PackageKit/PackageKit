@@ -37,7 +37,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 PK_BACKEND_OPTIONS (
-	"Test Spawn Backend",			/* description */
+	"Test Spawn",				/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	NULL,					/* initalize */

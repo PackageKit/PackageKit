@@ -24,7 +24,7 @@
 #include <pk-backend.h>
 
 PK_BACKEND_OPTIONS (
-	"Test NOP Backend",			/* description */
+	"Test NOP",				/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	NULL,					/* initalize */

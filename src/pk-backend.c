@@ -1244,6 +1244,25 @@ pk_backend_update_system (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_backend_detail:
+ */
+gboolean
+pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author, gchar **version)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (name != NULL && backend->desc->description != NULL) {
+		*name = g_strdup (backend->desc->description);
+	}
+	if (author != NULL && backend->desc->author != NULL) {
+		*author = g_strdup (backend->desc->author);
+	}
+	if (version != NULL && backend->desc->version != NULL) {
+		*version = g_strdup (backend->desc->version);
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_get_actions:
  *
  * You need to g_object_unref the returned object

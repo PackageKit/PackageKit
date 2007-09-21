@@ -1693,6 +1693,33 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 	return TRUE;
 }
 
+
+/**
+ * pk_engine_get_backend_detail:
+ * @engine: This class instance
+ **/
+gboolean
+pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gchar **version, GError **error)
+{
+	PkBackend *backend;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* create a new backend and start it */
+	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
+	pk_backend_get_backend_detail (backend, name, author, version);
+	g_object_unref (backend);
+
+	return TRUE;
+}
+
 /**
  * pk_engine_get_groups:
  * @engine: This class instance

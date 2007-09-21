@@ -146,7 +146,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 PK_BACKEND_OPTIONS (
-	"Conary Backend",			/* description */
+	"Conary",				/* description */
 	"0.0.1",				/* version */
 	"Ken VanDine <ken@vandine.org>",	/* author */
 	NULL,					/* initalize */

@@ -255,7 +255,7 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Test Succeed Backend",			/* description */
+	"Test Succeed",				/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initalize,			/* initalize */

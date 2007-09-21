@@ -228,9 +228,9 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Dummy Backend",			/* description */
+	"YUM",					/* description */
 	"0.0.1",				/* version */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
+	"Tim Lauridsen <tla@rasmil.dk>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */

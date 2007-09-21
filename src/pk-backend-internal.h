@@ -54,6 +54,10 @@ struct _PkBackendClass
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
 PkEnumList	*pk_backend_get_actions			(PkBackend	*backend);
+gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
+							 gchar		**name,
+							 gchar		**author,
+							 gchar		**version);
 PkEnumList	*pk_backend_get_groups			(PkBackend	*backend);
 PkEnumList	*pk_backend_get_filters			(PkBackend	*backend);
 gdouble		 pk_backend_get_runtime			(PkBackend	*backend);

@@ -158,6 +158,11 @@ gboolean	 pk_engine_get_role			(PkEngine	*engine,
 gboolean	 pk_engine_cancel			(PkEngine	*engine,
 							 const gchar	*tid,
 							 GError		**error);
+gboolean	 pk_engine_get_backend_detail		(PkEngine	*engine,
+							 gchar		**name,
+							 gchar		**author,
+							 gchar		**version,
+							 GError		**error);
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
 							 gchar		**actions,
 							 GError		**error);
