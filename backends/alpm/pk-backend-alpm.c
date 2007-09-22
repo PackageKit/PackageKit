@@ -815,6 +815,48 @@ backend_get_filters (PkBackend *backend, PkEnumList *list)
   pk_enum_list_append (list, PK_FILTER_ENUM_INSTALLED);
 }
 
+static void
+backend_install_file (PkBackend *backend, const gchar *path)
+{
+  g_return_if_fail (backend != NULL);
+  alpm_list_t *problems = NULL;
+ if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0,
+		       trans_event_cb, trans_conv_cb,
+		       trans_prog_cb) == -1)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      return;
+    }
+
+  alpm_trans_addtarget ((char *)path);
+
+  if (alpm_trans_prepare (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      return;
+    }
+
+  if (alpm_trans_commit (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      return;
+    }
+
+  alpm_trans_release ();
+  pk_backend_finished (backend);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
@@ -831,7 +873,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
-	NULL,						/* install_file */
+	backend_install_file,				/* install_file */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_package,				/* remove_package */
 	NULL,						/* resolve */
