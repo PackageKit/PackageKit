@@ -76,73 +76,86 @@ PkEngine	*pk_engine_new				(void);
 gboolean	 pk_engine_use_backend			(PkEngine	*engine,
 							 const gchar	*backend);
 
-gboolean	 pk_engine_get_updates			(PkEngine	*engine,
+gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,
+							 GError		**error);
+gboolean	 pk_engine_get_updates			(PkEngine	*engine,
+							 const gchar	*tid,
 							 GError		**error);
 gboolean	 pk_engine_search_name			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_details		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_group			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_search_file			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_depends			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_update_detail		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_requires			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_get_description		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_resolve			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package,
-							 gchar		**tid,
 							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
+							 const gchar	*tid,
 							 gboolean	 force,
-							 gchar		**tid,
+							 GError		**error);
+gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
+							 const gchar	*tid,
+							 guint		 number,
 							 GError		**error);
 void		 pk_engine_update_system		(PkEngine	*engine,
+							 const gchar	*tid,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_remove_package		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
 							 gboolean	 allow_deps,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_install_package		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_install_file			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*full_path,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_update_package		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
+
 gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
 							 gchar		***transaction_list,
 							 GError		**error);
@@ -185,10 +198,6 @@ gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
 gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 const gchar	*tid,
 							 gchar		**package,
-							 GError		**error);
-gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
-							 guint		 number,
-							 gchar		**tid,
 							 GError		**error);
 
 G_END_DECLS

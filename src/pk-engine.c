@@ -188,7 +188,7 @@ pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status
 		pk_warning ("could not find backend");
 		return;
 	}
-		status_text = pk_status_enum_to_text (status);
+	status_text = pk_status_enum_to_text (status);
 
 	pk_debug ("emitting transaction-status-changed tid:%s, '%s'", item->tid, status_text);
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_STATUS_CHANGED], 0, item->tid, status_text);
@@ -489,27 +489,18 @@ pk_engine_new_backend (PkEngine *engine)
  * pk_engine_add_backend:
  **/
 static gboolean
-pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
+pk_engine_add_backend (PkEngine *engine, PkTransactionItem *item)
 {
 	PkRoleEnum role;
-	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
-	pk_transaction_list_commit (engine->priv->transaction_list, backend);
-
-	/* get all the data we know */
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-
-	/* we might not have a backend */
-	if (backend == NULL) {
-		return TRUE;
-	}
+	pk_transaction_list_commit (engine->priv->transaction_list, item->backend);
 
 	/* only save into the database for useful stuff */
-	pk_backend_get_role (backend, &role, NULL);
+	pk_backend_get_role (item->backend, &role, NULL);
 	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
 	    role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
@@ -531,23 +522,29 @@ pk_engine_add_backend (PkEngine *engine, PkBackend *backend)
  * of all references to it.
  **/
 gboolean
-pk_engine_delete_backend (PkEngine *engine, PkBackend *backend)
+pk_engine_delete_backend (PkEngine *engine, PkTransactionItem *item)
 {
-	PkTransactionItem *item;
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* get item, and remove it */
-	item = pk_transaction_list_get_item_from_backend(engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		return FALSE;
-	}
-	pk_debug ("removing backend %p as it failed", backend);
+	pk_debug ("removing backend %p as it failed", item->backend);
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
 
 	/* we don't do g_object_unref (backend) here as it is done in the
 	   ::finished handler */
 	return TRUE;
+}
+
+/**
+ * pk_engine_get_tid:
+ **/
+gboolean
+pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
+{
+	PkTransactionItem *item;
+	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
+	*tid =  g_strdup (item->tid);
+	return FALSE;
 }
 
 /**
@@ -613,38 +610,39 @@ pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context, c
  * pk_engine_refresh_cache:
  **/
 gboolean
-pk_engine_refresh_cache (PkEngine *engine, gboolean force, gchar **tid, GError **error)
+pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_refresh_cache (backend, force);
+	ret = pk_backend_refresh_cache (item->backend, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
 
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -652,38 +650,38 @@ pk_engine_refresh_cache (PkEngine *engine, gboolean force, gchar **tid, GError *
  * pk_engine_get_updates:
  **/
 gboolean
-pk_engine_get_updates (PkEngine *engine, gchar **tid, GError **error)
+pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_get_updates (backend);
+	ret = pk_backend_get_updates (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -743,11 +741,9 @@ pk_engine_filter_check (const gchar *filter, GError **error)
  * pk_engine_search_name:
  **/
 gboolean
-pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *search,
-		       gchar **tid, GError **error)
+pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -765,29 +761,30 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_search_name (backend, filter, search);
+	ret = pk_backend_search_name (item->backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -795,11 +792,9 @@ pk_engine_search_name (PkEngine *engine, const gchar *filter, const gchar *searc
  * pk_engine_search_details:
  **/
 gboolean
-pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *search,
-			  gchar **tid, GError **error)
+pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -817,29 +812,30 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_search_details (backend, filter, search);
+	ret = pk_backend_search_details (item->backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -847,11 +843,9 @@ pk_engine_search_details (PkEngine *engine, const gchar *filter, const gchar *se
  * pk_engine_search_group:
  **/
 gboolean
-pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *search,
-			gchar **tid, GError **error)
+pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -869,29 +863,30 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_search_group (backend, filter, search);
+	ret = pk_backend_search_group (item->backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -899,11 +894,9 @@ pk_engine_search_group (PkEngine *engine, const gchar *filter, const gchar *sear
  * pk_engine_search_file:
  **/
 gboolean
-pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *search,
-		       gchar **tid, GError **error)
+pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -921,29 +914,30 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_search_file (backend, filter, search);
+	ret = pk_backend_search_file (item->backend, filter, search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -951,38 +945,38 @@ pk_engine_search_file (PkEngine *engine, const gchar *filter, const gchar *searc
  * pk_engine_resolve:
  **/
 gboolean
-pk_engine_resolve (PkEngine *engine, const gchar *package, gchar **tid, GError **error)
+pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_resolve (backend, package);
+	ret = pk_backend_resolve (item->backend, package);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -990,15 +984,21 @@ pk_engine_resolve (PkEngine *engine, const gchar *package, gchar **tid, GError *
  * pk_engine_get_depends:
  **/
 gboolean
-pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
-		       gchar **tid, GError **error)
+pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
@@ -1008,29 +1008,22 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_get_depends (backend, package_id);
+	ret = pk_backend_get_depends (item->backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -1038,11 +1031,9 @@ pk_engine_get_depends (PkEngine *engine, const gchar *package_id,
  * pk_engine_get_requires:
  **/
 gboolean
-pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
-		        gchar **tid, GError **error)
+pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1056,29 +1047,30 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_get_requires (backend, package_id);
+	ret = pk_backend_get_requires (item->backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -1086,11 +1078,9 @@ pk_engine_get_requires (PkEngine *engine, const gchar *package_id,
  * pk_engine_get_update_detail:
  **/
 gboolean
-pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
-		             gchar **tid, GError **error)
+pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1104,29 +1094,30 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
 		return FALSE;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_get_update_detail (backend, package_id);
+	ret = pk_backend_get_update_detail (item->backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -1134,39 +1125,38 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *package_id,
  * pk_engine_get_description:
  **/
 gboolean
-pk_engine_get_description (PkEngine *engine, const gchar *package_id,
-			   gchar **tid, GError **error)
+pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	ret = pk_backend_get_description (backend, package_id);
+	ret = pk_backend_get_description (item->backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, backend);
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return FALSE;
-	}
-	*tid = g_strdup (item->tid);
-
+	pk_engine_add_backend (engine, item);
 	return TRUE;
 }
 
@@ -1174,12 +1164,10 @@ pk_engine_get_description (PkEngine *engine, const gchar *package_id,
  * pk_engine_update_system:
  **/
 void
-pk_engine_update_system (PkEngine *engine,
-			 DBusGMethodInvocation *context, GError **dead_error)
+pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
 	GError *error;
-	PkBackend *backend;
 	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
@@ -1200,43 +1188,44 @@ pk_engine_update_system (PkEngine *engine,
 		return;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_update_system (backend);
+	ret = pk_backend_update_system (item->backend);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, backend);
-
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	dbus_g_method_return (context, item->tid);
+	pk_engine_add_backend (engine, item);
 }
 
 /**
  * pk_engine_remove_package:
  **/
 void
-pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean allow_deps,
+pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *package_id, gboolean allow_deps,
 			  DBusGMethodInvocation *context, GError **dead_error)
 {
 	PkTransactionItem *item;
 	gboolean ret;
-	PkBackend *backend;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1258,31 +1247,33 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
 		return;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_remove_package (backend, package_id, allow_deps);
+	ret = pk_backend_remove_package (item->backend, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, backend);
-
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	dbus_g_method_return (context, item->tid);
+	pk_engine_add_backend (engine, item);
 }
 
 /**
@@ -1291,12 +1282,11 @@ pk_engine_remove_package (PkEngine *engine, const gchar *package_id, gboolean al
  * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_install_package (PkEngine *engine, const gchar *package_id,
+pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
-	PkBackend *backend;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1318,31 +1308,33 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
 		return;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_install_package (backend, package_id);
+	ret = pk_backend_install_package (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, backend);
-
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	dbus_g_method_return (context, item->tid);
+	pk_engine_add_backend (engine, item);
 }
 
 /**
@@ -1351,12 +1343,11 @@ pk_engine_install_package (PkEngine *engine, const gchar *package_id,
  * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_install_file (PkEngine *engine, const gchar *full_path,
+pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_path,
 			DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
-	PkBackend *backend;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1378,31 +1369,33 @@ pk_engine_install_file (PkEngine *engine, const gchar *full_path,
 		return;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_install_file (backend, full_path);
+	ret = pk_backend_install_file (item->backend, full_path);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, backend);
-
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	dbus_g_method_return (context, item->tid);
+	pk_engine_add_backend (engine, item);
 }
 
 /**
@@ -1411,12 +1404,11 @@ pk_engine_install_file (PkEngine *engine, const gchar *full_path,
  * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_update_package (PkEngine *engine, const gchar *package_id,
+pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *package_id,
 			   DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
-	PkBackend *backend;
 	GError *error;
 
 	g_return_if_fail (engine != NULL);
@@ -1438,31 +1430,33 @@ pk_engine_update_package (PkEngine *engine, const gchar *package_id,
 		return;
 	}
 
-	/* create a new backend and start it */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_update_package (backend, package_id);
+	ret = pk_backend_update_package (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, backend);
+		pk_engine_delete_backend (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, backend);
-
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	dbus_g_method_return (context, item->tid);
+	pk_engine_add_backend (engine, item);
 }
 
 /**
@@ -1493,6 +1487,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1518,6 +1513,7 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1542,6 +1538,7 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1569,6 +1566,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percent
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1596,6 +1594,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1615,7 +1614,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
  * pk_engine_get_old_transactions:
  **/
 gboolean
-pk_engine_get_old_transactions (PkEngine *engine, guint number, gchar **tid, GError **error)
+pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number, GError **error)
 {
 	PkTransactionItem *item;
 
@@ -1625,7 +1624,6 @@ pk_engine_get_old_transactions (PkEngine *engine, guint number, gchar **tid, GEr
 	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
 	engine->priv->sync_item = item;
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
-	*tid = g_strdup (item->tid);
 //	pk_engine_finished_cb ();
 
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
@@ -1649,6 +1647,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
@@ -1679,7 +1678,7 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
+	/* create a new backend */
 	backend = pk_engine_new_backend (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
@@ -1708,7 +1707,7 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
+	/* create a new backend */
 	backend = pk_engine_new_backend (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
@@ -1735,7 +1734,7 @@ pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
+	/* create a new backend */
 	backend = pk_engine_new_backend (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
@@ -1764,7 +1763,7 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* create a new backend and start it */
+	/* create a new backend */
 	backend = pk_engine_new_backend (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,

@@ -3,77 +3,80 @@
   <interface name="org.freedesktop.PackageKit">
 
     <!-- Schedule new transactions -->
-    <method name="GetUpdates">
+    <method name="GetTid">
       <arg type="s" name="tid" direction="out"/>
     </method>
+    <method name="GetUpdates">
+      <arg type="s" name="tid" direction="in"/>
+    </method>
     <method name="RefreshCache">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="b" name="force" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="UpdateSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="Resolve">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchName">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchDetails">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchGroup">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchFile">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetDepends">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetRequires">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetUpdateDetail">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetDescription"> <!-- orders Description signals for the package -->
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="RemovePackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="allow_deps" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="InstallPackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="UpdatePackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="InstallFile">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="full_path" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
 
     <!-- signals emitted from any transaction -->
@@ -177,8 +180,8 @@
 
     <!-- Transaction methods -->
     <method name="GetOldTransactions">
+      <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="number" direction="in"/>
-      <arg type="s" name="tid" direction="out"/>
     </method>
     <signal name="Transaction">
       <arg type="s" name="tid" direction="out"/>
