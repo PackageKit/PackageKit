@@ -392,7 +392,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	//PkPackageId *id = pk_package_id_new_from_string (package_id);
 	//pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_PROGRAMMING, "sdgd");
 	pk_backend_finished (backend);
 }
@@ -798,13 +798,21 @@ backend_update_system (PkBackend *backend)
 	g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
+static void
+backend_get_groups (PkBackend *backend, PkEnumList *list)
+{
+  list = pk_enum_list_new ();
+  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_GROUP);
+}
+
+
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
 	"0.0.1",					/* version */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initalize */
 	backend_destroy,				/* destroy */
-	NULL,						/* get_groups */
+	backend_get_groups,				/* get_groups */
 	NULL,						/* get_filters */
 	NULL,						/* cancel */
  	backend_get_depends,				/* get_depends */
