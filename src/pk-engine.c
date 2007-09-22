@@ -64,6 +64,7 @@ struct PkEnginePrivate
 	gchar			*backend;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
+	PkTransactionItem	*sync_item;
 };
 
 enum {
@@ -1622,6 +1623,7 @@ pk_engine_get_old_transactions (PkEngine *engine, guint number, gchar **tid, GEr
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
+	engine->priv->sync_item = item;
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
 	*tid = g_strdup (item->tid);
 //	pk_engine_finished_cb ();
@@ -1782,11 +1784,12 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
  * pk_engine_transaction_cb:
  **/
 static void
-pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *tid, const gchar *timespec,
+pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gchar *timespec,
 			  gboolean succeeded, const gchar *role, guint duration, PkEngine *engine)
 {
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i", tid, timespec, succeeded, role, duration);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
+	const gchar *tid = engine->priv->sync_item->tid;
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role, duration);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role, duration);
 }
 
 /**
@@ -1892,8 +1895,9 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
