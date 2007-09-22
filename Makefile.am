@@ -22,6 +22,9 @@ pkgconfig_DATA = packagekit.pc
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = PackageKit.conf
 
+packagekitpythondir = ${PYTHON_PACKAGE_DIR}
+packagekitpython_PYTHON = python/__init__.py
+
 EXTRA_DIST =			\
 	PackageKit.conf.in	\
 	packagekit.pc.in	\
