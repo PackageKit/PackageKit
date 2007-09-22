@@ -20,7 +20,9 @@
  */
 
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
-#define PROGRESS_UPDATE_INTERVAL 400
+#define ALPM_PROGRESS_UPDATE_INTERVAL 400
+#define ALPM_FILTER_INSTALLED "installed"
+#define ALPM_FILTER_NINSTALLED "~installed"
 
 #include <gmodule.h>
 #include <glib.h>
@@ -552,7 +554,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	alpm_list_t *i = NULL;
 	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	g_timeout_add (PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
+	g_timeout_add (ALPM_PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
 	for (i = dbs; i; i = alpm_list_next (i))
 	  {
 	    if (alpm_db_update (force, (pmdb_t *)i->data))
@@ -706,11 +708,11 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	sections = g_strsplit (filter, ";", 0);
 	int i = 0;
 	while (sections[i]) {
-	  if (strcmp(sections[i], "installed") == 0)
+	  if (strcmp(sections[i], ALPM_FILTER_INSTALLED) == 0)
 	    {
 	      installed = FALSE;
 	    }
-	  if (strcmp(sections[i], "~installed") == 0)
+	  if (strcmp(sections[i], ALPM_FILTER_NINSTALLED) == 0)
 	    {
 	      ninstalled = FALSE;
 	    }
@@ -805,6 +807,14 @@ backend_get_groups (PkBackend *backend, PkEnumList *list)
   pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_GROUP);
 }
 
+static void
+backend_get_filters (PkBackend *backend, PkEnumList *list)
+{
+  list = pk_enum_list_new ();
+  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_FILTER);
+  pk_enum_list_append (list, PK_FILTER_ENUM_INSTALLED);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
@@ -813,7 +823,7 @@ PK_BACKEND_OPTIONS (
 	backend_initialize,				/* initalize */
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
  	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
