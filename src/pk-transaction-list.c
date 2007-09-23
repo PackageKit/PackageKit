@@ -113,16 +113,12 @@ pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
  * pk_transaction_list_remove:
  **/
 gboolean
-pk_transaction_list_remove (PkTransactionList *tlist, PkBackend *backend)
+pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 {
-	PkTransactionItem *item;
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_backend (tlist, backend);
-	if (item == NULL) {
-		return FALSE;
-	}
+	/* valid item */
 	g_ptr_array_remove (tlist->priv->array, item);
 	g_free (item->tid);
 	g_free (item);
@@ -152,7 +148,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 		pk_error ("moo!");
 	}
 	pk_debug ("transaction %s completed, removing", item->tid);
-	pk_transaction_list_remove (tlist, backend);
+	pk_transaction_list_remove (tlist, item);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;

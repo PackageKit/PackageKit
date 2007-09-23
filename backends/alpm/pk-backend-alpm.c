@@ -20,7 +20,9 @@
  */
 
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
-#define PROGRESS_UPDATE_INTERVAL 400
+#define ALPM_PROGRESS_UPDATE_INTERVAL 400
+#define ALPM_FILTER_INSTALLED "installed"
+#define ALPM_FILTER_NINSTALLED "~installed"
 
 #include <gmodule.h>
 #include <glib.h>
@@ -392,7 +394,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	//PkPackageId *id = pk_package_id_new_from_string (package_id);
 	//pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_PROGRAMMING, "sdgd");
 	pk_backend_finished (backend);
 }
@@ -552,7 +554,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	alpm_list_t *i = NULL;
 	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	g_timeout_add (PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
+	g_timeout_add (ALPM_PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
 	for (i = dbs; i; i = alpm_list_next (i))
 	  {
 	    if (alpm_db_update (force, (pmdb_t *)i->data))
@@ -706,11 +708,11 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	sections = g_strsplit (filter, ";", 0);
 	int i = 0;
 	while (sections[i]) {
-	  if (strcmp(sections[i], "installed") == 0)
+	  if (strcmp(sections[i], ALPM_FILTER_INSTALLED) == 0)
 	    {
 	      installed = FALSE;
 	    }
-	  if (strcmp(sections[i], "~installed") == 0)
+	  if (strcmp(sections[i], ALPM_FILTER_NINSTALLED) == 0)
 	    {
 	      ninstalled = FALSE;
 	    }
@@ -798,14 +800,72 @@ backend_update_system (PkBackend *backend)
 	g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
+static void
+backend_get_groups (PkBackend *backend, PkEnumList *list)
+{
+  list = pk_enum_list_new ();
+  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_GROUP);
+}
+
+static void
+backend_get_filters (PkBackend *backend, PkEnumList *list)
+{
+  list = pk_enum_list_new ();
+  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_FILTER);
+  pk_enum_list_append (list, PK_FILTER_ENUM_INSTALLED);
+}
+
+static void
+backend_install_file (PkBackend *backend, const gchar *path)
+{
+  g_return_if_fail (backend != NULL);
+  alpm_list_t *problems = NULL;
+ if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0,
+		       trans_event_cb, trans_conv_cb,
+		       trans_prog_cb) == -1)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      return;
+    }
+
+  alpm_trans_addtarget ((char *)path);
+
+  if (alpm_trans_prepare (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      return;
+    }
+
+  if (alpm_trans_commit (&problems) != 0)
+    {
+      pk_backend_error_code (backend,
+			     PK_ERROR_ENUM_TRANSACTION_ERROR,
+			     alpm_strerror (pm_errno));
+      pk_backend_finished (backend);
+      alpm_trans_release ();
+      return;
+    }
+
+  alpm_trans_release ();
+  pk_backend_finished (backend);
+}
+
+
 PK_BACKEND_OPTIONS (
-	"alpm backend",					/* description */
+	"alpm",						/* description */
 	"0.0.1",					/* version */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initalize */
 	backend_destroy,				/* destroy */
-	NULL,						/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_groups,				/* get_groups */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
  	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
@@ -813,9 +873,10 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
-	NULL,						/* install_file */
+	backend_install_file,				/* install_file */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_package,				/* remove_package */
+	NULL,						/* resolve */
 	backend_search_details,				/* search_details */
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */

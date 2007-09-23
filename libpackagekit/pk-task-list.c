@@ -209,7 +209,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item = g_new0 (PkTaskListItem, 1);
 			item->tid = g_strdup (tid);
 			item->monitor = pk_task_monitor_new ();
-			g_signal_connect (item->monitor, "job-status-changed",
+			g_signal_connect (item->monitor, "transaction-status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
 			g_signal_connect (item->monitor, "finished",
 					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
@@ -257,10 +257,10 @@ pk_task_list_get_latest (PkTaskList *tlist)
 }
 
 /**
- * pk_task_list_job_list_changed_cb:
+ * pk_task_list_transaction_list_changed_cb:
  **/
 static void
-pk_task_list_job_list_changed_cb (PkJobList *jlist, PkTaskList *tlist)
+pk_task_list_transaction_list_changed_cb (PkJobList *jlist, PkTaskList *tlist)
 {
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
@@ -307,8 +307,8 @@ pk_task_list_init (PkTaskList *tlist)
 
 	/* get the changing job list */
 	tlist->priv->job_list = pk_job_list_new ();
-	g_signal_connect (tlist->priv->job_list, "job-list-changed",
-			  G_CALLBACK (pk_task_list_job_list_changed_cb), tlist);
+	g_signal_connect (tlist->priv->job_list, "transaction-list-changed",
+			  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
 
 	/* we maintain a local copy */
 	tlist->priv->task_list = g_ptr_array_new ();

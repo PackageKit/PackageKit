@@ -105,6 +105,10 @@ PkEnumList	*pk_task_client_get_groups		(PkTaskClient	*tclient);
 gboolean	 pk_task_client_reset			(PkTaskClient	*tclient);
 gboolean	 pk_task_client_get_old_transactions	(PkTaskClient	*tclient,
 							 guint		 number);
+gboolean	 pk_task_client_get_backend_detail	(PkTaskClient	*tclient,
+							 gchar		**name,
+							 gchar		**author,
+							 gchar		**version);
 
 G_END_DECLS
 

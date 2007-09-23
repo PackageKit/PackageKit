@@ -151,6 +151,7 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [sync] [verbose] remove <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] update <package_id>\n");
 	g_print ("  pkcon [sync] [verbose] refresh\n");
+	g_print ("  pkcon [sync] [verbose] resolve\n");
 	g_print ("  pkcon [sync] [verbose] force-refresh\n");
 	g_print ("  pkcon [sync] [verbose] update-system\n");
 	g_print ("  pkcon [sync] [verbose] get updates\n");
@@ -251,6 +252,15 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			goto out;
 		} else {
 			pk_task_client_remove_package (tclient, value, FALSE);
+			remove = 2;
+		}
+	} else if (strcmp (mode, "resolve") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package name to resolve");
+			remove = 1;
+			goto out;
+		} else {
+			pk_warning ("TODO!");
 			remove = 2;
 		}
 	} else if (strcmp (mode, "get") == 0) {

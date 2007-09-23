@@ -2,7 +2,7 @@
 <node name="/">
   <interface name="org.freedesktop.PackageKit">
 
-    <!-- Schedule new jobs -->
+    <!-- Schedule new transactions -->
     <method name="GetUpdates">
       <arg type="s" name="tid" direction="out"/>
     </method>
@@ -12,6 +12,10 @@
     </method>
     <method name="UpdateSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="out"/>
+    </method>
+    <method name="Resolve">
+      <arg type="s" name="package" direction="in"/>
       <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="SearchName">
@@ -72,12 +76,12 @@
       <arg type="s" name="tid" direction="out"/>
     </method>
 
-    <!-- signals emitted from any job -->
-    <signal name="JobStatusChanged">
+    <!-- signals emitted from any transaction -->
+    <signal name="TransactionStatusChanged">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
     </signal>
-    <signal name="PercentageChanged"> <!-- progress of the whole job -->
+    <signal name="PercentageChanged"> <!-- progress of the whole transaction -->
       <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
     </signal>
@@ -114,11 +118,11 @@
     <signal name="Finished">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
-      <arg type="u" name="runtime" direction="out"/> <!-- amount of time job has been running in seconds -->
+      <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in seconds -->
     </signal>
     <signal name="AllowInterrupt">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="allow_kill" direction="out"/> <!-- if the job can be SIGKILL'd -->
+      <arg type="b" name="allow_kill" direction="out"/> <!-- if the transaction can be SIGKILL'd -->
     </signal>
     <signal name="ErrorCode">
       <arg type="s" name="tid" direction="out"/>
@@ -131,52 +135,54 @@
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
 
-    <!-- Do things or query jobs -->
+    <!-- Do things or query transactions -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
     </method>
-    <method name="GetStatus"> <!-- this is what the job is currrently doing, and might change -->
-      <!-- throws NoSuchJob -->
+    <method name="GetStatus"> <!-- this is what the transaction is currrently doing, and might change -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
     </method>
-    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the job -->
-      <!-- throws NoSuchJob -->
+    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the transaction -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
     </method>
     <method name="GetPercentage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetSubPercentage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
     </method>
     <method name="GetPackage">
-      <!-- throws NoSuchJob -->
+      <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package" direction="out"/>
     </method>
 
-    <!-- Job list -->
-    <method name="GetJobList">
+    <!-- Transaction list -->
+    <method name="GetTransactionList">
       <arg type="as" name="transactions" direction="out"/>
     </method>
-    <signal name="JobListChanged">
+    <signal name="TransactionListChanged">
       <arg type="as" name="transactions" direction="out"/>
     </signal>
 
     <!-- Transaction methods -->
     <method name="GetOldTransactions">
       <arg type="u" name="number" direction="in"/>
+      <arg type="s" name="tid" direction="out"/>
     </method>
     <signal name="Transaction">
       <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="old_tid" direction="out"/>
       <arg type="s" name="timespec" direction="out"/>
       <arg type="b" name="succeeded" direction="out"/>
       <arg type="s" name="role" direction="out"/>
@@ -184,6 +190,11 @@
     </signal>
 
     <!-- General methods -->
+    <method name="GetBackendDetail">
+      <arg type="s" name="name" direction="out"/>
+      <arg type="s" name="author" direction="out"/>
+      <arg type="s" name="version" direction="out"/>
+    </method>
     <method name="GetActions">
       <arg type="s" name="actions" direction="out"/> <!-- list of supported actions -->
     </method>

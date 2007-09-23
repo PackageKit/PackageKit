@@ -43,7 +43,7 @@ class PackageKitNotStarted(PackageKitException):
 class PackageKitAccessDenied(PackageKitException):
 	pass
 
-class PackageKitJobFailure(PackageKitException):
+class PackageKitTransactionFailure(PackageKitException):
 	pass
 
 class PackageKitBackendFailure(PackageKitException):
@@ -71,7 +71,7 @@ class PackageKit:
 		def wrapper(*args,**kwargs):
 			jid = func(*args,**kwargs)
 			if jid == -1:
-				raise PackageKitJobFailure
+				raise PackageKitTransactionFailure
 			else:
 				return jid
 		return wrapper
@@ -97,7 +97,7 @@ class PackageKit:
 		self.loop.run()
 
 	def catchall_signal_handler(self,*args, **kwargs):
-		#if args[0] != self.job and kwargs['member']!="JobListChanged":
+		#if args[0] != self.job and kwargs['member']!="TransactionListChanged":
 		#	print "args",args,kwargs
 		#	return
 		if kwargs['member'] == "Finished":
@@ -109,11 +109,11 @@ class PackageKit:
 		elif kwargs['member'] == "SubPercentageChanged":
 			progress = (float(args[1])/100.0)+int(progress)
 			self.Percentage(progress)
-		elif kwargs['member'] == "JobStatusChanged":
+		elif kwargs['member'] == "TransactionStatusChanged":
 			self.JobStatus(args[1])
 		elif kwargs['member'] == "Package":
 			self.Package(args[2],args[3])
-		elif kwargs['member'] in ["NoPercentageUpdates","JobListChanged"]:
+		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged"]:
 			pass
 		else:
 			print "Caught signal %s"% kwargs['member']

@@ -23,6 +23,11 @@ AM_PROG_LIBTOOL
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
+AM_PATH_PYTHON
+PYTHON_PACKAGE_DIR=${pythondir}/PackageKit
+AC_SUBST(PYTHON_PACKAGE_DIR)
+
+
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------

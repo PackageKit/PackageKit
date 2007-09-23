@@ -46,7 +46,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
+				      /*PK_FILTER_ENUM_GUI,*/
 				      PK_FILTER_ENUM_INSTALLED,
 				      PK_FILTER_ENUM_DEVELOPMENT,
 				      -1);
@@ -176,6 +176,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_spawn_helper (backend, "search-file.py", filter, search, NULL);
 }
 
+#if 0
 /**
  * backend_search_group:
  */
@@ -186,6 +187,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
 }
+#endif
 
 /**
  * backend_search_name:
@@ -226,9 +228,9 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Dummy Backend",			/* description */
+	"YUM",					/* description */
 	"0.0.1",				/* version */
-	"Richard Hughes <richard@hughsie.com>",	/* author */
+	"Tim Lauridsen <tla@rasmil.dk>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
@@ -243,9 +245,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	NULL,					/* resolve */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
-	backend_search_group,			/* search_group */
+	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
 	backend_update_system			/* update_system */

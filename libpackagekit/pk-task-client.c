@@ -66,7 +66,7 @@ struct PkTaskClientPrivate
 };
 
 typedef enum {
-	PK_TASK_CLIENT_JOB_STATUS_CHANGED,
+	PK_TASK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_TASK_CLIENT_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_TASK_CLIENT_NO_PERCENTAGE_UPDATES,
@@ -945,6 +945,50 @@ pk_task_client_get_actions (PkTaskClient *tclient)
 }
 
 /**
+ * pk_task_client_get_backend_detail:
+ **/
+gboolean
+pk_task_client_get_backend_detail (PkTaskClient *tclient, gchar **name, gchar **author, gchar **version)
+{
+	gboolean ret;
+	GError *error;
+	gchar *tname;
+	gchar *tauthor;
+	gchar *tversion;
+
+	g_return_val_if_fail (tclient != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_CLIENT (tclient), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (tclient->priv->proxy, "GetBackendDetail", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_STRING, &tname,
+				 G_TYPE_STRING, &tauthor,
+				 G_TYPE_STRING, &tversion,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetBackendDetail failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	/* copy needed bits */
+	if (name != NULL) {
+		*name = g_strdup (tname);
+	}
+	/* copy needed bits */
+	if (author != NULL) {
+		*author = g_strdup (tauthor);
+	}
+	/* copy needed bits */
+	if (version != NULL) {
+		*version = g_strdup (tversion);
+	}
+	return TRUE;
+}
+
+/**
  * pk_task_client_get_groups:
  **/
 PkEnumList *
@@ -1108,18 +1152,18 @@ pk_task_client_no_percentage_updates_cb (PkTaskMonitor *tmonitor,
 }
 
 /**
- * pk_task_client_job_status_changed_cb:
+ * pk_task_client_transaction_status_changed_cb:
  */
 static void
-pk_task_client_job_status_changed_cb (PkTaskMonitor *tmonitor,
+pk_task_client_transaction_status_changed_cb (PkTaskMonitor *tmonitor,
 				      PkStatusEnum   status,
 				      PkTaskClient  *tclient)
 {
 	g_return_if_fail (tclient != NULL);
 	g_return_if_fail (PK_IS_TASK_CLIENT (tclient));
 
-	pk_debug ("emit job-status-changed %i", status);
-	g_signal_emit (tclient , signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED], 0, status);
+	pk_debug ("emit transaction-status-changed %i", status);
+	g_signal_emit (tclient , signals [PK_TASK_CLIENT_TRANSACTION_STATUS_CHANGED], 0, status);
 	tclient->priv->last_status = status;
 }
 
@@ -1254,8 +1298,8 @@ pk_task_client_class_init (PkTaskClientClass *klass)
 
 	object_class->finalize = pk_task_client_finalize;
 
-	signals [PK_TASK_CLIENT_JOB_STATUS_CHANGED] =
-		g_signal_new ("job-status-changed",
+	signals [PK_TASK_CLIENT_TRANSACTION_STATUS_CHANGED] =
+		g_signal_new ("transaction-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -1380,8 +1424,8 @@ pk_task_client_init (PkTaskClient *tclient)
 			  G_CALLBACK (pk_task_client_sub_percentage_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "no-percentage-updates",
 			  G_CALLBACK (pk_task_client_no_percentage_updates_cb), tclient);
-	g_signal_connect (tclient->priv->tmonitor, "job-status-changed",
-			  G_CALLBACK (pk_task_client_job_status_changed_cb), tclient);
+	g_signal_connect (tclient->priv->tmonitor, "transaction-status-changed",
+			  G_CALLBACK (pk_task_client_transaction_status_changed_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "package",
 			  G_CALLBACK (pk_task_client_package_cb), tclient);
 	g_signal_connect (tclient->priv->tmonitor, "transaction",

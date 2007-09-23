@@ -55,7 +55,7 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	gchar			*name;
-	PkStatusEnum		 role; /* this never changes for the lifetime of a job */
+	PkStatusEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
@@ -82,7 +82,7 @@ struct _PkBackendPrivate
 };
 
 enum {
-	PK_BACKEND_JOB_STATUS_CHANGED,
+	PK_BACKEND_TRANSACTION_STATUS_CHANGED,
 	PK_BACKEND_PERCENTAGE_CHANGED,
 	PK_BACKEND_SUB_PERCENTAGE_CHANGED,
 	PK_BACKEND_NO_PERCENTAGE_UPDATES,
@@ -605,8 +605,8 @@ pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	backend->priv->status = status;
-	pk_debug ("emiting job-status-changed %i", status);
-	g_signal_emit (backend, signals [PK_BACKEND_JOB_STATUS_CHANGED], 0, status);
+	pk_debug ("emiting transaction-status-changed %i", status);
+	g_signal_emit (backend, signals [PK_BACKEND_TRANSACTION_STATUS_CHANGED], 0, status);
 	return TRUE;
 }
 
@@ -847,7 +847,7 @@ pk_backend_finished (PkBackend *backend)
 		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
 	}
 
-	/* we have to run this idle as the command may finish before the job
+	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
 	g_timeout_add (50, pk_backend_finished_delay, backend);
@@ -934,6 +934,8 @@ pk_backend_run (PkBackend *backend)
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		backend->desc->get_update_detail (backend,
 						  backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_RESOLVE) {
+		backend->desc->resolve (backend, backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
 		backend->desc->get_description (backend,
 						backend->priv->xcached_package_id);
@@ -1127,6 +1129,22 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
 }
 
 /**
+ * pk_backend_resolve:
+ */
+gboolean
+pk_backend_resolve (PkBackend *backend, const gchar *package)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->resolve == NULL) {
+		pk_backend_not_implemented_yet (backend, "Resolve");
+		return FALSE;
+	}
+	backend->priv->xcached_package_id = g_strdup (package);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_RESOLVE);
+	return TRUE;
+}
+
+/**
  * pk_backend_search_details:
  */
 gboolean
@@ -1226,6 +1244,25 @@ pk_backend_update_system (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_backend_detail:
+ */
+gboolean
+pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author, gchar **version)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (name != NULL && backend->desc->description != NULL) {
+		*name = g_strdup (backend->desc->description);
+	}
+	if (author != NULL && backend->desc->author != NULL) {
+		*author = g_strdup (backend->desc->author);
+	}
+	if (version != NULL && backend->desc->version != NULL) {
+		*version = g_strdup (backend->desc->version);
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_get_actions:
  *
  * You need to g_object_unref the returned object
@@ -1262,6 +1299,9 @@ pk_backend_get_actions (PkBackend *backend)
 	}
 	if (backend->desc->remove_package != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	}
+	if (backend->desc->resolve != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_RESOLVE);
 	}
 	if (backend->desc->search_details != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
@@ -1383,8 +1423,8 @@ pk_backend_class_init (PkBackendClass *klass)
 
 	object_class->finalize = pk_backend_finalize;
 
-	signals [PK_BACKEND_JOB_STATUS_CHANGED] =
-		g_signal_new ("job-status-changed",
+	signals [PK_BACKEND_TRANSACTION_STATUS_CHANGED] =
+		g_signal_new ("transaction-status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);

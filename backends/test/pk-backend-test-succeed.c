@@ -171,6 +171,16 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 }
 
 /**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_search_details:
  */
 static void
@@ -245,7 +255,7 @@ backend_update_system (PkBackend *backend)
 }
 
 PK_BACKEND_OPTIONS (
-	"Test Succeed Backend",			/* description */
+	"Test Succeed",				/* description */
 	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initalize,			/* initalize */
@@ -262,6 +272,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_file,			/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	backend_resolve,			/* resolve */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */

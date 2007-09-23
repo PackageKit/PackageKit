@@ -1,8 +1,6 @@
 Order of no particular importance:
 
 *** API Changes ***
-s/GetJobList/GetTransactions
-s/JobListChanged/TransactionListChanged
 s/GetOldTransactions/GetTransactionDetails
 
 *** Have to have an UpdatesChanged signal ***
