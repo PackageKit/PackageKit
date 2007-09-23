@@ -34,17 +34,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arches = [ 'noarch' ]
         return ','.join(arches)
 
-    def _get_version(self, version):
-        return version.asString()
-
-    def get_package_id(self, name, version, flavor=None, fullVersion=None):
-        version = self._get_version(version)
-        if not flavor == None:
+    def get_package_id(self, name, versionObj, flavor=None):
+        version = versionObj.tralingRevision()
+        fullVersion = versionObj.asString()
+        if flavor:
             arch = self._get_arch(flavor)
         else:
             arch = ""
-        return PackageKitBaseBackend.get_package_id(self, name, version,
-                                                    arch, fullVersion)
+        return PackageKitBackend.get_package_id(self, name, version, arch,
+                                                fullVersion)
 
     def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
@@ -71,8 +69,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for troveTuple in troveTupleList:
             troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
             name = troveTuple[0]
-            version = versions.ThawVersion(troveTuple[1]).trailingRevision()
-            fullVersion = versions.ThawVersion(troveTuple[1])
+            version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
             # We don't have summary data yet... so leave it blank for now
             summary = " "
@@ -80,7 +77,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = self.check_installed(troveTuple)
 
             if self._do_filtering(name,fltlist,installed):
-                id = self.get_package_id(name, version, flavor, fullVersion)
+                id = self.get_package_id(name, version, flavor)
                 self.package(id, installed, summary)
 
     def _do_search_live(self, searchlist, filters):
@@ -120,15 +117,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             for troveTuple in troveTupleList:
                 name = troveTuple[0]
-                version = troveTuple[1].trailingRevision()
-                fullVersion = troveTuple[1].asString()
+                version = troveTuple[1]
                 flavor = troveTuple[2]
                 # We don't have summary data yet... so leave it blank for now
                 summary = " "
                 installed = self.check_installed(troveTuple)
 
                 if self._do_filtering(name,fltlist,installed):
-                    id = self.get_package_id(name, version, flavor, fullVersion)
+                    id = self.get_package_id(name, version, flavor)
                     self.package(id, installed, summary)
         except:
             self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
