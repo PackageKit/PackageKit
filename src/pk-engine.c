@@ -749,6 +749,14 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
 	/* check the search term */
 	ret = pk_engine_search_check (search, error);
 	if (ret == FALSE) {
@@ -758,14 +766,6 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, error);
 	if (ret == FALSE) {
-		return FALSE;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "transaction_id '%s' not found", tid);
 		return FALSE;
 	}
 
@@ -800,6 +800,14 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
 	/* check the search term */
 	ret = pk_engine_search_check (search, error);
 	if (ret == FALSE) {
@@ -809,14 +817,6 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, error);
 	if (ret == FALSE) {
-		return FALSE;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "transaction_id '%s' not found", tid);
 		return FALSE;
 	}
 
@@ -851,6 +851,14 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
 	/* check the search term */
 	ret = pk_engine_search_check (search, error);
 	if (ret == FALSE) {
@@ -860,14 +868,6 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, error);
 	if (ret == FALSE) {
-		return FALSE;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "transaction_id '%s' not found", tid);
 		return FALSE;
 	}
 
@@ -902,6 +902,14 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
 	/* check the search term */
 	ret = pk_engine_search_check (search, error);
 	if (ret == FALSE) {
@@ -911,14 +919,6 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, error);
 	if (ret == FALSE) {
-		return FALSE;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "transaction_id '%s' not found", tid);
 		return FALSE;
 	}
 
@@ -1039,19 +1039,19 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
-		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
-				      "The package id '%s' is not valid", package_id);
-		return FALSE;
-	}
-
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
 		return FALSE;
 	}
 
@@ -1086,19 +1086,19 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
-		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
-				      "The package id '%s' is not valid", package_id);
-		return FALSE;
-	}
-
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
 		return FALSE;
 	}
 
@@ -1173,6 +1173,15 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
 	if (ret == FALSE) {
@@ -1184,15 +1193,6 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	if (pk_transaction_list_role_present (engine->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1231,6 +1231,15 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1243,15 +1252,6 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.remove", &error);
 	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1292,6 +1292,15 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1304,15 +1313,6 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.install", &error);
 	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1353,6 +1353,15 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check file exists */
 	ret = g_file_test (full_path, G_FILE_TEST_EXISTS);
 	if (ret == FALSE) {
@@ -1365,15 +1374,6 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.localinstall", &error);
 	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1414,6 +1414,15 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1426,15 +1435,6 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
 	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
