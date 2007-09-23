@@ -486,10 +486,10 @@ pk_engine_new_backend (PkEngine *engine)
 }
 
 /**
- * pk_engine_add_backend:
+ * pk_engine_item_add:
  **/
 static gboolean
-pk_engine_add_backend (PkEngine *engine, PkTransactionItem *item)
+pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 {
 	PkRoleEnum role;
 
@@ -516,13 +516,13 @@ pk_engine_add_backend (PkEngine *engine, PkTransactionItem *item)
 }
 
 /**
- * pk_engine_delete_backend:
+ * pk_engine_item_delete:
  *
  * Use this function when a function failed, and we just want to get rid
  * of all references to it.
  **/
 gboolean
-pk_engine_delete_backend (PkEngine *engine, PkTransactionItem *item)
+pk_engine_item_delete (PkEngine *engine, PkTransactionItem *item)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -638,11 +638,11 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
 
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -678,10 +678,10 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -781,10 +781,10 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -832,10 +832,10 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -883,10 +883,10 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -934,10 +934,10 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -973,10 +973,10 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -1020,10 +1020,10 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -1067,10 +1067,10 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -1114,10 +1114,10 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -1153,10 +1153,10 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		return FALSE;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 	return TRUE;
 }
 
@@ -1210,11 +1210,11 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 }
 
 /**
@@ -1269,11 +1269,11 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 }
 
 /**
@@ -1330,11 +1330,11 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 }
 
 /**
@@ -1391,11 +1391,11 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 }
 
 /**
@@ -1452,11 +1452,11 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
-		pk_engine_delete_backend (engine, item);
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_add_backend (engine, item);
+	pk_engine_item_add (engine, item);
 }
 
 /**
