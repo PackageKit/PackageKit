@@ -44,9 +44,18 @@ class UpdateCallback(callbacks.UpdateCallback, PackageKitConaryBackend):
 
         job = self.currentJob[troveNum]
         name = job[0]
-        version, flavor = job[2]
+        oldVersion, oldFlavor = job[1]
+        newVersion, newFlavor = job[2]
 
-        id = self.get_package_id(name, version, flavor)
+        if oldVersion and newVersion:
+            self.status('Update')
+            id = self.get_package_id(name, newVersion, newFlavor)
+        elif oldVersion and not newVersion:
+            self.status('Erase')
+            id = self.get_package_id(name, oldVersion, oldFlavor)
+        elif not oldVersion and newVersion:
+            self.status('Install')
+            id = self.get_package_id(name, newVersion, newFlavor)
 
         self.package(id, 1, '')
 
