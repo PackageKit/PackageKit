@@ -41,8 +41,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arch = self._get_arch(flavor)
         else:
             arch = ""
-        return PackageKitBackend.get_package_id(self, name, version, arch,
-                                                fullVersion)
+        return PackageKitBaseBackend.get_package_id(self, name, version, arch,
+                                                    fullVersion)
+
+    def get_package_from_id(self, id):
+        name, verString, archString, fullVerString = \
+            PackageKitBaseBackend.get_package_from_id(self, id)
+
+        version = versions.fromString(fullVerString)
+
+        if archString:
+            arches = 'is: %s' % archString.split(',').join(' ')
+            flavor = deps.parseFlavor(arches)
+        else:
+            flavor = None
+
+        return name, version, flavor
 
     def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
@@ -148,7 +162,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _do_package_update(self, package):
+    def _do_package_update(self, package_id):
         pass
 
     def check_installed(self, troveTuple):
@@ -194,8 +208,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
             if installed:
@@ -214,8 +227,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
             if not installed:
@@ -234,16 +246,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
-        fullVersion = versions.VersionFromString(fullVersion)
-        version = fullVersion.trailingRevision()
         if name:
-            id = self.get_package_id(name, version)
+            id = self.get_package_id(name, version, flavor)
             desc = ""
             desc += "%s \n" % name
-            desc += "%s \n" % version
+            desc += "%s \n" % version.trailingRevision()
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')
             detail = ""
@@ -326,13 +335,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
-        # Split up the id
-        (name, version, arch, fullVersion) = self.get_package_from_id(id)
-        troveTuple = tuple([name,
-                            versions.VersionFromString(fullVersion),
-                            None])
+        name, version, flavor = self.get_package_from_id(id)
+        troveTuple = (name, version, flavor)
         installed = self.check_installed(troveTuple)
-        return name, installed, version, arch, fullVersion
+        return name, version, flavor, installed
 
 
 class Cache(object):
