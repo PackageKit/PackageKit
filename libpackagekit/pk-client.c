@@ -1670,14 +1670,6 @@ pk_client_init (PkClient *client)
 	}
 	client->priv->proxy = proxy;
 
-	/* get a connection */
-	proxy = dbus_g_proxy_new_for_name (client->priv->connection,
-					   PK_DBUS_SERVICE, PK_DBUS_PATH, PK_DBUS_INTERFACE);
-	if (proxy == NULL) {
-		g_error ("Cannot connect to PackageKit.");
-	}
-	client->priv->proxy = proxy;
-
 	/* use PolicyKit */
 	client->priv->polkit = pk_polkit_client_new ();
 
