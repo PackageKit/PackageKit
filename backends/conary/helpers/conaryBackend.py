@@ -16,6 +16,7 @@ from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
 
 from packagekit import *
+from conaryCallback import UpdateCallback
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
     def __init__(self, args):
@@ -23,6 +24,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
         self.client = conaryclient.ConaryClient(self.cfg)
+        self.callback = UpdateCallback(self, self.cfg)
+        self.client.setUpdateCallback(self.callback)
 
     def _get_arch(self, flavor):
         isdep = deps.InstructionSetDependency
@@ -31,17 +34,32 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arches = [ 'noarch' ]
         return ','.join(arches)
 
-    def _get_version(self, version):
-        return version.asString()
-
-    def get_package_id(self, name, version, flavor=None, fullVersion=None):
-        version = self._get_version(version)
-        if not flavor == None:
+    def get_package_id(self, name, versionObj, flavor=None):
+        version = versionObj.trailingRevision()
+        fullVersion = versionObj.asString()
+        if flavor is not None:
             arch = self._get_arch(flavor)
         else:
             arch = ""
-        return PackageKitBaseBackend.get_package_id(self, name, version,
-                                                    arch, fullVersion)
+        return PackageKitBaseBackend.get_package_id(self, name, version, arch,
+                                                    fullVersion)
+
+    def get_package_from_id(self, id):
+        name, verString, archString, fullVerString = \
+            PackageKitBaseBackend.get_package_from_id(self, id)
+
+        if verString:
+            version = versions.VersionFromString(fullVerString)
+        else:
+            version = None
+
+        if archString:
+            arches = 'is: %s' %  ' '.join(archString.split(','))
+            flavor = deps.parseFlavor(arches)
+        else:
+            flavor = None
+
+        return name, version, flavor
 
     def _do_search(self, searchlist, filters):
         fltlist = filters.split(';')
@@ -72,16 +90,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for troveTuple in troveTupleList:
             troveTuple = tuple([item.encode('UTF-8') for item in troveTuple])
             name = troveTuple[0]
-            version = versions.ThawVersion(troveTuple[1]).trailingRevision()
-            fullVersion = versions.ThawVersion(troveTuple[1])
+            version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
             # We don't have summary data yet... so leave it blank for now
             summary = " "
-            troveTuple = tuple([name, fullVersion, flavor])
+            troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
 
             if self._do_filtering(name,fltlist,installed):
-                id = self.get_package_id(name, version, flavor, fullVersion)
+                id = self.get_package_id(name, version, flavor)
                 self.package(id, installed, summary)
 
     def _do_search_live(self, searchlist, filters):
@@ -125,18 +142,36 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             for troveTuple in troveTupleList:
                 name = troveTuple[0]
-                version = troveTuple[1].trailingRevision()
-                fullVersion = troveTuple[1].asString()
+                version = troveTuple[1]
                 flavor = troveTuple[2]
                 # We don't have summary data yet... so leave it blank for now
                 summary = " "
                 installed = self.check_installed(troveTuple)
 
                 if self._do_filtering(name,fltlist,installed):
-                    id = self.get_package_id(name, version, flavor, fullVersion)
+                    id = self.get_package_id(name, version, flavor)
                     self.package(id, installed, summary)
         except:
             self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
+
+    def _do_update(self, applyList, apply=False):
+        self.cfg.autoResolve = True
+
+        updJob = self.client.newUpdateJob()
+        suggMap = self.client.prepareUpdateJob(updJob, applyList)
+
+        if apply:
+            restartDir = self.client.applyUpdateJob(updJob)
+
+        return updJob, suggMap
+
+    def _do_package_update(self, name, version, flavor, apply=False):
+        if name.startswith('-'):
+            applyList = [(name, (version, flavor), (None, None), False)]
+        else:
+            applyList = [(name, (None, None), (version, flavor), False)]
+        updJob, suggMap = self._do_update(applyList, apply=apply)
+        return updJob, suggMap
 
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
@@ -167,10 +202,27 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         pass
 
     def get_requires(self, package_id):
-        pass
+        name, version, flavor, installed = self._findPackage(package_id)
+
+        if name:
+            if installed:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                    'Package already installed')
+
+            updJob, suggMap = self._do_pacakge_update(name, version, flavor,
+                                                      apply=False)
+
+            for what, need in suggMap:
+                id = self.get_package_id(need[0], need[1], need[2])
+                self.package(id, False, '')
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                'Package was not found')
 
     def update_system(self):
-        pass
+        updateItems = self.client.fullUpdateItemList()
+        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
+        updJob, suggMap = self._do_update(applyList, apply=True)
 
     def refresh_cache(self):
         self.percentage()
@@ -181,16 +233,15 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
             if installed:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
             try:
-                self.base.status(STATE_INSTALL)
-                #print "Update code goes here"
+                self.status(STATE_INSTALL)
+                self._do_package_update(name, version, flavor, apply=True)
             except:
                 pass
         else:
@@ -201,16 +252,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
             if not installed:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                     'Package not installed')
             try:
-                self.base.status(STATE_REMOVE)
-                #print "Remove code goes here"
+                self.status(STATE_REMOVE)
+                name = '-%s' % name
+                self._do_package_update(name, version, flavor, apply=True)
             except:
                 pass
         else:
@@ -221,16 +272,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
-        name, installed, version, arch, fullVersion = \
-            self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(package_id)
 
-        fullVersion = versions.VersionFromString(fullVersion)
-        version = fullVersion.trailingRevision()
         if name:
-            id = self.get_package_id(name, version)
+            id = self.get_package_id(name, version, flavor)
             desc = ""
             desc += "%s \n" % name
-            desc += "%s \n" % version
+            desc += "%s \n" % version.trailingRevision()
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')
             detail = ""
@@ -244,10 +292,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.percentage()
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        updJob = self.client.newUpdateJob()
-        suggMap = self.client.prepareUpdateJob(updJob, applyList,
-                                               resolveDeps=True,
-                                               migrate=False)
+        updJob, suggMap = self._do_update(applyList, apply=False)
+
         jobLists = updJob.getJobs()
 
         totalJobs = len(jobLists)
@@ -315,13 +361,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
-        # Split up the id
-        (name, version, arch, fullVersion) = self.get_package_from_id(id)
-        troveTuple = tuple([name,
-                            versions.VersionFromString(fullVersion),
-                            None])
+        name, version, flavor = self.get_package_from_id(id)
+        troveTuple = (name, version, flavor)
         installed = self.check_installed(troveTuple)
-        return name, installed, version, arch, fullVersion
+        return name, version, flavor, installed
 
 
 class Cache(object):

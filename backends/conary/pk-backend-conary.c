@@ -169,6 +169,6 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL					/* update_system */
+	backend_update_system			/* update_system */
 );
 
