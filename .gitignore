@@ -46,4 +46,5 @@ omf.make
 gtk-doc.make
 *~
 *.pc
+py-compile
 
