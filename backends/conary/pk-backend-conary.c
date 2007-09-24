@@ -145,6 +145,43 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
 }
 
+/**
+  * backend_update_package:
+ */
+static void
+backend_update_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	/* check network state */
+	if (pk_backend_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
+		pk_backend_finished (backend);
+		return;
+	}
+	pk_backend_spawn_helper (backend, "update.py", package_id, NULL);
+}
+
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "update-system.py", NULL);
+}
+
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
 	"0.0.1",				/* version */
@@ -156,7 +193,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
-	NULL,					/* get_requires */
+	backend_get_requires,				/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
@@ -168,7 +205,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	backend_update_package,			/* update_package */
 	backend_update_system			/* update_system */
 );
 
