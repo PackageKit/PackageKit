@@ -24,7 +24,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
         self.client = conaryclient.ConaryClient(self.cfg)
-        self.callback = UpdateCallback(self.cfg)
+        self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
 
     def _get_arch(self, flavor):
@@ -35,9 +35,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return ','.join(arches)
 
     def get_package_id(self, name, versionObj, flavor=None):
-        version = versionObj.tralingRevision()
+        version = versionObj.trailingRevision()
         fullVersion = versionObj.asString()
-        if flavor:
+        if flavor is not None:
             arch = self._get_arch(flavor)
         else:
             arch = ""
@@ -48,10 +48,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, verString, archString, fullVerString = \
             PackageKitBaseBackend.get_package_from_id(self, id)
 
-        version = versions.fromString(fullVerString)
+        if verString:
+            version = versions.VersionFromString(fullVerString)
+        else:
+            version = None
 
         if archString:
-            arches = 'is: %s' % archString.split(',').join(' ')
+            arches = 'is: %s' %  ' '.join(archString.split(','))
             flavor = deps.parseFlavor(arches)
         else:
             flavor = None
@@ -151,7 +154,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         except:
             self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
 
-    def _do_update(self, applyList, apply=True):
+    def _do_update(self, applyList, apply=False):
         self.cfg.autoResolve = True
 
         updJob = self.client.newUpdateJob()
@@ -162,8 +165,13 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         return updJob, suggMap
 
-    def _do_package_update(self, package_id):
-        pass
+    def _do_package_update(self, name, version, flavor, apply=False):
+        if name.startswith('-'):
+            applyList = [(name, (version, flavor), (None, None), False)]
+        else:
+            applyList = [(name, (None, None), (version, flavor), False)]
+        updJob, suggMap = self._do_update(applyList, apply=apply)
+        return updJob, suggMap
 
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
@@ -194,10 +202,27 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         pass
 
     def get_requires(self, package_id):
-        pass
+        name, version, flavor, installed = self._findPackage(package_id)
+
+        if name:
+            if installed:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                    'Package already installed')
+
+            updJob, suggMap = self._do_pacakge_update(name, version, flavor,
+                                                      apply=False)
+
+            for what, need in suggMap:
+                id = self.get_package_id(need[0], need[1], need[2])
+                self.package(id, False, '')
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                'Package was not found')
 
     def update_system(self):
-        pass
+        updateItems = self.client.fullUpdateItemList()
+        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
+        updJob, suggMap = self._do_update(applyList, apply=True)
 
     def refresh_cache(self):
         self.percentage()
@@ -215,8 +240,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
             try:
-                self.base.status(STATE_INSTALL)
-                #print "Update code goes here"
+                self.status(STATE_INSTALL)
+                self._do_package_update(name, version, flavor, apply=True)
             except:
                 pass
         else:
@@ -234,8 +259,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                     'Package not installed')
             try:
-                self.base.status(STATE_REMOVE)
-                #print "Remove code goes here"
+                self.status(STATE_REMOVE)
+                name = '-%s' % name
+                self._do_package_update(name, version, flavor, apply=True)
             except:
                 pass
         else:

@@ -10,34 +10,37 @@
 #
 
 from conary import callbacks
-from conaryBackend import PackageKitConaryBackend
+from packagekit import *
 
-class UpdateCallback(callbacks.UpdateCallback, PackageKitConaryBackend):
+class UpdateCallback(callbacks.UpdateCallback):
     def resolvingDependencies(self):
-        self.status('Resolving Dependencies')
+        self.backend.status('Resolving Dependencies')
 
     def creatingRollback(self):
-        self.status('Creating Rollback')
+        self.backend.status('Creating Rollback')
 
     def committingTransaction(self):
-        self.status('Committing Transaction')
+        self.backend.status('Committing Transaction')
 
     def downloadingFileContents(self, got, need):
-        self.status('Downloading files for changeset')
+        self.backend.status('Downloading files for changeset')
 
     def downloadingChangeSet(self, got, need):
-        self.status('Downloading')
+        self.backend.status('Downloading')
 
     def requestingFileContents(self):
-        self.status('Requesting File Contents')
+        self.backend.status('Requesting File Contents')
 
     def requestingChangeSet(self):
-        self.status('Requesting Changeset')
+        self.backend.status('Requesting Changeset')
+
+    def done(self):
+        self.backend.status('Done')
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
         if troveNum > 0 and troveCount > 0:
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
-            self.sub_percentage(sub_percent)
+            self.backend.sub_percentage(sub_percent)
 
         if troveNum != 0:
             troveNum -= 1
@@ -48,16 +51,16 @@ class UpdateCallback(callbacks.UpdateCallback, PackageKitConaryBackend):
         newVersion, newFlavor = job[2]
 
         if oldVersion and newVersion:
-            self.status('Update')
-            id = self.get_package_id(name, newVersion, newFlavor)
+            self.backend.status('Update')
+            id = self.backend.get_package_id(name, newVersion, newFlavor)
         elif oldVersion and not newVersion:
-            self.status('Erase')
-            id = self.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.status('Erase')
+            id = self.backend.get_package_id(name, oldVersion, oldFlavor)
         elif not oldVersion and newVersion:
-            self.status('Install')
-            id = self.get_package_id(name, newVersion, newFlavor)
+            self.backend.status('Install')
+            id = self.backend.get_package_id(name, newVersion, newFlavor)
 
-        self.package(id, 1, '')
+        self.backend.package(id, 1, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
@@ -68,16 +71,13 @@ class UpdateCallback(callbacks.UpdateCallback, PackageKitConaryBackend):
     def setUpdateHunk(self, hunk, hunkCount):
         if hunk > 0 and hunkCount > 0:
             percentage = hunk / float(hunkCount) * 100.0
-            self.percentage(percentage)
+            self.backend.percentage(percentage)
 
     def setUpdateJob(self, job):
         self.currentJob = job
 
     def updateDone(self):
         self.currentJob = None
-
-    def done(self):
-        self.status('done')
 
     def tagHandlerOutput(self, tag, msg, stderr = False):
         pass
@@ -88,10 +88,10 @@ class UpdateCallback(callbacks.UpdateCallback, PackageKitConaryBackend):
     def troveScriptFailure(self, typ, errcode):
         pass
 
-    def __init__(self, cfg=None, args=None):
+    def __init__(self, backend, cfg=None):
         callbacks.UpdateCallback.__init__(self)
         if cfg:
             self.setTrustThreshold(cfg.trustThreshold)
-        PackageKitConaryBackend.__init__(self, args)
 
+        self.backend = backend
         self.currentJob = None
