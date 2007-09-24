@@ -171,6 +171,17 @@ backend_update_system (PkBackend *backend)
 	pk_backend_spawn_helper (backend, "update-system.py", NULL);
 }
 
+/**
+   * backend_get_requires:
+    */
+static void
+backend_get_requires (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
 	"0.0.1",				/* version */
@@ -182,7 +193,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
-	NULL,					/* get_requires */
+	get_requires,				/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
