@@ -29,9 +29,11 @@
 #include <dbus/dbus-glib.h>
 
 #include <pk-debug.h>
-#include <pk-task-client.h>
+#include <pk-client.h>
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
+
+static GMainLoop *loop = NULL;
 
 /**
  * pk_console_make_space:
@@ -59,7 +61,7 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_id, const gchar *summary, gpointer data)
+pk_console_package_cb (PkClient *client, guint value, const gchar *package_id, const gchar *summary, gpointer data)
 {
 	PkPackageId *ident;
 	PkPackageId *spacing;
@@ -99,7 +101,7 @@ pk_console_package_cb (PkTaskClient *tclient, guint value, const gchar *package_
  * pk_console_transaction_cb:
  **/
 static void
-pk_console_transaction_cb (PkTaskClient *tclient, const gchar *tid, const gchar *timespec,
+pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *timespec,
 			   gboolean succeeded, const gchar *role, guint duration, gpointer data)
 {
 	g_print ("tid          : %s\n", tid);
@@ -113,7 +115,7 @@ pk_console_transaction_cb (PkTaskClient *tclient, const gchar *tid, const gchar 
  * pk_console_update_detail_cb:
  **/
 static void
-pk_console_update_detail_cb (PkTaskClient *tclient, const gchar *package_id,
+pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 			     const gchar *updates, const gchar *obsoletes,
 			     const gchar *url, const gchar *restart,
 			     const gchar *update_text, gpointer data)
@@ -131,7 +133,7 @@ pk_console_update_detail_cb (PkTaskClient *tclient, const gchar *package_id,
  * pk_console_percentage_changed_cb:
  **/
 static void
-pk_console_percentage_changed_cb (PkTaskClient *tclient, guint percentage, gpointer data)
+pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer data)
 {
 	g_print ("%i%%\n", percentage);
 }
@@ -146,32 +148,44 @@ pk_console_usage (const gchar *error)
 		g_print ("Error: %s\n", error);
 	}
 	g_print ("usage:\n");
-	g_print ("  pkcon [sync] [verbose] search name|details|group|file data\n");
-	g_print ("  pkcon [sync] [verbose] install <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] remove <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] update <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] refresh\n");
-	g_print ("  pkcon [sync] [verbose] resolve\n");
-	g_print ("  pkcon [sync] [verbose] force-refresh\n");
-	g_print ("  pkcon [sync] [verbose] update-system\n");
-	g_print ("  pkcon [sync] [verbose] get updates\n");
-	g_print ("  pkcon [sync] [verbose] get depends <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] get requires <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] get description <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] get updatedetail <package_id>\n");
-	g_print ("  pkcon [sync] [verbose] get actions\n");
-	g_print ("  pkcon [sync] [verbose] get groups\n");
-	g_print ("  pkcon [sync] [verbose] get filters\n");
-	g_print ("  pkcon [sync] [verbose] get transactions\n");
+	g_print ("  pkcon [verbose] search name|details|group|file data\n");
+	g_print ("  pkcon [verbose] install <package_id>\n");
+	g_print ("  pkcon [verbose] remove <package_id>\n");
+	g_print ("  pkcon [verbose] update <package_id>\n");
+	g_print ("  pkcon [verbose] refresh\n");
+	g_print ("  pkcon [verbose] resolve\n");
+	g_print ("  pkcon [verbose] force-refresh\n");
+	g_print ("  pkcon [verbose] update-system\n");
+	g_print ("  pkcon [verbose] get updates\n");
+	g_print ("  pkcon [verbose] get depends <package_id>\n");
+	g_print ("  pkcon [verbose] get requires <package_id>\n");
+	g_print ("  pkcon [verbose] get description <package_id>\n");
+	g_print ("  pkcon [verbose] get updatedetail <package_id>\n");
+	g_print ("  pkcon [verbose] get actions\n");
+	g_print ("  pkcon [verbose] get groups\n");
+	g_print ("  pkcon [verbose] get filters\n");
+	g_print ("  pkcon [verbose] get transactions\n");
 	g_print ("\n");
 	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
+}
+
+/**
+ * pk_client_wait:
+ **/
+static gboolean
+pk_client_wait (void)
+{
+	pk_debug ("starting loop");
+	loop = g_main_loop_new (NULL, FALSE);
+	g_main_loop_run (loop);
+	return TRUE;
 }
 
 /**
  * pk_console_parse_multiple_commands:
  **/
 static void
-pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
+pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 {
 	const gchar *mode;
 	const gchar *value = NULL;
@@ -199,8 +213,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_search_name (tclient, "none", details);
+				pk_client_search_name (client, "none", details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "details") == 0) {
@@ -209,8 +223,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_search_details (tclient, "none", details);
+				pk_client_search_details (client, "none", details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "group") == 0) {
@@ -219,8 +233,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_search_group (tclient, "none", details);
+				pk_client_search_group (client, "none", details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "file") == 0) {
@@ -229,8 +243,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_search_file (tclient, "none", details);
+				pk_client_search_file (client, "none", details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else {
@@ -242,7 +256,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			remove = 1;
 			goto out;
 		} else {
-			pk_task_client_install_package (tclient, value);
+			pk_client_install_package (client, value);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "remove") == 0) {
@@ -251,7 +265,7 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 			remove = 1;
 			goto out;
 		} else {
-			pk_task_client_remove_package (tclient, value, FALSE);
+			pk_client_remove_package (client, value, FALSE);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -274,8 +288,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_get_depends (tclient, details);
+				pk_client_get_depends (client, details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
@@ -284,8 +298,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_get_update_detail (tclient, details);
+				pk_client_get_update_detail (client, details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "requires") == 0) {
@@ -294,8 +308,8 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_get_requires (tclient, details);
+				pk_client_get_requires (client, details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "description") == 0) {
@@ -304,32 +318,32 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 				remove = 2;
 				goto out;
 			} else {
-				pk_task_client_set_sync (tclient, TRUE);
-				pk_task_client_get_description (tclient, details);
+				pk_client_get_description (client, details);
+				pk_client_wait ();
 				remove = 3;
 			}
 		} else if (strcmp (value, "updates") == 0) {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_get_updates (tclient);
+			pk_client_get_updates (client);
+			pk_client_wait ();
 			remove = 2;
 		} else if (strcmp (value, "actions") == 0) {
-			elist = pk_task_client_get_actions (tclient);
+			elist = pk_client_get_actions (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "filters") == 0) {
-			elist = pk_task_client_get_filters (tclient);
+			elist = pk_client_get_filters (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "groups") == 0) {
-			elist = pk_task_client_get_groups (tclient);
+			elist = pk_client_get_groups (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "transactions") == 0) {
-			pk_task_client_set_sync (tclient, TRUE);
-			pk_task_client_get_old_transactions (tclient, 10);
+			pk_client_get_old_transactions (client, 10);
+			pk_client_wait ();
 			remove = 2;
 		} else {
 			pk_console_usage ("invalid get type");
@@ -339,15 +353,11 @@ pk_console_parse_multiple_commands (PkTaskClient *tclient, GPtrArray *array)
 	} else if (strcmp (mode, "verbose") == 0) {
 		pk_debug_init (TRUE);
 	} else if (strcmp (mode, "update-system") == 0) {
-		pk_task_client_update_system (tclient);
+		pk_client_update_system (client);
 	} else if (strcmp (mode, "refresh") == 0) {
-		pk_task_client_refresh_cache (tclient, FALSE);
+		pk_client_refresh_cache (client, FALSE);
 	} else if (strcmp (mode, "force-refresh") == 0) {
-		pk_task_client_refresh_cache (tclient, TRUE);
-	} else if (strcmp (mode, "sync") == 0) {
-		pk_task_client_set_sync (tclient, TRUE);
-	} else if (strcmp (mode, "async") == 0) {
-		pk_task_client_set_sync (tclient, FALSE);
+		pk_client_refresh_cache (client, TRUE);
 	} else {
 		pk_console_usage ("option not yet supported");
 	}
@@ -367,21 +377,21 @@ out:
  * pk_console_tidy_up_sync:
  **/
 static void
-pk_console_tidy_up_sync (PkTaskClient *tclient)
+pk_console_tidy_up_sync (PkClient *client)
 {
-	PkTaskClientPackageItem *item;
+	PkClientPackageItem *item;
 	GPtrArray *packages;
 	guint i;
 	guint length;
 	gboolean sync;
 
-	sync = pk_task_client_get_sync (tclient);
+	sync = FALSE;
 	if (sync == TRUE) {
-		packages = pk_task_client_get_package_buffer (tclient);
+		packages = pk_client_get_package_buffer (client);
 		length = packages->len;
 		for (i=0; i<length; i++) {
 			item = g_ptr_array_index (packages, i);
-			pk_console_package_cb (tclient, item->value, item->package_id, item->summary, NULL);
+			pk_console_package_cb (client, item->value, item->package_id, item->summary, NULL);
 		}
 	}
 }
@@ -390,16 +400,19 @@ pk_console_tidy_up_sync (PkTaskClient *tclient)
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkTaskClient *tclient, PkStatusEnum status, guint runtime, gpointer data)
+pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
 {
 	g_print ("Runtime was %i seconds\n", runtime);
+	if (loop != NULL) {
+		g_main_loop_quit (loop);
+	}
 }
 
 /**
  * pk_console_error_code_cb:
  **/
 static void
-pk_console_error_code_cb (PkTaskClient *tclient, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
+pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
 }
@@ -408,7 +421,7 @@ pk_console_error_code_cb (PkTaskClient *tclient, PkErrorCodeEnum error_code, con
  * pk_console_description_cb:
  **/
 static void
-pk_console_description_cb (PkTaskClient *tclient, const gchar *package_id,
+pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *licence, PkGroupEnum group,
 			   const gchar *description, const gchar *url, gpointer data)
 {
@@ -428,7 +441,7 @@ main (int argc, char *argv[])
 {
 	DBusGConnection *system_connection;
 	GError *error = NULL;
-	PkTaskClient *tclient;
+	PkClient *client;
 	GPtrArray *array;
 	guint i;
 
@@ -455,20 +468,20 @@ main (int argc, char *argv[])
 		return 1;
 	}
 
-	tclient = pk_task_client_new ();
-	g_signal_connect (tclient, "package",
+	client = pk_client_new ();
+	g_signal_connect (client, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
-	g_signal_connect (tclient, "transaction",
+	g_signal_connect (client, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (tclient, "description",
+	g_signal_connect (client, "description",
 			  G_CALLBACK (pk_console_description_cb), NULL);
-	g_signal_connect (tclient, "update-detail",
+	g_signal_connect (client, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
-	g_signal_connect (tclient, "percentage-changed",
+	g_signal_connect (client, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
-	g_signal_connect (tclient, "finished",
+	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	g_signal_connect (tclient, "error-code",
+	g_signal_connect (client, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	/* add argv to a pointer array */
@@ -478,14 +491,14 @@ main (int argc, char *argv[])
 	}
 	/* process all the commands */
 	while (array->len > 0) {
-		pk_console_parse_multiple_commands (tclient, array);
+		pk_console_parse_multiple_commands (client, array);
 	}
 
 	/* if we are sync then print the package lists */
-	pk_console_tidy_up_sync (tclient);
+	pk_console_tidy_up_sync (client);
 
 	g_ptr_array_free (array, TRUE);
-	g_object_unref (tclient);
+	g_object_unref (client);
 
 	return 0;
 }

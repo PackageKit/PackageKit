@@ -178,7 +178,7 @@ pk_job_list_class_init (PkJobListClass *klass)
 }
 
 /**
- * pk_task_monitor_connect:
+ * pk_client_connect:
  **/
 static void
 pk_job_list_connect (PkJobList *jlist)

@@ -59,8 +59,7 @@ typedef struct {
 GType		 pk_transaction_list_get_type	  	(void);
 PkTransactionList *pk_transaction_list_new		(void);
 
-PkTransactionItem *pk_transaction_list_add		(PkTransactionList	*tlist,
-							 PkBackend		*backend);
+PkTransactionItem *pk_transaction_list_create		(PkTransactionList	*tlist);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
 							 PkTransactionItem	*item);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
@@ -69,9 +68,9 @@ gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);
 gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist);
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
-PkTransactionItem *pk_transaction_list_get_item_from_tid(PkTransactionList	*tlist,
+PkTransactionItem *pk_transaction_list_get_from_tid	(PkTransactionList	*tlist,
 							 const gchar		*tid);
-PkTransactionItem *pk_transaction_list_get_item_from_backend(PkTransactionList	*tlist,
+PkTransactionItem *pk_transaction_list_get_from_backend	(PkTransactionList	*tlist,
 							 PkBackend		*backend);
 
 G_END_DECLS

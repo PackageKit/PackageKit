@@ -1,5 +1,5 @@
-PkTaskClient	Do action, wait until completion
-PkTaskMonitor	Watch a single job for changes
+PkClient	Do action, wait until completion
+PkClient	Watch a single job for changes
 PkJobList	Watch the job list for changes (list of jobs)
 PkTaskList	Watch the job list and emit signals for tasks in job list
 

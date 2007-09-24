@@ -32,8 +32,6 @@ libpackagekit_include_HEADERS =					\
 	pk-enum.h						\
 	pk-task-common.h					\
 	pk-client.h						\
-	pk-task-monitor.h					\
-	pk-task-client.h					\
 	pk-task-list.h						\
 	pk-job-list.h						\
 	pk-polkit-client.h					\
@@ -56,10 +54,6 @@ libpackagekit_la_SOURCES =					\
 	pk-task-common.h					\
 	pk-client.c						\
 	pk-client.h						\
-	pk-task-monitor.c					\
-	pk-task-monitor.h					\
-	pk-task-client.c					\
-	pk-task-client.h					\
 	pk-task-list.c						\
 	pk-task-list.h						\
 	pk-job-list.c						\

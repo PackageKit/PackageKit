@@ -23,7 +23,7 @@
 #define __PK_TASK_LIST_H
 
 #include <glib-object.h>
-#include "pk-task-monitor.h"
+#include "pk-client.h"
 #include "pk-enum.h"
 
 G_BEGIN_DECLS
@@ -43,7 +43,7 @@ typedef struct
 	PkStatusEnum		 status;
 	PkRoleEnum		 role;
 	gchar			*package_id;
-	PkTaskMonitor		*monitor;
+	PkClient		*monitor;
 	gboolean		 valid;
 } PkTaskListItem;
 

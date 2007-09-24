@@ -89,10 +89,10 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 }
 
 /**
- * pk_transaction_list_add:
+ * pk_transaction_list_create:
  **/
 PkTransactionItem *
-pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
+pk_transaction_list_create (PkTransactionList *tlist)
 {
 	PkTransactionItem *item;
 
@@ -103,7 +103,7 @@ pk_transaction_list_add (PkTransactionList *tlist, PkBackend *backend)
 	item = g_new0 (PkTransactionItem, 1);
 	item->committed = FALSE;
 	item->running = FALSE;
-	item->backend = backend;
+	item->backend = NULL;
 	item->tid = pk_transaction_id_generate ();
 	g_ptr_array_add (tlist->priv->array, item);
 	return item;
@@ -143,7 +143,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	item = pk_transaction_list_get_item_from_backend (tlist, backend);
+	item = pk_transaction_list_get_from_backend (tlist, backend);
 	if (item == NULL) {
 		pk_error ("moo!");
 	}
@@ -200,7 +200,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkBackend *backend)
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
-	item = pk_transaction_list_get_item_from_backend (tlist, backend);
+	item = pk_transaction_list_get_from_backend (tlist, backend);
 	if (item == NULL) {
 		return FALSE;
 	}
@@ -290,10 +290,10 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 }
 
 /**
- * pk_transaction_list_get_item_from_tid:
+ * pk_transaction_list_get_from_tid:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_tid (PkTransactionList *tlist, const gchar *tid)
+pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 {
 	guint i;
 	guint length;
@@ -314,10 +314,10 @@ pk_transaction_list_get_item_from_tid (PkTransactionList *tlist, const gchar *ti
 }
 
 /**
- * pk_transaction_list_get_item_from_backend:
+ * pk_transaction_list_get_from_backend:
  **/
 PkTransactionItem *
-pk_transaction_list_get_item_from_backend (PkTransactionList *tlist, PkBackend *backend)
+pk_transaction_list_get_from_backend (PkTransactionList *tlist, PkBackend *backend)
 {
 	guint i;
 	guint length;

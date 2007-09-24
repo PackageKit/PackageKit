@@ -183,7 +183,7 @@ pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -206,7 +206,7 @@ pk_engine_percentage_changed_cb (PkBackend *backend, guint percentage, PkEngine 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -227,7 +227,7 @@ pk_engine_sub_percentage_changed_cb (PkBackend *backend, guint percentage, PkEng
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -248,7 +248,7 @@ pk_engine_no_percentage_updates_cb (PkBackend *backend, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -269,7 +269,7 @@ pk_engine_package_cb (PkBackend *backend, guint value, const gchar *package_id, 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -293,7 +293,7 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -317,7 +317,7 @@ pk_engine_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -340,7 +340,7 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -364,7 +364,7 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -388,7 +388,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -420,7 +420,7 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_item_from_backend (engine->priv->transaction_list, backend);
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
 	if (item == NULL) {
 		pk_warning ("could not find backend");
 		return;
@@ -478,7 +478,7 @@ pk_engine_new_backend (PkEngine *engine)
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
 
-	pk_transaction_list_add (engine->priv->transaction_list, backend);
+	pk_transaction_list_create (engine->priv->transaction_list);
 
 	/* we don't add to the array or do the transaction-list-changed yet
 	 * as this transaction might fail */
@@ -542,9 +542,13 @@ gboolean
 pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 {
 	PkTransactionItem *item;
-	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	item = pk_transaction_list_create (engine->priv->transaction_list);
 	*tid =  g_strdup (item->tid);
-	return FALSE;
+	return TRUE;
 }
 
 /**
@@ -619,7 +623,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -659,7 +663,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -750,7 +754,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -801,7 +805,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -852,7 +856,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -903,7 +907,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -954,7 +958,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -993,7 +997,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -1040,7 +1044,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -1087,7 +1091,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -1134,7 +1138,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
@@ -1174,7 +1178,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
@@ -1232,7 +1236,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
@@ -1293,7 +1297,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
@@ -1354,7 +1358,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
@@ -1415,7 +1419,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
@@ -1488,7 +1492,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1514,7 +1518,7 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1539,7 +1543,7 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1567,7 +1571,7 @@ pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percent
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1595,7 +1599,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
@@ -1621,7 +1625,7 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_add (engine->priv->transaction_list, NULL);
+	item = pk_transaction_list_create (engine->priv->transaction_list);
 	engine->priv->sync_item = item;
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
 //	pk_engine_finished_cb ();
@@ -1648,7 +1652,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_item_from_tid (engine->priv->transaction_list, tid);
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);

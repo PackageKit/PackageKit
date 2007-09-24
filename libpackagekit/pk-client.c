@@ -713,9 +713,8 @@ pk_client_allocate_transaction_id (PkClient *client)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	if (client->priv->tid != NULL) {
+		pk_warning ("Already has transaction ID");
 		return FALSE;
 	}
 

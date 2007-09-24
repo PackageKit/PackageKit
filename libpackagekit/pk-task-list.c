@@ -35,15 +35,14 @@
 
 #include "pk-debug.h"
 #include "pk-marshal.h"
-#include "pk-task-client.h"
+#include "pk-client.h"
 #include "pk-task-common.h"
 #include "pk-task-list.h"
-#include "pk-task-monitor.h"
 #include "pk-job-list.h"
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
 static void     pk_task_list_init		(PkTaskList      *task_list);
-static void     pk_task_list_finalize		(GObject           *object);
+static void     pk_task_list_finalize		(GObject         *object);
 
 #define PK_TASK_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_LIST, PkTaskListPrivate))
 
@@ -115,7 +114,7 @@ pk_task_list_find_existing_tid (PkTaskList *tlist, const gchar *tid)
  * pk_task_list_job_status_changed_cb:
  **/
 static void
-pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status, PkTaskList *tlist)
+pk_task_list_job_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskList *tlist)
 {
 	gchar *tid;
 	PkTaskListItem *item;
@@ -123,7 +122,7 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
-	tid = pk_task_monitor_get_tid (tmonitor);
+	tid = pk_client_get_tid (client);
 	pk_debug ("tid %s is now %i", tid, status);
 
 	/* get correct item */
@@ -139,7 +138,7 @@ pk_task_list_job_status_changed_cb (PkTaskMonitor *tmonitor, PkStatusEnum status
  * pk_task_list_job_finished_cb:
  **/
 static void
-pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint runtime, PkTaskList *tlist)
+pk_task_list_job_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
 {
 	gchar *tid;
 	PkTaskListItem *item;
@@ -147,7 +146,7 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint ru
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
-	tid = pk_task_monitor_get_tid (tmonitor);
+	tid = pk_client_get_tid (client);
 	pk_debug ("tid %s exited with %i", tid, exit);
 
 	/* get correct item */
@@ -162,7 +161,7 @@ pk_task_list_job_finished_cb (PkTaskMonitor *tmonitor, PkExitEnum exit, guint ru
  * pk_task_list_error_code_cb:
  **/
 static void
-pk_task_list_error_code_cb (PkTaskMonitor *tmonitor, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
+pk_task_list_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
 {
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
@@ -208,16 +207,16 @@ pk_task_list_refresh (PkTaskList *tlist)
 			pk_debug ("new job, have to create %s", tid);
 			item = g_new0 (PkTaskListItem, 1);
 			item->tid = g_strdup (tid);
-			item->monitor = pk_task_monitor_new ();
+			item->monitor = pk_client_new ();
 			g_signal_connect (item->monitor, "transaction-status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
 			g_signal_connect (item->monitor, "finished",
 					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
 			g_signal_connect (item->monitor, "error-code",
 					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
-			pk_task_monitor_set_tid (item->monitor, tid);
-			pk_task_monitor_get_role (item->monitor, &item->role, &item->package_id);
-			pk_task_monitor_get_status (item->monitor, &item->status);
+			pk_client_set_tid (item->monitor, tid);
+			pk_client_get_role (item->monitor, &item->role, &item->package_id);
+			pk_client_get_status (item->monitor, &item->status);
 
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);
