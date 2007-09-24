@@ -115,6 +115,8 @@ class PackageKit:
 			self.Package(args[2],args[3])
 		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged"]:
 			pass
+		elif kwargs['member'] == "Description":
+			self.Description(args[1],args[3],args[4],args[5])
 		else:
 			print "Caught signal %s"% kwargs['member']
 			for arg in args:
@@ -128,6 +130,12 @@ class PackageKit:
 	
 	def Finish(self):
 		pass
+
+	def Package(self,package_name,package_summary):
+		pass
+
+	def Description(self,package_name,package_group,package_description,package_url):
+		pass
 	
 	@dbusException
 	@job_id
@@ -136,13 +144,13 @@ class PackageKit:
 
 	@dbusException
 	@job_id
-	def GetDescription(package_id):
-		return pk_iface.GetDescription(package_id)
+	def GetDescription(self,package_id):
+		return self.pk_iface.GetDescription(package_id)
 
 	@dbusException
 	@job_id
-	def RefreshCache(force=False):
-		return pk_iface.RefreshCache(force)
+	def RefreshCache(self,force=False):
+		return self.pk_iface.RefreshCache(force)
 
 # hack to avoid exporting them
 #del job_id
