@@ -94,7 +94,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             flavor = deps.ThawFlavor(troveTuple[2])
             # We don't have summary data yet... so leave it blank for now
             summary = " "
-            troveTuple = tuple([name, fullVersion, flavor])
+            troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
 
             if self._do_filtering(name,fltlist,installed):
