@@ -15,6 +15,7 @@ dist_helper_DATA = 			\
 	update-system.py		\
 	get-description.py		\
 	conaryBackend.py		\
+	conaryCallback.py		\
 	packagekit.py			\
 	$(NULL)
 
