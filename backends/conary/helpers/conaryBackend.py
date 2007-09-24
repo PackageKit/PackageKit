@@ -37,7 +37,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_package_id(self, name, versionObj, flavor=None):
         version = versionObj.trailingRevision()
         fullVersion = versionObj.asString()
-        if flavor is not None:
+        if flavor is not None and flavor != 'noarch':
             arch = self._get_arch(flavor)
         else:
             arch = ""
@@ -248,7 +248,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
-    def remove(self, package_id):
+    def remove(self, allowDeps, package_id):
         '''
         Implement the {backend}-remove functionality
         '''
