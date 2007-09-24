@@ -6,7 +6,7 @@ INCLUDES = \
 	$(DBUS_CFLAGS)						\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
-	-I$(top_srcdir)/libselftest					\
+	-I$(top_srcdir)/libselftest				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
@@ -28,9 +28,10 @@ libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
-	pk-enum-list.h					\
+	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-task-common.h					\
+	pk-client.h						\
 	pk-task-monitor.h					\
 	pk-task-client.h					\
 	pk-task-list.h						\
@@ -47,12 +48,14 @@ libpackagekit_la_SOURCES =					\
 	pk-connection.h						\
 	pk-package-id.h						\
 	pk-package-id.c						\
-	pk-enum-list.c					\
-	pk-enum-list.h					\
+	pk-enum-list.c						\
+	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-enum.c						\
 	pk-task-common.c					\
 	pk-task-common.h					\
+	pk-client.c						\
+	pk-client.h						\
 	pk-task-monitor.c					\
 	pk-task-monitor.h					\
 	pk-task-client.c					\
