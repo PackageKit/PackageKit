@@ -1626,15 +1626,10 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	item = pk_transaction_list_create (engine->priv->transaction_list);
 	engine->priv->sync_item = item;
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
-//	pk_engine_finished_cb ();
-
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, "", 0);
-
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
-
 	return TRUE;
-//xxx
 }
 
 /**
