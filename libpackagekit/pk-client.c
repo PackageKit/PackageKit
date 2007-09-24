@@ -733,6 +733,8 @@ pk_client_allocate_transaction_id (PkClient *client)
 		/* abort as the DBUS method failed */
 		pk_warning ("NewTid failed!");
 		return FALSE;
+	} else {
+		pk_debug ("Got tid: '%s'", client->priv->tid);
 	}
 
 	return TRUE;

@@ -545,6 +545,7 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	item = pk_transaction_list_create (engine->priv->transaction_list);
+	pk_debug ("sending tid: '%s'", item->tid);
 	*tid =  g_strdup (item->tid);
 	return TRUE;
 }
@@ -1623,8 +1624,15 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_create (engine->priv->transaction_list);
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "No tid:%s", tid);
+		return FALSE;
+	}
 	engine->priv->sync_item = item;
+
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, "", 0);
