@@ -172,8 +172,8 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
-   * backend_get_requires:
-    */
+ * backend_get_requires:
+ */
 static void
 backend_get_requires (PkBackend *backend, const gchar *package_id)
 {
@@ -193,7 +193,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
-	get_requires,				/* get_requires */
+	backend_get_requires,				/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
