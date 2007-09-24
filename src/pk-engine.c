@@ -478,8 +478,6 @@ pk_engine_new_backend (PkEngine *engine)
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
 
-	pk_transaction_list_create (engine->priv->transaction_list);
-
 	/* we don't add to the array or do the transaction-list-changed yet
 	 * as this transaction might fail */
 	return backend;
@@ -497,7 +495,7 @@ pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* commit, so it appears in the JobList */
-	pk_transaction_list_commit (engine->priv->transaction_list, item->backend);
+	pk_transaction_list_commit (engine->priv->transaction_list, item);
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (item->backend, &role, NULL);
