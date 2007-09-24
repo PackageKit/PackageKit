@@ -248,7 +248,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
-    def remove(self, package_id):
+    def remove(self, allowDeps, package_id):
         '''
         Implement the {backend}-remove functionality
         '''
