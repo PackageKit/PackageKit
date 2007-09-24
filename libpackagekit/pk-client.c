@@ -1481,8 +1481,16 @@ pk_client_get_old_transactions (PkClient *client, guint number)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", &error,
+				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_UINT, number,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
