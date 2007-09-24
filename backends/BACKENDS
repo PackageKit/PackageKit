@@ -5,16 +5,16 @@ Current status of the backends
 resolve           |        |     |     |  X  |      |
 refresh-cache     |   X    |  X  |  X  |  X  |      |
 get-updates       |   X    |  X  |     |  X  |      |
-update-system     |        |  X  |     |     |      |
+update-system     |   X    |  X  |     |     |      |
 search-name       |   X    |  X  |  X  |  X  |  X   |
 search-details    |        |  X  |  X  |  X  |      |
 search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
-install-package   |        |  X  |     |  X  |  X   |
+install-package   |   X    |  X  |     |  X  |  X   |
 install-file      |        |     |     |  X  |      |
-remove            |        |  X  |     |  X  |  X   |
+remove            |   X    |  X  |     |  X  |  X   |
 get-depends       |        |  X  |     |     |      |
-get-requires      |        |     |     |     |      |
+get-requires      |   X    |     |     |     |      |
 get-description   |   X    |  X  |  X  |  X  |      |
 get-update-detail |        |     |     |     |      |
 
