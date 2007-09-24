@@ -374,29 +374,6 @@ out:
 }
 
 /**
- * pk_console_tidy_up_sync:
- **/
-static void
-pk_console_tidy_up_sync (PkClient *client)
-{
-	PkClientPackageItem *item;
-	GPtrArray *packages;
-	guint i;
-	guint length;
-	gboolean sync;
-
-	sync = FALSE;
-	if (sync == TRUE) {
-		packages = pk_client_get_package_buffer (client);
-		length = packages->len;
-		for (i=0; i<length; i++) {
-			item = g_ptr_array_index (packages, i);
-			pk_console_package_cb (client, item->value, item->package_id, item->summary, NULL);
-		}
-	}
-}
-
-/**
  * pk_console_finished_cb:
  **/
 static void
@@ -493,9 +470,6 @@ main (int argc, char *argv[])
 	while (array->len > 0) {
 		pk_console_parse_multiple_commands (client, array);
 	}
-
-	/* if we are sync then print the package lists */
-	pk_console_tidy_up_sync (client);
 
 	g_ptr_array_free (array, TRUE);
 	g_object_unref (client);

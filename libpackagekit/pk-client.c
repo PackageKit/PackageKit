@@ -50,11 +50,10 @@ struct PkClientPrivate
 {
 	DBusGConnection	*connection;
 	DBusGProxy	*proxy;
-	gboolean	 assigned;
 	gboolean	 is_finished;
 	gboolean	 use_buffer;
 	gchar		*tid;
-	GPtrArray	*package_items;
+	GPtrArray	*cache_package;
 	PkConnection	*pconnection;
 	PkPolkitClient	*polkit;
 	PkRestartEnum	 require_restart;
@@ -163,22 +162,22 @@ pk_client_get_package_buffer (PkClient *client)
 	if (client->priv->use_buffer == FALSE) {
 		return NULL;
 	}
-	return client->priv->package_items;
+	return client->priv->cache_package;
 }
 
 /**
- * pk_client_remove_package_items:
+ * pk_client_remove_cache_package:
  **/
 static void
-pk_client_remove_package_items (PkClient *client)
+pk_client_remove_cache_package (PkClient *client)
 {
 	PkClientPackageItem *item;
-	while (client->priv->package_items->len > 0) {
-		item = g_ptr_array_index (client->priv->package_items, 0);
+	while (client->priv->cache_package->len > 0) {
+		item = g_ptr_array_index (client->priv->cache_package, 0);
 		g_free (item->package_id);
 		g_free (item->summary);
 		g_free (item);
-		g_ptr_array_remove_index_fast (client->priv->package_items, 0);
+		g_ptr_array_remove_index_fast (client->priv->cache_package, 0);
 	}
 }
 
@@ -194,12 +193,13 @@ pk_client_reset (PkClient *client)
 	if (client->priv->is_finished != TRUE) {
 		pk_warning ("not exit status, reset might be invalid");
 	}
-	client->priv->assigned = FALSE;
+	g_free (client->priv->tid);
+	client->priv->tid = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
-	pk_client_remove_package_items (client);
+	pk_client_remove_cache_package (client);
 	return TRUE;
 }
 
@@ -269,7 +269,7 @@ pk_client_percentage_changed_cb (DBusGProxy  *proxy,
  */
 static void
 pk_client_sub_percentage_changed_cb (DBusGProxy  *proxy,
-			   	     const gchar *tid,
+				     const gchar *tid,
 			             guint	  percentage,
 			             PkClient    *client)
 {
@@ -347,7 +347,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 			item->value = value;
 			item->package_id = g_strdup (package_id);
 			item->summary = g_strdup (summary);
-			g_ptr_array_add (client->priv->package_items, item);
+			g_ptr_array_add (client->priv->cache_package, item);
 		}
 	}
 }
@@ -677,8 +677,8 @@ pk_client_cancel (PkClient *client)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	/* check to see if we have an action */
-	if (client->priv->assigned == FALSE) {
+	/* check to see if we have an tid */
+	if (client->priv->tid == NULL) {
 		pk_warning ("Transaction ID not set");
 		return FALSE;
 	}
@@ -1641,12 +1641,11 @@ pk_client_init (PkClient *client)
 
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
-	client->priv->assigned = FALSE;
 	client->priv->use_buffer = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->is_finished = FALSE;
-	client->priv->package_items = g_ptr_array_new ();
+	client->priv->cache_package = g_ptr_array_new ();
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -1802,8 +1801,8 @@ pk_client_finalize (GObject *object)
 	g_object_unref (client->priv->polkit);
 
 	/* removed any cached packages */
-	pk_client_remove_package_items (client);
-	g_ptr_array_free (client->priv->package_items, TRUE);
+	pk_client_remove_cache_package (client);
+	g_ptr_array_free (client->priv->cache_package, TRUE);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
 }
