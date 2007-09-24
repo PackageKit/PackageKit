@@ -42,6 +42,9 @@ class UpdateCallback(callbacks.UpdateCallback):
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
             self.backend.sub_percentage(sub_percent)
 
+            if self.smallUpdate:
+                self.backend.percentage(sub_percent)
+
         if troveNum != 0:
             troveNum -= 1
 
@@ -72,6 +75,8 @@ class UpdateCallback(callbacks.UpdateCallback):
         if hunk > 0 and hunkCount > 0:
             percentage = hunk / float(hunkCount) * 100.0
             self.backend.percentage(percentage)
+        else:
+            self.smallUpdate = True
 
     def setUpdateJob(self, job):
         self.currentJob = job
@@ -95,3 +100,4 @@ class UpdateCallback(callbacks.UpdateCallback):
 
         self.backend = backend
         self.currentJob = None
+        self.smallUpdate = False
