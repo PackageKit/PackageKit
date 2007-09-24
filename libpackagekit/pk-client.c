@@ -720,7 +720,7 @@ pk_client_allocate_transaction_id (PkClient *client)
 	}
 
 	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "NewTid", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetTid", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &client->priv->tid,
 				 G_TYPE_INVALID);
