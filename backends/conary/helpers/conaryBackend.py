@@ -37,7 +37,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_package_id(self, name, versionObj, flavor=None):
         version = versionObj.trailingRevision()
         fullVersion = versionObj.asString()
-        if flavor is not None and flavor != 'noarch':
+        if flavor is not None:
             arch = self._get_arch(flavor)
         else:
             arch = ""
@@ -53,7 +53,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             version = None
 
-        if archString:
+        if archString and archString != 'noarch':
             arches = 'is: %s' %  ' '.join(archString.split(','))
             flavor = deps.parseFlavor(arches)
         else:
