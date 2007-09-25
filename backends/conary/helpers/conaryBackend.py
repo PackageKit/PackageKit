@@ -15,7 +15,7 @@ from conary.deps import deps
 from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
 
-from packagekit import *
+from packagekit.backend import *
 from conaryCallback import UpdateCallback
 
 class PackageKitConaryBackend(PackageKitBaseBackend):

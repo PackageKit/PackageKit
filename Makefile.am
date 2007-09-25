@@ -23,7 +23,11 @@ dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = PackageKit.conf
 
 packagekitpythondir = ${PYTHON_PACKAGE_DIR}
-packagekitpython_PYTHON = python/__init__.py
+packagekitpython_PYTHON =             \
+	python/packagekit/__init__.py     \
+	python/packagekit/backend.py		\
+	$(NULL)
+	
 
 EXTRA_DIST =			\
 	PackageKit.conf.in	\

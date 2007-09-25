@@ -23,7 +23,7 @@
 import sys
 import re
 
-from packagekit import *
+from packagekit.backend import *
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
