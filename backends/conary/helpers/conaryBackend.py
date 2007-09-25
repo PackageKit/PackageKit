@@ -198,10 +198,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def search_details(self, opt, key):
         pass
 
-    def get_depends(self, package_id):
+    def get_requires(self, package_id):
         pass
 
-    def get_requires(self, package_id):
+    def get_depends(self, package_id):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
@@ -209,7 +209,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
 
-            updJob, suggMap = self._do_pacakge_update(name, version, flavor,
+            updJob, suggMap = self._do_package_update(name, version, flavor,
                                                       apply=False)
 
             for what, need in suggMap:
