@@ -169,7 +169,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         if name.startswith('-'):
             applyList = [(name, (version, flavor), (None, None), False)]
         else:
-            applyList = [(name, (None, None), (version, flavor), False)]
+            applyList = [(name, (None, None), (version, flavor), True)]
         updJob, suggMap = self._do_update(applyList, apply=apply)
         return updJob, suggMap
 
