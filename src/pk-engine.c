@@ -1794,11 +1794,15 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
  **/
 static void
 pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gchar *timespec,
-			  gboolean succeeded, const gchar *role, guint duration, PkEngine *engine)
+			  gboolean succeeded, PkRoleEnum role, guint duration, PkEngine *engine)
 {
-	const gchar *tid = engine->priv->sync_item->tid;
-	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role, duration);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role, duration);
+	const gchar *role_text;
+	const gchar *tid;
+
+	tid = engine->priv->sync_item->tid;
+	role_text = pk_role_enum_to_text (role);
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role_text, duration);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration);
 }
 
 /**
