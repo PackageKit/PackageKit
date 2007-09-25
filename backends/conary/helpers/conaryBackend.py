@@ -290,25 +290,28 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def get_updates(self):
         self.percentage()
-        updateItems = self.client.fullUpdateItemList()
-        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        updJob, suggMap = self._do_update(applyList, apply=False)
+        try:
+            updateItems = self.client.fullUpdateItemList()
+            applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
+            updJob, suggMap = self._do_update(applyList, apply=False)
 
-        jobLists = updJob.getJobs()
+            jobLists = updJob.getJobs()
 
-        totalJobs = len(jobLists)
-        for num, job in enumerate(jobLists):
-            status = '2'
-            name = job[0][0]
-            version = job[0][2][0]
-            flavor = job[0][2][1]
-            troveTuple = []
-            troveTuple.append(name)
-            troveTuple.append(version)
-            installed = self.check_installed(troveTuple)
-            id = self.get_package_id(name, version, flavor)
-            summary = ""
-            self.package(id, installed, summary)
+            totalJobs = len(jobLists)
+            for num, job in enumerate(jobLists):
+                status = '2'
+                name = job[0][0]
+                version = job[0][2][0]
+                flavor = job[0][2][1]
+                troveTuple = []
+                troveTuple.append(name)
+                troveTuple.append(version)
+                installed = self.check_installed(troveTuple)
+                id = self.get_package_id(name, version, flavor)
+                summary = ""
+                self.package(id, installed, summary)
+        except:
+            pass
 
     def _do_filtering(self, pkg, filterList, installed):
         ''' Filter the package, based on the filter in filterList '''
