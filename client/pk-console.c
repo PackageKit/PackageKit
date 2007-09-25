@@ -257,6 +257,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			goto out;
 		} else {
 			pk_client_install_package (client, value);
+			pk_client_wait ();
 			remove = 2;
 		}
 	} else if (strcmp (mode, "remove") == 0) {
@@ -266,6 +267,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			goto out;
 		} else {
 			pk_client_remove_package (client, value, FALSE);
+			pk_client_wait ();
 			remove = 2;
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -275,6 +277,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			goto out;
 		} else {
 			pk_warning ("TODO!");
+			pk_client_wait ();
 			remove = 2;
 		}
 	} else if (strcmp (mode, "get") == 0) {
