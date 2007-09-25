@@ -1,8 +1,5 @@
 Order of no particular importance:
 
-*** API Changes ***
-s/GetOldTransactions/GetTransactionDetails
-
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
@@ -20,19 +17,12 @@ We need a way to get the installed files into the UI.
 We need a way to work out how long something is going to take, and
 to expose in the UI.
 
-*** Get Transactions ***
-Do we use a job number? Finished?
-Need to convert the role to an enum
-
 *** task_client has to return GError ***
 Client programs using libpackagekit should know the error, rather than just
 "it failed"
 
 *** Log what was installed/removed and when ***
 Need to monitor the Package's emitted by the task and encoded to a string
-
-*** Dummy backend should use subpercent and install deps ***
-It's not a great test case right now...
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
