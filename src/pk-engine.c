@@ -1218,6 +1218,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1277,6 +1278,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1338,6 +1340,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1399,6 +1402,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1460,6 +1464,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
