@@ -1665,6 +1665,13 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 		return FALSE;
 	}
 
+	/* check to see if we are trying to cancel a non-running task */
+	if (item->running == FALSE) {
+		pk_debug ("cancelling the non-running item %p", item);
+		pk_engine_item_delete (engine, item);
+		return TRUE;
+	}
+
 	ret = pk_backend_cancel (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
