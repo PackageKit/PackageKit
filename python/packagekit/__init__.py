@@ -102,40 +102,100 @@ class PackageKit:
 		#	return
 		if kwargs['member'] == "Finished":
 			self.loop.quit()
-			self.Finish()
+			self.Finished(args[0],args[1],args[2])
 		elif kwargs['member'] == "PercentageChanged":
 			progress = float(args[1])+(progress%1.0)
-			self.Percentage(progress)
+			self.Percentage(args[0], progress)
 		elif kwargs['member'] == "SubPercentageChanged":
 			progress = (float(args[1])/100.0)+int(progress)
-			self.Percentage(progress)
+			self.Percentage(args[0], progress)
 		elif kwargs['member'] == "TransactionStatusChanged":
-			self.JobStatus(args[1])
+			self.JobStatus(args[0], args[1])
 		elif kwargs['member'] == "Package":
-			self.Package(args[2],args[3])
-		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged"]:
-			pass
+			self.Package(args[0],args[1],args[2],args[3])
+		elif kwargs['member'] == "UpdateDetail":
+			self.UpdateDetail(args[0],args[1],args[2],args[3],args[4],args[5],args[6])
 		elif kwargs['member'] == "Description":
-			self.Description(args[1],args[3],args[4],args[5])
+			self.Description(args[0],args[1],args[2],args[3],args[4],args[5])
+		elif kwargs['member'] == "ErrorCode":
+			self.ErrorCode(args[0],args[1],args[2])
+		elif kwargs['member'] == "RequireRestart":
+			self.RequireRestart(args[0],args[1],args[2])
+		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged","Transaction",
+					  "AllowInterrupt","JobListChanged"]:
+			pass
 		else:
-			print "Caught signal %s"% kwargs['member']
+			print "Caught unhandled signal %s"% kwargs['member']
+			print "  args:"
 			for arg in args:
 				print "		" + str(arg)
-	
-	def Percentage(self,value):
+
+# --- PK Signal Handlers ---
+
+	def Finished(self,
+		     jid,          # Job ID
+		     status,       # enum - unknown, success, failed, canceled
+		     running_time  # amount of time transaction has been running in seconds
+		     ):
 		pass
 	
-	def JobStatus(self,string):
+	def Percentage(self,
+		       jid,        # Job ID
+		       progress    # 0.0 - 100.0
+		       ):
 		pass
 	
-	def Finish(self):
+	def JobStatus(self,
+		      jid,        # Job ID
+		      status      # enum - invalid, setup, download, install, update, exit
+		      ):
+		pass
+	
+	def Package(self,
+		    jid,        # Job ID
+		    value,      # installed=1, not-installed=0 | security=1, normal=0
+		    package_id,
+		    package_summary
+		    ):
 		pass
 
-	def Package(self,package_name,package_summary):
+	def UpdateDetail(self,
+			 jid,        # Job ID
+			 package_id,
+			 updates,
+			 obsoletes,
+			 url,
+			 restart_required,
+			 update_text
+			 ):
 		pass
 
-	def Description(self,package_name,package_group,package_description,package_url):
+	def Description(self,
+			jid,        # Job ID
+			package_id,
+			license,
+			group,
+			detail,
+			url
+			):
 		pass
+
+	def ErrorCode(self,
+		      jid,        # Job ID
+		      error_code, # enumerated - see pk-enum.c in PackageKit source
+		      details     # non-localized details
+		      ):
+		pass
+	
+	def RequireRestart(self,
+			   jid,        # Job ID
+			   type,       # enum - system,application,session
+			   details     # non-localized details
+			   ):
+		pass
+
+
+# --- PK Methods ---
 	
 	@dbusException
 	@job_id
@@ -151,6 +211,7 @@ class PackageKit:
 	@job_id
 	def RefreshCache(self,force=False):
 		return self.pk_iface.RefreshCache(force)
+
 
 # hack to avoid exporting them
 #del job_id

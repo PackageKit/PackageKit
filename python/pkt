@@ -20,14 +20,14 @@ from types import FunctionType
 from packagekit import *
 
 class pkt(PackageKit):
-	def Percentage(self,progress):
+	def Percentage(self,jid,progress):
 		print "Progress: %.2f%%"%progress
 	
-	def JobStatus(self,type):
+	def JobStatus(self,jid,type):
 		print "Job type: %s"%type
 	
-	def Package(self,name,description):
-		print "Package: %s - %s"%(name,description)
+	def Package(self,jid,value,name,summary):
+		print "Package: %s - %s"%(name,summary)
 
 try:
 	p = pkt()
