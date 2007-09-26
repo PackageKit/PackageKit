@@ -564,6 +564,7 @@ static gboolean backend_search_packages_thread (PkBackend *backend, gpointer dat
 	pk_debug("finding %s", st->search);
 
 	sqlite3_stmt *package = NULL;
+	g_strdelimit(st->search," ",'%');
 	gchar *sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%'",st->search);
 	pk_debug("statement is '%s'",sel);
 	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
