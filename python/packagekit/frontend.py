@@ -76,6 +76,9 @@ class PackageKit:
 				return jid
 		return wrapper
 
+	def tid(self):
+		return self.pk_iface.GetTid()
+
 	def __init__(self):
 		DBusGMainLoop(set_as_default=True)
 		bus = dbus.SystemBus()
@@ -140,18 +143,17 @@ class PackageKit:
 	@dbusException
 	@job_id
 	def SearchName(self,pattern,filter="none"):
-		return self.pk_iface.SearchName(filter,pattern)
+		return self.pk_iface.SearchName(self.tid(),filter,pattern)
 
 	@dbusException
 	@job_id
 	def GetDescription(self,package_id):
-		return self.pk_iface.GetDescription(package_id)
+		return self.pk_iface.GetDescription(self.tid(),package_id)
 
 	@dbusException
 	@job_id
 	def RefreshCache(self,force=False):
-		return self.pk_iface.RefreshCache(force)
+		return self.pk_iface.RefreshCache(self.tid(),force)
 
 # hack to avoid exporting them
-#del job_id
 del dbusException
