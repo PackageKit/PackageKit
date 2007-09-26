@@ -17,7 +17,7 @@ from sys import argv,exit
 from optparse import OptionParser
 from types import FunctionType
 
-from packagekit import *
+from packagekit.frontend import *
 
 class pkt(PackageKit):
 	def Percentage(self,progress):

@@ -26,6 +26,7 @@ packagekitpythondir = ${PYTHON_PACKAGE_DIR}
 packagekitpython_PYTHON =             \
 	python/packagekit/__init__.py     \
 	python/packagekit/backend.py		\
+	python/packagekit/frontend.py		\
 	$(NULL)
 	
 
