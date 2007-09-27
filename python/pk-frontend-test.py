@@ -29,6 +29,11 @@ class pkt(PackageKit):
 	def Package(self,jid,value,name,summary):
 		print "Package: %s - %s"%(name,summary)
 
+	def Description(self,jid,package_id,license,group,detail,url):
+		print "Package: %s" % package_id
+		print "  %s" % url
+		print "  %s" % detail
+
 try:
 	p = pkt()
 except PackageKitNotStarted:
