@@ -113,11 +113,11 @@ class PackageKit:
 			self.loop.quit()
 			self.Finished(args[0],args[1],args[2])
 		elif kwargs['member'] == "PercentageChanged":
-			progress = float(args[1])+(progress%1.0)
-			self.Percentage(args[0], progress)
+			self.progress = float(args[1])+(self.progress%1.0)
+			self.Percentage(args[0], self.progress)
 		elif kwargs['member'] == "SubPercentageChanged":
-			progress = (float(args[1])/100.0)+int(progress)
-			self.Percentage(args[0], progress)
+			self.progress = (float(args[1])/100.0)+int(self.progress)
+			self.Percentage(args[0], self.progress)
 		elif kwargs['member'] == "TransactionStatusChanged":
 			self.JobStatus(args[0], args[1])
 		elif kwargs['member'] == "Package":
