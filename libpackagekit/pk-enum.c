@@ -126,6 +126,21 @@ static PkTaskEnumMatch task_group[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_freq[] = {
+	{PK_FREQ_ENUM_HOURLY,			"hourly"},
+	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
+	{PK_FREQ_ENUM_DAILY,			"daily"},
+	{PK_FREQ_ENUM_NEVER,			"never"},
+	{0, NULL},
+};
+
+static PkTaskEnumMatch task_update[] = {
+	{PK_UPDATE_ENUM_ALL,			"all"},
+	{PK_UPDATE_ENUM_SECURITY,		"security"},
+	{PK_UPDATE_ENUM_NONE,			"none"},
+	{0, NULL},
+};
+
 /**
  * pk_task_enum_find_value:
  */
@@ -280,6 +295,42 @@ const gchar *
 pk_group_enum_to_text (PkGroupEnum group)
 {
 	return pk_task_enum_find_string (task_group, group);
+}
+
+/**
+ * pk_freq_enum_from_text:
+ **/
+PkFreqEnum
+pk_freq_enum_from_text (const gchar *freq)
+{
+	return pk_task_enum_find_value (task_freq, freq);
+}
+
+/**
+ * pk_freq_enum_to_text:
+ **/
+const gchar *
+pk_freq_enum_to_text (PkFreqEnum freq)
+{
+	return pk_task_enum_find_string (task_freq, freq);
+}
+
+/**
+ * pk_update_enum_from_text:
+ **/
+PkUpdateEnum
+pk_update_enum_from_text (const gchar *update)
+{
+	return pk_task_enum_find_value (task_update, update);
+}
+
+/**
+ * pk_update_enum_to_text:
+ **/
+const gchar *
+pk_update_enum_to_text (PkUpdateEnum update)
+{
+	return pk_task_enum_find_string (task_update, update);
 }
 
 /**

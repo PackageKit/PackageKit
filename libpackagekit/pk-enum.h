@@ -115,6 +115,26 @@ typedef enum {
 	PK_GROUP_ENUM_UNKNOWN
 } PkGroupEnum;
 
+typedef enum {
+	PK_FREQ_ENUM_HOURLY,
+	PK_FREQ_ENUM_WEEKLY,
+	PK_FREQ_ENUM_DAILY,
+	PK_FREQ_ENUM_NEVER,
+	PK_FREQ_ENUM_UNKNOWN
+} PkFreqEnum;
+
+typedef enum {
+	PK_UPDATE_ENUM_ALL,
+	PK_UPDATE_ENUM_SECURITY,
+	PK_UPDATE_ENUM_NONE,
+} PkUpdateEnum;
+
+PkUpdateEnum	 pk_update_enum_from_text		(const gchar	*update);
+const gchar	*pk_update_enum_to_text			(PkUpdateEnum	 update);
+
+PkFreqEnum	 pk_freq_enum_from_text			(const gchar	*freq);
+const gchar	*pk_freq_enum_to_text			(PkFreqEnum	 freq);
+
 PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
 const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
 
