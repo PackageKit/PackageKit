@@ -128,8 +128,8 @@ static PkTaskEnumMatch task_group[] = {
 
 static PkTaskEnumMatch task_freq[] = {
 	{PK_FREQ_ENUM_HOURLY,			"hourly"},
-	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
 	{PK_FREQ_ENUM_DAILY,			"daily"},
+	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
 	{PK_FREQ_ENUM_NEVER,			"never"},
 	{0, NULL},
 };
