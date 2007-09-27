@@ -23,6 +23,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, args)
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
+        self.cfg.autoResolve = True
         self.client = conaryclient.ConaryClient(self.cfg)
         self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
@@ -34,13 +35,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arches = [ 'noarch' ]
         return ','.join(arches)
 
-    def get_package_id(self, name, versionObj, flavor=None):
+    def get_package_id(self, name, versionObj, flavor):
         version = versionObj.trailingRevision()
         fullVersion = versionObj.asString()
-        if flavor is not None:
-            arch = self._get_arch(flavor)
-        else:
-            arch = ""
+        arch = self._get_arch(flavor)
         return PackageKitBaseBackend.get_package_id(self, name, version, arch,
                                                     fullVersion)
 
@@ -57,7 +55,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arches = 'is: %s' %  ' '.join(archString.split(','))
             flavor = deps.parseFlavor(arches)
         else:
-            flavor = None
+            flavor = deps.parseFlavor('')
 
         return name, version, flavor
 
@@ -155,8 +153,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
 
     def _do_update(self, applyList, apply=False):
-        self.cfg.autoResolve = True
-
         updJob = self.client.newUpdateJob()
         suggMap = self.client.prepareUpdateJob(updJob, applyList)
 
