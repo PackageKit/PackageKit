@@ -16,7 +16,6 @@ Do automatic updates at login time when system has gone idle
 NOTE: RELEASE BLOCKER
 
 *** pk-application (client) ***
-Move the buttons to the left hand side of pk-application, not a bar at the top
 Use an icons for installed and not-installed rather than tickboxes
 Refresh the query list after an install or remove (means saving the query and re-issuing)
 
