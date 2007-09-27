@@ -268,23 +268,45 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
-    def get_description(self, package_id):
+    def _get_metadata(self, id, field):
+        '''
+        Retrieve metadata from the repository and return result
+        field should be one of:
+                bibliography
+                url
+                notes
+                crypto
+                licenses
+                shortDesc
+                longDesc
+                categories
+        '''
+        n, v, f = self.get_package_from_id(id)
+
+        trvList = self.client.repos.findTrove(self.cfg.installLabelPath,
+                                     (n, v, f),
+                                     defaultFlavor = self.cfg.flavor)
+
+        troves = self.client.repos.getTroves(trvList, withFiles=False)
+        result = ''
+        for trove in troves:
+            result = trove.getMetadata()[field]
+        return result
+
+    def get_description(self, id):
         '''
         Print a detailed description for a given package
         '''
-        name, version, flavor, installed = self._findPackage(package_id)
+        name, version, flavor, installed = self._findPackage(id)
+
+        
 
         if name:
-            id = self.get_package_id(name, version, flavor)
-            desc = ""
-            desc += "%s \n" % name
-            desc += "%s \n" % version.trailingRevision()
-            desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')
-            detail = ""
+            shortDesc = self._get_metadata(id, 'shortDesc') or name
+            longDesc = self._get_metadata(id, 'longDesc') or ""
             url = "http://www.foresightlinux.org/packages/" + name + ".html"
-            group = "other"
-            self.description(desc, id, group, detail, url)
+            categories = self._get_metadata(id, 'categories') or "other"
+            self.description(shortDesc, id, categories, longDesc, url)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
