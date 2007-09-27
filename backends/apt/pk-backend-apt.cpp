@@ -21,6 +21,7 @@
 
 #include <gmodule.h>
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-debug.h>
@@ -39,12 +40,16 @@
 #include <apt-pkg/acquire.h>
 #include <apt-pkg/acquire-item.h>
 
-#include <regex.h>
 #include <string.h>
 #include <math.h>
+#include <sqlite3.h>
 
 static pkgCacheFile *fileCache = NULL;
-pkgSourceList *SrcList = 0;
+static pkgSourceList *SrcList = 0;
+static gboolean inited = FALSE;
+static sqlite3 *db = NULL;
+
+#define APT_DB DATABASEDIR "/apt.db"
 
 typedef enum {
 	SEARCH_NAME = 1,
@@ -70,27 +75,278 @@ typedef pkgCache::DescFile AptCompFile;
 #error Need either rpm or deb defined
 #endif
 
-struct ExDescFile {
-	AptCompFile *Df;
-	const char *verstr;
-	const char *arch;
-	gboolean installed;
-	gboolean available;
-	char *repo;
-	bool NameMatch;
-};
+typedef enum {FIELD_PKG=1,FIELD_VER,FIELD_DEPS,FIELD_ARCH,FIELD_SHORT,FIELD_LONG,FIELD_REPO} Fields;
 
+static void build_db(PkBackend * backend)
+{
+	GMatchInfo *match_info;
+	GError *error = NULL;
+	gchar *contents = NULL;
+	gchar *sdir;
+	const gchar *fname;
+	GRegex *origin, *suite, *version, *description;
+	GDir *dir;
+	GHashTable *releases;
 
-static pkgCacheFile *getCache()
+	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates(backend);
+
+	sdir = g_build_filename(_config->Find("Dir").c_str(),_config->Find("Dir::State").c_str(),_config->Find("Dir::State::lists").c_str(), NULL);
+	dir = g_dir_open(sdir,0,&error);
+	if (error!=NULL)
+	{
+		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "can't open %s",dir);
+		g_error_free(error);
+		goto search_task_cleanup;
+	}
+
+	origin = g_regex_new("^Origin: (\\S+)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
+	suite = g_regex_new("^Suite: (\\S+)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
+
+	version = g_regex_new("^Version: (.*)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
+	description = g_regex_new("^Description: (.*)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
+
+	releases = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
+	while ((fname = g_dir_read_name(dir))!=NULL)
+	{
+		gchar *temp, *parsed_name;
+		gchar** items = g_strsplit(fname,"_",-1);
+		guint len = g_strv_length(items);
+		if(len<=3) // minimum is <source>_<type>_<group>
+		{
+			g_strfreev(items);
+			continue;
+		}
+		
+		/* warning: nasty hack with g_strjoinv */
+		temp = items[len-2];
+		items[len-2] = NULL;
+		parsed_name = g_strjoinv("_",items);
+		items[len-2] = temp;
+		
+		if (g_ascii_strcasecmp(items[len-1],"Release")==0 && g_ascii_strcasecmp(items[len-2],"source")!=0)
+		{
+			gchar * repo = NULL, *fullname;
+			fullname = g_build_filename(sdir,fname,NULL);
+			if (g_file_get_contents(fullname,&contents,NULL,NULL) == FALSE)
+			{
+				pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "error loading %s",fullname);
+				goto search_task_cleanup;
+			}
+			g_free(fullname);
+
+			g_regex_match (origin, contents, (GRegexMatchFlags)0, &match_info);
+			if (!g_match_info_matches(match_info))
+			{
+				pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "origin regex failure in %s",fname);
+				goto search_task_cleanup;
+			}
+			repo = g_match_info_fetch (match_info, 1);
+
+			g_regex_match (suite, contents, (GRegexMatchFlags)0, &match_info);
+			if (g_match_info_matches(match_info))
+			{
+				temp = g_strconcat(repo,"/",g_match_info_fetch (match_info, 1),NULL);
+				g_free(repo);
+				repo = temp;
+			}
+
+			temp = parsed_name;
+			parsed_name = g_strconcat(temp,"_",items[len-2],NULL);
+			g_free(temp);
+
+			pk_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
+
+			g_hash_table_insert(releases, parsed_name, repo);
+			g_free(contents);
+			contents = NULL;
+		}
+		else
+			g_free(parsed_name);
+		g_strfreev(items);
+	}
+	g_dir_close(dir);
+
+	/* and then we need to do this again, but this time we're looking for the packages */
+	dir = g_dir_open(sdir,0,&error);
+	while ((fname = g_dir_read_name(dir))!=NULL)
+	{
+		gchar** items = g_strsplit(fname,"_",-1);
+		guint len = g_strv_length(items);
+		if(len<=3) // minimum is <source>_<type>_<group>
+		{
+			g_strfreev(items);
+			continue;
+		}
+
+		if (g_ascii_strcasecmp(items[len-1],"Packages")==0)
+		{
+			const gchar *repo;
+			gchar *temp, *parsed_name;
+			gchar *fullname;
+			/* warning: nasty hack with g_strjoinv */
+			if (g_str_has_prefix(items[len-2],"binary-"))
+			{
+				temp = items[len-3];
+				items[len-3] = NULL;
+				parsed_name = g_strjoinv("_",items);
+				items[len-3] = temp;
+			}
+			else
+			{
+				temp = items[len-1];
+				items[len-1] = NULL;
+				parsed_name = g_strjoinv("_",items);
+				items[len-1] = temp;
+			}
+			
+			pk_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
+			
+			repo = (const gchar *)g_hash_table_lookup(releases,parsed_name);
+			if (repo == NULL)
+			{
+				pk_debug("Can't find repo for %s, marking as \"unknown\"",parsed_name);
+				repo = g_strdup("unknown");
+				//g_assert(0);
+			}
+			else
+				pk_debug("repo for %s is %s",parsed_name,repo);
+			g_free(parsed_name);
+
+			fullname = g_build_filename(sdir,fname,NULL);
+			pk_debug("loading %s",fullname);
+			if (g_file_get_contents(fullname,&contents,NULL,NULL) == FALSE)
+			{
+				pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "error loading %s",fullname);
+				goto search_task_cleanup;
+			}
+			gchar *begin = contents, *next;
+			glong count = 0;
+
+			sqlite3_stmt *package = NULL;
+			int res;
+			res = sqlite3_prepare_v2(db, "insert or replace into packages values (?,?,?,?,?,?,?)", -1, &package, NULL);
+			if (res!=SQLITE_OK)
+				pk_error("sqlite error during insert prepare: %s", sqlite3_errmsg(db));
+			res = sqlite3_bind_text(package,FIELD_REPO,repo,-1,SQLITE_STATIC);
+			if (res!=SQLITE_OK)
+				pk_error("sqlite error during repo bind: %s", sqlite3_errmsg(db));
+
+			gboolean haspk = FALSE;
+
+			sqlite3_exec(db,"begin",NULL,NULL,NULL);
+
+			while (true)
+			{
+				next = strstr(begin,"\n");
+				if (next!=NULL)
+				{
+					next[0] = '\0';
+					next++;
+				}
+
+				if (begin[0]=='\0')
+				{
+					if (haspk)
+					{
+						res = sqlite3_step(package);
+						if (res!=SQLITE_DONE)
+							pk_error("sqlite error during step: %s", sqlite3_errmsg(db));
+						sqlite3_reset(package);
+						//pk_debug("added package");
+						haspk = FALSE;
+					}
+					//g_assert(0);
+				}
+				else if (begin[0]==' ')
+				{
+					/*gchar *oldval = g_strdup((const gchar*)g_hash_table_lookup(ret,"Description"));
+					g_hash_table_insert(ret,g_strdup("Description"),g_strconcat(oldval, "\n",parts[1],NULL));
+					//pk_debug("new entry =  '%s'",(const gchar*)g_hash_table_lookup(ret,"Description"));
+					g_free(oldval);*/
+				}
+				else
+				{
+					gchar *colon = strchr(begin,':');
+					g_assert(colon!=NULL);
+					colon[0] = '\0';
+					colon+=2;
+					/*if (strlen(colon)>3000)
+						pk_error("strlen(colon) = %d\ncolon = %s",strlen(colon),colon);*/
+					//typedef enum {FIELD_PKG=0,FIELD_VER,FIELD_DEPS,FIELD_ARCH,FIELD_SHORT,FIELD_LONG,FIELD_REPO} Fields;
+					//pk_debug("entry = '%s','%s'",begin,colon);
+					if (begin[0] == 'P' && g_strcasecmp("Package",begin)==0)
+					{
+						res=sqlite3_bind_text(package,FIELD_PKG,colon,-1,SQLITE_STATIC);
+						haspk = TRUE;
+						count++;
+						if (count%1000==0)
+							pk_debug("Package %ld (%s)",count,colon);
+					}
+					else if (begin[0] == 'V' && g_strcasecmp("Version",begin)==0)
+						res=sqlite3_bind_text(package,FIELD_VER,colon,-1,SQLITE_STATIC);
+					else if (begin[0] == 'D' && g_strcasecmp("Depends",begin)==0)
+						res=sqlite3_bind_text(package,FIELD_DEPS,colon,-1,SQLITE_STATIC);
+					else if (begin[0] == 'A' && g_strcasecmp("Architecture",begin)==0)
+						res=sqlite3_bind_text(package,FIELD_ARCH,colon,-1,SQLITE_STATIC);
+					else if (begin[0] == 'D' && g_strcasecmp("Description",begin)==0)
+						res=sqlite3_bind_text(package,FIELD_SHORT,colon,-1,SQLITE_STATIC);
+					if (res!=SQLITE_OK)
+						pk_error("sqlite error during %s bind: %s", begin, sqlite3_errmsg(db));
+				}
+				if (next == NULL)
+					break;
+				begin = next;	
+			}
+			sqlite3_exec(db,"commit",NULL,NULL,NULL);
+			g_free(contents);
+			contents = NULL;
+		}
+	}
+
+search_task_cleanup:
+	g_dir_close(dir);
+	g_free(sdir);
+	g_free(contents);
+}
+
+static void init(PkBackend *backend)
+{
+	if (!inited)
+	{
+		gint ret;
+		char *errmsg = NULL;
+		if (pkgInitConfig(*_config) == false)
+			pk_debug("pkginitconfig was false");
+		if (pkgInitSystem(*_config, _system) == false)
+			pk_debug("pkginitsystem was false");
+		ret = sqlite3_open (APT_DB, &db);
+		ret = sqlite3_exec(db,"PRAGMA synchronous = OFF",NULL,NULL,NULL);
+		g_assert(ret == SQLITE_OK);
+		//sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,&errmsg);
+		sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string)",NULL,NULL,&errmsg);
+		if (errmsg == NULL) // success, ergo didn't exist
+		{
+			build_db(backend);
+		}
+		else
+		{
+			sqlite3_free(errmsg);
+			/*ret = sqlite3_exec(db,"delete from packages",NULL,NULL,NULL); // clear it!
+			g_assert(ret == SQLITE_OK);
+			pk_debug("wiped db");*/
+		}
+		inited = TRUE;
+	}
+}
+
+static pkgCacheFile *getCache(PkBackend *backend)
 {
 	if (fileCache == NULL)
 	{
 		MMap *Map = 0;
 		OpTextProgress Prog;
-		if (pkgInitConfig(*_config) == false)
-			pk_debug("pkginitconfig was false");
-		if (pkgInitSystem(*_config, _system) == false)
-			pk_debug("pkginitsystem was false");
+		init(backend);
 		// Open the cache file
 		SrcList = new pkgSourceList;
 		SrcList->ReadMainList();
@@ -156,7 +412,7 @@ static gboolean backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 	/* easy as that */
 	pk_backend_change_status(backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	Cache = getCache();
+	Cache = getCache(backend);
 
 	// Get the source list
 	pkgSourceList List;
@@ -227,7 +483,7 @@ static gboolean backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 	}
 
 	// Prepare the cache.
-	Cache = getCache();
+	Cache = getCache(backend);
 	if (Cache->BuildCaches(Prog,false) == false)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "Failed to prepare the cache");
@@ -294,168 +550,44 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 	pk_backend_thread_helper(backend, backend_refresh_cache_thread, NULL);
 }
 
-// LocalitySort - Sort a version list by package file locality		/*{{{*/
-// ---------------------------------------------------------------------
-/* */
-static int LocalityCompare(const void *a, const void *b)
-{
-	pkgCache::VerFile *A = *(pkgCache::VerFile **)a;
-	pkgCache::VerFile *B = *(pkgCache::VerFile **)b;
-
-	if (A == 0 && B == 0)
-		return 0;
-	if (A == 0)
-		return 1;
-	if (B == 0)
-		return -1;
-
-	if (A->File == B->File)
-		return A->Offset - B->Offset;
-	return A->File - B->File;
-}
-
-static void LocalitySort(AptCompFile **begin,
-		  unsigned long Count,size_t Size)
-{
-	qsort(begin,Count,Size,LocalityCompare);
-}
-
-static gboolean buildExDesc(ExDescFile *DFList, unsigned int pid, pkgCache::VerIterator V)
-{
-	// Find the proper version to use.
-	DFList[pid].available = false;
-	if (V.end() == false)
-	{
-	#ifdef APT_PKG_RPM
-		DFList[pid].Df = V.FileList();
-	#else
-		DFList[pid].Df = V.DescriptionList().FileList();
-	#endif
-		DFList[pid].verstr = V.VerStr();
-		DFList[pid].arch = V.Arch();
-		for (pkgCache::VerFileIterator VF = V.FileList(); VF.end() == false; VF++)
-		{
-			// Locate the associated index files so we can derive a description
-			pkgIndexFile *Indx;
-			bool hasLocal = _system->FindIndex(VF.File(),Indx);
-			if (SrcList->FindIndex(VF.File(),Indx) == false && !hasLocal)
-			{
-			   pk_debug("Cache is out of sync, can't x-ref a package file");
-			   break;
-			}
-			gchar** items = g_strsplit_set(Indx->Describe(true).c_str()," \t",-1);
-			DFList[pid].repo = g_strdup(items[1]); // should be in format like "http://ftp.nl.debian.org unstable/main Packages"
-			DFList[pid].installed = hasLocal;
-			g_strfreev(items);
-			DFList[pid].available = true;
-			if (hasLocal)
-				break;
-		}
-	}
-	return DFList[pid].available;
-}
-
 // backend_search_packages_thread
 // Swiped from apt-cache's search mode
 static gboolean backend_search_packages_thread (PkBackend *backend, gpointer data)
 {
 	search_task *st = (search_task *) data;
-	ExDescFile *DFList = NULL;
+	int res;
 
+	init(backend);
 	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", st->search);
-	pkgCache & pkgCache = *(getCache());
-	pkgDepCache::Policy Plcy;
-	// Create the text record parser
-	pkgRecords Recs(pkgCache);
 
-	// Compile the regex pattern
-	regex_t *Pattern = new regex_t;
-	memset(Pattern, 0, sizeof(*Pattern));
-	if (regcomp(Pattern, st->search, REG_EXTENDED | REG_ICASE | REG_NOSUB) != 0)
+	sqlite3_stmt *package = NULL;
+	gchar *sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%'",st->search);
+	pk_debug("statement is '%s'",sel);
+	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
+	g_free(sel);
+	if (res!=SQLITE_OK)
+		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
+	res = sqlite3_step(package);
+	while (res == SQLITE_ROW)
 	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_UNKNOWN, "regex compilation error");
-		goto search_task_cleanup;
+		gchar *pid = pk_package_id_build((const gchar*)sqlite3_column_text(package,0),
+				(const gchar*)sqlite3_column_text(package,1),
+				(const gchar*)sqlite3_column_text(package,2),
+				(const gchar*)sqlite3_column_text(package,3));
+		pk_backend_package(backend, FALSE, pid, (const gchar*)sqlite3_column_text(package,4));
+		g_free(pid);
+		if (res==SQLITE_ROW)
+			res = sqlite3_step(package);
+	}
+	if (res!=SQLITE_DONE)
+	{
+		pk_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
+		g_assert(0);
 	}
 
-	DFList = new ExDescFile[pkgCache.HeaderP->PackageCount + 1];
-	memset(DFList, 0, sizeof(*DFList) * pkgCache.HeaderP->PackageCount + 1);
-
-	// Map versions that we want to write out onto the VerList array.
-	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
-	{
-		DFList[P->ID].NameMatch = true;
-		if (regexec(Pattern, P.Name(), 0, 0, 0) == 0)
-			DFList[P->ID].NameMatch &= true;
-		else
-			DFList[P->ID].NameMatch = false;
-
-		// Doing names only, drop any that dont match..
-		if (st->depth == SEARCH_NAME && DFList[P->ID].NameMatch == false)
-			continue;
-
-		// Find the proper version to use.
-		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
-		buildExDesc(DFList, P->ID, V);
-	}
-
-	// Include all the packages that provide matching names too
-	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
-	{
-		if (DFList[P->ID].NameMatch == false)
-			continue;
-
-		for (pkgCache::PrvIterator Prv = P.ProvidesList(); Prv.end() == false; Prv++)
-		{
-			pkgCache::VerIterator V = Plcy.GetCandidateVer(Prv.OwnerPkg());
-			if (buildExDesc(DFList, Prv.OwnerPkg()->ID, V))
-				DFList[Prv.OwnerPkg()->ID].NameMatch = true;
-		}
-	}
-
-	LocalitySort(&DFList->Df, pkgCache.HeaderP->PackageCount, sizeof(*DFList));
-
-	// Iterate over all the version records and check them
-	for (ExDescFile * J = DFList; J->Df != 0; J++)
-	{
-#ifdef APT_PKG_RPM
-		pkgRecords::Parser & P = Recs.Lookup(pkgCache::VerFileIterator(pkgCache, J->Df));
-#else
-		pkgRecords::Parser & P = Recs.Lookup(pkgCache::DescFileIterator(pkgCache, J->Df));
-#endif
-
-		gboolean Match = true;
-		if (J->NameMatch == false)
-		{
-			string LongDesc = P.LongDesc();
-			if (regexec(Pattern, LongDesc.c_str(), 0, 0, 0) == 0)
-				Match = true;
-			else
-				Match = false;
-		}
-
-		if (Match == true)// && pk_backend_filter_package_name(backend,P.Name().c_str()))
-		{
-			gchar *pid = pk_package_id_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
-			PkInfoEnum info;
-			if (J->installed)
-				info = PK_INFO_ENUM_INSTALLED;
-			else
-				info = PK_INFO_ENUM_AVAILABLE;
-			pk_backend_package(backend, info, pid, P.ShortDesc().c_str());
-			g_free(pid);
-		}
-	}
-
-search_task_cleanup:
-	for (ExDescFile * J = DFList; J->Df != 0; J++)
-	{
-		g_free(J->repo);
-	}
-	delete[]DFList;
-	regfree(Pattern);
 	g_free(st->search);
 	g_free(st);
 
@@ -484,11 +616,11 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 	}
 }
 
-static GHashTable *PackageRecord(pkgCache::VerIterator V)
+static GHashTable *PackageRecord(PkBackend *backend, pkgCache::VerIterator V)
 {
 	GHashTable *ret = NULL;
 
-	pkgCache & pkgCache = *(getCache());
+	pkgCache & pkgCache = *(getCache(backend));
 	// Find an appropriate file
 	pkgCache::VerFileIterator Vf = V.FileList();
 	for (; Vf.end() == false; Vf++)
@@ -553,7 +685,7 @@ static gboolean backend_get_description_thread (PkBackend *backend, gpointer dat
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", dt->pi->name);
-	pkgCache & pkgCache = *(getCache());
+	pkgCache & pkgCache = *(getCache(backend));
 	pkgDepCache::Policy Plcy;
 
 	// Map versions that we want to write out onto the VerList array.
@@ -564,7 +696,7 @@ static gboolean backend_get_description_thread (PkBackend *backend, gpointer dat
 
 		// Find the proper version to use.
 		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
-		GHashTable *pkg = PackageRecord(V);
+		GHashTable *pkg = PackageRecord(backend,V);
 		pk_backend_description(backend,dt->pi->name,
 			"unknown", PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
 		g_hash_table_unref(pkg);
