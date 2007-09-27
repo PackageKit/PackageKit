@@ -34,7 +34,15 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
 				      PK_GROUP_ENUM_ACCESSIBILITY,
+				      PK_GROUP_ENUM_ACCESSORIES,
+				      PK_GROUP_ENUM_EDUCATION,
 				      PK_GROUP_ENUM_GAMES,
+				      PK_GROUP_ENUM_GRAPHICS,
+				      PK_GROUP_ENUM_INTERNET,
+				      PK_GROUP_ENUM_OFFICE,
+				      PK_GROUP_ENUM_OTHER,
+				      PK_GROUP_ENUM_PROGRAMMING,
+				      PK_GROUP_ENUM_MULTIMEDIA,
 				      PK_GROUP_ENUM_SYSTEM,
 				      -1);
 }
