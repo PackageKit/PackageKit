@@ -34,6 +34,17 @@ class pkt(PackageKit):
 		print "  %s" % url
 		print "  %s" % detail
 
+	def Transaction(self,jid,old_jid,timespec,succeeded,role,duration):
+		success = "Failed"
+		if succeeded:
+			success = "Successful"
+
+		print "Transaction: %s\n" % old_jid,
+		print "  %s" % role
+		print "  %s" % timespec
+		print "  %s seconds" % duration
+		print "  %s" % success
+
 try:
 	p = pkt()
 except PackageKitNotStarted:
@@ -53,11 +64,23 @@ def desc(*args):
 		raise PackageKitTransactionFailure
 	return p.GetDescription(args[0][0])
 
-def update(args):
+def refresh_cache(args):
 	if len(args)>0 and len(args[0])>0:
-		print "update doesn't take args"
+		print "refresh_cache doesn't take args"
 		raise PackageKitTransactionFailure
 	return p.RefreshCache()
+
+def history(*args):
+	count = 5
+	if len(args)==1 and len(args[0])==1:
+		count = args[0][0]
+	
+	count = int(count)
+
+	if count < 1:
+		print "history takes an integer (how many transactions to show)"
+
+	return p.GetOldTransactions(count)
 
 def usage():
 	print "Usage: %s <command> <options>"%argv[0]

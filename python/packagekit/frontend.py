@@ -126,7 +126,9 @@ class PackageKit:
 			self.ErrorCode(args[0],args[1],args[2])
 		elif kwargs['member'] == "RequireRestart":
 			self.RequireRestart(args[0],args[1],args[2])
-		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged","Transaction",
+		elif kwargs['member'] == "Transaction":
+			self.Transaction(args[0],args[1],args[2],args[3],args[4],args[5])
+		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged",
 					  "AllowInterrupt","JobListChanged"]:
 			pass
 		else:
@@ -199,6 +201,17 @@ class PackageKit:
 			   ):
 		pass
 
+	def Transaction(self,
+			jid,       # Job ID
+			old_jid,   # Old Job ID
+			timespec,  # Time (2007-09-27T15:29:22Z)
+			succeeded, # 1 or 0
+			role,      # enum, see task_role in pk-enum.c
+			duration   # in seconds
+			):
+		pass
+
+
 
 # --- PK Methods ---
 	
@@ -216,3 +229,9 @@ class PackageKit:
 	@job_id
 	def RefreshCache(self,force=False):
 		return self.pk_iface.RefreshCache(self.tid(),force)
+
+	@dbusException
+	@job_id
+	def GetOldTransactions(self,number=5):
+		return self.pk_iface.GetOldTransactions(self.tid(),number)
+
