@@ -559,6 +559,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
+        self.yumbase.conf.throttle = "40%"    # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )         # Setup the download callback class
 
