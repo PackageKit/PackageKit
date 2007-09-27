@@ -55,24 +55,20 @@ class PackageKitTransactionFailure(PackageKitException):
 class PackageKitBackendFailure(PackageKitException):
 	pass
 
-def dbusException(func):
-	def wrapper(*args,**kwargs):
-		try:
-			return func(*args,**kwargs)
-		except dbus.exceptions.DBusException,e:
-			if e.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
-				raise PackageKitAccessDenied
-			elif e.get_dbus_name() == "org.freedesktop.DBus.Error.NoReply":
-				raise PackageKitBackendFailure
-			else:
-				raise PackageKitException(e)
-		except Exception:
-			print "wibble"
-			raise
-	return wrapper
-
-
 class PackageKit:
+	def dbusException(func):
+		def wrapper(*args,**kwargs):
+			try:
+				return func(*args,**kwargs)
+			except dbus.exceptions.DBusException,e:
+				if e.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
+					raise PackageKitAccessDenied
+				elif e.get_dbus_name() == "org.freedesktop.DBus.Error.NoReply":
+					raise PackageKitBackendFailure
+				else:
+					raise PackageKitException(e)
+		return wrapper
+
 	def job_id(func):
 		def wrapper(*args,**kwargs):
 			jid = func(*args,**kwargs)
@@ -220,7 +216,3 @@ class PackageKit:
 	@job_id
 	def RefreshCache(self,force=False):
 		return self.pk_iface.RefreshCache(self.tid(),force)
-
-# hack to avoid exporting them
-del dbusException
-
