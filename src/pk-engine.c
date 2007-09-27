@@ -1218,6 +1218,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1277,6 +1278,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1338,6 +1340,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1399,6 +1402,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1460,6 +1464,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
 }
 
 /**
@@ -1660,6 +1665,13 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 		return FALSE;
 	}
 
+	/* check to see if we are trying to cancel a non-running task */
+	if (item->running == FALSE) {
+		pk_debug ("cancelling the non-running item %p", item);
+		pk_engine_item_delete (engine, item);
+		return TRUE;
+	}
+
 	ret = pk_backend_cancel (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1789,11 +1801,15 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
  **/
 static void
 pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gchar *timespec,
-			  gboolean succeeded, const gchar *role, guint duration, PkEngine *engine)
+			  gboolean succeeded, PkRoleEnum role, guint duration, PkEngine *engine)
 {
-	const gchar *tid = engine->priv->sync_item->tid;
-	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role, duration);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role, duration);
+	const gchar *role_text;
+	const gchar *tid;
+
+	tid = engine->priv->sync_item->tid;
+	role_text = pk_role_enum_to_text (role);
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role_text, duration);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration);
 }
 
 /**

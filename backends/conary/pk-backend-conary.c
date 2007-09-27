@@ -34,7 +34,15 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
 				      PK_GROUP_ENUM_ACCESSIBILITY,
+				      PK_GROUP_ENUM_ACCESSORIES,
+				      PK_GROUP_ENUM_EDUCATION,
 				      PK_GROUP_ENUM_GAMES,
+				      PK_GROUP_ENUM_GRAPHICS,
+				      PK_GROUP_ENUM_INTERNET,
+				      PK_GROUP_ENUM_OFFICE,
+				      PK_GROUP_ENUM_OTHER,
+				      PK_GROUP_ENUM_PROGRAMMING,
+				      PK_GROUP_ENUM_MULTIMEDIA,
 				      PK_GROUP_ENUM_SYSTEM,
 				      -1);
 }
@@ -47,9 +55,9 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
+				      /* PK_FILTER_ENUM_GUI, */
 				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
+				      /* PK_FILTER_ENUM_DEVELOPMENT, */
 				      -1);
 }
 
@@ -71,6 +79,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
 }
 
@@ -172,14 +181,14 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
- * backend_get_requires:
+ * backend_get_depends:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *package_id)
+backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
+	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
 }
 
 PK_BACKEND_OPTIONS (
@@ -191,9 +200,9 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
-	NULL,					/* get_depends */
+	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
-	backend_get_requires,				/* get_requires */
+	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */

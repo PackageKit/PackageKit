@@ -17,7 +17,6 @@ localcache_DATA =					\
 
 databasedir = $(PK_DB_DIR)
 database_DATA =						\
-	packages.db					\
 	transactions.db					\
 	$(NULL)
 

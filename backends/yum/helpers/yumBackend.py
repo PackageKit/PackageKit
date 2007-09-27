@@ -23,7 +23,7 @@
 import sys
 import re
 
-from packagekit import *
+from packagekit.backend import *
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
@@ -380,7 +380,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
-            id = self.get_package_id(pkg.name, pkg.version,pkg.arch, pkg.repo)
+            pkgver = self._get_package_ver(pkg)
+            id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
             desc = pkg.description
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')            

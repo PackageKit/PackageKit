@@ -49,10 +49,10 @@ static guint exit_idle_time;
  **/
 static gboolean
 pk_object_register (DBusGConnection *connection,
-		    GObject	     *object)
+		    GObject	     *object,
+		    GError **error)
 {
 	DBusGProxy *bus_proxy = NULL;
-	GError *error = NULL;
 	guint request_name_result;
 	gboolean ret;
 
@@ -61,19 +61,20 @@ pk_object_register (DBusGConnection *connection,
 					       DBUS_PATH_DBUS,
 					       DBUS_INTERFACE_DBUS);
 
-	ret = dbus_g_proxy_call (bus_proxy, "RequestName", &error,
+	ret = dbus_g_proxy_call (bus_proxy, "RequestName", error,
 				 G_TYPE_STRING, PK_DBUS_SERVICE,
 				 G_TYPE_UINT, 0,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &request_name_result,
 				 G_TYPE_INVALID);
-	if (error) {
-		pk_debug ("ERROR: %s", error->message);
-		g_error_free (error);
+	if (error && *error) {
+		pk_debug ("ERROR: %s", (*error)->message);
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
 		pk_warning ("RequestName failed!");
+		g_clear_error(error);
+		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "Acquiring D-Bus name %s failed due to security policies on this machine",PK_DBUS_SERVICE);
 		return FALSE;
 	}
 
@@ -82,6 +83,7 @@ pk_object_register (DBusGConnection *connection,
 
 	/* already running */
  	if (request_name_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
+		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "Already running on this machine");
 		return FALSE;
 	}
 
@@ -216,8 +218,9 @@ main (int argc, char *argv[])
 	engine = pk_engine_new ();
 	pk_engine_use_backend (engine, backend);
 
-	if (!pk_object_register (system_connection, G_OBJECT (engine))) {
-		g_error ("Already running on this machine");
+	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
+		g_error ("Error trying to start: %s", error->message);
+		g_error_free (error);
 		return 0;
 	}
 

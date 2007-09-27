@@ -1,11 +1,34 @@
 Order of no particular importance:
 
-*** API Changes ***
-s/GetOldTransactions/GetTransactionDetails
-
 *** Have to have an UpdatesChanged signal ***
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
+
+*** convert the magic number in Package to a string type *** 
+Define Package to be (s,s) not (i,s) where the first status is
+"installed, removed, updated, security, normal, etc"
+Need to convert to enumerated types early on, and in the client library
+NOTE: RELEASE BLOCKER
+
+*** pk-notify-icon (client) ***
+Do automatic updates at login time when system has gone idle
+ * needs gnome-screensaver integration
+NOTE: RELEASE BLOCKER
+
+*** pk-application (client) ***
+Move the buttons to the left hand side of pk-application, not a bar at the top
+Use an icons for installed and not-installed rather than tickboxes
+Refresh the query list after an install or remove (means saving the query and re-issuing)
+
+*** Prepare download to refresh system ***
+Either use a flag or a new method. I'm not sure which yet.
+
+*** cache signal responses from methods ***
+Need to cache packages in the daemon. yes the daemon.
+We need this for transaction logging of what was removed or added.
+Need to convert the gptrarray to a Gstring
+installed,moo;1.23.;i386;fedora,removed,foo;1.23.;i386;fedora and save
+to database
 
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
@@ -20,10 +43,6 @@ We need a way to get the installed files into the UI.
 We need a way to work out how long something is going to take, and
 to expose in the UI.
 
-*** Get Transactions ***
-Do we use a job number? Finished?
-Need to convert the role to an enum
-
 *** task_client has to return GError ***
 Client programs using libpackagekit should know the error, rather than just
 "it failed"
@@ -31,11 +50,10 @@ Client programs using libpackagekit should know the error, rather than just
 *** Log what was installed/removed and when ***
 Need to monitor the Package's emitted by the task and encoded to a string
 
-*** Dummy backend should use subpercent and install deps ***
-It's not a great test case right now...
-
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
- * write an application that can see the description of the transactions
+ * emit internal signal for SetTransactionData
+ * write pk_transaction_id_equal to not compare data
+ * allow transaction data to be changed in _db
  * use an new method to handle the rollbacks and pass it to the backend
 

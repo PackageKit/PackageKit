@@ -358,14 +358,16 @@ pk_client_package_cb (DBusGProxy   *proxy,
 static void
 pk_client_transaction_cb (DBusGProxy *proxy,
 			  const gchar *tid, const gchar *old_tid, const gchar *timespec,
-			  gboolean succeeded, const gchar *role, guint duration,
+			  gboolean succeeded, const gchar *role_text, guint duration,
 			  PkClient *client)
 {
+	PkRoleEnum role;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
-		pk_debug ("emitting transaction %s, %s, %i, %s, %i", old_tid, timespec, succeeded, role, duration);
+		role = pk_role_enum_from_text (role_text);
+		pk_debug ("emitting transaction %s, %s, %i, %s, %i", old_tid, timespec, succeeded, role_text, duration);
 		g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, tid, timespec, succeeded, role, duration);
 	}
 }
@@ -1578,8 +1580,8 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT);
 	signals [PK_CLIENT_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

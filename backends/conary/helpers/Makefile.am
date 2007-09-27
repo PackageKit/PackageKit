@@ -16,7 +16,6 @@ dist_helper_DATA = 			\
 	get-description.py		\
 	conaryBackend.py		\
 	conaryCallback.py		\
-	packagekit.py			\
 	$(NULL)
 
 install-data-hook:

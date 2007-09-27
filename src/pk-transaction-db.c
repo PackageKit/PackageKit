@@ -145,7 +145,7 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
-		       item.tid, item.timespec, item.succeeded, pk_role_enum_to_text (item.role), item.duration);
+		       item.tid, item.timespec, item.succeeded, item.role, item.duration);
 
 	pk_transaction_db_item_free (&item);
 	return 0;
@@ -287,8 +287,8 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 	signals [PK_TRANSACTION_DB_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_STRING_UINT,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 

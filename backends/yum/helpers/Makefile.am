@@ -18,7 +18,6 @@ dist_helper_DATA = 			\
 	refresh-cache.py		\
 	update-system.py		\
 	yumBackend.py			\
-	packagekit.py			\
 	$(NULL)
 
 install-data-hook:
