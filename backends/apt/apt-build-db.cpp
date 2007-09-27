@@ -203,6 +203,14 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				{
 					if (haspk)
 					{
+						if (description!=NULL)
+						{
+							res=sqlite3_bind_text(package,FIELD_LONG,description,-1,SQLITE_TRANSIENT);
+							if (res!=SQLITE_OK)
+								pk_error("sqlite error during description bind: %s", sqlite3_errmsg(db));
+							g_free(description);
+							description = NULL;
+						}
 						res = sqlite3_step(package);
 						if (res!=SQLITE_DONE)
 							pk_error("sqlite error during step: %s", sqlite3_errmsg(db));
@@ -214,10 +222,14 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				}
 				else if (begin[0]==' ')
 				{
-					/*gchar *oldval = g_strdup((const gchar*)g_hash_table_lookup(ret,"Description"));
-					g_hash_table_insert(ret,g_strdup("Description"),g_strconcat(oldval, "\n",parts[1],NULL));
-					//pk_debug("new entry =  '%s'",(const gchar*)g_hash_table_lookup(ret,"Description"));
-					g_free(oldval);*/
+					if (description == NULL)
+						description = g_strdup(&begin[1]);
+					else
+					{
+						gchar *oldval = description;
+						description = g_strconcat(oldval, "\n",&begin[1],NULL);
+						g_free(oldval);
+					}
 				}
 				else
 				{
