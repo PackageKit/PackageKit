@@ -10,6 +10,11 @@ Define Package to be (s,s) not (i,s) where the first status is
 Need to convert to enumerated types early on, and in the client library
 NOTE: RELEASE BLOCKER
 
+*** transsaction viewer ***
+If no updates then show something "There are no updates" and a big tick
+Hide apply if no updates
+NOTE: RELEASE BLOCKER
+
 *** pk-notify-icon (client) ***
 Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration
