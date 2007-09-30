@@ -1849,15 +1849,16 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
  **/
 static void
 pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gchar *timespec,
-			  gboolean succeeded, PkRoleEnum role, guint duration, PkEngine *engine)
+			  gboolean succeeded, PkRoleEnum role, guint duration,
+			  const gchar *data, PkEngine *engine)
 {
 	const gchar *role_text;
 	const gchar *tid;
 
 	tid = engine->priv->sync_item->tid;
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i", tid, old_tid, timespec, succeeded, role_text, duration);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration);
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", tid, old_tid, timespec, succeeded, role_text, duration, data);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration, data);
 }
 
 /**
@@ -1968,9 +1969,9 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }

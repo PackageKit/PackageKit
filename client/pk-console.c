@@ -101,7 +101,8 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
  **/
 static void
 pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *timespec,
-			   gboolean succeeded, PkRoleEnum role, guint duration, gpointer data)
+			   gboolean succeeded, PkRoleEnum role, guint duration,
+			   const gchar *data, gpointer user_data)
 {
 	const gchar *role_text;
 	role_text = pk_role_enum_to_text (role);
@@ -110,6 +111,7 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 	g_print (" succeeded   : %i\n", succeeded);
 	g_print (" role        : %s\n", role_text);
 	g_print (" duration    : %i (seconds)\n", duration);
+	g_print (" data        : %s\n", data);
 }
 
 /**

@@ -19,13 +19,6 @@ Refresh the query list after an install or remove (means saving the query and re
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
 
-*** cache signal responses from methods ***
-Need to cache packages in the daemon. yes the daemon.
-We need this for transaction logging of what was removed or added.
-Need to convert the gptrarray to a Gstring
-installed,moo;1.23.;i386;fedora,removed,foo;1.23.;i386;fedora and save
-to database
-
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 

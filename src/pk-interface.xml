@@ -193,6 +193,7 @@
       <arg type="b" name="succeeded" direction="out"/>
       <arg type="s" name="role" direction="out"/>
       <arg type="u" name="duration" direction="out"/>
+      <arg type="s" name="data" direction="out"/>
     </signal>
 
     <!-- General methods -->
