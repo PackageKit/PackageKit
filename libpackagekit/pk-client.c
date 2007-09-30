@@ -1402,7 +1402,73 @@ pk_client_install_package (PkClient *client, const gchar *package_id)
 		}
 	}
 
-	/* only wait if the command succeeded. False is usually due to PolicyKit auth failure */
+	return ret;
+}
+
+/**
+ * pk_client_install_file_action:
+ **/
+gboolean
+pk_client_install_file_action (PkClient *client, const gchar *file, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFile", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, file,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("InstallFile failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_client_install_file:
+ **/
+gboolean
+pk_client_install_file (PkClient *client, const gchar *file)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+
+	/* hopefully do the operation first time */
+	ret = pk_client_install_file_action (client, file, &error);
+
+	/* we were refused by policy then try to get auth */
+	if (ret == FALSE) {
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_install_file_action (client, file, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
 	return ret;
 }
 
