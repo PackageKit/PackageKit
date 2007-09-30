@@ -90,6 +90,7 @@ enum {
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
+	PK_BACKEND_UPDATES_CHANGED,
 	PK_BACKEND_REQUIRE_RESTART,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
@@ -735,6 +736,20 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
 	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url);
 
+	return TRUE;
+}
+
+/**
+ * pk_backend_updates_changed:
+ **/
+gboolean
+pk_backend_updates_changed (PkBackend *backend)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit updates-changed");
+	g_signal_emit (backend, signals [PK_BACKEND_UPDATES_CHANGED], 0);
 	return TRUE;
 }
 
@@ -1471,6 +1486,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_BACKEND_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

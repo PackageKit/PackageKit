@@ -65,6 +65,7 @@ gboolean	 pk_backend_description			(PkBackend	*backend,
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 guint		 code,
 							 const gchar	*details, ...);
+gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
 gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
 							 const gchar	*script, ...);
 gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);

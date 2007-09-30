@@ -309,6 +309,26 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 }
 
 /**
+ * pk_engine_updates_changed_cb:
+ **/
+static void
+pk_engine_updates_changed_cb (PkBackend *backend, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+	pk_debug ("emitting updates-changed tid:%s", item->tid);
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+}
+
+/**
  * pk_engine_error_code_cb:
  **/
 static void
@@ -478,6 +498,8 @@ pk_engine_new_backend (PkEngine *engine)
 			  G_CALLBACK (pk_engine_update_detail_cb), engine);
 	g_signal_connect (backend, "error-code",
 			  G_CALLBACK (pk_engine_error_code_cb), engine);
+	g_signal_connect (backend, "updates-changed",
+			  G_CALLBACK (pk_engine_updates_changed_cb), engine);
 	g_signal_connect (backend, "require-restart",
 			  G_CALLBACK (pk_engine_require_restart_cb), engine);
 	g_signal_connect (backend, "finished",
