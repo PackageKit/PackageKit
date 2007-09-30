@@ -43,8 +43,10 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
 {
 	gint size;
 	gchar *padding;
-	*extra = 0;
 
+	if (extra != NULL) {
+		*extra = 0;
+	}
 	size = length;
 	if (data != NULL) {
 		size = (length - strlen(data));
