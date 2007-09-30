@@ -137,6 +137,9 @@
       <arg type="s" name="type" direction="out"/> <!-- system,application,session -->
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
+    <signal name="UpdatesChanged">
+      <arg type="s" name="tid" direction="out"/>
+    </signal>
 
     <!-- Do things or query transactions -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->

@@ -67,6 +67,7 @@ typedef enum {
 	PK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_CLIENT_PACKAGE,
 	PK_CLIENT_PERCENTAGE_CHANGED,
+	PK_CLIENT_UPDATES_CHANGED,
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_CLIENT_TRANSACTION,
@@ -352,6 +353,21 @@ pk_client_package_cb (DBusGProxy   *proxy,
 			g_ptr_array_add (client->priv->cache_package, item);
 		}
 	}
+}
+
+/**
+ * pk_client_updates_changed_cb:
+ */
+static void
+pk_client_updates_changed_cb (DBusGProxy *proxy, const gchar *tid, PkClient *client)
+{
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* we always emit, even if the tid does not match */
+	pk_debug ("emitting updates-changed");
+	g_signal_emit (client, signals [PK_CLIENT_UPDATES_CHANGED], 0);
+
 }
 
 /**
@@ -1559,6 +1575,11 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	signals [PK_CLIENT_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	signals [PK_CLIENT_PERCENTAGE_CHANGED] =
 		g_signal_new ("percentage-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1742,6 +1763,11 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 
+	dbus_g_proxy_add_signal (proxy, "UpdatesChanged",
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "UpdatesChanged",
+				     G_CALLBACK (pk_client_updates_changed_cb), client, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -1788,6 +1814,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_no_percentage_updates_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "TransactionStatusChanged",
 				        G_CALLBACK (pk_client_transaction_status_changed_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",
+				        G_CALLBACK (pk_client_updates_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",

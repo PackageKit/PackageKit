@@ -1,9 +1,5 @@
 Order of no particular importance:
 
-*** Have to have an UpdatesChanged signal ***
-For the icon to update after we've done a system upgrade
-NOTE: RELEASE BLOCKER
-
 *** pk-notify-icon (client) ***
 Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration

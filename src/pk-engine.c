@@ -77,6 +77,7 @@ enum {
 	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
+	PK_ENGINE_UPDATES_CHANGED,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
@@ -348,7 +349,7 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 		return;
 	}
 	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting error-code tid:%s %s, '%s'", item->tid, restart_text, details);
+	pk_debug ("emitting require-restart tid:%s %s, '%s'", item->tid, restart_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, item->tid, restart_text, details);
 	pk_engine_reset_timer (engine);
 }
@@ -384,6 +385,7 @@ static void
 pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 {
 	PkTransactionItem *item;
+	PkRoleEnum role;
 	const gchar *exit_text;
 	gdouble time;
 
@@ -402,6 +404,14 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	pk_debug ("backend was running for %f seconds", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
+
+	/* could the update list have changed? */
+	pk_backend_get_role (item->backend, &role, NULL);
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		pk_debug ("emitting updates-changed tid:%s", item->tid);
+		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+	}
 
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
@@ -1892,6 +1902,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_ENGINE_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
