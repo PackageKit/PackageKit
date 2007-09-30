@@ -112,6 +112,8 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force);
 gboolean	 pk_client_install_package		(PkClient	*client,
 							 const gchar	*package_id);
+gboolean	 pk_client_resolve			(PkClient	*client,
+							 const gchar	*package);
 gboolean	 pk_client_cancel			(PkClient	*client);
 
 /* cached stuff */

@@ -984,7 +984,6 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 		pk_warning ("SearchGroup failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
@@ -1026,7 +1025,6 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 		pk_warning ("SearchFile failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
@@ -1067,7 +1065,6 @@ pk_client_get_depends (PkClient *client, const gchar *package)
 		pk_warning ("GetDepends failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
@@ -1108,7 +1105,6 @@ pk_client_get_requires (PkClient *client, const gchar *package)
 		pk_warning ("GetRequires failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
@@ -1149,7 +1145,46 @@ pk_client_get_update_detail (PkClient *client, const gchar *package)
 		pk_warning ("GetUpdateDetail failed!");
 		return FALSE;
 	}
-	/* only assign on success */
+
+	return TRUE;
+}
+
+/**
+ * pk_client_resolve:
+ **/
+gboolean
+pk_client_resolve (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+
+	error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", &error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error != NULL) {
+		const gchar *error_name;
+		error_name = pk_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("Resolve failed!");
+		return FALSE;
+	}
 
 	return TRUE;
 }
@@ -1190,7 +1225,6 @@ pk_client_get_description (PkClient *client, const gchar *package)
 		pk_warning ("GetDescription failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
@@ -1300,7 +1334,6 @@ pk_client_refresh_cache (PkClient *client, gboolean force)
 		pk_warning ("RefreshCache failed!");
 		return FALSE;
 	}
-	/* only assign on success */
 
 	return TRUE;
 }
