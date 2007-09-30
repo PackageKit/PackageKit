@@ -4,12 +4,6 @@ Order of no particular importance:
 For the icon to update after we've done a system upgrade
 NOTE: RELEASE BLOCKER
 
-*** convert the magic number in Package to a string type *** 
-Define Package to be (s,s) not (i,s) where the first status is
-"installed, removed, updated, security, normal, etc"
-Need to convert to enumerated types early on, and in the client library
-NOTE: RELEASE BLOCKER
-
 *** pk-notify-icon (client) ***
 Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration

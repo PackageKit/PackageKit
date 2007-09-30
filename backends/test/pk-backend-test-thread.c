@@ -30,10 +30,10 @@
 static gboolean
 backend_search_group_thread (PkBackend *backend, gpointer data)
 {
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	return TRUE;
 }
 
@@ -66,10 +66,10 @@ backend_search_name_thread (PkBackend *backend, gpointer data)
 	g_timer_destroy (timer);
 	pk_debug ("exited task (%p,%p)", backend, data);
 
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	return TRUE;
 }
 

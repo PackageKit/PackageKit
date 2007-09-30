@@ -327,24 +327,26 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 static void
 pk_client_package_cb (DBusGProxy   *proxy,
 		      const gchar  *tid,
-		      guint         value,
+		      const gchar  *info_text,
 		      const gchar  *package_id,
 		      const gchar  *summary,
 		      PkClient     *client)
 {
 	PkClientPackageItem *item;
+	PkInfoEnum info;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
-		pk_debug ("emit package %i, %s, %s", value, package_id, summary);
-		g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, value, package_id, summary);
+		pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+		info = pk_info_enum_from_text (info_text);
+		g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
 
 		/* cache */
 		if (client->priv->use_buffer == TRUE) {
-			pk_debug ("adding to cache array package %i, %s, %s", value, package_id, summary);
+			pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 			item = g_new0 (PkClientPackageItem, 1);
-			item->value = value;
+			item->info = info;
 			item->package_id = g_strdup (package_id);
 			item->summary = g_strdup (summary);
 			g_ptr_array_add (client->priv->cache_package, item);
@@ -1730,7 +1732,7 @@ pk_client_init (PkClient *client)
 				     G_CALLBACK (pk_client_transaction_status_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_client_package_cb), client, NULL);
 

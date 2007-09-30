@@ -439,7 +439,12 @@ static gboolean backend_search_packages_thread (PkBackend *backend, gpointer dat
 		if (Match == true)// && pk_backend_filter_package_name(backend,P.Name().c_str()))
 		{
 			gchar *pid = pk_package_id_build(P.Name().c_str(),J->verstr,J->arch,J->repo);
-			pk_backend_package(backend, J->installed, pid, P.ShortDesc().c_str());
+			PkInfoEnum info;
+			if (J->installed)
+				info = PK_INFO_ENUM_INSTALLED;
+			else
+				info = PK_INFO_ENUM_AVAILABLE;
+			pk_backend_package(backend, info, pid, P.ShortDesc().c_str());
 			g_free(pid);
 		}
 	}

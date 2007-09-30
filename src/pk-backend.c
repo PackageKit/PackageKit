@@ -236,9 +236,9 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 {
 	gchar **sections;
 	guint size;
-	guint value = 0;
 	gchar *command;
 	gboolean ret = TRUE;
+	PkInfoEnum info;
 	PkGroupEnum group;
 
 	/* check if output line */
@@ -259,9 +259,16 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		if (pk_package_id_check (sections[2]) == TRUE) {
-			value = atoi(sections[1]);
-			pk_debug ("value=%i, package='%s' shortdesc='%s'", value, sections[2], sections[3]);
-			pk_backend_package (backend, value, sections[2], sections[3]);
+			info = pk_info_enum_from_text (sections[1]);
+			/* just until we've converted the backends */
+			if (info == PK_INFO_ENUM_UNKNOWN) {
+				g_print ("Info enumerated type '%s' not recognised\n", sections[1]);
+				g_print ("See src/pk-enum.c for allowed values.\n");
+				pk_error ("Runtime error, cannot continue");
+			}
+			pk_debug ("info=%s, package='%s' shortdesc='%s'",
+				  pk_info_enum_to_text (info), sections[2], sections[3]);
+			pk_backend_package (backend, info, sections[2], sections[3]);
 		} else {
 			pk_warning ("invalid package_id");
 		}
@@ -614,7 +621,7 @@ pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
  * pk_backend_package:
  **/
 gboolean
-pk_backend_package (PkBackend *backend, guint value, const gchar *package, const gchar *summary)
+pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, const gchar *summary)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -623,8 +630,8 @@ pk_backend_package (PkBackend *backend, guint value, const gchar *package, const
 	g_free (backend->priv->last_package);
 	backend->priv->last_package = g_strdup (package);
 
-	pk_debug ("emit package %i, %s, %s", value, package, summary);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, value, package, summary);
+	pk_debug ("emit package %i, %s, %s", info, package, summary);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary);
 
 	return TRUE;
 }

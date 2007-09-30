@@ -262,9 +262,10 @@ pk_engine_no_percentage_updates_cb (PkBackend *backend, PkEngine *engine)
  * pk_engine_package_cb:
  **/
 static void
-pk_engine_package_cb (PkBackend *backend, guint value, const gchar *package_id, const gchar *summary, PkEngine *engine)
+pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
 	PkTransactionItem *item;
+	const gchar *info_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -274,8 +275,9 @@ pk_engine_package_cb (PkBackend *backend, guint value, const gchar *package_id, 
 		pk_warning ("could not find backend");
 		return;
 	}
-	pk_debug ("emitting package tid:%s value=%i %s, %s", item->tid, value, package_id, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, value, package_id, summary);
+	info_text = pk_info_enum_to_text (info);
+	pk_debug ("emitting package tid:%s info=%s %s, %s", item->tid, info_text, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, info_text, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -1878,8 +1880,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

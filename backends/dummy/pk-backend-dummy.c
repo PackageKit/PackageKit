@@ -89,10 +89,10 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 }
 
@@ -122,10 +122,10 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 }
 
@@ -150,11 +150,15 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "powertop;1.8-1.fc8;i386;fedora",
-			 "Power consumption monitor");
-	pk_backend_package (backend, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-			 "The Linux kernel (the core of the Linux operating system)");
-	pk_backend_package (backend, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
+	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
+			    "powertop;1.8-1.fc8;i386;fedora",
+			    "Power consumption monitor");
+	pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
+			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+			    "The Linux kernel (the core of the Linux operating system)");
+	pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
+			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+			    "An HTML widget for GTK+ 2.0");
 	pk_backend_finished (backend);
 }
 
@@ -233,8 +237,9 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "vips-doc;7.12.4-2.fc8;noarch;linva",
+			    "The vips documentation package.");
 	pk_backend_finished (backend);
 }
 
@@ -245,8 +250,9 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "vips-doc;7.12.4-2.fc8;noarch;linva",
+			    "The vips documentation package.");
 	pk_backend_finished (backend);
 }
 
@@ -257,8 +263,9 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "vips-doc;7.12.4-2.fc8;noarch;linva",
+			    "The vips documentation package.");
 	pk_backend_finished (backend);
 }
 
@@ -269,14 +276,18 @@ gboolean
 backend_search_name_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	pk_backend_package (backend, 1, "evince;0.9.3-5.fc8;i386;installed",
-			 "PDF Document viewer");
-	pk_backend_package (backend, 1, "tetex;3.0-41.fc8;i386;fedora",
-			 "TeTeX is an implementation of TeX for Linux or UNIX systems.");
-	pk_backend_package (backend, 0, "scribus;1.3.4-1.fc8;i386;fedora",
-			 "Scribus is an desktop open source page layout program");
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "evince;0.9.3-5.fc8;i386;installed",
+			    "PDF Document viewer");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "tetex;3.0-41.fc8;i386;fedora",
+			    "TeTeX is an implementation of TeX for Linux or UNIX systems.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "scribus;1.3.4-1.fc8;i386;fedora",
+			    "Scribus is an desktop open source page layout program");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "vips-doc;7.12.4-2.fc8;noarch;linva",
+			    "The vips documentation package.");
 	pk_backend_finished (backend);
 	return FALSE;
 }
@@ -299,7 +310,7 @@ static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, package_id, "The same thing");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, "The same thing");
 	pk_backend_finished (backend);
 }
 

@@ -43,7 +43,7 @@ gboolean	 pk_backend_change_status		(PkBackend	*backend,
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
-							 guint		 value,
+							 PkInfoEnum	 info,
 							 const gchar	*package_id,
 							 const gchar	*summary);
 gboolean	 pk_backend_update_detail		(PkBackend	*backend,

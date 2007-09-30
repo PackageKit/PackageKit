@@ -46,6 +46,17 @@ RESTART_SYSTEM = "system"
 RESTART_APPLICATION = "application"
 RESTART_SESSION = "session"
 
+INFO_INSTALLED = "installed"
+INFO_AVAILABLE = "available"
+INFO_LOW = "low"
+INFO_NORMAL = "normal"
+INFO_IMPORTANT = "important"
+INFO_SECURITY = "security"
+INFO_DOWNLOADING = "downloading"
+INFO_UPDATING = "updating"
+INFO_INSTALLING = "installing"
+INFO_REMOVING = "removing"
+
 # Classes
 
 class PackageKitBaseBackend:
@@ -84,7 +95,7 @@ class PackageKitBaseBackend:
     def package(self,id,status,summary):
         '''
         send 'package' signal
-        @param status: 1 = Installed, 0 = not
+        @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary 
         '''

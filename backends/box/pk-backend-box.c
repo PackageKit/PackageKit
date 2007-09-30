@@ -76,12 +76,16 @@ add_packages_from_list (PkBackend *backend, GList *list)
 	PackageSearch *package = NULL;
 	GList *li = NULL;
 	gchar *pkg_string = NULL;
+	PkInfoEnum info;
 
 	for (li = list; li != NULL; li = li->next) {
 		package = (PackageSearch*)li->data;
 		pkg_string = pk_package_id_build(package->package, package->version, package->arch, package->reponame);
-
-		pk_backend_package (backend, package->installed, pkg_string, package->description);
+		if (package->installed)
+			info = PK_INFO_ENUM_INSTALLED;
+		else
+			info = PK_INFO_ENUM_AVAILABLE;
+		pk_backend_package (backend, info, pkg_string, package->description);
 
 		g_free(pkg_string);
 	}

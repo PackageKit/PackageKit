@@ -51,7 +51,7 @@ typedef struct
 /* used if we are collecting packages sync */
 typedef struct
 {
-	guint			 value;
+	PkInfoEnum		 info;
 	gchar			*package_id;
 	gchar			*summary;
 } PkClientPackageItem;

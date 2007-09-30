@@ -49,7 +49,9 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
 	if (data != NULL) {
 		size = (length - strlen(data));
 		if (size < 0) {
-			*extra = -size;
+			if (extra != NULL) {
+				*extra = -size;
+			}
 			size = 0;
 		}
 	}
@@ -61,19 +63,14 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkClient *client, guint value, const gchar *package_id, const gchar *summary, gpointer data)
+pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id, const gchar *summary, gpointer data)
 {
 	PkPackageId *ident;
 	PkPackageId *spacing;
-	const gchar *installed;
+	gchar *info_text;
 	guint extra;
 
-	if (value == 0) {
-		installed = "no  ";
-	} else {
-		installed = "yes ";
-	}
-
+	info_text = pk_console_make_space (pk_info_enum_to_text (info), 10, NULL);
 	spacing = pk_package_id_new ();
 	ident = pk_package_id_new_from_string (package_id);
 
@@ -85,7 +82,7 @@ pk_console_package_cb (PkClient *client, guint value, const gchar *package_id, c
 	spacing->data = pk_console_make_space (ident->data, 7-extra, &extra);
 
 	/* pretty print */
-	g_print ("%s %s%s %s%s %s%s %s%s %s\n", installed,
+	g_print ("%s %s%s %s%s %s%s %s%s %s\n", info_text,
 		 ident->name, spacing->name,
 		 ident->version, spacing->version,
 		 ident->arch, spacing->arch,

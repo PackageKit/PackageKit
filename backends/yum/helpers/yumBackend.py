@@ -247,7 +247,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)            
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-                self.package(id, 1, pkg.summary)
+                # TODO: we need to find out if this is installed or not...
+                self.package(id, PK_INFO_ENUM_UNKNOWN, pkg.summary)
 
     def update_system(self):
         '''
@@ -400,9 +401,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         ut = notice['type']
         # TODO : Add more types to check
         if ut == 'security':
-            return 1
+            return INFO_SECURITY
         else:
-            return 0 
+            return INFO_NORMAL 
         
             
     def get_updates(self):
@@ -427,7 +428,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 status = self._get_status(notice)
                 self._show_package(pkg,status)                
             else:
-                self._show_package(pkg,0)
+                self._show_package(pkg,INFO_NORMAL)
             
                                                                                                
     def _setup_yum(self):
@@ -526,10 +527,10 @@ class DownloadCallback( BaseMeter ):
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
-                    self.base._show_package(pkg,1)
+                    self.base._show_package(pkg,INFO_DOWNLOADING)
                 else:
                     id = self.base.get_package_id(name, '', '', '')
-                    self.base.package(id,1, "Repository MetaData")
+                    self.base.package(id,INFO_DOWNLOADING, "Repository MetaData")
     
 
 class PackageKitCallback(RPMBaseCallback):

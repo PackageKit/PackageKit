@@ -192,6 +192,7 @@ list_cmp_fn (const void *n1, const void *n2)
 static void
 add_package (PkBackend *backend, PackageSource *package)
 {
+  PkInfoEnum info;
   gchar *pkg_string;
   gchar *arch = (gchar *)alpm_pkg_get_arch (package->pkg);
 
@@ -201,8 +202,11 @@ add_package (PkBackend *backend, PackageSource *package)
 				     alpm_pkg_get_version (package->pkg),
 				     arch,
 				     package->repo);
-
-  pk_backend_package (backend, package->installed, pkg_string, alpm_pkg_get_desc (package->pkg));
+  if (package->installed)
+    info = PK_INFO_ENUM_INSTALLED;
+  else
+    info = PK_INFO_ENUM_AVAILABLE;
+  pk_backend_package (backend, info, pkg_string, alpm_pkg_get_desc (package->pkg));
 
   g_free(pkg_string);
 }
@@ -371,61 +375,6 @@ backend_initialize (PkBackend *backend)
 	    return;
 	  }
 	pk_debug ("alpm: ready to go");
-}
-
-/**
- * backend_get_depends:
- */
-static void
-backend_get_depends (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_get_description:
- */
-static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	//PkPackageId *id = pk_package_id_new_from_string (package_id);
-	//pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_PROGRAMMING, "sdgd");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_get_requires:
- */
-static void
-backend_get_requires (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, "glib2;2.14.0;i386;fedora",
-			 "The GLib library");
-	pk_backend_package (backend, 1, "gtk2;gtk2-2.11.6-6.fc8;i386;fedora",
-			 "GTK+ Libraries for GIMP");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_get_updates:
- */
-static void
-backend_get_updates (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "powertop;1.8-1.fc8;i386;fedora",
-			 "Power consumption monitor");
-	pk_backend_package (backend, 1, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
-			 "The Linux kernel (the core of the Linux operating system)");
-	pk_backend_package (backend, 1, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
-	pk_backend_finished (backend);
 }
 
 /**
@@ -656,42 +605,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 }
 
 /**
- * backend_search_details:
- */
-static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_search_file:
- */
-static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
-	pk_backend_finished (backend);
-}
-
-/**
- * backend_search_group:
- */
-static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 0, "vips-doc;7.12.4-2.fc8;noarch;linva",
-			 "The vips documentation package.");
-	pk_backend_finished (backend);
-}
-
-/**
  * backend_search_name:
  */
 static void
@@ -762,44 +675,6 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_finished (backend);
 }
 
-/**
- * backend_update_package:
- */
-static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, 1, package_id, "The same thing");
-	pk_backend_finished (backend);
-}
-
-static gboolean
-backend_update_system_timeout (gpointer data)
-{
-	PkBackend *backend = (PkBackend *) data;
-	if (progress_percentage == 100) {
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
-	progress_percentage += 10;
-	pk_backend_change_percentage (backend, progress_percentage);
-	return TRUE;
-}
-
-/**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	progress_percentage = 0;
-	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
-	g_timeout_add (1000, backend_update_system_timeout, backend);
-}
-
 static void
 backend_get_groups (PkBackend *backend, PkEnumList *list)
 {
@@ -867,21 +742,21 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
- 	backend_get_depends,				/* get_depends */
-	backend_get_description,			/* get_description */
-	backend_get_requires,				/* get_requires */
+ 	NULL,						/* get_depends */
+	NULL,						/* get_description */
+	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
-	backend_get_updates,				/* get_updates */
+	NULL,						/* get_updates */
 	backend_install_package,			/* install_package */
 	backend_install_file,				/* install_file */
 	backend_refresh_cache,				/* refresh_cache */
 	backend_remove_package,				/* remove_package */
 	NULL,						/* resolve */
-	backend_search_details,				/* search_details */
-	backend_search_file,				/* search_file */
-	backend_search_group,				/* search_group */
+	NULL,						/* search_details */
+	NULL,						/* search_file */
+	NULL,						/* search_group */
 	backend_search_name,				/* search_name */
-	backend_update_package,				/* update_package */
-	backend_update_system				/* update_system */
+	NULL,						/* update_package */
+	NULL						/* update_system */
 );
 

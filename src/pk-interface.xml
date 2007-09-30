@@ -97,7 +97,7 @@
     </signal>
     <signal name="Package">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="u" name="value" direction="out"/> <!-- installed=1, not-installed=0 | security=1, normal=0 -->
+      <arg type="s" name="info" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>

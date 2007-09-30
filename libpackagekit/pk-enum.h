@@ -129,6 +129,23 @@ typedef enum {
 	PK_UPDATE_ENUM_NONE,
 } PkUpdateEnum;
 
+typedef enum {
+	PK_INFO_ENUM_INSTALLED,
+	PK_INFO_ENUM_AVAILABLE,
+	PK_INFO_ENUM_LOW,
+	PK_INFO_ENUM_NORMAL,
+	PK_INFO_ENUM_IMPORTANT,
+	PK_INFO_ENUM_SECURITY,
+	PK_INFO_ENUM_DOWNLOADING,
+	PK_INFO_ENUM_UPDATING,
+	PK_INFO_ENUM_INSTALLING,
+	PK_INFO_ENUM_REMOVING,
+	PK_INFO_ENUM_UNKNOWN
+} PkInfoEnum;
+
+PkInfoEnum	 pk_info_enum_from_text			(const gchar	*info);
+const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);
+
 PkUpdateEnum	 pk_update_enum_from_text		(const gchar	*update);
 const gchar	*pk_update_enum_to_text			(PkUpdateEnum	 update);
 

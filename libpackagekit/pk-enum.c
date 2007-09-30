@@ -141,6 +141,20 @@ static PkTaskEnumMatch task_update[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_info[] = {
+	{PK_INFO_ENUM_INSTALLED,		"installed"},
+	{PK_INFO_ENUM_AVAILABLE,		"available"},
+	{PK_INFO_ENUM_LOW,			"low"},
+	{PK_INFO_ENUM_NORMAL,			"normal"},
+	{PK_INFO_ENUM_IMPORTANT,		"important"},
+	{PK_INFO_ENUM_SECURITY,			"security"},
+	{PK_INFO_ENUM_DOWNLOADING,		"downloading"},
+	{PK_INFO_ENUM_UPDATING,			"updating"},
+	{PK_INFO_ENUM_INSTALLING,		"installing"},
+	{PK_INFO_ENUM_REMOVING,			"removing"},
+	{0, NULL},
+};
+
 /**
  * pk_task_enum_find_value:
  */
@@ -187,6 +201,24 @@ pk_task_enum_find_string (PkTaskEnumMatch *table, guint value)
 		}
 	}
 	return table[0].string;
+}
+
+/**
+ * pk_info_enum_from_text:
+ */
+PkInfoEnum
+pk_info_enum_from_text (const gchar *info)
+{
+	return pk_task_enum_find_value (task_info, info);
+}
+
+/**
+ * pk_info_enum_to_text:
+ **/
+const gchar *
+pk_info_enum_to_text (PkInfoEnum info)
+{
+	return pk_task_enum_find_string (task_info, info);
 }
 
 /**
