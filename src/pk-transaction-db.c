@@ -66,6 +66,7 @@ typedef struct {
 	guint duration;
 	PkRoleEnum role;
 	gchar *tid;
+	gchar *data;
 	gchar *timespec;
 } PkTransactionDbItem;
 
@@ -79,6 +80,7 @@ pk_transaction_db_item_clear (PkTransactionDbItem *item)
 	item->duration = 0;
 	item->role = PK_ROLE_ENUM_UNKNOWN;
 	item->tid = NULL;
+	item->data = NULL;
 	item->timespec = NULL;
 	return TRUE;
 }
@@ -90,6 +92,7 @@ static gboolean
 pk_transaction_db_item_free (PkTransactionDbItem *item)
 {
 	g_free (item->tid);
+	g_free (item->data);
 	g_free (item->timespec);
 	return TRUE;
 }
@@ -128,6 +131,10 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
+		} else if (strcmp (col, "data") == 0) {
+			if (value != NULL) {
+				item.data = g_strdup (value);
+			}
 		} else if (strcmp (col, "duration") == 0) {
 			if (value != NULL) {
 				item.duration = atoi (value);
@@ -142,6 +149,7 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	g_print (" succeeded   : %i\n", item.succeeded);
 	g_print (" role        : %s\n", pk_role_enum_to_text (item.role));
 	g_print (" duration    : %i (seconds)\n", item.duration);
+	g_print (" data        : %s\n", item.data);
 
 	/* emit signal */
 	g_signal_emit (tdb, signals [PK_TRANSACTION_DB_TRANSACTION], 0,
@@ -184,7 +192,7 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
-	statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role "
+	statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
 				     "FROM transactions ORDER BY transaction_id DESC LIMIT %i", limit);
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
@@ -235,6 +243,24 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 
 	role_text = pk_role_enum_to_text (role);
 	statement = g_strdup_printf ("UPDATE transactions SET role = '%s' WHERE transaction_id = '%s'", role_text, tid);
+	pk_transaction_db_sql_statement (tdb, statement);
+	g_free (statement);
+	return TRUE;
+}
+
+/**
+ * pk_transaction_db_set_data:
+ **/
+gboolean
+pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar *data)
+{
+	gchar *statement;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	statement = g_strdup_printf ("UPDATE transactions SET data = \"%s\" WHERE transaction_id = '%s'",
+				     data, tid);
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
 	return TRUE;
@@ -315,6 +341,8 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 
 	/* add extra tables */
 	statement = "ALTER table transactions ADD timespec TEXT;";
+	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+	statement = "ALTER table transactions ADD data TEXT;";
 	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
 }
 

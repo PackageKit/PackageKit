@@ -170,7 +170,16 @@ backend_install_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+	if (progress_percentage == 30) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+				    "An HTML widget for GTK+ 2.0");
+		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+	}
 	if (progress_percentage == 50) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
+				    "Devel files for gtkhtml");
 		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
 	progress_percentage += 10;
@@ -186,6 +195,9 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	progress_percentage = 0;
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+			    "An HTML widget for GTK+ 2.0");
 	g_timeout_add (1000, backend_install_timeout, backend);
 }
 

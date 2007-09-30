@@ -59,6 +59,9 @@ gboolean	 pk_transaction_db_set_finished		(PkTransactionDb	*tdb,
 							 const gchar		*tid,
 							 gboolean		 success,
 							 guint			 runtime);
+gboolean	 pk_transaction_db_set_data		(PkTransactionDb	*tdb,
+							 const gchar		*tid,
+							 const gchar		*data);
 gboolean	 pk_transaction_db_get_list		(PkTransactionDb	*tdb,
 							 guint			 limit);
 

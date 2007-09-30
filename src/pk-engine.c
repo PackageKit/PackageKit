@@ -267,6 +267,7 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 {
 	PkTransactionItem *item;
 	const gchar *info_text;
+	gchar *cache;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -277,6 +278,13 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 		return;
 	}
 	info_text = pk_info_enum_to_text (info);
+
+	/* add to package cache */
+	cache = g_strdup_printf ("%s\t%s\t%s\n", info_text, package_id, summary);
+	pk_debug ("cache='%s'", cache);
+	g_string_append (item->package_cache, cache);
+	g_free (cache);
+
 	pk_debug ("emitting package tid:%s info=%s %s, %s", item->tid, info_text, package_id, summary);
 	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, info_text, package_id, summary);
 	pk_engine_reset_timer (engine);
@@ -421,6 +429,12 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
+
+	/* add to the database */
+	if (item->package_cache->len != 0) {
+		g_string_set_size (item->package_cache, item->package_cache->len-1);
+		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, item->package_cache->str);
+	}
 
 	pk_debug ("backend was running for %f seconds", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);

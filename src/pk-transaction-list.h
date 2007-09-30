@@ -54,6 +54,7 @@ typedef struct {
 	gboolean		 running;
 	PkBackend		*backend;
 	gchar			*tid;
+	GString			*package_cache;
 } PkTransactionItem;
 
 GType		 pk_transaction_list_get_type	  	(void);
