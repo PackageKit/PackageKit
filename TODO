@@ -15,6 +15,18 @@ Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration
 NOTE: RELEASE BLOCKER
 
+*** installed, available checkboxes to go comboboxes ***
+Show: [Installed packages, Available packages, All packages]
+Type Filter: [Only graphical packages, Only text packages, All packages]
+Development Filter: [Only normal packages, Only development packages, All packages]
+
+*** Add new callback for status ***
+TimeRemaining()
+ 
+*** Get the deps in the UI when removing ***
+We really don't want to remove glibc...
+NOTE: RELEASE BLOCKER
+
 *** pk-application (client) ***
 Use an icons for installed and not-installed rather than tickboxes
 Refresh the query list after an install or remove (means saving the query and re-issuing)
