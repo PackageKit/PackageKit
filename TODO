@@ -5,11 +5,6 @@ Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration
 NOTE: RELEASE BLOCKER
 
-*** installed, available checkboxes to go comboboxes ***
-Show: [Installed packages, Available packages, All packages]
-Type Filter: [Only graphical packages, Only text packages, All packages]
-Development Filter: [Only normal packages, Only development packages, All packages]
-
 *** Add new callback for status ***
 TimeRemaining()
  
