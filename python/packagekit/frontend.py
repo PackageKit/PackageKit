@@ -245,10 +245,10 @@ class PackageKit:
 
 	@dbusException
 	@job_id
-	def Resolve(self,package_id):
+	def Resolve(self,package_name):
 		"""
-		Resolves dependancies.
-		(description is a guess, since this not yet supported in yum backend, and maybe others)
+		Finds a package with the given name, and gives back a Package that matches that name exactly
+		(not yet supported in yum backend, and maybe others)
 		"""
 		return self.pk_iface.Resolve(self.tid(),package_id)
 
