@@ -64,7 +64,7 @@ def desc(*args):
 		raise PackageKitTransactionFailure
 	return p.GetDescription(args[0][0])
 
-def refresh_cache(args):
+def refresh_cache(*args):
 	if len(args)>0 and len(args[0])>0:
 		print "refresh_cache doesn't take args"
 		raise PackageKitTransactionFailure
@@ -81,6 +81,15 @@ def history(*args):
 		print "history takes an integer (how many transactions to show)"
 
 	return p.GetOldTransactions(count)
+
+def get_backend_detail(*args):
+	details = p.GetBackendDetail()
+	for d in details:
+		print "  %s" % d
+
+	# Quit immediately because no job was scheduled
+	exit(0)
+
 
 def usage():
 	print "Usage: %s <command> <options>"%argv[0]
@@ -104,7 +113,7 @@ if not globals().has_key(args[0]):
 	usage()
 
 try:
-	job = globals()[args[0]](args[1:])
+	globals()[args[0]](args[1:])
 except PackageKitAccessDenied:
 	print "You don't have sufficient permissions to access PackageKit (on the org.freedesktop.PackageKit dbus service)"
 	exit(1)

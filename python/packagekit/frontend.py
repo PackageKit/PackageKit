@@ -214,24 +214,272 @@ class PackageKit:
 
 
 # --- PK Methods ---
+
+## Start a new transaction to do Foo
 	
 	@dbusException
 	@job_id
-	def SearchName(self,pattern,filter="none"):
-		return self.pk_iface.SearchName(self.tid(),filter,pattern)
-
-	@dbusException
-	@job_id
-	def GetDescription(self,package_id):
-		return self.pk_iface.GetDescription(self.tid(),package_id)
+	def GetUpdates(self):
+		"""
+		Lists packages which could be updated.
+		Causes 'Package' signals for each available package.
+		"""
+		return self.pk_iface.GetUpdates(self.tid())
 
 	@dbusException
 	@job_id
 	def RefreshCache(self,force=False):
+		"""
+		Refreshes the backend's cache.
+		"""
 		return self.pk_iface.RefreshCache(self.tid(),force)
 
 	@dbusException
 	@job_id
+	def UpdateSystem(self):
+		"""
+		Applies all available updates.
+		Asynchronous
+		"""
+		return self.pk_iface.UpdateSystem(self.tid())
+
+	@dbusException
+	@job_id
+	def Resolve(self,package_id):
+		"""
+		Resolves dependancies.
+		(description is a guess, since this not yet supported in yum backend, and maybe others)
+		"""
+		return self.pk_iface.Resolve(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def SearchName(self,pattern,filter="none"):
+		"""
+		Searches the 'Name' field for something matching 'pattern'.
+		'filter' could be 'installed', a repository name, or 'none'.
+		Causes 'Package' signals for each package found.
+		"""
+		return self.pk_iface.SearchName(self.tid(),filter,pattern)
+
+	@dbusException
+	@job_id
+	def SearchDetails(self,pattern,filter="none"):
+		"""
+		Searches the 'Details' field for something matching 'pattern'.
+		'filter' could be 'installed', a repository name, or 'none'.
+		Causes 'Package' signals for each package found.
+		"""
+		return self.pk_iface.SearchDetails(self.tid(),filter,pattern)
+
+	@dbusException
+	@job_id
+	def SearchGroup(self,pattern,filter="none"):
+		"""
+		Lists all packages in groups matching 'pattern'.
+		'filter' could be 'installed', a repository name, or 'none'.
+		Causes 'Package' signals for each package found.
+		(description is a guess, since this not yet supported in yum backend, and maybe others)
+		"""
+		return self.pk_iface.SearchGroup(self.tid(),filter,pattern)
+
+	@dbusException
+	@job_id
+	def SearchFile(self,pattern,filter="none"):
+		"""
+		Lists all packages that provide a file matching 'pattern'.
+		'filter' could be 'installed', a repository name, or 'none'.
+		Causes 'Package' signals for each package found.
+		"""
+		return self.pk_iface.SearchFile(self.tid(),filter,pattern)
+
+	@dbusException
+	@job_id
+	def GetDepends(self,package_id):
+		"""
+		Lists package dependancies?
+		(description is a guess, since this doesn't seem to work for me)
+		"""
+		return self.pk_iface.GetDepends(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def GetRequires(self,package_id):
+		"""
+		Lists package dependancies?
+		(description is a guess, since this not doesn't seem to work for me)
+		"""
+		return self.pk_iface.GetRequires(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def GetUpdateDetail(self,package_id):
+		"""
+		More details about an update.
+		(description is a guess, since this not yet supported in yum backend, and maybe others)
+		"""
+		return self.pk_iface.GetUpdateDetail(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def GetDescription(self,package_id):
+		"""
+		Gets the Description of a given package_id.
+		Causes a 'Description' signal.
+		"""
+		return self.pk_iface.GetDescription(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def RemovePackage(self,package_id,allow_deps=False ):
+		"""
+		Removes a package.
+		Asynchronous
+		"""
+		return self.pk_iface.RemovePackage(self.tid(),package_id,allow_deps)
+
+	@dbusException
+	@job_id
+	def InstallPackage(self,package_id):
+		"""
+		Installs a package.
+		Asynchronous
+		"""
+		return self.pk_iface.InstallPackage(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def UpdatePackage(self,package_id):
+		"""
+		Updates a package.
+		Asynchronous
+		"""
+		return self.pk_iface.UpdatePackage(self.tid(),package_id)
+
+	@dbusException
+	@job_id
+	def InstallFile(self,full_path):
+		"""
+		Installs a package which provides given file?
+		Asynchronous
+		"""
+		return self.pk_iface.InstallFile(self.tid(),full_path)
+
+## Do things or query transactions
+	@dbusException
+	@job_id
+	def Cancel(self):
+		"""
+		Might not succeed for all manner or reasons.
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.Cancel(self.tid())
+
+	@dbusException
+	@job_id
+	def GetStatus(self):
+		"""
+		This is what the transaction is currrently doing, and might change.
+		Returns status (query,download,install,exit)
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.GetStatus(self.tid())
+
+	@dbusException
+	@job_id
+	def GetRole(self):
+		"""
+		This is the master role, i.e. won't change for the lifetime of the transaction
+		Returns status (query,download,install,exit) and package_id (package acted upon, or NULL
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.GetRole(self.tid())
+
+	@dbusException
+	@job_id
+	def GetPercentage(self):
+		"""
+		Returns percentage of transaction complete
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.GetPercentage(self.tid())
+
+	@dbusException
+	@job_id
+	def GetSubPercentage(self):
+		"""
+		Returns percentage of this part of transaction complete
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.GetSubPercentage(self.tid())
+
+	@dbusException
+	@job_id
+	def GetPackage(self):
+		"""
+		Returns package being acted upon at this very moment
+		throws NoSuchTransaction
+		"""
+		return self.pk_iface.GetPackage(self.tid())
+
+## Get lists of transactions
+
+	@dbusException
+	def GetTransactionList(self):
+		"""
+		Returns list of (active) transactions.
+		"""
+		return self.pk_iface.GetTransactionList()
+
+	@dbusException
+	@job_id
 	def GetOldTransactions(self,number=5):
+		"""
+		Causes Transaction signals for each Old transaction.
+		"""
 		return self.pk_iface.GetOldTransactions(self.tid(),number)
 
+## General methods
+
+	@dbusException
+	def GetBackendDetail(self):
+		"""
+		Returns name, author, and version of backend.
+		"""
+		return self.pk_iface.GetBackendDetail()
+
+	@dbusException
+	def GetActions(self):
+		"""
+		Returns list of supported actions.
+		"""
+		return self.pk_iface.GetActions()
+
+	@dbusException
+	def GetGroups(self):
+		"""
+		Returns list of supported groups.
+		"""
+		return self.pk_iface.GetGroups()
+
+	@dbusException
+	def GetFilters(self):
+		"""
+		Returns list of supported filters.
+		"""
+		return self.pk_iface.GetFilters()
+
+
+class DumpingPackageKit(PackageKit):
+	"""
+	Just like PackageKit(), but prints all signals instead of handling them
+	"""
+	def catchall_signal_handler(self,*args, **kwargs):
+		if kwargs['member'] == "Finished":
+			self.loop.quit()
+
+		print "Caught signal %s"% kwargs['member']
+		print "  args:"
+		for arg in args:
+			print "		" + str(arg)
+	
