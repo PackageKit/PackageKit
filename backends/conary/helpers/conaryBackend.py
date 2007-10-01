@@ -174,9 +174,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         try:
             troveTuple = troveTuple[0], troveTuple[1], troveTuple[2]
             localInstall = db.findTrove(None, troveTuple)
-            installed = 1
+            installed = INFO_INSTALLED
         except:
-            installed = 0
+            installed = INFO_AVAILABLE
         return installed
 
     def search_name(self, options, searchlist):
