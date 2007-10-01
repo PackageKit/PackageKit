@@ -173,7 +173,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
-            if installed:
+            if installed == INFO_INSTALLED:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
             try:
@@ -192,7 +192,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
-            if not installed:
+            if not installed == INFO_INSTALLED:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                     'Package not installed')
             try:
@@ -278,9 +278,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         do_print = False;
         if filterList == ['none']: # 'none' = all packages.
             return True
-        elif 'installed' in filterList and installed == 1:
+        elif 'installed' in filterList and installed == INFO_INSTALLED:
             do_print = True
-        elif '~installed' in filterList and installed == 0:
+        elif '~installed' in filterList and installed == INFO_AVAILABLE:
             do_print = True
 
         if len(filterList) == 1: # Only one filter, return
