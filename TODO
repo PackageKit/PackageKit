@@ -36,9 +36,6 @@ to expose in the UI.
 Client programs using libpackagekit should know the error, rather than just
 "it failed"
 
-*** Log what was installed/removed and when ***
-Need to monitor the Package's emitted by the task and encoded to a string
-
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
  * emit internal signal for SetTransactionData
