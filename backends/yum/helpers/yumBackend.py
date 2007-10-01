@@ -64,7 +64,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 break
             count+=1
             # are we installed?
-            if self.yumbase.rpmdb.installed(pkg.name):
+            if pkg.repoid == 'installed':
                 installed = INFO_INSTALLED
             else:
                 installed = INFO_AVAILABLE
@@ -72,6 +72,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if self._do_filtering(pkg,fltlist,installed):
                 self._show_package(pkg, installed)
 
+        
     def _do_filtering(self,pkg,filterList,installed):
         ''' Filter the package, based on the filter in filterList '''
 
@@ -79,9 +80,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         do_print = False;
         if filterList == ['none']: # 'none' = all packages.
             return True
-        elif 'installed' in filterList and installed == '1':
+        elif 'installed' in filterList and installed == INFO_INSTALLED:
             do_print = True
-        elif '~installed' in filterList and installed == '0':
+        elif '~installed' in filterList and installed == INFO_AVAILABLE:
             do_print = True
 
         if len(filterList) == 1: # Only one filter, return
@@ -180,7 +181,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, INFO_INSTALLED)
+                        self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
         
                 
@@ -369,7 +370,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if txmbr:
                 self._runYumTransaction()
             else:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                self.erhror(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
 
@@ -547,9 +548,9 @@ class PackageKitCallback(RPMBaseCallback):
         pct = int(self.startPct + (ts_current * bump))
         return pct
     
-    def _showName(self):
+    def _showName(self,status):
         id = self.base.get_package_id(self.curpkg, '', '', '')
-        self.base.package(id,1, "")
+        self.base.package(id,status, "")
         
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
@@ -557,9 +558,11 @@ class PackageKitCallback(RPMBaseCallback):
             self.curpkg = str(package)
             if action in TS_INSTALL_STATES:
                 self.base.status(STATE_INSTALL)
+                status = INFO_INSTALLING
             elif action in TS_REMOVE_STATES:
                 self.base.status(STATE_REMOVE)
-            self._showName()
+                status = INFO_REMOVING
+            self._showName(status)
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
