@@ -99,59 +99,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 id = self.get_package_id(name, version, flavor)
                 self.package(id, installed, summary)
 
-    def _do_search_live(self, searchlist, filters):
-        '''
-        Search for conary packages
-        @param searchlist: The conary package fields to search in
-        @param options: package types to search (all,installed,available)
-        '''
-        repos = self.client.getRepos()
-        db = conaryclient.ConaryClient(self.cfg).db
-        affinityDb = self.client.db
-        fltlist = filters.split(';')
-
-        troveSpecs = [ updatecmd.parseTroveSpec(searchlist,
-                                                allowEmptyName=False) ]
-
-        try:
-            # Look for packages with affinity
-            troveTupleList = queryrep.getTrovesToDisplay(repos, troveSpecs,
-                None, None, queryrep.VERSION_FILTER_LATEST,
-                queryrep.FLAVOR_FILTER_BEST, self.cfg.installLabelPath,
-                self.cfg.flavor, affinityDb)
-            # Look for packages regardless of affinity
-            troveTupleList.extend(queryrep.getTrovesToDisplay(repos, troveSpecs,
-                None, None, queryrep.VERSION_FILTER_LATEST,
-                queryrep.FLAVOR_FILTER_BEST, self.cfg.installLabelPath,
-                self.cfg.flavor, None))
-            # Remove dupes
-            tempDict = {}
-            try:
-                for element in troveTupleList:
-                    tempDict[element] = None
-            except TypeError:
-                del tempDict  # move on to the next method
-            else:
-                troveTupleList = tempDict.keys()
-
-            # Get the latest first
-            troveTupleList.sort()
-            troveTupleList.reverse()
-
-            for troveTuple in troveTupleList:
-                name = troveTuple[0]
-                version = troveTuple[1]
-                flavor = troveTuple[2]
-                # We don't have summary data yet... so leave it blank for now
-                summary = " "
-                installed = self.check_installed(troveTuple)
-
-                if self._do_filtering(name,fltlist,installed):
-                    id = self.get_package_id(name, version, flavor)
-                    self.package(id, installed, summary)
-        except:
-            self.error(ERROR_INTERNAL_ERROR, 'An internal error has occurred')
-
     def _do_update(self, applyList, apply=False):
         updJob = self.client.newUpdateJob()
         suggMap = self.client.prepareUpdateJob(updJob, applyList)
@@ -184,12 +131,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-search-name functionality
         '''
         self._do_search(searchlist, options)
-
-    def search_name_live(self, options, searchlist):
-        '''
-        Implement the {backend}-search-name-live functionality
-        '''
-        self._do_search_live(searchlist, options)
 
     def search_details(self, opt, key):
         pass
