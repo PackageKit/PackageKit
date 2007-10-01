@@ -65,9 +65,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             count+=1
             # are we installed?
             if self.yumbase.rpmdb.installed(pkg.name):
-                installed = '1'
+                installed = INFO_INSTALLED
             else:
-                installed = '0'
+                installed = INFO_AVAILABLE
         
             if self._do_filtering(pkg,fltlist,installed):
                 self._show_package(pkg, installed)
@@ -171,7 +171,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, 1)
+                        self._show_package(pkg, INFO_INSTALLED)
                         found[str(pkg)] = 1
         if not 'installed' in fltlist:
             # Check available for file                
@@ -180,7 +180,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, 1)
+                        self._show_package(pkg, INFO_INSTALLED)
                         found[str(pkg)] = 1
         
                 
