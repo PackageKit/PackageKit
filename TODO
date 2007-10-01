@@ -5,6 +5,11 @@ Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration
 NOTE: RELEASE BLOCKER
 
+*** don't output the same package in different repos ***
+Need to store Package() in the server properly, and compare the first chunk
+(not the data) to avoid reporting the same package more than once.
+NOTE: RELEASE BLOCKER
+
 *** Add new callback for status ***
 TimeRemaining()
  
