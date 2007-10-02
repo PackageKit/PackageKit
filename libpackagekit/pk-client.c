@@ -426,7 +426,7 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  const gchar *group_text,
 			  const gchar *description,
 			  const gchar *url,
-			  gulong size,
+			  gulong       size,
 			  const gchar *filelist,
 			  PkClient    *client)
 {
@@ -436,8 +436,10 @@ pk_client_description_cb (DBusGProxy  *proxy,
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
-		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s", package_id, licence, group, description, url, size, filelist);
-		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0, package_id, licence, group, description, url, size, filelist);
+		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
+			  package_id, licence, group, description, url, size, filelist);
+		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
+			       package_id, licence, group, description, url, size, filelist);
 	}
 }
 
@@ -1802,30 +1804,36 @@ pk_client_init (PkClient *client)
 	/* use PolicyKit */
 	client->priv->polkit = pk_polkit_client_new ();
 
+	/* PercentageChanged et al */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
+
+	/* TransactionStatusChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Finished */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
+	/* ErrorCode, RequireRestart */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
+
+	/* Description */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_ULONG_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_ULONG,
+					   G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* UpdateDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	/* transaction */
+	/* Transaction */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
 					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);

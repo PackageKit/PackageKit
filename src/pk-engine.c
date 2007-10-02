@@ -403,8 +403,10 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	}
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld, %s", item->tid, package_id, licence, group_text, detail, url, size, filelist);
-	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, item->tid, package_id, licence, group_text, detail, url, size, filelist);
+	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld, %s",
+		  item->tid, package_id, licence, group_text, detail, url, size, filelist);
+	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0,
+		       item->tid, package_id, licence, group_text, detail, url, size, filelist);
 }
 
 /**
