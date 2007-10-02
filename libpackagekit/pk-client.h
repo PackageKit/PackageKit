@@ -48,14 +48,6 @@ typedef struct
 	GObjectClass	parent_class;
 } PkClientClass;
 
-/* used if we are collecting packages sync */
-typedef struct
-{
-	PkInfoEnum		 info;
-	gchar			*package_id;
-	gchar			*summary;
-} PkClientPackageItem;
-
 GType		 pk_client_get_type			(void);
 PkClient	*pk_client_new				(void);
 

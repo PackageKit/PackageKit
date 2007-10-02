@@ -107,7 +107,7 @@ pk_package_list_get_string (PkPackageList *plist)
  * pk_plist_get_package_buffer:
  **/
 GPtrArray *
-pk_package_list_get_package_buffer (PkPackageList *plist)
+pk_package_list_get_buffer (PkPackageList *plist)
 {
 	g_return_val_if_fail (plist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
@@ -115,15 +115,15 @@ pk_package_list_get_package_buffer (PkPackageList *plist)
 }
 
 /**
- * pk_plist_remove_array:
+ * pk_package_list_remove_buffer:
  **/
-static void
-pk_plist_remove_array (PkPackageList *plist)
+gboolean
+pk_package_list_remove_buffer (PkPackageList *plist)
 {
 	PkPackageListItem *item;
 
-	g_return_if_fail (plist != NULL);
-	g_return_if_fail (PK_IS_PACKAGE_LIST (plist));
+	g_return_val_if_fail (plist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 
 	while (plist->priv->array->len > 0) {
 		item = g_ptr_array_index (plist->priv->array, 0);
@@ -132,6 +132,7 @@ pk_plist_remove_array (PkPackageList *plist)
 		g_free (item);
 		g_ptr_array_remove_index_fast (plist->priv->array, 0);
 	}
+	return TRUE;
 }
 
 /**
@@ -173,7 +174,7 @@ pk_package_list_finalize (GObject *object)
 	g_return_if_fail (plist->priv != NULL);
 
 	/* removed any cached packages */
-	pk_plist_remove_array (plist);
+	pk_package_list_remove_buffer (plist);
 	g_ptr_array_free (plist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_package_list_parent_class)->finalize (object);

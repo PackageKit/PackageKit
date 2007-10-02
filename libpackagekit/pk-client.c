@@ -35,6 +35,7 @@
 
 #include "pk-client.h"
 #include "pk-connection.h"
+#include "pk-package-list.h"
 #include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-polkit-client.h"
@@ -53,7 +54,7 @@ struct PkClientPrivate
 	gboolean	 is_finished;
 	gboolean	 use_buffer;
 	gchar		*tid;
-	GPtrArray	*cache_package;
+	PkPackageList	*package_list;
 	PkConnection	*pconnection;
 	PkPolkitClient	*polkit;
 	PkRestartEnum	 require_restart;
@@ -163,23 +164,7 @@ pk_client_get_package_buffer (PkClient *client)
 	if (client->priv->use_buffer == FALSE) {
 		return NULL;
 	}
-	return client->priv->cache_package;
-}
-
-/**
- * pk_client_remove_cache_package:
- **/
-static void
-pk_client_remove_cache_package (PkClient *client)
-{
-	PkClientPackageItem *item;
-	while (client->priv->cache_package->len > 0) {
-		item = g_ptr_array_index (client->priv->cache_package, 0);
-		g_free (item->package_id);
-		g_free (item->summary);
-		g_free (item);
-		g_ptr_array_remove_index_fast (client->priv->cache_package, 0);
-	}
+	return pk_package_list_get_buffer (client->priv->package_list);
 }
 
 /**
@@ -200,7 +185,7 @@ pk_client_reset (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
-	pk_client_remove_cache_package (client);
+	pk_package_list_remove_buffer (client->priv->package_list);
 	return TRUE;
 }
 
@@ -333,7 +318,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		      const gchar  *summary,
 		      PkClient     *client)
 {
-	PkClientPackageItem *item;
 	PkInfoEnum info;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -346,11 +330,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		/* cache */
 		if (client->priv->use_buffer == TRUE) {
 			pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
-			item = g_new0 (PkClientPackageItem, 1);
-			item->info = info;
-			item->package_id = g_strdup (package_id);
-			item->summary = g_strdup (summary);
-			g_ptr_array_add (client->priv->cache_package, item);
+			pk_package_list_add (client->priv->package_list, info, package_id, summary);
 		}
 	}
 }
@@ -1775,7 +1755,7 @@ pk_client_init (PkClient *client)
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->is_finished = FALSE;
-	client->priv->cache_package = g_ptr_array_new ();
+	client->priv->package_list = pk_package_list_new ();
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -1943,10 +1923,7 @@ pk_client_finalize (GObject *object)
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->polkit);
-
-	/* removed any cached packages */
-	pk_client_remove_cache_package (client);
-	g_ptr_array_free (client->priv->cache_package, TRUE);
+	g_object_unref (client->priv->package_list);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
 }

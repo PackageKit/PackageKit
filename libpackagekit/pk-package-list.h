@@ -61,7 +61,8 @@ gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 const gchar		*package_id,
 							 const gchar		*summary);
 gchar		*pk_package_list_get_string		(PkPackageList		*plist);
-GPtrArray	*pk_package_list_get_package_buffer	(PkPackageList		*plist);
+GPtrArray	*pk_package_list_get_buffer		(PkPackageList		*plist);
+gboolean	 pk_package_list_remove_buffer		(PkPackageList		*plist);
 
 G_END_DECLS
 
