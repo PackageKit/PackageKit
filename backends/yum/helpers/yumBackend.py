@@ -395,7 +395,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if txmbr:
                 self._runYumTransaction()
             else:
-                self.erhror(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
 
