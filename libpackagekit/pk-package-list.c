@@ -78,10 +78,29 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 gchar *
 pk_package_list_get_string (PkPackageList *plist)
 {
+	PkPackageListItem *item;
+	guint i;
+	guint length;
+	const gchar *info_text;
+	GString *package_cache;
+
 	g_return_val_if_fail (plist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 
-	return NULL;
+	package_cache = g_string_new ("");
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (plist->priv->array, i);
+		info_text = pk_info_enum_to_text (item->info);
+		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, item->package_id, item->summary);
+	}
+
+	/* remove trailing newline */
+	if (package_cache->len != 0) {
+		g_string_set_size (package_cache, package_cache->len-1);
+	}
+
+	return g_string_free (package_cache, FALSE);
 }
 
 /**
@@ -183,6 +202,7 @@ void
 libst_package_list (LibSelfTest *test)
 {
 	PkPackageList *plist;
+	gchar *text;
 	gboolean ret;
 
 	if (libst_start (test, "PkPackageList", CLASS_AUTO) == FALSE) {
@@ -206,6 +226,16 @@ libst_package_list (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "add entry");
+	text = pk_package_list_get_string (plist);
+	if (text != NULL && strcmp (text, "installed\tgnome;1.23;i386;data\tGNOME!") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "get string incorrect '%s'", text);
+	}
+	g_free (text);
 
 	libst_end (test);
 }
