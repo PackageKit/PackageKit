@@ -293,6 +293,31 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_INTERNAL_ERROR,str(e))
 
+    def _is_inst(self,name): # fast check for if package is installed
+        mi = self.yumbase.ts.ts.dbMatch('name', name)
+        if mi.count() > 0:
+            return True
+        return False         
+
+    def resolve(self, name):
+        '''
+        Implement the {backend}-resolve functionality
+        '''
+        # Get installed packages
+        installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+        for pkg in installedByKey:
+            self._show_package(pkg,INFO_INSTALLED)      
+        # Get availabe packages
+        for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+            if pkg.name == name:
+                show = True
+                for instpo in installedByKey:
+                    if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:  # Check if package have a smaller & equal EVR to a inst pkg
+                        show = False
+                if show:
+                    self._show_package(pkg,INFO_AVAILABLE)
+                    break
+
     def install(self, package):
         '''
         Implement the {backend}-install functionality
