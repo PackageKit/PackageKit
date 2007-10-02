@@ -372,7 +372,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
     
-    def _runYumTransaction(self):
+    def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
         This will only work with yum 3.2.4 or higher
@@ -383,6 +383,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
             self._check_for_reboot()
+            if removedeps == False:
+                if len(self.yumbase.tsInfo) > 1:
+                    retmsg = 'package could not be remove, because something depends on it'
+                    self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+                    return
+
             try:
                 rpmDisplay = PackageKitCallback(self)
                 callback = ProcessTransPackageKitCallback(self)
@@ -409,7 +415,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg and inst:        
             txmbr = self.yumbase.remove(name=pkg.name)
             if txmbr:
-                self._runYumTransaction()
+                if allowdep != 'yes':
+                    self._runYumTransaction(removedeps=False)
+                else:
+                    self._runYumTransaction(removedeps=True)
             else:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
         else:
