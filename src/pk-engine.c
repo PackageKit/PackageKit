@@ -387,8 +387,8 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
  **/
 static void
 pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gchar *licence, PkGroupEnum group,
-			  const gchar *detail, const gchar *url, gulong size, const gchar *filelist, 
-			  PkEngine *engine)
+			  const gchar *detail, const gchar *url,
+			  guint64 size, const gchar *filelist, PkEngine *engine)
 {
 	PkTransactionItem *item;
 	const gchar *group_text;
@@ -404,7 +404,7 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	group_text = pk_group_enum_to_text (group);
 
 	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld, %s",
-		  item->tid, package_id, licence, group_text, detail, url, size, filelist);
+		  item->tid, package_id, licence, group_text, detail, url, (long int) size, filelist);
 	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0,
 		       item->tid, package_id, licence, group_text, detail, url, size, filelist);
 }
@@ -1950,9 +1950,9 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_ULONG_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_ULONG, G_TYPE_STRING);
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

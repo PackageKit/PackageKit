@@ -426,7 +426,7 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  const gchar *group_text,
 			  const gchar *description,
 			  const gchar *url,
-			  gulong       size,
+			  guint64      size,
 			  const gchar *filelist,
 			  PkClient    *client)
 {
@@ -437,7 +437,7 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
-			  package_id, licence, group, description, url, size, filelist);
+			  package_id, licence, group, description, url, (long int) size, filelist);
 		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
 			       package_id, licence, group, description, url, size, filelist);
 	}
@@ -1718,9 +1718,9 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_ULONG_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_ULONG, G_TYPE_STRING);
+			      G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
 	signals [PK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1820,9 +1820,9 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Description */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_ULONG_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_ULONG,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Package */
@@ -1887,7 +1887,7 @@ pk_client_init (PkClient *client)
 
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_ULONG,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Description",
 				     G_CALLBACK (pk_client_description_cb), client, NULL);

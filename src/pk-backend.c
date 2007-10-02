@@ -1485,9 +1485,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_ULONG_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_ULONG,G_TYPE_STRING);
+			      G_TYPE_UINT64, G_TYPE_STRING);
 	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

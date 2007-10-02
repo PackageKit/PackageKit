@@ -108,7 +108,7 @@
       <arg type="s" name="group" direction="out"/>
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>
-      <arg type="u" name="size" direction="out"/> <!-- size of package file in bytes -->
+      <arg type="t" name="size" direction="out"/> <!-- size of package file in bytes -->
       <arg type="s" name="file_list" direction="out"/> <!-- list of files and dirs separated by ';' -->
     </signal>
     <signal name="UpdateDetail">
