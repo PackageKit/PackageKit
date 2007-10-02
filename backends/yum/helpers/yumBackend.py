@@ -34,6 +34,12 @@ from yum.callbacks import *
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
+    # Packages there require a reboot     
+    rebootpkgs = ("kernel", "kernel-smp", "kernel-xen-hypervisor", "kernel-PAE",
+              "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
+              "glibc", "hal", "dbus", "xen")
+
+
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
@@ -192,7 +198,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         cpos = idver.find(':')
         if cpos != -1:
             epoch = idver[:cpos]
-            idver = idver[cpos:]
+            idver = idver[cpos+1:]
         else:
             epoch = '0'
         (version,release) = tuple(idver.split('-'))
@@ -207,6 +213,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # get e,v,r from package id version
         e,v,r = self._getEVR(idver)
         # search the rpmdb for the nevra
+        print n,e,v,r,a
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
         if len(pkgs) != 0:
@@ -356,6 +363,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
+    def _check_for_reboot(self):
+        for txmbr in self.yumbase.tsInfo:
+            pkg = txmbr.po
+            # check if package is in reboot list and is installed/updated etc
+            print pkg.name,txmbr.output_state
+            if pkg.name in self.rebootpkgs and txmbr.ts_state in TS_INSTALL_STATES:
+                self.require_restart(RESTART_SYSTEM,"")
+                break
     
     def _runYumTransaction(self):
         '''
@@ -367,6 +382,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             retmsg = "Error in Dependency Resolution;" +";".join(msgs)
             self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
+            self._check_for_reboot()
             try:
                 rpmDisplay = PackageKitCallback(self)
                 callback = ProcessTransPackageKitCallback(self)
