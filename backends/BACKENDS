@@ -2,7 +2,7 @@ Current status of the backends
 
                   | conary | yum | apt | box | alpm |
 -----------------------------------------------------
-resolve           |        |     |     |  X  |      |
+resolve           |        |  X  |     |  X  |      |
 refresh-cache     |   X    |  X  |  X  |  X  |      |
 get-updates       |   X    |  X  |     |  X  |      |
 update-system     |   X    |  X  |     |     |      |
