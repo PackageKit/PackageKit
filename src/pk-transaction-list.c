@@ -104,7 +104,7 @@ pk_transaction_list_create (PkTransactionList *tlist)
 	item->committed = FALSE;
 	item->running = FALSE;
 	item->backend = NULL;
-	item->package_cache = g_string_new ("");
+	item->package_list = pk_package_list_new ();
 	item->tid = pk_transaction_id_generate ();
 	g_ptr_array_add (tlist->priv->array, item);
 	return item;
@@ -121,8 +121,8 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 
 	/* valid item */
 	g_ptr_array_remove (tlist->priv->array, item);
+	g_object_unref (item->package_list);
 	g_free (item->tid);
-	g_string_free (item->package_cache, TRUE);
 	g_free (item);
 
 	/* we have changed what is running */

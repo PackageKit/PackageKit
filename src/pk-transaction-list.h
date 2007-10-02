@@ -24,6 +24,7 @@
 
 #include <glib-object.h>
 #include "pk-backend-internal.h"
+#include "pk-package-list.h"
 
 G_BEGIN_DECLS
 
@@ -54,7 +55,7 @@ typedef struct {
 	gboolean		 running;
 	PkBackend		*backend;
 	gchar			*tid;
-	GString			*package_cache;
+	PkPackageList		*package_list;
 } PkTransactionItem;
 
 GType		 pk_transaction_list_get_type	  	(void);

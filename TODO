@@ -8,7 +8,6 @@ NOTE: RELEASE BLOCKER
 *** don't output the same package in different repos ***
 Need to store Package() in the server properly, and compare the first chunk
 (not the data) to avoid reporting the same package more than once.
-Instead of Gstring have PkPackageCache instance.
 We can also use this in the client library (perhaps?)
 Also: pk_package_id_compare (gboolean use_data)
 Need to unit test...
