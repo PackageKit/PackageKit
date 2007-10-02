@@ -387,8 +387,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             desc = pkg.description
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')            
+            
+            files = pkg.returnFileEntries('dir')
+            files.extend(pkg.returnFileEntries()) # regular files
+
+            file_list = ";".join(files)
+
             self.description(id, "%s-%s" % (pkg.version, pkg.release),
-                                 "unknown", desc, pkg.url)
+                                 "unknown", desc, pkg.url, pkg.size, file_list)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
     

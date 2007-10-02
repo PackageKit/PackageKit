@@ -241,6 +241,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 	gboolean ret = TRUE;
 	PkInfoEnum info;
 	PkGroupEnum group;
+	gulong package_size;
 
 	/* check if output line */
 	if (line == NULL || strstr (line, "\t") == NULL)
@@ -274,13 +275,15 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			pk_warning ("invalid package_id");
 		}
 	} else if (strcmp (command, "description") == 0) {
-		if (size != 6) {
+		if (size != 8) {
 			g_error ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		group = pk_group_enum_from_text (sections[3]);
-		pk_backend_description (backend, sections[1], sections[2], group, sections[4], sections[5]);
+		package_size = atol(sections[6]);
+		pk_backend_description (backend, sections[1], sections[2], group, sections[4], sections[5],
+					package_size, sections[7]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
@@ -728,13 +731,16 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 gboolean
 pk_backend_description (PkBackend *backend, const gchar *package_id,
 			const gchar *licence, PkGroupEnum group,
-			const gchar *description, const gchar *url)
+			const gchar *description, const gchar *url,
+			gulong size, const gchar *filelist)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
-	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url);
+	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s", package_id, licence, group, description, url,
+		  size, filelist);
+	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url,
+		       size, filelist);
 
 	return TRUE;
 }
@@ -1479,8 +1485,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_ULONG_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_ULONG,G_TYPE_STRING);
 	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

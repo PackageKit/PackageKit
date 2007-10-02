@@ -166,7 +166,7 @@
           </row>
           <row>
             <entry>Description</entry>
-            <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url</literal></entry>
+            <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes[tab]file_list</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>

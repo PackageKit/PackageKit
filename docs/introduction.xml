@@ -1385,6 +1385,18 @@
               <entry><literal>url</literal></entry>
               <entry>The upstream project homepage</entry>
             </row>
+            <row>
+              <entry><literal>size</literal></entry>
+              <entry>
+		The size of the package in bytes.  This should be the
+		size of the entire package file, not the size of the
+		files installed on the system.
+	      </entry>
+            </row>
+            <row>
+              <entry><literal>file_list</literal></entry>
+              <entry>A list of all files and directories created by the package at install time.  Separated by the ';' character.</entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>

@@ -115,7 +115,7 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
-    def description(self,id,licence,group,desc,url):
+    def description(self,id,licence,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -123,8 +123,10 @@ class PackageKitBaseBackend:
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
+        @param bytes: The size of the package, in bytes
+        @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s" % (id,licence,group,desc,url)
+        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
 
     def require_restart(self,restart_type,details):
         '''

@@ -61,7 +61,9 @@ gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*licence,
 							 PkGroupEnum	 group,
 							 const gchar	*description,
-							 const gchar	*url);
+							 const gchar	*url,
+							 gulong          size,
+							 const gchar    *filelist);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 guint		 code,
 							 const gchar	*details, ...);

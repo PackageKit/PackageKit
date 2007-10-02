@@ -29,10 +29,14 @@ class pkt(PackageKit):
 	def Package(self,jid,value,name,summary):
 		print "Package: %s - %s"%(name,summary)
 
-	def Description(self,jid,package_id,license,group,detail,url):
+	def Description(self,jid,package_id,license,group,detail,url,size,file_list):
 		print "Package: %s" % package_id
 		print "  %s" % url
 		print "  %s" % detail
+		print "  %s bytes" % size
+		print "  Files:"
+		for file in file_list.split(";"):
+			print "    %s" % file
 
 	def Transaction(self,jid,old_jid,timespec,succeeded,role,duration):
 		success = "Failed"

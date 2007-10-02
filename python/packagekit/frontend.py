@@ -121,7 +121,7 @@ class PackageKit:
 		elif kwargs['member'] == "UpdateDetail":
 			self.UpdateDetail(args[0],args[1],args[2],args[3],args[4],args[5],args[6])
 		elif kwargs['member'] == "Description":
-			self.Description(args[0],args[1],args[2],args[3],args[4],args[5])
+			self.Description(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7])
 		elif kwargs['member'] == "ErrorCode":
 			self.ErrorCode(args[0],args[1],args[2])
 		elif kwargs['member'] == "RequireRestart":
@@ -183,7 +183,9 @@ class PackageKit:
 			license,
 			group,
 			detail,
-			url
+			url,
+			size,       # in bytes
+			file_list   # separated by ';'
 			):
 		pass
 

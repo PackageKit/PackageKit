@@ -286,7 +286,9 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "");
+	/* Package size and file list go here, but I don't know how to find those for 'boxes'. */
+	/* Also, if I ever write a packaging system, they will be called 'presents'. Or perhaps 'parcels'. */
+	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0, "");
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);

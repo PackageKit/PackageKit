@@ -243,7 +243,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             longDesc = self._get_metadata(id, 'longDesc') or ""
             url = "http://www.foresightlinux.org/packages/" + name + ".html"
             categories = self._get_metadata(id, 'categories') or "unknown"
-            self.description(shortDesc, id, categories, longDesc, url)
+
+            # Package size and file list go here, but I don't know how to find those for conary packages.
+            self.description(shortDesc, id, categories, longDesc, url, 0, "")
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 

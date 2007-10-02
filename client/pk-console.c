@@ -406,13 +406,17 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 static void
 pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *licence, PkGroupEnum group,
-			   const gchar *description, const gchar *url, gpointer data)
+			   const gchar *description, const gchar *url, gulong size, const gchar *filelist,
+			   gpointer data)
 {
 	g_print ("description\n");
 	g_print ("  package:     '%s'\n", package_id);
 	g_print ("  licence:     '%s'\n", licence);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
 	g_print ("  description: '%s'\n", description);
+	g_print ("  size:        '%ld' bytes\n", size);
+	/* filelist is probably too long to just dump to the screen */
+	/* g_print ("  files:       '%s'\n", filelist); */
 	g_print ("  url:         '%s'\n", url);
 }
 
