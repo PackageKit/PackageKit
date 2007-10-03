@@ -210,6 +210,7 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
+	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */

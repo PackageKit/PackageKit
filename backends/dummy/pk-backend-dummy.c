@@ -234,6 +234,16 @@ backend_resolve (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_rollback:
+ */
+static void
+backend_rollback (PkBackend *backend, const gchar *transaction_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_remove_package:
  */
 static void
@@ -375,6 +385,7 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
+	backend_rollback,			/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
