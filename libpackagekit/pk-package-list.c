@@ -36,6 +36,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
+#include "pk-package-id.h"
 #include "pk-package-list.h"
 
 static void     pk_package_list_class_init	(PkPackageListClass *klass);
@@ -136,6 +137,31 @@ pk_package_list_remove_buffer (PkPackageList *plist)
 }
 
 /**
+ * pk_package_list_contains:
+ **/
+gboolean
+pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
+{
+	PkPackageListItem *item;
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (plist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_id_equal (item->package_id, package_id);
+		if (ret == TRUE) {
+			break;
+		}
+	}
+	return ret;
+}
+
+/**
  * pk_package_list_class_init:
  * @klass: The PkPackageListClass
  **/
@@ -222,6 +248,33 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check not exists");
+	ret = pk_package_list_contains (plist, "liferea;1.23;i386;data");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check exists");
+	ret = pk_package_list_contains (plist, "gnome;1.23;i386;data");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check exists different data");
+	ret = pk_package_list_contains (plist, "gnome;1.23;i386;fedora");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {

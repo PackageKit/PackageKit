@@ -8,7 +8,6 @@ NOTE: RELEASE BLOCKER
 *** don't output the same package in different repos ***
 Need to store Package() in the server properly, and compare the first chunk
 (not the data) to avoid reporting the same package more than once.
-Need to properly unit test...
 NOTE: RELEASE BLOCKER
 
 *** Add new callback for status ***
