@@ -585,9 +585,6 @@ class DownloadCallback( BaseMeter ):
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
-                else:
-                    id = self.base.get_package_id(name, '', '', '')
-                    self.base.package(id,INFO_DOWNLOADING, "Repository MetaData")
     
 
 class PackageKitCallback(RPMBaseCallback):
