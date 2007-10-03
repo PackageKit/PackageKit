@@ -254,8 +254,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)            
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-                # TODO: we need to find out if this is installed or not...
-                self.package(id, PK_INFO_ENUM_UNKNOWN, pkg.summary)
+                if pkg.repo == 'installed':
+                    self.package(id, INFO_INSTALLED, pkg.summary)
+                else:
+                    self.package(id, INFO_AVAILABLE, pkg.summary)
+                    
 
     def update_system(self):
         '''
