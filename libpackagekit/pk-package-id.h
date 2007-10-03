@@ -42,6 +42,10 @@ gchar		*pk_package_id_build			(const gchar	*name,
 gchar		*pk_package_id_to_string		(PkPackageId	*ident);
 gboolean	 pk_package_id_free			(PkPackageId	*ident);
 gboolean	 pk_package_id_check			(const gchar	*package_id);
+gboolean	 pk_package_id_equal			(const gchar	*tid1,
+							 const gchar	*tid2);
+gboolean	 pk_package_id_strcmp			(const gchar	*tid1,
+							 const gchar	*tid2);
 
 G_END_DECLS
 
