@@ -837,7 +837,7 @@ pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package
 /**
  * pk_backend_finished_delay:
  *
- * We can call into this function if we *know* it's safe. 
+ * We can call into this function if we *know* it's safe.
  **/
 static gboolean
 pk_backend_finished_delay (gpointer data)
@@ -1419,7 +1419,7 @@ pk_backend_finalize (GObject *object)
 	if (backend->desc != NULL) {
 		if (backend->desc->destroy != NULL) {
 			backend->desc->destroy (backend);
-		}		
+		}
 	}
 
 	pk_debug ("freeing %s (%p)", backend->priv->name, backend);

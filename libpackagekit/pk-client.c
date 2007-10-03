@@ -196,7 +196,7 @@ static const gchar *
 pk_client_get_error_name (GError *error)
 {
 	const gchar *name;
-	if (error->domain == DBUS_GERROR && 
+	if (error->domain == DBUS_GERROR &&
 	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 		name = dbus_g_error_get_name (error);
 	} else {
@@ -1801,7 +1801,7 @@ pk_client_init (PkClient *client)
 
 	/* Description */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_STRING, G_TYPE_INVALID);
 

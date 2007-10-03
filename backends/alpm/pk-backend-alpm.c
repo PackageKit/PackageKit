@@ -544,9 +544,9 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	    pk_package_id_free (id);
 	    return;
 	  }
-	else if (alpm_list_count (result) != 1 || 
+	else if (alpm_list_count (result) != 1 ||
 		 strcmp (alpm_pkg_get_name(((PackageSource *)result->data)->pkg), id->name) != 0)
-	  {	    
+	  {
 	    pk_backend_error_code (backend,
 				  PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
 				  "Package is not installed");

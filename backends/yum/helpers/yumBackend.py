@@ -34,7 +34,7 @@ from yum.callbacks import *
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
-    # Packages there require a reboot     
+    # Packages there require a reboot
     rebootpkgs = ("kernel", "kernel-smp", "kernel-xen-hypervisor", "kernel-PAE",
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
@@ -44,13 +44,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = yum.YumBase()
 
-    def _get_package_ver(self,po):        
+    def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
         if po.epoch != '0':
             ver = "%s:%s-%s" % (po.epoch,po.version,po.release)
         else:
             ver = "%s-%s" % (po.version,po.release)
-        return ver    
+        return ver
 
     def _do_search(self,searchlist,filters,key):
         '''
@@ -74,11 +74,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 installed = INFO_INSTALLED
             else:
                 installed = INFO_AVAILABLE
-        
+
             if self._do_filtering(pkg,fltlist,installed):
                 self._show_package(pkg, installed)
 
-        
+
     def _do_filtering(self,pkg,filterList,installed):
         ''' Filter the package, based on the filter in filterList '''
 
@@ -98,10 +98,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return self._do_extra_filtering(pkg,filterList)
         else:
             return do_print
-    
+
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
-        
+
         for flt in filterList:
             if flt == 'installed' or flt =='~installed':
                 continue
@@ -112,7 +112,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not self._do_devel_filtering(flt,pkg):
                     return False
         return True
-    
+
     def _do_gui_filtering(self,flt,pkg):
         isGUI = False
         if flt == 'gui':
@@ -142,7 +142,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         #
         #
         return isDevel == wantDevel
-    
+
 
     def search_name(self,filters,key):
         '''
@@ -170,7 +170,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self._setup_yum()
         #self.yumbase.conf.cache = 1 # Only look in cache.
-        fltlist = filters.split(';')        
+        fltlist = filters.split(';')
         found = {}
         if not '~installed' in fltlist:
             # Check installed for file
@@ -181,7 +181,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_INSTALLED)
                         found[str(pkg)] = 1
         if not 'installed' in fltlist:
-            # Check available for file                
+            # Check available for file
             self.yumbase.repos.populateSack(mdtype='filelists')
             for pkg in self.yumbase.pkgSack:
                 filelist = pkg.filelist
@@ -189,8 +189,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if key in fn and not found.has_key(str(pkg)):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
-        
-                
+
+
     def _getEVR(self,idver):
         '''
         get the e,v,r from the package id version
@@ -203,7 +203,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             epoch = '0'
         (version,release) = tuple(idver.split('-'))
         return epoch,version,release
-            
+
     def _findPackage(self,id):
         '''
         find a package based on a packahe id (name;version;arch;repoid)
@@ -224,14 +224,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return pkgs[0],False
         else:
             return None,False
-            
+
 
     def get_requires(self,package):
         '''
         Print a list of requires for a given package
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-        
+
 
     def get_depends(self,package):
         '''
@@ -252,13 +252,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         for pkg in results.values():
             if pkg.name != name:
-                pkgver = self._get_package_ver(pkg)            
+                pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
                 if pkg.repo == 'installed':
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
                     self.package(id, INFO_AVAILABLE, pkg.summary)
-                    
+
 
     def update_system(self):
         '''
@@ -271,7 +271,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._runYumTransaction()
         else:
             self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
-            
+
     def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -306,7 +306,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         mi = self.yumbase.ts.ts.dbMatch('name', name)
         if mi.count() > 0:
             return True
-        return False         
+        return False
 
     def resolve(self, name):
         '''
@@ -315,7 +315,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # Get installed packages
         installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
         for pkg in installedByKey:
-            self._show_package(pkg,INFO_INSTALLED)      
+            self._show_package(pkg,INFO_INSTALLED)
         # Get availabe packages
         for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
             if pkg.name == name:
@@ -337,17 +337,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         if pkg:
             if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')        
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
             try:
                 txmbr = self.yumbase.install(name=pkg.name)
                 self._runYumTransaction()
             except yum.Errors.InstallError,e:
                 print e
                 msgs = ';'.join(e)
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)        
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")        
-            
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+
     def update(self, package):
         '''
         Implement the {backend}-install functionality
@@ -373,7 +373,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg.name in self.rebootpkgs and txmbr.ts_state in TS_INSTALL_STATES:
                 self.require_restart(RESTART_SYSTEM,"")
                 break
-    
+
     def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
@@ -414,7 +414,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._setup_yum()
         self.percentage(0)
         pkg,inst = self._findPackage( package)
-        if pkg and inst:        
+        if pkg and inst:
             txmbr = self.yumbase.remove(name=pkg.name)
             if txmbr:
                 if allowdep != 'yes':
@@ -438,8 +438,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
             desc = pkg.description
             desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')            
-            
+            desc = desc.replace('\n',' ')
+
             files = pkg.returnFileEntries('dir')
             files.extend(pkg.returnFileEntries()) # regular files
 
@@ -449,22 +449,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                  "unknown", desc, pkg.url, pkg.size, file_list)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-    
+
     def _show_package(self,pkg,status):
         '''  Show info about package'''
         pkgver = self._get_package_ver(pkg)
         id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         self.package(id,status, pkg.summary)
-            
+
     def _get_status(self,notice):
         ut = notice['type']
         # TODO : Add more types to check
         if ut == 'security':
             return INFO_SECURITY
         else:
-            return INFO_NORMAL 
-        
-            
+            return INFO_NORMAL
+
+
     def get_updates(self):
         '''
         Implement the {backend}-get-updates functionality
@@ -475,21 +475,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         for repo in self.yumbase.repos.listEnabled():
             try:
                 md.add(repo)
-            except: 
+            except:
                 pass # No updateinfo.xml.gz in repo
-        
+
         self.percentage(0)
-        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')      
+        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
         for pkg in ygl.updates:
             # Get info about package in updates info
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if notice: 
+            if notice:
                 status = self._get_status(notice)
-                self._show_package(pkg,status)                
+                self._show_package(pkg,status)
             else:
                 self._show_package(pkg,INFO_NORMAL)
-            
-                                                                                               
+
+
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
         self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
@@ -514,7 +514,7 @@ class DownloadCallback( BaseMeter ):
         self.numPkgs = len(self.pkgs)
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
-        
+
     def _getPackage(self,name):
         name = name.split('-')[0]
         if self.pkgs:
@@ -522,7 +522,7 @@ class DownloadCallback( BaseMeter ):
                 if pkg.name == name:
                     return pkg
         return None
-        
+
     def update( self, amount_read, now=None ):
         BaseMeter.update( self, amount_read, now )
 
@@ -587,7 +587,7 @@ class DownloadCallback( BaseMeter ):
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
-    
+
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -602,11 +602,11 @@ class PackageKitCallback(RPMBaseCallback):
         bump = float(self.numPct)/ts_total
         pct = int(self.startPct + (ts_current * bump))
         return pct
-    
+
     def _showName(self,status):
         id = self.base.get_package_id(self.curpkg, '', '', '')
         self.base.package(id,status, "")
-        
+
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != self.curpkg:
@@ -638,7 +638,7 @@ class ProcessTransPackageKitCallback:
             self.base.allow_interrupt(True)
             self.base.percentage(10)
             self.base.status(STATE_DOWNLOAD)
-        if state == PT_DOWNLOAD_PKGS:   # Packages to download 
+        if state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
             self.base.percentage(40)
