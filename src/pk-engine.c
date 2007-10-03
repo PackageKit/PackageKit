@@ -433,6 +433,11 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		pk_warning ("could not find backend");
 		return;
 	}
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return;
+	}
 	exit_text = pk_exit_enum_to_text (exit);
 
 	/* find the length of time we have been running */
@@ -553,6 +558,12 @@ pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 
 	/* commit, so it appears in the JobList */
 	pk_transaction_list_commit (engine->priv->transaction_list, item);
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return FALSE;
+	}
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (item->backend, &role, NULL);
@@ -689,8 +700,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	/* create a new backend */
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
+		g_warning ("Backend not set yet!");
 		return FALSE;
 	}
 
@@ -1583,6 +1593,13 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
+		return FALSE;
+	}
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "Backend not set with tid:%s", tid);
 		return FALSE;
 	}
 	pk_backend_get_role (item->backend, &role_enum, package_id);
