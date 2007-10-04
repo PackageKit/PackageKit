@@ -79,6 +79,7 @@ enum {
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_UPDATES_CHANGED,
+	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
@@ -341,6 +342,32 @@ pk_engine_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 }
 
 /**
+ * pk_engine_repo_signature_required_cb:
+ **/
+static void
+pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repository_name, const gchar *key_url, const gchar *key_userid,
+				      const gchar *key_id, const gchar *key_timestamp, PkSigTypeEnum type, PkEngine *engine)
+{
+	PkTransactionItem *item;
+	const gchar *type_text;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+	type_text = pk_sig_type_enum_to_text (type);
+
+	pk_debug ("emitting repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s",
+		  item->tid, repository_name, key_url, key_userid, key_id, key_timestamp, type_text);
+	g_signal_emit (engine, signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED], 0,
+		       item->tid, repository_name, key_url, key_userid, key_id, key_timestamp, type_text);
+}
+
+/**
  * pk_engine_error_code_cb:
  **/
 static void
@@ -523,6 +550,8 @@ pk_engine_new_backend (PkEngine *engine)
 			  G_CALLBACK (pk_engine_error_code_cb), engine);
 	g_signal_connect (backend, "updates-changed",
 			  G_CALLBACK (pk_engine_updates_changed_cb), engine);
+	g_signal_connect (backend, "repo-signature-required",
+			  G_CALLBACK (pk_engine_repo_signature_required_cb), engine);
 	g_signal_connect (backend, "require-restart",
 			  G_CALLBACK (pk_engine_require_restart_cb), engine);
 	g_signal_connect (backend, "finished",
@@ -1953,6 +1982,12 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED] =
+		g_signal_new ("repo-signature-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

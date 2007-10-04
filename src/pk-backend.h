@@ -68,6 +68,13 @@ gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 guint		 code,
 							 const gchar	*details, ...);
 gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
+gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,
+							 const gchar    *repository_name,
+							 const gchar    *key_url,
+							 const gchar    *key_userid,
+							 const gchar    *key_id,
+							 const gchar    *key_timestamp,
+							 PkSigTypeEnum   type);
 gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
 							 const gchar	*script, ...);
 gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);

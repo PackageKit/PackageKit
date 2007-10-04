@@ -196,6 +196,16 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+
+	if(strcmp(package_id,"signedpackage;1.0-1.fc8;i386;fedora") == 0) {
+		pk_backend_repo_signature_required(backend, "updates", "http://example.com/gpgkey",
+						   "Test Key (Fedora) fedora@example.com",
+						   "BB7576AC", "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "GPG signed package could not be verified");
+		pk_backend_finished (backend);
+	}
+
 	progress_percentage = 0;
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",

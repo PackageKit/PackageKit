@@ -143,6 +143,13 @@ typedef enum {
 	PK_INFO_ENUM_UNKNOWN
 } PkInfoEnum;
 
+typedef enum {
+	PK_SIGTYPE_ENUM_GPG
+} PkSigTypeEnum;
+
+PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
+const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_type);
+
 PkInfoEnum	 pk_info_enum_from_text			(const gchar	*info);
 const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);
 

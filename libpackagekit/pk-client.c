@@ -74,6 +74,7 @@ typedef enum {
 	PK_CLIENT_TRANSACTION,
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
+	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
@@ -420,6 +421,25 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  package_id, licence, group, description, url, (long int) size, filelist);
 		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
 			       package_id, licence, group, description, url, size, filelist);
+	}
+}
+
+/**
+ * pk_client_repo_signature_required_cb:
+ **/
+static void
+pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repository_name,
+				      const gchar *key_url, const gchar *key_userid, const gchar *key_id, 
+				      const gchar *key_timestamp, const gchar *type_text, PkClient *client)
+{
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+	
+	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+		pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s",
+			  tid, repository_name, key_url, key_userid, key_id, key_timestamp, type_text);
+		g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
+			       repository_name, key_url, key_userid, key_id, key_timestamp, type_text);
 	}
 }
 
@@ -1701,6 +1721,12 @@ pk_client_class_init (PkClientClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
+	signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED] =
+		g_signal_new ("repo-signature-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1805,6 +1831,11 @@ pk_client_init (PkClient *client)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_STRING, G_TYPE_INVALID);
 
+	/* Repo Signature Required */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
 	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -1872,6 +1903,13 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "Description",
 				     G_CALLBACK (pk_client_description_cb), client, NULL);
 
+	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
+				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "ErrorCode",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
@@ -1914,6 +1952,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_transaction_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Description",
 				        G_CALLBACK (pk_client_description_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
+				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",

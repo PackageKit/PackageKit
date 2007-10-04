@@ -155,6 +155,10 @@ static PkTaskEnumMatch task_info[] = {
 	{0, NULL},
 };
 
+static PkTaskEnumMatch task_sig_type[] = {
+	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
+};
+
 /**
  * pk_task_enum_find_value:
  */
@@ -201,6 +205,24 @@ pk_task_enum_find_string (PkTaskEnumMatch *table, guint value)
 		}
 	}
 	return table[0].string;
+}
+
+/**
+ * pk_sig_type_enum_from_text:
+ */
+PkSigTypeEnum
+pk_sig_type_enum_from_text (const gchar *sig_type)
+{
+	return pk_task_enum_find_value (task_sig_type, sig_type);
+}
+
+/**
+ * pk_sig_type_enum_to_text:
+ **/
+const gchar *
+pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
+{
+	return pk_task_enum_find_string (task_sig_type, sig_type);
 }
 
 /**

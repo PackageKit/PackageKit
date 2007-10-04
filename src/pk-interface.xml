@@ -142,6 +142,15 @@
     <signal name="UpdatesChanged">
       <arg type="s" name="tid" direction="out"/>
     </signal>
+    <signal name="RepoSignatureRequired">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="repository_name" direction="out"/>
+      <arg type="s" name="key_url" direction="out"/>
+      <arg type="s" name="key_userid" direction="out"/>
+      <arg type="s" name="key_id" direction="out"/>
+      <arg type="s" name="key_timestamp" direction="out"/>
+      <arg type="s" name="type" direction="out"/> <!-- 'gpg', for now -->
+    </signal>
 
     <!-- Do things or query transactions -->
     <method name="Cancel"> <!-- might not succeed for all manner or reasons -->

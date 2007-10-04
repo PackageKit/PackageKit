@@ -421,6 +421,24 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 }
 
 /**
+ * pk_console_repo_signature_required_cb:
+ **/
+static void
+pk_console_repo_signature_required_cb (PkClient *client, const gchar *repository_name, const gchar *key_url,
+				       const gchar *key_userid, const gchar *key_id, const gchar *key_timestamp,
+				       PkSigTypeEnum type, gpointer data)
+{
+	g_print ("Signature Required\n");
+	g_print ("  repo name:     '%s'\n", repository_name);
+	g_print ("  key url:       '%s'\n", key_url);
+	g_print ("  key userid:    '%s'\n", key_userid);
+	g_print ("  key id:        '%s'\n", key_id);
+	g_print ("  key timestamp: '%s'\n", key_timestamp);
+	g_print ("  key type:      '%s'\n", pk_sig_type_enum_to_text (type));
+
+}
+
+/**
  * main:
  **/
 int
@@ -462,6 +480,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
 	g_signal_connect (client, "description",
 			  G_CALLBACK (pk_console_description_cb), NULL);
+	g_signal_connect (client, "repo-signature-required",
+			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
 	g_signal_connect (client, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (client, "percentage-changed",
