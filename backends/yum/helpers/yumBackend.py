@@ -232,6 +232,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def _is_inst(self,pkg):
+        (n,a,e,v,r) = pkg.pkgtup
+        pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
+        # if the package is found, then return it
+        if len(pkgs) != 0:
+            return True
+        else:
+            return False
 
     def get_depends(self,package):
         '''
@@ -252,9 +260,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         for pkg in results.values():
             if pkg.name != name:
-                pkgver = self._get_package_ver(pkg)
-                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-                if pkg.repo == 'installed':
+                pkgver = self._get_package_ver(pkg)            
+                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
+                
+                if self._is_inst(pkg):
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
                     self.package(id, INFO_AVAILABLE, pkg.summary)
@@ -301,12 +310,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_INTERNAL_ERROR,str(e))
-
-    def _is_inst(self,name): # fast check for if package is installed
-        mi = self.yumbase.ts.ts.dbMatch('name', name)
-        if mi.count() > 0:
-            return True
-        return False
 
     def resolve(self, name):
         '''
