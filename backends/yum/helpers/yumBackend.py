@@ -30,7 +30,8 @@ from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
-from yum.misc import prco_tuple_to_string
+from yum.misc import prco_tuple_to_string, unique
+import rpmUtils
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
@@ -233,13 +234,55 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def _is_inst(self,pkg):
-        (n,a,e,v,r) = pkg.pkgtup
-        pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
-        # if the package is found, then return it
-        if len(pkgs) != 0:
-            return True
-        else:
+        return self.yumbase.rpmdb.installed(po=pkg)
+
+    def _installable(self, pkg, ematch=False):
+
+        """check if the package is reasonably installable, true/false"""
+        
+        exactarchlist = self.yumbase.conf.exactarchlist        
+        # we look through each returned possibility and rule out the
+        # ones that we obviously can't use
+        
+        if self.yumbase.rpmdb.installed(po=pkg):
             return False
+        
+        # everything installed that matches the name
+        installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+        comparable = []
+        for instpo in installedByKey:
+            if rpmUtils.arch.isMultiLibArch(instpo.arch) == rpmUtils.arch.isMultiLibArch(pkg.arch):
+                comparable.append(instpo)
+            else:
+                continue
+                
+        # go through each package 
+        if len(comparable) > 0:
+            for instpo in comparable:
+                if pkg.EVR > instpo.EVR: # we're newer - this is an update, pass to them
+                    if instpo.name in exactarchlist:
+                        if pkg.arch == instpo.arch:
+                            return True
+                    else:
+                        return True
+                        
+                elif pkg.EVR == instpo.EVR: # same, ignore
+                    return False
+                    
+                elif pkg.EVR < instpo.EVR: # lesser, check if the pkgtup is an exactmatch
+                                   # if so then add it to be installed
+                                   # if it can be multiply installed
+                                   # this is where we could handle setting 
+                                   # it to be an 'oldpackage' revert.
+                                   
+                    if ematch and self.yumbase.allowedMultipleInstalls(pkg):
+                        return True
+                        
+        else: # we've not got any installed that match n or n+a
+            return True
+        
+        return False
+    
         
     def _get_best_dependencies(self,po):
         ''' find the most recent packages that provides the dependencies for a package
@@ -264,7 +307,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     best= po
             bestdeps.append(best)
-        return bestdeps
+        return unique(bestdeps)
 
     def get_depends(self,package):
         '''
@@ -286,7 +329,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if self._is_inst(pkg):
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
-                    self.package(id, INFO_AVAILABLE, pkg.summary)
+                    if self._installable(pkg):
+                        self.package(id, INFO_AVAILABLE, pkg.summary)
 
 
     def update_system(self):
