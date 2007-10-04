@@ -60,6 +60,7 @@ struct _PkBackendPrivate
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
 	gchar			*xcached_package_id;
+	gchar			*xcached_transaction_id;
 	gchar			*xcached_full_path;
 	gchar			*xcached_filter;
 	gchar			*xcached_search;
@@ -969,6 +970,8 @@ pk_backend_run (PkBackend *backend)
 						  backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_RESOLVE) {
 		backend->desc->resolve (backend, backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		backend->desc->rollback (backend, backend->priv->xcached_transaction_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
 		backend->desc->get_description (backend,
 						backend->priv->xcached_package_id);
@@ -1178,6 +1181,22 @@ pk_backend_resolve (PkBackend *backend, const gchar *package)
 }
 
 /**
+ * pk_backend_rollback:
+ */
+gboolean
+pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->rollback == NULL) {
+		pk_backend_not_implemented_yet (backend, "Rollback");
+		return FALSE;
+	}
+	backend->priv->xcached_transaction_id = g_strdup (transaction_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_ROLLBACK);
+	return TRUE;
+}
+
+/**
  * pk_backend_search_details:
  */
 gboolean
@@ -1336,6 +1355,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (backend->desc->resolve != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_RESOLVE);
 	}
+	if (backend->desc->rollback != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_ROLLBACK);
+	}
 	if (backend->desc->search_details != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
 	}
@@ -1434,6 +1456,7 @@ pk_backend_finalize (GObject *object)
 	g_timer_destroy (backend->priv->timer);
 
 	g_free (backend->priv->xcached_package_id);
+	g_free (backend->priv->xcached_transaction_id);
 	g_free (backend->priv->xcached_filter);
 	g_free (backend->priv->xcached_search);
 
@@ -1537,6 +1560,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
 	backend->priv->xcached_package_id = NULL;
+	backend->priv->xcached_transaction_id = NULL;
 	backend->priv->xcached_full_path = NULL;
 	backend->priv->xcached_filter = NULL;
 	backend->priv->xcached_search = NULL;

@@ -39,5 +39,4 @@ To do rollbacks sanely in PK we need a few things:
  * emit internal signal for SetTransactionData
  * write pk_transaction_id_equal to not compare data
  * allow transaction data to be changed in _db
- * use an new method to handle the rollbacks and pass it to the backend
 

@@ -1473,6 +1473,59 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 }
 
 /**
+ * pk_engine_rollback:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
+pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction_id,
+		    DBusGMethodInvocation *context, GError **dead_error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.rollback", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	ret = pk_backend_rollback (item->backend, transaction_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_engine_update_package:
  *
  * This is async, so we have to treat it a bit carefully
