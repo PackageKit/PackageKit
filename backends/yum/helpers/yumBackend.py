@@ -30,7 +30,7 @@ from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
-
+from yum.misc import prco_tuple_to_string
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
@@ -240,6 +240,31 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return True
         else:
             return False
+        
+    def _get_best_dependencies(self,po):
+        ''' find the most recent packages that provides the dependencies for a package
+        @param po: yum package object to find deps for
+        @return: a list for yum package object providing the dependencies 
+        '''
+        results = self.yumbase.findDeps([po])    
+        pkg = results.keys()[0]
+        bestdeps=[]
+        if len(results[pkg].keys()) == 0: # No dependencies for this package ?
+            return bestdeps
+        for req in results[pkg].keys():
+            reqlist = results[pkg][req] 
+            if not reqlist: #  Unsatisfied dependency
+                self.error(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req),exit=False)
+                continue
+            best = None
+            for po in reqlist:
+                if best:
+                    if po.EVR > best.EVR:
+                        best=po
+                else:
+                    best= po
+            bestdeps.append(best)
+        return bestdeps
 
     def get_depends(self,package):
         '''
@@ -250,15 +275,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         results = {}
         if pkg:
-            deps = self.yumbase.findDeps([pkg]).values()[0]
-            for deplist in deps.values():
-                for dep in deplist:
-                    if not results.has_key(dep.name):
-                        results[dep.name] = dep
+            deps = self._get_best_dependencies(pkg)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-
-        for pkg in results.values():
+        for pkg in deps:
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)            
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
