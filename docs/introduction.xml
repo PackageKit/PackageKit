@@ -1453,6 +1453,59 @@
         </tgroup>
       </informaltable>
     </sect2>
+
+    <sect2 id="backends-spawn-repo-signature-required">
+      <title>RepoSignatureRequired</title>
+      <para>
+        Some backends support repositories which use a cryptographic
+        signature, such as GPG.  If a package cannot be installed
+        because it is signed with a key that has not been verified,
+        this signal is generated so the user can choose to accept or
+        decline the key.
+      </para>
+      <para>
+        This signal includes information that can be used to verify
+        that the key should be trusted, such as a URL for the company
+        or person who owns the key, the key's ID, the userid of
+        the key creator, and the date the key was generated.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>repository_name</literal></entry>
+              <entry>The name of the repository associated with the provided key</entry>
+            </row>
+            <row>
+              <entry><literal>key_url</literal></entry>
+              <entry>The URL provided with the key.</entry>
+            </row>
+            <row>
+              <entry><literal>key_userid</literal></entry>
+              <entry>The user id associated with the key</entry>
+            </row>
+            <row>
+              <entry><literal>key_id</literal></entry>
+              <entry>A unique identifier for the key</entry>
+            </row>
+            <row>
+              <entry><literal>key_timestamp</literal></entry>
+              <entry>The date the key was created</entry>
+            </row>
+            <row>
+              <entry><literal>type</literal></entry>
+              <entry>The type of signature used.  'GPG', for example.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
   </sect1>
 
 </chapter>
