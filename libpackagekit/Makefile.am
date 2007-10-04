@@ -28,6 +28,7 @@ libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-connection.h						\
 	pk-package-id.h						\
+	pk-package-list.h					\
 	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-task-common.h					\
@@ -44,8 +45,10 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-connection.c						\
 	pk-connection.h						\
-	pk-package-id.h						\
 	pk-package-id.c						\
+	pk-package-id.h						\
+	pk-package-list.c					\
+	pk-package-list.h					\
 	pk-enum-list.c						\
 	pk-enum-list.h						\
 	pk-enum.h						\
@@ -84,6 +87,8 @@ pk_self_test_SOURCES =						\
 	pk-enum-list.c						\
 	pk-package-id.h						\
 	pk-package-id.c						\
+	pk-package-list.h					\
+	pk-package-list.c					\
 	pk-self-test.c						\
 	$(NULL)
 

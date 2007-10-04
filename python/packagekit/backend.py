@@ -65,7 +65,7 @@ class PackageKitBaseBackend:
         self.cmds = cmds
 
     def percentage(self,percent=None):
-        ''' 
+        '''
         Write progress percentage
         @param percent: Progress percentage
         '''
@@ -75,7 +75,7 @@ class PackageKitBaseBackend:
             print >> sys.stderr, "no-percentage-updates"
 
     def sub_percentage(self,percent=None):
-        ''' 
+        '''
         send 'subpercentage' signal : subprogress percentage
         @param percent: subprogress percentage
         '''
@@ -83,10 +83,10 @@ class PackageKitBaseBackend:
 
     def error(self,err,description,exit=True):
         '''
-        send 'error' 
-        @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR) 
+        send 'error'
+        @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR)
         @param description: Error description
-        @param exit: exit application with rc=1, if true 
+        @param exit: exit application with rc=1, if true
         '''
         print >> sys.stderr,"error\t%s\t%s" % (err,description)
         if exit:
@@ -97,14 +97,14 @@ class PackageKitBaseBackend:
         send 'package' signal
         @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param summary: The package Summary 
+        @param summary: The package Summary
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
 
     def status(self,state):
         '''
         send 'status' signal
-        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE 
+        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE
         '''
         print >> sys.stderr,"status\t%s" % (state)
 
@@ -115,7 +115,7 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
-    def description(self,id,licence,group,desc,url):
+    def description(self,id,licence,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -123,8 +123,10 @@ class PackageKitBaseBackend:
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
+        @param bytes: The size of the package, in bytes
+        @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s" % (id,licence,group,desc,url)
+        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
 
     def require_restart(self,restart_type,details):
         '''
@@ -225,6 +227,13 @@ class PackageKitBaseBackend:
     def install(self, package):
         '''
         Implement the {backend}-install functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def resolve(self, name):
+        '''
+        Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

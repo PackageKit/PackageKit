@@ -215,6 +215,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* search_details */
+	NULL,					/* rollback */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */

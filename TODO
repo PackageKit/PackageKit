@@ -8,9 +8,14 @@ NOTE: RELEASE BLOCKER
 *** Add new callback for status ***
 TimeRemaining()
  
-*** Get the deps in the UI when removing ***
+*** get the depends and requires in the tabbed UI ***
 We really don't want to remove glibc...
 NOTE: RELEASE BLOCKER
+
+*** the backends will have repo controls ***
+a(s=rid,s=description)=GetRepoList()
+RepoEnable(s=rid,s=value)
+RepoSetData(s=rid,s=data,s=value)
 
 *** pk-application (client) ***
 Use an icons for installed and not-installed rather than tickboxes
@@ -25,19 +30,9 @@ In fedora, if you add a signed repo you have to agree to the GPG key.
 *** Split up PolicyKit install into different types ***
 Have different permissions for signed and unsigned repos.
 
-*** Add files in package into Description signal ***
-We need a way to get the installed files into the UI.
-
-*** Add package size into description signal ***
-We need a way to work out how long something is going to take, and
-to expose in the UI.
-
 *** task_client has to return GError ***
 Client programs using libpackagekit should know the error, rather than just
 "it failed"
-
-*** Log what was installed/removed and when ***
-Need to monitor the Package's emitted by the task and encoded to a string
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:

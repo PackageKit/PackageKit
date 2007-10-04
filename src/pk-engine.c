@@ -39,6 +39,7 @@
 #include <polkit/polkit.h>
 #include <polkit-dbus/polkit-dbus.h>
 #include <pk-package-id.h>
+#include <pk-package-list.h>
 
 #include <pk-debug.h>
 #include <pk-task-common.h>
@@ -267,7 +268,7 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 {
 	PkTransactionItem *item;
 	const gchar *info_text;
-	gchar *cache;
+	gboolean ret;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -277,14 +278,17 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 		pk_warning ("could not find backend");
 		return;
 	}
-	info_text = pk_info_enum_to_text (info);
+
+	/* check if already in the package list, to avoid having installed and available in the UI */
+	ret = pk_package_list_contains (item->package_list, package_id);
+	if (ret == TRUE) {
+		return;
+	}
 
 	/* add to package cache */
-	cache = g_strdup_printf ("%s\t%s\t%s\n", info_text, package_id, summary);
-	pk_debug ("cache='%s'", cache);
-	g_string_append (item->package_cache, cache);
-	g_free (cache);
+	pk_package_list_add (item->package_list, info, package_id, summary);
 
+	info_text = pk_info_enum_to_text (info);
 	pk_debug ("emitting package tid:%s info=%s %s, %s", item->tid, info_text, package_id, summary);
 	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, info_text, package_id, summary);
 	pk_engine_reset_timer (engine);
@@ -387,7 +391,8 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
  **/
 static void
 pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gchar *licence, PkGroupEnum group,
-			  const gchar *detail, const gchar *url, PkEngine *engine)
+			  const gchar *detail, const gchar *url,
+			  guint64 size, const gchar *filelist, PkEngine *engine)
 {
 	PkTransactionItem *item;
 	const gchar *group_text;
@@ -402,8 +407,10 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	}
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s", item->tid, package_id, licence, group_text, detail, url);
-	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0, item->tid, package_id, licence, group_text, detail, url);
+	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld, %s",
+		  item->tid, package_id, licence, group_text, detail, url, (long int) size, filelist);
+	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0,
+		       item->tid, package_id, licence, group_text, detail, url, size, filelist);
 }
 
 /**
@@ -416,6 +423,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	PkRoleEnum role;
 	const gchar *exit_text;
 	gdouble time;
+	gchar *packages;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -425,16 +433,22 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		pk_warning ("could not find backend");
 		return;
 	}
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return;
+	}
 	exit_text = pk_exit_enum_to_text (exit);
 
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
 
 	/* add to the database */
-	if (item->package_cache->len != 0) {
-		g_string_set_size (item->package_cache, item->package_cache->len-1);
-		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, item->package_cache->str);
+	packages = pk_package_list_get_string (item->package_list);
+	if (strlen (packages) > 0) {
+		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
 	}
+	g_free (packages);
 
 	pk_debug ("backend was running for %f seconds", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
@@ -544,6 +558,12 @@ pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 
 	/* commit, so it appears in the JobList */
 	pk_transaction_list_commit (engine->priv->transaction_list, item);
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return FALSE;
+	}
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (item->backend, &role, NULL);
@@ -680,8 +700,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	/* create a new backend */
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
+		g_warning ("Backend not set yet!");
 		return FALSE;
 	}
 
@@ -1576,6 +1595,13 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "Backend not set with tid:%s", tid);
+		return FALSE;
+	}
 	pk_backend_get_role (item->backend, &role_enum, package_id);
 	*role = g_strdup (pk_role_enum_to_text (role_enum));
 
@@ -1947,9 +1973,9 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -111,7 +111,9 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 "While the goals of the program are for ease of use and simple easy to "
 "understand tools, Scribus offers support for professional publishing "
 "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager");
+"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager",
+				11214665, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz"
+				);
 	pk_backend_finished (backend);
 }
 
@@ -226,6 +228,16 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  */
 static void
 backend_resolve (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_rollback:
+ */
+static void
+backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -373,6 +385,7 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
+	backend_rollback,			/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */

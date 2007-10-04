@@ -670,6 +670,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	NULL,					/* resolve */
+	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */

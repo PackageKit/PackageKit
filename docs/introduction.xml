@@ -1246,6 +1246,11 @@
         If updating, as packages are updated then emit them to the screen.
 	This allows a summary to be presented after the transaction.
       </para>
+      <para>
+        When returning results from a search always return
+        <literal>installed</literal> before <literal>available</literal> for
+        the same package name.
+      </para>
       <informaltable>
         <tgroup cols="2">
           <thead>
@@ -1384,6 +1389,22 @@
             <row>
               <entry><literal>url</literal></entry>
               <entry>The upstream project homepage</entry>
+            </row>
+            <row>
+              <entry><literal>size</literal></entry>
+              <entry>
+		The size of the package in bytes.  This should be the
+		size of the entire package file, not the size of the
+		files installed on the system.
+	      </entry>
+            </row>
+            <row>
+              <entry><literal>file_list</literal></entry>
+              <entry>
+                A list of all files and directories created by the package
+                at install time.
+                The list is separated by the <literal>;</literal> character.
+              </entry>
             </row>
           </tbody>
         </tgroup>

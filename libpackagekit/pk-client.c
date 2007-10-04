@@ -35,6 +35,7 @@
 
 #include "pk-client.h"
 #include "pk-connection.h"
+#include "pk-package-list.h"
 #include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-polkit-client.h"
@@ -53,7 +54,7 @@ struct PkClientPrivate
 	gboolean	 is_finished;
 	gboolean	 use_buffer;
 	gchar		*tid;
-	GPtrArray	*cache_package;
+	PkPackageList	*package_list;
 	PkConnection	*pconnection;
 	PkPolkitClient	*polkit;
 	PkRestartEnum	 require_restart;
@@ -163,23 +164,7 @@ pk_client_get_package_buffer (PkClient *client)
 	if (client->priv->use_buffer == FALSE) {
 		return NULL;
 	}
-	return client->priv->cache_package;
-}
-
-/**
- * pk_client_remove_cache_package:
- **/
-static void
-pk_client_remove_cache_package (PkClient *client)
-{
-	PkClientPackageItem *item;
-	while (client->priv->cache_package->len > 0) {
-		item = g_ptr_array_index (client->priv->cache_package, 0);
-		g_free (item->package_id);
-		g_free (item->summary);
-		g_free (item);
-		g_ptr_array_remove_index_fast (client->priv->cache_package, 0);
-	}
+	return pk_package_list_get_buffer (client->priv->package_list);
 }
 
 /**
@@ -200,7 +185,7 @@ pk_client_reset (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
-	pk_client_remove_cache_package (client);
+	pk_package_list_remove_buffer (client->priv->package_list);
 	return TRUE;
 }
 
@@ -211,7 +196,7 @@ static const gchar *
 pk_client_get_error_name (GError *error)
 {
 	const gchar *name;
-	if (error->domain == DBUS_GERROR && 
+	if (error->domain == DBUS_GERROR &&
 	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
 		name = dbus_g_error_get_name (error);
 	} else {
@@ -333,7 +318,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		      const gchar  *summary,
 		      PkClient     *client)
 {
-	PkClientPackageItem *item;
 	PkInfoEnum info;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -346,11 +330,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		/* cache */
 		if (client->priv->use_buffer == TRUE) {
 			pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
-			item = g_new0 (PkClientPackageItem, 1);
-			item->info = info;
-			item->package_id = g_strdup (package_id);
-			item->summary = g_strdup (summary);
-			g_ptr_array_add (client->priv->cache_package, item);
+			pk_package_list_add (client->priv->package_list, info, package_id, summary);
 		}
 	}
 }
@@ -426,6 +406,8 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  const gchar *group_text,
 			  const gchar *description,
 			  const gchar *url,
+			  guint64      size,
+			  const gchar *filelist,
 			  PkClient    *client)
 {
 	PkGroupEnum group;
@@ -434,8 +416,10 @@ pk_client_description_cb (DBusGProxy  *proxy,
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
-		pk_debug ("emit description %s, %s, %i, %s, %s", package_id, licence, group, description, url);
-		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0, package_id, licence, group, description, url);
+		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
+			  package_id, licence, group, description, url, (long int) size, filelist);
+		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
+			       package_id, licence, group, description, url, size, filelist);
 	}
 }
 
@@ -1714,8 +1698,9 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
 	signals [PK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1770,7 +1755,7 @@ pk_client_init (PkClient *client)
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->is_finished = FALSE;
-	client->priv->cache_package = g_ptr_array_new ();
+	client->priv->package_list = pk_package_list_new ();
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -1799,30 +1784,36 @@ pk_client_init (PkClient *client)
 	/* use PolicyKit */
 	client->priv->polkit = pk_polkit_client_new ();
 
+	/* PercentageChanged et al */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
+
+	/* TransactionStatusChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Finished */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
+	/* ErrorCode, RequireRestart */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, 
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* Description */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+					   G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* UpdateDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	/* transaction */
+	/* Transaction */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
 					   G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
@@ -1876,7 +1867,8 @@ pk_client_init (PkClient *client)
 
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Description",
 				     G_CALLBACK (pk_client_description_cb), client, NULL);
 
@@ -1931,10 +1923,7 @@ pk_client_finalize (GObject *object)
 	g_object_unref (G_OBJECT (client->priv->proxy));
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->polkit);
-
-	/* removed any cached packages */
-	pk_client_remove_cache_package (client);
-	g_ptr_array_free (client->priv->cache_package, TRUE);
+	g_object_unref (client->priv->package_list);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
 }

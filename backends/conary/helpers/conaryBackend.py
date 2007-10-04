@@ -236,14 +236,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         name, version, flavor, installed = self._findPackage(id)
 
-        
+
 
         if name:
             shortDesc = self._get_metadata(id, 'shortDesc') or name
             longDesc = self._get_metadata(id, 'longDesc') or ""
             url = "http://www.foresightlinux.org/packages/" + name + ".html"
             categories = self._get_metadata(id, 'categories') or "unknown"
-            self.description(shortDesc, id, categories, longDesc, url)
+
+            # Package size and file list go here, but I don't know how to find those for conary packages.
+            self.description(shortDesc, id, categories, longDesc, url, 0, "")
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
@@ -377,7 +379,7 @@ class Cache(object):
         self.db = conaryclient.ConaryClient(self.cfg).db
 
         troves = queryrep.getTrovesToDisplay(self.repos, None, None, None,
-            queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST, 
+            queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST,
             self.cfg.installLabelPath, self.cfg.flavor, None)
 
         packages = []

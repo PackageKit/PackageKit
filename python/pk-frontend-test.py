@@ -22,17 +22,21 @@ from packagekit.frontend import *
 class pkt(PackageKit):
 	def Percentage(self,jid,progress):
 		print "Progress: %.2f%%"%progress
-	
+
 	def JobStatus(self,jid,type):
 		print "Job type: %s"%type
-	
+
 	def Package(self,jid,value,name,summary):
 		print "Package: %s - %s"%(name,summary)
 
-	def Description(self,jid,package_id,license,group,detail,url):
+	def Description(self,jid,package_id,license,group,detail,url,size,file_list):
 		print "Package: %s" % package_id
 		print "  %s" % url
 		print "  %s" % detail
+		print "  %s bytes" % size
+		print "  Files:"
+		for file in file_list.split(";"):
+			print "    %s" % file
 
 	def Transaction(self,jid,old_jid,timespec,succeeded,role,duration):
 		success = "Failed"
@@ -74,7 +78,7 @@ def history(*args):
 	count = 5
 	if len(args)==1 and len(args[0])==1:
 		count = args[0][0]
-	
+
 	count = int(count)
 
 	if count < 1:

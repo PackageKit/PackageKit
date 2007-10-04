@@ -151,7 +151,7 @@ libgbus_is_connected (LibGBus *libgbus)
 	gboolean ret;
 	g_return_val_if_fail (IS_LIBGBUS (libgbus), FALSE);
 
-	/* get raw connection */	
+	/* get raw connection */
 	conn = dbus_g_connection_get_connection (libgbus->priv->connection);
 	dbus_error_init (&error);
 	ret = dbus_bus_name_has_owner (conn, libgbus->priv->service, &error);
