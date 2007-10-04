@@ -236,7 +236,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         name, version, flavor, installed = self._findPackage(id)
 
-        
+
 
         if name:
             shortDesc = self._get_metadata(id, 'shortDesc') or name
@@ -379,7 +379,7 @@ class Cache(object):
         self.db = conaryclient.ConaryClient(self.cfg).db
 
         troves = queryrep.getTrovesToDisplay(self.repos, None, None, None,
-            queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST, 
+            queryrep.VERSION_FILTER_LEAVES, queryrep.FLAVOR_FILTER_BEST,
             self.cfg.installLabelPath, self.cfg.flavor, None)
 
         packages = []

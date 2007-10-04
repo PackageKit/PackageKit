@@ -124,7 +124,7 @@ pk_conf_init (PkConf *conf)
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 		pk_debug ("config file not found '%s'", path);
 		g_free (path);
-		path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);		
+		path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
 		if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 			pk_error ("config file not found '%s'", path);
 		}

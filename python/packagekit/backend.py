@@ -65,7 +65,7 @@ class PackageKitBaseBackend:
         self.cmds = cmds
 
     def percentage(self,percent=None):
-        ''' 
+        '''
         Write progress percentage
         @param percent: Progress percentage
         '''
@@ -75,7 +75,7 @@ class PackageKitBaseBackend:
             print >> sys.stderr, "no-percentage-updates"
 
     def sub_percentage(self,percent=None):
-        ''' 
+        '''
         send 'subpercentage' signal : subprogress percentage
         @param percent: subprogress percentage
         '''
@@ -83,10 +83,10 @@ class PackageKitBaseBackend:
 
     def error(self,err,description,exit=True):
         '''
-        send 'error' 
-        @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR) 
+        send 'error'
+        @param err: Error Type (ERROR_NO_NETWORK, ERROR_NOT_SUPPORTED, ERROR_INTERNAL_ERROR)
         @param description: Error description
-        @param exit: exit application with rc=1, if true 
+        @param exit: exit application with rc=1, if true
         '''
         print >> sys.stderr,"error\t%s\t%s" % (err,description)
         if exit:
@@ -97,14 +97,14 @@ class PackageKitBaseBackend:
         send 'package' signal
         @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param summary: The package Summary 
+        @param summary: The package Summary
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
 
     def status(self,state):
         '''
         send 'status' signal
-        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE 
+        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE
         '''
         print >> sys.stderr,"status\t%s" % (state)
 

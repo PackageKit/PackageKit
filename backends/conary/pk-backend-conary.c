@@ -64,6 +64,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 /**
  * backend_get_description:
  */
+/**
 static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
@@ -71,6 +72,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
 }
+ */
 
 /**
  * backend_get_updates:
@@ -134,6 +136,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 /**
  * backend_search_details:
  */
+/**
 static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
@@ -141,6 +144,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
 }
+ */
 
 /**
  * backend_search_name:
@@ -201,7 +205,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	NULL,					/* get_description */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
@@ -210,7 +214,8 @@ PK_BACKEND_OPTIONS (
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
-	backend_search_details,			/* search_details */
+	NULL,					/* search_details */
+	NULL,					/* rollback */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */

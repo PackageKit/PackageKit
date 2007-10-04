@@ -60,6 +60,7 @@ static PkTaskEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
+	{PK_ROLE_ENUM_ROLLBACK,			"rollback"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
 	{PK_ROLE_ENUM_GET_DESCRIPTION,		"get-description"},

@@ -22,7 +22,7 @@ import gobject
 class PackageKitException(Exception):
 	def __init__(self):
 		Exception.__init__(self)
-	
+
 	def __init__(self,e=None):
 		Exception.__init__(self)
 		if e == None:
@@ -33,10 +33,10 @@ class PackageKitException(Exception):
 				raise Exception,"Can only handle DBusExceptions"
 			self._pk_name = str(e.get_dbus_name())
 			self._full_str = str(e)
-	
+
 	def get_backend_name(self):
 		return self._pk_name
-	
+
 	def __str__(self):
 		if self._full_str!=None:
 			return self._full_str
@@ -96,7 +96,7 @@ class PackageKit:
 		#self.job = None
 		self.progress = 0.0
 		bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface="org.freedesktop.PackageKit")
-	
+
 	def run(self):
 		self.loop = gobject.MainLoop()
 		self.loop.run()
@@ -145,19 +145,19 @@ class PackageKit:
 		     running_time  # amount of time transaction has been running in seconds
 		     ):
 		pass
-	
+
 	def Percentage(self,
 		       jid,        # Job ID
 		       progress    # 0.0 - 100.0
 		       ):
 		pass
-	
+
 	def JobStatus(self,
 		      jid,        # Job ID
 		      status      # enum - invalid, setup, download, install, update, exit
 		      ):
 		pass
-	
+
 	def Package(self,
 		    jid,        # Job ID
 		    value,      # installed=1, not-installed=0 | security=1, normal=0
@@ -195,7 +195,7 @@ class PackageKit:
 		      details     # non-localized details
 		      ):
 		pass
-	
+
 	def RequireRestart(self,
 			   jid,        # Job ID
 			   type,       # enum - system,application,session
@@ -218,7 +218,7 @@ class PackageKit:
 # --- PK Methods ---
 
 ## Start a new transaction to do Foo
-	
+
 	@dbusException
 	@job_id
 	def GetUpdates(self):
@@ -484,4 +484,4 @@ class DumpingPackageKit(PackageKit):
 		print "  args:"
 		for arg in args:
 			print "		" + str(arg)
-	
+

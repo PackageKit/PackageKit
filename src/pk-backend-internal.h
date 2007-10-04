@@ -90,6 +90,8 @@ gboolean	 pk_backend_search_details		(PkBackend	*backend,
 							 const gchar	*search);
 gboolean	 pk_backend_resolve			(PkBackend	*backend,
 							 const gchar	*package);
+gboolean	 pk_backend_rollback			(PkBackend	*backend,
+							 const gchar	*transaction_id);
 gboolean	 pk_backend_search_file			(PkBackend	*backend,
 							 const gchar	*filter,
 							 const gchar	*search);

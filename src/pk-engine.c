@@ -460,6 +460,11 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		pk_warning ("could not find backend");
 		return;
 	}
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return;
+	}
 	exit_text = pk_exit_enum_to_text (exit);
 
 	/* find the length of time we have been running */
@@ -582,6 +587,12 @@ pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 
 	/* commit, so it appears in the JobList */
 	pk_transaction_list_commit (engine->priv->transaction_list, item);
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return FALSE;
+	}
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (item->backend, &role, NULL);
@@ -718,8 +729,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	/* create a new backend */
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
+		g_warning ("Backend not set yet!");
 		return FALSE;
 	}
 
@@ -1492,6 +1502,59 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 }
 
 /**
+ * pk_engine_rollback:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
+pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction_id,
+		    DBusGMethodInvocation *context, GError **dead_error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.rollback", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	ret = pk_backend_rollback (item->backend, transaction_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_engine_update_package:
  *
  * This is async, so we have to treat it a bit carefully
@@ -1612,6 +1675,13 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "No tid:%s", tid);
+		return FALSE;
+	}
+
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "Backend not set with tid:%s", tid);
 		return FALSE;
 	}
 	pk_backend_get_role (item->backend, &role_enum, package_id);

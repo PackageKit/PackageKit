@@ -113,6 +113,7 @@ struct _PkBackendDesc {
 	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
 	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps);
 	void		(*resolve)		(PkBackend *backend, const gchar *package);
+	void		(*rollback)		(PkBackend *backend, const gchar *transaction_id);
 	void		(*search_details)	(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*search_file)		(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*search_group)		(PkBackend *backend, const gchar *filter, const gchar *search);
@@ -125,7 +126,7 @@ struct _PkBackendDesc {
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
 			   get_groups, get_filters, cancel, get_depends, get_description, \
 			   get_requires, get_update_detail, get_updates, install_package, install_file, \
-			   refresh_cache, remove_package, resolve, search_details, \
+			   refresh_cache, remove_package, resolve, rollback, search_details, \
 			   search_file, search_group, search_name, \
 			   update_package, update_system) \
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { \
@@ -147,6 +148,7 @@ struct _PkBackendDesc {
 		refresh_cache, \
 		remove_package, \
 		resolve, \
+		rollback, \
 		search_details, \
 		search_file, \
 		search_group, \

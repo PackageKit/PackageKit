@@ -60,6 +60,7 @@ struct _PkBackendPrivate
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
 	gchar			*xcached_package_id;
+	gchar			*xcached_transaction_id;
 	gchar			*xcached_full_path;
 	gchar			*xcached_filter;
 	gchar			*xcached_search;
@@ -257,7 +258,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 
 	if (strcmp (command, "package") == 0) {
 		if (size != 4) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -267,7 +268,9 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			if (info == PK_INFO_ENUM_UNKNOWN) {
 				g_print ("Info enumerated type '%s' not recognised\n", sections[1]);
 				g_print ("See src/pk-enum.c for allowed values.\n");
-				pk_error ("Runtime error, cannot continue");
+				pk_warning ("Runtime error, cannot continue");
+				ret = FALSE;
+				goto out;
 			}
 			pk_debug ("info=%s, package='%s' shortdesc='%s'",
 				  pk_info_enum_to_text (info), sections[2], sections[3]);
@@ -277,7 +280,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		}
 	} else if (strcmp (command, "description") == 0) {
 		if (size != 8) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -324,7 +327,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 
 	if (strcmp (command, "percentage") == 0) {
 		if (size != 2) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -332,7 +335,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_change_percentage (backend, percentage);
 	} else if (strcmp (command, "subpercentage") == 0) {
 		if (size != 2) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -340,7 +343,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_change_sub_percentage (backend, percentage);
 	} else if (strcmp (command, "error") == 0) {
 		if (size != 3) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -348,7 +351,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_error_code (backend, error_enum, sections[2]);
 	} else if (strcmp (command, "requirerestart") == 0) {
 		if (size != 3) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -356,7 +359,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
 	} else if (strcmp (command, "status") == 0) {
 		if (size != 2) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -364,7 +367,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_change_status (backend, status_enum);
 	} else if (strcmp (command, "allow-interrupt") == 0) {
 		if (size != 2) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -379,7 +382,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 	} else if (strcmp (command, "no-percentage-updates") == 0) {
 		if (size != 1) {
-			g_error ("invalid command '%s'", command);
+			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -399,7 +402,8 @@ static gboolean
 pk_backend_spawn_helper_delete (PkBackend *backend)
 {
 	if (backend->priv->spawn == NULL) {
-		pk_error ("spawn object not in use");
+		pk_warning ("spawn object not in use");
+		return FALSE;
 	}
 	pk_debug ("deleting spawn %p", backend->priv->spawn);
 	g_signal_handler_disconnect (backend->priv->spawn, backend->priv->signal_finished);
@@ -455,7 +459,8 @@ static gboolean
 pk_backend_spawn_helper_new (PkBackend *backend)
 {
 	if (backend->priv->spawn != NULL) {
-		pk_error ("spawn object already in use");
+		pk_warning ("spawn object already in use");
+		return FALSE;
 	}
 	backend->priv->spawn = pk_spawn_new ();
 	pk_debug ("allocating spawn %p", backend->priv->spawn);
@@ -598,8 +603,9 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 
 	/* Should only be called once... */
 	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
-		pk_error ("cannot set role more than once, already %s",
-			  pk_role_enum_to_text (backend->priv->role));
+		pk_warning ("cannot set role more than once, already %s",
+			    pk_role_enum_to_text (backend->priv->role));
+		return FALSE;
 	}
 	pk_debug ("setting role to %s", pk_role_enum_to_text (role));
 	backend->priv->assigned = TRUE;
@@ -798,7 +804,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	if (backend->priv->set_error == TRUE) {
 		g_print ("pk_backend_error_code was used more than once in the same backend instance!\n");
 		g_print ("You tried to set '%s'\n", buffer);
-		pk_error ("Internal error, cannot continue");
+		pk_warning ("Internal error");
 		return FALSE;
 	}
 	backend->priv->set_error = TRUE;
@@ -856,7 +862,7 @@ pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package
 /**
  * pk_backend_finished_delay:
  *
- * We can call into this function if we *know* it's safe. 
+ * We can call into this function if we *know* it's safe.
  **/
 static gboolean
 pk_backend_finished_delay (gpointer data)
@@ -983,6 +989,8 @@ pk_backend_run (PkBackend *backend)
 						  backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_RESOLVE) {
 		backend->desc->resolve (backend, backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		backend->desc->rollback (backend, backend->priv->xcached_transaction_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
 		backend->desc->get_description (backend,
 						backend->priv->xcached_package_id);
@@ -1192,6 +1200,22 @@ pk_backend_resolve (PkBackend *backend, const gchar *package)
 }
 
 /**
+ * pk_backend_rollback:
+ */
+gboolean
+pk_backend_rollback (PkBackend *backend, const gchar *transaction_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->rollback == NULL) {
+		pk_backend_not_implemented_yet (backend, "Rollback");
+		return FALSE;
+	}
+	backend->priv->xcached_transaction_id = g_strdup (transaction_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_ROLLBACK);
+	return TRUE;
+}
+
+/**
  * pk_backend_search_details:
  */
 gboolean
@@ -1350,6 +1374,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (backend->desc->resolve != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_RESOLVE);
 	}
+	if (backend->desc->rollback != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_ROLLBACK);
+	}
 	if (backend->desc->search_details != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
 	}
@@ -1438,7 +1465,7 @@ pk_backend_finalize (GObject *object)
 	if (backend->desc != NULL) {
 		if (backend->desc->destroy != NULL) {
 			backend->desc->destroy (backend);
-		}		
+		}
 	}
 
 	pk_debug ("freeing %s (%p)", backend->priv->name, backend);
@@ -1448,6 +1475,7 @@ pk_backend_finalize (GObject *object)
 	g_timer_destroy (backend->priv->timer);
 
 	g_free (backend->priv->xcached_package_id);
+	g_free (backend->priv->xcached_transaction_id);
 	g_free (backend->priv->xcached_filter);
 	g_free (backend->priv->xcached_search);
 
@@ -1557,6 +1585,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
 	backend->priv->xcached_package_id = NULL;
+	backend->priv->xcached_transaction_id = NULL;
 	backend->priv->xcached_full_path = NULL;
 	backend->priv->xcached_filter = NULL;
 	backend->priv->xcached_search = NULL;

@@ -122,6 +122,11 @@ gboolean	 pk_engine_resolve			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package,
 							 GError		**error);
+void		 pk_engine_rollback			(PkEngine	*engine,
+							 const gchar	*tid,
+							 const gchar	*transaction_id,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
 gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
 							 const gchar	*tid,
 							 gboolean	 force,
