@@ -193,8 +193,13 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
-	statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
-				     "FROM transactions ORDER BY transaction_id DESC LIMIT %i", limit);
+	if (limit == 0) {
+		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+				      "FROM transactions ORDER BY transaction_id");
+	} else {
+		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data "
+					     "FROM transactions ORDER BY transaction_id DESC LIMIT %i", limit);
+	}
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
 
