@@ -187,6 +187,7 @@ backend_update_system (PkBackend *backend)
 /**
  * backend_get_depends:
  */
+/**
 static void
 backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
@@ -194,6 +195,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id)
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
 }
+ */
 
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
@@ -204,7 +206,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
-	backend_get_depends,			/* get_depends */
+	NULL,					/* get_depends */
 	NULL,					/* get_description */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
