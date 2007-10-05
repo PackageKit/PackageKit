@@ -612,8 +612,7 @@ pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
 
 	/* only save into the database for useful stuff */
 	pk_backend_get_role (item->backend, &role, NULL);
-	if (role == PK_ROLE_ENUM_REFRESH_CACHE ||
-	    role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
