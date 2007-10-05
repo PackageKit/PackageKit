@@ -5,6 +5,12 @@ Do automatic updates at login time when system has gone idle
  * needs gnome-screensaver integration
 NOTE: RELEASE BLOCKER
 
+
+*** pk-update-icon (client) ***
+* When updates are available, the menu for the icon should say "Show updates" instead of "Software Update Viewer"
+* Don't re-run get-updates when selecting "Show updates" from the update icon, just populate it with the previous results.
+NOTE: RELEASE BLOCKER
+
 *** Add new callback for status ***
 TimeRemaining()
  
