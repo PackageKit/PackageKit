@@ -367,7 +367,7 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		role = pk_role_enum_from_text (role_text);
 		pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
-		g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, tid, timespec, succeeded, role, duration, data);
+		g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec, succeeded, role, duration, data);
 	}
 }
 
