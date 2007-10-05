@@ -186,7 +186,7 @@ pk_client_reset (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
-	pk_package_list_remove_buffer (client->priv->package_list);
+	pk_package_list_clear (client->priv->package_list);
 	return TRUE;
 }
 

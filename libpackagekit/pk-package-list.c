@@ -116,10 +116,10 @@ pk_package_list_get_buffer (PkPackageList *plist)
 }
 
 /**
- * pk_package_list_remove_buffer:
+ * pk_package_list_clear:
  **/
 gboolean
-pk_package_list_remove_buffer (PkPackageList *plist)
+pk_package_list_clear (PkPackageList *plist)
 {
 	PkPackageListItem *item;
 
@@ -200,7 +200,7 @@ pk_package_list_finalize (GObject *object)
 	g_return_if_fail (plist->priv != NULL);
 
 	/* removed any cached packages */
-	pk_package_list_remove_buffer (plist);
+	pk_package_list_clear (plist);
 	g_ptr_array_free (plist->priv->array, TRUE);
 
 	G_OBJECT_CLASS (pk_package_list_parent_class)->finalize (object);

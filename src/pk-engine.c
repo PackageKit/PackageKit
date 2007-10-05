@@ -43,6 +43,7 @@
 
 #include <pk-debug.h>
 #include <pk-task-common.h>
+#include <pk-package-list.h>
 #include <pk-enum.h>
 
 #include "pk-backend-internal.h"
@@ -66,6 +67,7 @@ struct PkEnginePrivate
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkTransactionItem	*sync_item;
+	PkPackageList		*updates_cache;
 };
 
 enum {
@@ -465,7 +467,21 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		g_warning ("Backend not set yet!");
 		return;
 	}
-	exit_text = pk_exit_enum_to_text (exit);
+
+	/* get what the role was */
+	pk_backend_get_role (item->backend, &role, NULL);
+
+	/* copy this into the cache if we are getting updates */
+	if (role == PK_ROLE_ENUM_GET_UPDATES) {
+		if (engine->priv->updates_cache != NULL) {
+			pk_debug ("unreffing updates cache");
+			g_object_unref (engine->priv->updates_cache);
+		}
+		engine->priv->updates_cache = item->package_list;
+		pk_debug ("reffing updates cache");
+		g_object_ref (engine->priv->updates_cache);
+		g_object_add_weak_pointer (G_OBJECT (engine->priv->updates_cache), (gpointer) &engine->priv->updates_cache);
+	}
 
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
@@ -481,13 +497,13 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
 	/* could the update list have changed? */
-	pk_backend_get_role (item->backend, &role, NULL);
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		pk_debug ("emitting updates-changed tid:%s", item->tid);
 		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
 	}
 
+	exit_text = pk_exit_enum_to_text (exit);
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, (guint) time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
 
@@ -733,6 +749,13 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 		return FALSE;
 	}
 
+	/* we unref the update cache if it exists */
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache");
+		g_object_unref (engine->priv->updates_cache);
+		engine->priv->updates_cache = NULL;
+	}
+
 	ret = pk_backend_refresh_cache (item->backend, force);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -771,6 +794,28 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
+	}
+
+	/* try and reuse cache */
+	if (engine->priv->updates_cache != NULL) {
+		PkPackageListItem *package;
+		GPtrArray *plist;
+		guint i;
+		guint length;
+
+		plist = pk_package_list_get_buffer (engine->priv->updates_cache);
+		pk_warning ("we have cached data (%i) we could use!", plist->len);
+
+		/* emulate the backend */
+		pk_backend_set_role (item->backend, PK_ROLE_ENUM_GET_UPDATES);
+		length = plist->len;
+		for (i=0; i<length; i++) {
+			package = g_ptr_array_index (plist, i);
+			pk_engine_package_cb (item->backend, package->info, package->package_id, package->summary, engine);
+		}
+		pk_engine_finished_cb (item->backend, PK_EXIT_ENUM_SUCCESS, engine);
+		pk_engine_item_delete (engine, item);
+		return TRUE;
 	}
 
 	ret = pk_backend_get_updates (item->backend);
@@ -2105,6 +2150,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
 
+	/* we save a cache of the latest update lists sowe can do cached responses */
+	engine->priv->updates_cache = NULL;
+
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
@@ -2153,6 +2201,11 @@ pk_engine_finalize (GObject *object)
 	polkit_context_unref (engine->priv->pk_context);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
+
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache");
+		g_object_unref (engine->priv->updates_cache);
+	}
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }
