@@ -142,16 +142,21 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if name:
-            if installed:
+            if installed == INFO_INSTALLED:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
 
-            updJob, suggMap = self._do_package_update(name, version, flavor,
+            else:
+                updJob, suggMap = self._do_package_update(name, version, flavor,
                                                       apply=False)
 
-            for what, need in suggMap:
-                id = self.get_package_id(need[0], need[1], need[2])
-                self.package(id, False, '')
+                for what, need in suggMap:
+                    id = self.get_package_id(need[0], need[1], need[2])
+                    depInstalled = self.check_installed(need[0])
+                    if depInstalled == INFO_INSTALLED:
+                        self.package(id, INFO_INSTALLED, '')
+                    else:
+                        self.package(id, INFO_AVAILABLE, '')
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
