@@ -483,6 +483,16 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		g_object_add_weak_pointer (G_OBJECT (engine->priv->updates_cache), (gpointer) &engine->priv->updates_cache);
 	}
 
+	/* we unref the update cache if it exists */
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		if (engine->priv->updates_cache != NULL) {
+			pk_debug ("unreffing updates cache as we have just finished an update");
+			g_object_unref (engine->priv->updates_cache);
+			engine->priv->updates_cache = NULL;
+		}
+	}
+
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
 
