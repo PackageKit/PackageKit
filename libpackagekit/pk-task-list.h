@@ -64,6 +64,8 @@ PkTaskList	*pk_task_list_new			(void);
 gboolean	 pk_task_list_refresh			(PkTaskList	*tlist);
 gboolean	 pk_task_list_print			(PkTaskList	*tlist);
 gboolean	 pk_task_list_free			(PkTaskList	*tlist);
+gboolean	 pk_task_list_contains_role		(PkTaskList	*tlist,
+							 PkRoleEnum	 role);
 GPtrArray	*pk_task_list_get_latest		(PkTaskList	*tlist);
 
 G_END_DECLS

@@ -90,6 +90,29 @@ pk_task_list_print (PkTaskList *tlist)
 }
 
 /**
+ * pk_task_list_contains_role:
+ **/
+gboolean
+pk_task_list_contains_role (PkTaskList *tlist, PkRoleEnum role)
+{
+	guint i;
+	PkTaskListItem *item;
+	guint length;
+
+	g_return_val_if_fail (tlist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
+
+	length = tlist->priv->task_list->len;
+	for (i=0; i<length; i++) {
+		item = g_ptr_array_index (tlist->priv->task_list, i);
+		if (item->role == role) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/**
  * pk_task_list_find_existing_tid:
  **/
 static PkTaskListItem *
