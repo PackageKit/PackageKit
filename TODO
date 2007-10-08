@@ -8,6 +8,8 @@ NOTE: RELEASE BLOCKER
 *** PkNetwork ***
 Need to move src/pk-network.* into libpackagekit so vendors can plug in
 other network detection frameworks other than NetworkManager.
+pk-network.c -> pk-network-nm.c and a common pk-network.h - select abstraction
+in the configure script. Create pk-network-none.c that is always on.
 Plus, clients can re-use this code, rather than using PkConnection (WRONG!!)
 NOTE: RELEASE BLOCKER
 
