@@ -602,6 +602,10 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-search-group">
@@ -634,6 +638,10 @@
         <literal>NoPercentageUpdates</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
+      </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
       </para>
     </sect2>
 
@@ -671,6 +679,10 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-search-file">
@@ -697,7 +709,7 @@
       <para>
         This should search for files.
         This should allow an application to find out what package owns
-		    a file on the system.
+        a file on the system.
       </para>
       <para>
         This method typically emits
@@ -705,6 +717,10 @@
         <literal>NoPercentageUpdates</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
+      </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
       </para>
     </sect2>
 
@@ -737,7 +753,7 @@
       <para>
         This should search for files.
         This should allow an application to find out what package owns
-		    a file on the system.
+        a file on the system.
       </para>
       <para>
         This method typically emits
@@ -747,6 +763,13 @@
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
+      </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>downloading</literal>,
+        <literal>updating</literal>,
+        <literal>installing</literal> or
+        <literal>removing</literal>.
       </para>
     </sect2>
 
@@ -784,6 +807,13 @@
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
+      </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>downloading</literal>,
+        <literal>updating</literal>,
+        <literal>installing</literal> or
+        <literal>removing</literal>.
       </para>
     </sect2>
 
@@ -825,6 +855,13 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>downloading</literal>,
+        <literal>updating</literal>,
+        <literal>installing</literal> or
+        <literal>removing</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-get-depends">
@@ -860,6 +897,10 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-resolve">
@@ -891,6 +932,10 @@
         This method typically emits
         <literal>Error</literal> and
         <literal>Package</literal>.
+      </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
       </para>
     </sect2>
 
@@ -960,6 +1005,10 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>available</literal> or<literal>installed</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-get-description">
@@ -1025,7 +1074,7 @@
       <para>
         This should search for files.
         This should allow an application to find out what package owns
-		    a file on the system.
+        a file on the system.
       </para>
       <para>
         This method typically emits
@@ -1052,6 +1101,13 @@
         <literal>RequireRestart</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>downloading</literal>,
+        <literal>updating</literal>,
+        <literal>installing</literal> or
+        <literal>removing</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-get-updates">
@@ -1066,6 +1122,13 @@
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
+      <para>
+        <literal>Package</literal> enumerated types should be
+        <literal>low</literal>,
+        <literal>normal</literal>,
+        <literal>important</literal> or
+        <literal>security</literal>.
+      </para>
     </sect2>
 
     <sect2 id="api-refresh-cache">
@@ -1076,7 +1139,7 @@
       <para>
         This should search for files.
         This should allow an application to find out what package owns
-		    a file on the system.
+        a file on the system.
       </para>
       <para>
         This method typically emits
@@ -1244,7 +1307,7 @@
       <title>Package</title>
       <para>
         If updating, as packages are updated then emit them to the screen.
-	This allows a summary to be presented after the transaction.
+        This allows a summary to be presented after the transaction.
       </para>
       <para>
         When returning results from a search always return
@@ -1393,10 +1456,10 @@
             <row>
               <entry><literal>size</literal></entry>
               <entry>
-		The size of the package in bytes.  This should be the
-		size of the entire package file, not the size of the
-		files installed on the system.
-	      </entry>
+                The size of the package in bytes.  This should be the
+                size of the entire package file, not the size of the
+                files installed on the system.
+              </entry>
             </row>
             <row>
               <entry><literal>file_list</literal></entry>
