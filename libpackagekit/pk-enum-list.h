@@ -61,6 +61,9 @@ gboolean	 pk_enum_list_set_type			(PkEnumList	*elist,
 gboolean	 pk_enum_list_from_string		(PkEnumList	*elist,
 							 const gchar	*enums);
 gchar		*pk_enum_list_to_string			(PkEnumList	*elist);
+guint		 pk_enum_list_size			(PkEnumList	*elist);
+guint		 pk_enum_list_get_item			(PkEnumList	*elist,
+							 guint		 item);
 gboolean	 pk_enum_list_contains			(PkEnumList	*elist,
 							 guint		 value);
 gboolean	 pk_enum_list_append			(PkEnumList	*elist,
