@@ -2,11 +2,6 @@ Order of no particular importance:
 
 *** pk-notify-icon (client) ***
 Do automatic updates at login time when system has gone idle
- * needs gnome-screensaver integration
-NOTE: RELEASE BLOCKER
-
-*** PkNetwork ***
-Use PkNetwork in client code, rather than using PkConnection (WRONG!!)
 NOTE: RELEASE BLOCKER
 
 *** pk-update-icon (client) ***
@@ -15,10 +10,6 @@ NOTE: RELEASE BLOCKER
 
 *** Add new callback for status ***
 TimeRemaining()
- 
-*** get the depends and requires in the tabbed UI ***
-We really don't want to remove glibc...
-NOTE: RELEASE BLOCKER
 
 *** the backends will have repo controls ***
 a(s=rid,s=description)=GetRepoList()
