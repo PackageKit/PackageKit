@@ -10,7 +10,7 @@
 #
 
 from conary import callbacks
-from packagekit import *
+from packagekit.backend import *
 
 class UpdateCallback(callbacks.UpdateCallback):
     def resolvingDependencies(self):
