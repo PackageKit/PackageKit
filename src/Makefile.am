@@ -16,7 +16,6 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
-	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
@@ -52,8 +51,6 @@ packagekitd_SOURCES =					\
 	pk-spawn.h					\
 	pk-engine.h					\
 	pk-engine.c					\
-	pk-network.h					\
-	pk-network.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
 	pk-transaction-db.h				\
@@ -70,7 +67,6 @@ packagekitd_LDADD =					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
-	$(LIBNM_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 
@@ -116,8 +112,6 @@ pk_self_test_SOURCES =					\
 	pk-backend.c					\
 	pk-spawn.h					\
 	pk-spawn.c					\
-	pk-network.h					\
-	pk-network.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
 	pk-transaction-id.h				\

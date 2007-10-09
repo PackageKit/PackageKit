@@ -39,13 +39,13 @@
 #include <gmodule.h>
 #include <pk-package-id.h>
 #include <pk-enum.h>
+#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-backend-internal.h"
 #include "pk-marshal.h"
 #include "pk-enum.h"
 #include "pk-spawn.h"
-#include "pk-network.h"
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
