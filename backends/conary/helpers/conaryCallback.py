@@ -63,14 +63,16 @@ class UpdateCallback(callbacks.UpdateCallback):
         if oldVersion and newVersion:
             self.backend.status(INFO_UPDATING)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
             self.backend.status(INFO_REMOVING)
             id = self.backend.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.package(id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
             self.backend.status(INFO_INSTALLING)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(id, INFO_INSTALLING, '')
 
-        self.backend.package(id, 1, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)
