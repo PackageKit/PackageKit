@@ -51,7 +51,6 @@ static void     pk_network_finalize	(GObject        *object);
 
 struct PkNetworkPrivate
 {
-	GString			*stdout_buf;
 	libnm_glib_ctx		*ctx;
 	guint			 callbackid;
 };
