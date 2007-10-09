@@ -4,10 +4,6 @@ Order of no particular importance:
 Do automatic updates at login time when system has gone idle
 NOTE: RELEASE BLOCKER
 
-*** pk-application (client) ***
-Don't hardcode the group list in PkApplication
-NOTE: RELEASE BLOCKER
-
 *** pk-update-icon (client) ***
 * Don't re-run get-updates when selecting "Show updates" from the update icon, just populate it with the previous results.
 NOTE: RELEASE BLOCKER
