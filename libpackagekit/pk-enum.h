@@ -81,7 +81,8 @@ typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
-	PK_RESTART_ENUM_SYSTEM
+	PK_RESTART_ENUM_SYSTEM,
+	PK_RESTART_ENUM_UNKNOWN
 } PkRestartEnum;
 
 typedef enum {
@@ -128,6 +129,7 @@ typedef enum {
 	PK_UPDATE_ENUM_ALL,
 	PK_UPDATE_ENUM_SECURITY,
 	PK_UPDATE_ENUM_NONE,
+	PK_UPDATE_ENUM_UNKNOWN,
 } PkUpdateEnum;
 
 typedef enum {
@@ -145,7 +147,8 @@ typedef enum {
 } PkInfoEnum;
 
 typedef enum {
-	PK_SIGTYPE_ENUM_GPG
+	PK_SIGTYPE_ENUM_GPG,
+	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
 
 PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);

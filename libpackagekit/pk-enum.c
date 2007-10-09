@@ -98,6 +98,7 @@ static PkTaskEnumMatch task_error[] = {
 };
 
 static PkTaskEnumMatch task_restart[] = {
+	{PK_RESTART_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_RESTART_ENUM_NONE,			"none"},
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
 	{PK_RESTART_ENUM_SESSION,		"session"},
@@ -106,6 +107,7 @@ static PkTaskEnumMatch task_restart[] = {
 };
 
 static PkTaskEnumMatch task_filter[] = {
+	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
 	{PK_FILTER_ENUM_GUI,			"gui"},
@@ -113,6 +115,7 @@ static PkTaskEnumMatch task_filter[] = {
 };
 
 static PkTaskEnumMatch task_group[] = {
+	{PK_GROUP_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
 	{PK_GROUP_ENUM_EDUCATION,		"education"},
@@ -128,6 +131,7 @@ static PkTaskEnumMatch task_group[] = {
 };
 
 static PkTaskEnumMatch task_freq[] = {
+	{PK_FREQ_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_FREQ_ENUM_HOURLY,			"hourly"},
 	{PK_FREQ_ENUM_DAILY,			"daily"},
 	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
@@ -136,6 +140,7 @@ static PkTaskEnumMatch task_freq[] = {
 };
 
 static PkTaskEnumMatch task_update[] = {
+	{PK_UPDATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_ENUM_ALL,			"all"},
 	{PK_UPDATE_ENUM_SECURITY,		"security"},
 	{PK_UPDATE_ENUM_NONE,			"none"},
@@ -143,6 +148,7 @@ static PkTaskEnumMatch task_update[] = {
 };
 
 static PkTaskEnumMatch task_info[] = {
+	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
 	{PK_INFO_ENUM_LOW,			"low"},
@@ -157,6 +163,7 @@ static PkTaskEnumMatch task_info[] = {
 };
 
 static PkTaskEnumMatch task_sig_type[] = {
+	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
 };
 
