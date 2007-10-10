@@ -39,24 +39,23 @@ void
 sqlite_init_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *))
 {
 	gint ret;
-	sqlite3_stmt *complete;
 
 	ret = sqlite3_open (dbname, &db);
 	ret = sqlite3_exec(db,"PRAGMA synchronous = OFF",NULL,NULL,NULL);
 	g_assert(ret == SQLITE_OK);
-	sqlite3_prepare_v2("create table params (name text primary key, value integer)", -1, &complete, NULL)
 	ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
-	g_assert(ret == SQLITE_OK);
 	if (ret == SQLITE_ERROR)
 	{
-		sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
-		build_db(backend,db);
-	}
-	else
-	{
-		/*ret = sqlite3_exec(db,"delete from packages",NULL,NULL,NULL); // clear it!
+		ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
+		//g_assert(ret == SQLITE_OK);
+		pk_debug("wiped db");
+		ret = sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
 		g_assert(ret == SQLITE_OK);
-		pk_debug("wiped db");*/
+
+		build_db(backend,db);
+
+		sqlite3_exec(db,"create table params (name text primary key, value integer)", NULL, NULL, NULL);
+		sqlite3_exec(db,"insert into params values ('build_complete',1)", NULL, NULL, NULL);
 	}
 }
 
@@ -87,7 +86,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 				(const gchar*)sqlite3_column_text(package,1),
 				(const gchar*)sqlite3_column_text(package,2),
 				(const gchar*)sqlite3_column_text(package,3));
-		pk_backend_package(backend, FALSE, pid, (const gchar*)sqlite3_column_text(package,4));
+		pk_backend_package(backend, PK_INFO_ENUM_UNKNOWN, pid, (const gchar*)sqlite3_column_text(package,4));
 		g_free(pid);
 		if (res==SQLITE_ROW)
 			res = sqlite3_step(package);
