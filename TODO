@@ -2,7 +2,6 @@ Order of no particular importance:
 
 *** pk-update-icon (client) ***
 * Don't re-run get-updates when selecting "Show updates" from the update icon, just populate it with the previous results.
-NOTE: RELEASE BLOCKER
 
 *** Add new callback for status ***
 TimeRemaining()
