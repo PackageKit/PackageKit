@@ -225,12 +225,21 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		exit = pk_exit_enum_from_text (exit_text);
 		pk_debug ("emit finished %i, %i", exit, runtime);
+
+		/* only this instance is finished, and do it before the signal so we can reset */
+		client->priv->is_finished = TRUE;
+
 		g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 	}
-	client->priv->is_finished = TRUE;
 }
 
 /**
@@ -244,6 +253,12 @@ pk_client_percentage_changed_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit percentage-changed %i", percentage);
@@ -263,6 +278,12 @@ pk_client_sub_percentage_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit sub-percentage-changed %i", percentage);
 		g_signal_emit (client, signals [PK_CLIENT_SUB_PERCENTAGE_CHANGED], 0, percentage);
@@ -279,6 +300,12 @@ pk_client_no_percentage_updates_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit no-percentage-updates");
@@ -299,6 +326,12 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	status = pk_status_enum_from_text (status_text);
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
@@ -322,6 +355,12 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	PkInfoEnum info;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
@@ -364,6 +403,12 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		role = pk_role_enum_from_text (role_text);
 		pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
@@ -387,6 +432,12 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
@@ -415,6 +466,12 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
@@ -435,6 +492,12 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 	
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s",
 			  tid, repository_name, key_url, key_userid, key_id, key_timestamp, type_text);
@@ -457,6 +520,12 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		code = pk_error_enum_from_text (code_text);
 		pk_debug ("emit error-code %i, %s", code, details);
@@ -477,6 +546,12 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	PkRestartEnum restart;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		restart = pk_restart_enum_from_text (restart_text);
