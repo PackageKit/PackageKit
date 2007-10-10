@@ -14,6 +14,7 @@ RepoSetData(s=rid,s=data,s=value)
 *** pk-application (client) ***
 Use an icons for installed and not-installed rather than tickboxes
 Refresh the query list after an install or remove (means saving the query and re-issuing)
+** RELEASE BLOCKER **
 
 *** Client library has to be able to re_issue ***
 Need to save PkRole
