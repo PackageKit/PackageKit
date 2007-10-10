@@ -23,39 +23,24 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <glib/gprintf.h>
+
+#include <math.h>
 #include <string.h>
+
 #include <pk-backend.h>
 #include <pk-debug.h>
 #include <pk-package-id.h>
 #include "config.h"
 
-#include <apt-pkg/pkgcachegen.h>
-#include <apt-pkg/pkgcache.h>
-#include <apt-pkg/cachefile.h>
-#include <apt-pkg/progress.h>
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/init.h>
-#include <apt-pkg/pkgrecords.h>
-#include <apt-pkg/sourcelist.h>
-#include <apt-pkg/error.h>
-#include <apt-pkg/acquire.h>
-#include <apt-pkg/acquire-item.h>
-
-#include <string.h>
-#include <math.h>
 
 #include "pk-backend-apt.h"
 #include "sqlite-pkg-cache.h"
 
-static pkgCacheFile *fileCache = NULL;
-static pkgSourceList *SrcList = 0;
 static gboolean inited = FALSE;
 
 #define APT_DB DATABASEDIR "/apt.db"
-
-struct desc_task {
-	PkPackageId *pi;
-};
 
 static void backend_initialize(PkBackend *backend)
 {
@@ -65,36 +50,9 @@ static void backend_initialize(PkBackend *backend)
 			pk_debug("pkginitconfig was false");
 		if (pkgInitSystem(*_config, _system) == false)
 			pk_debug("pkginitsystem was false");
-		init_sqlite_cache(backend, APT_DB, apt_build_db);
+		sqlite_init_cache(backend, APT_DB, apt_build_db);
 		inited = TRUE;
 	}
-}
-
-static pkgCacheFile *getCache(PkBackend *backend)
-{
-	if (fileCache == NULL)
-	{
-		MMap *Map = 0;
-		OpTextProgress Prog;
-		// Open the cache file
-		SrcList = new pkgSourceList;
-		SrcList->ReadMainList();
-
-		// Generate it and map it
-		pkgMakeStatusCache(*SrcList, Prog, &Map, true);
-
-		fileCache = new pkgCacheFile();
-
-		if (fileCache->Open(Prog, FALSE) == FALSE)
-		{
-			pk_debug("I need more privelges");
-			fileCache->Close();
-			fileCache = NULL;
-		}
-		else
-			pk_debug("cache inited");
-	}
-	return fileCache;
 }
 
 /**
@@ -141,121 +99,6 @@ static void backend_refresh_cache(PkBackend * backend, gboolean force)
 	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
 }
 
-static GHashTable *PackageRecord(PkBackend *backend, pkgCache::VerIterator V)
-{
-	GHashTable *ret = NULL;
-
-	pkgCache & pkgCache = *(getCache(backend));
-	// Find an appropriate file
-	pkgCache::VerFileIterator Vf = V.FileList();
-	for (; Vf.end() == false; Vf++)
-	{
-		if ((Vf.File()->Flags & pkgCache::Flag::NotSource) == 0)
-			break;
-		if (Vf.end() == true)
-			Vf = V.FileList();
-	}
-
-	// Check and load the package list file
-	pkgCache::PkgFileIterator I = Vf.File();
-	if (I.IsOk() == false)
-		return NULL;
-
-	FileFd PkgF(I.FileName(),FileFd::ReadOnly);
-	if (_error->PendingError() == true)
-		return NULL;
-
-	// Read the record
-	char *Buffer = new char[pkgCache.HeaderP->MaxVerFileSize+1];
-	Buffer[V.FileList()->Size] = '\0';
-	if (PkgF.Seek(V.FileList()->Offset) == false ||
-		 PkgF.Read(Buffer,V.FileList()->Size) == false)
-	{
-		delete [] Buffer;
-		return NULL;
-	}
-	//pk_debug("buffer: '%s'\n",Buffer);
-	ret = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
-	gchar ** lines = g_strsplit(Buffer,"\n",-1);
-	guint i;
-	for (i=0;i<g_strv_length(lines);i++)
-	{
-		gchar ** parts = g_strsplit_set(lines[i],": ",2);
-		if (g_strv_length(parts)>1)
-		{
-			//pk_debug("entry =  '%s' : '%s'",parts[0],parts[1]);
-			if (parts[0][0]=='\0')
-			{
-				gchar *oldval = g_strdup((const gchar*)g_hash_table_lookup(ret,"Description"));
-				g_hash_table_insert(ret,g_strdup("Description"),g_strconcat(oldval, "\n",parts[1],NULL));
-				//pk_debug("new entry =  '%s'",(const gchar*)g_hash_table_lookup(ret,"Description"));
-				g_free(oldval);
-			}
-			else
-				g_hash_table_insert(ret,g_strdup(parts[0]),g_strdup(parts[1]));
-		}
-		g_strfreev(parts);
-	}
-	g_strfreev(lines);
-	return ret;
-
-}
-
-// backend_get_description_thread
-static gboolean backend_get_description_thread (PkBackend *backend, gpointer data)
-{
-	desc_task *dt = (desc_task *) data;
-
-	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(backend);
-
-	pk_debug("finding %s", dt->pi->name);
-	pkgCache & pkgCache = *(getCache(backend));
-	pkgDepCache::Policy Plcy;
-
-	// Map versions that we want to write out onto the VerList array.
-	for (pkgCache::PkgIterator P = pkgCache.PkgBegin(); P.end() == false; P++)
-	{
-		if (strcmp(dt->pi->name, P.Name())!=0)
-			continue;
-
-		// Find the proper version to use.
-		pkgCache::VerIterator V = Plcy.GetCandidateVer(P);
-		GHashTable *pkg = PackageRecord(backend,V);
-		pk_backend_description(backend,dt->pi->name,
-			"unknown", PK_GROUP_ENUM_OTHER,(const gchar*)g_hash_table_lookup(pkg,"Description"),"");
-		g_hash_table_unref(pkg);
-	}
-	return NULL;
-}
-
-/**
- * backend_get_description:
- */
-static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	desc_task *data = g_new(struct desc_task, 1);
-	if (data == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
-		pk_backend_finished(backend);
-		return;
-	}
-
-	data->pi = pk_package_id_new_from_string(package_id);
-	if (data->pi == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished(backend);
-		return;
-	}
-
-	pk_backend_thread_helper (backend, backend_get_description_thread, data);
-	return;
-}
-
 static gboolean backend_search_file_thread (PkBackend *backend, gpointer data)
 {
 	//search_task *st = (search_task*)data;
@@ -300,7 +143,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	backend_get_description,		/* get_description */
+	sqlite_get_description,		/* get_description */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */

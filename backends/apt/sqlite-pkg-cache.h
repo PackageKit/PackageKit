@@ -30,9 +30,10 @@ typedef enum {
 
 #include <pk-backend.h>
 
-void init_sqlite_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *db));
+void sqlite_init_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *db));
 void sqlite_search_details (PkBackend *backend, const gchar *filter, const gchar *search);
 void sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search);
 void backend_search_common(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, PkBackendThreadFunc func);
+void sqlite_get_description (PkBackend *backend, const gchar *package_id);
 
 #endif

@@ -25,35 +25,44 @@
 
 static sqlite3 *db = NULL;
 
+struct desc_task {
+	PkPackageId *pi;
+};
+
 struct search_task {
 	gchar *search;
 	gchar *filter;
 	SearchDepth depth;
 };
 
-void init_sqlite_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *))
+void
+sqlite_init_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *))
 {
 	gint ret;
-	char *errmsg = NULL;
+	sqlite3_stmt *complete;
+
 	ret = sqlite3_open (dbname, &db);
 	ret = sqlite3_exec(db,"PRAGMA synchronous = OFF",NULL,NULL,NULL);
 	g_assert(ret == SQLITE_OK);
-	sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,&errmsg);
-	if (errmsg == NULL) // success, ergo didn't exist
+	sqlite3_prepare_v2("create table params (name text primary key, value integer)", -1, &complete, NULL)
+	ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
+	g_assert(ret == SQLITE_OK);
+	if (ret == SQLITE_ERROR)
 	{
+		sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
 		build_db(backend,db);
 	}
 	else
 	{
-		sqlite3_free(errmsg);
 		/*ret = sqlite3_exec(db,"delete from packages",NULL,NULL,NULL); // clear it!
 		g_assert(ret == SQLITE_OK);
 		pk_debug("wiped db");*/
 	}
 }
 
-// backend_search_packages_thread
-gboolean backend_search_packages_thread (PkBackend *backend, gpointer data)
+// sqlite_search_packages_thread
+static gboolean
+sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 {
 	search_task *st = (search_task *) data;
 	int res;
@@ -118,21 +127,82 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 }
 
 /**
- * backend_search_details:
+ * sqlite_search_details:
  */
 void
 sqlite_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	backend_search_common(backend, filter, search, SEARCH_DETAILS, backend_search_packages_thread);
+	backend_search_common(backend, filter, search, SEARCH_DETAILS, sqlite_search_packages_thread);
 }
 
 /**
- * backend_search_name:
+ * sqlite_search_name:
  */
 void
 sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	backend_search_common(backend, filter, search, SEARCH_NAME, backend_search_packages_thread);
+	backend_search_common(backend, filter, search, SEARCH_NAME, sqlite_search_packages_thread);
+}
+
+// sqlite_get_description_thread
+static gboolean sqlite_get_description_thread (PkBackend *backend, gpointer data)
+{
+	desc_task *dt = (desc_task *) data;
+	int res;
+
+	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates(backend);
+
+	pk_debug("finding %s", dt->pi->name);
+
+	sqlite3_stmt *package = NULL;
+	gchar *sel = g_strdup_printf("select long_desc from packages where name = '%s' and version = '%s' and repo = '%s'",dt->pi->name,dt->pi->version,dt->pi->data);
+	pk_debug("statement is '%s'",sel);
+	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
+	g_free(sel);
+	if (res!=SQLITE_OK)
+		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
+	res = sqlite3_step(package);
+	pk_backend_description(backend,dt->pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0,"");
+	res = sqlite3_step(package);
+	if (res==SQLITE_ROW)
+		pk_error("multiple matches for that package!");
+	if (res!=SQLITE_DONE)
+	{
+		pk_debug("sqlite error during step (%d): %s", res, sqlite3_errmsg(db));
+		g_assert(0);
+	}
+
+	g_free(dt);
+
+	return TRUE;
+}
+
+/**
+ * sqlite_get_description:
+ */
+void
+sqlite_get_description (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	desc_task *data = g_new(struct desc_task, 1);
+	if (data == NULL)
+	{
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
+		pk_backend_finished(backend);
+		return;
+	}
+
+	data->pi = pk_package_id_new_from_string(package_id);
+	if (data->pi == NULL)
+	{
+		pk_backend_error_code(backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished(backend);
+		return;
+	}
+
+	pk_backend_thread_helper (backend, sqlite_get_description_thread, data);
+	return;
 }
 
 
