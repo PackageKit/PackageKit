@@ -487,7 +487,11 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	gchar *command;
 
 	/* build script */
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	filename = g_build_filename ("..", "backends", backend->priv->name, "helpers", script, NULL);
+	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
+		g_free (filename);
+		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	}
 	pk_debug ("using spawn filename %s", filename);
 
 	if (argument != NULL) {
