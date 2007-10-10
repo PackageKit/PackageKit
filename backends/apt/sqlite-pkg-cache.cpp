@@ -74,6 +74,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 {
 	search_task *st = (search_task *) data;
 	int res;
+	gchar *sel;
 
 	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
@@ -82,7 +83,17 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 
 	sqlite3_stmt *package = NULL;
 	g_strdelimit(st->search," ",'%');
-	gchar *sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%'",st->search);
+	
+	if (st->depth == SEARCH_NAME)
+		sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%'",st->search);
+	else if (st->depth == SEARCH_DETAILS)
+		sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%' or short_desc like '%%%s%%' or long_desc like '%%%s%%'",st->search, st->search, st->search);
+	else
+	{
+		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Unknown search task type");
+		goto end_search_packages;
+	}
+	
 	pk_debug("statement is '%s'",sel);
 	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
 	g_free(sel);
@@ -106,6 +117,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 		g_assert(0);
 	}
 
+	end_search_packages:
 	g_free(st->search);
 	g_free(st);
 
