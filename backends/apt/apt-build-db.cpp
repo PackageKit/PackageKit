@@ -32,9 +32,11 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 	gchar *contents = NULL;
 	gchar *sdir;
 	const gchar *fname;
-	GRegex *origin, *suite, *version, *description;
+	GRegex *origin, *suite;
 	GDir *dir;
 	GHashTable *releases;
+	int res;
+	sqlite3_stmt *package = NULL;
 
 	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
@@ -50,9 +52,6 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 
 	origin = g_regex_new("^Origin: (\\S+)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
 	suite = g_regex_new("^Suite: (\\S+)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
-
-	version = g_regex_new("^Version: (.*)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
-	description = g_regex_new("^Description: (.*)",(GRegexCompileFlags)(G_REGEX_CASELESS|G_REGEX_OPTIMIZE|G_REGEX_MULTILINE),(GRegexMatchFlags)0,NULL);
 
 	releases = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
 	while ((fname = g_dir_read_name(dir))!=NULL)
@@ -117,6 +116,11 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 
 	/* and then we need to do this again, but this time we're looking for the packages */
 	dir = g_dir_open(sdir,0,&error);
+	res = sqlite3_prepare_v2(db, "insert or replace into packages values (?,?,?,?,?,?,?)", -1, &package, NULL);
+	if (res!=SQLITE_OK)
+		pk_error("sqlite error during insert prepare: %s", sqlite3_errmsg(db));
+	else
+		pk_debug("insert prepare ok for %p",package);
 	while ((fname = g_dir_read_name(dir))!=NULL)
 	{
 		gchar** items = g_strsplit(fname,"_",-1);
@@ -130,8 +134,12 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 		if (g_ascii_strcasecmp(items[len-1],"Packages")==0)
 		{
 			const gchar *repo;
-			gchar *temp, *parsed_name;
-			gchar *fullname;
+			gchar *temp=NULL, *parsed_name=NULL;
+			gchar *fullname= NULL;
+			gchar *begin=NULL, *next=NULL, *description = NULL;
+			glong count = 0;
+			gboolean haspk = FALSE;
+
 			/* warning: nasty hack with g_strjoinv */
 			if (g_str_has_prefix(items[len-2],"binary-"))
 			{
@@ -168,21 +176,19 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "error loading %s",fullname);
 				goto search_task_cleanup;
 			}
-			gchar *begin = contents, *next;
-			glong count = 0;
+			/*else
+				pk_debug("loaded");*/
 
-			sqlite3_stmt *package = NULL;
-			int res;
-			res = sqlite3_prepare_v2(db, "insert or replace into packages values (?,?,?,?,?,?,?)", -1, &package, NULL);
-			if (res!=SQLITE_OK)
-				pk_error("sqlite error during insert prepare: %s", sqlite3_errmsg(db));
-			res = sqlite3_bind_text(package,FIELD_REPO,repo,-1,SQLITE_STATIC);
+			res = sqlite3_bind_text(package,FIELD_REPO,repo,-1,SQLITE_TRANSIENT);
 			if (res!=SQLITE_OK)
 				pk_error("sqlite error during repo bind: %s", sqlite3_errmsg(db));
+			/*else
+				pk_debug("repo bind ok");*/
 
-			gboolean haspk = FALSE;
+			res = sqlite3_exec(db,"begin",NULL,NULL,NULL);
+			g_assert(res == SQLITE_OK);
 
-			sqlite3_exec(db,"begin",NULL,NULL,NULL);
+			begin = contents;
 
 			while (true)
 			{
@@ -221,7 +227,6 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 					colon+=2;
 					/*if (strlen(colon)>3000)
 						pk_error("strlen(colon) = %d\ncolon = %s",strlen(colon),colon);*/
-					//typedef enum {FIELD_PKG=0,FIELD_VER,FIELD_DEPS,FIELD_ARCH,FIELD_SHORT,FIELD_LONG,FIELD_REPO} Fields;
 					//pk_debug("entry = '%s','%s'",begin,colon);
 					if (begin[0] == 'P' && g_strcasecmp("Package",begin)==0)
 					{
@@ -246,11 +251,17 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 					break;
 				begin = next;	
 			}
-			sqlite3_exec(db,"commit",NULL,NULL,NULL);
+			res = sqlite3_exec(db,"commit",NULL,NULL,NULL);
+			if (res!=SQLITE_OK)
+				pk_error("sqlite error during commit: %s", sqlite3_errmsg(db));
+			res = sqlite3_clear_bindings(package);
+			if (res!=SQLITE_OK)
+				pk_error("sqlite error during clear: %s", sqlite3_errmsg(db));
 			g_free(contents);
 			contents = NULL;
 		}
 	}
+	sqlite3_finalize(package);
 
 search_task_cleanup:
 	g_dir_close(dir);
