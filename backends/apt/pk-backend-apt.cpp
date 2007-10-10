@@ -47,11 +47,20 @@ static void backend_initialize(PkBackend *backend)
 {
 	if (!inited)
 	{
+		gchar *apt_fname = NULL;
 		if (pkgInitConfig(*_config) == false)
 			pk_debug("pkginitconfig was false");
 		if (pkgInitSystem(*_config, _system) == false)
 			pk_debug("pkginitsystem was false");
-		sqlite_init_cache(backend, APT_DB, apt_build_db);
+
+		apt_fname = g_strconcat(
+				_config->Find("Dir").c_str(),
+				_config->Find("Dir::Cache").c_str(),
+				_config->Find("Dir::Cache::pkgcache").c_str(),
+				NULL);
+
+		sqlite_init_cache(backend, APT_DB, apt_fname, apt_build_db);
+		g_free(apt_fname);
 		inited = TRUE;
 	}
 }

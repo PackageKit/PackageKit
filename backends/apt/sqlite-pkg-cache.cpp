@@ -21,6 +21,7 @@
 
 #include <sqlite3.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include "sqlite-pkg-cache.h"
 
 static sqlite3 *db = NULL;
@@ -36,27 +37,35 @@ struct search_task {
 };
 
 void
-sqlite_init_cache(PkBackend *backend, const char* dbname, void (*build_db)(PkBackend *, sqlite3 *))
+sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fname, void (*build_db)(PkBackend *, sqlite3 *))
 {
-	gint ret;
+	int ret;
+	struct stat st;
+	time_t db_age;
 
 	ret = sqlite3_open (dbname, &db);
 	ret = sqlite3_exec(db,"PRAGMA synchronous = OFF",NULL,NULL,NULL);
 	g_assert(ret == SQLITE_OK);
-	ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
-	if (ret == SQLITE_ERROR)
+
+	g_stat(dbname, &st);
+	db_age = st.st_mtime;
+	g_stat(compare_fname, &st);
+	if (db_age>=st.st_mtime)
 	{
-		ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
-		//g_assert(ret == SQLITE_OK);
-		pk_debug("wiped db");
-		ret = sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
-		g_assert(ret == SQLITE_OK);
-
-		build_db(backend,db);
-
-		sqlite3_exec(db,"create table params (name text primary key, value integer)", NULL, NULL, NULL);
-		sqlite3_exec(db,"insert into params values ('build_complete',1)", NULL, NULL, NULL);
+		ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
+		if (ret != SQLITE_ERROR)
+			return;
 	}
+	ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
+	//g_assert(ret == SQLITE_OK);
+	pk_debug("wiped db");
+	ret = sqlite3_exec(db,"create table packages (name text, version text, deps text, arch text, short_desc text, long_desc text, repo string, primary key(name,version,arch,repo))",NULL,NULL,NULL);
+	g_assert(ret == SQLITE_OK);
+
+	build_db(backend,db);
+
+	sqlite3_exec(db,"create table params (name text primary key, value integer)", NULL, NULL, NULL);
+	sqlite3_exec(db,"insert into params values ('build_complete',1)", NULL, NULL, NULL);
 }
 
 // sqlite_search_packages_thread
