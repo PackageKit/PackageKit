@@ -130,7 +130,7 @@ static void backend_search_file(PkBackend *backend, const gchar *filter, const g
 extern "C" PK_BACKEND_OPTIONS (
 	"APT",					/* description */
 	"0.0.1",				/* version */
-	"Richard Hughes <richard@hughsie.com>, Tom Parker <palfrey@tevp.net>",	/* author */
+	"Tom Parker <palfrey@tevp.net>",	/* author */
 	backend_initialize,			/* initalize */
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
