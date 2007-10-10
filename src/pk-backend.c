@@ -39,13 +39,13 @@
 #include <gmodule.h>
 #include <pk-package-id.h>
 #include <pk-enum.h>
+#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-backend-internal.h"
 #include "pk-marshal.h"
 #include "pk-enum.h"
 #include "pk-spawn.h"
-#include "pk-network.h"
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -487,7 +487,11 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	gchar *command;
 
 	/* build script */
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	filename = g_build_filename ("..", "backends", backend->priv->name, "helpers", script, NULL);
+	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
+		g_free (filename);
+		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+	}
 	pk_debug ("using spawn filename %s", filename);
 
 	if (argument != NULL) {

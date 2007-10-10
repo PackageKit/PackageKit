@@ -10,32 +10,39 @@
 #
 
 from conary import callbacks
-from packagekit import *
+from packagekit.backend import *
 
 class UpdateCallback(callbacks.UpdateCallback):
     def resolvingDependencies(self):
-        self.backend.status('Resolving Dependencies')
+        #self.backend.status('Resolving Dependencies')
+        pass
 
     def creatingRollback(self):
-        self.backend.status('Creating Rollback')
+        #self.backend.status('Creating Rollback')
+        pass
 
     def committingTransaction(self):
-        self.backend.status('Committing Transaction')
+        #self.backend.status('Committing Transaction')
+        pass
 
     def downloadingFileContents(self, got, need):
-        self.backend.status('Downloading files for changeset')
+        #self.backend.status('Downloading files for changeset')
+        self.backend.status(INFO_DOWNLOADING)
 
     def downloadingChangeSet(self, got, need):
-        self.backend.status('Downloading')
+        self.backend.status(INFO_DOWNLOADING)
 
     def requestingFileContents(self):
-        self.backend.status('Requesting File Contents')
+        #self.backend.status('Requesting File Contents')
+        pass
 
     def requestingChangeSet(self):
-        self.backend.status('Requesting Changeset')
+        #self.backend.status('Requesting Changeset')
+        pass
 
     def done(self):
-        self.backend.status('Done')
+        #self.backend.status('Done')
+        pass
 
     def preparingUpdate(self, troveNum, troveCount, add=0):
         if troveNum > 0 and troveCount > 0:
@@ -54,16 +61,18 @@ class UpdateCallback(callbacks.UpdateCallback):
         newVersion, newFlavor = job[2]
 
         if oldVersion and newVersion:
-            self.backend.status('Update')
+            self.backend.status(INFO_UPDATING)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
-            self.backend.status('Erase')
+            self.backend.status(INFO_REMOVING)
             id = self.backend.get_package_id(name, oldVersion, oldFlavor)
+            self.backend.package(id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
-            self.backend.status('Install')
+            self.backend.status(INFO_INSTALLING)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
+            self.backend.package(id, INFO_INSTALLING, '')
 
-        self.backend.package(id, 1, '')
 
     def creatingDatabaseTransaction(self, troveNum, troveCount):
         self.preparingUpdate(troveNum, troveCount, add=troveCount)

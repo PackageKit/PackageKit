@@ -4,6 +4,7 @@ NULL =
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
+	$(LIBNM_CFLAGS)						\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
 	-I$(top_srcdir)/libselftest				\
@@ -27,6 +28,7 @@ libpackagekit_includedir = $(includedir)/packagekit
 libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-connection.h						\
+	pk-network.h						\
 	pk-package-id.h						\
 	pk-package-list.h					\
 	pk-enum-list.h						\
@@ -45,6 +47,8 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-connection.c						\
 	pk-connection.h						\
+	pk-network.c						\
+	pk-network.h						\
 	pk-package-id.c						\
 	pk-package-id.h						\
 	pk-package-list.c					\
@@ -69,6 +73,7 @@ libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
+	$(LIBNM_LIBS)						\
 	$(NULL)
 
 libpackagekit_la_LDFLAGS =					\

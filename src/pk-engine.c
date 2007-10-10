@@ -270,6 +270,7 @@ static void
 pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
 	PkTransactionItem *item;
+	PkRoleEnum role;
 	const gchar *info_text;
 	gboolean ret;
 
@@ -290,6 +291,17 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 
 	/* add to package cache */
 	pk_package_list_add (item->package_list, info, package_id, summary);
+
+	/* check the backend is doing the right thing */
+	pk_backend_get_role (item->backend, &role, NULL);
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		if (info == PK_INFO_ENUM_INSTALLED) {
+			pk_error ("backend emitted 'installed' rather than 'installing' "
+				  "- you need to do the package *before* you do the action");
+		}
+	}
 
 	info_text = pk_info_enum_to_text (info);
 	pk_debug ("emitting package tid:%s info=%s %s, %s", item->tid, info_text, package_id, summary);

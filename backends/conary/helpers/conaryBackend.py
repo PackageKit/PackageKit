@@ -254,6 +254,22 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
+    def _show_package(self,name, version, flavor, status):
+        '''  Show info about package'''
+        id = self.get_package_id(name, version, flavor)
+        summary = ""
+        self.package(id, status, summary)
+
+    def _get_status(self,notice):
+        # We need to figure out how to get this info, this is a place holder
+        #ut = notice['type']
+        # TODO : Add more types to check
+        #if ut == 'security':
+        #    return INFO_SECURITY
+        #else:
+        #    return INFO_NORMAL
+        return INFO_NORMAL
+
     def get_updates(self):
         self.percentage()
         try:
@@ -273,9 +289,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 troveTuple.append(name)
                 troveTuple.append(version)
                 installed = self.check_installed(troveTuple)
-                id = self.get_package_id(name, version, flavor)
-                summary = ""
-                self.package(id, installed, summary)
+                self._show_package(name, version, flavor, INFO_NORMAL)
         except:
             pass
 

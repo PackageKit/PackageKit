@@ -68,6 +68,12 @@ def desc(*args):
 		raise PackageKitTransactionFailure
 	return p.GetDescription(args[0][0])
 
+def depends(*args):
+	if len(args)!=1 or len(args[0])!=1:
+		print "depends only takes single arg"
+		raise PackageKitTransactionFailure
+	return p.GetDepends(args[0][0])
+
 def refresh_cache(*args):
 	if len(args)>0 and len(args[0])>0:
 		print "refresh_cache doesn't take args"

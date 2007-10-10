@@ -50,6 +50,7 @@ static void     pk_spawn_init		(PkSpawn      *spawn);
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
+#define PK_SPAWN_POLL_DELAY	100 /* ms */
 
 struct PkSpawnPrivate
 {
@@ -236,8 +237,8 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
 	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
-	/* poll every 250ms */
-	g_timeout_add (250, (GSourceFunc) pk_spawn_check_child, spawn);
+	/* poll every quickly */
+	g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
 
 	return TRUE;
 }
