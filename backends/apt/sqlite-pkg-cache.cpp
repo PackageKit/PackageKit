@@ -7,7 +7,7 @@
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; version 2 of the License.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -82,7 +82,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 
 	sqlite3_stmt *package = NULL;
 	g_strdelimit(st->search," ",'%');
-	
+
 	if (st->depth == SEARCH_NAME)
 		sel = g_strdup_printf("select name,version,arch,repo,short_desc from packages where name like '%%%s%%'",st->search);
 	else if (st->depth == SEARCH_DETAILS)
@@ -92,7 +92,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Unknown search task type");
 		goto end_search_packages;
 	}
-	
+
 	pk_debug("statement is '%s'",sel);
 	res = sqlite3_prepare_v2(db,sel, -1, &package, NULL);
 	g_free(sel);

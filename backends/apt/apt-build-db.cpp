@@ -64,13 +64,13 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 			g_strfreev(items);
 			continue;
 		}
-		
+
 		/* warning: nasty hack with g_strjoinv */
 		temp = items[len-2];
 		items[len-2] = NULL;
 		parsed_name = g_strjoinv("_",items);
 		items[len-2] = temp;
-		
+
 		if (g_ascii_strcasecmp(items[len-1],"Release")==0 && g_ascii_strcasecmp(items[len-2],"source")!=0)
 		{
 			gchar * repo = NULL, *fullname;
@@ -155,9 +155,9 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				parsed_name = g_strjoinv("_",items);
 				items[len-1] = temp;
 			}
-			
+
 			pk_debug("type is %s, group is %s, parsed_name is %s",items[len-2],items[len-1],parsed_name);
-			
+
 			repo = (const gchar *)g_hash_table_lookup(releases,parsed_name);
 			if (repo == NULL)
 			{
@@ -261,7 +261,7 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 				}
 				if (next == NULL)
 					break;
-				begin = next;	
+				begin = next;
 			}
 			res = sqlite3_exec(db,"commit",NULL,NULL,NULL);
 			if (res!=SQLITE_OK)
