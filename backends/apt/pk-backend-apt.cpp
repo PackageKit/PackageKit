@@ -37,6 +37,7 @@
 
 #include "pk-backend-apt.h"
 #include "sqlite-pkg-cache.h"
+#include "python-backend-common.h"
 
 static gboolean inited = FALSE;
 
@@ -81,22 +82,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      PK_FILTER_ENUM_INSTALLED,
 				      PK_FILTER_ENUM_DEVELOPMENT,
 				      -1);
-}
-
-/**
- * backend_refresh_cache:
- **/
-static void backend_refresh_cache(PkBackend * backend, gboolean force)
-{
-	/* check network state */
-	if (pk_backend_network_is_online(backend) == FALSE)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished(backend);
-		return;
-	}
-
-	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
 }
 
 static gboolean backend_search_file_thread (PkBackend *backend, gpointer data)
@@ -149,7 +134,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
 	NULL,					/* install_name */
-	backend_refresh_cache,			/* refresh_cache */
+	python_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
