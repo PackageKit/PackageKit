@@ -1495,6 +1495,10 @@
               <entry>A unique identifier for the key</entry>
             </row>
             <row>
+              <entry><literal>key_fingerprint</literal></entry>
+              <entry>The hashed fingerprint of the key</entry>
+            </row>
+            <row>
               <entry><literal>key_timestamp</literal></entry>
               <entry>The date the key was created</entry>
             </row>

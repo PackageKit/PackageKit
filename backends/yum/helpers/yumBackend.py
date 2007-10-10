@@ -32,6 +32,10 @@ from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 import rpmUtils
+import exceptions
+
+class GPGKeyNotImported(exceptions.Exception):
+    pass
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
@@ -43,7 +47,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
-        self.yumbase = yum.YumBase()
+        self.yumbase = PackageKitYumBase()
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
@@ -469,6 +473,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.YumGPGCheckError, msgs:
                 retmsg = "Error in Package Signatures;" +";".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
+            except GPGKeyNotImported, e:
+                keyData = self.yumbase.missingGPGKey                
+                if not keyData:
+                    self.error(ERROR_INTERNAL_ERROR,
+                               "GPG key not imported, but no GPG information received from Yum.")
+
+# We need a yum with this change:
+# http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
+# to have fingerprint and timestamp available here
+                self.repo_signature_required(keyData['po'].repoid,
+                                             keyData['keyurl'],
+                                             keyData['userid'],
+                                             keyData['hexkeyid'],
+                                             keyData['fingerprint'],
+                                             keyData['timestamp'],
+                                             'GPG')
+                self.error(ERROR_SIGNATURE_NOT_IMPORTED,retmsg)
             except yum.Errors.YumBaseError, msgs:
                 retmsg = "Error in Transaction Processing;" +";".join(msgs)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
@@ -718,3 +739,36 @@ class ProcessTransPackageKitCallback:
             self.base.allow_interrupt(False)
             self.base.percentage(50)
             pass
+
+
+class PackageKitYumBase(yum.YumBase):
+    """
+    Subclass of YumBase.  Needed so we can overload _checkSignatures
+    and nab the gpg sig data
+    """
+
+    def __init__(self):
+        yum.YumBase.__init__(self)
+        self.missingGPGKey = None
+
+    def _checkSignatures(self,pkgs,callback):
+        ''' The the signatures of the downloaded packages '''
+        # This can be overloaded by a subclass.
+        
+        for po in pkgs:
+            result, errmsg = self.sigCheckPkg(po)
+            if result == 0:
+                # Verified ok, or verify not req'd
+                continue            
+            elif result == 1:
+                self.getKeyForPackage(po, fullaskcb=self._fullAskForGPGKeyImport)
+            else:
+                raise YumGPGCheckError, errmsg
+
+        return 0
+
+    def _fullAskForGPGKeyImport(self, data):
+        self.missingGPGKey = data
+
+        raise GPGKeyNotImported()
+

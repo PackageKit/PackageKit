@@ -152,6 +152,7 @@
       <arg type="s" name="key_url" direction="out"/>
       <arg type="s" name="key_userid" direction="out"/>
       <arg type="s" name="key_id" direction="out"/>
+      <arg type="s" name="key_fingerprint" direction="out"/>
       <arg type="s" name="key_timestamp" direction="out"/>
       <arg type="s" name="type" direction="out"/> <!-- 'gpg', for now -->
     </signal>

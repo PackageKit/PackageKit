@@ -29,6 +29,7 @@ ERROR_NO_NETWORK = "no-network"
 ERROR_NOT_SUPPORTED = "not-supported"
 ERROR_INTERNAL_ERROR = "internal-error"
 ERROR_GPG_FAILURE = "gpg-failure"
+ERROR_SIGNATURE_NOT_IMPORTED = "signature-not-imported"
 ERROR_PACKAGE_NOT_INSTALLED = "package-not-installed"
 ERROR_PACKAGE_ALREADY_INSTALLED = "package-already-installed"
 ERROR_PACKAGE_DOWNLOAD_FAILED = "package-download-failed"
@@ -146,6 +147,21 @@ class PackageKitBaseBackend:
         else:
             data = 'false'
         print >> sys.stderr,"allow-interrupt\t%s" % (data)
+
+    def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
+        '''
+        send 'repo-signature-required' signal:
+        @param repo_name:       Name of the repository
+        @param key_url:         URL which the user can use to verify the key
+        @param key_userid:      Key userid
+        @param key_id:          Key ID
+        @param key_fingerprint: Full key fingerprint
+        @param key_timestamp:   Key timestamp
+        @param type:            Key type (GPG)
+        '''
+        print >> sys.stderr,"repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+            repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
+            )
 
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)

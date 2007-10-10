@@ -73,6 +73,7 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 const gchar    *key_url,
 							 const gchar    *key_userid,
 							 const gchar    *key_id,
+							 const gchar    *key_fingerprint,
 							 const gchar    *key_timestamp,
 							 PkSigTypeEnum   type);
 gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,

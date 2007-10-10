@@ -771,16 +771,16 @@ pk_backend_updates_changed (PkBackend *backend)
  **/
 gboolean
 pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_name, const gchar *key_url,
-				    const gchar *key_userid, const gchar *key_id, const gchar *key_timestamp,
-				    PkSigTypeEnum type)
+				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
+				    const gchar *key_timestamp, PkSigTypeEnum type)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %i",
-		  repository_name, key_url, key_userid, key_id, key_timestamp, type);
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %i",
+		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED], 0,
-		       repository_name, key_url, key_userid, key_id, key_timestamp, type);
+		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
 	return TRUE;
 }
 
@@ -1548,8 +1548,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
