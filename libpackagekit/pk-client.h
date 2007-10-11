@@ -104,11 +104,16 @@ gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force);
 gboolean	 pk_client_install_package		(PkClient	*client,
 							 const gchar	*package_id);
+gboolean	 pk_client_update_package		(PkClient	*client,
+							 const gchar	*package_id);
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*full_path);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*package);
+gboolean	 pk_client_rollback			(PkClient	*client,
+							 const gchar	*transaction_id);
 gboolean	 pk_client_cancel			(PkClient	*client);
+gboolean	 pk_client_requeue			(PkClient	*client);
 
 /* cached stuff */
 GPtrArray	*pk_client_get_package_buffer		(PkClient	*client);

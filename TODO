@@ -16,11 +16,6 @@ Use an icons for installed and not-installed rather than tickboxes
 Refresh the query list after an install or remove (means saving the query and re-issuing)
 ** RELEASE BLOCKER **
 
-*** Client library has to be able to re_issue ***
-Need to save PkRole
-Need to save data in xcache (copy from pk-engine)
-We should refresh the search after an install in pk-application
-
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
 
