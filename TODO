@@ -1,8 +1,5 @@
 Order of no particular importance:
 
-*** pk-update-icon (client) ***
-* Don't re-run get-updates when selecting "Show updates" from the update icon, just populate it with the previous results.
-
 *** Add new callback for status ***
 TimeRemaining()
 
@@ -13,8 +10,6 @@ RepoSetData(s=rid,s=data,s=value)
 
 *** pk-application (client) ***
 Use an icons for installed and not-installed rather than tickboxes
-Refresh the query list after an install or remove (means saving the query and re-issuing)
-** RELEASE BLOCKER **
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
@@ -24,10 +19,6 @@ In fedora, if you add a signed repo you have to agree to the GPG key.
 
 *** Split up PolicyKit install into different types ***
 Have different permissions for signed and unsigned repos.
-
-*** task_client has to return GError ***
-Client programs using libpackagekit should know the error, rather than just
-"it failed"
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
