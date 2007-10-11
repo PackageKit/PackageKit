@@ -33,6 +33,20 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 import rpmUtils
 
+class PackageKitYumBase(yum.YumBase):
+    """ 
+    Custom YumBase Class for PackageKit
+    Used to overload methods in YumBase there need to be different in
+    PackageKit
+    
+    """
+    def _askForGPGKeyImport(self, po, userid, hexkeyid):
+        ''' 
+        Ask for GPGKeyImport 
+        '''
+        # TODO: Add code here to send the RepoSignatureRequired signal
+        return False    
+
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -43,7 +57,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
-        self.yumbase = yum.YumBase()
+        self.yumbase = yum.PackageKitYumBase()
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
