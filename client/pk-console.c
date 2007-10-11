@@ -273,6 +273,16 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			pk_client_wait ();
 			remove = 2;
 		}
+	} else if (strcmp (mode, "update") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a package to update");
+			remove = 1;
+			goto out;
+		} else {
+			pk_client_update_package (client, value);
+			pk_client_wait ();
+			remove = 2;
+		}
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
 			pk_console_usage ("you need to specify a package name to resolve");
