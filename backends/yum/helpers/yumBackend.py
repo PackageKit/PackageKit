@@ -57,7 +57,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
-        self.yumbase = yum.PackageKitYumBase()
+        self.yumbase = PackageKitYumBase()
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
