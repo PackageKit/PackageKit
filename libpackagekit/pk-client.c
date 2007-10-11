@@ -753,6 +753,12 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
 		return FALSE;
 	}
 
+	/* we can avoid a trip to the daemon */
+	if (package_id == NULL) {
+		*role = client->priv->role;
+		return TRUE;
+	}
+
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", &error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1918,6 +1924,9 @@ pk_client_requeue (PkClient *client)
 		pk_warning ("role unknown!!");
 		return FALSE;
 	}
+
+	/* reset this client, which doesn't clear cached data */
+	pk_client_reset (client);
 
 	/* do the correct action with the cached parameters */
 	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
