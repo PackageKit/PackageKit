@@ -8,9 +8,6 @@ a(s=rid,s=description)=GetRepoList()
 RepoEnable(s=rid,s=value)
 RepoSetData(s=rid,s=data,s=value)
 
-*** pk-application (client) ***
-Use an icons for installed and not-installed rather than tickboxes
-
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
 
@@ -25,4 +22,9 @@ To do rollbacks sanely in PK we need a few things:
  * emit internal signal for SetTransactionData
  * write pk_transaction_id_equal to not compare data
  * allow transaction data to be changed in _db
+
+*** Integrate with HAL ***
+Do the HAL inhibit in packagekitd:
+http://people.freedesktop.org/~david/hal-spec/hal-spec.html
+do the g-p-m client stuff ALSO in the client program (for nice error message)
 
