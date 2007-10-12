@@ -35,6 +35,10 @@ typedef struct {
 
 PkPackageId	*pk_package_id_new			(void);
 PkPackageId	*pk_package_id_new_from_string		(const gchar	*package_id);
+PkPackageId	*pk_package_id_new_from_list		(const gchar	*name,
+							 const gchar	*version,
+							 const gchar	*arch,
+							 const gchar	*data);
 gchar		*pk_package_id_build			(const gchar	*name,
 							 const gchar	*version,
 							 const gchar	*arch,

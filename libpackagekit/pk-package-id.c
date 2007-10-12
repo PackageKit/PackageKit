@@ -188,6 +188,24 @@ pk_package_id_new_from_string (const gchar *package_id)
 }
 
 /**
+ * pk_package_id_new_from_list:
+ **/
+PkPackageId *
+pk_package_id_new_from_list (const gchar *name, const gchar *version,
+		     const gchar *arch, const gchar *data)
+{
+	PkPackageId *ident = NULL;
+
+	/* create new object */
+	ident = pk_package_id_new ();
+	ident->name = g_strdup (name);
+	ident->version = g_strdup (version);
+	ident->arch = g_strdup (arch);
+	ident->data = g_strdup (data);
+	return ident;
+}
+
+/**
  * pk_package_id_to_string:
  **/
 gchar *
