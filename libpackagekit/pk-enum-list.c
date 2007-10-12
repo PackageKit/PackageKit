@@ -244,8 +244,17 @@ pk_enum_list_get_item (PkEnumList *elist, guint item)
 gboolean
 pk_enum_list_append (PkEnumList *elist, guint value)
 {
+	guint i;
+
 	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
+
+	for (i=0; i<elist->priv->data->len; i++) {
+		if (GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i)) == value) {
+			pk_debug ("trying to append item already in list");
+			return FALSE;
+		}
+	}
 	g_ptr_array_add (elist->priv->data, GUINT_TO_POINTER(value));
 	return TRUE;
 }
@@ -380,6 +389,15 @@ libst_enum_list (LibSelfTest *test)
 	libst_title (test, "append single");
 	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
 	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "append duplicate");
+	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
+	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
