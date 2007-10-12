@@ -134,6 +134,29 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 }
 
 /**
+ * pk_enum_list_get_item_text:
+ **/
+static const gchar *
+pk_enum_list_get_item_text (PkEnumList *elist, guint value)
+{
+	const gchar *text = NULL;
+
+	g_return_val_if_fail (elist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), NULL);
+
+	if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
+		text = pk_role_enum_to_text (value);
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+		text = pk_group_enum_to_text (value);
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+		text = pk_filter_enum_to_text (value);
+	} else {
+		pk_warning ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
+	}
+	return text;
+}
+
+/**
  * pk_enum_list_to_string:
  **/
 gchar *
@@ -156,15 +179,7 @@ pk_enum_list_to_string (PkEnumList *elist)
 	string = g_string_new ("");
 	for (i=0; i<length; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
-			text = pk_role_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
-			text = pk_group_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
-			text = pk_filter_enum_to_text (value);
-		} else {
-			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
-		}
+		text = pk_enum_list_get_item_text (elist, value);
 		g_string_append (string, text);
 		g_string_append (string, ";");
 	}
@@ -197,15 +212,7 @@ pk_enum_list_print (PkEnumList *elist)
 	}
 	for (i=0; i<elist->priv->data->len; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
-			text = pk_role_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
-			text = pk_group_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
-			text = pk_filter_enum_to_text (value);
-		} else {
-			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
-		}
+		text = pk_enum_list_get_item_text (elist, value);
 		g_print ("%s\n", text);
 	}
 
@@ -276,7 +283,7 @@ pk_enum_list_remove (PkEnumList *elist, guint value)
 			return TRUE;
 		}
 	}
-	pk_debug ("cannot find item %i", value);
+	pk_debug ("cannot find item '%s'", pk_enum_list_get_item_text (elist, value));
 	return FALSE;
 }
 
