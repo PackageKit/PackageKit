@@ -41,6 +41,7 @@ STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"
 STATE_UPDATE = "update"
 STATE_REMOVE = "remove"
+STATE_WAIT = "wait"
 
 RESTART_SYSTEM = "system"
 RESTART_APPLICATION = "application"
@@ -104,7 +105,7 @@ class PackageKitBaseBackend:
     def status(self,state):
         '''
         send 'status' signal
-        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE
+        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE, STATE_WAIT
         '''
         print >> sys.stderr,"status\t%s" % (state)
 

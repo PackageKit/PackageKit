@@ -374,6 +374,7 @@ class Cache(object):
 
     def _validate_tables(self):
         """ Validates that all tables are up to date. """
+        backend = PackageKitBaseBackend(self)
         stmt = ("select tbl_name from sqlite_master "
                 "where type = 'table' and tbl_name like 'conary_%'")
         self.cursor.execute(stmt)
@@ -387,6 +388,8 @@ class Cache(object):
             # Create all tables if database is empty
             if len(tbllist) == 0:
                 self._create_database()
+                backend.status(STATE_WAIT)
+                self.populate_database()
                 return True
 
     def conaryquery(self):
