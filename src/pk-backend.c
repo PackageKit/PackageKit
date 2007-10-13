@@ -942,6 +942,21 @@ pk_backend_finished (PkBackend *backend)
 }
 
 /**
+ * pk_backend_repo_detail:
+ **/
+gboolean
+pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
+			const gchar *description, gboolean enabled)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+//	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	return TRUE;
+}
+
+/**
  * pk_backend_no_percentage_updates:
  **/
 gboolean

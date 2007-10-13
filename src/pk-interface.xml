@@ -167,17 +167,17 @@
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="RepoEnable">
-      <arg type="s" name="rid" direction="in"/>
+      <arg type="s" name="repo_id" direction="in"/>
       <arg type="b" name="enabled" direction="in"/>
     </method>
     <method name="RepoSetData">
-      <arg type="s" name="rid" direction="in"/>
+      <arg type="s" name="repo_id" direction="in"/>
       <arg type="s" name="parameter" direction="in"/>
       <arg type="s" name="value" direction="in"/>
     </method>
     <signal name="RepoDetail">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="rid" direction="out"/>
+      <arg type="s" name="repo_id" direction="out"/>
       <arg type="s" name="description" direction="out"/>
       <arg type="b" name="enabled" direction="out"/>
     </signal>

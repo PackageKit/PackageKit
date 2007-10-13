@@ -264,6 +264,36 @@ backend_update_system (PkBackend *backend)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_repo_set_data:
+ */
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Test Succeed",				/* description */
 	"0.0.1",				/* version */
@@ -289,6 +319,9 @@ PK_BACKEND_OPTIONS (
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
-	backend_update_system			/* update_system */
+	backend_update_system,			/* update_system */
+	backend_get_repo_list,			/* get_repo_list */
+	backend_repo_enable,			/* repo_enable */
+	backend_repo_set_data			/* repo_set_data */
 );
 

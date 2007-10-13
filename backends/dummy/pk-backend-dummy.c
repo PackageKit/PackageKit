@@ -377,6 +377,54 @@ backend_update_system (PkBackend *backend)
 	g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
+/**
+ * backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_repo_detail (backend, "development",
+				"Fedora - Development", TRUE);
+	pk_backend_repo_detail (backend, "development-debuginfo",
+				"Fedora - Development - Debug", TRUE);
+	pk_backend_repo_detail (backend, "development-source",
+				"Fedora - Development - Source", FALSE);
+	pk_backend_repo_detail (backend, "livna-development",
+				"Livna for Fedora Core 8 - i386 - Development Tree", TRUE);
+	pk_backend_repo_detail (backend, "livna-development-debuginfo",
+				"Livna for Fedora Core 8 - i386 - Development Tree - Debug", TRUE);
+	pk_backend_repo_detail (backend, "livna-development-source",
+				"Livna for Fedora Core 8 - i386 - Development Tree - Source", FALSE);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	g_return_if_fail (backend != NULL);
+	if (enabled == TRUE) {
+		pk_warning ("REPO ENABLE '%s'", rid);
+	} else {
+		pk_warning ("REPO DISABLE '%s'", rid);
+	}
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_repo_set_data:
+ */
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	g_return_if_fail (backend != NULL);
+	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"0.0.1",				/* version */
@@ -402,6 +450,9 @@ PK_BACKEND_OPTIONS (
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
-	backend_update_system			/* update_system */
+	backend_update_system,			/* update_system */
+	backend_get_repo_list,			/* get_repo_list */
+	backend_repo_enable,			/* repo_enable */
+	backend_repo_set_data			/* repo_set_data */
 );
 

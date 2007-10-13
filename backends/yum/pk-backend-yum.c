@@ -252,6 +252,9 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
-	backend_update_system			/* update_system */
+	backend_update_system,			/* update_system */
+	NULL,					/* get_repo_list */
+	NULL,					/* repo_enable */
+	NULL					/* repo_set_data */
 );
 

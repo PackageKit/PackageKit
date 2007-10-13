@@ -1766,7 +1766,7 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
  * pk_engine_repo_enable:
  **/
 void
-pk_engine_repo_enable (PkEngine	*engine, const gchar *rid, gboolean enabled,
+pk_engine_repo_enable (PkEngine	*engine, const gchar *repo_id, gboolean enabled,
 		       DBusGMethodInvocation *context, GError **old_error)
 {
 	gboolean ret;
@@ -1792,7 +1792,7 @@ pk_engine_repo_enable (PkEngine	*engine, const gchar *rid, gboolean enabled,
 		return;
 	}
 
-	//ret = pk_backend_repo_enable (item->backend, rid, enabled);
+	//ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
 	ret = FALSE;
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1807,7 +1807,7 @@ pk_engine_repo_enable (PkEngine	*engine, const gchar *rid, gboolean enabled,
  * pk_engine_repo_set_data:
  **/
 void
-pk_engine_repo_set_data (PkEngine *engine, const gchar *rid,
+pk_engine_repo_set_data (PkEngine *engine, const gchar *repo_id,
 			 const gchar *parameter, const gchar *value,
 			 DBusGMethodInvocation *context, GError **old_error)
 {
@@ -1834,7 +1834,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *rid,
 		return;
 	}
 
-	//ret = pk_backend_repo_set_data (item->backend, rid, parameter, value);
+	//ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
 	ret = FALSE;
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,

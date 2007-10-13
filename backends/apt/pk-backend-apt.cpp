@@ -152,6 +152,9 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	sqlite_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL					/* update_system */
+	NULL,					/* update_system */
+	NULL,					/* get_repo_list */
+	NULL,					/* repo_enable */
+	NULL					/* repo_set_data */
 );
 

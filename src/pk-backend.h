@@ -46,6 +46,10 @@ gboolean	 pk_backend_package			(PkBackend	*backend,
 							 PkInfoEnum	 info,
 							 const gchar	*package_id,
 							 const gchar	*summary);
+gboolean	 pk_backend_repo_detail			(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 const gchar	*description,
+							 gboolean	 enabled);
 gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*package_id,
 							 const gchar	*updates,
@@ -123,6 +127,10 @@ struct _PkBackendDesc {
 	void		(*search_name)		(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*update_package)	(PkBackend *backend, const gchar *package_id);
 	void		(*update_system)	(PkBackend *backend);
+	/* repo stuff */
+	void		(*get_repo_list)	(PkBackend *backend);
+	void		(*repo_enable)		(PkBackend *backend, const gchar *rid, gboolean enabled);
+	void		(*repo_set_data)	(PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value);
 	gpointer	padding[12];
 };
 
@@ -130,8 +138,8 @@ struct _PkBackendDesc {
 			   get_groups, get_filters, cancel, get_depends, get_description, \
 			   get_requires, get_update_detail, get_updates, install_package, install_file, \
 			   refresh_cache, remove_package, resolve, rollback, search_details, \
-			   search_file, search_group, search_name, \
-			   update_package, update_system) \
+			   search_file, search_group, search_name, update_package, update_system, \
+			   get_repo_list, repo_enable, repo_set_data) \
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { \
 		description, \
 		version, \
@@ -158,6 +166,9 @@ struct _PkBackendDesc {
 		search_name, \
 		update_package, \
 		update_system, \
+		get_repo_list, \
+		repo_enable, \
+		repo_set_data, \
 		{0} \
 	}
 
