@@ -25,6 +25,7 @@
 #include <pk-debug.h>
 
 /* prototypes */
+void libst_conf (LibSelfTest *test);
 void libst_spawn (LibSelfTest *test);
 void libst_thread_list (LibSelfTest *test);
 void libst_transaction_list (LibSelfTest *test);
@@ -42,6 +43,7 @@ main (int argc, char **argv)
 	pk_debug_init (TRUE);
 
 	/* tests go here */
+	libst_conf (&test);
 	libst_spawn (&test);
 	libst_thread_list (&test);
 	libst_transaction_list (&test);

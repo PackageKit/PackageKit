@@ -46,6 +46,9 @@ typedef struct
 	GObjectClass	parent_class;
 } PkConfClass;
 
+#define PK_CONF_VALUE_INT_MISSING	-1
+#define PK_CONF_VALUE_STRING_MISSING	NULL
+
 GType		 pk_conf_get_type		(void);
 PkConf		*pk_conf_new			(void);
 

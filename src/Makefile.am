@@ -110,10 +110,14 @@ check_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
+	pk-inhibit.h					\
+	pk-inhibit.c					\
 	pk-backend.h					\
 	pk-backend.c					\
 	pk-spawn.h					\
 	pk-spawn.c					\
+	pk-conf.h					\
+	pk-conf.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
 	pk-transaction-id.h				\

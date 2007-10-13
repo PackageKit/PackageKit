@@ -55,6 +55,8 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 	GError *error = NULL;
 	value = g_key_file_get_string (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
+		/* set to missing value */
+		value = PK_CONF_VALUE_STRING_MISSING;
 		pk_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
@@ -67,10 +69,12 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 gint
 pk_conf_get_int (PkConf *conf, const gchar *key)
 {
-	gint value = 0;
+	gint value;
 	GError *error = NULL;
 	value = g_key_file_get_integer (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
+		/* set to missing value */
+		value = PK_CONF_VALUE_INT_MISSING;
 		pk_debug ("%s read error: %s", key, error->message);
 		g_error_free (error);
 	}
@@ -154,4 +158,73 @@ pk_conf_new (void)
 	}
 	return PK_CONF (pk_conf_object);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_conf (LibSelfTest *test)
+{
+	PkConf *conf;
+	gchar *text;
+	gint value;
+
+	if (libst_start (test, "PkConf", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+
+	/************************************************************/
+	libst_title (test, "get an instance");
+	conf = pk_conf_new ();
+	if (conf != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get the default backend");
+	text = pk_conf_get_string (conf, "DefaultBackend");
+	if (text != PK_CONF_VALUE_STRING_MISSING) {
+		libst_success (test, "got default backend '%s'", text);
+	} else {
+		libst_failed (test, "got NULL!");
+	}
+
+	/************************************************************/
+	libst_title (test, "get a string that doesn't exist");
+	text = pk_conf_get_string (conf, "FooBarBaz");
+	if (text == PK_CONF_VALUE_STRING_MISSING) {
+		libst_success (test, "got NULL", text);
+	} else {
+		libst_failed (test, "got return value '%s'", text);
+	}
+
+	/************************************************************/
+	libst_title (test, "get the shutdown timeout");
+	value = pk_conf_get_int (conf, "ShutdownTimeout");
+	if (value != PK_CONF_VALUE_INT_MISSING) {
+		libst_success (test, "got ShutdownTimeout '%i'", value);
+	} else {
+		libst_failed (test, "got %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "get an int that doesn't exist");
+	value = pk_conf_get_int (conf, "FooBarBaz");
+	if (value == PK_CONF_VALUE_INT_MISSING) {
+		libst_success (test, "got %i", value);
+	} else {
+		libst_failed (test, "got return value '%i'", value);
+	}
+
+	g_object_unref (conf);
+
+	libst_end (test);
+}
+#endif
 

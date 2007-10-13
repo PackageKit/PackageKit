@@ -29,6 +29,5 @@ http://people.freedesktop.org/~david/hal-spec/hal-spec.html
 do the g-p-m client stuff ALSO in the client program (for nice error message)
 
 *** add more unit tests ***
-PkConf
 PkInhibit
 
