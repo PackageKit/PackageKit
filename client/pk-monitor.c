@@ -29,7 +29,7 @@
 #include <dbus/dbus-glib.h>
 
 #include <pk-debug.h>
-#include <pk-task-common.h>
+#include <pk-common.h>
 #include <pk-task-list.h>
 #include <pk-connection.h>
 

@@ -35,7 +35,7 @@
 
 #include "pk-debug.h"
 #include "pk-marshal.h"
-#include "pk-task-common.h"
+#include "pk-common.h"
 #include "pk-connection.h"
 #include "pk-job-list.h"
 

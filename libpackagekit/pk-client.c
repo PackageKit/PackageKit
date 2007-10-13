@@ -40,7 +40,7 @@
 #include "pk-debug.h"
 #include "pk-marshal.h"
 #include "pk-polkit-client.h"
-#include "pk-task-common.h"
+#include "pk-common.h"
 
 static void     pk_client_class_init	(PkClientClass *klass);
 static void     pk_client_init		(PkClient      *client);

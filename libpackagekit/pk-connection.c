@@ -36,7 +36,7 @@
 #include <libgbus.h>
 
 #include "pk-debug.h"
-#include "pk-task-common.h"
+#include "pk-common.h"
 #include "pk-connection.h"
 
 #define PK_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONNECTION, PkConnectionPrivate))

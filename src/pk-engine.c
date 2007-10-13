@@ -42,7 +42,7 @@
 #include <pk-package-list.h>
 
 #include <pk-debug.h>
-#include <pk-task-common.h>
+#include <pk-common.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>
 
@@ -909,7 +909,7 @@ pk_engine_filter_check (const gchar *filter, GError **error)
 	gboolean ret;
 
 	/* check for invalid filter */
-	ret = pk_task_filter_check (filter);
+	ret = pk_filter_check (filter);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_FILTER_INVALID,
 			     "Filter '%s' is invalid", filter);

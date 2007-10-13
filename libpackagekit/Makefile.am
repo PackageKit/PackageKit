@@ -33,7 +33,7 @@ libpackagekit_include_HEADERS =					\
 	pk-package-list.h					\
 	pk-enum-list.h						\
 	pk-enum.h						\
-	pk-task-common.h					\
+	pk-common.h						\
 	pk-client.h						\
 	pk-task-list.h						\
 	pk-job-list.h						\
@@ -57,8 +57,8 @@ libpackagekit_la_SOURCES =					\
 	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-enum.c						\
-	pk-task-common.c					\
-	pk-task-common.h					\
+	pk-common.c						\
+	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
 	pk-task-list.c						\
