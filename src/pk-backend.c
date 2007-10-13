@@ -46,6 +46,7 @@
 #include "pk-marshal.h"
 #include "pk-enum.h"
 #include "pk-spawn.h"
+#include "pk-inhibit.h"
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -72,6 +73,7 @@ struct _PkBackendPrivate
 	gboolean		 assigned;
 	gboolean		 set_error;
 	PkNetwork		*network;
+	PkInhibit		*inhibit;
 	/* needed for gui coldplugging */
 	guint			 last_percentage;
 	guint			 last_subpercentage;
@@ -907,6 +909,9 @@ pk_backend_finished (PkBackend *backend)
 		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
 	}
 
+	/* remove any inhibit */
+	pk_inhibit_remove (backend->priv->inhibit, backend);
+
 	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
@@ -942,6 +947,14 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 
 	pk_debug ("emit allow-interrupt %i", allow_restart);
 	backend->priv->is_killable = allow_restart;
+
+	/* remove or add the hal inhibit */
+	if (allow_restart == TRUE) {
+		pk_inhibit_remove (backend->priv->inhibit, backend);
+	} else {
+		pk_inhibit_add (backend->priv->inhibit, backend);
+	}
+
 	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0);
 	return TRUE;
 }
@@ -979,8 +992,8 @@ pk_backend_cancel (PkBackend *backend)
 /**
  * pk_backend_run:
  */
-gboolean
-pk_backend_run (PkBackend *backend)
+static gboolean
+pk_backend_set_running (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 
@@ -1044,6 +1057,24 @@ pk_backend_run (PkBackend *backend)
 		return FALSE;
 	}
 	return TRUE;
+}
+
+/**
+ * pk_backend_run:
+ */
+gboolean
+pk_backend_run (PkBackend *backend)
+{
+	gboolean ret;
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	ret = pk_backend_set_running (backend);
+	if (ret == TRUE) {
+		/* we start inhibited, it's up to the backed to
+		 * release early if a shutdown is possible */
+		pk_inhibit_add (backend->priv->inhibit, backend);
+	}
+	return ret;
 }
 
 /**
@@ -1489,6 +1520,11 @@ pk_backend_finalize (GObject *object)
 	if (backend->priv->spawn != NULL) {
 		pk_backend_spawn_helper_delete (backend);
 	}
+
+	/* remove any inhibit, it's okay to call this function when it's not needed */
+	pk_inhibit_remove (backend->priv->inhibit, backend);
+	g_object_unref (backend->priv->inhibit);
+
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->thread_list);
 
@@ -1602,6 +1638,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
+	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->thread_list = pk_thread_list_new ();
 }
