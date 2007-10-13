@@ -205,6 +205,22 @@ gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 gchar		**package,
 							 GError		**error);
 
+/* repo stuff */
+gboolean	 pk_engine_get_repo_list		(PkEngine	*engine,
+							 const gchar	*tid,
+							 GError		**error);
+void		 pk_engine_repo_enable			(PkEngine	*engine,
+							 const gchar	*rid,
+							 gboolean	 enabled,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
+void		 pk_engine_repo_set_data		(PkEngine	*engine,
+							 const gchar	*rid,
+							 const gchar	*parameter,
+							 const gchar	*value,
+							 DBusGMethodInvocation *context,
+							 GError		**error);
+
 G_END_DECLS
 
 #endif /* __PK_ENGINE_H */

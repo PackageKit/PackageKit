@@ -149,6 +149,8 @@
     <signal name="Locked">
       <arg type="b" name="is_locked" direction="out"/>
     </signal>
+
+    <!-- Callbacks from repositories -->
     <signal name="RepoSignatureRequired">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="repository_name" direction="out"/>
@@ -158,6 +160,26 @@
       <arg type="s" name="key_fingerprint" direction="out"/>
       <arg type="s" name="key_timestamp" direction="out"/>
       <arg type="s" name="type" direction="out"/> <!-- 'gpg', for now -->
+    </signal>
+
+    <!-- Repository stuff -->
+    <method name="GetRepoList">
+      <arg type="s" name="tid" direction="in"/>
+    </method>
+    <method name="RepoEnable">
+      <arg type="s" name="rid" direction="in"/>
+      <arg type="b" name="enabled" direction="in"/>
+    </method>
+    <method name="RepoSetData">
+      <arg type="s" name="rid" direction="in"/>
+      <arg type="s" name="parameter" direction="in"/>
+      <arg type="s" name="value" direction="in"/>
+    </method>
+    <signal name="RepoDetail">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="rid" direction="out"/>
+      <arg type="s" name="description" direction="out"/>
+      <arg type="b" name="enabled" direction="out"/>
     </signal>
 
     <!-- Do things or query transactions -->

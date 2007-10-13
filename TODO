@@ -4,9 +4,10 @@ Order of no particular importance:
 TimeRemaining()
 
 *** the backends will have repo controls ***
-a(s=rid,s=description)=GetRepoList()
-RepoEnable(s=rid,s=value)
-RepoSetData(s=rid,s=data,s=value)
+Add the callback and methods in PkBackend
+Add details to the help file
+Add stubs in the backends
+Add methods and signals to the client library
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.

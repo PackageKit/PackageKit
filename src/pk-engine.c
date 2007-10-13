@@ -89,6 +89,7 @@ enum {
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_ALLOW_INTERRUPT,
 	PK_ENGINE_LOCKED,
+	PK_ENGINE_REPO_DETAIL,
 	PK_ENGINE_LAST_SIGNAL
 };
 
@@ -1722,6 +1723,129 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 }
 
 /**
+ * pk_engine_get_repo_list:
+ **/
+gboolean
+pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
+	//ret = pk_backend_get_repo_list (item->backend);
+	ret = FALSE;
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		return FALSE;
+	}
+	pk_engine_item_add (engine, item);
+	return TRUE;
+}
+
+/**
+ * pk_engine_repo_enable:
+ **/
+void
+pk_engine_repo_enable (PkEngine	*engine, const gchar *rid, gboolean enabled,
+		       DBusGMethodInvocation *context, GError **old_error)
+{
+	gboolean ret;
+	GError *error;
+	PkBackend *backend;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	//ret = pk_backend_repo_enable (item->backend, rid, enabled);
+	ret = FALSE;
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	dbus_g_method_return (context);
+}
+
+/**
+ * pk_engine_repo_set_data:
+ **/
+void
+pk_engine_repo_set_data (PkEngine *engine, const gchar *rid,
+			 const gchar *parameter, const gchar *value,
+			 DBusGMethodInvocation *context, GError **old_error)
+{
+	gboolean ret;
+	GError *error;
+	PkBackend *backend;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	backend = pk_engine_new_backend (engine);
+	if (backend == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	//ret = pk_backend_repo_set_data (item->backend, rid, parameter, value);
+	ret = FALSE;
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_engine_get_transaction_list:
  **/
 gboolean
@@ -2196,6 +2320,12 @@ pk_engine_class_init (PkEngineClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT_STRING,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_ENGINE_REPO_DETAIL] =
+		g_signal_new ("repo-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_BOOL,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_BOOLEAN);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
