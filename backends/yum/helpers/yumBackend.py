@@ -20,7 +20,6 @@
 
 # imports
 
-import sys
 import re
 
 from packagekit.backend import *
