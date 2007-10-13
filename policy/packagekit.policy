@@ -63,5 +63,14 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.repo-change">
+    <description>Change repository parameters</description>
+    <message>System policy prevents changing repository parameters</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
 </policyconfig>
 
