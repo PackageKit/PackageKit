@@ -778,7 +778,7 @@ class PackageKitYumBase(yum.YumBase):
             elif result == 1:
                 self.getKeyForPackage(po, fullaskcb=self._fullAskForGPGKeyImport)
             else:
-                raise YumGPGCheckError, errmsg
+                raise yum.Errors.YumGPGCheckError, errmsg
 
         return 0
 
