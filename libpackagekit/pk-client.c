@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-enum.h"
 #include "pk-client.h"
 #include "pk-connection.h"
 #include "pk-package-list.h"
@@ -49,16 +50,24 @@ static void     pk_client_finalize	(GObject       *object);
 
 struct PkClientPrivate
 {
-	DBusGConnection	*connection;
-	DBusGProxy	*proxy;
-	gboolean	 is_finished;
-	gboolean	 use_buffer;
-	gchar		*tid;
-	PkPackageList	*package_list;
-	PkConnection	*pconnection;
-	PkPolkitClient	*polkit;
-	PkRestartEnum	 require_restart;
-	PkStatusEnum	 last_status;
+	DBusGConnection		*connection;
+	DBusGProxy		*proxy;
+	gboolean		 is_finished;
+	gboolean		 use_buffer;
+	gchar			*tid;
+	PkPackageList		*package_list;
+	PkConnection		*pconnection;
+	PkPolkitClient		*polkit;
+	PkRestartEnum		 require_restart;
+	PkStatusEnum		 last_status;
+	PkRoleEnum		 role;
+	gboolean		 xcached_force;
+	gboolean		 xcached_allow_deps;
+	gchar			*xcached_package_id;
+	gchar			*xcached_transaction_id;
+	gchar			*xcached_full_path;
+	gchar			*xcached_filter;
+	gchar			*xcached_search;
 };
 
 typedef enum {
@@ -225,12 +234,21 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		exit = pk_exit_enum_from_text (exit_text);
 		pk_debug ("emit finished %i, %i", exit, runtime);
+
+		/* only this instance is finished, and do it before the signal so we can reset */
+		client->priv->is_finished = TRUE;
+
 		g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 	}
-	client->priv->is_finished = TRUE;
 }
 
 /**
@@ -244,6 +262,12 @@ pk_client_percentage_changed_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit percentage-changed %i", percentage);
@@ -263,6 +287,12 @@ pk_client_sub_percentage_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit sub-percentage-changed %i", percentage);
 		g_signal_emit (client, signals [PK_CLIENT_SUB_PERCENTAGE_CHANGED], 0, percentage);
@@ -279,6 +309,12 @@ pk_client_no_percentage_updates_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit no-percentage-updates");
@@ -299,6 +335,12 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	status = pk_status_enum_from_text (status_text);
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
@@ -322,6 +364,12 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	PkInfoEnum info;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
@@ -364,6 +412,12 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		role = pk_role_enum_from_text (role_text);
 		pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
@@ -387,6 +441,12 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
@@ -415,6 +475,12 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
@@ -436,6 +502,12 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 	
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
 			  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
@@ -458,6 +530,12 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		code = pk_error_enum_from_text (code_text);
 		pk_debug ("emit error-code %i, %s", code, details);
@@ -478,6 +556,12 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	PkRestartEnum restart;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		restart = pk_restart_enum_from_text (restart_text);
@@ -668,6 +752,12 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
 	if (client->priv->tid == NULL) {
 		pk_warning ("Transaction ID not set");
 		return FALSE;
+	}
+
+	/* we can avoid a trip to the daemon */
+	if (package_id == NULL) {
+		*role = client->priv->role;
+		return TRUE;
 	}
 
 	error = NULL;
@@ -888,6 +978,10 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
+	client->priv->xcached_filter = g_strdup (filter);
+	client->priv->xcached_search = g_strdup (search);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", &error,
@@ -929,6 +1023,10 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
+	client->priv->xcached_filter = g_strdup (filter);
+	client->priv->xcached_search = g_strdup (search);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", &error,
@@ -970,6 +1068,10 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
+	client->priv->xcached_filter = g_strdup (filter);
+	client->priv->xcached_search = g_strdup (search);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", &error,
@@ -1011,6 +1113,10 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
+	client->priv->xcached_filter = g_strdup (filter);
+	client->priv->xcached_search = g_strdup (search);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", &error,
@@ -1052,6 +1158,9 @@ pk_client_get_depends (PkClient *client, const gchar *package)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", &error,
@@ -1092,6 +1201,9 @@ pk_client_get_requires (PkClient *client, const gchar *package)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", &error,
@@ -1132,6 +1244,9 @@ pk_client_get_update_detail (PkClient *client, const gchar *package)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", &error,
@@ -1148,6 +1263,49 @@ pk_client_get_update_detail (PkClient *client, const gchar *package)
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetUpdateDetail failed!");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * pk_client_rollback:
+ **/
+gboolean
+pk_client_rollback (PkClient *client, const gchar *transaction_id)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
+	client->priv->xcached_transaction_id = g_strdup (transaction_id);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", &error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error != NULL) {
+		const gchar *error_name;
+		error_name = pk_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("Rollback failed!");
 		return FALSE;
 	}
 
@@ -1172,6 +1330,9 @@ pk_client_resolve (PkClient *client, const gchar *package)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_RESOLVE;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", &error,
@@ -1212,6 +1373,9 @@ pk_client_get_description (PkClient *client, const gchar *package)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", &error,
@@ -1239,7 +1403,7 @@ pk_client_get_description (PkClient *client, const gchar *package)
  **/
 gboolean
 pk_client_remove_package_action (PkClient *client, const gchar *package,
-				      gboolean allow_deps, GError **error)
+				 gboolean allow_deps, GError **error)
 {
 	gboolean ret;
 
@@ -1279,6 +1443,10 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
+	client->priv->xcached_allow_deps = allow_deps;
+	client->priv->xcached_package_id = g_strdup (package);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_remove_package_action (client, package, allow_deps, &error);
@@ -1321,6 +1489,9 @@ pk_client_refresh_cache (PkClient *client, gboolean force)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
+	client->priv->xcached_force = force;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", &error,
@@ -1386,9 +1557,82 @@ pk_client_install_package (PkClient *client, const gchar *package_id)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
+	client->priv->xcached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_install_package_action (client, package_id, &error);
+
+	/* we were refused by policy then try to get auth */
+	if (ret == FALSE) {
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_install_package_action (client, package_id, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_update_package_action:
+ **/
+gboolean
+pk_client_update_package_action (PkClient *client, const gchar *package, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackage", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("UpdatePackage failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_client_update_package:
+ **/
+gboolean
+pk_client_update_package (PkClient *client, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
+	client->priv->xcached_package_id = g_strdup (package_id);
+
+	/* hopefully do the operation first time */
+	ret = pk_client_update_package_action (client, package_id, &error);
 
 	/* we were refused by policy then try to get auth */
 	if (ret == FALSE) {
@@ -1453,6 +1697,9 @@ pk_client_install_file (PkClient *client, const gchar *file)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
+	client->priv->xcached_full_path = g_strdup (file);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_install_file_action (client, file, &error);
@@ -1665,6 +1912,71 @@ pk_client_get_filters (PkClient *client)
 }
 
 /**
+ * pk_client_requeue:
+ */
+gboolean
+pk_client_requeue (PkClient *client)
+{
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* we are no longer waiting, we are setting up */
+	if (client->priv->role == PK_ROLE_ENUM_UNKNOWN) {
+		pk_warning ("role unknown!!");
+		return FALSE;
+	}
+
+	/* reset this client, which doesn't clear cached data */
+	pk_client_reset (client);
+
+	/* do the correct action with the cached parameters */
+	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		pk_client_get_depends (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		pk_client_get_update_detail (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_RESOLVE) {
+		pk_client_resolve (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		pk_client_rollback (client, client->priv->xcached_transaction_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
+		pk_client_get_description (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		pk_client_get_requires (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+		pk_client_get_updates (client);
+	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		pk_client_search_details (client, client->priv->xcached_filter,
+					  client->priv->xcached_search);
+	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+		pk_client_search_file (client, client->priv->xcached_filter,
+				       client->priv->xcached_search);
+	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		pk_client_search_group (client, client->priv->xcached_filter,
+					client->priv->xcached_search);
+	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+		pk_client_search_name (client, client->priv->xcached_filter,
+				       client->priv->xcached_search);
+	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		pk_client_install_package (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
+		pk_client_install_file (client, client->priv->xcached_full_path);
+	} else if (client->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		pk_client_refresh_cache (client, client->priv->xcached_force);
+	} else if (client->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		pk_client_remove_package (client, client->priv->xcached_package_id,
+					  client->priv->xcached_allow_deps);
+	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		pk_client_update_package (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		pk_client_update_system (client);
+	} else {
+		pk_warning ("role unknown");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_client_class_init:
  **/
 static void
@@ -1781,8 +2093,14 @@ pk_client_init (PkClient *client)
 	client->priv->use_buffer = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
+	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->package_list = pk_package_list_new ();
+	client->priv->xcached_package_id = NULL;
+	client->priv->xcached_transaction_id = NULL;
+	client->priv->xcached_full_path = NULL;
+	client->priv->xcached_filter = NULL;
+	client->priv->xcached_search = NULL;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -1933,6 +2251,13 @@ pk_client_finalize (GObject *object)
 	g_return_if_fail (PK_IS_CLIENT (object));
 	client = PK_CLIENT (object);
 	g_return_if_fail (client->priv != NULL);
+
+	/* free cached strings */
+	g_free (client->priv->xcached_package_id);
+	g_free (client->priv->xcached_transaction_id);
+	g_free (client->priv->xcached_full_path);
+	g_free (client->priv->xcached_filter);
+	g_free (client->priv->xcached_search);
 
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",

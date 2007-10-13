@@ -134,6 +134,29 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 }
 
 /**
+ * pk_enum_list_get_item_text:
+ **/
+static const gchar *
+pk_enum_list_get_item_text (PkEnumList *elist, guint value)
+{
+	const gchar *text = NULL;
+
+	g_return_val_if_fail (elist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), NULL);
+
+	if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
+		text = pk_role_enum_to_text (value);
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
+		text = pk_group_enum_to_text (value);
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
+		text = pk_filter_enum_to_text (value);
+	} else {
+		pk_warning ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
+	}
+	return text;
+}
+
+/**
  * pk_enum_list_to_string:
  **/
 gchar *
@@ -156,15 +179,7 @@ pk_enum_list_to_string (PkEnumList *elist)
 	string = g_string_new ("");
 	for (i=0; i<length; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
-			text = pk_role_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
-			text = pk_group_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
-			text = pk_filter_enum_to_text (value);
-		} else {
-			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
-		}
+		text = pk_enum_list_get_item_text (elist, value);
 		g_string_append (string, text);
 		g_string_append (string, ";");
 	}
@@ -197,15 +212,7 @@ pk_enum_list_print (PkEnumList *elist)
 	}
 	for (i=0; i<elist->priv->data->len; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
-		if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
-			text = pk_role_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_GROUP) {
-			text = pk_group_enum_to_text (value);
-		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
-			text = pk_filter_enum_to_text (value);
-		} else {
-			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
-		}
+		text = pk_enum_list_get_item_text (elist, value);
 		g_print ("%s\n", text);
 	}
 
@@ -244,10 +251,40 @@ pk_enum_list_get_item (PkEnumList *elist, guint item)
 gboolean
 pk_enum_list_append (PkEnumList *elist, guint value)
 {
+	guint i;
+
 	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
+
+	for (i=0; i<elist->priv->data->len; i++) {
+		if (GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i)) == value) {
+			pk_debug ("trying to append item already in list");
+			return FALSE;
+		}
+	}
 	g_ptr_array_add (elist->priv->data, GUINT_TO_POINTER(value));
 	return TRUE;
+}
+
+/**
+ * pk_enum_list_remove:
+ **/
+gboolean
+pk_enum_list_remove (PkEnumList *elist, guint value)
+{
+	guint i;
+
+	g_return_val_if_fail (elist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
+
+	for (i=0; i<elist->priv->data->len; i++) {
+		if (GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i)) == value) {
+			g_ptr_array_remove_index (elist->priv->data, i);
+			return TRUE;
+		}
+	}
+	pk_debug ("cannot find item '%s'", pk_enum_list_get_item_text (elist, value));
+	return FALSE;
 }
 
 /**
@@ -386,6 +423,15 @@ libst_enum_list (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "append duplicate");
+	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "get single size");
 	value = pk_enum_list_size (elist);
 	if (value == 1) {
@@ -423,6 +469,15 @@ libst_enum_list (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "get multiple size");
+	value = pk_enum_list_size (elist);
+	if (value == 3) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid size %i, should be 3", value);
+	}
+
+	/************************************************************/
 	libst_title (test, "get multiple list");
 	text = pk_enum_list_to_string (elist);
 	if (strcmp (text, "search-name;search-details;search-group") == 0) {
@@ -431,6 +486,34 @@ libst_enum_list (LibSelfTest *test)
 		libst_failed (test, "invalid '%s', should be 'search-name;search-details;search-group'", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "remove single");
+	ret = pk_enum_list_remove (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "remove duplicate single");
+	ret = pk_enum_list_remove (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get size after remove");
+	value = pk_enum_list_size (elist);
+	if (value == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid size %i, should be 2", value);
+	}
+
 	g_object_unref (elist);
 
 	/************************************************************/

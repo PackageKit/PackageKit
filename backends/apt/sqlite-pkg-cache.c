@@ -6,7 +6,8 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,15 +26,15 @@
 
 static sqlite3 *db = NULL;
 
-struct desc_task {
+typedef struct {
 	PkPackageId *pi;
-};
+} desc_task;
 
-struct search_task {
+typedef struct {
 	gchar *search;
 	gchar *filter;
 	SearchDepth depth;
-};
+} search_task;
 
 void
 sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fname, void (*build_db)(PkBackend *, sqlite3 *))
@@ -130,7 +131,7 @@ void
 backend_search_common(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, PkBackendThreadFunc func)
 {
 	g_return_if_fail (backend != NULL);
-	search_task *data = g_new(struct search_task, 1);
+	search_task *data = g_new(search_task, 1);
 	if (data == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
@@ -204,7 +205,7 @@ void
 sqlite_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	desc_task *data = g_new(struct desc_task, 1);
+	desc_task *data = g_new(desc_task, 1);
 	if (data == NULL)
 	{
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");

@@ -37,6 +37,20 @@ import exceptions
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
+class PackageKitYumBase(yum.YumBase):
+    """ 
+    Custom YumBase Class for PackageKit
+    Used to overload methods in YumBase there need to be different in
+    PackageKit
+    
+    """
+    def _askForGPGKeyImport(self, po, userid, hexkeyid):
+        ''' 
+        Ask for GPGKeyImport 
+        '''
+        # TODO: Add code here to send the RepoSignatureRequired signal
+        return False    
+
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -581,6 +595,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
+        self.yumbase.conf.throttle = "40%"    # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )         # Setup the download callback class
 

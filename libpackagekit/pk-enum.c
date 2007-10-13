@@ -111,6 +111,9 @@ static PkTaskEnumMatch task_filter[] = {
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
 	{PK_FILTER_ENUM_GUI,			"gui"},
+	{PK_FILTER_ENUM_NORMAL,			"~devel"},
+	{PK_FILTER_ENUM_AVAILABLE,		"~installed"},
+	{PK_FILTER_ENUM_TEXT,			"~gui"},
 	{0, NULL},
 };
 
