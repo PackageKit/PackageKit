@@ -188,6 +188,7 @@ libst_package_id (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/************************************************************/
 	libst_title (test, "pid equal pass (different)");
 	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
 	if (ret == TRUE) {
@@ -196,6 +197,7 @@ libst_package_id (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/************************************************************/
 	libst_title (test, "get an ident object");
 	ident = pk_package_id_new ();
 	if (ident != NULL) {

@@ -28,6 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
+#include "pk-common.h"
 #include "pk-transaction-id.h"
 #define PK_TRANSACTION_ID_COUNT_FILE		LOCALSTATEDIR "/run/PackageKit/job_count.dat"
 
@@ -97,16 +98,11 @@ pk_transaction_id_save_job_count (guint job_count)
 
 /**
  * pk_transaction_id_equal:
- * TODO: only compare first two sections...
  **/
 gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
-	if (tid1 == NULL || tid2 == NULL) {
-		pk_warning ("transaction id compare invalid '%s' and '%s'", tid1, tid2);
-		return FALSE;
-	}
-	return (strcmp (tid1, tid2) == 0);
+	return pk_string_id_equal (tid1, tid2, 3, 2);
 }
 
 /**
@@ -146,6 +142,7 @@ void
 libst_transaction_id (LibSelfTest *test)
 {
 	gchar *tid;
+	gboolean ret;
 
 	if (libst_start (test, "PkTransactionId", CLASS_AUTO) == FALSE) {
 		return;
@@ -162,6 +159,42 @@ libst_transaction_id (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 	g_free (tid);
+
+	/************************************************************/
+	libst_title (test, "tid equal pass (same)");
+	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234def;r23");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "tid equal pass (different)");
+	ret = pk_transaction_id_equal ("34;1234def;unknown", "34;1234def;r23");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "tid equal fail 1");
+	ret = pk_transaction_id_equal ("34;1234def;r23", "35;1234def;r23");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "tid equal fail 2");
+	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234dff;r23");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	libst_end (test);
 }
