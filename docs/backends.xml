@@ -175,6 +175,11 @@
             <entry><literal>stdout</literal></entry>
           </row>
           <row>
+            <entry>ChangeTransactionData</entry>
+            <entry><literal>change-transaction-data[tab]data</literal></entry>
+            <entry><literal>stdout</literal></entry>
+          </row>
+          <row>
             <entry>RepoSignatureRequired</entry>
             <entry><literal>repository_name[tab]key_url[tab]key_userid[tab]key_id[tab]key_fingerprint[tab]key_timestamp[tab]type</literal></entry>
             <entry><literal>stdout</literal></entry>

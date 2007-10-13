@@ -78,6 +78,8 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 PkSigTypeEnum   type);
 gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
 							 const gchar	*script, ...);
+gboolean	 pk_backend_change_transaction_data	(PkBackend	*backend,
+							 const gchar	*data);
 gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);
 gboolean	 pk_backend_allow_interrupt		(PkBackend	*backend,
 							 gboolean	 allow_restart);

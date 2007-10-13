@@ -572,6 +572,27 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 }
 
 /**
+ * pk_engine_change_transaction_data_cb:
+ **/
+static void
+pk_engine_change_transaction_data_cb (PkBackend *backend, gchar *data, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+
+	/* change the database */
+	pk_warning ("TODO: change the item->tid and resave to database");
+}
+
+/**
  * pk_engine_new_backend:
  **/
 static PkBackend *
@@ -619,6 +640,8 @@ pk_engine_new_backend (PkEngine *engine)
 			  G_CALLBACK (pk_engine_description_cb), engine);
 	g_signal_connect (backend, "allow-interrupt",
 			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
+	g_signal_connect (backend, "change-transaction-data",
+			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
 
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);

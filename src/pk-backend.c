@@ -96,6 +96,7 @@ enum {
 	PK_BACKEND_UPDATES_CHANGED,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
+	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
 	PK_BACKEND_LAST_SIGNAL
@@ -359,6 +360,13 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 		restart_enum = pk_restart_enum_from_text (sections[1]);
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
+	} else if (strcmp (command, "change-transaction-data") == 0) {
+		if (size != 2) {
+			g_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_change_transaction_data (backend, sections[1]);
 	} else if (strcmp (command, "status") == 0) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
@@ -738,6 +746,20 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 	pk_debug ("emit require-restart %i, %s", restart, details);
 	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
+	return TRUE;
+}
+
+/**
+ * pk_backend_change_transaction_data:
+ **/
+gboolean
+pk_backend_change_transaction_data (PkBackend *backend, const gchar *data)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit change-transaction-data %s", data);
+	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
 	return TRUE;
 }
 
@@ -1572,6 +1594,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_BACKEND_CHANGE_TRANSACTION_DATA] =
+		g_signal_new ("change-transaction-data",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
