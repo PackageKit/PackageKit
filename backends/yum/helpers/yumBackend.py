@@ -482,6 +482,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # We need a yum with this change:
 # http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
 # to have fingerprint and timestamp available here
+# the above change is now in the latest yum for Fedor arawhide (yum-3.2.6-5.fc8)
                 self.repo_signature_required(keyData['po'].repoid,
                                              keyData['keyurl'],
                                              keyData['userid'],
@@ -489,7 +490,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['fingerprint'],
                                              keyData['timestamp'],
                                              'GPG')
-                self.error(ERROR_SIGNATURE_NOT_IMPORTED,retmsg)
+                self.error(ERROR_SIGNATURE_NOT_IMPORTED,"GPG key not imported.")
             except yum.Errors.YumBaseError, msgs:
                 retmsg = "Error in Transaction Processing;" +";".join(msgs)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)

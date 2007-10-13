@@ -387,6 +387,9 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		pk_backend_no_percentage_updates (backend);
+	} else if (strcmp (command, "repo-signature-required") == 0) {
+		ret = FALSE;
+		goto out;
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
