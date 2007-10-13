@@ -1,5 +1,6 @@
 #!/bin/sh
 
+sudo echo "Build!"
 #autobuild.sh all PolicyKit
 #sudo auto_refresh_from_repo.sh
 #autobuild.sh all PolicyKit-gnome
