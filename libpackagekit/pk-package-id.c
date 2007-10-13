@@ -47,19 +47,6 @@ pk_package_id_new (void)
 }
 
 /**
- * pk_package_id_strcmp:
- **/
-gboolean
-pk_package_id_strcmp (const gchar *pid1, const gchar *pid2)
-{
-	if (pid1 == NULL || pid2 == NULL) {
-		pk_warning ("package id compare invalid '%s' and '%s'", pid1, pid2);
-		return FALSE;
-	}
-	return (strcmp (pid1, pid2) == 0);
-}
-
-/**
  * pk_package_id_equal:
  * only compare first three sections, not data
  **/
@@ -225,22 +212,6 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************
 	 ****************          IDENT           ******************
 	 ************************************************************/
-
-	libst_title (test, "pid strcmp pass");
-	ret = pk_package_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "pid strcmp fail");
-	ret = pk_package_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
 
 	libst_title (test, "pid equal pass (same)");
 	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");

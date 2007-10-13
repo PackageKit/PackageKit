@@ -149,6 +149,19 @@ out:
 	return NULL;
 }
 
+/**
+ * pk_string_id_strcmp:
+ **/
+gboolean
+pk_string_id_strcmp (const gchar *id1, const gchar *id2)
+{
+	if (id1 == NULL || id2 == NULL) {
+		pk_warning ("string id compare invalid '%s' and '%s'", id1, id2);
+		return FALSE;
+	}
+	return (strcmp (id1, id2) == 0);
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -220,6 +233,24 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test fail missing first");
 	array = pk_string_id_split (";moo", 2);
 	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "id strcmp pass");
+	ret = pk_string_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "id strcmp fail");
+	ret = pk_string_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
+	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
