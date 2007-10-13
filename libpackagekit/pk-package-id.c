@@ -47,48 +47,6 @@ pk_package_id_new (void)
 }
 
 /**
- * pk_package_id_equal:
- * only compare first three sections, not data
- **/
-gboolean
-pk_package_id_equal (const gchar *pid1, const gchar *pid2)
-{
-	gchar **sections1;
-	gchar **sections2;
-	gboolean ret = FALSE;
-
-	if (pid1 == NULL || pid2 == NULL) {
-		pk_warning ("package id compare invalid '%s' and '%s'", pid1, pid2);
-		return FALSE;
-	}
-
-	/* split, NULL will be returned if error */
-	sections1 = pk_string_id_split (pid1, 4);
-	sections2 = pk_string_id_split (pid2, 4);
-
-	/* check we split okay */
-	if (sections1 == NULL) {
-		pk_warning ("package id compare sections1 invalid '%s'", pid1);
-		return FALSE;
-	}
-	if (sections2 == NULL) {
-		pk_warning ("package id compare sections2 invalid '%s'", pid2);
-		return FALSE;
-	}
-
-	/* only compare first three sections */
-	if ((strcmp (sections1[0], sections2[0]) == 0) &&
-	    (strcmp (sections1[1], sections2[1]) == 0) &&
-	    (strcmp (sections1[2], sections2[2]) == 0)) {
-		ret = TRUE;
-	}
-
-	g_strfreev (sections1);
-	g_strfreev (sections2);
-	return ret;
-}
-
-/**
  * pk_package_id_check:
  **/
 gboolean
@@ -191,6 +149,15 @@ pk_package_id_free (PkPackageId *ident)
 	return TRUE;
 }
 
+/**
+ * pk_string_id_equal:
+ **/
+gboolean
+pk_package_id_equal (const gchar *pid1, const gchar *pid2)
+{
+	return pk_string_id_equal (pid1, pid2, 4, 3);
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -224,30 +191,6 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "pid equal pass (different)");
 	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
 	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "pid equal fail1");
-	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora");
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "pid equal fail2");
-	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora");
-	if (ret == FALSE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	libst_title (test, "pid equal fail3");
-	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora");
-	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

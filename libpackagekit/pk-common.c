@@ -162,6 +162,59 @@ pk_string_id_strcmp (const gchar *id1, const gchar *id2)
 	return (strcmp (id1, id2) == 0);
 }
 
+/**
+ * pk_string_id_equal:
+ * only compare first sections, not all the data
+ **/
+gboolean
+pk_string_id_equal (const gchar *id1, const gchar *id2, guint parts, guint compare)
+{
+	gchar **sections1;
+	gchar **sections2;
+	gboolean ret = FALSE;
+	guint i;
+
+	if (id1 == NULL || id2 == NULL) {
+		pk_warning ("package id compare invalid '%s' and '%s'", id1, id2);
+		return FALSE;
+	}
+	if (compare > parts) {
+		pk_warning ("compare %i > parts %i", compare, parts);
+		return FALSE;
+	}
+	if (compare == parts) {
+		pk_debug ("optimise to strcmp");
+		return pk_string_id_strcmp (id1, id2);
+	}
+
+	/* split, NULL will be returned if error */
+	sections1 = pk_string_id_split (id1, parts);
+	sections2 = pk_string_id_split (id2, parts);
+
+	/* check we split okay */
+	if (sections1 == NULL) {
+		pk_warning ("string id compare sections1 invalid '%s'", id1);
+		goto out;
+	}
+	if (sections2 == NULL) {
+		pk_warning ("string id compare sections2 invalid '%s'", id2);
+		goto out;
+	}
+
+	/* only compare preceeding sections */
+	for (i=0; i<compare; i++) {
+		if (strcmp (sections1[i], sections2[i]) != 0) {
+			goto out;
+		}
+	}
+	ret = TRUE;
+
+out:
+	g_strfreev (sections1);
+	g_strfreev (sections2);
+	return ret;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -250,6 +303,62 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
 	ret = pk_string_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal pass (same)");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal pass (parts==match)");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal pass (different)");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail1");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail2");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail3");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_title (test, "id equal fail (match too high)");
+	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {

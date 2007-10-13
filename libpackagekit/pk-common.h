@@ -33,6 +33,12 @@ G_BEGIN_DECLS
 gboolean	 pk_filter_check			(const gchar	*filter);
 gchar		**pk_string_id_split			(const gchar	*id,
 							 guint		 parts);
+gboolean	 pk_string_id_strcmp			(const gchar	*id1,
+							 const gchar	*id2);
+gboolean	 pk_string_id_equal			(const gchar	*id1,
+							 const gchar	*id2,
+							 guint		 parts,
+							 guint		 match);
 
 G_END_DECLS
 
