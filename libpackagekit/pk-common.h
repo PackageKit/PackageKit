@@ -31,6 +31,8 @@ G_BEGIN_DECLS
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
 gboolean	 pk_filter_check			(const gchar	*filter);
+gchar		**pk_string_id_split			(const gchar	*id,
+							 guint		 parts);
 
 G_END_DECLS
 

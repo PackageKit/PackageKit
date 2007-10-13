@@ -88,6 +88,8 @@ pk_self_test_SOURCES =						\
 	pk-debug.h						\
 	pk-enum.h						\
 	pk-enum.c						\
+	pk-common.h						\
+	pk-common.c						\
 	pk-enum-list.h						\
 	pk-enum-list.c						\
 	pk-package-id.h						\

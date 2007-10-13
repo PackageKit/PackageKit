@@ -110,6 +110,45 @@ out:
 	return ret;
 }
 
+/**
+ * pk_string_id_split:
+ *
+ * You need to use g_strfreev on the returned value
+ **/
+gchar **
+pk_string_id_split (const gchar *id, guint parts)
+{
+	gchar **sections = NULL;
+
+	if (id == NULL) {
+		pk_warning ("ident is null!");
+		goto out;
+	}
+
+	/* split by delimeter ';' */
+	sections = g_strsplit (id, ";", 0);
+	if (g_strv_length (sections) != parts) {
+		pk_warning ("ident '%s' is invalid (sections=%d)", id, g_strv_length (sections));
+		goto out;
+	}
+
+	/* name has to be valid */
+	if (strlen (sections[0]) == 0) {
+		pk_warning ("ident first section is empty");
+		goto out;
+	}
+
+	/* all okay, phew.. */
+	return sections;
+
+out:
+	/* free sections and return NULL */
+	if (sections != NULL) {
+		g_strfreev (sections);
+	}
+	return NULL;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -117,14 +156,73 @@ out:
 #include <libselftest.h>
 
 void
-libst_task_common (LibSelfTest *test)
+libst_common (LibSelfTest *test)
 {
 	gboolean ret;
-	gchar *text;
+	gchar **array;
 	const gchar *temp;
 
-	if (libst_start (test, "PkTaskCommon", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
+	}
+
+	/************************************************************
+	 ****************          string_id         ****************
+	 ************************************************************/
+	libst_title (test, "test pass 1");
+	array = pk_string_id_split ("foo", 1);
+	if (array != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 2");
+	array = pk_string_id_split ("foo;moo", 2);
+	if (array != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test pass 3");
+	array = pk_string_id_split ("foo;moo;bar", 3);
+	if (array != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test fail under");
+	array = pk_string_id_split ("foo;moo", 1);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail over");
+	array = pk_string_id_split ("foo;moo", 3);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test fail missing first");
+	array = pk_string_id_split (";moo", 2);
+	if (array == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
 	}
 
 	/************************************************************

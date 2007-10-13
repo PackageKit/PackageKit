@@ -28,6 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
+#include "pk-common.h"
 #include "pk-package-id.h"
 
 /**
@@ -43,46 +44,6 @@ pk_package_id_new (void)
 	ident->arch = NULL;
 	ident->data = NULL;
 	return ident;
-}
-
-/**
- * pk_package_id_split:
- *
- * Returns the split, ONLY if package name is okay
- * You need to use g_strfreev on the returned value
- **/
-static gchar **
-pk_package_id_split (const gchar *package_id)
-{
-	gchar **sections = NULL;
-
-	if (package_id == NULL) {
-		pk_warning ("Package ident is null!");
-		goto out;
-	}
-
-	/* split by delimeter ';' */
-	sections = g_strsplit (package_id, ";", 0);
-	if (g_strv_length (sections) != 4) {
-		pk_warning ("Package ident '%s' is invalid (sections=%d)", package_id, g_strv_length (sections));
-		goto out;
-	}
-
-	/* name has to be valid */
-	if (strlen (sections[0]) == 0) {
-		pk_warning ("Package ident package is empty");
-		goto out;
-	}
-
-	/* all okay, phew.. */
-	return sections;
-
-out:
-	/* free sections and return NULL */
-	if (sections != NULL) {
-		g_strfreev (sections);
-	}
-	return NULL;
 }
 
 /**
@@ -115,8 +76,8 @@ pk_package_id_equal (const gchar *pid1, const gchar *pid2)
 	}
 
 	/* split, NULL will be returned if error */
-	sections1 = pk_package_id_split (pid1);
-	sections2 = pk_package_id_split (pid2);
+	sections1 = pk_string_id_split (pid1, 4);
+	sections2 = pk_string_id_split (pid2, 4);
 
 	/* check we split okay */
 	if (sections1 == NULL) {
@@ -147,7 +108,7 @@ gboolean
 pk_package_id_check (const gchar *package_id)
 {
 	gchar **sections;
-	sections = pk_package_id_split (package_id);
+	sections = pk_string_id_split (package_id, 4);
 	if (sections != NULL) {
 		g_strfreev (sections);
 		return TRUE;
@@ -164,7 +125,7 @@ pk_package_id_new_from_string (const gchar *package_id)
 	gchar **sections;
 	PkPackageId *ident = NULL;
 
-	sections = pk_package_id_split (package_id);
+	sections = pk_string_id_split (package_id, 4);
 	if (sections == NULL) {
 		return NULL;
 	}
