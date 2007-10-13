@@ -51,6 +51,8 @@ packagekitd_SOURCES =					\
 	pk-spawn.h					\
 	pk-engine.h					\
 	pk-engine.c					\
+	pk-inhibit.h					\
+	pk-inhibit.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
 	pk-transaction-db.h				\
