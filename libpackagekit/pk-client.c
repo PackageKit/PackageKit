@@ -84,6 +84,7 @@ typedef enum {
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_LOCKED,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
@@ -541,6 +542,16 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 		pk_debug ("emit error-code %i, %s", code, details);
 		g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 	}
+}
+
+/**
+ * pk_client_locked_cb:
+ */
+static void
+pk_client_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkClient *client)
+{
+	pk_debug ("emit locked %i", is_locked);
+	g_signal_emit (client , signals [PK_CLIENT_LOCKED], 0, is_locked);
 }
 
 /**
@@ -2050,6 +2061,11 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_CLIENT_LOCKED] =
+		g_signal_new ("locked",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals [PK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2132,6 +2148,10 @@ pk_client_init (PkClient *client)
 	/* PercentageChanged et al */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+
+	/* Locked */
+	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
+					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* TransactionStatusChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
@@ -2238,6 +2258,10 @@ pk_client_init (PkClient *client)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
 				     G_CALLBACK (pk_client_require_restart_cb), client, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "Locked",
+				     G_CALLBACK (pk_client_locked_cb), client, NULL);
 }
 
 /**
@@ -2284,6 +2308,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
 				        G_CALLBACK (pk_client_require_restart_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Locked",
+				        G_CALLBACK (pk_client_locked_cb), client);
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (client->priv->proxy));

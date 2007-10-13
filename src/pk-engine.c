@@ -50,6 +50,7 @@
 #include "pk-engine.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction-list.h"
+#include "pk-inhibit.h"
 #include "pk-marshal.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
@@ -68,6 +69,7 @@ struct PkEnginePrivate
 	PkTransactionDb		*transaction_db;
 	PkTransactionItem	*sync_item;
 	PkPackageList		*updates_cache;
+	PkInhibit		*inhibit;
 };
 
 enum {
@@ -86,6 +88,7 @@ enum {
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_ALLOW_INTERRUPT,
+	PK_ENGINE_LOCKED,
 	PK_ENGINE_LAST_SIGNAL
 };
 
@@ -174,6 +177,18 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 	pk_debug ("emitting transaction-list-changed");
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_LIST_CHANGED], 0, transaction_list);
 	pk_engine_reset_timer (engine);
+}
+
+/**
+ * pk_engine_inhibit_locked_cb:
+ **/
+static void
+pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *engine)
+{
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+	pk_debug ("emitting locked %i", is_locked);
+	g_signal_emit (engine, signals [PK_ENGINE_LOCKED], 0, is_locked);
 }
 
 /**
@@ -2147,6 +2162,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_BOOL,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_BOOLEAN);
+	signals [PK_ENGINE_LOCKED] =
+		g_signal_new ("locked",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals [PK_ENGINE_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2178,6 +2198,10 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
+
+	engine->priv->inhibit = pk_inhibit_new ();
+	g_signal_connect (engine->priv->inhibit, "locked",
+			  G_CALLBACK (pk_engine_inhibit_locked_cb), engine);
 
 	/* we use a trasaction db to store old transactions and to do rollbacks */
 	engine->priv->transaction_db = pk_transaction_db_new ();
@@ -2221,6 +2245,7 @@ pk_engine_finalize (GObject *object)
 	g_timer_destroy (engine->priv->timer);
 	g_free (engine->priv->backend);
 	polkit_context_unref (engine->priv->pk_context);
+	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 

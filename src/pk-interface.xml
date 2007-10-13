@@ -146,6 +146,9 @@
     <signal name="UpdatesChanged">
       <arg type="s" name="tid" direction="out"/>
     </signal>
+    <signal name="Locked">
+      <arg type="b" name="is_locked" direction="out"/>
+    </signal>
     <signal name="RepoSignatureRequired">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="repository_name" direction="out"/>

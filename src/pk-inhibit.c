@@ -50,8 +50,15 @@ struct PkInhibitPrivate
 	DBusGProxy		*proxy;
 };
 
-G_DEFINE_TYPE (PkInhibit, pk_inhibit, G_TYPE_OBJECT)
+enum {
+	PK_INHIBIT_LOCKED,
+	PK_INHIBIT_LAST_SIGNAL
+};
+
 static gpointer pk_inhibit_object = NULL;
+static guint signals [PK_INHIBIT_LAST_SIGNAL] = { 0, };
+
+G_DEFINE_TYPE (PkInhibit, pk_inhibit, G_TYPE_OBJECT)
 
 /**
  * pk_inhibit_locked:
@@ -98,7 +105,8 @@ pk_inhibit_lock (PkInhibit *inhibit)
 	}
 	if (ret == TRUE) {
 		inhibit->priv->is_locked = TRUE;
-		pk_debug ("setting is_locked %i", inhibit->priv->is_locked);
+		pk_debug ("emit lock %i", inhibit->priv->is_locked);
+		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
 	return ret;
@@ -138,7 +146,8 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 	}
 	if (ret == TRUE) {
 		inhibit->priv->is_locked = FALSE;
-		pk_debug ("setting is_locked %i", inhibit->priv->is_locked);
+		pk_debug ("emit lock %i", inhibit->priv->is_locked);
+		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
 	}
 
 	return ret;
@@ -222,6 +231,10 @@ pk_inhibit_class_init (PkInhibitClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_inhibit_finalize;
+	signals [PK_INHIBIT_LOCKED] =
+		g_signal_new ("locked", G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	g_type_class_add_private (klass, sizeof (PkInhibitPrivate));
 }
 
