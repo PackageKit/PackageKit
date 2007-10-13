@@ -19,6 +19,5 @@ Have different permissions for signed and unsigned repos.
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
- * emit internal signal for SetTransactionData
  * allow transaction data to be changed in _db
 
