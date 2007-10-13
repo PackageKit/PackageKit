@@ -76,6 +76,9 @@ static PkTaskEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
 	{PK_ROLE_ENUM_UPDATE_PACKAGE,		"update-package"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
+	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
+	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
+	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{0, NULL},
 };
 
