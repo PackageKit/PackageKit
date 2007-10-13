@@ -23,11 +23,6 @@ To do rollbacks sanely in PK we need a few things:
  * write pk_transaction_id_equal to not compare data
  * allow transaction data to be changed in _db
 
-*** Integrate with HAL ***
-Do the HAL inhibit in packagekitd:
-http://people.freedesktop.org/~david/hal-spec/hal-spec.html
+*** Integrate with gnome-power-manager to prevent shutdown ***
 do the g-p-m client stuff ALSO in the client program (for nice error message)
-
-*** add more unit tests ***
-PkInhibit
 
