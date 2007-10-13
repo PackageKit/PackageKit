@@ -287,14 +287,14 @@
       </para>
       <para>
         Every error should have an enumerated type
-        (e.g. <literal>out-of-memory</literal>) and also an error dscription.
+        (e.g. <literal>out-of-memory</literal>) and also an error description.
         The error description is not translated and not converted into the users
         locale.
         The error description should be descriptive, as it's for power users
         and people trying to debug the problem.
         For instance, "Out of memory" is not helpful as an error description,
         but "Could not create database index" is.
-        For the description use <literal>;</literal> to seporate the lines if
+        For the description use <literal>;</literal> to separate the lines if
         required.
       </para>
       <para>
@@ -531,7 +531,7 @@
     <sect2 id="config-main">
       <title>Daemon Config Options</title>
       <para>
-        The config file <literal>/etc/PackageKit.conf</literal>allows to the
+        The config file <literal>/etc/PackageKit.conf</literal> allows to the
         administrator to change system daemon options.
         In normal use this file does not have to be changed, but it may be
         useful to people debugging the daemon or developing backends.
@@ -604,7 +604,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -641,7 +641,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -681,7 +681,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -720,7 +720,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -899,7 +899,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -935,7 +935,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
@@ -1007,7 +1007,7 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
-        <literal>available</literal> or<literal>installed</literal>.
+        <literal>available</literal> or <literal>installed</literal>.
       </para>
     </sect2>
 
