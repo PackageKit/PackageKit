@@ -4,7 +4,7 @@ Order of no particular importance:
 TimeRemaining()
 
 *** the backends will have repo controls ***
-Add methods and signals to the client library
+Add methods and callbacks in pkcon for repo stuff
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.

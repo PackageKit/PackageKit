@@ -84,6 +84,7 @@ typedef enum {
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_LOCKED,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
@@ -502,7 +503,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
-	
+
 	/* check to see if we have been assigned yet */
 	if (client->priv->tid == NULL) {
 		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
@@ -514,6 +515,28 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 			  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 		g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
 			       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+	}
+}
+
+/**
+ * pk_client_repo_detail_cb:
+ **/
+static void
+pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repo_id,
+			  const gchar *description, gboolean enabled, PkClient *client)
+{
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+		return;
+	}
+
+	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+		pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+		g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
 	}
 }
 
@@ -1735,9 +1758,178 @@ pk_client_install_file (PkClient *client, const gchar *file)
 	return ret;
 }
 
+/**
+ * pk_client_get_repo_list:
+ */
+gboolean
+pk_client_get_repo_list (PkClient *client)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
+
+	error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", &error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error != NULL) {
+		const gchar *error_name;
+		error_name = pk_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetRepoList failed!");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 /******************************************************************************
  *                    NON-TRANSACTION ID METHODS
  ******************************************************************************/
+
+/**
+ * pk_client_repo_enable_action:
+ **/
+gboolean
+pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", error,
+				 G_TYPE_STRING, repo_id,
+				 G_TYPE_BOOLEAN, enabled,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RepoEnable failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_client_repo_enable:
+ */
+gboolean
+pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
+
+	/* hopefully do the operation first time */
+	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error);
+
+	/* we were refused by policy then try to get auth */
+	if (ret == FALSE) {
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_repo_enable_action (client, repo_id, enabled, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_repo_set_data_action:
+ **/
+gboolean
+pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
+				const gchar *parameter, const gchar *value, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", error,
+				 G_TYPE_STRING, repo_id,
+				 G_TYPE_STRING, parameter,
+				 G_TYPE_STRING, value,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RepoSetData failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_client_repo_set_data:
+ */
+gboolean
+pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
+
+	/* hopefully do the operation first time */
+	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error);
+
+	/* we were refused by policy then try to get auth */
+	if (ret == FALSE) {
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
+	return ret;
+}
 
 /**
  * pk_client_get_actions:
@@ -2051,6 +2243,11 @@ pk_client_class_init (PkClientClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_CLIENT_REPO_DETAIL] =
+		g_signal_new ("repo-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOLEAN,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
 	signals [PK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2179,6 +2376,10 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
+	/* RepoDetail */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+
 	/* UpdateDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -2248,6 +2449,11 @@ pk_client_init (PkClient *client)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "RepoDetail",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
+				     G_CALLBACK (pk_client_repo_detail_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "ErrorCode",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);

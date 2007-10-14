@@ -115,6 +115,16 @@ gboolean	 pk_client_rollback			(PkClient	*client,
 gboolean	 pk_client_cancel			(PkClient	*client);
 gboolean	 pk_client_requeue			(PkClient	*client);
 
+/* repo stuff */
+gboolean	 pk_client_get_repo_list		(PkClient	*client);
+gboolean	 pk_client_repo_enable			(PkClient	*client,
+							 const gchar	*repo_id,
+							 gboolean	 enabled);
+gboolean	 pk_client_repo_set_data		(PkClient	*client,
+							 const gchar	*repo_id,
+							 const gchar	*parameter,
+							 const gchar	*value);
+
 /* cached stuff */
 GPtrArray	*pk_client_get_package_buffer		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
