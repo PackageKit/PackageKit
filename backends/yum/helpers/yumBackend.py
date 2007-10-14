@@ -68,6 +68,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         res = self.yumbase.searchGenerator(searchlist, [key])
         fltlist = filters.split(';')
 
+        available = []
         count = 1
         for (pkg,values) in res:
             if count > 100:
@@ -75,33 +76,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             count+=1
             # are we installed?
             if pkg.repoid == 'installed':
-                installed = INFO_INSTALLED
+                if FILTER_NON_INSTALLED not in fltlist:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
             else:
-                installed = INFO_AVAILABLE
+                available.append(pkg)
 
-            if self._do_filtering(pkg,fltlist,installed):
-                self._show_package(pkg, installed)
-
-
-    def _do_filtering(self,pkg,filterList,installed):
-        ''' Filter the package, based on the filter in filterList '''
-
-        # do we print to stdout?
-        do_print = False;
-        if filterList == ['none']: # 'none' = all packages.
-            return True
-        elif FILTER_INSTALLED in filterList and installed == INFO_INSTALLED:
-            do_print = True
-        elif FILTER_NON_INSTALLED in filterList and installed == INFO_AVAILABLE:
-            do_print = True
-
-        if len(filterList) == 1: # Only one filter, return
-            return do_print
-
-        if do_print:
-            return self._do_extra_filtering(pkg,filterList)
-        else:
-            return do_print
+        # Now show available packages.
+        if FILTER_INSTALLED not in fltlist:
+            for pkg in available:
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_AVAILABLE)
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
