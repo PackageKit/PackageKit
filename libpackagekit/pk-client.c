@@ -196,6 +196,7 @@ pk_client_reset (PkClient *client)
 	client->priv->use_buffer = FALSE;
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	pk_package_list_clear (client->priv->package_list);
 	return TRUE;
@@ -907,6 +908,8 @@ pk_client_get_updates (PkClient *client)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", &error,
@@ -970,6 +973,8 @@ pk_client_update_system (PkClient *client)
 		pk_warning ("Failed to get transaction ID");
 		return FALSE;
 	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
 	/* hopefully do the operation first time */
 	ret = pk_client_update_system_action (client, &error);
