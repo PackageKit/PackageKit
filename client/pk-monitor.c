@@ -80,10 +80,6 @@ main (int argc, char *argv[])
 	g_type_init ();
 	pk_debug_init (TRUE);
 
-	if (!g_thread_supported ())
-		g_thread_init (NULL);
-	dbus_g_thread_init ();
-
 	loop = g_main_loop_new (NULL, FALSE);
 
 	pconnection = pk_connection_new ();
