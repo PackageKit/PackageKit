@@ -5,7 +5,6 @@ TimeRemaining()
 
 *** the backends will have repo controls ***
 Add the callback and methods in PkBackend
-Add details to the help file
 Add methods and signals to the client library
 
 *** Prepare download to refresh system ***

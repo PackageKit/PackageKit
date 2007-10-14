@@ -1150,6 +1150,100 @@
         <literal>Package</literal>.
       </para>
     </sect2>
+
+    <sect2 id="api-get-repo-list">
+      <title>Get Repo List</title>
+      <para>
+        Return the list of repositories used in the system.
+      </para>
+      <para>
+        There are no arguments.
+      </para>
+      <para>
+        This method typically emits
+        <literal>RepoDetail</literal>.
+      </para>
+    </sect2>
+
+    <sect2 id="api-repo-enable">
+      <title>Repo Enable</title>
+      <para>
+        This enables the repository specified.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>repo_id</literal></entry>
+              <entry>
+                A repository identifier, e.g.
+                <literal>fedora-development-debuginfo</literal>
+              </entry>
+            </row>
+            <row>
+              <entry><literal>enabled</literal></entry>
+              <entry>
+                <literal>true</literal> if enabled,
+                <literal>false</literal> if disabled.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 id="api-repo-set-data">
+      <title>Repo Set Data</title>
+      <para>
+        This sets a parameter for the repository specified.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>repo_id</literal></entry>
+              <entry>
+                A repository identifier, e.g.
+                <literal>fedora-development-debuginfo</literal>
+              </entry>
+            </row>
+            <row>
+              <entry><literal>parameter</literal></entry>
+              <entry>
+                The backend specific value, e.g.
+                <literal>set-download-url</literal>.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>value</literal></entry>
+              <entry>
+                The backend specific value, e.g.
+                <literal>http://foo.bar.org/baz</literal>.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
   </sect1>
 
   <sect1 id="api-signal-reference">

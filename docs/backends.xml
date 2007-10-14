@@ -106,6 +106,18 @@
             <entry>Refresh Cache</entry>
             <entry><literal>refresh-cache.*</literal></entry>
           </row>
+          <row>
+            <entry>Get Repo List</entry>
+            <entry><literal>get-repo-list.*</literal></entry>
+          </row>
+          <row>
+            <entry>Repo Enable</entry>
+            <entry><literal>repo-enable.*</literal></entry>
+          </row>
+          <row>
+            <entry>Repo Set Data</entry>
+            <entry><literal>repo-set-data.*</literal></entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>
@@ -182,6 +194,11 @@
           <row>
             <entry>RepoSignatureRequired</entry>
             <entry><literal>repository_name[tab]key_url[tab]key_userid[tab]key_id[tab]key_fingerprint[tab]key_timestamp[tab]type</literal></entry>
+            <entry><literal>stdout</literal></entry>
+          </row>
+          <row>
+            <entry>RepoDetail</entry>
+            <entry><literal>repo-detail[tab]repo_id[tab]description[tab]enabled</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
         </tbody>
