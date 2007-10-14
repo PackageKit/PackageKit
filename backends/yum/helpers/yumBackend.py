@@ -36,20 +36,6 @@ import exceptions
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
-class PackageKitYumBase(yum.YumBase):
-    """ 
-    Custom YumBase Class for PackageKit
-    Used to overload methods in YumBase there need to be different in
-    PackageKit
-    
-    """
-    def _askForGPGKeyImport(self, po, userid, hexkeyid):
-        ''' 
-        Ask for GPGKeyImport 
-        '''
-        # TODO: Add code here to send the RepoSignatureRequired signal
-        return False    
-
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -758,7 +744,7 @@ class PackageKitYumBase(yum.YumBase):
     def _checkSignatures(self,pkgs,callback):
         ''' The the signatures of the downloaded packages '''
         # This can be overloaded by a subclass.
-        
+
         for po in pkgs:
             result, errmsg = self.sigCheckPkg(po)
             if result == 0:
@@ -776,3 +762,9 @@ class PackageKitYumBase(yum.YumBase):
 
         raise GPGKeyNotImported()
 
+    def _askForGPGKeyImport(self, po, userid, hexkeyid):
+        ''' 
+        Ask for GPGKeyImport 
+        '''
+        # TODO: Add code here to send the RepoSignatureRequired signal
+        return False
