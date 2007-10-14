@@ -70,6 +70,9 @@ struct PkEnginePrivate
 	PkTransactionItem	*sync_item;
 	PkPackageList		*updates_cache;
 	PkInhibit		*inhibit;
+	PkEnumList		*actions;
+	PkEnumList		*groups;
+	PkEnumList		*filters;
 };
 
 enum {
@@ -96,6 +99,9 @@ enum {
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
+
+/* prototypes */
+static PkBackend *pk_engine_backend_new (PkEngine *engine);
 
 /**
  * pk_engine_error_quark:
@@ -145,10 +151,25 @@ pk_engine_error_get_type (void)
  * pk_engine_use_backend:
  **/
 gboolean
-pk_engine_use_backend (PkEngine *engine, const gchar *backend)
+pk_engine_use_backend (PkEngine *engine, const gchar *backend_name)
 {
-	pk_debug ("trying backend %s", backend);
-	engine->priv->backend = g_strdup (backend);
+	PkBackend *backend;
+	if (engine->priv->backend != NULL) {
+		pk_error ("The backend to use can only be specified once");
+	}
+	pk_debug ("trying backend %s", backend_name);
+	engine->priv->backend = g_strdup (backend_name);
+
+	/* create a new backend so we can get the static stuff */
+	backend = pk_engine_backend_new (engine);
+	if (backend == NULL) {
+		pk_error ("Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+	engine->priv->actions = pk_backend_get_actions (backend);
+	engine->priv->groups = pk_backend_get_groups (backend);
+	engine->priv->filters = pk_backend_get_filters (backend);
+	g_object_unref (backend);
 	return TRUE;
 }
 
@@ -629,10 +650,10 @@ pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 }
 
 /**
- * pk_engine_new_backend:
+ * pk_engine_backend_new:
  **/
 static PkBackend *
-pk_engine_new_backend (PkEngine *engine)
+pk_engine_backend_new (PkEngine *engine)
 {
 	PkBackend *backend;
 	gboolean ret;
@@ -647,7 +668,6 @@ pk_engine_new_backend (PkEngine *engine)
 		pk_warning ("Cannot use backend '%s'", engine->priv->backend);
 		return NULL;
 	}
-	pk_debug ("adding backend %p", backend);
 
 	/* connect up signals */
 	g_signal_connect (backend, "transaction-status-changed",
@@ -841,7 +861,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_warning ("Backend not set yet!");
 		return FALSE;
@@ -887,7 +907,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1012,7 +1032,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1063,7 +1083,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1114,7 +1134,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1165,7 +1185,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1204,7 +1224,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1251,7 +1271,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1298,7 +1318,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1345,7 +1365,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1384,7 +1404,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1440,7 +1460,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1500,7 +1520,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1562,7 +1582,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1624,7 +1644,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1677,7 +1697,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1739,7 +1759,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1780,7 +1800,7 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1831,7 +1851,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -1885,7 +1905,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Could not create backend instance");
@@ -2129,37 +2149,42 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 
 /**
  * pk_engine_get_actions:
- * @engine: This class instance
  **/
 gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
-	PkBackend *backend;
-	PkEnumList *elist;
-
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_actions (backend);
-	*actions = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
-
+	*actions = pk_enum_list_to_string (engine->priv->actions);
 	return TRUE;
 }
 
+/**
+ * pk_engine_get_groups:
+ **/
+gboolean
+pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	*groups = pk_enum_list_to_string (engine->priv->groups);
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_filters:
+ **/
+gboolean
+pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	*filters = pk_enum_list_to_string (engine->priv->filters);
+	return TRUE;
+}
 
 /**
  * pk_engine_get_backend_detail:
- * @engine: This class instance
  **/
 gboolean
 pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gchar **version, GError **error)
@@ -2170,7 +2195,7 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
+	backend = pk_engine_backend_new (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -2179,64 +2204,6 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 
 	pk_backend_get_backend_detail (backend, name, author, version);
 	g_object_unref (backend);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_groups:
- * @engine: This class instance
- **/
-gboolean
-pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
-{
-	PkBackend *backend;
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_groups (backend);
-	*groups = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_filters:
- * @engine: This class instance
- **/
-gboolean
-pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
-{
-	PkBackend *backend;
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_filters (backend);
-	*filters = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
 
 	return TRUE;
 }
@@ -2260,7 +2227,6 @@ pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gcha
 
 /**
  * pk_engine_get_seconds_idle:
- * @engine: This class instance
  **/
 guint
 pk_engine_get_seconds_idle (PkEngine *engine)
@@ -2392,7 +2358,6 @@ pk_engine_class_init (PkEngineClass *klass)
 
 /**
  * pk_engine_init:
- * @engine: This class instance
  **/
 static void
 pk_engine_init (PkEngine *engine)
@@ -2461,6 +2426,9 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
+	g_object_unref (engine->priv->actions);
+	g_object_unref (engine->priv->groups);
+	g_object_unref (engine->priv->filters);
 
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache");

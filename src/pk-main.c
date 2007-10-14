@@ -74,7 +74,8 @@ pk_object_register (DBusGConnection *connection,
 		/* abort as the DBUS method failed */
 		pk_warning ("RequestName failed!");
 		g_clear_error(error);
-		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "Acquiring D-Bus name %s failed due to security policies on this machine",PK_DBUS_SERVICE);
+		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
+			    "Acquiring D-Bus name %s failed due to security policies on this machine", PK_DBUS_SERVICE);
 		return FALSE;
 	}
 
