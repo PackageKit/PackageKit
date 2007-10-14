@@ -1799,10 +1799,6 @@ pk_client_get_repo_list (PkClient *client)
 	return TRUE;
 }
 
-/******************************************************************************
- *                    NON-TRANSACTION ID METHODS
- ******************************************************************************/
-
 /**
  * pk_client_repo_enable_action:
  **/
@@ -1816,6 +1812,7 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 
 	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", error,
+				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, repo_id,
 				 G_TYPE_BOOLEAN, enabled,
 				 G_TYPE_INVALID,
@@ -1839,6 +1836,13 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled)
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
@@ -1880,6 +1884,7 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 
 	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", error,
+				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, repo_id,
 				 G_TYPE_STRING, parameter,
 				 G_TYPE_STRING, value,
@@ -1904,6 +1909,13 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
@@ -1930,6 +1942,10 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	return ret;
 }
+
+/******************************************************************************
+ *                    NON-TRANSACTION ID METHODS
+ ******************************************************************************/
 
 /**
  * pk_client_get_actions:
@@ -2377,8 +2393,8 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* RepoDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
@@ -2451,7 +2467,7 @@ pk_client_init (PkClient *client)
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "RepoDetail",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
 				     G_CALLBACK (pk_client_repo_detail_cb), client, NULL);
 

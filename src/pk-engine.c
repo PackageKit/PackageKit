@@ -612,7 +612,7 @@ pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 	}
 
 	pk_debug ("emitting repo-detail tid:%s, %s, %s, %i", item->tid, repo_id, description, enabled);
-	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, item->tid, repo_id, description, enabled);
 }
 
 /**
@@ -1787,70 +1787,40 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 
 /**
  * pk_engine_repo_enable:
+ *
+ * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_repo_enable (PkEngine	*engine, const gchar *repo_id, gboolean enabled,
-		       DBusGMethodInvocation *context, GError **old_error)
+pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id, gboolean enabled,
+		       DBusGMethodInvocation *context, GError **dead_error)
 {
-	gboolean ret;
-	GError *error;
-	PkBackend *backend;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
-	if (ret == FALSE) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
+#if 0
+xxx	has to be done when finished!
 	/* this has to be done as different repos might have different updates */
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache as we have just enabled/disabled a repo");
 		g_object_unref (engine->priv->updates_cache);
 		engine->priv->updates_cache = NULL;
 	}
-
-	ret = pk_backend_repo_enable (backend, repo_id, enabled);
-	g_object_unref (backend);
-	if (ret == TRUE) {
 		/* this should cause the client program to requeue an update */
-		pk_debug ("emitting updates-changed tid:(null)");
-		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, NULL);
-	} else {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-	dbus_g_method_return (context);
-}
-
-/**
- * pk_engine_repo_set_data:
- **/
-void
-pk_engine_repo_set_data (PkEngine *engine, const gchar *repo_id,
-			 const gchar *parameter, const gchar *value,
-			 DBusGMethodInvocation *context, GError **old_error)
-{
+		pk_debug ("emitting updates-changed tid: %s", tid);
+		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, tid);
+#endif
 	gboolean ret;
+	PkTransactionItem *item;
 	GError *error;
-	PkBackend *backend;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
@@ -1860,22 +1830,77 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *repo_id,
 	}
 
 	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	ret = pk_backend_repo_set_data (backend, repo_id, parameter, value);
-	g_object_unref (backend);
+	ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
 	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_item_add (engine, item);
+	dbus_g_method_return (context);
+}
+
+/**
+ * pk_engine_repo_set_data:
+ *
+ * This is async, so we have to treat it a bit carefully
+ **/
+void
+pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_id,
+			 const gchar *parameter, const gchar *value,
+		         DBusGMethodInvocation *context, GError **dead_error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_new_backend (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_item_add (engine, item);
 	dbus_g_method_return (context);
 }
 

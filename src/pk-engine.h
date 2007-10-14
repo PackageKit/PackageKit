@@ -210,11 +210,13 @@ gboolean	 pk_engine_get_repo_list		(PkEngine	*engine,
 							 const gchar	*tid,
 							 GError		**error);
 void		 pk_engine_repo_enable			(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*repo_id,
 							 gboolean	 enabled,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
 void		 pk_engine_repo_set_data		(PkEngine	*engine,
+							 const gchar	*tid,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value,
