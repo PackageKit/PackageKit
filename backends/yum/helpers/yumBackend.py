@@ -109,10 +109,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if filter in (FILTER_INSTALLED, FILTER_NON_INSTALLED):
                 continue
             elif filter in (FILTER_GUI, FILTER_NON_GUI):
-                if not self._do_gui_filtering(flt,pkg):
+                if not self._do_gui_filtering(filter, pkg):
                     return False
             elif filter in (FILTER_DEVEL, FILTER_NON_DEVEL):
-                if not self._do_devel_filtering(flt,pkg):
+                if not self._do_devel_filtering(filter, pkg):
                     return False
         return True
 
