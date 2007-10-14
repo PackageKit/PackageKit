@@ -202,7 +202,7 @@ pk_client_wait (void)
  * pk_console_parse_multiple_commands:
  **/
 static void
-pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
+pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError **error)
 {
 	const gchar *mode;
 	const gchar *value = NULL;
@@ -221,12 +221,12 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 
 	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a search type");
+			g_set_error (error, 0, 0, "you need to specify a search type");
 			remove = 1;
 			goto out;
 		} else if (strcmp (value, "name") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -236,7 +236,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -246,7 +246,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -256,7 +256,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -265,11 +265,11 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 				remove = 3;
 			}
 		} else {
-			pk_console_usage ("invalid search type");
+			g_set_error (error, 0, 0, "invalid search type");
 		}
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a package to install");
+			g_set_error (error, 0, 0, "you need to specify a package to install");
 			remove = 1;
 			goto out;
 		} else {
@@ -279,7 +279,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a package to remove");
+			g_set_error (error, 0, 0, "you need to specify a package to remove");
 			remove = 1;
 			goto out;
 		} else {
@@ -289,7 +289,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a package to update");
+			g_set_error (error, 0, 0, "you need to specify a package to update");
 			remove = 1;
 			goto out;
 		} else {
@@ -299,7 +299,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a package name to resolve");
+			g_set_error (error, 0, 0, "you need to specify a package name to resolve");
 			remove = 1;
 			goto out;
 		} else {
@@ -309,7 +309,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a repo name");
+			g_set_error (error, 0, 0, "you need to specify a repo name");
 			remove = 1;
 			goto out;
 		} else {
@@ -318,7 +318,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "disable-repo") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a repo name");
+			g_set_error (error, 0, 0, "you need to specify a repo name");
 			remove = 1;
 			goto out;
 		} else {
@@ -327,12 +327,12 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 		}
 	} else if (strcmp (mode, "get") == 0) {
 		if (value == NULL) {
-			pk_console_usage ("you need to specify a get type");
+			g_set_error (error, 0, 0, "you need to specify a get type");
 			remove = 1;
 			goto out;
 		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -342,7 +342,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -352,7 +352,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "requires") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a search term");
+				g_set_error (error, 0, 0, "you need to specify a search term");
 				remove = 2;
 				goto out;
 			} else {
@@ -362,7 +362,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
-				pk_console_usage ("you need to specify a package to find the description for");
+				g_set_error (error, 0, 0, "you need to specify a package to find the description for");
 				remove = 2;
 				goto out;
 			} else {
@@ -398,7 +398,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			pk_client_wait ();
 			remove = 2;
 		} else {
-			pk_console_usage ("invalid get type");
+			g_set_error (error, 0, 0, "invalid get type");
 		}
 	} else if (strcmp (mode, "debug") == 0) {
 		pk_debug_init (TRUE);
@@ -411,7 +411,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 	} else if (strcmp (mode, "force-refresh") == 0) {
 		pk_client_refresh_cache (client, TRUE);
 	} else {
-		pk_console_usage ("option not yet supported");
+		g_set_error (error, 0, 0, "option not yet supported");
 	}
 
 out:
@@ -543,7 +543,11 @@ main (int argc, char *argv[])
 	}
 	/* process all the commands */
 	while (array->len > 0) {
-		pk_console_parse_multiple_commands (client, array);
+		pk_console_parse_multiple_commands (client, array, &error);
+		if (error != NULL) {
+			pk_console_usage (error->message);
+			g_error_free (error);
+		}
 	}
 
 	g_ptr_array_free (array, TRUE);
