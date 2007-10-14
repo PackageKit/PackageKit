@@ -818,23 +818,56 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 
 /**
  * pk_engine_action_is_allowed:
+ *
+ * Only valid from an async caller, which is fine, as we won't prompt the user
+ * when not async.
  **/
 static gboolean
-pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context, const gchar *action, GError **error)
+pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context,
+			     PkRoleEnum role, GError **error)
 {
 	PolKitResult pk_result;
 	const gchar *dbus_name;
+	const gchar *policy = NULL;
+	gboolean ret;
+
+	/* could we actually do this, even with the right permissions? */
+	ret = pk_enum_list_contains (engine->priv->actions, role);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "%s not supported", pk_role_enum_to_text (role));
+		return FALSE;
+	}
 
 #ifdef IGNORE_POLKIT
 	return TRUE;
 #endif
 
+	/* map the roles to policykit rules */
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.update";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		policy = "org.freedesktop.packagekit.remove";
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		policy = "org.freedesktop.packagekit.install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILE) {
+		policy = "org.freedesktop.packagekit.localinstall";
+	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
+		policy = "org.freedesktop.packagekit.rollback";
+	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
+		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		policy = "org.freedesktop.packagekit.repo-change";
+	} else {
+		pk_error ("policykit type required for '%s'", pk_role_enum_to_text (role));
+	}
+
 	/* get the dbus sender */
 	dbus_name = dbus_g_method_get_sender (context);
-	pk_result = pk_engine_can_do_action (engine, dbus_name, action);
+	pk_result = pk_engine_can_do_action (engine, dbus_name, policy);
 	if (pk_result != POLKIT_RESULT_YES) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
-				     "%s %s", action, polkit_result_to_string_representation (pk_result));
+				     "%s %s", policy, polkit_result_to_string_representation (pk_result));
 		return FALSE;
 	}
 	return TRUE;
@@ -1445,7 +1478,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1513,7 +1546,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.remove", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1575,7 +1608,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.install", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1637,7 +1670,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.localinstall", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_FILE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1690,7 +1723,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.rollback", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_ROLLBACK, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1752,7 +1785,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1844,7 +1877,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1898,7 +1931,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
