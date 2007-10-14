@@ -227,6 +227,16 @@ backend_update_system (PkBackend *backend)
 	pk_backend_spawn_helper (backend, "update-system.py", NULL);
 }
 
+/**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "resolve.py", NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"0.0.1",				/* version */
@@ -245,7 +255,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
-	NULL,					/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
