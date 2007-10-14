@@ -1443,7 +1443,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1503,7 +1503,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1565,7 +1565,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1627,7 +1627,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1680,7 +1680,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1742,7 +1742,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1834,7 +1834,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1888,7 +1888,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	item->backend = pk_engine_new_backend (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
