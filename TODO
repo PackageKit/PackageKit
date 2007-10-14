@@ -4,7 +4,6 @@ Order of no particular importance:
 TimeRemaining()
 
 *** the backends will have repo controls ***
-Add the extra operations in the backend status widget
 Connect up pk-repo to actually get the data
 If pk-repo can't get repos, then display a message and quit
 If repos can't be enabled then grey out check boxes
