@@ -4,7 +4,10 @@ Order of no particular importance:
 TimeRemaining()
 
 *** the backends will have repo controls ***
-Add methods and callbacks in pkcon for repo stuff
+Add the extra operations in the backend status widget
+Connect up pk-repo to actually get the data
+If pk-repo can't get repos, then display a message and quit
+If repos can't be enabled then grey out check boxes
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
