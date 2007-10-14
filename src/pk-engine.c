@@ -1792,9 +1792,20 @@ pk_engine_repo_enable (PkEngine	*engine, const gchar *repo_id, gboolean enabled,
 		return;
 	}
 
+	/* this has to be done as different repos might have different updates */
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache as we have just enabled/disabled a repo");
+		g_object_unref (engine->priv->updates_cache);
+		engine->priv->updates_cache = NULL;
+	}
+
 	//ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
 	ret = FALSE;
-	if (ret == FALSE) {
+	if (ret == TRUE) {
+		/* this should cause the client program to requeue an update */
+		pk_debug ("emitting updates-changed tid:(null)");
+		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, NULL);
+	} else {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
