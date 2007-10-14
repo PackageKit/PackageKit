@@ -6,6 +6,7 @@ TimeRemaining()
 *** the backends will have repo controls ***
 Add the callback and methods in PkBackend
 Add methods and signals to the client library
+After changing the repos, trigger a refresh-cache
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.
