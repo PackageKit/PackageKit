@@ -39,6 +39,7 @@
 #include "pk-common.h"
 #include "pk-task-list.h"
 #include "pk-job-list.h"
+#include "pk-connection.h"
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
 static void     pk_task_list_init		(PkTaskList      *task_list);
@@ -48,6 +49,7 @@ static void     pk_task_list_finalize		(GObject         *object);
 
 struct PkTaskListPrivate
 {
+	PkConnection		*pconnection;
 	GPtrArray		*task_list;
 	PkJobList		*job_list;
 };
@@ -291,6 +293,19 @@ pk_task_list_transaction_list_changed_cb (PkJobList *jlist, PkTaskList *tlist)
 }
 
 /**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkTaskList *tlist)
+{
+	pk_debug ("connected=%i", connected);
+
+	/* if we crashed, then loose all the items in the task list */
+	pk_debug ("emit task-list-changed");
+	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+}
+
+/**
  * pk_task_list_class_init:
  **/
 static void
@@ -332,6 +347,11 @@ pk_task_list_init (PkTaskList *tlist)
 	g_signal_connect (tlist->priv->job_list, "transaction-list-changed",
 			  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
 
+	/* watch for PackageKit on the bus, and try to connect up at start */
+	tlist->priv->pconnection = pk_connection_new ();
+	g_signal_connect (tlist->priv->pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), tlist);
+
 	/* we maintain a local copy */
 	tlist->priv->task_list = g_ptr_array_new ();
 
@@ -366,6 +386,7 @@ pk_task_list_finalize (GObject *object)
 
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
 	g_object_unref (tlist->priv->job_list);
+	g_object_unref (tlist->priv->pconnection);
 
 	G_OBJECT_CLASS (pk_task_list_parent_class)->finalize (object);
 }
