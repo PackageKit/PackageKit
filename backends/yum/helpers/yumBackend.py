@@ -104,9 +104,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         do_print = False;
         if filterList == ['none']: # 'none' = all packages.
             return True
-        elif 'installed' in filterList and installed == INFO_INSTALLED:
+        elif FILTER_INSTALLED in filterList and installed == INFO_INSTALLED:
             do_print = True
-        elif '~installed' in filterList and installed == INFO_AVAILABLE:
+        elif FILTER_NON_INSTALLED in filterList and installed == INFO_AVAILABLE:
             do_print = True
 
         if len(filterList) == 1: # Only one filter, return
@@ -119,46 +119,35 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
-
-        for flt in filterList:
-            if flt == 'installed' or flt =='~installed':
+        for filter in filterList:
+            if filter in (FILTER_INSTALLED, FILTER_NON_INSTALLED):
                 continue
-            elif flt == 'gui' or flt =='~gui':
+            elif filter in (FILTER_GUI, FILTER_NON_GUI):
                 if not self._do_gui_filtering(flt,pkg):
                     return False
-            elif flt =='devel' or flt=='~devel':
+            elif filter in (FILTER_DEVEL, FILTER_NON_DEVEL):
                 if not self._do_devel_filtering(flt,pkg):
                     return False
         return True
 
     def _do_gui_filtering(self,flt,pkg):
         isGUI = False
-        if flt == 'gui':
+        if flt == FILTER_GUI:
             wantGUI = True
         else:
             wantGUI = False
-        #
-        # TODO: Add GUI detection Code here.Set isGUI = True, if it is a GUI app
-        #
         isGUI = wantGUI # Fake it for now
-        #
-        #
         return isGUI == wantGUI
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
-        if flt == 'devel':
+        if flt == FILTER_DEVEL:
             wantDevel = True
         else:
             wantDevel = False
-        #
-        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a devel app
-        #
         regex =  re.compile(r'(-devel)|(-dgb)|(-static)')
         if regex.search(pkg.name):
             isDevel = True
-        #
-        #
         return isDevel == wantDevel
 
 
@@ -190,7 +179,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
-        if not '~installed' in fltlist:
+        if not FILTER_NON_INSTALLED in fltlist:
             # Check installed for file
             for pkg in self.yumbase.rpmdb:
                 filelist = pkg.filelist

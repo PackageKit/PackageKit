@@ -59,6 +59,13 @@ INFO_UPDATING = "updating"
 INFO_INSTALLING = "installing"
 INFO_REMOVING = "removing"
 
+FILTER_INSTALLED = "installed"
+FILTER_NON_INSTALLED = "~installed"
+FILTER_GUI = "gui"
+FILTER_NON_GUI = "~gui"
+FILTER_DEVEL = "devel"
+FILTER_NON_DEVEL = "~devel"
+
 # Classes
 
 class PackageKitBaseBackend:
@@ -282,4 +289,3 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-
