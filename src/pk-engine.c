@@ -594,6 +594,28 @@ pk_engine_change_transaction_data_cb (PkBackend *backend, gchar *data, PkEngine 
 }
 
 /**
+ * pk_engine_repo_detail_cb:
+ **/
+static void
+pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
+			  const gchar *description, gboolean enabled, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+
+	pk_debug ("emitting repo-detail tid:%s, %s, %s, %i", item->tid, repo_id, description, enabled);
+	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, repo_id, description, enabled);
+}
+
+/**
  * pk_engine_new_backend:
  **/
 static PkBackend *
@@ -643,6 +665,8 @@ pk_engine_new_backend (PkEngine *engine)
 			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
 	g_signal_connect (backend, "change-transaction-data",
 			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
+	g_signal_connect (backend, "repo-detail",
+			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
 
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
@@ -1750,8 +1774,7 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 		return FALSE;
 	}
 
-	//ret = pk_backend_get_repo_list (item->backend);
-	ret = FALSE;
+	ret = pk_backend_get_repo_list (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -1799,8 +1822,8 @@ pk_engine_repo_enable (PkEngine	*engine, const gchar *repo_id, gboolean enabled,
 		engine->priv->updates_cache = NULL;
 	}
 
-	//ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
-	ret = FALSE;
+	ret = pk_backend_repo_enable (backend, repo_id, enabled);
+	g_object_unref (backend);
 	if (ret == TRUE) {
 		/* this should cause the client program to requeue an update */
 		pk_debug ("emitting updates-changed tid:(null)");
@@ -1845,8 +1868,8 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *repo_id,
 		return;
 	}
 
-	//ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
-	ret = FALSE;
+	ret = pk_backend_repo_set_data (backend, repo_id, parameter, value);
+	g_object_unref (backend);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

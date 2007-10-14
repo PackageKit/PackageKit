@@ -98,6 +98,16 @@ gboolean	 pk_backend_thread_helper		(PkBackend	*backend,
 							 PkBackendThreadFunc func,
 							 gpointer	 data);
 
+/* repo stuff */
+gboolean	 pk_backend_get_repo_list		(PkBackend	*backend);
+gboolean	 pk_backend_repo_enable			(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 gboolean	 enabled);
+gboolean	 pk_backend_repo_set_data		(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 const gchar	*parameter,
+							 const gchar	*value);
+
 /**
  * PkBackendDesc:
  */
@@ -129,8 +139,8 @@ struct _PkBackendDesc {
 	void		(*update_system)	(PkBackend *backend);
 	/* repo stuff */
 	void		(*get_repo_list)	(PkBackend *backend);
-	void		(*repo_enable)		(PkBackend *backend, const gchar *rid, gboolean enabled);
-	void		(*repo_set_data)	(PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value);
+	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
+	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
 	gpointer	padding[12];
 };
 
