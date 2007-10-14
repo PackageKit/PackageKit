@@ -522,6 +522,19 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		}
 	}
 
+	/* this has to be done as different repos might have different updates */
+	if (role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		if (engine->priv->updates_cache != NULL) {
+			pk_debug ("unreffing updates cache as we have just enabled/disabled a repo");
+			g_object_unref (engine->priv->updates_cache);
+			engine->priv->updates_cache = NULL;
+		}
+		/* this should cause the client program to requeue an update */
+		pk_debug ("emitting updates-changed tid: %s", item->tid);
+		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+	}
+
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
 
@@ -1794,18 +1807,6 @@ void
 pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id, gboolean enabled,
 		       DBusGMethodInvocation *context, GError **dead_error)
 {
-#if 0
-xxx	has to be done when finished!
-	/* this has to be done as different repos might have different updates */
-	if (engine->priv->updates_cache != NULL) {
-		pk_debug ("unreffing updates cache as we have just enabled/disabled a repo");
-		g_object_unref (engine->priv->updates_cache);
-		engine->priv->updates_cache = NULL;
-	}
-		/* this should cause the client program to requeue an update */
-		pk_debug ("emitting updates-changed tid: %s", tid);
-		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, tid);
-#endif
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
