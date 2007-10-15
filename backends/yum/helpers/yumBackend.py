@@ -129,6 +129,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         searchlist = ['name']
         self._do_search(searchlist, filters, key)
 
@@ -136,6 +139,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         searchlist = ['name', 'summary', 'description', 'group']
         self._do_search(searchlist, filters, key)
 
@@ -143,12 +149,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+        
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+        
         self._setup_yum()
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
@@ -213,6 +225,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def _is_inst(self,pkg):
@@ -295,6 +310,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of depends for a given package
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         self._setup_yum()
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
@@ -319,8 +337,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
-        self._setup_yum()
+        self.allow_interrupt(False)
         self.percentage(0)
+
+        self._setup_yum()
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
             self._runYumTransaction()
@@ -331,9 +351,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        self.allow_interrupt(True);
+        self.percentage(0)
+
         self._setup_yum()
         pct = 0
-        self.percentage(pct)
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
                 self.percentage(100)
@@ -361,6 +383,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        self.allow_interrupt(True);
+        self.percentage(None)
+
+        # !!! Shouldn't we self._setup_yum() here?
+
         # Get installed packages
         installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
         for pkg in installedByKey:
@@ -381,8 +408,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self._setup_yum()
+        self.allow_interrupt(False)
         self.percentage(0)
+    
+        self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             if inst:
@@ -403,6 +432,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
+        self.allow_interrupt(False);
+        self.percentage(0)
+
         pkgs_to_inst = []
         self._setup_yum()
         # Check if the inst_file is already installed
@@ -442,8 +474,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self._setup_yum()
+        self.allow_interrupt(False);
         self.percentage(0)
+
+        self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             txmbr = self.yumbase.update(name=pkg.name)
@@ -518,8 +552,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self._setup_yum()
+        self.allow_interrupt(False);
         self.percentage(0)
+
+        self._setup_yum()
         pkg,inst = self._findPackage( package)
         if pkg and inst:
             txmbr = self.yumbase.remove(name=pkg.name)
@@ -538,6 +574,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
@@ -576,6 +615,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-updates functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         self._setup_yum()
         md = UpdateMetadata()
         # Added extra Update Metadata
@@ -585,7 +627,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except:
                 pass # No updateinfo.xml.gz in repo
 
-        self.percentage() # emit no-percentage-updates signal
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
         for pkg in ygl.updates:
             # Get info about package in updates info

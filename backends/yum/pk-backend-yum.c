@@ -70,7 +70,6 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
 }
 
@@ -81,7 +80,6 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
 }
 
@@ -92,7 +90,6 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
 }
 
@@ -103,7 +100,6 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
 }
 
@@ -162,8 +158,6 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
 }
 
@@ -174,8 +168,6 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-file.py", filter, search, NULL);
 }
 
@@ -187,7 +179,6 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
 }
 #endif
@@ -199,8 +190,6 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
 }
 
