@@ -57,6 +57,7 @@ struct PkSpawnPrivate
 	gint			 child_pid;
 	gint			 stderr_fd;
 	gint			 stdout_fd;
+	guint			 poll_id;
 	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
@@ -237,8 +238,8 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
 	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
-	/* poll every quickly */
-	g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
+	/* poll quickly */
+	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
 
 	return TRUE;
 }
@@ -285,6 +286,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->child_pid = -1;
 	spawn->priv->stderr_fd = -1;
 	spawn->priv->stdout_fd = -1;
+	spawn->priv->poll_id = 0;
 
 	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -306,6 +308,10 @@ pk_spawn_finalize (GObject *object)
 
 	g_return_if_fail (spawn->priv != NULL);
 
+	/* disconnect the poll in case we were cancelled before completion */
+	g_source_remove (spawn->priv->poll_id);
+
+	/* free the buffers */
 	g_string_free (spawn->priv->stderr_buf, TRUE);
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 

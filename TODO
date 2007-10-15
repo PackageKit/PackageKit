@@ -1,11 +1,19 @@
 Order of no particular importance:
 
+*** Make the daemon aware on how long between updates ***
+Requires writing to a database for config stuff
+ - Probably should move the job number stuff there too
+New method GetHoursSinceLastUpdate
+Use this in the update icon
+
+*** yum backends should call no-percentage-updates when no feedback ***
+To fix: get_updates
+
+*** backends have to emit the installed packages first ***
+To fix: yum
+
 *** Add new callback for status ***
 TimeRemaining()
-
-*** the backends will have repo controls ***
-Add the callback and methods in PkBackend
-Add methods and signals to the client library
 
 *** Prepare download to refresh system ***
 Either use a flag or a new method. I'm not sure which yet.

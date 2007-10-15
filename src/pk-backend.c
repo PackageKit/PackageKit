@@ -60,11 +60,15 @@ struct _PkBackendPrivate
 	PkStatusEnum		 status; /* this changes */
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
+	gboolean		 xcached_enabled;
 	gchar			*xcached_package_id;
 	gchar			*xcached_transaction_id;
 	gchar			*xcached_full_path;
 	gchar			*xcached_filter;
 	gchar			*xcached_search;
+	gchar			*xcached_repo_id;
+	gchar			*xcached_parameter;
+	gchar			*xcached_value;
 	PkExitEnum		 exit;
 	GTimer			*timer;
 	PkSpawn			*spawn;
@@ -99,6 +103,7 @@ enum {
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_LAST_SIGNAL
 };
 
@@ -952,7 +957,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
-//	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
 	return TRUE;
 }
 
@@ -1090,6 +1095,15 @@ pk_backend_set_running (PkBackend *backend)
 					       backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		backend->desc->update_system (backend);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		backend->desc->get_repo_list (backend);
+	} else if (backend->priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
+		backend->desc->repo_enable (backend, backend->priv->xcached_repo_id,
+					    backend->priv->xcached_enabled);
+	} else if (backend->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		backend->desc->repo_set_data (backend, backend->priv->xcached_repo_id,
+					      backend->priv->xcached_parameter,
+					      backend->priv->xcached_value);
 	} else {
 		return FALSE;
 	}
@@ -1390,6 +1404,56 @@ pk_backend_update_system (PkBackend *backend)
 }
 
 /**
+ * pk_backend_get_repo_list:
+ */
+gboolean
+pk_backend_get_repo_list (PkBackend *backend)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->get_repo_list == NULL) {
+		pk_backend_not_implemented_yet (backend, "GetRepoList");
+		return FALSE;
+	}
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_REPO_LIST);
+	return TRUE;
+}
+
+/**
+ * pk_backend_repo_enable:
+ */
+gboolean
+pk_backend_repo_enable (PkBackend *backend, const gchar	*repo_id, gboolean enabled)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->repo_enable == NULL) {
+		pk_backend_not_implemented_yet (backend, "RepoEnable");
+		return FALSE;
+	}
+	backend->priv->xcached_repo_id = g_strdup (repo_id);
+	backend->priv->xcached_enabled = enabled;
+	pk_backend_set_role (backend, PK_ROLE_ENUM_REPO_ENABLE);
+	return TRUE;
+}
+
+/**
+ * pk_backend_repo_set_data:
+ */
+gboolean
+pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->repo_set_data == NULL) {
+		pk_backend_not_implemented_yet (backend, "RepoSetData");
+		return FALSE;
+	}
+	backend->priv->xcached_repo_id = g_strdup (repo_id);
+	backend->priv->xcached_parameter = g_strdup (parameter);
+	backend->priv->xcached_value = g_strdup (value);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_REPO_SET_DATA);
+	return TRUE;
+}
+
+/**
  * pk_backend_get_backend_detail:
  */
 gboolean
@@ -1469,6 +1533,15 @@ pk_backend_get_actions (PkBackend *backend)
 	}
 	if (backend->desc->update_system != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_SYSTEM);
+	}
+	if (backend->desc->get_repo_list != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REPO_LIST);
+	}
+	if (backend->desc->repo_enable != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_REPO_ENABLE);
+	}
+	if (backend->desc->repo_set_data != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_REPO_SET_DATA);
 	}
 	return elist;
 }
@@ -1553,6 +1626,9 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->xcached_transaction_id);
 	g_free (backend->priv->xcached_filter);
 	g_free (backend->priv->xcached_search);
+	g_free (backend->priv->xcached_repo_id);
+	g_free (backend->priv->xcached_parameter);
+	g_free (backend->priv->xcached_value);
 
 	if (backend->priv->spawn != NULL) {
 		pk_backend_spawn_helper_delete (backend);
@@ -1651,6 +1727,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PK_BACKEND_REPO_DETAIL] =
+		g_signal_new ("repo-detail",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
 
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
@@ -1669,11 +1750,15 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
+	backend->priv->xcached_enabled = FALSE;
 	backend->priv->xcached_package_id = NULL;
 	backend->priv->xcached_transaction_id = NULL;
 	backend->priv->xcached_full_path = NULL;
 	backend->priv->xcached_filter = NULL;
 	backend->priv->xcached_search = NULL;
+	backend->priv->xcached_repo_id = NULL;
+	backend->priv->xcached_parameter = NULL;
+	backend->priv->xcached_value = NULL;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_package = NULL;

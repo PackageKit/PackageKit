@@ -167,10 +167,14 @@
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="RepoEnable">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="repo_id" direction="in"/>
       <arg type="b" name="enabled" direction="in"/>
     </method>
     <method name="RepoSetData">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="repo_id" direction="in"/>
       <arg type="s" name="parameter" direction="in"/>
       <arg type="s" name="value" direction="in"/>

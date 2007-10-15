@@ -133,6 +133,17 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 }
 
 /**
+ * pk_console_repo_detail_cb:
+ **/
+static void
+pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
+			   const gchar *description, gboolean enabled, gpointer data)
+{
+	g_print ("[%s]\n", repo_id);
+	g_print ("  %i, %s\n", enabled, description);
+}
+
+/**
  * pk_console_percentage_changed_cb:
  **/
 static void
@@ -168,6 +179,9 @@ pk_console_usage (const gchar *error)
 	g_print ("  pkcon [verbose] get groups\n");
 	g_print ("  pkcon [verbose] get filters\n");
 	g_print ("  pkcon [verbose] get transactions\n");
+	g_print ("  pkcon [verbose] get repos\n");
+	g_print ("  pkcon [verbose] enable-repo <repo_id>\n");
+	g_print ("  pkcon [verbose] disable-repo <repo_id>\n");
 	g_print ("\n");
 	g_print ("    package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development\n");
 }
@@ -289,8 +303,26 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			remove = 1;
 			goto out;
 		} else {
-			pk_warning ("TODO!");
+			pk_client_resolve (client, value);
 			pk_client_wait ();
+			remove = 2;
+		}
+	} else if (strcmp (mode, "enable-repo") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a repo name");
+			remove = 1;
+			goto out;
+		} else {
+			pk_client_repo_enable (client, value, TRUE);
+			remove = 2;
+		}
+	} else if (strcmp (mode, "disable-repo") == 0) {
+		if (value == NULL) {
+			pk_console_usage ("you need to specify a repo name");
+			remove = 1;
+			goto out;
+		} else {
+			pk_client_repo_enable (client, value, FALSE);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "get") == 0) {
@@ -351,6 +383,10 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array)
 			elist = pk_client_get_filters (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
+			remove = 2;
+		} else if (strcmp (value, "repos") == 0) {
+			pk_client_get_repo_list (client);
+			pk_client_wait ();
 			remove = 2;
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_client_get_groups (client);
@@ -467,10 +503,6 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 	g_type_init ();
 
-	if (!g_thread_supported ())
-		g_thread_init (NULL);
-	dbus_g_thread_init ();
-
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
@@ -495,6 +527,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
 	g_signal_connect (client, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
+	g_signal_connect (client, "repo-detail",
+			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
 	g_signal_connect (client, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
 	g_signal_connect (client, "finished",

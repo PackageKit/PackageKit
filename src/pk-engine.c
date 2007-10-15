@@ -70,6 +70,9 @@ struct PkEnginePrivate
 	PkTransactionItem	*sync_item;
 	PkPackageList		*updates_cache;
 	PkInhibit		*inhibit;
+	PkEnumList		*actions;
+	PkEnumList		*groups;
+	PkEnumList		*filters;
 };
 
 enum {
@@ -96,6 +99,9 @@ enum {
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
+
+/* prototypes */
+static PkBackend *pk_engine_backend_new (PkEngine *engine);
 
 /**
  * pk_engine_error_quark:
@@ -145,10 +151,25 @@ pk_engine_error_get_type (void)
  * pk_engine_use_backend:
  **/
 gboolean
-pk_engine_use_backend (PkEngine *engine, const gchar *backend)
+pk_engine_use_backend (PkEngine *engine, const gchar *backend_name)
 {
-	pk_debug ("trying backend %s", backend);
-	engine->priv->backend = g_strdup (backend);
+	PkBackend *backend;
+	if (engine->priv->backend != NULL) {
+		pk_error ("The backend to use can only be specified once");
+	}
+	pk_debug ("trying backend %s", backend_name);
+	engine->priv->backend = g_strdup (backend_name);
+
+	/* create a new backend so we can get the static stuff */
+	backend = pk_engine_backend_new (engine);
+	if (backend == NULL) {
+		pk_error ("Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+	engine->priv->actions = pk_backend_get_actions (backend);
+	engine->priv->groups = pk_backend_get_groups (backend);
+	engine->priv->filters = pk_backend_get_filters (backend);
+	g_object_unref (backend);
 	return TRUE;
 }
 
@@ -522,6 +543,19 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		}
 	}
 
+	/* this has to be done as different repos might have different updates */
+	if (role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		if (engine->priv->updates_cache != NULL) {
+			pk_debug ("unreffing updates cache as we have just enabled/disabled a repo");
+			g_object_unref (engine->priv->updates_cache);
+			engine->priv->updates_cache = NULL;
+		}
+		/* this should cause the client program to requeue an update */
+		pk_debug ("emitting updates-changed tid: %s", item->tid);
+		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+	}
+
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
 
@@ -594,10 +628,32 @@ pk_engine_change_transaction_data_cb (PkBackend *backend, gchar *data, PkEngine 
 }
 
 /**
- * pk_engine_new_backend:
+ * pk_engine_repo_detail_cb:
+ **/
+static void
+pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
+			  const gchar *description, gboolean enabled, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+
+	pk_debug ("emitting repo-detail tid:%s, %s, %s, %i", item->tid, repo_id, description, enabled);
+	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, item->tid, repo_id, description, enabled);
+}
+
+/**
+ * pk_engine_backend_new:
  **/
 static PkBackend *
-pk_engine_new_backend (PkEngine *engine)
+pk_engine_backend_new (PkEngine *engine)
 {
 	PkBackend *backend;
 	gboolean ret;
@@ -612,7 +668,6 @@ pk_engine_new_backend (PkEngine *engine)
 		pk_warning ("Cannot use backend '%s'", engine->priv->backend);
 		return NULL;
 	}
-	pk_debug ("adding backend %p", backend);
 
 	/* connect up signals */
 	g_signal_connect (backend, "transaction-status-changed",
@@ -643,6 +698,8 @@ pk_engine_new_backend (PkEngine *engine)
 			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
 	g_signal_connect (backend, "change-transaction-data",
 			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
+	g_signal_connect (backend, "repo-detail",
+			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
 
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
@@ -761,23 +818,56 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
 
 /**
  * pk_engine_action_is_allowed:
+ *
+ * Only valid from an async caller, which is fine, as we won't prompt the user
+ * when not async.
  **/
 static gboolean
-pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context, const gchar *action, GError **error)
+pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context,
+			     PkRoleEnum role, GError **error)
 {
 	PolKitResult pk_result;
 	const gchar *dbus_name;
+	const gchar *policy = NULL;
+	gboolean ret;
+
+	/* could we actually do this, even with the right permissions? */
+	ret = pk_enum_list_contains (engine->priv->actions, role);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "%s not supported", pk_role_enum_to_text (role));
+		return FALSE;
+	}
 
 #ifdef IGNORE_POLKIT
 	return TRUE;
 #endif
 
+	/* map the roles to policykit rules */
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.update";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		policy = "org.freedesktop.packagekit.remove";
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		policy = "org.freedesktop.packagekit.install";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILE) {
+		policy = "org.freedesktop.packagekit.localinstall";
+	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
+		policy = "org.freedesktop.packagekit.rollback";
+	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
+		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		policy = "org.freedesktop.packagekit.repo-change";
+	} else {
+		pk_error ("policykit type required for '%s'", pk_role_enum_to_text (role));
+	}
+
 	/* get the dbus sender */
 	dbus_name = dbus_g_method_get_sender (context);
-	pk_result = pk_engine_can_do_action (engine, dbus_name, action);
+	pk_result = pk_engine_can_do_action (engine, dbus_name, policy);
 	if (pk_result != POLKIT_RESULT_YES) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
-				     "%s %s", action, polkit_result_to_string_representation (pk_result));
+				     "%s %s", policy, polkit_result_to_string_representation (pk_result));
 		return FALSE;
 	}
 	return TRUE;
@@ -804,7 +894,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_warning ("Backend not set yet!");
 		return FALSE;
@@ -850,7 +940,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -975,7 +1065,7 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1026,7 +1116,7 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1077,7 +1167,7 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1128,7 +1218,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1167,7 +1257,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1214,7 +1304,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1261,7 +1351,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1308,7 +1398,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1347,7 +1437,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -1388,7 +1478,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1403,10 +1493,10 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1456,17 +1546,17 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.remove", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1518,17 +1608,17 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.install", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1580,17 +1670,17 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.localinstall", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_FILE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1633,17 +1723,17 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.rollback", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_ROLLBACK, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1695,17 +1785,17 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.update", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1743,15 +1833,14 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 	}
 
 	/* create a new backend */
-	item->backend = pk_engine_new_backend (engine);
+	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
 		return FALSE;
 	}
 
-	//ret = pk_backend_get_repo_list (item->backend);
-	ret = FALSE;
+	ret = pk_backend_get_repo_list (item->backend);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -1764,84 +1853,108 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 
 /**
  * pk_engine_repo_enable:
+ *
+ * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_repo_enable (PkEngine	*engine, const gchar *repo_id, gboolean enabled,
-		       DBusGMethodInvocation *context, GError **old_error)
+pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id, gboolean enabled,
+		       DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
+	PkTransactionItem *item;
 	GError *error;
-	PkBackend *backend;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	item->backend = pk_engine_backend_new (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	//ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
-	ret = FALSE;
+	ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_item_add (engine, item);
 	dbus_g_method_return (context);
 }
 
 /**
  * pk_engine_repo_set_data:
+ *
+ * This is async, so we have to treat it a bit carefully
  **/
 void
-pk_engine_repo_set_data (PkEngine *engine, const gchar *repo_id,
+pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 			 const gchar *parameter, const gchar *value,
-			 DBusGMethodInvocation *context, GError **old_error)
+		         DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
+	PkTransactionItem *item;
 	GError *error;
-	PkBackend *backend;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, "org.freedesktop.packagekit.repo-change", &error);
+	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
+	item->backend = pk_engine_backend_new (engine);
+	if (item->backend == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
+				     "Could not create backend instance");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
-	//ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
-	ret = FALSE;
+	ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	pk_engine_item_add (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2069,37 +2182,42 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 
 /**
  * pk_engine_get_actions:
- * @engine: This class instance
  **/
 gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
-	PkBackend *backend;
-	PkEnumList *elist;
-
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_actions (backend);
-	*actions = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
-
+	*actions = pk_enum_list_to_string (engine->priv->actions);
 	return TRUE;
 }
 
+/**
+ * pk_engine_get_groups:
+ **/
+gboolean
+pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	*groups = pk_enum_list_to_string (engine->priv->groups);
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_filters:
+ **/
+gboolean
+pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	*filters = pk_enum_list_to_string (engine->priv->filters);
+	return TRUE;
+}
 
 /**
  * pk_engine_get_backend_detail:
- * @engine: This class instance
  **/
 gboolean
 pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gchar **version, GError **error)
@@ -2110,7 +2228,7 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
+	backend = pk_engine_backend_new (engine);
 	if (backend == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "Backend '%s' could not be initialized", engine->priv->backend);
@@ -2119,64 +2237,6 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 
 	pk_backend_get_backend_detail (backend, name, author, version);
 	g_object_unref (backend);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_groups:
- * @engine: This class instance
- **/
-gboolean
-pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
-{
-	PkBackend *backend;
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_groups (backend);
-	*groups = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
-
-	return TRUE;
-}
-
-/**
- * pk_engine_get_filters:
- * @engine: This class instance
- **/
-gboolean
-pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
-{
-	PkBackend *backend;
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* create a new backend */
-	backend = pk_engine_new_backend (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	elist = pk_backend_get_filters (backend);
-	*filters = pk_enum_list_to_string (elist);
-	g_object_unref (backend);
-	g_object_unref (elist);
 
 	return TRUE;
 }
@@ -2200,7 +2260,6 @@ pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gcha
 
 /**
  * pk_engine_get_seconds_idle:
- * @engine: This class instance
  **/
 guint
 pk_engine_get_seconds_idle (PkEngine *engine)
@@ -2332,7 +2391,6 @@ pk_engine_class_init (PkEngineClass *klass)
 
 /**
  * pk_engine_init:
- * @engine: This class instance
  **/
 static void
 pk_engine_init (PkEngine *engine)
@@ -2401,6 +2459,9 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
+	g_object_unref (engine->priv->actions);
+	g_object_unref (engine->priv->groups);
+	g_object_unref (engine->priv->filters);
 
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache");

@@ -13,9 +13,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
-# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
-# Copyright (C) 2007 Luke Macken <lmacken@redhat.com>
+# Copyright (C) 2007 
+#    Tim Lauridsen <timlau@fedoraproject.org>
+#    Seth Vidal <skvidal@fedoraproject.org>
+#    Luke Macken <lmacken@redhat.com>
+#    James Bowes <jbowes@dangerouslyinc.com>
 
 
 # imports
@@ -32,23 +34,10 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 import rpmUtils
 import exceptions
+import types
 
 class GPGKeyNotImported(exceptions.Exception):
     pass
-
-class PackageKitYumBase(yum.YumBase):
-    """ 
-    Custom YumBase Class for PackageKit
-    Used to overload methods in YumBase there need to be different in
-    PackageKit
-    
-    """
-    def _askForGPGKeyImport(self, po, userid, hexkeyid):
-        ''' 
-        Ask for GPGKeyImport 
-        '''
-        # TODO: Add code here to send the RepoSignatureRequired signal
-        return False    
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
@@ -82,6 +71,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         res = self.yumbase.searchGenerator(searchlist, [key])
         fltlist = filters.split(';')
 
+        available = []
         count = 1
         for (pkg,values) in res:
             if count > 100:
@@ -89,76 +79,49 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             count+=1
             # are we installed?
             if pkg.repoid == 'installed':
-                installed = INFO_INSTALLED
+                if FILTER_NON_INSTALLED not in fltlist:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
             else:
-                installed = INFO_AVAILABLE
+                available.append(pkg)
 
-            if self._do_filtering(pkg,fltlist,installed):
-                self._show_package(pkg, installed)
-
-
-    def _do_filtering(self,pkg,filterList,installed):
-        ''' Filter the package, based on the filter in filterList '''
-
-        # do we print to stdout?
-        do_print = False;
-        if filterList == ['none']: # 'none' = all packages.
-            return True
-        elif 'installed' in filterList and installed == INFO_INSTALLED:
-            do_print = True
-        elif '~installed' in filterList and installed == INFO_AVAILABLE:
-            do_print = True
-
-        if len(filterList) == 1: # Only one filter, return
-            return do_print
-
-        if do_print:
-            return self._do_extra_filtering(pkg,filterList)
-        else:
-            return do_print
+        # Now show available packages.
+        if FILTER_INSTALLED not in fltlist:
+            for pkg in available:
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_AVAILABLE)
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
-
-        for flt in filterList:
-            if flt == 'installed' or flt =='~installed':
+        for filter in filterList:
+            if filter in (FILTER_INSTALLED, FILTER_NON_INSTALLED):
                 continue
-            elif flt == 'gui' or flt =='~gui':
-                if not self._do_gui_filtering(flt,pkg):
+            elif filter in (FILTER_GUI, FILTER_NON_GUI):
+                if not self._do_gui_filtering(filter, pkg):
                     return False
-            elif flt =='devel' or flt=='~devel':
-                if not self._do_devel_filtering(flt,pkg):
+            elif filter in (FILTER_DEVEL, FILTER_NON_DEVEL):
+                if not self._do_devel_filtering(filter, pkg):
                     return False
         return True
 
     def _do_gui_filtering(self,flt,pkg):
         isGUI = False
-        if flt == 'gui':
+        if flt == FILTER_GUI:
             wantGUI = True
         else:
             wantGUI = False
-        #
-        # TODO: Add GUI detection Code here.Set isGUI = True, if it is a GUI app
-        #
         isGUI = wantGUI # Fake it for now
-        #
-        #
         return isGUI == wantGUI
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
-        if flt == 'devel':
+        if flt == FILTER_DEVEL:
             wantDevel = True
         else:
             wantDevel = False
-        #
-        # TODO: Add Devel detection Code here.Set isDevel = True, if it is a devel app
-        #
         regex =  re.compile(r'(-devel)|(-dgb)|(-static)')
         if regex.search(pkg.name):
             isDevel = True
-        #
-        #
         return isDevel == wantDevel
 
 
@@ -190,23 +153,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
-        if not '~installed' in fltlist:
+        if not FILTER_NON_INSTALLED in fltlist:
             # Check installed for file
             for pkg in self.yumbase.rpmdb:
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, INFO_INSTALLED)
-                        found[str(pkg)] = 1
-        if not 'installed' in fltlist:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+                            found[str(pkg)] = 1
+        if not FILTER_INSTALLED in fltlist:
             # Check available for file
             self.yumbase.repos.populateSack(mdtype='filelists')
             for pkg in self.yumbase.pkgSack:
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, INFO_AVAILABLE)
-                        found[str(pkg)] = 1
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_AVAILABLE)
+                            found[str(pkg)] = 1
 
 
     def _getEVR(self,idver):
@@ -431,6 +396,46 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            
+    def install_file (self, inst_file):
+        '''
+        Implement the {backend}-install_file functionality
+        Install the package containing the inst_file file
+        Needed to be implemented in a sub class
+        '''
+        pkgs_to_inst = []
+        self._setup_yum()
+        # Check if the inst_file is already installed
+        try:
+            my_inst_pkgs = self.yumbase.returnInstalledPackagesByDep(inst_file)
+        except yum.Errors.YumBaseError, e:
+            my_inst_pkgs = []
+        if my_inst_pkgs:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"File %s is already installed" % inst_file)
+        
+        # Find packages there is providing inst_file
+        try:
+            mypkgs = self.yumbase.returnPackagesByDep(inst_file)
+        except yum.Errors.YumBaseError, e:
+            msgs = ';'.join(e)
+            self.error(ERROR_INTERNAL_ERROR,msgs)
+        else:
+            mybestpkgs = self.yumbase.bestPackagesFromList(mypkgs)
+            for mypkg in mybestpkgs:
+                if self._installable(mypkg, True):
+                    self._show_package(mypkg, INFO_AVAILABLE)                    
+                    pkgs_to_inst.append(mypkg)
+                    break
+        try:
+            # Added the package to the transaction set
+            for pkg in pkgs_to_inst:
+                txmbr = self.yumbase.install(name=pkg.name)
+            if len(self.yumbase.tsInfo) > 0:
+                self._runYumTransaction()
+        except yum.Errors.InstallError,e:
+            print e
+            msgs = ';'.join(e)
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
     def update(self, package):
         '''
@@ -580,7 +585,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except:
                 pass # No updateinfo.xml.gz in repo
 
-        self.percentage(0)
+        self.percentage() # emit no-percentage-updates signal
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
         for pkg in ygl.updates:
             # Get info about package in updates info
@@ -593,10 +598,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
 
     def _setup_yum(self):
-        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
-        self.yumbase.conf.throttle = "40%"    # Set bandwidth throttle to 40%
-        self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
-        self.yumbase.repos.setProgressBar( self.dnlCallback )         # Setup the download callback class
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
+        self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
+        self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
+        self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
@@ -707,13 +712,17 @@ class PackageKitCallback(RPMBaseCallback):
         return pct
 
     def _showName(self,status):
-        id = self.base.get_package_id(self.curpkg, '', '', '')
+        if type(self.curpkg) in types.StringTypes:
+            id = self.base.get_package_id(self.curpkg,'','','')
+        else:
+            pkgver = self.base._get_package_ver(self.curpkg)
+            id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
         self.base.package(id,status, "")
 
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
-        if str(package) != self.curpkg:
-            self.curpkg = str(package)
+        if str(package) != str(self.curpkg):
+            self.curpkg = package
             if action in TS_INSTALL_STATES:
                 self.base.status(STATE_INSTALL)
                 status = INFO_INSTALLING
@@ -769,7 +778,7 @@ class PackageKitYumBase(yum.YumBase):
     def _checkSignatures(self,pkgs,callback):
         ''' The the signatures of the downloaded packages '''
         # This can be overloaded by a subclass.
-        
+
         for po in pkgs:
             result, errmsg = self.sigCheckPkg(po)
             if result == 0:
@@ -787,3 +796,9 @@ class PackageKitYumBase(yum.YumBase):
 
         raise GPGKeyNotImported()
 
+    def _askForGPGKeyImport(self, po, userid, hexkeyid):
+        ''' 
+        Ask for GPGKeyImport 
+        '''
+        # TODO: Add code here to send the RepoSignatureRequired signal
+        return False

@@ -14,6 +14,7 @@ dist_helper_DATA = 			\
 	get-description.py		\
 	install.py			\
 	remove.py			\
+	resolve.py			\
 	update.py			\
 	refresh-cache.py		\
 	update-system.py		\
