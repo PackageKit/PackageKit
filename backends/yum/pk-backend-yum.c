@@ -162,6 +162,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
 }
 
@@ -173,6 +174,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-file.py", filter, search, NULL);
 }
 
