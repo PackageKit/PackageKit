@@ -156,17 +156,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, INFO_INSTALLED)
-                        found[str(pkg)] = 1
-        if not 'installed' in fltlist:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+                            found[str(pkg)] = 1
+        if not FILTER_INSTALLED in fltlist:
             # Check available for file
             self.yumbase.repos.populateSack(mdtype='filelists')
             for pkg in self.yumbase.pkgSack:
                 filelist = pkg.filelist
                 for fn in filelist:
                     if key in fn and not found.has_key(str(pkg)):
-                        self._show_package(pkg, INFO_AVAILABLE)
-                        found[str(pkg)] = 1
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_AVAILABLE)
+                            found[str(pkg)] = 1
 
 
     def _getEVR(self,idver):
