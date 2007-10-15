@@ -151,7 +151,21 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_updates (PkBackend *backend)
 {
+	guint number;
+	GRand *rand;
+
 	g_return_if_fail (backend != NULL);
+
+	rand = g_rand_new ();
+	number = g_rand_int_range (rand, 1, 5);
+	g_rand_free (rand);
+
+	/* only find updates one in 5 times */
+	if (number != 1) {
+		pk_backend_finished (backend);
+		return;
+	}
+
 	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 			    "powertop;1.8-1.fc8;i386;fedora",
 			    "Power consumption monitor");
