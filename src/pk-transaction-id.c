@@ -70,7 +70,16 @@ pk_transaction_id_load_job_count (void)
 		pk_warning ("failed to get last job");
 		return FALSE;
 	}
+
+	/* ITS4: ignore, not used for allocation */
 	job_count = atoi (contents);
+
+	/* check we got a sane number */
+	if (job_count > 10240) {
+		pk_warning ("invalid job count!");
+		job_count = 0;
+	}
+
 	pk_debug ("job=%i", job_count);
 	g_free (contents);
 	return job_count;
@@ -111,23 +120,23 @@ pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 gchar *
 pk_transaction_id_generate (void)
 {
-	gchar *random;
+	gchar *rand_str;
 	gchar *job;
 	gchar *tid;
 	guint job_count;
 
 	/* load from file */
 	job_count = pk_transaction_id_load_job_count ();
-	random = pk_transaction_id_get_random_hex_string (8);
+	rand_str = pk_transaction_id_get_random_hex_string (8);
 	job = g_strdup_printf ("%i", job_count++);
 
 	/* save the new value */
 	pk_transaction_id_save_job_count (job_count);
 
 	/* make the tid */
-	tid = g_strjoin (";", job, random, "data", NULL);
+	tid = g_strjoin (";", job, rand_str, "data", NULL);
 
-	g_free (random);
+	g_free (rand_str);
 	g_free (job);
 	return tid;
 }

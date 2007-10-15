@@ -44,6 +44,7 @@ pk_filter_check_part (const gchar *filter)
 	if (filter == NULL) {
 		return FALSE;
 	}
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (filter) == 0) {
 		return FALSE;
 	}
@@ -86,6 +87,7 @@ pk_filter_check (const gchar *filter)
 		pk_warning ("filter null");
 		return FALSE;
 	}
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (filter) == 0) {
 		pk_warning ("filter zero length");
 		return FALSE;
@@ -97,6 +99,7 @@ pk_filter_check (const gchar *filter)
 	ret = FALSE;
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
+		/* ITS4: ignore, not used for allocation */
 		if (strlen (sections[i]) == 0) {
 			goto out;
 		}
@@ -132,8 +135,9 @@ pk_string_id_split (const gchar *id, guint parts)
 		goto out;
 	}
 
-	/* name has to be valid */
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (sections[0]) == 0) {
+		/* name has to be valid */
 		pk_warning ("ident first section is empty");
 		goto out;
 	}

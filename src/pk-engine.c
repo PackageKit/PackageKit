@@ -561,6 +561,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* add to the database */
 	packages = pk_package_list_get_string (item->package_list);
+	/* ITS4: ignore, GString is always NULL terminated */
 	if (strlen (packages) > 0) {
 		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
 	}
@@ -986,17 +987,22 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 gboolean
 pk_engine_search_check (const gchar *search, GError **error)
 {
+	guint size;
+
+	/* ITS4: ignore, not used for allocation */
+	size = strlen (search);
+
 	if (search == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
 			     "Search is null. This isn't supposed to happen...");
 		return FALSE;
 	}
-	if (strlen (search) == 0) {
+	if (size == 0) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
 			     "Search string zero length");
 		return FALSE;
 	}
-	if (strlen (search) < 2) {
+	if (size < 2) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
 			     "The search string length is too small");
 		return FALSE;

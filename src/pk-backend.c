@@ -293,9 +293,16 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		group = pk_group_enum_from_text (sections[3]);
-		package_size = atol(sections[6]);
-		pk_backend_description (backend, sections[1], sections[2], group, sections[4], sections[5],
-					package_size, sections[7]);
+
+		/* ITS4: ignore, checked for overflow */
+		package_size = atol (sections[6]);
+		if (package_size > 1073741824) {
+			pk_warning ("package size cannot be larger than one Gb");
+		} else {
+			pk_backend_description (backend, sections[1], sections[2],
+						group, sections[4], sections[5],
+						package_size, sections[7]);
+		}
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
@@ -339,16 +346,26 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		percentage = atoi(sections[1]);
-		pk_backend_change_percentage (backend, percentage);
+		/* ITS4: ignore, checked for sanity */
+		percentage = atoi (sections[1]);
+		if (percentage > 100) {
+			pk_warning ("invalid percentage value %i", percentage);
+		} else {
+			pk_backend_change_percentage (backend, percentage);
+		}
 	} else if (strcmp (command, "subpercentage") == 0) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		percentage = atoi(sections[1]);
-		pk_backend_change_sub_percentage (backend, percentage);
+		/* ITS4: ignore, checked for sanity */
+		percentage = atoi (sections[1]);
+		if (percentage > 100) {
+			pk_warning ("invalid subpercentage value %i", percentage);
+		} else {
+			pk_backend_change_sub_percentage (backend, percentage);
+		}
 	} else if (strcmp (command, "error") == 0) {
 		if (size != 3) {
 			g_warning ("invalid command '%s'", command);

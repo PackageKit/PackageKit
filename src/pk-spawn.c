@@ -82,7 +82,7 @@ pk_spawn_read_fd_into_buffer (gint fd, GString *string)
 	gint bytes_read;
 	gchar buffer[1024];
 
-	/* read as much as we can */
+	/* read as much as we can, TODO: should probably use g_io_channel */
 	while ((bytes_read = read (fd, buffer, 1023)) > 0) {
 		buffer[bytes_read] = '\0';
 		g_string_append (string, buffer);
@@ -103,6 +103,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	gchar *message;
 	guint bytes_processed;
 
+	/* ITS4: ignore, GString is always NULL terminated */
 	if (strlen (string->str) == 0) {
 		return FALSE;
 	}
@@ -128,6 +129,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 			g_signal_emit (spawn, signals [PK_SPAWN_STDERR], 0, message);
 		}
 		g_free (message);
+		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
 	}
 

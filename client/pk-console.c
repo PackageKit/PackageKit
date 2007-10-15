@@ -49,6 +49,7 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
 	}
 	size = length;
 	if (data != NULL) {
+		/* ITS4: ignore, only used for formatting */
 		size = (length - strlen(data));
 		if (size < 0) {
 			if (extra != NULL) {

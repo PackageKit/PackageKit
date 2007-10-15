@@ -118,7 +118,12 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		col = col_name[i];
 		value = argv[i];
 		if (strcmp (col, "succeeded") == 0) {
+			/* ITS4: ignore, checked for sanity */
 			item.succeeded = atoi (value);
+			if (item.succeeded > 1) {
+				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
+				item.succeeded = 1;
+			}
 		} else if (strcmp (col, "role") == 0) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
@@ -137,7 +142,12 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 			}
 		} else if (strcmp (col, "duration") == 0) {
 			if (value != NULL) {
+				/* ITS4: ignore, checked for sanity */
 				item.duration = atoi (value);
+				if (item.duration > 60*60*12) {
+					pk_warning ("insane duartion %i", item.duration);
+					item.duration = 0;
+				}
 			}
 		} else {
 			pk_warning ("%s = %s\n", col, value);

@@ -77,15 +77,19 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 	/* create new object */
 	ident = pk_package_id_new ();
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (sections[0]) > 0) {
 		ident->name = g_strdup (sections[0]);
 	}
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (sections[1]) > 0) {
 		ident->version = g_strdup (sections[1]);
 	}
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (sections[2]) > 0) {
 		ident->arch = g_strdup (sections[2]);
 	}
+	/* ITS4: ignore, not used for allocation */
 	if (strlen (sections[3]) > 0) {
 		ident->data = g_strdup (sections[3]);
 	}
