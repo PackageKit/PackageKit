@@ -16,7 +16,6 @@ dist_helper_DATA = 			\
 	remove.py			\
 	resolve.py			\
 	update.py			\
-	install-file.py     \
 	refresh-cache.py		\
 	update-system.py		\
 	yumBackend.py			\
