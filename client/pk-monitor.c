@@ -72,13 +72,36 @@ main (int argc, char *argv[])
 	GMainLoop *loop;
 	PkConnection *pconnection;
 	gboolean connected;
+	gboolean verbose = FALSE;
+	gboolean program_version = FALSE;
+	GOptionContext *context;
+
+	const GOptionEntry options[] = {
+		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
+			"Show extra debugging information", NULL },
+		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
+			"Show the program version and exit", NULL},
+		{ NULL}
+	};
 
 	if (! g_thread_supported ()) {
 		g_thread_init (NULL);
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
-	pk_debug_init (TRUE);
+
+	context = g_option_context_new (NULL);
+	g_option_context_set_summary (context, _("PackageKit Monitor"));
+	g_option_context_add_main_entries (context, options, NULL);
+	g_option_context_parse (context, &argc, &argv, NULL);
+	g_option_context_free (context);
+
+	if (program_version == TRUE) {
+		g_print (VERSION "\n");
+		return 0;
+	}
+
+	pk_debug_init (verbose);
 
 	loop = g_main_loop_new (NULL, FALSE);
 
