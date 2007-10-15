@@ -103,6 +103,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
 }
 
