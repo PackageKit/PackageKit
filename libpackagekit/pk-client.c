@@ -2141,6 +2141,8 @@ pk_client_get_filters (PkClient *client)
 gboolean
 pk_client_requeue (PkClient *client)
 {
+	PkRoleEnum role;
+
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -2150,8 +2152,14 @@ pk_client_requeue (PkClient *client)
 		return FALSE;
 	}
 
+	/* save the role */
+	role = client->priv->role;
+
 	/* reset this client, which doesn't clear cached data */
 	pk_client_reset (client);
+
+	/* restore the role */
+	client->priv->role = role;
 
 	/* do the correct action with the cached parameters */
 	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
