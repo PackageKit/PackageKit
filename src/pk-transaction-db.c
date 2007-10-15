@@ -326,24 +326,6 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 }
 
 /**
- * pk_transaction_db_create:
- **/
-static void
-pk_transaction_db_create (PkTransactionDb *tdb)
-{
-	const gchar *statement;
-	statement = "CREATE TABLE transactions ("
-		    "transaction_id TEXT primary key,"
-		    "timespec TEXT,"
-		    "duration INTEGER,"
-		    "succeeded INTEGER DEFAULT 0,"
-		    "role TEXT,"
-		    "data TEXT,"
-		    "description TEXT);";
-	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
-}
-
-/**
  * pk_transaction_db_empty:
  **/
 gboolean
@@ -365,7 +347,8 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 static void
 pk_transaction_db_init (PkTransactionDb *tdb)
 {
-	gboolean ret;
+	gboolean create_file;
+	const gchar *statement;
 	gint rc;
 
 	g_return_if_fail (tdb != NULL);
@@ -374,10 +357,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
 
 	/* if the database file was not installed (or was nuked) recreate it */
-	ret = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
-	if (ret == FALSE) {
-		pk_transaction_db_create (tdb);
-	}
+	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
@@ -385,6 +365,18 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
 		return;
+	} else {
+		if (create_file == FALSE) {
+			statement = "CREATE TABLE transactions ("
+				    "transaction_id TEXT primary key,"
+				    "timespec TEXT,"
+				    "duration INTEGER,"
+				    "succeeded INTEGER DEFAULT 0,"
+				    "role TEXT,"
+				    "data TEXT,"
+				    "description TEXT);";
+			sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+		}
 	}
 }
 
