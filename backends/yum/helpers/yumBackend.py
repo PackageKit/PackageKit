@@ -32,6 +32,7 @@ from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
 import rpmUtils
 import exceptions
+import types
 
 class GPGKeyNotImported(exceptions.Exception):
     pass
@@ -393,6 +394,46 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            
+    def install_file (self, inst_file):
+        '''
+        Implement the {backend}-install_file functionality
+        Install the package containing the inst_file file
+        Needed to be implemented in a sub class
+        '''
+        pkgs_to_inst = []
+        self._setup_yum()
+        # Check if the inst_file is already installed
+        try:
+            my_inst_pkgs = self.yumbase.returnInstalledPackagesByDep(inst_file)
+        except yum.Errors.YumBaseError, e:
+            my_inst_pkgs = []
+        if my_inst_pkgs:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"File %s is already installed" % inst_file)
+        
+        # Find packages there is providing inst_file
+        try:
+            mypkgs = self.yumbase.returnPackagesByDep(inst_file)
+        except yum.Errors.YumBaseError, e:
+            msgs = ';'.join(e)
+            self.error(ERROR_INTERNAL_ERROR,msgs)
+        else:
+            mybestpkgs = self.yumbase.bestPackagesFromList(mypkgs)
+            for mypkg in mybestpkgs:
+                if self._installable(mypkg, True):
+                    self._show_package(mypkg, INFO_AVAILABLE)                    
+                    pkgs_to_inst.append(mypkg)
+                    break
+        try:
+            # Added the package to the transaction set
+            for pkg in pkgs_to_inst:
+                txmbr = self.yumbase.install(name=pkg.name)
+            if len(self.yumbase.tsInfo) > 0:
+                self._runYumTransaction()
+        except yum.Errors.InstallError,e:
+            print e
+            msgs = ';'.join(e)
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
     def update(self, package):
         '''
@@ -669,13 +710,17 @@ class PackageKitCallback(RPMBaseCallback):
         return pct
 
     def _showName(self,status):
-        id = self.base.get_package_id(self.curpkg, '', '', '')
+        if type(self.curpkg) in types.StringTypes:
+            id = self.base.get_package_id(self.curpkg,'','','')
+        else:
+            pkgver = self.base._get_package_ver(self.curpkg)
+            id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
         self.base.package(id,status, "")
 
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
-        if str(package) != self.curpkg:
-            self.curpkg = str(package)
+        if str(package) != str(self.curpkg):
+            self.curpkg = package
             if action in TS_INSTALL_STATES:
                 self.base.status(STATE_INSTALL)
                 status = INFO_INSTALLING
