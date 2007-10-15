@@ -583,7 +583,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except:
                 pass # No updateinfo.xml.gz in repo
 
-        self.percentage(0)
+        self.percentage() # emit no-percentage-updates signal
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
         for pkg in ygl.updates:
             # Get info about package in updates info
@@ -596,10 +596,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
 
     def _setup_yum(self):
-        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0) # Setup Yum Config
-        self.yumbase.conf.throttle = "40%"    # Set bandwidth throttle to 40%
-        self.dnlCallback = DownloadCallback(self,showNames=True)      # Download callback
-        self.yumbase.repos.setProgressBar( self.dnlCallback )         # Setup the download callback class
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
+        self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
+        self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
+        self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
