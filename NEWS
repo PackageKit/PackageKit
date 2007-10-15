@@ -1,1 +1,22 @@
+=============
+Version 0.1.0
+=============
+
+- The first public release of PackageKit!
+- New gobject client library for session software to easily talk to PackageKit.
+- Asynchronous API that does not block.
+- Daemon that can queue and manage multiple simultaneous blocking and
+  non-blocking transactions
+- Client applications (pkcon and pkmon) that interact with PackageKit on the
+  command line without any GUI dependencies
+- Many compiled and scripted backends: conary, yum, apt, box, alpm
+- Comprehensive docbook documentation
+- Daemon configuration parameters in etc
+- Module level unit tests as standard
+- Python backend and frontend helper libraries
+- Transaction logging and capability exports for GUI tools
+- HAL locking supported for not-to-be interrupted phases of the transaction
+- NetworkManager integration for network state (other network detection
+  stacks can also be used in the future)
+- PolicyKit integration for fine-grained permission control.
 

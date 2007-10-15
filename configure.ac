@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.0.1)
+AC_INIT(PackageKit, 0.1.0)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -9,7 +9,12 @@ AM_CONFIG_HEADER(config.h)
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
 #
-LT_CURRENT=1
+# increment;
+# CURRENT	If the API or ABI interface has changed (reset REVISION to 0)
+# REVISION	If the API and ABI remains the same, but bugs are fixed.
+# AGE		If libpackagekit can be linked into executables which can be 
+# 		built with previous versions of this library. Don't use.
+LT_CURRENT=2
 LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)
