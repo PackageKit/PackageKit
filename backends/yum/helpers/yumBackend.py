@@ -13,9 +13,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# Copyright (C) 2007 Tim Lauridsen <timlau@fedoraproject.org>
-# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
-# Copyright (C) 2007 Luke Macken <lmacken@redhat.com>
+# Copyright (C) 2007 
+#    Tim Lauridsen <timlau@fedoraproject.org>
+#    Seth Vidal <skvidal@fedoraproject.org>
+#    Luke Macken <lmacken@redhat.com>
+#    James Bowes <jbowes@dangerouslyinc.com>
 
 
 # imports
