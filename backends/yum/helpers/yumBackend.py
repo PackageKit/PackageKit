@@ -425,6 +425,81 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+
+    def _localInstall(self, inst_file):
+        """handles installs/updates of rpms provided on the filesystem in a 
+           local dir (ie: not from a repo)"""
+           
+        # Slightly modified localInstall from yum's cli.py
+           
+        # read in each package into a YumLocalPackage Object
+        # append it to self.yumbase.localPackages
+        # check if it can be installed or updated based on nevra versus rpmdb
+        # don't import the repos until we absolutely need them for depsolving
+        
+        oldcount = len(self.yumbase.tsInfo)
+               
+        installpkgs = []
+        updatepkgs = []
+        
+        pkg = inst_file
+        try:
+            po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
+        except yum.Errors.MiscError:
+            self.error(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+
+        # everything installed that matches the name
+        installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
+        # go through each package 
+        if len(installedByKey) == 0: # nothing installed by that name
+            installpkgs.append(po)
+        else:
+            for installed_pkg in installedByKey:
+                if po.EVR > installed_pkg.EVR: # we're newer - this is an update, pass to them
+                    if installed_pkg.name in self.yumbase.conf.exactarchlist:
+                        if po.arch == installed_pkg.arch:
+                            updatepkgs.append((po, installed_pkg))
+                            continue
+                        else:
+                            continue
+                    else:
+                        updatepkgs.append((po, installed_pkg))
+                        continue
+                elif po.EVR == installed_pkg.EVR:
+                    if po.arch != installed_pkg.arch and (isMultiLibArch(po.arch) or
+                              isMultiLibArch(installed_pkg.arch)):
+                        installpkgs.append(po)
+                        continue
+                    else:
+                        continue
+                else:
+                    continue
+        
+        # handle excludes for a localinstall
+        toexc = []
+        if len(self.yumbase.conf.exclude) > 0:
+           exactmatch, matched, unmatched = \
+                   yum.packages.parsePackages(installpkgs + map(lambda x: x[0], updatepkgs),
+                                 self.yumbase.conf.exclude, casematch=1)
+           toexc = exactmatch + matched
+       
+        # Process potential installs   
+        for po in installpkgs:
+            if po in toexc:
+               continue     # Exclude package
+            # Add package to transaction for installation
+            self.yumbase.localPackages.append(po)
+            self.yumbase.install(po=po)
+        # Process potential updates
+        for (po, oldpo) in updatepkgs:
+            if po in toexc:
+               continue # Excludeing package
+            # Add Package to transaction for updating
+            self.yumbase.localPackages.append(po)
+            self.yumbase.tsInfo.addUpdate(po, oldpo)
+        
+
+
             
     def install_file (self, inst_file):
         '''
@@ -437,31 +512,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkgs_to_inst = []
         self._setup_yum()
-        # Check if the inst_file is already installed
-        try:
-            my_inst_pkgs = self.yumbase.returnInstalledPackagesByDep(inst_file)
-        except yum.Errors.YumBaseError, e:
-            my_inst_pkgs = []
-        if my_inst_pkgs:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"File %s is already installed" % inst_file)
-        
-        # Find packages there is providing inst_file
-        try:
-            mypkgs = self.yumbase.returnPackagesByDep(inst_file)
-        except yum.Errors.YumBaseError, e:
-            msgs = ';'.join(e)
-            self.error(ERROR_INTERNAL_ERROR,msgs)
-        else:
-            mybestpkgs = self.yumbase.bestPackagesFromList(mypkgs)
-            for mypkg in mybestpkgs:
-                if self._installable(mypkg, True):
-                    self._show_package(mypkg, INFO_AVAILABLE)                    
-                    pkgs_to_inst.append(mypkg)
-                    break
+        self.yumbase.conf.gpgcheck=0
+        self._localInstall(inst_file)
         try:
             # Added the package to the transaction set
-            for pkg in pkgs_to_inst:
-                txmbr = self.yumbase.install(name=pkg.name)
             if len(self.yumbase.tsInfo) > 0:
                 self._runYumTransaction()
         except yum.Errors.InstallError,e:
