@@ -120,6 +120,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_install_file:
+ */
+static void
+backend_install_file (PkBackend *backend, const gchar *full_path)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "install-file.py", full_path, NULL);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -244,7 +254,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
-	NULL,					/* install_file */
+	backend_install_file,			/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
