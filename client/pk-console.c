@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
@@ -150,12 +151,40 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 }
 
 /**
+ * pk_console_draw_progress_bar:
+ **/
+static void
+pk_console_draw_progress_bar (guint percentage)
+{
+	int i;
+	guint bar_size = 60;
+	guint progress = (int) (bar_size * (float) (percentage) / 100 );
+	guint remaining = bar_size - progress;
+
+	g_print ("\r    [");
+	for (i = 0; i < progress; i++) {
+		g_print ("=");
+	}
+	for (i = 0; i < remaining; i++) {
+		g_print (".");
+	}
+	g_print ("]  %3i%%", percentage);
+	if (percentage == 100) {
+		g_print ("\n");
+	}
+}
+
+/**
  * pk_console_percentage_changed_cb:
  **/
 static void
 pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer data)
 {
-	g_print ("Percentage changed: %i%%\n", percentage);
+	if (isatty(fileno(stdout))) {
+		pk_console_draw_progress_bar (percentage);
+	} else {
+		g_print ("%i%%\n", percentage);
+	}
 }
 
 const gchar *summary =
@@ -473,6 +502,10 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
+	/* We need to get off the progress bar line if this is a tty. */
+	if (isatty(fileno(stdout))) {
+		g_print ("\n");
+	}
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
 }
 
