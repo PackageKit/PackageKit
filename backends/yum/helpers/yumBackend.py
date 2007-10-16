@@ -386,7 +386,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True);
         self.percentage(None)
 
-        # !!! Shouldn't we self._setup_yum() here?
+        self._setup_yum()
 
         # Get installed packages
         installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
