@@ -14,6 +14,60 @@ Please consider enabling git's default pre-commit hook:
 This hook will run before every checkin, and check your changes for
 suspicious use of whitespace.
 
+In the C files use the following convention.
+The number of spaces and tabs are very important!
+
+	/* map the roles to policykit rules */
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.update";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		policy = "org.freedesktop.packagekit.remove";
+	}
+
+and please DO NOT use "!" for a null pointer or boolean - it's too easy to miss
+in an audit...
+
+	/* check the search term */
+	ret = pk_engine_search_check (search, error);
+	if (ret == FALSE) {
+		return FALSE;
+	}
+
+Functions are nearly always the same format, gtk-doc is optional:
+
+/**
+ * pk_engine_search_name:
+ **/
+gboolean
+pk_engine_search_name (PkEngine *engine, const gchar *search, GError **error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	return TRUE;
+}
+
+Finally: DO NOT COMMIT TRAILING WHITESPACE.
+
+Security
+--------
+Remember:
+* The daemon is running as the root user
+ - no FIXME or TODO code please
+* If the daemon crashes, then that's a DOS
+* Text from the user (over the dbus interface) is insecure!
+ - even filters and enumerated values can be wrong
+ - users can use dbus-send to do bad stuff as users
+* Never allocate a buffer on user input
+* Output from backends is trusted, they are run from standard locations
+
+Use flawfinder to find obvious security problems. Use "ITS4: ignore" if you are
+totally 100% sure that it's not a problem.
+
 Submitting Patches
 ------------------
 Use 'git format-patch' to generate patches against a checked out copy
@@ -32,3 +86,4 @@ For Example:
 
 Send these patches in an introductory email as attachments to
 packagekit-list@lists.freedesktop.org
+
