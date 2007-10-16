@@ -348,7 +348,7 @@ fi
     
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
-AC_SUBST(PK_DB_DIR, "\$(localstatedir)/db/PackageKit")
+AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
