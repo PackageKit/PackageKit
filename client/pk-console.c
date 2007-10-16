@@ -201,6 +201,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
+	gboolean wait = FALSE;
 	guint remove;
 	PkEnumList *elist;
 
@@ -224,8 +225,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_search_name (client, "none", details);
-				pk_client_wait ();
+				wait = pk_client_search_name (client, "none", details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "details") == 0) {
@@ -234,8 +234,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_search_details (client, "none", details);
-				pk_client_wait ();
+				wait = pk_client_search_details (client, "none", details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "group") == 0) {
@@ -244,8 +243,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_search_group (client, "none", details);
-				pk_client_wait ();
+				wait = pk_client_search_group (client, "none", details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "file") == 0) {
@@ -254,8 +252,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_search_file (client, "none", details);
-				pk_client_wait ();
+				wait = pk_client_search_file (client, "none", details);
 				remove = 3;
 			}
 		} else {
@@ -267,8 +264,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			remove = 1;
 			goto out;
 		} else {
-			pk_client_install_package (client, value);
-			pk_client_wait ();
+			wait = pk_client_install_package (client, value);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "remove") == 0) {
@@ -277,8 +273,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			remove = 1;
 			goto out;
 		} else {
-			pk_client_remove_package (client, value, FALSE);
-			pk_client_wait ();
+			wait = pk_client_remove_package (client, value, FALSE);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "update") == 0) {
@@ -287,8 +282,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			remove = 1;
 			goto out;
 		} else {
-			pk_client_update_package (client, value);
-			pk_client_wait ();
+			wait = pk_client_update_package (client, value);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -297,8 +291,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			remove = 1;
 			goto out;
 		} else {
-			pk_client_resolve (client, value);
-			pk_client_wait ();
+			wait = pk_client_resolve (client, value);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
@@ -316,7 +309,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			remove = 1;
 			goto out;
 		} else {
-			pk_client_repo_enable (client, value, FALSE);
+			wait = pk_client_repo_enable (client, value, FALSE);
 			remove = 2;
 		}
 	} else if (strcmp (mode, "get") == 0) {
@@ -330,8 +323,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_get_depends (client, details);
-				pk_client_wait ();
+				wait = pk_client_get_depends (client, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
@@ -340,8 +332,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_get_update_detail (client, details);
-				pk_client_wait ();
+				wait = pk_client_get_update_detail (client, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "requires") == 0) {
@@ -350,8 +341,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_get_requires (client, details);
-				pk_client_wait ();
+				wait = pk_client_get_requires (client, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "description") == 0) {
@@ -360,13 +350,11 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 				remove = 2;
 				goto out;
 			} else {
-				pk_client_get_description (client, details);
-				pk_client_wait ();
+				wait = pk_client_get_description (client, details);
 				remove = 3;
 			}
 		} else if (strcmp (value, "updates") == 0) {
-			pk_client_get_updates (client);
-			pk_client_wait ();
+			wait = pk_client_get_updates (client);
 			remove = 2;
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_client_get_actions (client);
@@ -379,8 +367,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "repos") == 0) {
-			pk_client_get_repo_list (client);
-			pk_client_wait ();
+			wait = pk_client_get_repo_list (client);
 			remove = 2;
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_client_get_groups (client);
@@ -388,20 +375,24 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 			g_object_unref (elist);
 			remove = 2;
 		} else if (strcmp (value, "transactions") == 0) {
-			pk_client_get_old_transactions (client, 10);
-			pk_client_wait ();
+			wait = pk_client_get_old_transactions (client, 10);
 			remove = 2;
 		} else {
 			g_set_error (error, 0, 0, "invalid get type");
 		}
 	} else if (strcmp (mode, "update-system") == 0) {
-		pk_client_update_system (client);
+		wait = pk_client_update_system (client);
 	} else if (strcmp (mode, "refresh") == 0) {
-		pk_client_refresh_cache (client, FALSE);
+		wait = pk_client_refresh_cache (client, FALSE);
 	} else if (strcmp (mode, "force-refresh") == 0) {
-		pk_client_refresh_cache (client, TRUE);
+		wait = pk_client_refresh_cache (client, TRUE);
 	} else {
 		g_set_error (error, 0, 0, "option not yet supported");
+	}
+
+	/* only wait if success */
+	if (wait == TRUE) {
+		pk_client_wait ();
 	}
 
 out:
