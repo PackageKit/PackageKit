@@ -43,6 +43,7 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
+#include <pk-network.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>
 
@@ -70,6 +71,7 @@ struct PkEnginePrivate
 	PkTransactionItem	*sync_item;
 	PkPackageList		*updates_cache;
 	PkInhibit		*inhibit;
+	PkNetwork		*network;
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
@@ -2530,6 +2532,9 @@ pk_engine_init (PkEngine *engine)
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
 
+	/* we dont need this, just don't keep creating and destroying it */
+	engine->priv->network = pk_network_new ();
+
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
@@ -2586,6 +2591,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->actions);
 	g_object_unref (engine->priv->groups);
 	g_object_unref (engine->priv->filters);
+	g_object_unref (engine->priv->network);
 
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache");

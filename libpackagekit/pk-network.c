@@ -60,7 +60,8 @@ enum {
 	PK_NETWORK_LAST_SIGNAL
 };
 
-static guint	     signals [PK_NETWORK_LAST_SIGNAL] = { 0, };
+static guint signals [PK_NETWORK_LAST_SIGNAL] = { 0, };
+static gpointer pk_network_object = NULL;
 
 G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 
@@ -144,7 +145,7 @@ pk_network_finalize (GObject *object)
 
 	g_return_if_fail (network->priv != NULL);
 	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callbackid);
-//	libnm_glib_shutdown (network->priv->ctx);
+	libnm_glib_shutdown (network->priv->ctx);
 
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }
@@ -157,7 +158,11 @@ pk_network_finalize (GObject *object)
 PkNetwork *
 pk_network_new (void)
 {
-	PkNetwork *network;
-	network = g_object_new (PK_TYPE_NETWORK, NULL);
-	return PK_NETWORK (network);
+	if (pk_network_object != NULL) {
+		g_object_ref (pk_network_object);
+	} else {
+		pk_network_object = g_object_new (PK_TYPE_NETWORK, NULL);
+		g_object_add_weak_pointer (pk_network_object, &pk_network_object);
+	}
+	return PK_NETWORK (pk_network_object);
 }
