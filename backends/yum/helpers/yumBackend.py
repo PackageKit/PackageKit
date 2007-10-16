@@ -51,6 +51,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self,args):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
+        self._setup_yum()
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
@@ -162,7 +163,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         
-        self._setup_yum()
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
@@ -314,7 +314,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
 
-        self._setup_yum()
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         results = {}
@@ -341,7 +340,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(False)
         self.percentage(0)
 
-        self._setup_yum()
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
             self._runYumTransaction()
@@ -355,7 +353,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True);
         self.percentage(0)
 
-        self._setup_yum()
         pct = 0
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
@@ -387,8 +384,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True);
         self.percentage(None)
 
-        self._setup_yum()
-
         # Get installed packages
         installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
         for pkg in installedByKey:
@@ -412,7 +407,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(False)
         self.percentage(0)
     
-        self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             if inst:
@@ -512,7 +506,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(0)
 
         pkgs_to_inst = []
-        self._setup_yum()
         self.yumbase.conf.gpgcheck=0
         self._localInstall(inst_file)
         try:
@@ -532,7 +525,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(False);
         self.percentage(0)
 
-        self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             txmbr = self.yumbase.update(name=pkg.name)
@@ -610,7 +602,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(False);
         self.percentage(0)
 
-        self._setup_yum()
         pkg,inst = self._findPackage( package)
         if pkg and inst:
             txmbr = self.yumbase.remove(name=pkg.name)
@@ -632,7 +623,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
 
-        self._setup_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             pkgver = self._get_package_ver(pkg)
@@ -673,7 +663,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
 
-        self._setup_yum()
         md = UpdateMetadata()
         # Added extra Update Metadata
         for repo in self.yumbase.repos.listEnabled():
