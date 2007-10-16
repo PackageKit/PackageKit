@@ -128,7 +128,7 @@ class PackageKit:
 		elif kwargs['member'] == "Transaction":
 			self.Transaction(args[0],args[1],args[2],args[3],args[4],args[5])
 		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged",
-					  "AllowInterrupt","JobListChanged"]:
+					  "AllowInterrupt","JobListChanged", "Locked"]:
 			pass
 		else:
 			print "Caught unhandled signal %s"% kwargs['member']
