@@ -28,6 +28,3 @@ To do rollbacks sanely in PK we need a few things:
 *** Use resolve for pkcon operations ***
 'pkcon install zsh' should work as well as 'pkcon install "zsh;1.0;i386;repo"'
 
-*** check all user input for bad chars... ***
-Be really paranoid....
-

@@ -138,6 +138,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_PACKAGE_ID_INVALID, "PackageIdInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_SEARCH_INVALID, "SearchInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_FILTER_INVALID, "FilterInvalid"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INPUT_INVALID, "InputInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			{ 0, 0, 0 }
@@ -988,6 +989,7 @@ gboolean
 pk_engine_search_check (const gchar *search, GError **error)
 {
 	guint size;
+	gboolean ret;
 
 	/* ITS4: ignore, not used for allocation */
 	size = strlen (search);
@@ -1017,6 +1019,12 @@ pk_engine_search_check (const gchar *search, GError **error)
 			     "Invalid search containing '?'");
 		return FALSE;
 	}
+	ret = pk_validate_input (search);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+			     "Invalid search term");
+		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -1027,6 +1035,14 @@ gboolean
 pk_engine_filter_check (const gchar *filter, GError **error)
 {
 	gboolean ret;
+
+	/* check for invalid input */
+	ret = pk_validate_input (filter);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+			     "Invalid filter term");
+		return FALSE;
+	}
 
 	/* check for invalid filter */
 	ret = pk_filter_check (filter);
@@ -1262,6 +1278,14 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 		return FALSE;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (package);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+			     "Invalid input passed to daemon");
+		return FALSE;
+	}
+
 	/* create a new backend */
 	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
@@ -1298,6 +1322,14 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				      "Invalid input passed to daemon");
 		return FALSE;
 	}
 
@@ -1348,6 +1380,14 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 		return FALSE;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				      "Invalid input passed to daemon");
+		return FALSE;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1395,6 +1435,14 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 		return FALSE;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				      "Invalid input passed to daemon");
+		return FALSE;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1439,6 +1487,22 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				      "Invalid input passed to daemon");
+		return FALSE;
+	}
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
 		return FALSE;
 	}
 
@@ -1542,6 +1606,15 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
 	if (ret == FALSE) {
@@ -1600,6 +1673,15 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1728,6 +1810,15 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 		return;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (transaction_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_ROLLBACK, &error);
 	if (ret == FALSE) {
@@ -1777,6 +1868,15 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1882,6 +1982,15 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		return;
 	}
 
+	/* check for sanity */
+	ret = pk_validate_input (repo_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (ret == FALSE) {
@@ -1932,6 +2041,15 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (repo_id);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
