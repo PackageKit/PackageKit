@@ -25,3 +25,5 @@ Have different permissions for signed and unsigned repos.
 To do rollbacks sanely in PK we need a few things:
  * allow transaction data to be changed in _db
 
+*** Use resolve for pkcon operations ***
+'pkcon install zsh' should work as well as 'pkcon install "zsh;1.0;i386;repo"'
