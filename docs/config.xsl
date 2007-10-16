@@ -5,5 +5,6 @@
   <xsl:param name="html.stylesheet" select="'docbook.css'"/>
   <xsl:param name="use.id.as.filename" select="1"/>
   <xsl:param name="chunk.section.depth" select="0"/>
+  <xsl:output method="html" encoding="UTF-8" indent="no"/>
   
 </xsl:stylesheet>
