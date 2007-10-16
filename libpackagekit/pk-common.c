@@ -114,6 +114,59 @@ out:
 }
 
 /**
+ * pk_validate_input_char:
+ **/
+static gboolean
+pk_validate_input_char (gchar item)
+{
+	switch (item) {
+	case ' ':
+	case '$':
+	case '`':
+	case '\'':
+	case '"':
+	case '^':
+	case '[':
+	case ']':
+	case '{':
+	case '}':
+	case '@':
+	case '#':
+	case '/':
+	case '\\':
+	case '<':
+	case '>':
+	case '|':
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_validate_input:
+ **/
+gboolean
+pk_validate_input (const gchar *text)
+{
+	guint i;
+	guint length;
+
+	/* ITS4: ignore, not used for allocation and checked for oversize */
+	length = strlen (text);
+	for (i=0; i<length; i++) {
+		if (i > 1024) {
+			pk_debug ("input too long!");
+			return FALSE;
+		}
+		if (pk_validate_input_char (text[i]) == FALSE) {
+			pk_debug ("invalid char in text!");
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+/**
  * pk_string_id_split:
  *
  * You need to use g_strfreev on the returned value
@@ -234,6 +287,53 @@ libst_common (LibSelfTest *test)
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
+	}
+
+	/************************************************************
+	 ****************        validate text         **************
+	 ************************************************************/
+	libst_title (test, "validate correct char 1");
+	ret = pk_validate_input_char ('a');
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "validate correct char 2");
+	ret = pk_validate_input_char ('~');
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "validate incorrect char");
+	ret = pk_validate_input_char ('$');
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "validate incorrect text");
+	ret = pk_validate_input ("richard$hughes");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "validate correct text");
+	ret = pk_validate_input ("richardhughes");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
 	}
 
 	/************************************************************

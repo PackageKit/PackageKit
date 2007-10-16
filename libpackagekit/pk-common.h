@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
+gboolean	 pk_validate_input			(const gchar	*text);
 gboolean	 pk_filter_check			(const gchar	*filter);
 gchar		**pk_string_id_split			(const gchar	*id,
 							 guint		 parts);
