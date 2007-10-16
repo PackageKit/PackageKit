@@ -3,7 +3,16 @@ Hacking PackageKit
 Coding Style
 ------------
 Please stick to the existing coding style.
-Tabs should be set equivalent to 8 spaces.
+Tabs should be hard (not expanded to spaces), and set equivalent to
+8 spaces.
+
+Please consider enabling git's default pre-commit hook:
+
+	$> cd PackageKit
+	$> chmod +x .git/hooks/pre-commit
+
+This hook will run before every checkin, and check your changes for
+suspicious use of whitespace.
 
 Submitting Patches
 ------------------
