@@ -304,7 +304,7 @@ pk_console_remove_package (PkClient *client, const gchar *package)
  * pk_console_process_commands:
  **/
 static gboolean
-pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **error)
+pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean wait_override, GError **error)
 {
 	const gchar *mode;
 	const gchar *value = NULL;
@@ -461,7 +461,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 	}
 
 	/* only wait if success */
-	if (wait == TRUE) {
+	if (wait == TRUE && wait_override == TRUE) {
 		pk_client_wait ();
 	}
 	return TRUE;
@@ -526,6 +526,7 @@ main (int argc, char *argv[])
 	PkClient *client;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
+	gboolean nowait = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
 
@@ -534,6 +535,8 @@ main (int argc, char *argv[])
 			"Show extra debugging information", NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			"Show the program version and exit", NULL},
+		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
+			"Exit without waiting for actions to complete", NULL},
 		{ NULL}
 	};
 
@@ -593,7 +596,7 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	/* run the commands */
-	pk_console_process_commands (client, argc, argv, &error);
+	pk_console_process_commands (client, argc, argv, !nowait, &error);
 	if (error != NULL) {
 		g_print ("Error:\n  %s\n\n", error->message);
 		g_error_free (error);
