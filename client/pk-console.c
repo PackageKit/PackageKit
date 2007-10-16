@@ -565,6 +565,7 @@ main (int argc, char *argv[])
 			g_print ("Error:\n  %s\n\n", error->message);
 			g_error_free (error);
 			g_print (options_help);
+			break;
 		}
 	}
 
