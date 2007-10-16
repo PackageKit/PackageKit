@@ -68,7 +68,6 @@ main (int argc, char *argv[])
 {
 	PkTaskList *tlist;
 	gboolean ret;
-	GPtrArray *task_list;
 	GMainLoop *loop;
 	PkConnection *pconnection;
 	gboolean connected;
@@ -122,7 +121,6 @@ main (int argc, char *argv[])
 	if (ret == FALSE) {
 		g_error ("cannot refresh transaction list");
 	}
-	task_list = pk_task_list_get_latest (tlist);
 	pk_task_list_print (tlist);
 
 	g_main_loop_run (loop);

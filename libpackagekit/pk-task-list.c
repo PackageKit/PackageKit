@@ -266,16 +266,29 @@ pk_task_list_refresh (PkTaskList *tlist)
 }
 
 /**
- * pk_task_list_get_latest:
- *
- * DO NOT FREE THIS.
+ * pk_task_list_get_size:
  **/
-GPtrArray *
-pk_task_list_get_latest (PkTaskList *tlist)
+guint
+pk_task_list_get_size (PkTaskList *tlist)
 {
-	g_return_val_if_fail (tlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
-	return tlist->priv->task_list;
+	g_return_val_if_fail (tlist != NULL, 0);
+	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), 0);
+	return tlist->priv->task_list->len;
+}
+
+/**
+ * pk_task_list_get_item:
+ **/
+PkTaskListItem *
+pk_task_list_get_item (PkTaskList *tlist, guint item)
+{
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
+	if (item >= tlist->priv->task_list->len) {
+		pk_debug ("item too large!");
+		return NULL;
+	}
+	return g_ptr_array_index (tlist->priv->task_list, item);
 }
 
 /**
@@ -336,7 +349,7 @@ pk_task_list_init (PkTaskList *tlist)
 	tlist->priv->task_list = g_ptr_array_new ();
 
 	/* force a refresh so we have valid data*/
-	pk_task_list_get_latest (tlist);
+	pk_task_list_refresh (tlist);
 }
 
 /**

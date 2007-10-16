@@ -66,7 +66,9 @@ gboolean	 pk_task_list_print			(PkTaskList	*tlist);
 gboolean	 pk_task_list_free			(PkTaskList	*tlist);
 gboolean	 pk_task_list_contains_role		(PkTaskList	*tlist,
 							 PkRoleEnum	 role);
-GPtrArray	*pk_task_list_get_latest		(PkTaskList	*tlist);
+guint		 pk_task_list_get_size			(PkTaskList	*tlist);
+PkTaskListItem	*pk_task_list_get_item			(PkTaskList	*tlist,
+							 guint		 item);
 
 G_END_DECLS
 
