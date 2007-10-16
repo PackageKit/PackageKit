@@ -36,8 +36,10 @@
 #include <apt-pkg/init.h>
 
 #include "pk-backend-apt.h"
+extern "C" {
 #include "sqlite-pkg-cache.h"
 #include "python-backend-common.h"
+}
 
 static gboolean inited = FALSE;
 
