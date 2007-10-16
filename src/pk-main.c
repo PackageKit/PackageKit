@@ -181,6 +181,9 @@ main (int argc, char *argv[])
 		goto unref_program;
 	}
 
+	/* force to crash for development releases */
+	setenv ("G_DEBUG", "fatal_criticals", 1);
+
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
