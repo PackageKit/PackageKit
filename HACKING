@@ -4,3 +4,22 @@ Coding Style
 ------------
 Please stick to the existing coding style.
 Tabs should be set equivalent to 8 spaces.
+
+Submitting Patches
+------------------
+Use 'git format-patch' to generate patches against a checked out copy
+of the source.
+
+For Example:
+
+	$> cd PackageKit
+	HACK HACK HACK
+	$> git commit -m "My first commit"
+	HACK HACK HACK
+	$> git commit -m "My second commit"
+	$> git format-patch -M HEAD^^
+	0001-My-first-commit.patch
+	0002-My-second-commit.patch
+
+Send these patches in an introductory email as attachments to
+packagekit-list@lists.freedesktop.org
