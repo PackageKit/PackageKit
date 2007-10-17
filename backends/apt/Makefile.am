@@ -5,11 +5,11 @@ libpk_backend_apt_la_INCLUDES = $(APT_CFLAGS) $(SQLITE_CFLAGS)
 libpk_backend_apt_la_SOURCES =		\
 	pk-backend-apt.h		\
 	pk-backend-apt.cpp		\
-	sqlite-pkg-cache.h		\
-	sqlite-pkg-cache.c		\
-	apt-build-db.cpp		\
-	python-backend-common.h		\
-	python-backend-common.c
+	pk-sqlite-pkg-cache.h		\
+	pk-sqlite-pkg-cache.c		\
+	pk-apt-build-db.cpp		\
+	pk-python-backend-common.h		\
+	pk-python-backend-common.c
 libpk_backend_apt_la_LIBADD = @PK_PLUGIN_LIBS@ $(APT_LIBS) $(SQLITE_LIBS)
 libpk_backend_apt_la_LDFLAGS = -module -avoid-version
 libpk_backend_apt_la_CFLAGS = @PK_PLUGIN_CFLAGS@ -DDATABASEDIR=\""$(PK_DB_DIR)"\"
