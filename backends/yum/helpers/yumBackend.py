@@ -681,6 +681,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 self._show_package(pkg,INFO_NORMAL)
 
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_repo_list(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config

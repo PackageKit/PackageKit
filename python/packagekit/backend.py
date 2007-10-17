@@ -118,6 +118,14 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"status\t%s" % (state)
 
+    def repo_detail(self,repoid,state):
+        '''
+        send 'repo-detail' signal
+        @param repoid: The repo id tag
+        @param state: false is repo is disabled else true.
+        '''
+        print >> sys.stderr,"repo-detail\t%s\t%s" % (repoid,state)
+
     def data(self,data):
         '''
         send 'data' signal:
@@ -295,6 +303,20 @@ class PackageKitBaseBackend:
     def get_updates(self, package):
         '''
         Implement the {backend}-get-updates functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_repo_list(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
