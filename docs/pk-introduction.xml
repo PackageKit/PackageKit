@@ -22,11 +22,6 @@
           Automatically installing new or add-on software.
         </para>
       </listitem>
-      <listitem>
-        <para>
-          Monitoring the state of the system.
-        </para>
-      </listitem>
     </itemizedlist>
 
     <para>
@@ -39,67 +34,6 @@
         <imagedata format="PNG" fileref="pk-structure.png" align="center"/>
       </imageobject>
     </mediaobject>
- 
-    <para>
-      PackageKit is GPL licensed.
-    </para>
-
-    <para>
-      PackageKit comprises:
-    </para>
-    <itemizedlist>
-      <listitem>
-        <para>
-          The <literal>packagekitd</literal> system daemon which runs using
-          system activation as the root user and queues and performs the package
-          actions. It quits after a small period of inactivity.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-           The <literal>pkcon</literal> text client access program.
-           This allows you to interact with PackageKit on the command line
-           either in an async or sync mode. e.g.
-           <literal>pkcon async check updates</literal> or
-           <literal>pkcon sync search description power</literal>.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-           The <literal>pkmon</literal> text client monitor program.
-           This allows you to monitor what PackageKit is doing on the command
-           line.
-        </para>
-      </listitem>
-    </itemizedlist>
-
-    <para>
-      What PackageKit is not:
-    </para>
-    <itemizedlist>
-      <listitem>
-        <para>
-          A huge daemon with lots of dependencies.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          API or ABI stable. Expect the ABI and API to change on a regular
-          basis until we ship 1.0.0.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          Targeted to a particular architecture or platform.
-        </para>
-      </listitem>
-      <listitem>
-        <para>
-          Produced by any one vendor.
-          There are many contributors helping to get this done.
-        </para>
-      </listitem>
-    </itemizedlist>
   </sect1>
 
   <sect1 id="introduction-backends">
