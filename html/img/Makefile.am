@@ -9,6 +9,21 @@ IMAGE_FILES =					\
 	large-preferences-system.png		\
 	large-system-users.png			\
 	packagekit.png				\
+	pk-application.png			\
+	pk-auto-update.png			\
+	pk-backend-status.png			\
+	pk-battery.png				\
+	pk-inhibit.png				\
+	pk-network.png				\
+	pk-prefs.png				\
+	pk-progress.png				\
+	pk-repo-auth.png			\
+	pk-repo.png				\
+	pk-require-restart.png			\
+	pk-transactions.png			\
+	pk-updates.png				\
+	pk-updates-warning.png			\
+	pk-waiting.png				\
 	$(NULL)
 
 EXTRA_DIST = 					\
@@ -17,4 +32,5 @@ EXTRA_DIST = 					\
 
 clean-local:
 	rm -f *~
+
 
