@@ -51,6 +51,8 @@ img.caption {
 code {
 	color: #000000;
 	font: 1.1em 'Courier New', Courier, Fixed;
+	margin-left: .3em;
+	margin-right: .3em;
 	}
 
 pre {

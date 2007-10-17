@@ -20,30 +20,26 @@
 <p>
 Your distribution may already have compiled packages that are much
 easier to install.
-Conary:
-Yes, just do sudo conary update-all
-Fedora 8:
-Yes, just install this repo and do yum install PackageKit
-gnome-packagekit
-Others:
-Probably not, although you can compile from source. See the download <a
-href="">page</a> for more details.
+<ul>
+  <li>Conary: Yes, just run: <code>sudo conary update-all</code></li>
+  <li>Fedora 8: Yes, just install <a href="http://people.freedesktop.org/~hughsient/fedora/">this</a> repository file and run: <code>yum install PackageKit gnome-packagekit</code> (as root)</li>
+  <li>Others: Probably not, although you can compile from source. See the download <a href="">page</a> for more details.</li>
+</ul>
 </p>
 
 <p>
 PackageKit itself is an abstract daemon, the only bits that are distro
-specific are the backends.
-To make PackageKit work on your unknown distribution you have to write a
+specific are the backends.<br/>
+To make PackageKit work on a new distribution, you have to write a
 "backend" which is basically a shim layer from the distro tool to
-packagekitd.
-A backend can have one or more threads and also spawn other processes.
+packagekitd. A backend can have one or more threads and also spawn other processes.<br/>
 See the developer information <a href="moo">here</a> for loads more
 information.
 </p>
 
 <p>
 Backends do not have to be complete; often they just contain basic
-functionality to install and remove but not provide dependency or file
+functionality to install and remove but do not provide dependency or file
 lists for example.
 For instance:
 </p>
@@ -56,8 +52,8 @@ For instance:
 </ul>
 
 <p>
-We need people to create a backend, and then package (pardon the pun)
-PackageKit and gnome-packagekit for distributions.
+We need people to create backends, and then package (pardon the pun)
+PackageKit and gnome-packagekit for more distributions.
 I think it's important that installing and updating software should be
 as easy as possible.
 </p>
