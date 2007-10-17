@@ -229,25 +229,6 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 	}
 }
 
-static GList*
-find_package_by_id (PkPackageId *pi)
-{
-	sqlite3 *db = NULL;
-	GList *list;
-
-	db = db_open();
-
-	/* only one element is returned */
-	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
-	if (list == NULL)
-		return NULL;
-
-	db_close(db);
-
-	return list;
-}
-
-
 static gboolean
 backend_get_updates_thread (PkBackend *backend, gpointer data)
 {
@@ -273,28 +254,40 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	PackageSearch *ps;
 	GList *list;
 	ThreadData *d = (ThreadData*) data;
+	gchar *files;
+	sqlite3 *db;
+
+	db = db_open();
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		db_close(db);
 		return FALSE;
 	}
 
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	list = find_package_by_id (pi);
+
+	/* only one element is returned */
+	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
+
 	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
+		db_close(db);
 		return FALSE;
 	}
 
-	/* Package size and file list go here, but I don't know how to find those for 'boxes'. */
-	/* Also, if I ever write a packaging system, they will be called 'presents'. Or perhaps 'parcels'. */
-	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0, "");
+	files = box_db_repos_get_files_string (db, pi->name, pi->version);
+
+	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0, files);
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
 
+	db_close(db);
+
+	g_free (files);
 	g_free (d->package_id);
 	g_free (d);
 
