@@ -25,10 +25,10 @@ like PolicyKit to make the process suck less.
 </p>
 
 <p>
-The actual nuts-and-bolts distro tool (yum, apt, conary etc-) is used in
+The actual nuts-and-bolts distro tool (yum, apt, conary, etc) is used by
 PackageKit using compiled and scripted helpers.
 PackageKit isn't meant to replace these tools, instead providing a
-common set abstraction that can be used by standard GUI and text mode
+common set of abstractions that can be used by standard GUI and text mode
 package managers.
 </p>
 
@@ -49,24 +49,17 @@ There are also QT applications being designed, although these are not
 fully functional yet.
 </p>
 
-<table>
-<tr>
- <td><img src="img/dialog-information.png" alt="[NOTE]"></td>
- <td>
-  <p>
-   By default, PackageKit uses PolicyKit for user authentication.
-   This means as an admin you can specify with fine-grained control what
-your users can and cannot do.
-   For instance, an admin could specify that unprivileged users can
-update the system and do searching, but are not allowed to install or
-remove packages.
-   For home users it's typical to ask the user for their own, or the
-administrator "root" password.
-   With PolicyKit, all these options are possible.
-  </p>
- </td>
-</tr>
-</table>
+<p>
+  <img style="float: left" src="img/dialog-information.png" alt="[NOTE]">
+  By default, PackageKit uses PolicyKit for user authentication.  This
+  means that you, as an admin, can specify with fine-grained control
+  what your users can and cannot do.  For instance, an admin could
+  specify that unprivileged users can update the system and do
+  searching, but are not allowed to install or remove packages.  For
+  home users it's typical to ask the user for their own, or the
+  administrator's "root" password.  With PolicyKit, all these options
+  are possible.
+</p>
 
 <p>
 Use cases for PackageKit exist for the following scenarios:
@@ -86,7 +79,12 @@ More details can be found on the wiki.
 </p>
 
 <p>
-PackageKit and gnome-packagekit is GPL2+ licensed.
+PackageKit and gnome-packagekit are GPLv2+ licensed.  This means that
+you can redistrubute and/or modify PackageKit and gnome-packagekit
+under the terms of the GNU General Public License as published by the
+Free Software foundation; either version 2 of the License, or (at your
+option) any later version.  See the license information included with
+software for more details.
 </p>
 
 <p>
