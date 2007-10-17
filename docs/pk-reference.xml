@@ -29,8 +29,8 @@
       </author>
     </authorgroup>
   </bookinfo>
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="introduction.xml" />
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="backends.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-introduction.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backends.xml" />
 
 </book>
 

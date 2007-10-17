@@ -3,12 +3,12 @@ IMAGE_FILES =				\
 	pk-structure.svg
 
 SPEC_XML_FILES =			\
-	reference.xml			\
-	introduction.xml		\
-	backends.xml
+	pk-reference.xml		\
+	pk-introduction.xml		\
+	pk-backends.xml
 
 SPEC_HTML_FILES =			\
-	reference.html
+	pk-reference.html
 
 clean-local:
 	rm -f *~
@@ -23,10 +23,10 @@ EXTRA_DIST = 				\
 if DOCBOOK_DOCS_ENABLED
 
 htmldocdir = $(docdir)
-htmldoc_DATA = reference.html
+htmldoc_DATA = pk-reference.html
 
-reference.html : introduction.xml
-	$(XMLTO) html-nochunks -m config.xsl reference.xml
+pk-reference.html : pk-introduction.xml
+	$(XMLTO) html-nochunks -m config.xsl pk-reference.xml
 
 EXTRA_DIST += $(SPEC_HTML_FILES)
 
