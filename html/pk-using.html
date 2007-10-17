@@ -1,0 +1,66 @@
+<html>
+<head>
+<title>PackageKit</title>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+</head>
+<body>
+
+<table align="center" class="title">
+<tr>
+ <td><img src="img/packagekit.png"/></td>
+ <td width="90%" valign="middle"><p class="title">PackageKit</p></td>
+ <td><img src="img/packagekit.png"/></td>
+</tr>
+</table>
+
+<p>Back to the <a href="index.html">main page</a></p>
+
+<h1>How do I use PackageKit</h1>
+
+<h2>Using the command line</h2>
+<p>
+The <code>pkcon</code> text-mode program allows you to interact with
+PackageKit on the command. e.g. <code>pkcon get updates</code> or
+<code>pkcon search description power</code>.
+The <code>pkmon</code> program allows you to monitor what PackageKit is
+doing on the command line and is mainly used for debugging.
+</p>
+
+<h2>Using graphical tools:</h2>
+<p>
+<code>gnome-packagekit</code> provides a rich set of GTK tools for
+automatically updating your computer and installing software. See the <a
+href=>screenshots page</a> for more details.
+</p>
+
+<h2>Using libpackagekit:</h2>
+<p>
+The libpackagekit gobject library wraps the DBUS interface in a nice
+glib-style API.
+This makes designing programs that use libpackagekit can concentrate on
+core functionality rather that the DBUS and PackageKit internals.
+PkClient in libpackagekit can be used as easily as:
+</p>
+<pre>
+PkClient *client;
+client = pk_client_new ();
+pk_client_install_package (client, "openoffice-clipart");
+g_object_unref (client);
+</pre>
+
+<h2>Using the raw DBUS API:</h2>
+<p>
+Using the DBUS methods and signals directly means that no glib or
+gobject dependency is needed, although this means you will have to
+manage the transaction_id multiplexing in any client program.
+This is not difficult, although does require more code than just using
+libpackagekit.
+The latest interface is available in the source tree or <a
+href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/pk-in
+terface.xml">online</a>.
+</p>
+
+<p>Back to the <a href="index.html">main page</a></p>
+
+</body>
+</html>

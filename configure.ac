@@ -370,6 +370,8 @@ Makefile
 etc/Makefile
 man/Makefile
 docs/Makefile
+html/Makefile
+html/img/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile

@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>PackageKit</title>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+</head>
+<body>
+
+<table align="center" class="title">
+<tr>
+ <td><img src="img/packagekit.png"/></td>
+ <td width="90%" valign="middle"><p class="title">PackageKit</p></td>
+ <td><img src="img/packagekit.png"/></td>
+</tr>
+</table>
+
+<p>Back to the <a href="index.html">main page</a></p>
+
+<h1>Where do I download it?</h1>
+
+<p>
+Your distribution may already have compiled packages that are much
+easier to install.
+Conary:
+Yes, just do sudo conary update-all
+Fedora 8:
+Yes, just install this repo and do yum install PackageKit
+gnome-packagekit
+Others:
+Probably not, although you can compile from source. See the download <a
+href="">page</a> for more details.
+</p>
+
+<p>
+PackageKit itself is an abstract daemon, the only bits that are distro
+specific are the backends.
+To make PackageKit work on your unknown distribution you have to write a
+"backend" which is basically a shim layer from the distro tool to
+packagekitd.
+A backend can have one or more threads and also spawn other processes.
+See the developer information <a href="moo">here</a> for loads more
+information.
+</p>
+
+<p>
+Backends do not have to be complete; often they just contain basic
+functionality to install and remove but not provide dependency or file
+lists for example.
+For instance:
+</p>
+<ul>
+<li>yum (95% complete)</li>
+<li>conary (70% complete)</li>
+<li>apt (40% complete)</li>
+<li>box (10% complete)</li>
+<li>pacman/alpm (10% complete)</li>
+</ul>
+
+<p>
+We need people to create a backend, and then package (pardon the pun)
+PackageKit and gnome-packagekit for distributions.
+I think it's important that installing and updating software should be
+as easy as possible.
+</p>
+
+Use Wiki:/Downloads
+
+<p>Back to the <a href="index.html">main page</a></p>
+
+</body>
+</html>
