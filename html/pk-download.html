@@ -17,33 +17,76 @@
 
 <h1>Where do I download it?</h1>
 
+<h2>Precompiled Packages</h2>
 <p>
 Your distribution may already have compiled packages that are much
 easier to install.
-Conary:
-Yes, just do sudo conary update-all
-Fedora 8:
-Yes, just install this repo and do yum install PackageKit
-gnome-packagekit
-Others:
-Probably not, although you can compile from source. See the download <a
-href="">page</a> for more details.
+<ul>
+  <li>Conary: Yes, just run: <code>sudo conary update PackageKit gnome-packagekit</code></li>
+  <li>Fedora 8: Yes, just install <a href="http://people.freedesktop.org/~hughsient/fedora/">this</a> repository file and run: <code>yum install PackageKit gnome-packagekit</code> (as root)</li>
+  <li>Others: Probably not, although you can compile from source. See below for more details.</li>
+</ul>
 </p>
 
+<h2>Released Versions</h2>
+<p>
+Released versions are found on
+<a href="http://people.freedesktop.org/~hughsient/releases/">people.freedesktop.org</a>.
+</p>
+<table>
+<tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
+<tr><td>0.1.0</td><td></td><td>2007-10-16</td></tr>
+</table>
+
+<h2>Dependencies</h2>
+<p>
+The actual PackageKit daemon needs:
+</p>
+<ul>
+<li><code>glib</code> 2.14.0</li>
+<li><code>dbus</code> newer than 1.1.3 (20070819 or later)</li>
+<li><code>dbus-glib</code> 0.74</li>
+<li><code>libnm</code> 0.6.4</li>
+<li><code>polkit-dbus</code> 0.5</li>
+<li><code>polkit-grant</code> 0.5</li>
+</ul>
+
+<p>
+gnome-packagekit will need all the usual GNOME libs as well.
+Just make sure you install PackageKit before gnome-packagekit!
+</p>
+
+<h2>Compiling the latest code</h2>
+<p>
+You can get the latest code from the public git repo on freedesktop.
+</p>
+<pre>
+git clone git://anongit.freedesktop.org/git/packagekit
+git clone git://people.freedesktop.org/~hughsient/gnome-packagekit
+</pre>
+<p>
+If you want to commit changes or a new backend, then please email the
+mailing list and we can give you access to a developer server.
+The developer server is always up to date, and the anonymous git is synced
+about twice a day.
+Having a two tier server lets developers review code for correctness and
+security problems before it's used in the real world.
+</p>
+
+<h2>Adding backends to PackageKit</h2>
 <p>
 PackageKit itself is an abstract daemon, the only bits that are distro
-specific are the backends.
-To make PackageKit work on your unknown distribution you have to write a
+specific are the backends.<br/>
+To make PackageKit work on a new distribution, you have to write a
 "backend" which is basically a shim layer from the distro tool to
-packagekitd.
-A backend can have one or more threads and also spawn other processes.
-See the developer information <a href="moo">here</a> for loads more
+packagekitd. A backend can have one or more threads and also spawn other processes.<br/>
+See the developer information <a href="pk-reference.html">here</a> for loads more
 information.
 </p>
 
 <p>
 Backends do not have to be complete; often they just contain basic
-functionality to install and remove but not provide dependency or file
+functionality to install and remove but do not provide dependency or file
 lists for example.
 For instance:
 </p>
@@ -56,13 +99,11 @@ For instance:
 </ul>
 
 <p>
-We need people to create a backend, and then package (pardon the pun)
-PackageKit and gnome-packagekit for distributions.
+We need people to create backends, and then package (pardon the pun)
+PackageKit and gnome-packagekit for more distributions.
 I think it's important that installing and updating software should be
 as easy as possible.
 </p>
-
-Use Wiki:/Downloads
 
 <p>Back to the <a href="index.html">main page</a></p>
 
