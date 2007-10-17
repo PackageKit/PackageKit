@@ -16,6 +16,12 @@ p.title {
 	font-size: 20px;
 	}
 
+p.caption {
+	color: #000000;
+	text-align: center;
+	font-style: italic;
+	}
+
 th {
 	color: #000000;
 	text-align: left;
@@ -35,6 +41,11 @@ table.title {
 
 img {
 	border: 0;
+	}
+
+img.caption {
+	border: 0;
+	text-align: center;
 	}
 
 code {
