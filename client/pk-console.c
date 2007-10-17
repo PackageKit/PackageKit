@@ -36,12 +36,13 @@
 static GMainLoop *loop = NULL;
 
 /**
- * pk_console_make_space:
+ * pk_console_pad_string:
  **/
 static gchar *
-pk_console_make_space (const gchar *data, guint length, guint *extra)
+pk_console_pad_string (const gchar *data, guint length, guint *extra)
 {
 	gint size;
+	gchar *text;
 	gchar *padding;
 
 	if (extra != NULL) {
@@ -59,7 +60,12 @@ pk_console_make_space (const gchar *data, guint length, guint *extra)
 		}
 	}
 	padding = g_strnfill (size, ' ');
-	return padding;
+	if (data == NULL) {
+		return padding;
+	}
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
 }
 
 /**
@@ -71,28 +77,27 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	PkPackageId *ident;
 	PkPackageId *spacing;
 	gchar *info_text;
-	guint extra;
+	guint extra = 0;
 
-	info_text = pk_console_make_space (pk_info_enum_to_text (info), 10, NULL);
+	/* pass this out */
+	info_text = pk_console_pad_string (pk_info_enum_to_text (info), 12, NULL);
+
 	spacing = pk_package_id_new ();
 	ident = pk_package_id_new_from_string (package_id);
 
 	/* these numbers are guesses */
 	extra = 0;
-	spacing->name = pk_console_make_space (ident->name, 20, &extra);
-	spacing->version = pk_console_make_space (ident->version, 15-extra, &extra);
-	spacing->arch = pk_console_make_space (ident->arch, 7-extra, &extra);
-	spacing->data = pk_console_make_space (ident->data, 7-extra, &extra);
+	spacing->name = pk_console_pad_string (ident->name, 20, &extra);
+	spacing->arch = pk_console_pad_string (ident->arch, 7-extra, &extra);
+	spacing->version = pk_console_pad_string (ident->version, 15-extra, &extra);
+	spacing->data = pk_console_pad_string (ident->data, 12-extra, &extra);
 
 	/* pretty print */
-	g_print ("%s %s%s %s%s %s%s %s%s %s\n", info_text,
-		 ident->name, spacing->name,
-		 ident->version, spacing->version,
-		 ident->arch, spacing->arch,
-		 ident->data, spacing->data,
-		 summary);
+	g_print ("%s %s %s %s %s %s\n", info_text, spacing->name,
+		 spacing->arch, spacing->version, spacing->data, summary);
 
 	/* free all the data */
+	g_free (info_text);
 	pk_package_id_free (ident);
 	pk_package_id_free (spacing);
 }

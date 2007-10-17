@@ -20,8 +20,26 @@
 <h2>Using the command line</h2>
 <p>
 The <code>pkcon</code> text-mode program allows you to interact with
-PackageKit on the command. e.g. <code>pkcon get updates</code> or
-<code>pkcon search description power</code>.
+PackageKit on the command. For example:
+<pre>
+[hughsie@laptop ~]$ pkcon get updates
+normal       powertop             i386    1.8-1.fc8       fedora    Power consumption monitor
+security     kernel               i386    2.6.23-0.115.rc3.git1.fc8 installed The Linux kernel
+security     gtkhtml2             i386    2.19.1-4.fc8    fedora    An HTML widget for GTK+ 2.0
+Runtime was 0 seconds
+</pre>
+<p>or</p>
+<pre>
+[hughsie@laptop ~]$ pkcon search name power
+installed    powerman             i386    1.0.25-2.fc7    installed   PowerMan - Power to the Cluster
+installed    powertop             i386    1.8-1.fc8       installed   Power consumption monitor
+installed    gnome-power-manager  i386    2.20.0-5.fc8    installed   GNOME Power Manager
+available    kpowersave           i386    0.7.3-0.2svn20070828.fc8 development KPowersave is the KDE frontend for powermanagement
+available    kadu-powerkadu       i386    0.5.0-4.fc8     development Powerkadu module for Kadu
+available    powermanga           i386    0.90-1          development Arcade 2D shoot-them-up game
+Runtime was 2 seconds
+</pre>
+<p>
 The <code>pkmon</code> program allows you to monitor what PackageKit is
 doing on the command line and is mainly used for debugging.
 </p>
