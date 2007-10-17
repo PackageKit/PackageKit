@@ -71,7 +71,7 @@ db_close(sqlite3 *db)
 
 
 static void
-add_packages_from_list (PkBackend *backend, GList *list)
+add_packages_from_list (PkBackend *backend, GList *list, gboolean updates)
 {
 	PackageSearch *package = NULL;
 	GList *li = NULL;
@@ -81,7 +81,9 @@ add_packages_from_list (PkBackend *backend, GList *list)
 	for (li = list; li != NULL; li = li->next) {
 		package = (PackageSearch*)li->data;
 		pkg_string = pk_package_id_build(package->package, package->version, package->arch, package->reponame);
-		if (package->installed)
+		if (updates == TRUE)
+			info = PK_INFO_ENUM_NORMAL;
+		else if (package->installed)
 			info = PK_INFO_ENUM_INSTALLED;
 		else
 			info = PK_INFO_ENUM_AVAILABLE;
@@ -167,11 +169,11 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	if (mode == SEARCH_TYPE_FILE) {
 		/* TODO: allow filtering */
 		list = box_db_repos_search_file (db, search);
-		add_packages_from_list (backend, list);
+		add_packages_from_list (backend, list, FALSE);
 		box_db_repos_package_list_free (list);
 	} else if (mode == SEARCH_TYPE_RESOLVE) {
 		list = box_db_repos_packages_search_one (db, (gchar *)search);
-		add_packages_from_list (backend, list);
+		add_packages_from_list (backend, list, FALSE);
 		box_db_repos_package_list_free (list);
 	} else {
 		if (installed == FALSE && available == FALSE) {
@@ -184,7 +186,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 			} else if (available == TRUE) {
 				list = box_db_repos_packages_search_available(db, (gchar *)search, search_filter);
 			}
-			add_packages_from_list (backend, list);
+			add_packages_from_list (backend, list, FALSE);
 			box_db_repos_package_list_free (list);
 		}
 	}
@@ -257,7 +259,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 	db = db_open ();
 
 	list = box_db_repos_packages_for_upgrade (db);
-	add_packages_from_list (backend, list);
+	add_packages_from_list (backend, list, TRUE);
 	box_db_repos_package_list_free (list);
 
 	db_close (db);
