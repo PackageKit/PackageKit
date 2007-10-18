@@ -36,9 +36,20 @@ from yum.misc import prco_tuple_to_string, unique
 import rpmUtils
 import exceptions
 import types
+import signal
+
+yumbase = None
 
 class GPGKeyNotImported(exceptions.Exception):
     pass
+
+def sigquit(signum, frame):   
+    print >> sys.stderr, "Quit signal sent - exiting immediately"
+    if yumbase:
+        print >> sys.stderr, "unlocking Yum"
+        yumbase.closeRpmDB()
+        yumbase.doUnlock(YUM_PID_FILE)
+    sys.exit(1)
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 
@@ -49,13 +60,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
 
     def __init__(self,args,lock=True):
+        signal.signal(signal.SIGQUIT, sigquit)        
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
+        yumbase = self.yumbase
         self._setup_yum()
         if lock:
             self.doLock()
-            
-
+        
     def doLock(self):
         ''' Lock Yum'''
         if not self.isLocked():        
