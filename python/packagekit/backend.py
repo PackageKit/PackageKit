@@ -73,6 +73,18 @@ class PackageKitBaseBackend:
 
     def __init__(self,cmds):
         self.cmds = cmds
+        self._locked = False
+        
+    def doLock(self):
+        ''' Generic locking, overide and extend in child class'''
+        self._locked = True
+        
+    def unLock(self):        
+        ''' Generic unlocking, overide and extend in child class'''
+        self._locked = False
+        
+    def isLocked(self):
+        return self._locked
 
     def percentage(self,percent=None):
         '''
@@ -100,6 +112,8 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"error\t%s\t%s" % (err,description)
         if exit:
+            if self.isLocked():
+                self.unLock()
             sys.exit(1)
 
     def package(self,id,status,summary):

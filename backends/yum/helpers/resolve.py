@@ -15,4 +15,5 @@ from yumBackend import PackageKitYumBackend
 name=sys.argv[1]
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.resolve(name)
+backend.unLock()
 sys.exit(0)

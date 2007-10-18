@@ -17,7 +17,7 @@ searchterms = sys.argv[2]
 
 from yumBackend import PackageKitYumBackend
 
-backend = PackageKitYumBackend(sys.argv[1:])
+backend = PackageKitYumBackend(sys.argv[1:],lock=False)
 backend.search_group(options,searchterms)
 sys.exit(0)
 

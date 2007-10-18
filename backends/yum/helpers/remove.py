@@ -19,4 +19,6 @@ package = sys.argv[2]
 
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.remove(allowdeps, package)
+backend.unLock()
+
 sys.exit(0)

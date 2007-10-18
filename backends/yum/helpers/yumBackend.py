@@ -48,10 +48,32 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "glibc", "hal", "dbus", "xen")
 
 
-    def __init__(self,args):
+    def __init__(self,args,lock=True):
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
         self._setup_yum()
+        if lock:
+            self.doLock()
+            
+
+    def doLock(self):
+        ''' Lock Yum'''
+        if not self.isLocked():        
+            try: # Try to lock yum
+                self.yumbase.doLock( YUM_PID_FILE )
+                PackageKitBaseBackend.doLock(self)
+            except:
+                self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
+                       
+
+        
+    def unLock(self):        
+        ''' Unlock Yum'''
+        if self.isLocked():
+            PackageKitBaseBackend.unLock(self)
+            self.yumbase.doUnlock(YUM_PID_FILE)
+        
+                
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
@@ -331,6 +353,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     if self._installable(pkg):
                         self.package(id, INFO_AVAILABLE, pkg.summary)
+        self._unlock_yum()
 
 
     def update_system(self):
@@ -345,6 +368,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._runYumTransaction()
         else:
             self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+        self._unlock_yum()
 
     def refresh_cache(self):
         '''
@@ -420,6 +444,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+        self._lock_yum()
 
     def _localInstall(self, inst_file):
         """handles installs/updates of rpms provided on the filesystem in a 
@@ -504,6 +529,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(False);
         self.percentage(0)
+        self._lock_yum()
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
@@ -622,7 +648,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-
+        self._lock_yum()
         pkg,inst = self._findPackage(package)
         if pkg:
             pkgver = self._get_package_ver(pkg)
@@ -662,7 +688,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-
+        self._lock_yum()
         md = UpdateMetadata()
         # Added extra Update Metadata
         for repo in self.yumbase.repos.listEnabled():
@@ -701,6 +727,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
+
+    def _lock_yum(self):
+        self.yumbase.doLock( YUM_PID_FILE )       
+
+        
+    def _unlock_yum(self):
+        self.yumbase.doUnlock(YUM_PID_FILE)
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
