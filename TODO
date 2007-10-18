@@ -6,9 +6,6 @@ Requires writing to a database for config stuff
 New method GetHoursSinceLastUpdate
 Use this in the update icon
 
-*** use g_io_channel_* rather than read in PkSpawn for speed ***
-This should get rid of the polling forever, and get rid of that 1k block append
-
 *** Add new callback for status ***
 TimeRemaining()
 
