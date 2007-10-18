@@ -71,6 +71,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         ''' Unlock Yum'''
         if self.isLocked():
             PackageKitBaseBackend.unLock(self)
+            self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
         
                 
