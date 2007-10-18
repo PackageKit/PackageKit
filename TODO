@@ -44,7 +44,13 @@ if not a valid package_id then
 *** Unit tests ***
 PkSpawn is a complex and untested bit of code.
 
-*** Send SIGQUIT ***
-Do SIGKILL only if SIGQUIT didn't work...
+*** PkSpawn enum return value ***
+pk_test_finished_cb (PkSpawn *spawn, gint exitcode, gpointer data)
+- exitcode is undefined - make an enum
+	PK_SPAWN_EXIT_SUCCESS
+	PK_SPAWN_EXIT_FAILED
+	PK_SPAWN_EXIT_KILLED
 
+*** backend docbook ***
+Explain SIGQUIT and SIGKILL in the docs
 
