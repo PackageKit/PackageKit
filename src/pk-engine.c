@@ -36,8 +36,6 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
-#include <polkit/polkit.h>
-#include <polkit-dbus/polkit-dbus.h>
 #include <pk-package-id.h>
 #include <pk-package-list.h>
 
@@ -53,6 +51,7 @@
 #include "pk-transaction-list.h"
 #include "pk-inhibit.h"
 #include "pk-marshal.h"
+#include "pk-security.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -63,8 +62,6 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GTimer			*timer;
-	PolKitContext		*pk_context;
-	DBusConnection		*connection;
 	gchar			*backend;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
@@ -72,6 +69,7 @@ struct PkEnginePrivate
 	PkPackageList		*updates_cache;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
+	PkSecurity		*security;
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
@@ -786,53 +784,17 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 }
 
 /**
- * pk_engine_can_do_action:
- **/
-static PolKitResult
-pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *action)
-{
-	PolKitResult pk_result;
-	PolKitAction *pk_action;
-	PolKitCaller *pk_caller;
-	DBusError dbus_error;
-
-	/* set action */
-	pk_action = polkit_action_new ();
-	polkit_action_set_action_id (pk_action, action);
-
-	/* set caller */
-	pk_debug ("using caller %s", dbus_name);
-	dbus_error_init (&dbus_error);
-	pk_caller = polkit_caller_new_from_dbus_name (engine->priv->connection, dbus_name, &dbus_error);
-	if (pk_caller == NULL) {
-		if (dbus_error_is_set (&dbus_error)) {
-			pk_error ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
-				  dbus_error.name, dbus_error.message);
-		}
-	}
-
-	pk_result = polkit_context_can_caller_do_action (engine->priv->pk_context, pk_action, pk_caller);
-	pk_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
-
-	polkit_action_unref (pk_action);
-	polkit_caller_unref (pk_caller);
-
-	return pk_result;
-}
-
-/**
  * pk_engine_action_is_allowed:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
  * when not async.
  **/
 static gboolean
-pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_name,
+pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 			     PkRoleEnum role, GError **error)
 {
-	PolKitResult pk_result;
-	const gchar *policy = NULL;
 	gboolean ret;
+	gchar *error_detail;
 
 	/* could we actually do this, even with the right permissions? */
 	ret = pk_enum_list_contains (engine->priv->actions, role);
@@ -842,34 +804,10 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_name,
 		return FALSE;
 	}
 
-#ifdef IGNORE_POLKIT
-	return TRUE;
-#endif
-
-	/* map the roles to policykit rules */
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		policy = "org.freedesktop.packagekit.update";
-	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		policy = "org.freedesktop.packagekit.remove";
-	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		policy = "org.freedesktop.packagekit.install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE) {
-		policy = "org.freedesktop.packagekit.localinstall";
-	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
-		policy = "org.freedesktop.packagekit.rollback";
-	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
-		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		policy = "org.freedesktop.packagekit.repo-change";
-	} else {
-		pk_error ("policykit type required for '%s'", pk_role_enum_to_text (role));
-	}
-
-	/* get the dbus sender */
-	pk_result = pk_engine_can_do_action (engine, dbus_name, policy);
-	if (pk_result != POLKIT_RESULT_YES) {
-		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
-				     "%s %s", policy, polkit_result_to_string_representation (pk_result));
+	/* use security model to get auth */
+	ret = pk_security_action_is_allowed (engine->priv->security, dbus_sender, role, &error_detail);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, error_detail);
 		return FALSE;
 	}
 	return TRUE;
@@ -1551,7 +1489,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1628,7 +1566,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1699,7 +1637,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1761,7 +1699,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_FILE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1823,7 +1761,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_ROLLBACK, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1894,7 +1832,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -1995,7 +1933,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -2058,7 +1996,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 		return;
 	}
 
-	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
+	/* check if the action is allowed from this client - if not, set an error */
 	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
@@ -2523,10 +2461,6 @@ pk_engine_class_init (PkEngineClass *klass)
 static void
 pk_engine_init (PkEngine *engine)
 {
-	DBusError dbus_error;
-	polkit_bool_t retval;
-	PolKitError *pk_error;
-
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
@@ -2536,6 +2470,9 @@ pk_engine_init (PkEngine *engine)
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->network = pk_network_new ();
+
+	/* we need an auth framework */
+	engine->priv->security = pk_security_new ();
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
@@ -2549,22 +2486,6 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->transaction_db = pk_transaction_db_new ();
 	g_signal_connect (engine->priv->transaction_db, "transaction",
 			  G_CALLBACK (pk_engine_transaction_cb), engine);
-
-	/* get a connection to the bus */
-	dbus_error_init (&dbus_error);
-	engine->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
-	if (engine->priv->connection == NULL) {
-		pk_error ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
-	}
-
-	/* get PolicyKit context */
-	engine->priv->pk_context = polkit_context_new ();
-	pk_error = NULL;
-	retval = polkit_context_init (engine->priv->pk_context, &pk_error);
-	if (retval == FALSE) {
-		pk_error ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
-		polkit_error_free (pk_error);
-	}
 }
 
 /**
@@ -2586,7 +2507,6 @@ pk_engine_finalize (GObject *object)
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
 	g_free (engine->priv->backend);
-	polkit_context_unref (engine->priv->pk_context);
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
@@ -2594,6 +2514,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->groups);
 	g_object_unref (engine->priv->filters);
 	g_object_unref (engine->priv->network);
+	g_object_unref (engine->priv->security);
 
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache");

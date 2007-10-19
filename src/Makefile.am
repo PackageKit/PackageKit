@@ -45,6 +45,8 @@ packagekitd_SOURCES =					\
 	pk-backend-internal.h				\
 	pk-backend.c					\
 	pk-backend.h					\
+	pk-security.h					\
+	pk-security-polkit.c				\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-spawn.c					\
@@ -145,6 +147,7 @@ pk_self_test_CPPFLAGS=	\
 
 EXTRA_DIST =						\
 	pk-marshal.list					\
+	pk-security-dummy.c				\
 	pk-interface.xml				\
 	$(NULL)
 
