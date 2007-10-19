@@ -78,7 +78,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.doLock( YUM_PID_FILE )
                 PackageKitBaseBackend.doLock(self)
             except:
-                self.status(STATE_WAIT)
+                if retries == 0:
+                    self.status(STATE_WAIT)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
