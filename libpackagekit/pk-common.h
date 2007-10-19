@@ -19,8 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_TASK_COMMON_H
-#define __PK_TASK_COMMON_H
+#ifndef __PK_COMMON_H
+#define __PK_COMMON_H
 
 #include <glib-object.h>
 
@@ -43,4 +43,4 @@ gboolean	 pk_string_id_equal			(const gchar	*id1,
 
 G_END_DECLS
 
-#endif /* __PK_TASK_COMMON_H */
+#endif /* __PK_COMMON_H */
