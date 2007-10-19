@@ -233,10 +233,10 @@ backend_update_system (PkBackend *backend)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *package_id)
+backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "resolve.py", "none", package_id, NULL);
+	pk_backend_spawn_helper (backend, "resolve.py", filter, package_id, NULL);
 }
 
 PK_BACKEND_OPTIONS (

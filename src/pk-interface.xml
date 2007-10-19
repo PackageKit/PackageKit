@@ -19,6 +19,7 @@
     </method>
     <method name="Resolve">
       <arg type="s" name="tid" direction="in"/>
+      <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="package" direction="in"/>
     </method>
     <method name="Rollback">

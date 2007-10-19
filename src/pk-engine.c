@@ -1262,7 +1262,7 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
  * pk_engine_resolve:
  **/
 gboolean
-pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GError **error)
+pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -1275,6 +1275,12 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 	if (item == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, error);
+	if (ret == FALSE) {
 		return FALSE;
 	}
 
@@ -1294,7 +1300,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *package, GEr
 		return FALSE;
 	}
 
-	ret = pk_backend_resolve (item->backend, package);
+	ret = pk_backend_resolve (item->backend, filter, package);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");

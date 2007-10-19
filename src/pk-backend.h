@@ -129,7 +129,7 @@ struct _PkBackendDesc {
 	void		(*install_file)		(PkBackend *backend, const gchar *full_path);
 	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
 	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps);
-	void		(*resolve)		(PkBackend *backend, const gchar *package);
+	void		(*resolve)		(PkBackend *backend, const gchar *filter, const gchar *package);
 	void		(*rollback)		(PkBackend *backend, const gchar *transaction_id);
 	void		(*search_details)	(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*search_file)		(PkBackend *backend, const gchar *filter, const gchar *search);

@@ -552,6 +552,13 @@
           </thead>
           <tbody>
             <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>installed;~devel</literal>
+              </entry>
+            </row>
+            <row>
               <entry><literal>search_term</literal></entry>
               <entry>A single word search term with no wildcard chars.</entry>
             </row>
@@ -589,6 +596,13 @@
           </thead>
           <tbody>
             <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>installed;~devel</literal>
+              </entry>
+            </row>
+            <row>
               <entry><literal>group_type</literal></entry>
               <entry>An enumerated group_type, or <literal>unknown</literal>.</entry>
             </row>
@@ -625,6 +639,13 @@
             </row>
           </thead>
           <tbody>
+            <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>installed;~devel</literal>
+              </entry>
+            </row>
             <row>
               <entry><literal>search_term</literal></entry>
               <entry>A single word search term with no wildcard chars.</entry>
@@ -665,6 +686,13 @@
             </row>
           </thead>
           <tbody>
+            <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>installed;~devel</literal>
+              </entry>
+            </row>
             <row>
               <entry><literal>search_term</literal></entry>
               <entry>A single word search term with no wildcard chars.</entry>
@@ -887,6 +915,13 @@
             </row>
           </thead>
           <tbody>
+            <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>installed;~devel</literal>
+              </entry>
+            </row>
             <row>
               <entry><literal>package</literal></entry>
               <entry>A single package name, e.g. <literal>art-clipart</literal>.</entry>

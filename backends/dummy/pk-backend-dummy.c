@@ -252,9 +252,11 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *package_id)
+backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_finished (backend);
 }
 

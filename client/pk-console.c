@@ -229,7 +229,7 @@ pk_console_install_package (PkClient *client, const gchar *package_id)
 	client_resolve = pk_client_new ();
 	g_signal_connect (client_resolve, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	ret = pk_client_resolve (client_resolve, package_id);
+	ret = pk_client_resolve (client_resolve, "none", package_id);
 	if (ret == FALSE) {
 		pk_warning ("Resolve not supported");
 	} else {
@@ -320,7 +320,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_set_error (error, 0, 0, "you need to specify a package name to resolve");
 			return FALSE;
 		} else {
-			wait = pk_client_resolve (client, value);
+			wait = pk_client_resolve (client, "none", value);
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
 		if (value == NULL) {

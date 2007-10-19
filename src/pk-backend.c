@@ -1067,7 +1067,8 @@ pk_backend_set_running (PkBackend *backend)
 		backend->desc->get_update_detail (backend,
 						  backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_RESOLVE) {
-		backend->desc->resolve (backend, backend->priv->xcached_package_id);
+		backend->desc->resolve (backend, backend->priv->xcached_filter,
+					backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		backend->desc->rollback (backend, backend->priv->xcached_transaction_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
@@ -1293,7 +1294,7 @@ pk_backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean
  * pk_backend_resolve:
  */
 gboolean
-pk_backend_resolve (PkBackend *backend, const gchar *package)
+pk_backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	if (backend->desc->resolve == NULL) {
@@ -1301,6 +1302,7 @@ pk_backend_resolve (PkBackend *backend, const gchar *package)
 		return FALSE;
 	}
 	backend->priv->xcached_package_id = g_strdup (package);
+	backend->priv->xcached_filter = g_strdup (filter);
 	pk_backend_set_role (backend, PK_ROLE_ENUM_RESOLVE);
 	return TRUE;
 }

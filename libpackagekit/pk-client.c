@@ -1371,7 +1371,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id)
  * pk_client_resolve:
  **/
 gboolean
-pk_client_resolve (PkClient *client, const gchar *package)
+pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package)
 {
 	gboolean ret;
 	GError *error;
@@ -1387,11 +1387,13 @@ pk_client_resolve (PkClient *client, const gchar *package)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
+	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_package_id = g_strdup (package);
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", &error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
@@ -2183,7 +2185,8 @@ pk_client_requeue (PkClient *client)
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		pk_client_get_update_detail (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_RESOLVE) {
-		pk_client_resolve (client, client->priv->xcached_package_id);
+		pk_client_resolve (client, client->priv->xcached_filter,
+				   client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		pk_client_rollback (client, client->priv->xcached_transaction_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {

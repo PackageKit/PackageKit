@@ -110,6 +110,7 @@ gboolean	 pk_client_update_package		(PkClient	*client,
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*full_path);
 gboolean	 pk_client_resolve			(PkClient	*client,
+							 const gchar	*filter,
 							 const gchar	*package);
 gboolean	 pk_client_rollback			(PkClient	*client,
 							 const gchar	*transaction_id);

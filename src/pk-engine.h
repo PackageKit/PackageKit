@@ -121,6 +121,7 @@ gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 GError		**error);
 gboolean	 pk_engine_resolve			(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 const gchar	*package,
 							 GError		**error);
 void		 pk_engine_rollback			(PkEngine	*engine,

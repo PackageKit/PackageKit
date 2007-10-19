@@ -174,7 +174,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *package_id)
+backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
