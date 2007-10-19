@@ -404,11 +404,36 @@
         This allows for example the yum download to be cancelled, but not the
         install transaction.
         By cancelling a job all subtransactions are killed.
-        By default actions cannot be cancelled unless enabled in the compiled backend.
+      </para>
+      <para>
+        By default actions cannot be cancelled unless enabled in the backend.
         Use <literal>AllowInterrupt(true)</literal> to enable cancellation
         and <literal>AllowInterrupt(false)</literal> to disable it.
         This can be done for any job type.
       </para>
+      <para>
+        For compiled backends that are threaded, the
+        <literal>cancel()</literal> method can be used to terminate
+        the thread.
+      </para>
+      <para>
+        For spawned backends, there are two staggered signals send to allow
+        locks to be released or for the backend to clean up after itself:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>Send the process <literal>SIGQUIT</literal>.</para>
+        </listitem>
+        <listitem>
+          <para>Wait 500ms</para>
+        </listitem>
+        <listitem>
+          <para>
+            If the process has not already quit, send the process
+            <literal>SIGKILL</literal> to terminate it.
+          </para>
+        </listitem>
+      </itemizedlist>
     </sect2>
 
     <sect2 id="introduction-ideas-transactionid">

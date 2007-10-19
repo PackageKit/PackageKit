@@ -44,6 +44,3 @@ if not a valid package_id then
         error
     }
 
-*** backend docbook ***
-Explain SIGQUIT and SIGKILL in the docs
-
