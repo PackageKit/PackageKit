@@ -24,6 +24,9 @@ To do rollbacks sanely in PK we need a few things:
 
 *** Use resolve for pkcon operations ***
 'pkcon install zsh' should work as well as 'pkcon install "zsh;1.0;i386;repo"'
+
+--- RELEASE BLOCKER ---
+
 def command_resolve(package, filter_enum)
 ret=client_resolve (package, filter)
 if ret wait()
@@ -40,9 +43,6 @@ if not a valid package_id then
     if (package== NULL) {
         error
     }
-
-*** Unit tests ***
-PkSpawn is a complex and untested bit of code.
 
 *** backend docbook ***
 Explain SIGQUIT and SIGKILL in the docs
