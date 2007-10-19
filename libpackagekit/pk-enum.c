@@ -85,6 +85,7 @@ static PkTaskEnumMatch task_role[] = {
 static PkTaskEnumMatch task_error[] = {
 	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
+	{PK_ERROR_ENUM_NO_CACHE,		"no-cache"},
 	{PK_ERROR_ENUM_NO_NETWORK,		"no-network"},
 	{PK_ERROR_ENUM_NOT_SUPPORTED,		"not-supported"},
 	{PK_ERROR_ENUM_INTERNAL_ERROR,		"internal-error"},

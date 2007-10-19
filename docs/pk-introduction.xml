@@ -284,6 +284,13 @@
               </entry>
             </row>
             <row>
+              <entry><literal>no-cache</literal></entry>
+              <entry>
+                The operation is trying to read from the cache, but the cache
+                is not present or invalid.
+              </entry>
+            </row>
+            <row>
               <entry><literal>package-already-installed</literal></entry>
               <entry>
                 The package that is trying to be installed or updated is already
