@@ -236,7 +236,7 @@ static void
 backend_resolve (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "resolve.py", package_id, NULL);
+	pk_backend_spawn_helper (backend, "resolve.py", "none", package_id, NULL);
 }
 
 PK_BACKEND_OPTIONS (

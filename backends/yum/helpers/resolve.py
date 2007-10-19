@@ -12,8 +12,9 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
-name=sys.argv[1]
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.resolve(name)
+filters = sys.argv[1]
+name=sys.argv[2]
+backend = PackageKitYumBackend(sys.argv[2:])
+backend.resolve(filters, name)
 backend.unLock()
 sys.exit(0)

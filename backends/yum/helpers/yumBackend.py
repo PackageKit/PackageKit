@@ -422,27 +422,32 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_INTERNAL_ERROR,str(e))
 
-    def resolve(self, name):
+    def resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
         '''
         self.allow_interrupt(True);
         self.percentage(None)
 
+        fltlist = filters.split(';')
+
         # Get installed packages
         installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-        for pkg in installedByKey:
-            self._show_package(pkg,INFO_INSTALLED)
-        # Get availabe packages
-        for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-            if pkg.name == name:
-                show = True
-                for instpo in installedByKey:
-                    if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:  # Check if package have a smaller & equal EVR to a inst pkg
-                        show = False
-                if show:
-                    self._show_package(pkg,INFO_AVAILABLE)
-                    break
+        if FILTER_NON_INSTALLED not in fltlist:
+            for pkg in installedByKey:
+                self._show_package(pkg,INFO_INSTALLED)
+        # Get available packages
+        if FILTER_INSTALLED not in fltlist:
+            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                if pkg.name == name:
+                    show = True
+                    for instpo in installedByKey:
+                        # Check if package have a smaller & equal EVR to a inst pkg
+                        if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                            show = False
+                    if show:
+                        self._show_package(pkg,INFO_AVAILABLE)
+                        break
 
     def install(self, package):
         '''
