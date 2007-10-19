@@ -61,6 +61,7 @@ struct PkSpawnPrivate
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
+	PkSpawnExit		 exit;
 	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
@@ -174,8 +175,14 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	if (WEXITSTATUS (status) > 0) {
 		pk_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
+		if (spawn->priv->exit == PK_SPAWN_EXIT_UNKNOWN) {
+			spawn->priv->exit = PK_SPAWN_EXIT_FAILED;
+		}
 	} else {
 		pk_debug ("Running fork successful");
+		if (spawn->priv->exit == PK_SPAWN_EXIT_UNKNOWN) {
+			spawn->priv->exit = PK_SPAWN_EXIT_SUCCESS;
+		}
 	}
 
 	/* officially done, although no signal yet */
@@ -187,8 +194,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 		spawn->priv->kill_id = 0;
 	}
 
-	pk_debug ("emitting finished %i", WEXITSTATUS (status));
-	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, WEXITSTATUS (status));
+	pk_debug ("emitting finished %i", spawn->priv->exit);
+	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, spawn->priv->exit);
 
 	return FALSE;
 }
@@ -206,6 +213,9 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 		pk_warning ("already finished, ignoring");
 		return FALSE;
 	}
+
+	/* we won't overwrite this if not unknown */
+	spawn->priv->exit = PK_SPAWN_EXIT_KILL;
 
 	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
@@ -238,6 +248,9 @@ pk_spawn_kill (PkSpawn *spawn)
 		pk_warning ("already finished, ignoring");
 		return FALSE;
 	}
+
+	/* we won't overwrite this if not unknown */
+	spawn->priv->exit = PK_SPAWN_EXIT_QUIT;
 
 	pk_warning ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
@@ -349,6 +362,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
+	spawn->priv->exit = PK_SPAWN_EXIT_UNKNOWN;
 
 	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -405,9 +419,10 @@ pk_spawn_new (void)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#define BAD_EXIT 999
 
 static GMainLoop *loop;
-gint mexitcode = -1;
+PkSpawnExit mexit = BAD_EXIT;
 guint stdout_count = 0;
 guint stderr_count = 0;
 guint finished_count = 0;
@@ -443,10 +458,10 @@ pk_test_get_data (const gchar *filename)
  * pk_test_finished_cb:
  **/
 static void
-pk_test_finished_cb (PkSpawn *spawn, gint exitcode, LibSelfTest *test)
+pk_test_finished_cb (PkSpawn *spawn, PkSpawnExit exit, LibSelfTest *test)
 {
-	pk_debug ("spawn exitcode=%i", exitcode);
-	mexitcode = exitcode;
+	pk_debug ("spawn exit=%i", exit);
+	mexit = exit;
 	finished_count++;
 	g_main_loop_quit (loop);
 }
@@ -502,7 +517,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
-	mexitcode = -1;
+	mexit = BAD_EXIT;
 	ret = pk_spawn_command (spawn, "pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
@@ -512,7 +527,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished wasn't called");
-	if (mexitcode == -1) {
+	if (mexit == BAD_EXIT) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "Called finish for bad file!");
@@ -520,7 +535,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure run correct helper");
-	mexitcode = -1;
+	mexit = -1;
 	ret = pk_spawn_command (spawn, path);
 	if (ret == TRUE) {
 		libst_success (test, "ran correct file");
@@ -534,7 +549,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished okay");
-	if (mexitcode == 0) {
+	if (mexit == PK_SPAWN_EXIT_SUCCESS) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish was okay!");
@@ -564,9 +579,18 @@ libst_spawn (LibSelfTest *test)
 		libst_failed (test, "wrong stderr count %i", stderr_count);
 	}
 
+	g_object_unref (spawn);
+	spawn = pk_spawn_new ();
+	g_signal_connect (spawn, "finished",
+			  G_CALLBACK (pk_test_finished_cb), test);
+	g_signal_connect (spawn, "stdout",
+			  G_CALLBACK (pk_test_stdout_cb), test);
+	g_signal_connect (spawn, "stderr",
+			  G_CALLBACK (pk_test_stderr_cb), test);
+
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
-	mexitcode = -1;
+	mexit = BAD_EXIT;
 	ret = pk_spawn_command (spawn, path);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
@@ -580,11 +604,11 @@ libst_spawn (LibSelfTest *test)
 	g_main_loop_run (loop);
 
 	/************************************************************/
-	libst_title (test, "make sure finished broken");
-	if (mexitcode == 0) {
+	libst_title (test, "make sure finished in SIGKILL");
+	if (mexit == PK_SPAWN_EXIT_KILL) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "finish %i!", mexitcode);
+		libst_failed (test, "finish %i!", mexit);
 	}
 
 	g_object_unref (spawn);
