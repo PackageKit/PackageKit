@@ -22,25 +22,3 @@ Have different permissions for signed and unsigned repos.
 To do rollbacks sanely in PK we need a few things:
  * allow transaction data to be changed in _db
 
-*** Use resolve for pkcon operations ***
-'pkcon install zsh' should work as well as 'pkcon install "zsh;1.0;i386;repo"'
-
---- RELEASE BLOCKER ---
-
-def command_resolve(package, filter_enum)
-ret=client_resolve (package, filter)
-if ret wait()
-length=get_length
-if length == 1 return get_item(client, 0)
-else
-print matched too many, quit
-for each length
-print get_item(client, 1)
-
-case: INSTALL
-if not a valid package_id then
-    pacakge=command_resolve(package, ENUM_AVAILABLE);
-    if (package== NULL) {
-        error
-    }
-

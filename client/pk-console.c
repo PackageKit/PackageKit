@@ -112,7 +112,7 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 {
 	const gchar *role_text;
 	role_text = pk_role_enum_to_text (role);
-	g_print ("tid          : %s\n", tid);
+	g_print ("Transaction  : %s\n", tid);
 	g_print (" timespec    : %s\n", timespec);
 	g_print (" succeeded   : %i\n", succeeded);
 	g_print (" role        : %s\n", role_text);
@@ -129,7 +129,7 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 			     const gchar *url, const gchar *restart,
 			     const gchar *update_text, gpointer data)
 {
-	g_print ("update-detail\n");
+	g_print ("Update detail\n");
 	g_print ("  package:    '%s'\n", package_id);
 	g_print ("  updates:    '%s'\n", updates);
 	g_print ("  obsoletes:  '%s'\n", obsoletes);
@@ -145,7 +145,7 @@ static void
 pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
-	g_print ("[%s]\n", repo_id);
+	g_print ("Repository detail for %s\n", repo_id);
 	g_print ("  %i, %s\n", enabled, description);
 }
 
@@ -155,7 +155,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 static void
 pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer data)
 {
-	g_print ("%i%%\n", percentage);
+	g_print ("Percentage changed: %i%%\n", percentage);
 }
 
 const gchar *summary =
@@ -202,41 +202,102 @@ pk_client_wait (void)
 static void
 pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
 {
-	g_print ("Runtime was %i seconds\n", runtime);
+	PkRoleEnum role;
+	const gchar *role_text;
+	pk_client_get_role (client, &role, NULL);
+	role_text = pk_role_enum_to_text (role);
+	g_print ("%s runtime was %i seconds\n", role_text, runtime);
 	if (loop != NULL) {
 		g_main_loop_quit (loop);
 	}
 }
 
 /**
- * pk_console_install_package:
+ * pk_console_perhaps_resolve:
  **/
-static gboolean
-pk_console_install_package (PkClient *client, const gchar *package_id)
+static gchar *
+pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package)
 {
-//xxx
 	gboolean ret;
 	gboolean valid;
 	PkClient *client_resolve;
-	valid = pk_package_id_check (package_id);
+	const gchar *filter_text;
+	guint i;
+	guint length;
+	PkPackageItem *item;
 
 	/* have we passed a complete package_id? */
+	valid = pk_package_id_check (package);
 	if (valid == TRUE) {
-		return pk_client_install_package (client, package_id);
+		return g_strdup (package);
 	}
 
 	/* we need to resolve it */
 	client_resolve = pk_client_new ();
 	g_signal_connect (client_resolve, "finished",
+	/* TODO: send local loop */
 			  G_CALLBACK (pk_console_finished_cb), NULL);
-	ret = pk_client_resolve (client_resolve, "none", package_id);
+	filter_text = pk_filter_enum_to_text (filter);
+	pk_client_set_use_buffer (client_resolve, TRUE);
+	ret = pk_client_resolve (client_resolve, filter_text, package);
 	if (ret == FALSE) {
-		pk_warning ("Resolve not supported");
+		pk_warning ("Resolve is not supported in this backend");
+		return NULL;
 	} else {
 		g_main_loop_run (loop);
 	}
-	pk_error ("resolve functionality not finished yet");
-	return TRUE;
+
+	/* get length of items found */
+	length = pk_client_package_buffer_get_size (client_resolve);
+
+	/* only found one, great! */
+	if (length == 1) {
+		item = pk_client_package_buffer_get_item (client_resolve, 0);
+		return item->package_id;
+	}
+
+	/* else list the options */
+	for (i=0; i<length; i++) {
+		item = pk_client_package_buffer_get_item (client_resolve, i);
+		g_print ("option is %s", item->package_id);
+	}
+	return NULL;
+}
+
+/**
+ * pk_console_install_package:
+ **/
+static gboolean
+pk_console_install_package (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_AVAILABLE, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to install\n");
+		return FALSE;
+	}
+	ret = pk_client_install_package (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
+ * pk_console_remove_package:
+ **/
+static gboolean
+pk_console_remove_package (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to remove\n");
+		return FALSE;
+	}
+	ret = pk_client_remove_package (client, package_id, FALSE);
+	g_free (package_id);
+	return ret;
 }
 
 /**
@@ -306,7 +367,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_set_error (error, 0, 0, "you need to specify a package to remove");
 			return FALSE;
 		} else {
-			wait = pk_client_remove_package (client, value, FALSE);
+			wait = pk_console_remove_package (client, value);
 		}
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
@@ -424,7 +485,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *description, const gchar *url,
 			   gulong size, const gchar *filelist, gpointer data)
 {
-	g_print ("description\n");
+	g_print ("Package description\n");
 	g_print ("  package:     '%s'\n", package_id);
 	g_print ("  licence:     '%s'\n", licence);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
