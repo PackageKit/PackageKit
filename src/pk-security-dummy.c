@@ -91,7 +91,8 @@ pk_security_class_init (PkSecurityClass *klass)
 static void
 pk_security_init (PkSecurity *security)
 {
-	pk_warning ("THERE IS NO SECURITY MODEL BEING USED!!!");
+	pk_debug ("Using dummy security framework");
+	pk_warning ("*** THERE IS NO SECURITY MODEL BEING USED!!! ***");
 }
 
 /**

@@ -172,6 +172,8 @@ pk_security_init (PkSecurity *security)
 
 	security->priv = PK_SECURITY_GET_PRIVATE (security);
 
+	pk_debug ("Using PolicyKit security framework");
+
 	/* get a connection to the bus */
 	dbus_error_init (&dbus_error);
 	security->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);

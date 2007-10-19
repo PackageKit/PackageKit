@@ -191,17 +191,17 @@ dnl - Compile time default choice of security framework
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([security_framework],
 	    AS_HELP_STRING([--with-security-framework=<option>],
-			   [Default backend to use polkit,dummy (dummy)]))
+			   [Default security framework to use polkit,dummy]))
 # try and guess this if nothing is listed
 if test x$with_security_framework = x; then
 	if test -f /usr/bin/polkit-list-actions ; then
 		with_security_framework=polkit
 	else
-		with_security_framework=dummy
+		AC_MSG_ERROR([--with-security-framework explicitly required when not using PolicyKit or RBAC])
 	fi
 fi
 
-AC_DEFINE(security_framework, "$with_security_framework", [default backend prefix])
+AC_DEFINE(security_framework, "$with_security_framework", [default security framework])
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
@@ -217,7 +217,7 @@ if test x$with_security_framework = xpolkit; then
 	fi
 	AC_DEFINE(USE_SECURITY_POLKIT, "polkit", [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
-	AC_DEFINE(USE_SECURITY_DUMMY, "dummy", [if we should use a dummy auth backend])
+	AC_DEFINE(USE_SECURITY_DUMMY, "dummy", [if we should use a dummy security framework])
 fi
 
 AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
@@ -436,6 +436,8 @@ echo "
 
 # warn that dummy is basically broken
 if test x$with_security_framework = xdummy; then
-	echo "YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING!"
+	echo "*******************************************************************"
+	echo "** YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING! **"
+	echo "*******************************************************************"
 fi
 
