@@ -473,6 +473,16 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_spawn_helper (backend, "update-package.sh", package_id, NULL);
 }
 
+/**
+ * backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "update-system.sh", NULL);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
@@ -499,7 +509,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
-	NULL,					/* update_system */
+	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */

@@ -9,6 +9,7 @@ dist_helper_DATA = 			\
 	refresh-cache.sh		\
 	remove-package.sh		\
 	update-package.sh		\
+	update-system.sh		\
 	$(NULL)
 
 install-data-hook:
