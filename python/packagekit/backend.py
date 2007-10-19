@@ -38,6 +38,8 @@ ERROR_DEP_RESOLUTION_FAILED = "dep-resolution-failed"
 ERROR_CREATE_THREAD_FAILED = "create-thread-failed"
 ERROR_FILTER_INVALID = "filter-invalid"
 ERROR_TRANSACTION_ERROR = "transaction-error"
+ERROR_TRANSACTION_ERROR = "transaction-error"
+ERROR_NO_CACHE = "no-cache"
 
 STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"

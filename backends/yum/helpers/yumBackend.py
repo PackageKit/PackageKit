@@ -111,7 +111,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
-        res = self.yumbase.searchGenerator(searchlist, [key])
+        try:
+            res = self.yumbase.searchGenerator(searchlist, [key])
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE)
         fltlist = filters.split(';')
 
         available = []
