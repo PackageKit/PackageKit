@@ -113,23 +113,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.conf.cache = 1 # Only look in cache.
         try:
             res = self.yumbase.searchGenerator(searchlist, [key])
+            fltlist = filters.split(';')
+    
+            available = []
+            count = 1
+            for (pkg,values) in res:
+                if count > 100:
+                    break
+                count+=1
+                # are we installed?
+                if pkg.repoid == 'installed':
+                    if FILTER_NON_INSTALLED not in fltlist:
+                        if self._do_extra_filtering(pkg,fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+                else:
+                    available.append(pkg)
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE)
-        fltlist = filters.split(';')
-
-        available = []
-        count = 1
-        for (pkg,values) in res:
-            if count > 100:
-                break
-            count+=1
-            # are we installed?
-            if pkg.repoid == 'installed':
-                if FILTER_NON_INSTALLED not in fltlist:
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
-            else:
-                available.append(pkg)
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
         # Now show available packages.
         if FILTER_INSTALLED not in fltlist:
