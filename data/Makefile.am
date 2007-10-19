@@ -3,6 +3,10 @@ AUTOMAKE_OPTIONS = 1.7
 
 NULL =
 
+SUBDIRS = 						\
+	tests						\
+	$(NULL)
+
 servicedir       = $(DBUS_SERVICES_DIR)
 service_in_files = org.freedesktop.PackageKit.service.in
 service_DATA     = $(service_in_files:.service.in=.service)

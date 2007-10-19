@@ -413,6 +413,33 @@ guint stderr_count = 0;
 guint finished_count = 0;
 
 /**
+ * pk_test_get_data:
+ **/
+static gchar *
+pk_test_get_data (const gchar *filename)
+{
+	gboolean ret;
+	gchar *full;
+
+	/* check to see if we are being run in the build root */
+	full = g_build_filename ("..", "data", "tests", filename, NULL);
+	ret = g_file_test (full, G_FILE_TEST_EXISTS);
+	if (ret == TRUE) {
+		return full;
+	}
+	g_free (full);
+
+	/* check to see if we are being run in make check */
+	full = g_build_filename ("..", "..", "data", "tests", filename, NULL);
+	ret = g_file_test (full, G_FILE_TEST_EXISTS);
+	if (ret == TRUE) {
+		return full;
+	}
+	g_free (full);
+	return NULL;
+}
+
+/**
  * pk_test_finished_cb:
  **/
 static void
@@ -457,6 +484,7 @@ libst_spawn (LibSelfTest *test)
 {
 	PkSpawn *spawn;
 	gboolean ret;
+	gchar *path;
 
 	if (libst_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
 		return;
@@ -470,16 +498,18 @@ libst_spawn (LibSelfTest *test)
 	g_signal_connect (spawn, "stderr",
 			  G_CALLBACK (pk_test_stderr_cb), test);
 
+	path = pk_test_get_data ("pk-spawn-test.sh");
+
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
 	mexitcode = -1;
-	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh");
+	ret = pk_spawn_command (spawn, "pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
 	} else {
 		libst_failed (test, "ran incorrect file");
 	}
-#if 0
+
 	/************************************************************/
 	libst_title (test, "make sure finished wasn't called");
 	if (mexitcode == -1) {
@@ -491,7 +521,7 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper");
 	mexitcode = -1;
-	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
+	ret = pk_spawn_command (spawn, path);
 	if (ret == TRUE) {
 		libst_success (test, "ran correct file");
 	} else {
@@ -537,7 +567,7 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
 	mexitcode = -1;
-	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
+	ret = pk_spawn_command (spawn, path);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -556,9 +586,9 @@ libst_spawn (LibSelfTest *test)
 	} else {
 		libst_failed (test, "finish %i!", mexitcode);
 	}
-#endif
 
 	g_object_unref (spawn);
+	g_free (path);
 
 	libst_end (test);
 }

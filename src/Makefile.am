@@ -109,6 +109,9 @@ pk-interface.h: pk-interface.xml
 check_PROGRAMS =					\
 	pk-self-test
 
+noinst_PROGRAMS =					\
+	pk-self-test
+
 pk_self_test_SOURCES =					\
 	pk-inhibit.h					\
 	pk-inhibit.c					\
@@ -143,7 +146,6 @@ pk_self_test_CPPFLAGS=	\
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-interface.xml				\
-	pk-spawn-test.sh				\
 	$(NULL)
 
 clean-local:

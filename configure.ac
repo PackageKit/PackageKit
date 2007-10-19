@@ -386,6 +386,7 @@ backends/test/helpers/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 data/Makefile
+data/tests/Makefile
 libselftest/Makefile
 libgbus/Makefile
 libpackagekit/Makefile
