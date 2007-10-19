@@ -6,9 +6,6 @@ Requires writing to a database for config stuff
 New method GetHoursSinceLastUpdate
 Use this in the update icon
 
-*** use g_io_channel_* rather than read in PkSpawn for speed ***
-This should get rid of the polling forever, and get rid of that 1k block append
-
 *** Add new callback for status ***
 TimeRemaining()
 
@@ -27,8 +24,33 @@ To do rollbacks sanely in PK we need a few things:
 
 *** Use resolve for pkcon operations ***
 'pkcon install zsh' should work as well as 'pkcon install "zsh;1.0;i386;repo"'
+def command_resolve(package, filter_enum)
+ret=client_resolve (package, filter)
+if ret wait()
+length=get_length
+if length == 1 return get_item(client, 0)
+else
+print matched too many, quit
+for each length
+print get_item(client, 1)
 
-*** HTML help files ***
-Spellcheck and grammar check!
-Add not about the development server and anon-cvs
+case: INSTALL
+if not a valid package_id then
+    pacakge=command_resolve(package, ENUM_AVAILABLE);
+    if (package== NULL) {
+        error
+    }
+
+*** Unit tests ***
+PkSpawn is a complex and untested bit of code.
+
+*** PkSpawn enum return value ***
+pk_test_finished_cb (PkSpawn *spawn, gint exitcode, gpointer data)
+- exitcode is undefined - make an enum
+	PK_SPAWN_EXIT_SUCCESS
+	PK_SPAWN_EXIT_FAILED
+	PK_SPAWN_EXIT_KILLED
+
+*** backend docbook ***
+Explain SIGQUIT and SIGKILL in the docs
 

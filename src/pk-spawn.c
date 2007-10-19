@@ -51,6 +51,7 @@ static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
 #define PK_SPAWN_POLL_DELAY	100 /* ms */
+#define PK_SPAWN_SIGKILL_DELAY	500 /* ms */
 
 struct PkSpawnPrivate
 {
@@ -58,6 +59,8 @@ struct PkSpawnPrivate
 	gint			 stderr_fd;
 	gint			 stdout_fd;
 	guint			 poll_id;
+	guint			 kill_id;
+	gboolean		 finished;
 	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
@@ -148,6 +151,11 @@ pk_spawn_check_child (PkSpawn *spawn)
 {
 	int status;
 
+	/* this shouldn't happen */
+	if (spawn->priv->finished == TRUE) {
+		pk_error ("finished twice!");
+	}
+
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
 	pk_spawn_read_fd_into_buffer (spawn->priv->stderr_fd, spawn->priv->stderr_buf);
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf, TRUE);
@@ -156,6 +164,9 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* check if the child exited */
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
 		return TRUE;
+
+	/* disconnect the poll as there will be no more updates */
+	g_source_remove (spawn->priv->poll_id);
 
 	/* child exited, display some information... */
 	close (spawn->priv->stderr_fd);
@@ -167,8 +178,44 @@ pk_spawn_check_child (PkSpawn *spawn)
 		pk_debug ("Running fork successful");
 	}
 
+	/* officially done, although no signal yet */
+	spawn->priv->finished = TRUE;
+
+	/* if we are trying to kill this process, cancel the SIGKILL */
+	if (spawn->priv->kill_id != 0) {
+		g_source_remove (spawn->priv->kill_id);
+		spawn->priv->kill_id = 0;
+	}
+
 	pk_debug ("emitting finished %i", WEXITSTATUS (status));
 	g_signal_emit (spawn, signals [PK_SPAWN_FINISHED], 0, WEXITSTATUS (status));
+
+	return FALSE;
+}
+
+/**
+ * pk_spawn_check_child:
+ **/
+static gboolean
+pk_spawn_sigkill_cb (PkSpawn *spawn)
+{
+	gint retval;
+
+	/* check if process has already gone */
+	if (spawn->priv->finished == TRUE) {
+		pk_warning ("already finished, ignoring");
+		return FALSE;
+	}
+
+	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
+	retval = kill (spawn->priv->child_pid, SIGKILL);
+	if (retval == EINVAL) {
+		pk_warning ("The signum argument is an invalid or unsupported number");
+		return FALSE;
+	} else if (retval == EPERM) {
+		pk_warning ("You do not have the privilege to send a signal to the process");
+		return FALSE;
+	}
 
 	return FALSE;
 }
@@ -178,24 +225,34 @@ pk_spawn_check_child (PkSpawn *spawn)
  *
  * THIS IS A VERY DANGEROUS THING TO DO!
  *
+ * We send SIGQUIT and after a few ms SIGKILL
+ *
  **/
 gboolean
 pk_spawn_kill (PkSpawn *spawn)
 {
 	gint retval;
-	guint ret;
-	pk_warning ("killing %i", spawn->priv->child_pid);
-	retval = kill (spawn->priv->child_pid, SIGKILL);
 
-	ret = TRUE;
+	/* check if process has already gone */
+	if (spawn->priv->finished == TRUE) {
+		pk_warning ("already finished, ignoring");
+		return FALSE;
+	}
+
+	pk_warning ("sending SIGQUIT %i", spawn->priv->child_pid);
+	retval = kill (spawn->priv->child_pid, SIGQUIT);
 	if (retval == EINVAL) {
 		pk_warning ("The signum argument is an invalid or unsupported number");
-		ret = FALSE;
+		return FALSE;
 	} else if (retval == EPERM) {
 		pk_warning ("You do not have the privilege to send a signal to the process");
-		ret = FALSE;
+		return FALSE;
 	}
-	return ret;
+
+	/* the program might not be able to handle SIGQUIT, give it a few seconds and then SIGKILL it */
+	spawn->priv->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
+
+	return TRUE;
 }
 
 /**
@@ -216,6 +273,7 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 	}
 
 	pk_debug ("command '%s'", command);
+	spawn->priv->finished = FALSE;
 
 	/* split command line */
 	argv = g_strsplit (command, " ", 0);
@@ -289,6 +347,8 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->stderr_fd = -1;
 	spawn->priv->stdout_fd = -1;
 	spawn->priv->poll_id = 0;
+	spawn->priv->kill_id = 0;
+	spawn->priv->finished = FALSE;
 
 	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -311,7 +371,14 @@ pk_spawn_finalize (GObject *object)
 	g_return_if_fail (spawn->priv != NULL);
 
 	/* disconnect the poll in case we were cancelled before completion */
-	g_source_remove (spawn->priv->poll_id);
+	if (spawn->priv->poll_id != 0) {
+		g_source_remove (spawn->priv->poll_id);
+	}
+
+	/* disconnect the SIGKILL check */
+	if (spawn->priv->kill_id != 0) {
+		g_source_remove (spawn->priv->kill_id);
+	}
 
 	/* free the buffers */
 	g_string_free (spawn->priv->stderr_buf, TRUE);
@@ -340,6 +407,10 @@ pk_spawn_new (void)
 #include <libselftest.h>
 
 static GMainLoop *loop;
+gint mexitcode = -1;
+guint stdout_count = 0;
+guint stderr_count = 0;
+guint finished_count = 0;
 
 /**
  * pk_test_finished_cb:
@@ -348,6 +419,8 @@ static void
 pk_test_finished_cb (PkSpawn *spawn, gint exitcode, LibSelfTest *test)
 {
 	pk_debug ("spawn exitcode=%i", exitcode);
+	mexitcode = exitcode;
+	finished_count++;
 	g_main_loop_quit (loop);
 }
 
@@ -358,6 +431,7 @@ static void
 pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 {
 	pk_debug ("stdout '%s'", line);
+	stdout_count++;
 }
 
 /**
@@ -367,6 +441,15 @@ static void
 pk_test_stderr_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 {
 	pk_debug ("stderr '%s'", line);
+	stderr_count++;
+}
+
+static gboolean
+cancel_cb (gpointer data)
+{
+	PkSpawn *spawn = PK_SPAWN(data);
+	pk_spawn_kill (spawn);
+	return FALSE;
 }
 
 void
@@ -389,28 +472,90 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
+	mexitcode = -1;
 	ret = pk_spawn_command (spawn, "./pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
 	} else {
 		libst_failed (test, "ran incorrect file");
 	}
-
 #if 0
 	/************************************************************/
+	libst_title (test, "make sure finished wasn't called");
+	if (mexitcode == -1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "Called finish for bad file!");
+	}
+
+	/************************************************************/
 	libst_title (test, "make sure run correct helper");
+	mexitcode = -1;
 	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
 	if (ret == TRUE) {
 		libst_success (test, "ran correct file");
 	} else {
 		libst_failed (test, "did not run helper");
 	}
-#endif
 
-#if 0
-	/* spin for a bit */
+	/* spin for a bit, todo add timer to break out if we fail */
 	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
+
+	/************************************************************/
+	libst_title (test, "make sure finished okay");
+	if (mexitcode == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "finish was okay!");
+	}
+
+	/************************************************************/
+	libst_title (test, "make sure finished was called only once");
+	if (finished_count == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "finish was called %i times!", finished_count);
+	}
+
+	/************************************************************/
+	libst_title (test, "make sure we got the right stdout data");
+	if (stdout_count == 4) {
+		libst_success (test, "correct stdout count");
+	} else {
+		libst_failed (test, "wrong stdout count %i", stdout_count);
+	}
+
+	/************************************************************/
+	libst_title (test, "make sure we got the right stderr data");
+	if (stderr_count == 11) {
+		libst_success (test, "correct stderr count");
+	} else {
+		libst_failed (test, "wrong stderr count %i", stderr_count);
+	}
+
+	/************************************************************/
+	libst_title (test, "make sure run correct helper, and kill it");
+	mexitcode = -1;
+	ret = pk_spawn_command (spawn, "./pk-spawn-test.sh");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not run helper");
+	}
+
+	g_timeout_add_seconds (1, cancel_cb, spawn);
+	/* spin for a bit, todo add timer to break out if we fail */
+	loop = g_main_loop_new (NULL, FALSE);
+	g_main_loop_run (loop);
+
+	/************************************************************/
+	libst_title (test, "make sure finished broken");
+	if (mexitcode == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "finish %i!", mexitcode);
+	}
 #endif
 
 	g_object_unref (spawn);

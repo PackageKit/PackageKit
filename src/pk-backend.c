@@ -330,7 +330,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 	gboolean ret = TRUE;
 
 	/* check if output line */
-	if (line == NULL || strstr (line, "\t") == NULL)
+	if (line == NULL)
 		return FALSE;
 
 	/* split by tab */
