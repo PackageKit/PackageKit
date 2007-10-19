@@ -430,6 +430,7 @@ libst_enum (LibSelfTest *test)
 {
 	const gchar *string;
 	PkRoleEnum value;
+	guint i;
 
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
@@ -470,6 +471,127 @@ libst_enum (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "check we convert all the role enums");
+	for (i=0; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+		string = pk_role_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the status enums");
+	for (i=0; i<=PK_STATUS_ENUM_UNKNOWN; i++) {
+		string = pk_status_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the exit enums");
+	for (i=0; i<=PK_EXIT_ENUM_UNKNOWN; i++) {
+		string = pk_exit_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the filter enums");
+	for (i=0; i<=PK_FILTER_ENUM_UNKNOWN; i++) {
+		string = pk_filter_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the restart enums");
+	for (i=0; i<=PK_RESTART_ENUM_UNKNOWN; i++) {
+		string = pk_restart_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the error_code enums");
+	for (i=0; i<=PK_ERROR_ENUM_UNKNOWN; i++) {
+		string = pk_error_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the group enums");
+	for (i=0; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+		string = pk_group_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the freq enums");
+	for (i=0; i<=PK_FREQ_ENUM_UNKNOWN; i++) {
+		string = pk_freq_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the update enums");
+	for (i=0; i<=PK_UPDATE_ENUM_UNKNOWN; i++) {
+		string = pk_update_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the info enums");
+	for (i=0; i<=PK_INFO_ENUM_UNKNOWN; i++) {
+		string = pk_info_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the sig_type enums");
+	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
+		string = pk_sig_type_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
 
 	libst_end (test);
 }
