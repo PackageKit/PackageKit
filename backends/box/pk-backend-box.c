@@ -315,20 +315,6 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
- * backend_get_groups:
- */
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
-{
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSIBILITY,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_SYSTEM,
-				      -1);
-}
-
-/**
  * backend_get_filters:
  */
 static void
@@ -494,7 +480,7 @@ PK_BACKEND_OPTIONS (
 	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */
-	backend_get_groups,			/* get_groups */
+	NULL,					/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
