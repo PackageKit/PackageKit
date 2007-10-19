@@ -37,6 +37,7 @@ import rpmUtils
 import exceptions
 import types
 import signal
+import time
 
 yumbase = None
 
@@ -68,15 +69,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
         
+ 
     def doLock(self):
         ''' Lock Yum'''
-        if not self.isLocked():        
+        retries = 0
+        while not self.isLocked():
             try: # Try to lock yum
                 self.yumbase.doLock( YUM_PID_FILE )
                 PackageKitBaseBackend.doLock(self)
             except:
-                self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
-                       
+                self.status(STATE_WAIT)
+                time.sleep(2)
+                retries += 1
+                if retries > 100:
+                    self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
 
         
     def unLock(self):        
