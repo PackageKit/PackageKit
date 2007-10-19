@@ -5,16 +5,21 @@ Current status of the backends
 resolve           |        |  X  |     |  X  |      |
 refresh-cache     |   X    |  X  |  X  |  X  |      |
 get-updates       |   X    |  X  |     |  X  |      |
-update-system     |   X    |  X  |     |     |      |
+update-system     |   X    |  X  |     |  X  |      |
 search-name       |   X    |  X  |  X  |  X  |  X   |
 search-details    |        |  X  |  X  |  X  |      |
 search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
 install-package   |   X    |  X  |     |  X  |  X   |
 install-file      |        |     |     |  X  |      |
-remove            |   X    |  X  |     |  X  |  X   |
+remove-package    |   X    |  X  |     |  X  |  X   |
+update-package    |        |     |     |  X  |      |
 get-depends       |        |  X  |     |     |      |
 get-requires      |   X    |     |     |     |      |
 get-description   |   X    |  X  |  X  |  X  |      |
 get-update-detail |        |     |     |     |      |
+get-repo-list     |        |     |     |     |      |
+repo-enable       |        |     |     |     |      |
+repo-set-data     |        |     |     |     |      |
+cancel-transaction|        |     |     |     |      |
 
