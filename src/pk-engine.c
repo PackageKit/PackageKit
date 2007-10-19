@@ -827,11 +827,10 @@ pk_engine_can_do_action (PkEngine *engine, const gchar *dbus_name, const gchar *
  * when not async.
  **/
 static gboolean
-pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context,
+pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_name,
 			     PkRoleEnum role, GError **error)
 {
 	PolKitResult pk_result;
-	const gchar *dbus_name;
 	const gchar *policy = NULL;
 	gboolean ret;
 
@@ -867,7 +866,6 @@ pk_engine_action_is_allowed (PkEngine *engine, DBusGMethodInvocation *context,
 	}
 
 	/* get the dbus sender */
-	dbus_name = dbus_g_method_get_sender (context);
 	pk_result = pk_engine_can_do_action (engine, dbus_name, policy);
 	if (pk_result != POLKIT_RESULT_YES) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY,
@@ -1554,7 +1552,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1631,7 +1629,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1702,7 +1700,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1764,7 +1762,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_INSTALL_FILE, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_FILE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1826,7 +1824,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_ROLLBACK, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_ROLLBACK, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1897,7 +1895,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1998,7 +1996,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_ENABLE, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_ENABLE, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2061,7 +2059,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	}
 
 	/* check with PolicyKit if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, context, PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
