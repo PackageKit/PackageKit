@@ -158,7 +158,7 @@ pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer d
 	g_print ("%i%%\n", percentage);
 }
 
-gchar *summary =
+const gchar *summary =
 	"PackageKit Console Interface\n"
 	"\n"
 	"Subcommands:\n"
@@ -198,67 +198,56 @@ pk_client_wait (void)
 }
 
 /**
- * pk_console_parse_multiple_commands:
+ * pk_console_process_commands:
  **/
-static void
-pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError **error)
+static gboolean
+pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **error)
 {
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	gboolean wait = FALSE;
-	guint remove;
 	PkEnumList *elist;
 
-	mode = g_ptr_array_index (array, 0);
-	if (array->len > 1) {
-		value = g_ptr_array_index (array, 1);
+	mode = argv[1];
+	if (argc > 2) {
+		value = argv[2];
 	}
-	if (array->len > 2) {
-		details = g_ptr_array_index (array, 2);
+	if (argc > 3) {
+		details = argv[3];
 	}
-	remove = 1;
 
 	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a search type");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else if (strcmp (value, "name") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_search_name (client, "none", details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_search_details (client, "none", details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_search_group (client, "none", details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_search_file (client, "none", details);
-				remove = 3;
 			}
 		} else {
 			g_set_error (error, 0, 0, "invalid search type");
@@ -266,122 +255,95 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a package to install");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			wait = pk_client_install_package (client, value);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a package to remove");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			wait = pk_client_remove_package (client, value, FALSE);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a package to update");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			wait = pk_client_update_package (client, value);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a package name to resolve");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			wait = pk_client_resolve (client, value);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a repo name");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			pk_client_repo_enable (client, value, TRUE);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "disable-repo") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a repo name");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else {
 			wait = pk_client_repo_enable (client, value, FALSE);
-			remove = 2;
 		}
 	} else if (strcmp (mode, "get") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a get type");
-			remove = 1;
-			goto out;
+			return FALSE;
 		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_get_depends (client, details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_get_update_detail (client, details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "requires") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_get_requires (client, details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a package to find the description for");
-				remove = 2;
-				goto out;
+				return FALSE;
 			} else {
 				wait = pk_client_get_description (client, details);
-				remove = 3;
 			}
 		} else if (strcmp (value, "updates") == 0) {
 			wait = pk_client_get_updates (client);
-			remove = 2;
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_client_get_actions (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
-			remove = 2;
 		} else if (strcmp (value, "filters") == 0) {
 			elist = pk_client_get_filters (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
-			remove = 2;
 		} else if (strcmp (value, "repos") == 0) {
 			wait = pk_client_get_repo_list (client);
-			remove = 2;
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_client_get_groups (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
-			remove = 2;
 		} else if (strcmp (value, "transactions") == 0) {
 			wait = pk_client_get_old_transactions (client, 10);
-			remove = 2;
 		} else {
 			g_set_error (error, 0, 0, "invalid get type");
 		}
@@ -399,16 +361,7 @@ pk_console_parse_multiple_commands (PkClient *client, GPtrArray *array, GError *
 	if (wait == TRUE) {
 		pk_client_wait ();
 	}
-
-out:
-	/* remove the right number of items from the pointer index */
-	g_ptr_array_remove_index (array, 0);
-	if (remove > 1) {
-		g_ptr_array_remove_index (array, 0);
-	}
-	if (remove > 2) {
-		g_ptr_array_remove_index (array, 0);
-	}
+	return TRUE;
 }
 
 /**
@@ -480,8 +433,6 @@ main (int argc, char *argv[])
 	DBusGConnection *system_connection;
 	GError *error = NULL;
 	PkClient *client;
-	GPtrArray *array;
-	guint i;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
 	GOptionContext *context;
@@ -549,24 +500,15 @@ main (int argc, char *argv[])
 	g_signal_connect (client, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
-	/* add argv to a pointer array */
-	array = g_ptr_array_new ();
-	for (i=1; i<argc; i++) {
-		g_ptr_array_add (array, (gpointer) argv[i]);
-	}
-	/* process all the commands */
-	while (array->len > 0) {
-		pk_console_parse_multiple_commands (client, array, &error);
-		if (error != NULL) {
-			g_print ("Error:\n  %s\n\n", error->message);
-			g_error_free (error);
-			g_print (options_help);
-			break;
-		}
+	/* run the commands */
+	pk_console_process_commands (client, argc, argv, &error);
+	if (error != NULL) {
+		g_print ("Error:\n  %s\n\n", error->message);
+		g_error_free (error);
+		g_print (options_help);
 	}
 
 	g_free (options_help);
-	g_ptr_array_free (array, TRUE);
 	g_object_unref (client);
 
 	return 0;
