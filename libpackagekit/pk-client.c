@@ -168,15 +168,31 @@ pk_client_get_require_restart (PkClient *client)
 }
 
 /**
- * pk_client_get_package_buffer:
+ * pk_client_package_buffer_get_size:
  **/
-GPtrArray *
-pk_client_get_package_buffer (PkClient *client)
+guint
+pk_client_package_buffer_get_size (PkClient *client)
 {
+	g_return_val_if_fail (client != NULL, 0);
+	g_return_val_if_fail (PK_IS_CLIENT (client), 0);
+	if (client->priv->use_buffer == FALSE) {
+		return 0;
+	}
+	return pk_package_list_get_size (client->priv->package_list);
+}
+
+/**
+ * pk_client_package_buffer_get_item:
+ **/
+PkPackageItem *
+pk_client_package_buffer_get_item (PkClient *client, guint item)
+{
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	if (client->priv->use_buffer == FALSE) {
 		return NULL;
 	}
-	return pk_package_list_get_buffer (client->priv->package_list);
+	return pk_package_list_get_item (client->priv->package_list, item);
 }
 
 /**

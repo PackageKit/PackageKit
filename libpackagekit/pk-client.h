@@ -25,6 +25,7 @@
 #include <glib-object.h>
 #include "pk-enum.h"
 #include "pk-enum-list.h"
+#include "pk-package-list.h"
 
 G_BEGIN_DECLS
 
@@ -126,7 +127,9 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 const gchar	*value);
 
 /* cached stuff */
-GPtrArray	*pk_client_get_package_buffer		(PkClient	*client);
+guint		 pk_client_package_buffer_get_size	(PkClient	*client);
+PkPackageItem	*pk_client_package_buffer_get_item	(PkClient	*client,
+							 guint		 item);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 
 /* not job specific */

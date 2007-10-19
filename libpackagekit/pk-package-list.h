@@ -52,7 +52,7 @@ typedef struct
 	PkInfoEnum		 info;
 	gchar			*package_id;
 	gchar			*summary;
-} PkPackageListItem;
+} PkPackageItem;
 
 GType		 pk_package_list_get_type		(void);
 PkPackageList	*pk_package_list_new			(void);
@@ -63,7 +63,9 @@ gboolean	 pk_package_list_add			(PkPackageList		*plist,
 gboolean	 pk_package_list_contains		(PkPackageList		*plist,
 							 const gchar		*package_id);
 gchar		*pk_package_list_get_string		(PkPackageList		*plist);
-GPtrArray	*pk_package_list_get_buffer		(PkPackageList		*plist);
+guint		 pk_package_list_get_size		(PkPackageList		*plist);
+PkPackageItem	*pk_package_list_get_item		(PkPackageList		*plist,
+							 guint			 item);
 gboolean	 pk_package_list_clear			(PkPackageList		*plist);
 
 G_END_DECLS

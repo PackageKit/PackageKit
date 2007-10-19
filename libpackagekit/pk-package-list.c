@@ -58,13 +58,13 @@ G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
 gboolean
 pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
-	PkPackageListItem *item;
+	PkPackageItem *item;
 
 	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 
 	pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
-	item = g_new0 (PkPackageListItem, 1);
+	item = g_new0 (PkPackageItem, 1);
 	item->info = info;
 	item->package_id = g_strdup (package_id);
 	item->summary = g_strdup (summary);
@@ -79,7 +79,7 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 gchar *
 pk_package_list_get_string (PkPackageList *plist)
 {
-	PkPackageListItem *item;
+	PkPackageItem *item;
 	guint i;
 	guint length;
 	const gchar *info_text;
@@ -105,14 +105,29 @@ pk_package_list_get_string (PkPackageList *plist)
 }
 
 /**
- * pk_plist_get_package_buffer:
+ * pk_package_list_get_size:
  **/
-GPtrArray *
-pk_package_list_get_buffer (PkPackageList *plist)
+guint
+pk_package_list_get_size (PkPackageList *plist)
+{
+	g_return_val_if_fail (plist != NULL, 0);
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), 0);
+	return plist->priv->array->len;
+}
+
+/**
+ * pk_package_list_get_item:
+ **/
+PkPackageItem *
+pk_package_list_get_item (PkPackageList *plist, guint item)
 {
 	g_return_val_if_fail (plist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
-	return plist->priv->array;
+	if (item >= plist->priv->array->len) {
+		pk_debug ("item too large!");
+		return NULL;
+	}
+	return g_ptr_array_index (plist->priv->array, item);
 }
 
 /**
@@ -121,7 +136,7 @@ pk_package_list_get_buffer (PkPackageList *plist)
 gboolean
 pk_package_list_clear (PkPackageList *plist)
 {
-	PkPackageListItem *item;
+	PkPackageItem *item;
 
 	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
@@ -142,7 +157,7 @@ pk_package_list_clear (PkPackageList *plist)
 gboolean
 pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 {
-	PkPackageListItem *item;
+	PkPackageItem *item;
 	guint i;
 	guint length;
 	gboolean ret = FALSE;

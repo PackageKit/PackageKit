@@ -953,19 +953,17 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 
 	/* try and reuse cache */
 	if (engine->priv->updates_cache != NULL) {
-		PkPackageListItem *package;
-		GPtrArray *plist;
+		PkPackageItem *package;
 		guint i;
 		guint length;
 
-		plist = pk_package_list_get_buffer (engine->priv->updates_cache);
-		pk_warning ("we have cached data (%i) we could use!", plist->len);
+		length = pk_package_list_get_size (engine->priv->updates_cache);
+		pk_warning ("we have cached data (%i) we could use!", length);
 
 		/* emulate the backend */
 		pk_backend_set_role (item->backend, PK_ROLE_ENUM_GET_UPDATES);
-		length = plist->len;
 		for (i=0; i<length; i++) {
-			package = g_ptr_array_index (plist, i);
+			package = pk_package_list_get_item (engine->priv->updates_cache, i);
 			pk_engine_package_cb (item->backend, package->info, package->package_id, package->summary, engine);
 		}
 		pk_engine_finished_cb (item->backend, PK_EXIT_ENUM_SUCCESS, engine);
