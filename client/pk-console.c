@@ -192,8 +192,50 @@ static gboolean
 pk_client_wait (void)
 {
 	pk_debug ("starting loop");
-	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
+	return TRUE;
+}
+
+/**
+ * pk_console_finished_cb:
+ **/
+static void
+pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
+{
+	g_print ("Runtime was %i seconds\n", runtime);
+	if (loop != NULL) {
+		g_main_loop_quit (loop);
+	}
+}
+
+/**
+ * pk_console_install_package:
+ **/
+static gboolean
+pk_console_install_package (PkClient *client, const gchar *package_id)
+{
+//xxx
+	gboolean ret;
+	gboolean valid;
+	PkClient *client_resolve;
+	valid = pk_package_id_check (package_id);
+
+	/* have we passed a complete package_id? */
+	if (valid == TRUE) {
+		return pk_client_install_package (client, package_id);
+	}
+
+	/* we need to resolve it */
+	client_resolve = pk_client_new ();
+	g_signal_connect (client_resolve, "finished",
+			  G_CALLBACK (pk_console_finished_cb), NULL);
+	ret = pk_client_resolve (client_resolve, package_id);
+	if (ret == FALSE) {
+		pk_warning ("Resolve not supported");
+	} else {
+		g_main_loop_run (loop);
+	}
+	pk_error ("resolve functionality not finished yet");
 	return TRUE;
 }
 
@@ -257,7 +299,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_set_error (error, 0, 0, "you need to specify a package to install");
 			return FALSE;
 		} else {
-			wait = pk_client_install_package (client, value);
+			wait = pk_console_install_package (client, value);
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
@@ -365,18 +407,6 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 }
 
 /**
- * pk_console_finished_cb:
- **/
-static void
-pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
-{
-	g_print ("Runtime was %i seconds\n", runtime);
-	if (loop != NULL) {
-		g_main_loop_quit (loop);
-	}
-}
-
-/**
  * pk_console_error_code_cb:
  **/
 static void
@@ -473,12 +503,13 @@ main (int argc, char *argv[])
 		return 0;
 	}
 
-	pk_debug_init (verbose);
-
 	if (argc < 2) {
 		g_print (options_help);
 		return 1;
 	}
+
+	pk_debug_init (verbose);
+	loop = g_main_loop_new (NULL, FALSE);
 
 	client = pk_client_new ();
 	g_signal_connect (client, "package",
