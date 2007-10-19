@@ -34,6 +34,8 @@
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
 
+#define PROGRESS_BAR_SIZE 60
+
 static GMainLoop *loop = NULL;
 
 /**
@@ -157,9 +159,8 @@ static void
 pk_console_draw_progress_bar (guint percentage)
 {
 	int i;
-	guint bar_size = 60;
-	guint progress = (int) (bar_size * (float) (percentage) / 100 );
-	guint remaining = bar_size - progress;
+	guint progress = (int) (PROGRESS_BAR_SIZE * (float) (percentage) / 100 );
+	guint remaining = PROGRESS_BAR_SIZE - progress;
 
 	g_print ("\r    [");
 	for (i = 0; i < progress; i++) {
@@ -184,6 +185,64 @@ pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer d
 		pk_console_draw_progress_bar (percentage);
 	} else {
 		g_print ("%i%%\n", percentage);
+	}
+}
+
+typedef struct
+{
+	int position;
+	gboolean move_forward;
+} PulseState;
+
+static gboolean
+pk_console_pulse_bar (PulseState *pulse_state) {
+	int i;
+
+	printf("\r    [");
+	for (i = 0; i < pulse_state->position - 1; i++) {
+		g_print (".");
+	}
+	printf("===");
+	for (i = pulse_state->position; i < PROGRESS_BAR_SIZE - 1; i++) {
+		g_print (".");
+	}
+	g_print ("]");
+
+	if (pulse_state->move_forward == TRUE) {
+		if (pulse_state->position == PROGRESS_BAR_SIZE - 1) {
+			pulse_state->move_forward = FALSE;
+			pulse_state->position--;
+		} else {
+			pulse_state->position++;
+		}
+	}
+	else if (pulse_state->move_forward == FALSE) {
+		if (pulse_state->position == 1) {
+			pulse_state->move_forward = TRUE;
+			pulse_state->position++;
+		} else {
+			pulse_state->position--;
+		}
+	}
+
+	return TRUE;
+}
+
+/**
+ * pk_console_no_percentage_updates_cb:
+ **/
+static void
+pk_console_no_percentage_updates_cb (PkClient *client, gpointer data)
+{
+	if (isatty(fileno(stdout))) {
+		PulseState *pulse_state;
+
+		/* FIXME: Free this. */
+		pulse_state = g_malloc (sizeof(PulseState));
+		pulse_state->position = 0;
+		pulse_state->move_forward = TRUE;
+
+		g_timeout_add(50, (GSourceFunc) pk_console_pulse_bar, pulse_state);
 	}
 }
 
@@ -623,6 +682,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
 	g_signal_connect (client, "percentage-changed",
 			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
+	g_signal_connect (client, "no-percentage-updates",
+			  G_CALLBACK (pk_console_no_percentage_updates_cb), NULL);
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 	g_signal_connect (client, "error-code",
