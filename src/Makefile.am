@@ -46,7 +46,6 @@ packagekitd_SOURCES =					\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-security.h					\
-	pk-security-polkit.c				\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-spawn.c					\
@@ -64,6 +63,14 @@ packagekitd_SOURCES =					\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
+
+if SECURITY_TYPE_POLKIT
+packagekitd_SOURCES += pk-security-polkit.c
+endif
+
+if SECURITY_TYPE_DUMMY
+packagekitd_SOURCES += pk-security-dummy.c
+endif
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
@@ -147,6 +154,7 @@ pk_self_test_CPPFLAGS=	\
 
 EXTRA_DIST =						\
 	pk-marshal.list					\
+	pk-security-polkit.c				\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
 	$(NULL)

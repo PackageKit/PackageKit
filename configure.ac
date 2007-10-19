@@ -12,7 +12,7 @@ AM_CONFIG_HEADER(config.h)
 # increment;
 # CURRENT	If the API or ABI interface has changed (reset REVISION to 0)
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
-# AGE		If libpackagekit can be linked into executables which can be 
+# AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
 LT_CURRENT=2
 LT_REVISION=0
@@ -37,8 +37,8 @@ dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
-    CPPFLAGS="$CPPFLAGS -Werror -Wcast-align -Wno-uninitialized"
-    CPPFLAGS="$CPPFLAGS -Wall"
+	CPPFLAGS="$CPPFLAGS -Werror -Wcast-align -Wno-uninitialized"
+	CPPFLAGS="$CPPFLAGS -Wall"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -94,16 +94,6 @@ PKG_CHECK_MODULES(LIBNM, \
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
-PKG_CHECK_MODULES(POLKIT, \
- polkit-dbus >= $POLKIT_DBUS_REQUIRED \
- polkit-grant >= $POLKIT_GRANT_REQUIRED)
-
-AC_CHECK_PROG([POLKIT_POLICY_FILE_VALIDATE],
-              [polkit-policy-file-validate], [polkit-policy-file-validate])
-if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
-   AC_MSG_ERROR([polkit-policy-file-validate not found])
-fi
-
 dnl ---------------------------------------------------------------------------
 dnl - Is docbook2man available?
 dnl ---------------------------------------------------------------------------
@@ -124,11 +114,11 @@ AC_SUBST(LOCALSTATEDIR, $localstatedir)
 
 AC_ARG_WITH([packagekit_user],
 	    AS_HELP_STRING([--with-packagekit-user=<user>],
-	                   [User for running the PackageKit daemon (root)]))
+			   [User for running the PackageKit daemon (root)]))
 if test -z "$with_packagekit_user" ; then
-    PACKAGEKIT_USER=root
+	PACKAGEKIT_USER=root
 else
-    PACKAGEKIT_USER=$with_packagekit_user
+	PACKAGEKIT_USER=$with_packagekit_user
 fi
 AC_SUBST(PACKAGEKIT_USER)
 AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PackageKit daemon])
@@ -140,9 +130,9 @@ AC_ARG_ENABLE(tests, [  --enable-tests          Build self tests],enable_tests=$
 AC_MSG_CHECKING([whether to support tests])
 have_tests=no
 if test x$enable_tests = xyes ; then
-    have_tests=yes
+	have_tests=yes
 	AC_MSG_RESULT([yes])
-    AC_DEFINE(HAVE_TESTS, 1, [Define if we want to use the self tests])
+	AC_DEFINE(HAVE_TESTS, 1, [Define if we want to use the self tests])
 else
 	AC_MSG_RESULT([no])
 fi
@@ -152,11 +142,11 @@ dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH(dbus-sys,
-              [AC_HELP_STRING([--with-dbus-sys=<dir>],
-              [where D-BUS system.d directory is])])
+	      [AC_HELP_STRING([--with-dbus-sys=<dir>],
+	      [where D-BUS system.d directory is])])
 AC_ARG_WITH(dbus-services,
-              [AC_HELP_STRING([--with-dbus-services=<dir>],
-              [where D-BUS system-services directory is])])
+	      [AC_HELP_STRING([--with-dbus-services=<dir>],
+	      [where D-BUS system-services directory is])])
 if ! test -z "$with_dbus_sys" ; then
 	DBUS_SYS_DIR="$with_dbus_sys"
 else
@@ -177,24 +167,61 @@ AC_ARG_ENABLE(docbook-docs, [  --enable-docbook-docs   build documentation (requ
 AC_PATH_PROG(XMLTO, xmlto, no)
 AC_MSG_CHECKING([whether to build DocBook documentation])
 if test x$XMLTO = xno ; then
-    have_docbook=no
+	have_docbook=no
 else
-    have_docbook=yes
+	have_docbook=yes
 fi
 if test x$enable_docbook_docs = xauto ; then
-    if test x$have_docbook = xno ; then
-        enable_docbook_docs=no
-    else
-        enable_docbook_docs=yes
-    fi
+	if test x$have_docbook = xno ; then
+		enable_docbook_docs=no
+	else
+		enable_docbook_docs=yes
+	fi
 fi
 if test x$enable_docbook_docs = xyes; then
-    if test x$have_docbook = xno; then
-	AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
-    fi
+	if test x$have_docbook = xno; then
+		AC_MSG_ERROR([Building DocBook docs explicitly required, but DocBook not found])
+	fi
 fi
 AM_CONDITIONAL(DOCBOOK_DOCS_ENABLED, test x$enable_docbook_docs = xyes)
 AC_MSG_RESULT(yes)
+
+dnl ---------------------------------------------------------------------------
+dnl - Compile time default choice of security framework
+dnl ---------------------------------------------------------------------------
+AC_ARG_WITH([security_framework],
+	    AS_HELP_STRING([--with-security-framework=<option>],
+			   [Default backend to use polkit,dummy (dummy)]))
+# try and guess this if nothing is listed
+if test x$with_security_framework = x; then
+	if test -f /usr/bin/polkit-list-actions ; then
+		with_security_framework=polkit
+	else
+		with_security_framework=dummy
+	fi
+fi
+
+AC_DEFINE(security_framework, "$with_security_framework", [default backend prefix])
+AC_SUBST(security_framework, "$with_security_framework")
+
+if test x$with_security_framework = xpolkit; then
+	PKG_CHECK_MODULES(POLKIT, \
+			  polkit-dbus >= $POLKIT_DBUS_REQUIRED \
+			  polkit-grant >= $POLKIT_GRANT_REQUIRED)
+	AC_SUBST(POLKIT_CFLAGS)
+	AC_SUBST(POLKIT_LIBS)
+	AC_CHECK_PROG([POLKIT_POLICY_FILE_VALIDATE],
+		      [polkit-policy-file-validate], [polkit-policy-file-validate])
+	if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
+	   AC_MSG_ERROR([polkit-policy-file-validate not found])
+	fi
+	AC_DEFINE(USE_SECURITY_POLKIT, "polkit", [if we should use PolicyKit])
+elif test x$with_security_framework = xdummy; then
+	AC_DEFINE(USE_SECURITY_DUMMY, "dummy", [if we should use a dummy auth backend])
+fi
+
+AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
+AM_CONDITIONAL(SECURITY_TYPE_POLKIT, [test x$with_security_framework = xpolkit], [using PolicyKit security framework])
 
 dnl ---------------------------------------------------------------------------
 dnl - Compile time default choice of backend
@@ -204,20 +231,19 @@ AC_ARG_WITH([default_backend],
 			   [Default backend to use alpm,apt,box,conary,dummy,yum (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
-    if test -f /usr/bin/yum ; then
-        with_default_backend=yum
-    elif test -f /usr/lib/libalpm.so; then
-	with_default_backend=alpm
-    elif test -f /usr/bin/apt-get ; then
-        with_default_backend=apt
-    elif test -f /usr/bin/conary ; then
-        with_default_backend=conary
-    elif test -f /usr/bin/box-repos ; then
-        with_default_backend=box
-    else
-        with_default_backend=dummy
-        AC_DEFINE(IGNORE_POLKIT, "err...", [if we should disable polkit])
-    fi
+	if test -f /usr/bin/yum ; then
+		with_default_backend=yum
+	elif test -f /usr/lib/libalpm.so; then
+		with_default_backend=alpm
+	elif test -f /usr/bin/apt-get ; then
+		with_default_backend=apt
+	elif test -f /usr/bin/conary ; then
+		with_default_backend=conary
+	elif test -f /usr/bin/box-repos ; then
+		with_default_backend=box
+	else
+		with_default_backend=dummy
+	fi
 fi
 
 AC_DEFINE(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
@@ -231,7 +257,7 @@ AC_DEFUN([APT_BACKEND],
 	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
 	   _APT_save_libs=$LIBS
 	   LIBS="$APT_LIBS $LIBS"
-	   
+
 	   AC_MSG_CHECKING([for apt support for $1 packages])
 		AC_RUN_IFELSE(AC_LANG_PROGRAM([
 		#include <apt-pkg/configuration.h>
@@ -267,24 +293,24 @@ AC_DEFUN([APT_BACKEND],
 ])
 
 if test x$with_default_backend = xapt; then
-   
+
    AC_ARG_WITH(libapt-pkg-lib,
-     AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
-     [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
+	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
+	 [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
   	if test "$_libaptpkg_with_lib" == "no" ; then
 		APT_LIBS="-lapt-pkg"
-    else
-        APT_LIBS="-L$withval -lapt-pkg"
-	fi	
+	else
+		APT_LIBS="-L$withval -lapt-pkg"
+	fi
 
    AC_ARG_WITH(libapt-pkg-includes,
-     AC_HELP_STRING([--with-libapt-pkg-includes=DIR],[look for the libapt-pkg includes in DIR]),
-     [_libaptpkg_with_inc=$withval],[_libaptpkg_with_inc=no])
+	 AC_HELP_STRING([--with-libapt-pkg-includes=DIR],[look for the libapt-pkg includes in DIR]),
+	 [_libaptpkg_with_inc=$withval],[_libaptpkg_with_inc=no])
   	if test "$_libaptpkg_with_inc" == "no" ; then
 		APT_CFLAGS="-I/usr/include/apt-pkg"
-    else
+	else
 		APT_CFLAGS="-I$withval"
-	fi	
+	fi
 
 	AC_CACHE_CHECK([whether libapt-pkg is usable],
 	   [libaptpkg_usable],
@@ -319,17 +345,17 @@ if test x$with_default_backend = xapt; then
 	   unset _libaptpkg_save_cppflags
 	   unset _libaptpkg_save_libs
 	   ])
-    AC_LANG_POP(C++)
+	AC_LANG_POP(C++)
 
 	APT_BACKEND(deb,DEB)
 	APT_BACKEND(rpm,RPM)
   	if test "$APT_PKG_TYPE" == "" ; then
 		AC_MSG_ERROR([Couldn't find support for any type of packages that we know about for Apt!])
 	fi
-		
-    AC_SUBST(APT_CFLAGS)
-    AC_SUBST(APT_LIBS)
-    AC_SUBST(APT_PKG_TYPE)
+
+	AC_SUBST(APT_CFLAGS)
+	AC_SUBST(APT_LIBS)
+	AC_SUBST(APT_PKG_TYPE)
 fi
 
 if test x$with_default_backend = xbox; then
@@ -339,13 +365,12 @@ if test x$with_default_backend = xbox; then
 fi
 
 if test x$with_default_backend = xalpm; then
-    with_default_backend=dummy
-    AC_MSG_WARN([The alpm backend doesn't work at all!])
-    AC_CHECK_HEADER([alpm.h],
-		    [with_default_backend=alpm],
-		    [AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
+	with_default_backend=dummy
+	AC_MSG_WARN([The alpm backend doesn't work at all!])
+	AC_CHECK_HEADER([alpm.h],
+			[with_default_backend=alpm],
+			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
-    
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
@@ -406,5 +431,11 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         Default backend:           ${with_default_backend}
+        Security Framework:        ${with_security_framework}
 "
+
+# warn that dummy is basically broken
+if test x$with_security_framework = xdummy; then
+	echo "YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING!"
+fi
 
