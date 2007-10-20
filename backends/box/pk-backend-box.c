@@ -32,12 +32,16 @@
 #include <libbox/libbox-db-repos.h>
 
 enum PkgSearchType {
-    SEARCH_TYPE_NAME = 0,
-    SEARCH_TYPE_DETAILS = 1,
-    SEARCH_TYPE_FILE = 2,
-    SEARCH_TYPE_RESOLVE = 3
+	SEARCH_TYPE_NAME = 0,
+	SEARCH_TYPE_DETAILS = 1,
+	SEARCH_TYPE_FILE = 2,
+	SEARCH_TYPE_RESOLVE = 3
 };
 
+enum DepsType {
+	DEPS_TYPE_DEPENDS = 0,
+	DEPS_TYPE_REQUIRES = 1
+};
 
 typedef struct {
 	gchar *search;
@@ -47,6 +51,7 @@ typedef struct {
 
 typedef struct {
 	gchar *package_id;
+	gint type;
 } ThreadData;
 
 
@@ -262,7 +267,10 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		db_close(db);
+		pk_package_id_free (pi);
+		db_close (db);
+		g_free (d->package_id);
+		g_free (d);
 		return FALSE;
 	}
 
@@ -271,12 +279,15 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	/* only one element is returned */
 	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
 
-	ps = (PackageSearch*) list->data;
 	if (list == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "cannot find package by id");
-		db_close(db);
+		pk_package_id_free (pi);
+		db_close (db);
+		g_free (d->package_id);
+		g_free (d);
 		return FALSE;
 	}
+	ps = (PackageSearch*) list->data;
 
 	files = box_db_repos_get_files_string (db, pi->name, pi->version);
 
@@ -295,30 +306,36 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_get_depends_thread (PkBackend *backend, gpointer data)
+backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 {
 	PkPackageId *pi;
 	GList *list;
 	ThreadData *d = (ThreadData*) data;
 	sqlite3 *db;
 
-	db = db_open();
+	db = db_open ();
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		db_close(db);
+		db_close (db);
+		g_free (d->package_id);
+		g_free (d);
 		return FALSE;
 	}
 
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
-	list = box_db_repos_get_depends(db, pi->name);
+	if (d->type == DEPS_TYPE_DEPENDS)
+		list = box_db_repos_get_depends(db, pi->name);
+	else if (d->type == DEPS_TYPE_REQUIRES)
+		list = box_db_repos_get_requires(db, pi->name);
+
 	add_packages_from_list (backend, list, FALSE);
 	box_db_repos_package_list_free (list);
 	pk_package_id_free (pi);
 
-	db_close(db);
+	db_close (db);
 
 	g_free (d->package_id);
 	g_free (d);
@@ -326,37 +343,6 @@ backend_get_depends_thread (PkBackend *backend, gpointer data)
 	return TRUE;
 }
 
-static gboolean
-backend_get_requires_thread (PkBackend *backend, gpointer data)
-{
-	PkPackageId *pi;
-	GList *list;
-	ThreadData *d = (ThreadData*) data;
-	sqlite3 *db;
-
-	db = db_open();
-
-	pi = pk_package_id_new_from_string (d->package_id);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		db_close(db);
-		return FALSE;
-	}
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-
-	list = box_db_repos_get_requires(db, pi->name);
-	add_packages_from_list (backend, list, FALSE);
-	box_db_repos_package_list_free (list);
-	pk_package_id_free (pi);
-
-	db_close(db);
-
-	g_free (d->package_id);
-	g_free (d);
-
-	return TRUE;
-}
 /* ===================================================================== */
 
 /**
@@ -406,7 +392,8 @@ backend_get_depends (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_get_depends_thread, data);
+		data->type = DEPS_TYPE_DEPENDS;
+		pk_backend_thread_helper (backend, backend_get_depends_requires_thread, data);
 	}
 }
 
@@ -444,7 +431,8 @@ backend_get_requires (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_get_requires_thread, data);
+		data->type = DEPS_TYPE_REQUIRES;
+		pk_backend_thread_helper (backend, backend_get_depends_requires_thread, data);
 	}
 }
 
