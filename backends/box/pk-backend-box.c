@@ -151,6 +151,12 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
+	if (installed == TRUE) {
+		search_filter = search_filter | PKG_INSTALLED;
+	}
+	if (available == TRUE) {
+		search_filter = search_filter | PKG_AVAILABLE;
+	}
 	if (devel == TRUE) {
 		search_filter = search_filter | PKG_DEVEL;
 	}
@@ -172,10 +178,13 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	db = db_open();
 
 	if (mode == SEARCH_TYPE_FILE) {
-		/* TODO: allow filtering */
-		list = box_db_repos_search_file (db, search);
-		add_packages_from_list (backend, list, FALSE);
-		box_db_repos_package_list_free (list);
+		if (installed == FALSE && available == FALSE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
+		} else	{
+			list = box_db_repos_search_file_with_filter (db, search, search_filter);
+			add_packages_from_list (backend, list, FALSE);
+			box_db_repos_package_list_free (list);
+		}
 	} else if (mode == SEARCH_TYPE_RESOLVE) {
 		list = box_db_repos_packages_search_one (db, (gchar *)search);
 		add_packages_from_list (backend, list, FALSE);
