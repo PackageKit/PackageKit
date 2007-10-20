@@ -18,7 +18,7 @@ get-depends       |        |  X  |     |  X  |      |
 get-requires      |   X    |     |     |  X  |      |
 get-description   |   X    |  X  |  X  |  X  |      |
 get-update-detail |        |     |     |     |      |
-get-repo-list     |        |     |     |     |      |
+get-repo-list     |        |     |     |     |  X   |
 repo-enable       |        |     |     |     |      |
 repo-set-data     |        |     |     |     |      |
 cancel-transaction|        |     |     |     |      |

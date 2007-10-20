@@ -35,6 +35,7 @@
 
 static int progress_percentage;
 static int subprogress_percentage;
+PkBackend *install_backend = NULL;
 
 typedef struct _PackageSource
 {
@@ -65,7 +66,9 @@ void
 trans_prog_cb (pmtransprog_t prog, const char *pkgname, int percent,
                        int n, int remain)
 {
+  pk_debug ("Percentage is %i", percent);
   subprogress_percentage = percent;
+  pk_backend_change_percentage ((PkBackend *)install_backend, subprogress_percentage);
 }
 
 gboolean
@@ -88,6 +91,13 @@ update_progress (void *data)
 
   pk_backend_change_percentage ((PkBackend *)data, progress_percentage);
   return TRUE;
+}
+
+gpointer
+state_notify (void *backend)
+{
+  g_timeout_add (300, update_subprogress, backend);
+  return backend;
 }
 
 alpm_list_t *
@@ -383,12 +393,14 @@ backend_initialize (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
+  pk_debug ("hello %i", (int)backend);
   g_return_if_fail (backend != NULL);
   //alpm_list_t *syncdbs = alpm_option_get_syncdbs ();
   alpm_list_t *result = NULL;
   alpm_list_t *problems = NULL;
   PkPackageId *id = pk_package_id_new_from_string (package_id);
   pmtransflag_t flags = 0;
+  GThread *progress = NULL;
 
   flags |= PM_TRANS_FLAG_NODEPS;
 
@@ -436,6 +448,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_package_id_free (id);
       return;
     }
+  pk_debug ("init");
 
   alpm_trans_addtarget (id->name);
 
@@ -450,6 +463,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       pk_package_id_free (id);
       return;
     }
+
+  pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    package_id,
+			    "An HTML widget for GTK+ 2.0");
+
+  progress = g_thread_create (state_notify,
+		  	(void *)backend,
+			TRUE,
+			NULL);
+ install_backend = backend; 
 
   if (alpm_trans_commit (&problems) != 0)
     {
@@ -732,6 +755,25 @@ backend_install_file (PkBackend *backend, const gchar *path)
   pk_backend_finished (backend);
 }
 
+void
+backend_get_repo_list (PkBackend *backend)
+{
+  g_return_if_fail (backend != NULL);
+  backend_initialize (backend);
+  alpm_list_t *repos = alpm_option_get_syncdbs ();
+  if (repos == NULL)
+    pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       alpm_strerror (pm_errno));
+  for (; repos; repos = alpm_list_next (repos))
+    {
+      pk_backend_repo_detail (backend, alpm_db_get_name ((pmdb_t *)repos), 
+			  /*alpm_db_get_url ((pmdb_t *)repos)*/ NULL, TRUE);
+    }
+  alpm_list_free (repos);
+  pk_backend_finished (backend);
+}
+  
+
 
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
@@ -759,7 +801,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	backend_install_package,			/* update_package */
 	NULL,						/* update_system */
-	NULL,						/* get_repo_list */
+	backend_get_repo_list,				/* get_repo_list */
 	NULL,						/* repo_enable */
 	NULL						/* repo_set_data */
 );
