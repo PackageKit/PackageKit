@@ -15,7 +15,7 @@ install-file      |        |     |     |  X  |      |
 remove-package    |   X    |  X  |     |  X  |  X   |
 update-package    |        |     |     |  X  |      |
 get-depends       |        |  X  |     |  X  |      |
-get-requires      |   X    |     |     |     |      |
+get-requires      |   X    |     |     |  X  |      |
 get-description   |   X    |  X  |  X  |  X  |      |
 get-update-detail |        |     |     |     |      |
 get-repo-list     |        |     |     |     |      |
