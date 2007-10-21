@@ -893,7 +893,7 @@ pk_backend_get_status (PkBackend *backend, PkStatusEnum *status)
  * pk_backend_get_role:
  **/
 gboolean
-pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package_id)
+pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **data)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -906,8 +906,12 @@ pk_backend_get_role (PkBackend *backend, PkRoleEnum *role, const gchar **package
 	if (role != NULL) {
 		*role = backend->priv->role;
 	}
-	if (package_id != NULL) {
-		*package_id = g_strdup (backend->priv->xcached_package_id);
+	if (data != NULL) {
+		if (backend->priv->xcached_package_id != NULL) {
+			*data = g_strdup (backend->priv->xcached_package_id);
+		} else if (backend->priv->xcached_search != NULL) {
+			*data = g_strdup (backend->priv->xcached_search);
+		}
 	}
 	return TRUE;
 }
