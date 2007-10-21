@@ -314,6 +314,7 @@ static void
 pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
 {
 	PkRoleEnum role;
+	gchar *blanking;
 	const gchar *role_text;
 
 	/* cancel the spinning */
@@ -323,7 +324,11 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 
 	/* if on console, clear the progress bar line */
 	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
-		g_print ("\r\r");
+		g_print ("\r");
+		blanking = g_strnfill (PROGRESS_BAR_SIZE + 7, ' ');
+		g_print ("%s", blanking);
+		g_free (blanking);
+		g_print ("\r");
 	}
 
 	pk_client_get_role (client, &role, NULL);
