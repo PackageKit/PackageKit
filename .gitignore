@@ -47,4 +47,6 @@ gtk-doc.make
 *~
 *.pc
 py-compile
-
+*.swp
+tags
+*.patch
