@@ -228,7 +228,7 @@ dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use alpm,apt,box,conary,dummy,yum (dummy)]))
+			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -241,6 +241,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=conary
 	elif test -f /usr/bin/box-repos ; then
 		with_default_backend=box
+	elif test -f /usr/bin/smart ; then
+		with_default_backend=smart
 	else
 		with_default_backend=dummy
 	fi
@@ -384,6 +386,7 @@ AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_default_backend = xyum], [using YU
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_default_backend = xconary], [using CONARY backend])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BOX backend])
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
+AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [using SMART backend])
 
 
 dnl ---------------------------------------------------------------------------
@@ -406,6 +409,8 @@ backends/box/helpers/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
 backends/dummy/Makefile
+backends/smart/Makefile
+backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/yum/Makefile
