@@ -1,8 +1,8 @@
 Current status of the backends
 
-                  | conary | yum | apt | box | alpm |
------------------------------------------------------
-resolve           |        |  X  |     |  X  |      |
+                  | conary | yum | apt | box | alpm | smart |
+-------------------------------------------------------------
+resolve           |        |  X  |     |  X  |      |   X
 refresh-cache     |   X    |  X  |  X  |  X  |      |
 get-updates       |   X    |  X  |     |  X  |      |
 update-system     |   X    |  X  |     |  X  |      |
@@ -12,7 +12,7 @@ search-file       |        |  X  |     |  X  |      |
 search-group      |        |     |     |     |      |
 install-package   |   X    |  X  |     |  X  |  X   |
 install-file      |        |     |     |  X  |      |
-remove-package    |   X    |  X  |     |  X  |  X   |
+remove-package    |   X    |  X  |     |  X  |  X   |   X
 update-package    |        |     |     |  X  |      |
 get-depends       |        |  X  |     |  X  |      |
 get-requires      |   X    |     |     |  X  |      |

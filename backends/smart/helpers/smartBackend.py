@@ -1,0 +1,70 @@
+# Licensed under the GNU General Public License Version 2
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+
+import smart
+from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
+        INFO_AVAILABLE
+
+class PackageKitSmartBackend(PackageKitBaseBackend):
+
+    def __init__(self, args):
+        PackageKitBaseBackend.__init__(self, args)
+
+        self.ctrl = smart.init()
+        self.ctrl.reloadChannels()
+        self.ctrl.getCache()
+
+    def remove(self, allowdeps, packageid):
+
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = []
+        for obj in results:
+            if isinstance(obj, smart.cache.Package):
+                packages.append(obj)
+
+        if not packages:
+            for obj in results:
+                for pkg in obj.packages:
+                    packages.append(pkg)
+
+        if len(packages) != 1:
+            return
+        package = packages[0]
+        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+                smart.transaction.PolicyRemove)
+        trans.getPolicy()
+        trans.enqueue(package, smart.transaction.REMOVE)
+        trans.run()
+        self.ctrl.commitTransaction(trans, confirm=False)
+
+    def resolve(self, filters, packagename):
+        ratio, results, suggestions = self.ctrl.search(packagename)
+        for result in results:
+            self._show_package(result)
+
+    def _show_package(self, package):
+        if package.installed:
+            status = INFO_INSTALLED
+        else:
+            status = INFO_AVAILABLE
+        version, arch = package.version.split('@')
+        self.package(self.get_package_id(package.name, version, arch,
+            "installed"), status, None)
