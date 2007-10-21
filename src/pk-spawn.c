@@ -494,10 +494,25 @@ cancel_cb (gpointer data)
 	return FALSE;
 }
 
+static void
+new_spawn_object (LibSelfTest *test, PkSpawn **pspawn)
+{
+	if (*pspawn != NULL) {
+		g_object_unref (*pspawn);
+	}
+	*pspawn = pk_spawn_new ();
+	g_signal_connect (*pspawn, "finished",
+			  G_CALLBACK (pk_test_finished_cb), test);
+	g_signal_connect (*pspawn, "stdout",
+			  G_CALLBACK (pk_test_stdout_cb), test);
+	g_signal_connect (*pspawn, "stderr",
+			  G_CALLBACK (pk_test_stderr_cb), test);
+}
+
 void
 libst_spawn (LibSelfTest *test)
 {
-	PkSpawn *spawn;
+	PkSpawn *spawn = NULL;
 	gboolean ret;
 	gchar *path;
 
@@ -505,19 +520,13 @@ libst_spawn (LibSelfTest *test)
 		return;
 	}
 
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
-			  G_CALLBACK (pk_test_finished_cb), test);
-	g_signal_connect (spawn, "stdout",
-			  G_CALLBACK (pk_test_stdout_cb), test);
-	g_signal_connect (spawn, "stderr",
-			  G_CALLBACK (pk_test_stderr_cb), test);
-
-	path = pk_test_get_data ("pk-spawn-test.sh");
+	/* get new object */
+	new_spawn_object (test, &spawn);
 
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
 	mexit = BAD_EXIT;
+	path = pk_test_get_data ("pk-spawn-test.sh");
 	ret = pk_spawn_command (spawn, "pk-spawn-test-xxx.sh");
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
@@ -579,14 +588,8 @@ libst_spawn (LibSelfTest *test)
 		libst_failed (test, "wrong stderr count %i", stderr_count);
 	}
 
-	g_object_unref (spawn);
-	spawn = pk_spawn_new ();
-	g_signal_connect (spawn, "finished",
-			  G_CALLBACK (pk_test_finished_cb), test);
-	g_signal_connect (spawn, "stdout",
-			  G_CALLBACK (pk_test_stdout_cb), test);
-	g_signal_connect (spawn, "stderr",
-			  G_CALLBACK (pk_test_stderr_cb), test);
+	/* get new object */
+	new_spawn_object (test, &spawn);
 
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
@@ -606,6 +609,34 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGKILL");
 	if (mexit == PK_SPAWN_EXIT_KILL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "finish %i!", mexit);
+	}
+
+	/* get new object */
+	new_spawn_object (test, &spawn);
+	g_free (path);
+
+	/************************************************************/
+	libst_title (test, "make sure run correct helper, and quit it");
+	mexit = BAD_EXIT;
+	path = pk_test_get_data ("pk-spawn-test-sigquit.sh");
+	ret = pk_spawn_command (spawn, path);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not run helper");
+	}
+
+	g_timeout_add_seconds (1, cancel_cb, spawn);
+	/* spin for a bit, todo add timer to break out if we fail */
+	loop = g_main_loop_new (NULL, FALSE);
+	g_main_loop_run (loop);
+
+	/************************************************************/
+	libst_title (test, "make sure finished in SIGQUIT");
+	if (mexit == PK_SPAWN_EXIT_QUIT) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish %i!", mexit);

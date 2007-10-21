@@ -5,6 +5,7 @@ NULL =
 
 TEST_FILES =						\
 	pk-spawn-test.sh				\
+	pk-spawn-test-sigquit.sh			\
 	$(NULL)
 
 EXTRA_DIST =						\
