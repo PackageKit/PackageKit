@@ -37,7 +37,10 @@
 #define PROGRESS_BAR_SIZE 60
 
 static GMainLoop *loop = NULL;
-static gboolean is_console;
+static gboolean is_console = FALSE;
+static gboolean has_output = FALSE;
+static gboolean printed_bar = FALSE;
+static guint timer_id = 0;
 
 typedef struct {
 	gint position;
@@ -88,6 +91,11 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	gchar *info_text;
 	guint extra = 0;
 
+	/* if on console, clear the progress bar line */
+	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+		g_print ("\r");
+	}
+
 	/* pass this out */
 	info_text = pk_console_pad_string (pk_info_enum_to_text (info), 12, NULL);
 
@@ -109,6 +117,9 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	g_free (info_text);
 	pk_package_id_free (ident);
 	pk_package_id_free (spacing);
+
+	/* don't do the percentage bar from now on */
+	has_output = TRUE;
 }
 
 /**
@@ -164,9 +175,12 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 static void
 pk_console_draw_progress_bar (guint percentage)
 {
-	int i;
-	guint progress = (int) (PROGRESS_BAR_SIZE * (float) (percentage) / 100 );
+	guint i;
+	guint progress = (gint) (PROGRESS_BAR_SIZE * (gfloat) (percentage) / 100);
 	guint remaining = PROGRESS_BAR_SIZE - progress;
+
+	/* we need to do an extra line */
+	printed_bar = TRUE;
 
 	g_print ("\r    [");
 	for (i = 0; i < progress; i++) {
@@ -194,11 +208,23 @@ pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer d
 	}
 }
 
+/**
+ * pk_console_pulse_bar:
+ **/
 static gboolean
 pk_console_pulse_bar (PulseState *pulse_state)
 {
-	int i;
+	guint i;
 
+	/* don't spin if we have had output */
+	if (has_output == TRUE) {
+		return FALSE;
+	}
+
+	/* we need to do an extra line */
+	printed_bar = TRUE;
+
+	/* the clever pulse code */
 	printf("\r    [");
 	for (i = 0; i < pulse_state->position - 1; i++) {
 		g_print (".");
@@ -235,10 +261,11 @@ static void
 pk_console_no_percentage_updates_cb (PkClient *client, gpointer data)
 {
 	static PulseState pulse_state;
+	has_output = FALSE;
 	if (is_console == TRUE) {
 		pulse_state.position = 1;
 		pulse_state.move_forward = TRUE;
-		g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
+		timer_id = g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
 	}
 }
 
@@ -289,9 +316,14 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 	PkRoleEnum role;
 	const gchar *role_text;
 
-	/* if on console, get off the progress bar line */
-	if (is_console == TRUE) {
-		g_print ("\n");
+	/* cancel the spinning */
+	if (timer_id != 0) {
+		g_source_remove (timer_id);
+	}
+
+	/* if on console, clear the progress bar line */
+	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+		g_print ("\r\r");
 	}
 
 	pk_client_get_role (client, &role, NULL);
@@ -563,8 +595,8 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
-	/* if on console, get off the progress bar line */
-	if (is_console == TRUE) {
+	/* if on console, clear the progress bar line */
+	if (is_console == TRUE && printed_bar == TRUE) {
 		g_print ("\n");
 	}
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
@@ -641,7 +673,6 @@ main (int argc, char *argv[])
 	g_type_init ();
 
 	/* check if we are on console */
-	is_console = FALSE;
 	if (isatty (fileno (stdout)) == 1) {
 		is_console = TRUE;
 	}

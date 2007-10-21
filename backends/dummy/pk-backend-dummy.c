@@ -166,6 +166,7 @@ backend_get_updates (PkBackend *backend)
 		return;
 	}
 
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 			    "powertop;1.8-1.fc8;i386;fedora",
 			    "Power consumption monitor");
@@ -239,13 +240,30 @@ backend_install_file (PkBackend *backend, const gchar *full_path)
 }
 
 /**
+ * backend_refresh_cache_timeout:
+ */
+static gboolean
+backend_refresh_cache_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+	if (progress_percentage == 100) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	progress_percentage += 10;
+	pk_backend_change_percentage (backend, progress_percentage);
+	return TRUE;
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_finished (backend);
+	progress_percentage = 0;
+	g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
 /**
