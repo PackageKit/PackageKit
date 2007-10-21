@@ -37,6 +37,12 @@
 #define PROGRESS_BAR_SIZE 60
 
 static GMainLoop *loop = NULL;
+static gboolean is_console;
+
+typedef struct {
+	gint position;
+	gboolean move_forward;
+} PulseState;
 
 /**
  * pk_console_pad_string:
@@ -181,21 +187,16 @@ pk_console_draw_progress_bar (guint percentage)
 static void
 pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer data)
 {
-	if (isatty(fileno(stdout))) {
+	if (is_console == TRUE) {
 		pk_console_draw_progress_bar (percentage);
 	} else {
 		g_print ("%i%%\n", percentage);
 	}
 }
 
-typedef struct
-{
-	int position;
-	gboolean move_forward;
-} PulseState;
-
 static gboolean
-pk_console_pulse_bar (PulseState *pulse_state) {
+pk_console_pulse_bar (PulseState *pulse_state)
+{
 	int i;
 
 	printf("\r    [");
@@ -215,8 +216,7 @@ pk_console_pulse_bar (PulseState *pulse_state) {
 		} else {
 			pulse_state->position++;
 		}
-	}
-	else if (pulse_state->move_forward == FALSE) {
+	} else if (pulse_state->move_forward == FALSE) {
 		if (pulse_state->position == 1) {
 			pulse_state->move_forward = TRUE;
 			pulse_state->position++;
@@ -234,15 +234,11 @@ pk_console_pulse_bar (PulseState *pulse_state) {
 static void
 pk_console_no_percentage_updates_cb (PkClient *client, gpointer data)
 {
-	if (isatty(fileno(stdout))) {
-		PulseState *pulse_state;
-
-		/* FIXME: Free this. */
-		pulse_state = g_malloc (sizeof(PulseState));
-		pulse_state->position = 0;
-		pulse_state->move_forward = TRUE;
-
-		g_timeout_add(50, (GSourceFunc) pk_console_pulse_bar, pulse_state);
+	static PulseState pulse_state;
+	if (is_console == TRUE) {
+		pulse_state.position = 1;
+		pulse_state.move_forward = TRUE;
+		g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
 	}
 }
 
@@ -292,6 +288,12 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 {
 	PkRoleEnum role;
 	const gchar *role_text;
+
+	/* if on console, get off the progress bar line */
+	if (is_console == TRUE) {
+		g_print ("\n");
+	}
+
 	pk_client_get_role (client, &role, NULL);
 	role_text = pk_role_enum_to_text (role);
 	g_print ("%s runtime was %i seconds\n", role_text, runtime);
@@ -561,8 +563,8 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
-	/* We need to get off the progress bar line if this is a tty. */
-	if (isatty(fileno(stdout))) {
+	/* if on console, get off the progress bar line */
+	if (is_console == TRUE) {
 		g_print ("\n");
 	}
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
@@ -637,6 +639,12 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
+
+	/* check if we are on console */
+	is_console = FALSE;
+	if (isatty (fileno (stdout)) == 1) {
+		is_console = TRUE;
+	}
 
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
