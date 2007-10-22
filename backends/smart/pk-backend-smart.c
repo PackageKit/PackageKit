@@ -51,6 +51,16 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	pk_backend_spawn_helper (backend, "resolve.py", filter, package_id, NULL);
 }
 
+/**
+ * backend_search_name:
+ */
+static void
+backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"0.0.1",					/* version */
@@ -74,7 +84,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* search_details */
 	NULL,						/* search_file */
 	NULL,						/* search_group */
-	NULL,						/* search_name */
+	backend_search_name,				/* search_name */
 	NULL,						/* update_package */
 	NULL,						/* update_system */
 	NULL,						/* get_repo_list */

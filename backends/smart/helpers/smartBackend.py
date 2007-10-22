@@ -60,6 +60,23 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for result in results:
             self._show_package(result)
 
+    def search_name(self, filters, packagename):
+        globbed = "*%s*" % packagename
+        ratio, results, suggestions = self.ctrl.search(globbed)
+
+        packages = []
+        for obj in results:
+            if isinstance(obj, smart.cache.Package):
+                packages.append(obj)
+
+        if not packages:
+            for obj in results:
+                for pkg in obj.packages:
+                    packages.append(pkg)
+
+        for package in packages:
+            self._show_package(package)
+
     def _show_package(self, package):
         if package.installed:
             status = INFO_INSTALLED
