@@ -22,3 +22,7 @@ Have different permissions for signed and unsigned repos.
 To do rollbacks sanely in PK we need a few things:
  * allow transaction data to be changed in _db
 
+*** Make resolve easier to use ***
+resolve in pkcon has to check for installed package already - and not
+display a cryptic message when already installed
+
