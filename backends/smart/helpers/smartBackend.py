@@ -35,15 +35,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
 
-        packages = []
-        for obj in results:
-            if isinstance(obj, smart.cache.Package):
-                packages.append(obj)
-
-        if not packages:
-            for obj in results:
-                for pkg in obj.packages:
-                    packages.append(pkg)
+        packages = self._process_search_results(results)
 
         if len(packages) != 1:
             return
@@ -64,15 +56,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         globbed = "*%s*" % packagename
         ratio, results, suggestions = self.ctrl.search(globbed)
 
-        packages = []
-        for obj in results:
-            if isinstance(obj, smart.cache.Package):
-                packages.append(obj)
-
-        if not packages:
-            for obj in results:
-                for pkg in obj.packages:
-                    packages.append(pkg)
+        packages = self._process_search_results(results)
 
         for package in packages:
             self._show_package(package)
@@ -85,3 +69,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         version, arch = package.version.split('@')
         self.package(self.get_package_id(package.name, version, arch,
             "installed"), status, None)
+
+    def _process_search_results(self, results):
+        packages = []
+        for obj in results:
+            if isinstance(obj, smart.cache.Package):
+                packages.append(obj)
+
+        if not packages:
+            for obj in results:
+                for pkg in obj.packages:
+                    packages.append(pkg)
+
+        return packages
