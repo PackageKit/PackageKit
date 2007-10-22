@@ -56,7 +56,7 @@ dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
-LIBNM_REQUIRED=0.6.4
+LIBNM_GLIB_REQUIRED=0.6.4
 POLKIT_DBUS_REQUIRED=0.5
 POLKIT_GRANT_REQUIRED=0.5
 
@@ -89,8 +89,19 @@ PKG_CHECK_MODULES(DBUS, \
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
 
-PKG_CHECK_MODULES(LIBNM, \
- libnm_glib >= $LIBNM_REQUIRED)
+dnl ---------------------------------------------------------------------------
+dnl - Is NetworkManager available?
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, HAVE_NETWORKMANAGER="yes", HAVE_NETWORKMANAGER="no")
+if test "x$HAVE_NETWORKMANAGER" = "xyes"; then
+	with_networking_stack="NetworkManager"
+	AC_DEFINE(HAVE_NETWORKMANAGER, 1, [define if NetworkManager is installed])
+else
+	with_networking_stack="dummy"
+	HAVE_NETWORKMANAGER=no
+fi
+
+AM_CONDITIONAL(HAVE_NETWORKMANAGER, test x$HAVE_NETWORKMANAGER = xyes)
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
@@ -437,6 +448,7 @@ echo "
         cflags:                    ${CFLAGS}
         Default backend:           ${with_default_backend}
         Security Framework:        ${with_security_framework}
+        Networking stack:          ${with_networking_stack}
 "
 
 # warn that dummy is basically broken

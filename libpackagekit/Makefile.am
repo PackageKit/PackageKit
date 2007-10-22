@@ -47,7 +47,6 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-connection.c						\
 	pk-connection.h						\
-	pk-network.c						\
 	pk-network.h						\
 	pk-package-id.c						\
 	pk-package-id.h						\
@@ -68,6 +67,16 @@ libpackagekit_la_SOURCES =					\
 	pk-polkit-client.c					\
 	pk-polkit-client.h					\
 	$(NULL)
+
+if HAVE_NETWORKMANAGER
+libpackagekit_la_SOURCES +=					\
+	pk-network-nm.c						\
+	$(NULL)
+else
+libpackagekit_la_SOURCES +=					\
+	pk-network-dummy.c					\
+	$(NULL)
+endif
 
 libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
