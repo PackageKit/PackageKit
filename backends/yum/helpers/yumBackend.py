@@ -733,17 +733,29 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def repo_enable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
-        Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        try:
+            repo = self.yumbase.repos.getRepo(repoid)
+            if enable == 'false':
+                if repo.isEnabled():
+                    repo.disablePersistent()
+            else:
+                if not repo.isEnabled():
+                    repo.enablePersistent()
+                
+        except Errors.RepoError,e:
+            self.error(ERROR_INTERNAL_ERROR, "repo %s is not found" % repoid)
+        
 
     def get_repo_list(self):
         '''
         Implement the {backend}-get-repo-list functionality
-        Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-
+        for repo in self.yumbase.repos.repos.values():
+            if repo.isEnabled():
+                self.repo_detail(repo.id,repo.name,'true')
+            else:
+                self.repo_detail(repo.id,repo.name,'false')
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
