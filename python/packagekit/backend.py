@@ -162,6 +162,18 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
 
+    def update_detail(self,id,updates,obsoletes,url,restart,update_text):
+        '''
+        Send 'updatedetail' signal
+        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param updates: 
+        @param obsoletes: 
+        @param url: 
+        @param restart:
+        @param update_text:  
+        '''
+        print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,url,restart,update_text)
+
     def require_restart(self,restart_type,details):
         '''
         Send 'requirerestart' signal
@@ -333,6 +345,13 @@ class PackageKitBaseBackend:
     def get_repo_list(self):
         '''
         Implement the {backend}-get-repo-list functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_update_detail(self,package):
+        '''
+        Implement the {backend}-get-update_detail functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

@@ -757,6 +757,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 self.repo_detail(repo.id,repo.name,'false')
 
+    def get_update_detail(self,package):
+        '''
+        Implement the {backend}-get-update_detail functionality
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+                
+
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
