@@ -239,6 +239,30 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	pk_backend_spawn_helper (backend, "resolve.py", filter, package_id, NULL);
 }
 
+/**
+ * backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "get-repo-list.py", NULL);
+}
+
+/**
+ * backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+	g_return_if_fail (backend != NULL);
+	if (enabled == TRUE) {
+		pk_backend_spawn_helper (backend, "repo-enable.py", rid, "true", NULL);
+	} else {
+		pk_backend_spawn_helper (backend, "repo-enable.py", rid, "false", NULL);
+	}
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"0.0.1",				/* version */
@@ -265,8 +289,8 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
-	NULL,					/* get_repo_list */
-	NULL,					/* repo_enable */
+	backend_get_repo_list,			/* get_repo_list */
+	backend_repo_enable,			/* repo_enable */
 	NULL					/* repo_set_data */
 );
 
