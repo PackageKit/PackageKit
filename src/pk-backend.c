@@ -304,6 +304,21 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 						group, sections[4], sections[5],
 						package_size, sections[7]);
 		}
+	} else if (strcmp (command, "repo-detail") == 0) {
+		if (size != 4) {
+			g_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		if (strcmp (sections[3], "true") == 0) {
+			pk_backend_repo_detail (backend, sections[1], sections[2], TRUE);
+		} else if (strcmp (sections[3], "false") == 0) {
+			pk_backend_repo_detail (backend, sections[1], sections[2], FALSE);
+		} else {
+			g_warning ("invalid qualifier '%s'", sections[3]);
+			ret = FALSE;
+			goto out;
+		}
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
