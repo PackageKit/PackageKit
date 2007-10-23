@@ -4,12 +4,14 @@ helperdir = $(datadir)/PackageKit/helpers/pisi
 NULL =
 
 dist_helper_DATA = 			\
-	resolve.py			\
-	remove.py			\
-	refresh-cache.py 		\
-	get-updates.py			\
+	get-depends.py			\
 	get-repo-list.py 		\
+	get-requires.py			\
+	get-updates.py			\
 	install.py			\
+	refresh-cache.py 		\
+	remove.py			\
+	resolve.py			\
 	update.py			\
 	pisiBackend.py			\
 	$(NULL)

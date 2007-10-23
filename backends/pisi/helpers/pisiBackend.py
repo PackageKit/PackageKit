@@ -22,7 +22,7 @@ import pisi
 from packagekit.backend import *
 
 class PackageKitPisiBackend(PackageKitBaseBackend):
-   
+
     # Currently we only support i686
     arch = "i686"
 
@@ -34,55 +34,61 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.packagedb = pisi.db.packagedb.PackageDB()
         self.repodb = pisi.db.repodb.RepoDB()
 
-    def get_package_version(self, pkg):
-        if pkg.build is not None:
-            version = "%s-%s-%s" % (pkg.version, pkg.release, pkg.build)
+    def __get_package_version(self, package):
+        """ Returns version string of given package """
+        # Internal FIXME: PiSi may provide this
+        if package.build is not None:
+            version = "%s-%s-%s" % (package.version, package.release, package.build)
         else:
-            version = "%s-%s" % (pkg.version, pkg.release)
+            version = "%s-%s" % (package.version, package.release)
         return version
 
-    def resolve(self, filter, package_id):
-        """ turns a single package name into a package_id suitable for the other methods. """
-
-        self.allow_interrupt(True);
-        self.percentage(None)
-
-        if self.installdb.has_package(package_id):
+    def __get_package(self, package):
+        """ Returns package object suitable for other methods """
+        if self.installdb.has_package(package):
             status = INFO_INSTALLED
-            pkg = self.installdb.get_package(package_id)
-        elif self.packagedb.has_package(package_id):
+            pkg = self.installdb.get_package(package)
+        elif self.packagedb.has_package(package):
             status = INFO_AVAILABLE
-            pkg = self.packagedb.get_package(package_id)
+            pkg = self.packagedb.get_package(package)
         else:
             self.error(ERROR_INTERNAL_ERROR, "Package was not found")
 
-        version = self.get_package_version(pkg)
+        version = self.__get_package_version(pkg)
 
         id = self.get_package_id(pkg.name, version, self.arch, "")
-        self.package(id, status, pkg.summary)
+        return self.package(id, status, pkg.summary)
+
+    def resolve(self, filter, package):
+        """ Turns a single package name into a package_id suitable for the other methods """
+        self.allow_interrupt(True);
+        self.percentage(None)
+        self.__get_package(package)
 
     def remove(self, deps, package_id):
-        """ removes given package """
-        package = self.get_package_from_id(package_id)[0]
-
+        """ Removes given package from system"""
         self.allow_interrupt(False);
         self.percentage(None)
+
+        package = self.get_package_from_id(package_id)[0]
 
         if self.installdb.has_package(package):
             self.status(STATE_REMOVE)
             try:
                 pisi.api.remove([package])
             except pisi.Error,e:
+                # system.base packages cannot be removed from system
                 self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
 
     def install(self, package_id):
-        """ installs given package """
-        package = self.get_package_from_id(package_id)[0]
-
+        """ Installs given package into system"""
+        # FIXME: fetch/install progress
         self.allow_interrupt(False);
         self.percentage(None)
+
+        package = self.get_package_from_id(package_id)[0]
 
         if self.packagedb.has_package(package):
             self.status(STATE_INSTALL)
@@ -94,9 +100,10 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
     def update(self, package_id):
+        """ Updates given package to its latest version """
         # FIXME: fetch/install progress
         self.allow_interrupt(False);
-        self.percentage(0)
+        self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
 
@@ -109,20 +116,26 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
     def get_repo_list(self):
+        """ Prints available repositories """
         self.allow_interrupt(True);
         self.percentage(None)
 
         for repo in pisi.api.list_repos():
+            # Internal FIXME: What an ugly way to get repo uri
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
 
     def get_updates(self):
+        """ Prints available updates and types """
+        self.allow_interrupt(True);
+        self.percentage(None)
+
         for package in pisi.api.list_upgradable():
 
             pkg = self.installdb.get_package(package)
 
-            version = self.get_package_version(pkg)
+            version = self.__get_package_version(pkg)
             id = self.get_package_id(pkg.name, version, self.arch, "")
-            
+
             # Internal FIXME: PiSi must provide this information as a single API call :(
             updates = [i for i in self.packagedb.get_package(package).history if pisi.version.Version(i.release) > pisi.version.Version(pkg.release)]
             if pisi.util.any(lambda i:i.type == "security", updates):
@@ -131,8 +144,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
                 self.package(id, INFO_NORMAL, pkg.summary)
 
     def refresh_cache(self):
+        """ Updates repository indexes """
         self.allow_interrupt(False);
-
         self.percentage(0)
 
         slice = (100/len(pisi.api.list_repos()))/2
@@ -144,3 +157,25 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.percentage(percentage)
 
         self.percentage(100)
+
+    def get_requires(self, package_id):
+        """ Prints a list of requires for a given package """
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        package = self.get_package_from_id(package_id)[0]
+
+        # FIXME: Handle packages which is not installed from repository
+        for pkg in self.packagedb.get_rev_deps(package):
+            self.__get_package(pkg[0])
+
+    def get_depends(self, package_id):
+        """ Prints a list of depends for a given package """
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        package = self.get_package_from_id(package_id)[0]
+
+        for pkg in self.packagedb.get_package(package).runtimeDependencies():
+            # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
+            self.__get_package(pkg.package)
