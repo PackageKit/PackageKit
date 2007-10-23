@@ -22,6 +22,10 @@ import pisi
 from packagekit.backend import *
 
 class PackageKitPisiBackend(PackageKitBaseBackend):
+   
+    # Currently we only support i686
+    arch = "i686"
+
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
@@ -29,6 +33,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.componentdb = pisi.db.componentdb.ComponentDB()
         self.packagedb = pisi.db.packagedb.PackageDB()
         self.repodb = pisi.db.repodb.RepoDB()
+
+    def get_package_version(self, pkg):
+        if pkg.build is not None:
+            version = "%s-%s-%s" % (pkg.version, pkg.release, pkg.build)
+        else:
+            version = "%s-%s" % (pkg.version, pkg.release)
+        return version
 
     def resolve(self, filter, package_id):
         """ turns a single package name into a package_id suitable for the other methods. """
@@ -45,14 +56,9 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR, "Package was not found")
 
-        if pkg.build is not None:
-            version = "%s-%s-%s" % (pkg.version, pkg.release, pkg.build)
-        else:
-            version = "%s-%s" % (pkg.version, pkg.release)
+        version = self.get_package_version(pkg)
 
-        # Currently we only support i686
-        arch = "i686"
-        id = self.get_package_id(pkg.name, version, arch, "")
+        id = self.get_package_id(pkg.name, version, self.arch, "")
         self.package(id, status, pkg.summary)
 
     def remove(self, deps, package_id):
@@ -67,7 +73,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             try:
                 pisi.api.remove([package])
             except pisi.Error,e:
-                self.error(ERROR_INTERNAL_ERROR, e)
+                self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
 
@@ -103,17 +109,30 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
     def get_repo_list(self):
+        self.allow_interrupt(True);
+        self.percentage(None)
+
         for repo in pisi.api.list_repos():
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
 
     def get_updates(self):
         for package in pisi.api.list_upgradable():
+
             pkg = self.installdb.get_package(package)
-            id = self.get_package_id(pkg.name, pkg.version, "", "")
-            # FIXME: type INFO_SECURITY or INFO_NORMAL
-            self.package(id, INFO_NORMAL, pkg.summary)
+
+            version = self.get_package_version(pkg)
+            id = self.get_package_id(pkg.name, version, self.arch, "")
+            
+            # Internal FIXME: PiSi must provide this information as a single API call :(
+            updates = [i for i in self.packagedb.get_package(package).history if pisi.version.Version(i.release) > pisi.version.Version(pkg.release)]
+            if pisi.util.any(lambda i:i.type == "security", updates):
+                self.package(id, INFO_SECURITY, pkg.summary)
+            else:
+                self.package(id, INFO_NORMAL, pkg.summary)
 
     def refresh_cache(self):
+        self.allow_interrupt(False);
+
         self.percentage(0)
 
         slice = (100/len(pisi.api.list_repos()))/2
