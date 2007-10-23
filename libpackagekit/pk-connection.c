@@ -122,13 +122,11 @@ pk_connection_init (PkConnection *connection)
 {
 	connection->priv = PK_CONNECTION_GET_PRIVATE (connection);
 	connection->priv->libgbus = libgbus_new ();
-
-	/* hardcode to PK */
-	libgbus_assign (connection->priv->libgbus, LIBGBUS_SYSTEM, PK_DBUS_SERVICE);
-
-	/* watch for future changes */
 	g_signal_connect (connection->priv->libgbus, "connection-changed",
 			  G_CALLBACK (pk_connection_connection_changed_cb), connection);
+
+	/* hardcode to PackageKit */
+	libgbus_assign (connection->priv->libgbus, LIBGBUS_SYSTEM, PK_DBUS_SERVICE);
 }
 
 /**

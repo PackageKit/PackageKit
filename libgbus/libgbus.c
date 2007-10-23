@@ -89,6 +89,9 @@ name_owner_changed_cb (DBusGProxy     *proxy,
  * @bus_type: The bus type, either LIBGBUS_SESSION or LIBGBUS_SYSTEM
  * @service: The LIBGBUS service name
  * Return value: success
+ *
+ * Emits connection-changed(TRUE) if connection is alive - this means you
+ * have to connect up the callback before this function is called.
  **/
 gboolean
 libgbus_assign (LibGBus      *libgbus,
@@ -137,6 +140,9 @@ libgbus_assign (LibGBus      *libgbus,
 
 	/* coldplug */
 	libgbus->priv->connected = libgbus_is_connected (libgbus);
+	if (libgbus->priv->connected == TRUE) {
+		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
+	}
 	return TRUE;
 }
 
