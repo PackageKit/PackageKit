@@ -201,10 +201,6 @@ gboolean	 pk_engine_get_progress			(PkEngine	*engine,
 							 guint		*elapsed,
 							 guint		*remaining,
 							 GError		**error);
-gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
-							 const gchar	*tid,
-							 guint		*percentage,
-							 GError		**error);
 gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 const gchar	*tid,
 							 gchar		**package,
