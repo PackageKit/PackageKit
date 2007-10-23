@@ -1,25 +1,25 @@
 Current status of the backends
 
-                  | conary | yum | apt | box | alpm | smart |
--------------------------------------------------------------
-resolve           |        |  X  |     |  X  |      |   X
-refresh-cache     |   X    |  X  |  X  |  X  |      |
-get-updates       |   X    |  X  |     |  X  |      |
-update-system     |   X    |  X  |     |  X  |      |
-search-name       |   X    |  X  |  X  |  X  |  X   |
-search-details    |        |  X  |  X  |  X  |      |
-search-file       |        |  X  |     |  X  |      |
-search-group      |        |     |     |     |      |
-install-package   |   X    |  X  |     |  X  |  X   |
-install-file      |        |  X  |     |  X  |      |
-remove-package    |   X    |  X  |     |  X  |  X   |   X
-update-package    |        |     |     |  X  |      |
-get-depends       |        |  X  |     |  X  |      |
-get-requires      |   X    |     |     |  X  |      |
-get-description   |   X    |  X  |  X  |  X  |      |
-get-update-detail |        |     |     |     |      |
-get-repo-list     |        |  X  |     |     |  X   |
-repo-enable       |        |  X  |     |     |      |
-repo-set-data     |        |     |     |     |      |
-cancel-transaction|        |     |     |     |      |
+                  | conary | yum | apt | box | alpm | smart | pisi |
+--------------------------------------------------------------------
+resolve           |        |  X  |     |  X  |      |   X   |   X  |
+refresh-cache     |   X    |  X  |  X  |  X  |      |       |   X  |
+get-updates       |   X    |  X  |     |  X  |      |       |   X  |
+update-system     |   X    |  X  |     |  X  |      |       |      |
+search-name       |   X    |  X  |  X  |  X  |  X   |       |      |
+search-details    |        |  X  |  X  |  X  |      |       |      |
+search-file       |        |  X  |     |  X  |      |       |      |
+search-group      |        |     |     |     |      |       |      |
+install-package   |   X    |  X  |     |  X  |  X   |       |   X  |
+install-file      |        |  X  |     |  X  |      |       |      |
+remove-package    |   X    |  X  |     |  X  |  X   |   X   |   X  |
+update-package    |        |     |     |  X  |      |       |   X  |
+get-depends       |        |  X  |     |  X  |      |       |      |
+get-requires      |   X    |     |     |  X  |      |       |      |
+get-description   |   X    |  X  |  X  |  X  |      |       |      |
+get-update-detail |        |     |     |     |      |       |      |
+get-repo-list     |        |  X  |     |     |  X   |       |   X  |
+repo-enable       |        |  X  |     |     |      |       |      |
+repo-set-data     |        |     |     |     |      |       |      |
+cancel-transaction|        |     |     |     |      |       |      |
 
