@@ -128,7 +128,7 @@
     <signal name="Finished">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
-      <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in seconds -->
+      <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in ms -->
     </signal>
     <signal name="AllowInterrupt">
       <arg type="s" name="tid" direction="out"/>

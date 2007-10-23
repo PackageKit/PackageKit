@@ -502,7 +502,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	PkTransactionItem *item;
 	PkRoleEnum role;
 	const gchar *exit_text;
-	gdouble time;
+	guint time;
 	gchar *packages;
 
 	g_return_if_fail (engine != NULL);
@@ -568,7 +568,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	}
 	g_free (packages);
 
-	pk_debug ("backend was running for %f seconds", time);
+	pk_debug ("backend was running for %i ms", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
 	/* could the update list have changed? */
@@ -579,8 +579,8 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	}
 
 	exit_text = pk_exit_enum_to_text (exit);
-	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, (guint) time);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, (guint) time);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, time);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, time);
 
 	/* unref */
 	g_object_unref (backend);

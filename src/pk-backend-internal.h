@@ -60,7 +60,7 @@ gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
 							 gchar		**version);
 PkEnumList	*pk_backend_get_groups			(PkBackend	*backend);
 PkEnumList	*pk_backend_get_filters			(PkBackend	*backend);
-gdouble		 pk_backend_get_runtime			(PkBackend	*backend);
+guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_load			(PkBackend      *backend,
 							 const gchar	*name);
 gboolean	 pk_backend_run				(PkBackend      *backend);

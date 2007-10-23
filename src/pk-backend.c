@@ -1605,11 +1605,16 @@ pk_backend_get_filters (PkBackend *backend)
 
 /**
  * pk_backend_get_runtime:
+ *
+ * Returns time running in ms
  */
-gdouble
+guint
 pk_backend_get_runtime (PkBackend *backend)
 {
-	return g_timer_elapsed (backend->priv->timer, NULL);
+	gdouble time;
+	time = g_timer_elapsed (backend->priv->timer, NULL);
+	time *= 1000;
+	return (guint) time;
 }
 
 /**

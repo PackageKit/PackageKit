@@ -72,13 +72,11 @@ name_owner_changed_cb (DBusGProxy     *proxy,
 	if (strcmp (name, libgbus->priv->service) == 0) {
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) != 0 && strlen (new) == 0 && libgbus->priv->connected == TRUE) {
-			g_debug ("emitting connection-changed for %s", name);
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
 			libgbus->priv->connected = FALSE;
 		}
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) == 0 && strlen (new) != 0 && libgbus->priv->connected == FALSE) {
-			g_debug ("emitting connection-changed for %s", name);
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 			libgbus->priv->connected = TRUE;
 		}
@@ -143,7 +141,6 @@ libgbus_assign (LibGBus      *libgbus,
 	/* coldplug */
 	libgbus->priv->connected = libgbus_is_connected (libgbus);
 	if (libgbus->priv->connected == TRUE) {
-		g_debug ("emitting connection-changed for %s", service);
 		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 	}
 	return TRUE;

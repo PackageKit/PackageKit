@@ -316,6 +316,7 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 	PkRoleEnum role;
 	gchar *blanking;
 	const gchar *role_text;
+	gfloat time;
 
 	/* cancel the spinning */
 	if (timer_id != 0) {
@@ -333,7 +334,8 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 
 	pk_client_get_role (client, &role, NULL);
 	role_text = pk_role_enum_to_text (role);
-	g_print ("%s runtime was %i seconds\n", role_text, runtime);
+	time = (gfloat) runtime / 1000.0;
+	g_print ("%s runtime was %.1f seconds\n", role_text, time);
 	if (loop != NULL) {
 		g_main_loop_quit (loop);
 	}

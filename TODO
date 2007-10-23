@@ -26,6 +26,3 @@ To do rollbacks sanely in PK we need a few things:
 resolve in pkcon has to check for installed package already - and not
 display a cryptic message when already installed
 
-*** Not enough resoltion in finished ***
-Convert finished signal to have time in milliseconds, not seconds.
-
