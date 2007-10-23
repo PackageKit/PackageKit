@@ -318,7 +318,7 @@ static gboolean
 backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 {
 	PkPackageId *pi;
-	GList *list;
+	GList *list = NULL;
 	ThreadData *d = (ThreadData*) data;
 	sqlite3 *db;
 
@@ -505,8 +505,9 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
-	g_return_if_fail (backend != NULL);
 	const gchar *deps;
+
+	g_return_if_fail (backend != NULL);
 	if (allow_deps == TRUE) {
 		deps = "yes";
 	} else {
