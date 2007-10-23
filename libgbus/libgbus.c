@@ -72,11 +72,13 @@ name_owner_changed_cb (DBusGProxy     *proxy,
 	if (strcmp (name, libgbus->priv->service) == 0) {
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) != 0 && strlen (new) == 0 && libgbus->priv->connected == TRUE) {
+			g_debug ("emitting connection-changed for %s", name);
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
 			libgbus->priv->connected = FALSE;
 		}
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) == 0 && strlen (new) != 0 && libgbus->priv->connected == FALSE) {
+			g_debug ("emitting connection-changed for %s", name);
 			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 			libgbus->priv->connected = TRUE;
 		}
@@ -117,8 +119,8 @@ libgbus_assign (LibGBus      *libgbus,
 	} else {
 		libgbus->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	}
-	if (error) {
-		g_warning ("Cannot connect to session bus: %s", error->message);
+	if (error != NULL) {
+		g_warning ("Cannot connect to bus: %s", error->message);
 		g_error_free (error);
 		return FALSE;
 	}
@@ -127,7 +129,7 @@ libgbus_assign (LibGBus      *libgbus,
 								DBUS_PATH_DBUS,
 						 		DBUS_INTERFACE_DBUS,
 								&error);
-	if (error) {
+	if (error != NULL) {
 		g_warning ("Cannot connect to DBUS: %s", error->message);
 		g_error_free (error);
 		return FALSE;
@@ -141,6 +143,7 @@ libgbus_assign (LibGBus      *libgbus,
 	/* coldplug */
 	libgbus->priv->connected = libgbus_is_connected (libgbus);
 	if (libgbus->priv->connected == TRUE) {
+		g_debug ("emitting connection-changed for %s", service);
 		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 	}
 	return TRUE;

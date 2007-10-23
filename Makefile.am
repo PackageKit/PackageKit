@@ -1,21 +1,21 @@
-SUBDIRS = 			\
-	docs			\
-	html			\
-	policy			\
-	etc			\
-	man			\
-	data			\
-	libselftest		\
-	libgbus			\
-	libpackagekit		\
-	src			\
-	client			\
-	backends		\
-	$(NULL)
-
 AUTOMAKE_OPTIONS = 1.7
 
 NULL =
+
+SUBDIRS = 						\
+	docs						\
+	html						\
+	policy						\
+	etc						\
+	man						\
+	data						\
+	libselftest					\
+	libgbus						\
+	libpackagekit					\
+	src						\
+	client						\
+	backends					\
+	$(NULL)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
@@ -24,10 +24,10 @@ dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = PackageKit.conf
 
 packagekitpythondir = ${PYTHON_PACKAGE_DIR}
-packagekitpython_PYTHON =             \
-	python/packagekit/__init__.py     \
-	python/packagekit/backend.py		\
-	python/packagekit/frontend.py		\
+packagekitpython_PYTHON =				\
+	python/packagekit/__init__.py			\
+	python/packagekit/backend.py			\
+	python/packagekit/frontend.py			\
 	$(NULL)
 	
 
