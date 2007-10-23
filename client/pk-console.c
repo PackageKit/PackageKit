@@ -165,8 +165,14 @@ static void
 pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
-	g_print ("Repository detail for %s\n", repo_id);
-	g_print ("  %i, %s\n", enabled, description);
+	gchar *repo;
+	repo = pk_console_pad_string (repo_id, 28, NULL);
+	if (enabled == TRUE) {
+		g_print ("  enabled   %s %s\n", repo, description);
+	} else {
+		g_print ("  disabled  %s %s\n", repo, description);
+	}
+	g_free (repo);
 }
 
 /**
