@@ -20,46 +20,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
-#include <string.h>
+
 #include <pk-backend.h>
-
-/**
- * backend_remove_package:
- */
-static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
-{
-	g_return_if_fail (backend != NULL);
-	const gchar *deps;
-	if (allow_deps == TRUE) {
-		deps = "yes";
-	} else {
-		deps = "no";
-	}
-	pk_backend_spawn_helper (backend, "remove.py", deps, package_id, NULL);
-}
-
-/**
- * backend_resolve:
- */
-static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "resolve.py", filter, package_id, NULL);
-}
-
-/**
- * backend_search_name:
- */
-static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
-}
+#include <pk-backend-python.h>
 
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
@@ -78,13 +41,13 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* install_package */
 	NULL,						/* install_file */
 	NULL,						/* refresh_cache */
-	backend_remove_package,				/* remove_package */
-	backend_resolve,				/* resolve */
+	pk_backend_python_remove_package,		/* remove_package */
+	pk_backend_python_resolve,			/* resolve */
 	NULL,						/* rollback */
 	NULL,						/* search_details */
 	NULL,						/* search_file */
 	NULL,						/* search_group */
-	backend_search_name,				/* search_name */
+	pk_backend_python_search_name,			/* search_name */
 	NULL,						/* update_package */
 	NULL,						/* update_system */
 	NULL,						/* get_repo_list */
