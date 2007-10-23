@@ -29,6 +29,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.reloadChannels()
         self.ctrl.getCache()
 
+        # FIXME: Only pulsing progress for now.
+        self.percentage(None)
+
     def remove(self, allowdeps, packageid):
 
         idparts = packageid.split(';')
