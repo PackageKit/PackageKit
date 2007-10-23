@@ -1,22 +1,68 @@
-=============
-Version 0.1.0
-=============
+~~~~~~~~~~~~~
+Version 0.1.1
+~~~~~~~~~~~~~
 
-- The first public release of PackageKit!
-- New gobject client library for session software to easily talk to PackageKit.
-- Asynchronous API that does not block.
-- Daemon that can queue and manage multiple simultaneous blocking and
-  non-blocking transactions
-- Client applications (pkcon and pkmon) that interact with PackageKit on the
-  command line without any GUI dependencies
-- Many compiled and scripted backends: conary, yum, apt, box, alpm
-- Comprehensive docbook documentation
-- Daemon configuration parameters in etc
-- Module level unit tests as standard
-- Python backend and frontend helper libraries
-- Transaction logging and capability exports for GUI tools
-- HAL locking supported for not-to-be interrupted phases of the transaction
-- NetworkManager integration for network state (other network detection
-  stacks can also be used in the future)
-- PolicyKit integration for fine-grained permission control.
+* New backends:
+ - A SMART backend (James Bowes)
+ - A PiSi backend (S.Çağlar Onur)
+
+* New features:
+ - A better, easier to use website; http://www.packagekit.org (Richard Hughes)
+ - Added missing install-file.py so we can do local rpm installs (Tim Lauridsen)
+ - Be ultra-paranoid about validating input from the user (Richard Hughes)
+ - Send SIGQUIT and then SIGKILL after a little delay, so we can clean up the
+   backends nicely by unlocking when we cancel (Richard Hughes)
+ - Add resolve functionality in pkcon to allow non-package_id use, for instance
+   'pkcon remove gimp' now does the right thing (Richard Hughes)
+ - Display a pulsing progress bar for no-progress-updates and percentage-update
+   that is shown when using a console (James Bowes)
+ - Remove the hard dependency on NetworkManager so other networking stacks
+   can be used instead (S.Çağlar Onur, Richard Hughes)
+ - Add a filter parameter for Resolve() so we can do the filtering in the
+   spawned backend without duplicating code (James Bowes, Richard Hughes)
+ - Substantial additions to the box backend (Grzegorz Dabrowski)
+ - Add GetRepoList and RepoEnable to the yum backend (Tim Lauridsen)
+ - Add bash completion script for pkcon (James Bowes)
+ - Get the repo list for the aplm backend (Andreas Obergrusberger)
+
+* API changes:
+ - Store the transaction database in /var/lib rather than /var/db (James Bowes)
+ - Don't expose the private list in PkTaskList, instead use verified functions
+   to ensure we can't corrupt data accidentally (Richard Hughes)
+ - Don't export the private data array in PkClient or PkPackageList - this
+   breaks API, so the library version has been bumped (Richard Hughes)
+
+* Bugfixes:
+ - Fix the resolve method parameter passing - now pk-install-package should work
+   correctly (James Bowes)
+ - Fix all the copyright notices to be a standard GPL2+ boilerplate licence
+   text (Tom Parker, Robin Norwood)
+ - Dist the local apt headers so the apt backend can be compiled from a tarball
+   rather than just from git (Richard Hughes)
+ - Fix a 1-in-10 random daemon startup crash when backends do libnm_glib init,
+   shutdown, init, shutdown repeatedly (Richard Hughes)
+ - Added locking in the yum backend to allow simultaneous use of the yum command
+   line tool or yum-updatesd (Tim Lauridsen)
+ - Fix NoPercentageUpdates validity checking (James Bowes)
+
+~~~~~~~~~~~~~
+Version 0.1.0
+~~~~~~~~~~~~~
+
+* The first public release of PackageKit:
+ - New gobject client library for session software to easily talk to PackageKit.
+ - Asynchronous API that does not block.
+ - Daemon that can queue and manage multiple simultaneous blocking and
+   non-blocking transactions
+ - Client applications (pkcon and pkmon) that interact with PackageKit on the
+   command line without any GUI dependencies
+ - Many compiled and scripted backends: conary, yum, apt, box, alpm
+ - Comprehensive docbook documentation
+ - Daemon configuration parameters in etc
+ - Module level unit tests as standard
+ - Python backend and frontend helper libraries
+ - Transaction logging and capability exports for GUI tools
+ - HAL locking supported for not-to-be interrupted phases of the transaction
+ - NetworkManager integration for network state
+ - PolicyKit integration for fine-grained permission control.
 
