@@ -130,6 +130,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+
         self._do_search(searchlist, options)
 
     def search_details(self, opt, key):
@@ -271,6 +274,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return INFO_NORMAL
 
     def get_updates(self):
+        self.allow_interrupt(True)
         self.percentage()
         try:
             updateItems = self.client.fullUpdateItemList()
