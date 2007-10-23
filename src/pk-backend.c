@@ -46,6 +46,7 @@
 #include "pk-marshal.h"
 #include "pk-enum.h"
 #include "pk-spawn.h"
+#include "pk-time.h"
 #include "pk-inhibit.h"
 #include "pk-thread-list.h"
 
@@ -70,7 +71,7 @@ struct _PkBackendPrivate
 	gchar			*xcached_parameter;
 	gchar			*xcached_value;
 	PkExitEnum		 exit;
-	GTimer			*timer;
+	PkTime			*time;
 	PkSpawn			*spawn;
 	gboolean		 is_killable;
 	gboolean		 during_initialize;
@@ -608,6 +609,9 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 
 	/* save in case we need this from coldplug */
 	backend->priv->last_percentage = percentage;
+
+	/* needed for time remaining calculation */
+	pk_time_add_data (backend->priv->time, percentage);
 
 	pk_debug ("emit percentage-changed %i", percentage);
 	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
@@ -1611,10 +1615,7 @@ pk_backend_get_filters (PkBackend *backend)
 guint
 pk_backend_get_runtime (PkBackend *backend)
 {
-	gdouble time;
-	time = g_timer_elapsed (backend->priv->timer, NULL);
-	time *= 1000;
-	return (guint) time;
+	return pk_time_get_elapsed (backend->priv->time);
 }
 
 /**
@@ -1648,7 +1649,6 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 	g_free (backend->priv->last_package);
 	pk_backend_unload (backend);
-	g_timer_destroy (backend->priv->timer);
 
 	g_free (backend->priv->xcached_package_id);
 	g_free (backend->priv->xcached_transaction_id);
@@ -1664,6 +1664,7 @@ pk_backend_finalize (GObject *object)
 
 	/* remove any inhibit, it's okay to call this function when it's not needed */
 	pk_inhibit_remove (backend->priv->inhibit, backend);
+	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
 
 	g_object_unref (backend->priv->network);
@@ -1771,7 +1772,6 @@ static void
 pk_backend_init (PkBackend *backend)
 {
 	backend->priv = PK_BACKEND_GET_PRIVATE (backend);
-	backend->priv->timer = g_timer_new ();
 	backend->priv->assigned = FALSE;
 	backend->priv->is_killable = FALSE;
 	backend->priv->set_error = FALSE;
@@ -1793,6 +1793,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
+	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->thread_list = pk_thread_list_new ();

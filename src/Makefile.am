@@ -46,6 +46,8 @@ packagekitd_SOURCES =					\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-security.h					\
+	pk-time.h					\
+	pk-time.c					\
 	pk-conf.c					\
 	pk-conf.h					\
 	pk-spawn.c					\
@@ -126,6 +128,8 @@ pk_self_test_SOURCES =					\
 	pk-inhibit.c					\
 	pk-backend.h					\
 	pk-backend.c					\
+	pk-time.h					\
+	pk-time.c					\
 	pk-spawn.h					\
 	pk-spawn.c					\
 	pk-conf.h					\
