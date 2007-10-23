@@ -436,6 +436,24 @@ pk_console_remove_package (PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_console_update_package:
+ **/
+static gboolean
+pk_console_update_package (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to update\n");
+		return FALSE;
+	}
+	ret = pk_client_update_package (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
  * pk_console_process_commands:
  **/
 static gboolean
@@ -509,7 +527,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 			g_set_error (error, 0, 0, "you need to specify a package to update");
 			return FALSE;
 		} else {
-			wait = pk_client_update_package (client, value);
+			wait = pk_console_update_package (client, value);
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
