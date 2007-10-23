@@ -31,44 +31,48 @@ packagekitpython_PYTHON =				\
 	$(NULL)
 	
 
-EXTRA_DIST =			\
-	PackageKit.conf.in	\
-	packagekit.pc.in	\
-	COPYING			\
-	MAINTAINERS		\
-	AUTHORS			\
-	INSTALL			\
-	README			\
-	HACKING			\
-	NEWS			\
-	ChangeLog		\
+EXTRA_DIST =						\
+	PackageKit.conf.in				\
+	packagekit.pc.in				\
+	COPYING						\
+	MAINTAINERS					\
+	AUTHORS						\
+	INSTALL						\
+	README						\
+	HACKING						\
+	NEWS						\
+	ChangeLog					\
 	$(NULL)
 
 clean-local :
 	rm -f *~
 
-DISTCLEANFILES =		\
-	PackageKit-*.tar.gz	\
-	packagekit.pc		\
-	intltool-extract	\
-	intltool-merge		\
-	intltool-update		\
+security-check:
+	flawfinder `find -name "*.c"`
+
+DISTCLEANFILES =					\
+	PackageKit-*.tar.gz				\
+	packagekit.pc					\
+	intltool-extract				\
+	intltool-merge					\
+	intltool-update					\
 	$(NULL)
 
-MAINTAINERCLEANFILES =		\
-	*~			\
-	intltool-*.in		\
-	compile			\
-	configure		\
-	INSTALL			\
-	install-sh		\
-	missing			\
-	mkinstalldirs		\
-	config.guess		\
-	ltmain.sh		\
-	config.sub		\
-	depcomp			\
-	Makefile.in		\
-	config.h.*		\
-	aclocal.m4		\
+MAINTAINERCLEANFILES =					\
+	*~						\
+	intltool-*.in					\
+	compile						\
+	configure					\
+	INSTALL						\
+	install-sh					\
+	missing						\
+	mkinstalldirs					\
+	config.guess					\
+	ltmain.sh					\
+	config.sub					\
+	depcomp						\
+	Makefile.in					\
+	config.h.*					\
+	aclocal.m4					\
 	$(NULL)
+
