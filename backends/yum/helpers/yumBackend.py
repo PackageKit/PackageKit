@@ -743,8 +743,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not repo.isEnabled():
                     repo.enablePersistent()
                 
-        except Errors.RepoError,e:
-            self.error(ERROR_INTERNAL_ERROR, "repo %s is not found" % repoid)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
         
 
     def get_repo_list(self):

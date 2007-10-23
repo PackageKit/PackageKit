@@ -40,6 +40,8 @@ ERROR_FILTER_INVALID = "filter-invalid"
 ERROR_TRANSACTION_ERROR = "transaction-error"
 ERROR_TRANSACTION_ERROR = "transaction-error"
 ERROR_NO_CACHE = "no-cache"
+ERROR_REPO_NOT_FOUND = "repo-not-found"
+
 
 STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"
