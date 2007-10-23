@@ -475,6 +475,42 @@ pk_console_update_package (PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_console_get_requires:
+ **/
+static gboolean
+pk_console_get_requires(PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to get requires\n");
+		return FALSE;
+	}
+	ret = pk_client_get_requires (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
+ * pk_console_get_depends:
+ **/
+static gboolean
+pk_console_get_depends(PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to get depends\n");
+		return FALSE;
+	}
+	ret = pk_client_get_depends (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
  * pk_console_process_commands:
  **/
 static gboolean
@@ -580,7 +616,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 				g_set_error (error, 0, 0, "you need to specify a search term");
 				return FALSE;
 			} else {
-				wait = pk_client_get_depends (client, details);
+				wait = pk_console_get_depends (client, details);
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
 			if (details == NULL) {
@@ -594,7 +630,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 				g_set_error (error, 0, 0, "you need to specify a search term");
 				return FALSE;
 			} else {
-				wait = pk_client_get_requires (client, details);
+				wait = pk_console_get_requires (client, details);
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
