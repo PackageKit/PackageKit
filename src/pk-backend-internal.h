@@ -110,10 +110,11 @@ gboolean	 pk_backend_get_status			(PkBackend	*backend,
 gboolean	 pk_backend_get_role			(PkBackend	*backend,
 							 PkRoleEnum	*role,
 							 const gchar	**package_id);
-gboolean	 pk_backend_get_percentage		(PkBackend	*backend,
-							 guint		*percentage);
-gboolean	 pk_backend_get_sub_percentage		(PkBackend	*backend,
-							 guint		*percentage);
+gboolean	 pk_backend_get_progress		(PkBackend	*backend,
+							 guint		*percentage,
+							 guint		*subpercentage,
+							 guint		*elapsed,
+							 guint		*remaining);
 gboolean	 pk_backend_get_package			(PkBackend	*backend,
 							 gchar		**package_id);
 

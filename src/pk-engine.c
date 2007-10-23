@@ -78,9 +78,7 @@ struct PkEnginePrivate
 enum {
 	PK_ENGINE_TRANSACTION_LIST_CHANGED,
 	PK_ENGINE_TRANSACTION_STATUS_CHANGED,
-	PK_ENGINE_PERCENTAGE_CHANGED,
-	PK_ENGINE_SUB_PERCENTAGE_CHANGED,
-	PK_ENGINE_NO_PERCENTAGE_UPDATES,
+	PK_ENGINE_PROGRESS_CHANGED,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
@@ -239,10 +237,11 @@ pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status
 }
 
 /**
- * pk_engine_percentage_changed_cb:
+ * pk_engine_progress_changed_cb:
  **/
 static void
-pk_engine_percentage_changed_cb (PkBackend *backend, guint percentage, PkEngine *engine)
+pk_engine_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage,
+			       guint elapsed, guint remaining, PkEngine *engine)
 {
 	PkTransactionItem *item;
 
@@ -254,50 +253,10 @@ pk_engine_percentage_changed_cb (PkBackend *backend, guint percentage, PkEngine 
 		pk_warning ("could not find backend");
 		return;
 	}
-	pk_debug ("emitting percentage-changed tid:%s %i", item->tid, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_PERCENTAGE_CHANGED], 0, item->tid, percentage);
-	pk_engine_reset_timer (engine);
-}
-
-/**
- * pk_engine_sub_percentage_changed_cb:
- **/
-static void
-pk_engine_sub_percentage_changed_cb (PkBackend *backend, guint percentage, PkEngine *engine)
-{
-	PkTransactionItem *item;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	pk_debug ("emitting sub-percentage-changed tid:%s %i", item->tid, percentage);
-	g_signal_emit (engine, signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED], 0, item->tid, percentage);
-	pk_engine_reset_timer (engine);
-}
-
-/**
- * pk_engine_no_percentage_updates_cb:
- **/
-static void
-pk_engine_no_percentage_updates_cb (PkBackend *backend, PkEngine *engine)
-{
-	PkTransactionItem *item;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	pk_debug ("emitting no-percentage-updates tid:%s", item->tid);
-	g_signal_emit (engine, signals [PK_ENGINE_NO_PERCENTAGE_UPDATES], 0, item->tid);
+	pk_debug ("emitting percentage-changed tid:%s %i, %i, %i, %i",
+		  item->tid, percentage, subpercentage, elapsed, remaining);
+	g_signal_emit (engine, signals [PK_ENGINE_PROGRESS_CHANGED], 0,
+		       item->tid, percentage, subpercentage, elapsed, remaining);
 	pk_engine_reset_timer (engine);
 }
 
@@ -674,12 +633,8 @@ pk_engine_backend_new (PkEngine *engine)
 	/* connect up signals */
 	g_signal_connect (backend, "transaction-status-changed",
 			  G_CALLBACK (pk_engine_transaction_status_changed_cb), engine);
-	g_signal_connect (backend, "percentage-changed",
-			  G_CALLBACK (pk_engine_percentage_changed_cb), engine);
-	g_signal_connect (backend, "sub-percentage-changed",
-			  G_CALLBACK (pk_engine_sub_percentage_changed_cb), engine);
-	g_signal_connect (backend, "no-percentage-updates",
-			  G_CALLBACK (pk_engine_no_percentage_updates_cb), engine);
+	g_signal_connect (backend, "progress-changed",
+			  G_CALLBACK (pk_engine_progress_changed_cb), engine);
 	g_signal_connect (backend, "package",
 			  G_CALLBACK (pk_engine_package_cb), engine);
 	g_signal_connect (backend, "update-detail",
@@ -2099,10 +2054,12 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 }
 
 /**
- * pk_engine_get_percentage:
+ * pk_engine_get_progress:
  **/
 gboolean
-pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage, GError **error)
+pk_engine_get_progress (PkEngine *engine, const gchar *tid,
+			guint *percentage, guint *subpercentage,
+			guint *elapsed, guint *remaining, GError **error)
 {
 	PkTransactionItem *item;
 	gboolean ret;
@@ -2117,38 +2074,10 @@ pk_engine_get_percentage (PkEngine *engine, const gchar *tid, guint *percentage,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_percentage (item->backend, percentage);
+	ret = pk_backend_get_progress (item->backend, percentage, subpercentage, elapsed, remaining);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "No percentage data available");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
- * pk_engine_get_sub_percentage:
- **/
-gboolean
-pk_engine_get_sub_percentage (PkEngine *engine, const gchar *tid, guint *percentage, GError **error)
-{
-	PkTransactionItem *item;
-	gboolean ret;
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
-			     "No tid:%s", tid);
-		return FALSE;
-	}
-	ret = pk_backend_get_sub_percentage (item->backend, percentage);
-	if (ret == FALSE) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "No sub-percentage data available");
+			     "No progress data available");
 		return FALSE;
 	}
 	return TRUE;
@@ -2371,21 +2300,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_ENGINE_PERCENTAGE_CHANGED] =
-		g_signal_new ("percentage-changed",
+	signals [PK_ENGINE_PROGRESS_CHANGED] =
+		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
-	signals [PK_ENGINE_SUB_PERCENTAGE_CHANGED] =
-		g_signal_new ("sub-percentage-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT,
-			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_UINT);
-	signals [PK_ENGINE_NO_PERCENTAGE_UPDATES] =
-		g_signal_new ("no-percentage-updates",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_UINT_UINT_UINT_UINT,
+			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

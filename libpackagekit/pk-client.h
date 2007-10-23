@@ -36,6 +36,8 @@ G_BEGIN_DECLS
 #define PK_IS_CLIENT_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CLIENT))
 #define PK_CLIENT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CLIENT, PkClientClass))
 
+#define PK_CLIENT_PERCENTAGE_INVALID	101
+
 typedef struct PkClientPrivate PkClientPrivate;
 
 typedef struct
@@ -66,10 +68,11 @@ gboolean	 pk_client_get_status			(PkClient	*client,
 gboolean	 pk_client_get_role			(PkClient	*client,
 							 PkRoleEnum	*role,
 							 gchar		**package_id);
-gboolean	 pk_client_get_percentage		(PkClient	*client,
-							 guint		*percentage);
-gboolean	 pk_client_get_sub_percentage		(PkClient	*client,
-							 guint		*percentage);
+gboolean	 pk_client_get_progress			(PkClient	*client,
+							 guint		*percentage,
+							 guint		*subpercentage,
+							 guint		*elapsed,
+							 guint		*remaining);
 gboolean	 pk_client_get_package			(PkClient	*client,
 							 gchar		**package_id);
 gboolean	 pk_client_cancel			(PkClient	*client);

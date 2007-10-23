@@ -82,6 +82,7 @@ struct _PkBackendPrivate
 	/* needed for gui coldplugging */
 	guint			 last_percentage;
 	guint			 last_subpercentage;
+	guint			 last_remaining;
 	gchar			*last_package;
 	PkThreadList		*thread_list;
 	gulong			 signal_finished;
@@ -91,9 +92,7 @@ struct _PkBackendPrivate
 
 enum {
 	PK_BACKEND_TRANSACTION_STATUS_CHANGED,
-	PK_BACKEND_PERCENTAGE_CHANGED,
-	PK_BACKEND_SUB_PERCENTAGE_CHANGED,
-	PK_BACKEND_NO_PERCENTAGE_UPDATES,
+	PK_BACKEND_PROGRESS_CHANGED,
 	PK_BACKEND_DESCRIPTION,
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
@@ -614,13 +613,37 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 }
 
 /**
+ * pk_backend_emit_progress_changed:
+ **/
+static gboolean
+pk_backend_emit_progress_changed (PkBackend *backend)
+{
+	guint percentage;
+	guint subpercentage;
+	guint elapsed;
+	guint remaining;
+
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	percentage = backend->priv->last_percentage;
+	subpercentage = backend->priv->last_subpercentage;
+	elapsed = pk_time_get_elapsed (backend->priv->time);
+	remaining = backend->priv->last_remaining;
+
+	pk_debug ("emit progress %i, %i, %i, %i",
+		  percentage, subpercentage, elapsed, remaining);
+	g_signal_emit (backend, signals [PK_BACKEND_PROGRESS_CHANGED], 0,
+		       percentage, subpercentage, elapsed, remaining);
+	return TRUE;
+}
+
+/**
  * pk_backend_change_percentage:
  **/
 gboolean
 pk_backend_change_percentage (PkBackend *backend, guint percentage)
 {
-	guint remaining;
-
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -631,11 +654,11 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 	pk_time_add_data (backend->priv->time, percentage);
 
 	/* TODO: lets try this */
-	remaining = pk_time_get_remaining (backend->priv->time);
-	pk_debug ("this will take ~%i seconds", remaining);
+	backend->priv->last_remaining = pk_time_get_remaining (backend->priv->time);
+	pk_debug ("this will now take ~%i seconds", backend->priv->last_remaining);
 
-	pk_debug ("emit percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
+	/* emit the progress changed signal */
+	pk_backend_emit_progress_changed (backend);
 	return TRUE;
 }
 
@@ -651,8 +674,8 @@ pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
 	/* save in case we need this from coldplug */
 	backend->priv->last_subpercentage = percentage;
 
-	pk_debug ("emit sub-percentage-changed %i", percentage);
-	g_signal_emit (backend, signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED], 0, percentage);
+	/* emit the progress changed signal */
+	pk_backend_emit_progress_changed (backend);
 	return TRUE;
 }
 
@@ -730,38 +753,21 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	return TRUE;
 }
 
-
 /**
- * pk_backend_get_percentage:
+ * pk_backend_get_progress:
  **/
 gboolean
-pk_backend_get_percentage (PkBackend *backend, guint *percentage)
+pk_backend_get_progress (PkBackend *backend,
+			 guint *percentage, guint *subpercentage,
+			 guint *elapsed, guint *remaining)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	/* no data yet... */
-	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
-		return FALSE;
-	}
 	*percentage = backend->priv->last_percentage;
-	return TRUE;
-}
-
-/**
- * pk_backend_get_sub_percentage:
- **/
-gboolean
-pk_backend_get_sub_percentage (PkBackend *backend, guint *percentage)
-{
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-
-	/* no data yet... */
-	if (backend->priv->last_subpercentage == PK_BACKEND_PERCENTAGE_INVALID) {
-		return FALSE;
-	}
-	*percentage = backend->priv->last_subpercentage;
+	*subpercentage = backend->priv->last_subpercentage;
+	*elapsed = pk_time_get_elapsed (backend->priv->time);
+	*remaining = backend->priv->last_remaining;
 	return TRUE;
 }
 
@@ -1019,8 +1025,8 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	/* invalidate previous percentage */
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 
-	pk_debug ("emit no-percentage-updates");
-	g_signal_emit (backend, signals [PK_BACKEND_NO_PERCENTAGE_UPDATES], 0);
+	/* emit the progress changed signal */
+	pk_backend_emit_progress_changed (backend);
 	return TRUE;
 }
 
@@ -1709,16 +1715,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_PERCENTAGE_CHANGED] =
-		g_signal_new ("percentage-changed",
+	signals [PK_BACKEND_PROGRESS_CHANGED] =
+		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_SUB_PERCENTAGE_CHANGED] =
-		g_signal_new ("sub-percentage-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
+			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	signals [PK_BACKEND_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1767,11 +1768,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_NO_PERCENTAGE_UPDATES] =
-		g_signal_new ("no-percentage-updates",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
 	signals [PK_BACKEND_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1810,6 +1806,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->xcached_value = NULL;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->last_remaining = 0;
 	backend->priv->last_package = NULL;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
