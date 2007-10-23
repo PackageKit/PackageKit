@@ -322,6 +322,10 @@
               <entry><literal>transaction-error</literal></entry>
               <entry>There was a generic transaction error</entry>
             </row>
+            <row>
+              <entry><literal>repo-not-found</literal></entry>
+              <entry>The repository name could not be found</entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
