@@ -99,6 +99,7 @@ static PkTaskEnumMatch task_error[] = {
 	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
+	{PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,	"cannot-remove-system-package"},
 	{0, NULL},
 };
 

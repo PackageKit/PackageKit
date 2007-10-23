@@ -41,7 +41,7 @@ ERROR_TRANSACTION_ERROR = "transaction-error"
 ERROR_TRANSACTION_ERROR = "transaction-error"
 ERROR_NO_CACHE = "no-cache"
 ERROR_REPO_NOT_FOUND = "repo-not-found"
-
+ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE = "cannot-remove-system-package"
 
 STATE_DOWNLOAD = "download"
 STATE_INSTALL = "install"
