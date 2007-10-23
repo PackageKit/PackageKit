@@ -140,7 +140,7 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        print >> sys.stderr,"repo-detail\t%s\t%s\t%s" % (repoid,name,state)
+        print >> sys.stdout,"repo-detail\t%s\t%s\t%s" % (repoid,name,state)
 
     def data(self,data):
         '''
