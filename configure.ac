@@ -398,6 +398,7 @@ AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_default_backend = xconary], [us
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BOX backend])
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [using SMART backend])
+AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
 
 
 dnl ---------------------------------------------------------------------------
@@ -426,6 +427,8 @@ backends/test/Makefile
 backends/test/helpers/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
+backends/pisi/Makefile
+backends/pisi/helpers/Makefile
 data/Makefile
 data/tests/Makefile
 libselftest/Makefile
