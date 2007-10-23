@@ -12,6 +12,8 @@ dist_helper_DATA = 			\
 	get-requires.py			\
 	get-updates.py			\
 	get-description.py		\
+	get-repo-list.py		\
+	repo-enable.py			\
 	install.py			\
 	remove.py			\
 	resolve.py			\
