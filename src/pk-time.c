@@ -48,9 +48,9 @@ static void     pk_time_init		(PkTime      *time);
 static void     pk_time_finalize	(GObject     *object);
 
 #define PK_TIME_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TIME, PkTimePrivate))
-#define PK_TIME_AVERAGE_MIN		2
-#define PK_TIME_AVERAGE_MAX		5
-#define PK_TIME_VALUE_MIN		2
+#define PK_TIME_AVERAGE_MIN		4
+#define PK_TIME_AVERAGE_MAX		10
+#define PK_TIME_VALUE_MIN		5
 #define PK_TIME_VALUE_MAX		60*60
 
 struct PkTimePrivate
