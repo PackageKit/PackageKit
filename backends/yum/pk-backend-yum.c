@@ -19,10 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
-#include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-python.h>
 
 /**
  * backend_get_groups:
@@ -52,217 +50,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      -1);
 }
 
-/**
- * backend_cancel:
- */
-static void
-backend_cancel (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	/* this feels bad... */
-	pk_backend_spawn_kill (backend);
-}
-
-/**
- * backend_get_depends:
- */
-static void
-backend_get_depends (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
-}
-
-/**
- * backend_get_description:
- */
-static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
-}
-
-/**
- * backend_get_requires:
- */
-static void
-backend_get_requires (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
-}
-
-/**
- * backend_get_updates:
- */
-static void
-backend_get_updates (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
-}
-
-/**
- * backend_install_package:
- */
-static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "install.py", package_id, NULL);
-}
-
-/**
- * backend_install_file:
- */
-static void
-backend_install_file (PkBackend *backend, const gchar *full_path)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "install-file.py", full_path, NULL);
-}
-
-/**
- * backend_refresh_cache:
- */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
-}
-
-/**
- * backend_remove_package:
- */
-static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
-{
-	g_return_if_fail (backend != NULL);
-	const gchar *deps;
-	if (allow_deps == TRUE) {
-		deps = "yes";
-	} else {
-		deps = "no";
-	}
-	pk_backend_spawn_helper (backend, "remove.py", deps, package_id, NULL);
-}
-
-/**
- * backend_search_details:
- */
-static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
-}
-
-/**
- * backend_search_file:
- */
-static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "search-file.py", filter, search, NULL);
-}
-
-#if 0
-/**
- * backend_search_group:
- */
-static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
-}
-#endif
-
-/**
- * backend_search_name:
- */
-static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
-}
-
-/**
- * backend_update_package:
- */
-static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "update.py", package_id, NULL);
-}
-
-/**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "update-system.py", NULL);
-}
-
-/**
- * backend_resolve:
- */
-static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "resolve.py", filter, package_id, NULL);
-}
-
-/**
- * backend_get_repo_list:
- */
-static void
-backend_get_repo_list (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-repo-list.py", NULL);
-}
-
-/**
- * backend_repo_enable:
- */
-static void
-backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
-{
-	g_return_if_fail (backend != NULL);
-	if (enabled == TRUE) {
-		pk_backend_spawn_helper (backend, "repo-enable.py", rid, "true", NULL);
-	} else {
-		pk_backend_spawn_helper (backend, "repo-enable.py", rid, "false", NULL);
-	}
-}
-
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"0.0.1",				/* version */
@@ -271,26 +58,26 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel,				/* cancel */
-	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
-	backend_get_requires,			/* get_requires */
+	pk_backend_python_cancel,		/* cancel */
+	pk_backend_python_get_depends,		/* get_depends */
+	pk_backend_python_get_description,	/* get_description */
+	pk_backend_python_get_requires,		/* get_requires */
 	NULL,					/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
-	backend_install_file,			/* install_file */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
-	backend_resolve,			/* resolve */
+	pk_backend_python_get_updates,		/* get_updates */
+	pk_backend_python_install_package,	/* install_package */
+	pk_backend_python_install_file,		/* install_file */
+	pk_backend_python_refresh_cache,	/* refresh_cache */
+	pk_backend_python_remove_package,	/* remove_package */
+	pk_backend_python_resolve,		/* resolve */
 	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
-	backend_search_file,			/* search_file */
+	pk_backend_python_search_details,	/* search_details */
+	pk_backend_python_search_file,		/* search_file */
 	NULL,					/* search_group */
-	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
-	backend_update_system,			/* update_system */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_repo_enable,			/* repo_enable */
+	pk_backend_python_search_name,		/* search_name */
+	pk_backend_python_update_package,	/* update_package */
+	pk_backend_python_update_system,	/* update_system */
+	pk_backend_python_get_repo_list,	/* get_repo_list */
+	pk_backend_python_repo_enable,		/* repo_enable */
 	NULL					/* repo_set_data */
 );
 
