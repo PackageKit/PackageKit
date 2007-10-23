@@ -50,8 +50,8 @@ static void     pk_time_finalize	(GObject     *object);
 #define PK_TIME_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TIME, PkTimePrivate))
 #define PK_TIME_AVERAGE_MIN		2
 #define PK_TIME_AVERAGE_MAX		5
-#define PK_TIME_VALUE_MIN		5*1000
-#define PK_TIME_VALUE_MAX		60*60*1000
+#define PK_TIME_VALUE_MIN		5
+#define PK_TIME_VALUE_MAX		60*60
 
 struct PkTimePrivate
 {
@@ -86,7 +86,7 @@ pk_time_get_elapsed (PkTime *time)
 }
 
 /**
- * pk_time_get_remaining:
+ * pk_time_get_gradient:
  **/
 static gfloat
 pk_time_get_gradient (PkTimeItem *item1, PkTimeItem *item2)
@@ -100,6 +100,8 @@ pk_time_get_gradient (PkTimeItem *item1, PkTimeItem *item2)
 
 /**
  * pk_time_get_remaining:
+ *
+ * Returns time in seconds
  **/
 guint
 pk_time_get_remaining (PkTime *time)
@@ -162,7 +164,8 @@ pk_time_get_remaining (PkTime *time)
 	estimated = (gfloat) percentage_left / grad_ave;
 
 	/* turn to ms */
-	pk_debug ("estimated=%f", estimated);
+	estimated /= 1000;
+	pk_debug ("estimated=%f seconds", estimated);
 
 	if (estimated < PK_TIME_VALUE_MIN) {
 		estimated = 0;
@@ -338,7 +341,7 @@ libst_time (LibSelfTest *test)
 		value += 10;
 	}
 	value = pk_time_get_remaining (time);
-	if (value > 9500 && value < 10500) {
+	if (value > 9 && value < 11) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %i, not ~10000ms", value);
