@@ -203,9 +203,19 @@ pk_console_draw_progress_bar (guint percentage, guint remaining_time)
 	}
 	g_print ("]  %3i%%", percentage);
 	if (remaining_time != 0) {
-		g_print (" (%i seconds)", remaining_time);
+		if (remaining_time > 60) {
+			guint remaining_minutes = remaining_time / 60;
+			if (remaining_minutes > 60) {
+				guint remaining_hours = remaining_time / 3600;
+				g_print (" (%2ih eta)", remaining_hours);
+			} else {
+				g_print (" (%2im eta)", remaining_minutes);
+			}
+		} else {
+			g_print (" (%2is eta)", remaining_time);
+		}
 	} else {
-		g_print ("                  ");
+		g_print ("          ");
 	}
 	if (percentage == 100) {
 		g_print ("\n");
