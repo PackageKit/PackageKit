@@ -619,6 +619,8 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 gboolean
 pk_backend_change_percentage (PkBackend *backend, guint percentage)
 {
+	guint remaining;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -627,6 +629,10 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 
 	/* needed for time remaining calculation */
 	pk_time_add_data (backend->priv->time, percentage);
+
+	/* TODO: lets try this */
+	remaining = pk_time_get_remaining (backend->priv->time);
+	pk_debug ("this will take ~%i seconds", remaining);
 
 	pk_debug ("emit percentage-changed %i", percentage);
 	g_signal_emit (backend, signals [PK_BACKEND_PERCENTAGE_CHANGED], 0, percentage);
