@@ -32,7 +32,8 @@ INCLUDES =						\
 pkbackendincludedir=$(includedir)/packagekit-backend
 
 pkbackendinclude_HEADERS =				\
-	pk-backend.h
+	pk-backend.h					\
+	pk-backend-python.h
 
 sbin_PROGRAMS =						\
 	packagekitd					\
@@ -45,6 +46,8 @@ packagekitd_SOURCES =					\
 	pk-backend-internal.h				\
 	pk-backend.c					\
 	pk-backend.h					\
+	pk-backend-python.c				\
+	pk-backend-python.h				\
 	pk-security.h					\
 	pk-time.h					\
 	pk-time.c					\
