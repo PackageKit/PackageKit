@@ -179,11 +179,17 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
  * pk_console_draw_progress_bar:
  **/
 static void
-pk_console_draw_progress_bar (guint percentage)
+pk_console_draw_progress_bar (guint percentage, guint remaining_time)
 {
 	guint i;
 	guint progress = (gint) (PROGRESS_BAR_SIZE * (gfloat) (percentage) / 100);
 	guint remaining = PROGRESS_BAR_SIZE - progress;
+
+	/* have we already been spinning? */
+	if (timer_id != 0) {
+		g_source_remove (timer_id);
+		timer_id = 0;
+	}
 
 	/* we need to do an extra line */
 	printed_bar = TRUE;
@@ -196,21 +202,13 @@ pk_console_draw_progress_bar (guint percentage)
 		g_print (".");
 	}
 	g_print ("]  %3i%%", percentage);
+	if (remaining_time != 0) {
+		g_print (" (%i seconds)", remaining_time);
+	} else {
+		g_print ("                  ");
+	}
 	if (percentage == 100) {
 		g_print ("\n");
-	}
-}
-
-/**
- * pk_console_percentage_changed_cb:
- **/
-static void
-pk_console_percentage_changed_cb (PkClient *client, guint percentage, gpointer data)
-{
-	if (is_console == TRUE) {
-		pk_console_draw_progress_bar (percentage);
-	} else {
-		g_print ("%i%%\n", percentage);
 	}
 }
 
@@ -261,17 +259,40 @@ pk_console_pulse_bar (PulseState *pulse_state)
 }
 
 /**
- * pk_console_no_percentage_updates_cb:
+ * pk_console_draw_progress_bar:
  **/
 static void
-pk_console_no_percentage_updates_cb (PkClient *client, gpointer data)
+pk_console_draw_pulse_bar (void)
 {
 	static PulseState pulse_state;
+
+	/* have we already got zero percent? */
+	if (timer_id != 0) {
+		return;
+	}
 	has_output = FALSE;
 	if (is_console == TRUE) {
 		pulse_state.position = 1;
 		pulse_state.move_forward = TRUE;
 		timer_id = g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
+	}
+}
+
+/**
+ * pk_console_progress_changed_cb:
+ **/
+static void
+pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
+				guint elapsed, guint remaining, gpointer data)
+{
+	if (is_console == TRUE) {
+		if (percentage == PK_CLIENT_PERCENTAGE_INVALID) {
+			pk_console_draw_pulse_bar ();
+		} else {
+			pk_console_draw_progress_bar (percentage, remaining);
+		}
+	} else {
+		g_print ("%i%%\n", percentage);
 	}
 }
 
@@ -750,10 +771,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (client, "repo-detail",
 			  G_CALLBACK (pk_console_repo_detail_cb), NULL);
-	g_signal_connect (client, "percentage-changed",
-			  G_CALLBACK (pk_console_percentage_changed_cb), NULL);
-	g_signal_connect (client, "no-percentage-updates",
-			  G_CALLBACK (pk_console_no_percentage_updates_cb), NULL);
+	g_signal_connect (client, "progress-changed",
+			  G_CALLBACK (pk_console_progress_changed_cb), NULL);
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 	g_signal_connect (client, "error-code",

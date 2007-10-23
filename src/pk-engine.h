@@ -194,9 +194,12 @@ gboolean	 pk_engine_get_filters			(PkEngine	*engine,
 							 GError		**error);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
-gboolean	 pk_engine_get_percentage		(PkEngine	*engine,
+gboolean	 pk_engine_get_progress			(PkEngine	*engine,
 							 const gchar	*tid,
 							 guint		*percentage,
+							 guint		*subpercentage,
+							 guint		*elapsed,
+							 guint		*remaining,
 							 GError		**error);
 gboolean	 pk_engine_get_sub_percentage		(PkEngine	*engine,
 							 const gchar	*tid,

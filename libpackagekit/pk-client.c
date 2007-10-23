@@ -74,12 +74,10 @@ typedef enum {
 	PK_CLIENT_DESCRIPTION,
 	PK_CLIENT_ERROR_CODE,
 	PK_CLIENT_FINISHED,
-	PK_CLIENT_NO_PERCENTAGE_UPDATES,
 	PK_CLIENT_PACKAGE,
-	PK_CLIENT_PERCENTAGE_CHANGED,
+	PK_CLIENT_PROGRESS_CHANGED,
 	PK_CLIENT_UPDATES_CHANGED,
 	PK_CLIENT_REQUIRE_RESTART,
-	PK_CLIENT_SUB_PERCENTAGE_CHANGED,
 	PK_CLIENT_TRANSACTION,
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
@@ -271,13 +269,12 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 }
 
 /**
- * pk_client_percentage_changed_cb:
+ * pk_client_progress_changed_cb:
  */
 static void
-pk_client_percentage_changed_cb (DBusGProxy  *proxy,
-			         const gchar *tid,
-			         guint	      percentage,
-			         PkClient    *client)
+pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
+			       guint percentage, guint subpercentage,
+			       guint elapsed, guint remaining, PkClient *client)
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -289,55 +286,9 @@ pk_client_percentage_changed_cb (DBusGProxy  *proxy,
 	}
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
-		pk_debug ("emit percentage-changed %i", percentage);
-		g_signal_emit (client , signals [PK_CLIENT_PERCENTAGE_CHANGED], 0, percentage);
-	}
-}
-
-/**
- * pk_client_sub_percentage_changed_cb:
- */
-static void
-pk_client_sub_percentage_changed_cb (DBusGProxy  *proxy,
-				     const gchar *tid,
-			             guint	  percentage,
-			             PkClient    *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
-		return;
-	}
-
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
-		pk_debug ("emit sub-percentage-changed %i", percentage);
-		g_signal_emit (client, signals [PK_CLIENT_SUB_PERCENTAGE_CHANGED], 0, percentage);
-	}
-}
-
-/**
- * pk_client_no_percentage_updates_cb:
- */
-static void
-pk_client_no_percentage_updates_cb (DBusGProxy  *proxy,
-			            const gchar *tid,
-				    PkClient    *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
-		return;
-	}
-
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
-		pk_debug ("emit no-percentage-updates");
-		g_signal_emit (client , signals [PK_CLIENT_NO_PERCENTAGE_UPDATES], 0);
+		pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
+		g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
+			       percentage, subpercentage, elapsed, remaining);
 	}
 }
 
@@ -708,16 +659,16 @@ pk_client_get_package (PkClient *client, gchar **package)
 }
 
 /**
- * pk_client_get_percentage:
+ * pk_client_get_progress:
  **/
 gboolean
-pk_client_get_percentage (PkClient *client, guint *percentage)
+pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentage,
+			guint *elapsed, guint *remaining)
 {
 	gboolean ret;
 	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (percentage != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
 
@@ -728,10 +679,13 @@ pk_client_get_percentage (PkClient *client, guint *percentage)
 	}
 
 	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetPercentage", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", &error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, percentage,
+				 G_TYPE_UINT, subpercentage,
+				 G_TYPE_UINT, elapsed,
+				 G_TYPE_UINT, remaining,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_debug ("ERROR: %s", error->message);
@@ -739,45 +693,7 @@ pk_client_get_percentage (PkClient *client, guint *percentage)
 	}
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
-		pk_warning ("GetPercentage failed!");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
- * pk_client_get_sub_percentage:
- **/
-gboolean
-pk_client_get_sub_percentage (PkClient *client, guint *percentage)
-{
-	gboolean ret;
-	GError *error;
-
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (percentage != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
-
-	/* check to see if we have a valid transaction */
-	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
-		return FALSE;
-	}
-
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetSubPercentage", &error,
-				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_INVALID,
-				 G_TYPE_UINT, percentage,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetSubPercentage failed!");
+		pk_warning ("GetProgress failed!");
 		return FALSE;
 	}
 	return TRUE;
@@ -2247,21 +2163,11 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_CLIENT_PERCENTAGE_CHANGED] =
-		g_signal_new ("percentage-changed",
+	signals [PK_CLIENT_PROGRESS_CHANGED] =
+		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_CLIENT_SUB_PERCENTAGE_CHANGED] =
-		g_signal_new ("sub-percentage-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
-			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_CLIENT_NO_PERCENTAGE_UPDATES] =
-		g_signal_new ("no-percentage-updates",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
+			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
 	signals [PK_CLIENT_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2390,9 +2296,10 @@ pk_client_init (PkClient *client)
 	/* use PolicyKit */
 	client->priv->polkit = pk_polkit_client_new ();
 
-	/* PercentageChanged et al */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	/* ProgressChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_UINT_UINT_UINT_UINT,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT,
+					   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 
 	/* Locked */
 	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
@@ -2442,20 +2349,10 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_client_finished_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "PercentageChanged",
-				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
-				     G_CALLBACK (pk_client_percentage_changed_cb), client, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "SubPercentageChanged",
-				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "SubPercentageChanged",
-				     G_CALLBACK (pk_client_sub_percentage_changed_cb), client, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "NoPercentageUpdates",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "NoPercentageUpdates",
-				     G_CALLBACK (pk_client_no_percentage_updates_cb), client, NULL);
+	dbus_g_proxy_add_signal (proxy, "ProgressChanged",
+				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
+				     G_CALLBACK (pk_client_progress_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "TransactionStatusChanged",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -2540,12 +2437,8 @@ pk_client_finalize (GObject *object)
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
 				        G_CALLBACK (pk_client_finished_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "PercentageChanged",
-				        G_CALLBACK (pk_client_percentage_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "SubPercentageChanged",
-				        G_CALLBACK (pk_client_sub_percentage_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "NoPercentageUpdates",
-				        G_CALLBACK (pk_client_no_percentage_updates_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
+				        G_CALLBACK (pk_client_progress_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "TransactionStatusChanged",
 				        G_CALLBACK (pk_client_transaction_status_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",

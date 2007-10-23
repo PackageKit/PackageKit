@@ -89,16 +89,12 @@
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
     </signal>
-    <signal name="PercentageChanged"> <!-- progress of the whole transaction -->
+    <signal name="ProgressChanged"> <!-- progress of the whole transaction -->
       <arg type="s" name="tid" direction="out"/>
       <arg type="u" name="percentage" direction="out"/>
-    </signal>
-    <signal name="SubPercentageChanged"> <!-- progress of the intervidual transaction -->
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="u" name="percentage" direction="out"/>
-    </signal>
-    <signal name="NoPercentageUpdates"> <!-- if we are not emmitting PercentageChanged, the UI has to spin -->
-      <arg type="s" name="tid" direction="out"/>
+      <arg type="u" name="subpercentage" direction="out"/>
+      <arg type="u" name="elapsed" direction="out"/>
+      <arg type="u" name="remaining" direction="out"/>
     </signal>
     <signal name="Package">
       <arg type="s" name="tid" direction="out"/>
@@ -203,15 +199,13 @@
       <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
       <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
     </method>
-    <method name="GetPercentage">
+    <method name="GetProgress">
       <!-- throws NoSuchTransaction -->
       <arg type="s" name="tid" direction="in"/>
       <arg type="u" name="percentage" direction="out"/>
-    </method>
-    <method name="GetSubPercentage">
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="u" name="percentage" direction="out"/>
+      <arg type="u" name="subpercentage" direction="out"/>
+      <arg type="u" name="elapsed" direction="out"/>
+      <arg type="u" name="remaining" direction="out"/>
     </method>
     <method name="GetPackage">
       <!-- throws NoSuchTransaction -->
