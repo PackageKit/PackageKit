@@ -113,7 +113,7 @@ pk_job_list_refresh (PkJobList *jlist)
 				 G_TYPE_INVALID,
 				 G_TYPE_STRV, &array,
 				 G_TYPE_INVALID);
-	if (error) {
+	if (error != NULL) {
 		pk_debug ("ERROR: %s", error->message);
 		g_error_free (error);
 	}
@@ -213,7 +213,7 @@ pk_job_list_init (PkJobList *jlist)
 
 	/* check dbus connections, exit if not valid */
 	jlist->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error) {
+	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
 		g_error ("This program cannot start until you start the dbus system service.");
@@ -229,7 +229,7 @@ pk_job_list_init (PkJobList *jlist)
 	if (pk_connection_valid (jlist->priv->pconnection)) {
 		pk_job_list_connect (jlist);
 	} else {
-		pk_warning ("no PK instance on the bus");
+		pk_debug ("no PK instance on the bus yet");
 	}
 
 	/* get a connection */
