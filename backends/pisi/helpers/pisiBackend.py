@@ -163,7 +163,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         for package in pisi.api.list_upgradable():
 
-            pkg = self.installdb.get_package(package)
+            pkg = self.packagedb.get_package(package)
 
             version = self.__get_package_version(pkg)
             id = self.get_package_id(pkg.name, version, self.arch, "")
