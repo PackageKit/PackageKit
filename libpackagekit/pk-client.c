@@ -54,6 +54,7 @@ struct PkClientPrivate
 	DBusGProxy		*proxy;
 	gboolean		 is_finished;
 	gboolean		 use_buffer;
+	gboolean		 promiscuous;
 	gchar			*tid;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
@@ -101,7 +102,25 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 gboolean
 pk_client_set_tid (PkClient *client, const gchar *tid)
 {
+	if (client->priv->promiscuous == TRUE) {
+		pk_warning ("you can't set the tid on a promiscuous client");
+		return FALSE;
+	}
 	client->priv->tid = g_strdup (tid);
+	return TRUE;
+}
+
+/**
+ * pk_client_set_promiscuous:
+ **/
+gboolean
+pk_client_set_promiscuous (PkClient *client, gboolean enabled)
+{
+	if (client->priv->tid != NULL) {
+		pk_warning ("you can't set promiscuous on a tid client");
+		return FALSE;
+	}
+	client->priv->promiscuous = enabled;
 	return TRUE;
 }
 
@@ -237,6 +256,21 @@ pk_client_get_error_name (GError *error)
  ******************************************************************************/
 
 /**
+ * pk_client_should_proxy:
+ */
+static gboolean
+pk_client_should_proxy (PkClient *client, const gchar *tid)
+{
+	if (client->priv->promiscuous == TRUE) {
+		return TRUE;
+	}
+	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
  * pk_client_finished_cb:
  */
 static void
@@ -257,7 +291,7 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		exit = pk_exit_enum_from_text (exit_text);
 		pk_debug ("emit finished %s, %i", exit_text, runtime);
 
@@ -285,7 +319,7 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
 		g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
 			       percentage, subpercentage, elapsed, remaining);
@@ -313,7 +347,7 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 	}
 
 	status = pk_status_enum_from_text (status_text);
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit transaction-status-changed %i", status);
 		g_signal_emit (client , signals [PK_CLIENT_TRANSACTION_STATUS_CHANGED], 0, status);
 	}
@@ -341,7 +375,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 		info = pk_info_enum_from_text (info_text);
 		g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
@@ -388,7 +422,7 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		role = pk_role_enum_from_text (role_text);
 		pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
 		g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec, succeeded, role, duration, data);
@@ -418,7 +452,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
 			  package_id, updates, obsoletes, url, restart, update_text);
 		g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
@@ -451,7 +485,7 @@ pk_client_description_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		group = pk_group_enum_from_text (group_text);
 		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
 			  package_id, licence, group, description, url, (long int) size, filelist);
@@ -478,7 +512,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
 			  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 		g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
@@ -502,7 +536,7 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repo
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
 		g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
 	}
@@ -528,7 +562,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		code = pk_error_enum_from_text (code_text);
 		pk_debug ("emit error-code %i, %s", code, details);
 		g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
@@ -565,7 +599,7 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_client_should_proxy (client, tid) == TRUE) {
 		restart = pk_restart_enum_from_text (restart_text);
 		pk_debug ("emit require-restart %i, %s", restart, details);
 		g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
@@ -2258,6 +2292,7 @@ pk_client_init (PkClient *client)
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
 	client->priv->use_buffer = FALSE;
+	client->priv->promiscuous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;

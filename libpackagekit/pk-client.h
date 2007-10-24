@@ -56,6 +56,8 @@ PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,
 							 const gchar	*tid);
+gboolean	 pk_client_set_promiscuous		(PkClient	*client,
+							 gboolean	 enabled);
 gchar		*pk_client_get_tid			(PkClient	*client);
 
 gboolean	 pk_client_set_use_buffer		(PkClient	*client,
