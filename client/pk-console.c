@@ -413,9 +413,10 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* else list the options */
+	g_print ("There are multiple matches\n");
 	for (i=0; i<length; i++) {
 		item = pk_client_package_buffer_get_item (client_resolve, i);
-		g_print ("option is %s", item->package_id);
+		g_print ("%i. %s\n", i+1, item->package_id);
 	}
 	return NULL;
 }
