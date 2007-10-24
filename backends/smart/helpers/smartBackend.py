@@ -18,7 +18,7 @@
 
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE, INFO_NORMAL
+        INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED
 
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
@@ -94,9 +94,14 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package, status=INFO_NORMAL)
 
     def resolve(self, filters, packagename):
+        filterlist = filters.split(';')
+
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
-            self._show_package(result)
+            if FILTER_NON_INSTALLED not in filterlist and result.installed:
+                self._show_package(result)
+            if FILTER_INSTALLED not in filterlist and not result.installed:
+                self._show_package(result)
 
     def search_name(self, filters, packagename):
         globbed = "*%s*" % packagename
