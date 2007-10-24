@@ -121,6 +121,9 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.allow_interrupt(False);
         self.percentage(None)
 
+        if not len(pisi.api.list_upgradable()) > 0:
+            self.error(ERROR_INTERNAL_ERROR, "System is already up2date")
+
         try:
             pisi.api.upgrade(pisi.api.list_upgradable())
         except pisi.Error,e:
@@ -134,6 +137,24 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         for repo in pisi.api.list_repos():
             # Internal FIXME: What an ugly way to get repo uri
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
+
+    def get_description(self, package_id):
+        """ Prints a detailed description for a given package """
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        package = self.get_package_from_id(package_id)[0]
+        pkg = self.packagedb.get_package(package)
+
+        if pkg:
+            self.description("%s-%s" % (pkg.name, self.__get_package_version(pkg)), 
+                            pkg.license, 
+                            pkg.partOf, 
+                            pkg.description, 
+                            pkg.packageURI, 
+                            pkg.packageSize, "")
+        else:
+            self.error(ERROR_INTERNAL_ERROR, "Package was not found")
 
     def get_updates(self):
         """ Prints available updates and types """
