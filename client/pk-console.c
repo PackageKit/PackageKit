@@ -511,6 +511,24 @@ pk_console_get_depends(PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_console_get_description:
+ **/
+static gboolean
+pk_console_get_description(PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to get depends\n");
+		return FALSE;
+	}
+	ret = pk_client_get_description (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
  * pk_console_process_commands:
  **/
 static gboolean
@@ -637,7 +655,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 				g_set_error (error, 0, 0, "you need to specify a package to find the description for");
 				return FALSE;
 			} else {
-				wait = pk_client_get_description (client, details);
+				wait = pk_console_get_description (client, details);
 			}
 		} else if (strcmp (value, "updates") == 0) {
 			wait = pk_client_get_updates (client);
@@ -699,6 +717,10 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *description, const gchar *url,
 			   gulong size, const gchar *filelist, gpointer data)
 {
+	/* if on console, clear the progress bar line */
+	if (is_console == TRUE && printed_bar == TRUE) {
+		g_print ("\n");
+	}
 	g_print ("Package description\n");
 	g_print ("  package:     '%s'\n", package_id);
 	g_print ("  licence:     '%s'\n", licence);
