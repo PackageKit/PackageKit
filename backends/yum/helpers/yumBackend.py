@@ -38,8 +38,11 @@ import exceptions
 import types
 import signal
 import time
+from packagekit.backend import PackagekitProgress
 
+# Global vars
 yumbase = None
+progress = PackagekitProgress()  # Progress object to store the progress
 
 class GPGKeyNotImported(exceptions.Exception):
     pass
