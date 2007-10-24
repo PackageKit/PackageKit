@@ -56,6 +56,7 @@ struct PkClientPrivate
 	gboolean		 use_buffer;
 	gboolean		 promiscuous;
 	gchar			*tid;
+	gchar			*tid_promiscuous;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
 	PkPolkitClient		*polkit;
@@ -130,6 +131,10 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled)
 gchar *
 pk_client_get_tid (PkClient *client)
 {
+	/* return the last thing */
+	if (client->priv->promiscuous == TRUE) {
+		return g_strdup (client->priv->tid_promiscuous);
+	}
 	return g_strdup (client->priv->tid);
 }
 
@@ -261,9 +266,20 @@ pk_client_get_error_name (GError *error)
 static gboolean
 pk_client_should_proxy (PkClient *client, const gchar *tid)
 {
+	/* are we promiscuous? */
 	if (client->priv->promiscuous == TRUE) {
+		g_free (client->priv->tid_promiscuous);
+		client->priv->tid_promiscuous = g_strdup (tid);
 		return TRUE;
 	}
+
+	/* check to see if we have been assigned yet */
+	if (client->priv->tid == NULL) {
+		/* silently fail to avoid cluttering up the logs */
+		return FALSE;
+	}
+
+	/* are we the right on? */
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		return TRUE;
 	}
@@ -285,21 +301,18 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		exit = pk_exit_enum_from_text (exit_text);
-		pk_debug ("emit finished %s, %i", exit_text, runtime);
+	exit = pk_exit_enum_from_text (exit_text);
+	pk_debug ("emit finished %s, %i", exit_text, runtime);
 
-		/* only this instance is finished, and do it before the signal so we can reset */
-		client->priv->is_finished = TRUE;
+	/* only this instance is finished, and do it before the signal so we can reset */
+	client->priv->is_finished = TRUE;
 
-		g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
-	}
+	g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 }
 
 /**
@@ -313,17 +326,14 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
-		g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
-			       percentage, subpercentage, elapsed, remaining);
-	}
+	pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
+	g_signal_emit (client , signals [PK_CLIENT_PROGRESS_CHANGED], 0,
+		       percentage, subpercentage, elapsed, remaining);
 }
 
 /**
@@ -340,17 +350,16 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
 	status = pk_status_enum_from_text (status_text);
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit transaction-status-changed %i", status);
-		g_signal_emit (client , signals [PK_CLIENT_TRANSACTION_STATUS_CHANGED], 0, status);
-	}
+
+	pk_debug ("emit transaction-status-changed %s", status_text);
+	g_signal_emit (client , signals [PK_CLIENT_TRANSACTION_STATUS_CHANGED], 0, status);
+
 	client->priv->last_status = status;
 }
 
@@ -369,22 +378,19 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
-		info = pk_info_enum_from_text (info_text);
-		g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
+	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
+	info = pk_info_enum_from_text (info_text);
+	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
 
-		/* cache */
-		if (client->priv->use_buffer == TRUE) {
-			pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
-			pk_package_list_add (client->priv->package_list, info, package_id, summary);
-		}
+	/* cache */
+	if (client->priv->use_buffer == TRUE) {
+		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
+		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
 }
 
@@ -416,17 +422,14 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		role = pk_role_enum_from_text (role_text);
-		pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
-		g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec, succeeded, role, duration, data);
-	}
+	role = pk_role_enum_from_text (role_text);
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
+	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec, succeeded, role, duration, data);
 }
 
 /**
@@ -446,18 +449,15 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
-			  package_id, updates, obsoletes, url, restart, update_text);
-		g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
-			       package_id, updates, obsoletes, url, restart, update_text);
-	}
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, url, restart, update_text);
+	g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
+		       package_id, updates, obsoletes, url, restart, update_text);
 }
 
 /**
@@ -479,19 +479,16 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		group = pk_group_enum_from_text (group_text);
-		pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
-			  package_id, licence, group, description, url, (long int) size, filelist);
-		g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
-			       package_id, licence, group, description, url, size, filelist);
-	}
+	group = pk_group_enum_from_text (group_text);
+	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
+		  package_id, licence, group, description, url, (long int) size, filelist);
+	g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
+		       package_id, licence, group, description, url, size, filelist);
 }
 
 /**
@@ -506,18 +503,15 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
-			  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
-		g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
-			       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
-	}
+	pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
+		  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
+		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 }
 
 /**
@@ -530,16 +524,13 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repo
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
-		g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
-	}
+	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	g_signal_emit (client, signals [PK_CLIENT_REPO_DETAIL], 0, repo_id, description, enabled);
 }
 
 /**
@@ -556,17 +547,14 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		code = pk_error_enum_from_text (code_text);
-		pk_debug ("emit error-code %i, %s", code, details);
-		g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
-	}
+	code = pk_error_enum_from_text (code_text);
+	pk_debug ("emit error-code %i, %s", code, details);
+	g_signal_emit (client , signals [PK_CLIENT_ERROR_CODE], 0, code, details);
 }
 
 /**
@@ -593,20 +581,17 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	/* check to see if we have been assigned yet */
-	if (client->priv->tid == NULL) {
-		pk_debug ("ignoring tid:%s as we are not yet assigned", tid);
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
 
-	if (pk_client_should_proxy (client, tid) == TRUE) {
-		restart = pk_restart_enum_from_text (restart_text);
-		pk_debug ("emit require-restart %i, %s", restart, details);
-		g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
-		if (restart > client->priv->require_restart) {
-			client->priv->require_restart = restart;
-			pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
-		}
+	restart = pk_restart_enum_from_text (restart_text);
+	pk_debug ("emit require-restart %i, %s", restart, details);
+	g_signal_emit (client , signals [PK_CLIENT_REQUIRE_RESTART], 0, restart, details);
+	if (restart > client->priv->require_restart) {
+		client->priv->require_restart = restart;
+		pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
 }
 
@@ -2291,6 +2276,7 @@ pk_client_init (PkClient *client)
 
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
+	client->priv->tid_promiscuous = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
@@ -2468,6 +2454,8 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->xcached_full_path);
 	g_free (client->priv->xcached_filter);
 	g_free (client->priv->xcached_search);
+	g_free (client->priv->tid);
+	g_free (client->priv->tid_promiscuous);
 
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
