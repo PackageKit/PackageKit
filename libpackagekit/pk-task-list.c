@@ -54,8 +54,6 @@ struct PkTaskListPrivate
 
 typedef enum {
 	PK_TASK_LIST_CHANGED,
-	PK_TASK_LIST_FINISHED,
-	PK_TASK_LIST_ERROR_CODE,
 	PK_TASK_LIST_LAST_SIGNAL
 } PkSignals;
 
@@ -84,7 +82,7 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%s %s %s\n", item->tid, pk_role_enum_to_text (item->role), item->package_id);
+		g_print ("%s\t%s %s\n", item->tid, pk_role_enum_to_text (item->role), item->package_id);
 	}
 	return TRUE;
 }
@@ -158,42 +156,6 @@ pk_task_list_job_status_changed_cb (PkClient *client, PkStatusEnum status, PkTas
 }
 
 /**
- * pk_task_list_job_finished_cb:
- **/
-static void
-pk_task_list_job_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
-{
-	gchar *tid;
-	PkTaskListItem *item;
-
-	g_return_if_fail (tlist != NULL);
-	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-
-	tid = pk_client_get_tid (client);
-	pk_debug ("tid %s exited with %i", tid, exit);
-
-	/* get correct item */
-	item = pk_task_list_find_existing_tid (tlist, tid);
-	g_free (tid);
-
-	pk_debug ("emit task-list-finished %i, %s, %i", item->role, item->package_id, runtime);
-	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, item->role, item->package_id, runtime);
-}
-
-/**
- * pk_task_list_error_code_cb:
- **/
-static void
-pk_task_list_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
-{
-	g_return_if_fail (tlist != NULL);
-	g_return_if_fail (PK_IS_TASK_LIST (tlist));
-
-	pk_debug ("emit error-code %i, %s", error_code, details);
-	g_signal_emit (tlist , signals [PK_TASK_LIST_ERROR_CODE], 0, error_code, details);
-}
-
-/**
  * pk_task_list_refresh:
  *
  * Not normally required, but force a refresh
@@ -233,10 +195,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item->monitor = pk_client_new ();
 			g_signal_connect (item->monitor, "transaction-status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-			g_signal_connect (item->monitor, "finished",
-					  G_CALLBACK (pk_task_list_job_finished_cb), tlist);
-			g_signal_connect (item->monitor, "error-code",
-					  G_CALLBACK (pk_task_list_error_code_cb), tlist);
 			pk_client_set_tid (item->monitor, tid);
 			pk_client_get_role (item->monitor, &item->role, &item->package_id);
 			pk_client_get_status (item->monitor, &item->status);
@@ -318,16 +276,6 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-	signals [PK_TASK_LIST_FINISHED] =
-		g_signal_new ("task-list-finished",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_UINT,
-			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT);
-	signals [PK_TASK_LIST_ERROR_CODE] =
-		g_signal_new ("error-code",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
-			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
 }
