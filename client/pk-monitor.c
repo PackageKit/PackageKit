@@ -30,6 +30,7 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
+#include <pk-client.h>
 #include <pk-task-list.h>
 #include <pk-connection.h>
 
@@ -46,9 +47,22 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
  * pk_monitor_error_code_cb:
  **/
 static void
-pk_monitor_error_code_cb (PkTaskList *tlist, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
+pk_monitor_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
-	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tError: %s, %s\n", tid, pk_error_enum_to_text (error_code), details);
+	g_free (tid);
+}
+
+/**
+ * pk_monitor_finished_cb:
+ **/
+static void
+pk_monitor_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tFinished: %s, %ims\n", tid, pk_exit_enum_to_text (exit), runtime);
+	g_free (tid);
 }
 
 /**
@@ -67,6 +81,7 @@ int
 main (int argc, char *argv[])
 {
 	PkTaskList *tlist;
+	PkClient *client;
 	gboolean ret;
 	GMainLoop *loop;
 	PkConnection *pconnection;
@@ -110,11 +125,16 @@ main (int argc, char *argv[])
 	connected = pk_connection_valid (pconnection);
 	pk_debug ("connected=%i", connected);
 
+	client = pk_client_new ();
+	pk_client_set_promiscuous (client, TRUE);
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (pk_monitor_finished_cb), NULL);
+	g_signal_connect (client, "error-code",
+			  G_CALLBACK (pk_monitor_error_code_cb), NULL);
+
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
-	g_signal_connect (tlist, "error-code",
-			  G_CALLBACK (pk_monitor_error_code_cb), NULL);
 
 	pk_debug ("refreshing task list");
 	ret = pk_task_list_refresh (tlist);
@@ -125,6 +145,7 @@ main (int argc, char *argv[])
 
 	g_main_loop_run (loop);
 
+	g_object_unref (client);
 	g_object_unref (tlist);
 	g_object_unref (pconnection);
 
