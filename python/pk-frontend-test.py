@@ -110,7 +110,6 @@ def get_backend_detail(*args):
 	# Quit immediately because no job was scheduled
 	exit(0)
 
-
 def usage():
 	print "Usage: %s <command> <options>"%argv[0]
 	print "Valid commands are:"

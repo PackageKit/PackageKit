@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-# Copyright (C) 2007 
+# Copyright (C) 2007
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Tom Parker <palfrey@tevp.net>
 #    Robin Norwood <rnorwood@redhat.com>
@@ -217,8 +217,6 @@ class PackageKit:
 			duration   # in seconds
 			):
 		pass
-
-
 
 # --- PK Methods ---
 
@@ -475,7 +473,6 @@ class PackageKit:
 		Returns list of supported filters.
 		"""
 		return self.pk_iface.GetFilters()
-
 
 class DumpingPackageKit(PackageKit):
 	"""
