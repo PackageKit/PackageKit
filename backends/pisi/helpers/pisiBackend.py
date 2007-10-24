@@ -23,9 +23,6 @@ from packagekit.backend import *
 
 class PackageKitPisiBackend(PackageKitBaseBackend):
 
-    # Currently we only support i686
-    arch = "i686"
-
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
@@ -56,7 +53,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         version = self.__get_package_version(pkg)
 
-        id = self.get_package_id(pkg.name, version, self.arch, "")
+        id = self.get_package_id(pkg.name, version, pkg.architecture, "")
         return self.package(id, status, pkg.summary)
 
     def resolve(self, filter, package):
@@ -166,7 +163,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             pkg = self.packagedb.get_package(package)
 
             version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, self.arch, "")
+            id = self.get_package_id(pkg.name, version, pkg.architecture, "")
 
             # Internal FIXME: PiSi must provide this information as a single API call :(
             updates = [i for i in self.packagedb.get_package(package).history 
