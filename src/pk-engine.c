@@ -733,6 +733,8 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetTid method called");
+
 	item = pk_transaction_list_create (engine->priv->transaction_list);
 	pk_debug ("sending tid: '%s'", item->tid);
 	*tid =  g_strdup (item->tid);
@@ -781,6 +783,8 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("RefreshCache method called: %s, %i", tid, force);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -826,6 +830,8 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, GError **error)
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetUpdates method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -958,6 +964,8 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("SearchName method called: %s, %s, %s", tid, filter, search);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1008,6 +1016,8 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("SearchDetails method called: %s, %s, %s", tid, filter, search);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1060,6 +1070,8 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("SearchGroup method called: %s, %s, %s", tid, filter, search);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1111,6 +1123,8 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("SearchFile method called: %s, %s, %s", tid, filter, search);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1161,6 +1175,8 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter, cons
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("Resolve method called: %s, %s, %s", tid, filter, package);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1214,6 +1230,8 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetDepends method called: %s, %s", tid, package_id);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1270,6 +1288,8 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetRequires method called: %s, %s", tid, package_id);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1324,6 +1344,8 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetUpdateDetail method called: %s, %s", tid, package_id);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1380,6 +1402,8 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetDescription method called: %s, %s", tid, package_id);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1435,6 +1459,8 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("UpdateSystem method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1494,6 +1520,8 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("RemovePackage method called: %s, %s, %i", tid, package_id, allow_deps);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1566,6 +1594,8 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	pk_debug ("method called: %s, %s", tid, package_id);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1637,6 +1667,8 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	pk_debug ("InstallFile method called: %s, %s", tid, full_path);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1699,6 +1731,8 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	pk_debug ("Rollback method called: %s, %s", tid, transaction_id);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1760,6 +1794,8 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("UpdatePackage method called: %s, %s", tid, package_id);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1828,6 +1864,8 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetRepoList method called: %s", tid);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1870,6 +1908,8 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("RepoEnable method called: %s, %s, %i", tid, repo_id, enabled);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1934,6 +1974,8 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+	pk_debug ("RepoSetData method called: %s, %s, %s, %s", tid, repo_id, parameter, value);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -1989,7 +2031,7 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("getting transaction list");
+	pk_debug ("GetTransactionList method called");
 	*transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
 
 	return TRUE;
@@ -2007,6 +2049,8 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetStatus method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2033,6 +2077,8 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetRole method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2068,6 +2114,8 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetProgress method called: %s", tid);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -2096,6 +2144,8 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
+	pk_debug ("GetPackage method called: %s", tid);
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -2122,6 +2172,8 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetOldTransactions method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2150,6 +2202,8 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("Cancel method called: %s", tid);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2222,6 +2276,8 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetBackendDetail method called");
 
 	/* create a new backend */
 	backend = pk_engine_backend_new (engine);
