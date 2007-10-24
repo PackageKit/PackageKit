@@ -32,6 +32,24 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         # FIXME: Only pulsing progress for now.
         self.percentage(None)
 
+    def install(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = self._process_search_results(results)
+
+        available = [package for package in packages if not package.installed]
+        if len(available) != 1:
+            return
+        package = available[0]
+        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+                smart.transaction.PolicyInstall)
+        trans.getPolicy()
+        trans.enqueue(package, smart.transaction.INSTALL)
+        trans.run()
+        self.ctrl.commitTransaction(trans, confirm=False)
+
     def remove(self, allowdeps, packageid):
 
         idparts = packageid.split(';')
