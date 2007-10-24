@@ -3,7 +3,7 @@ Current status of the backends
                   | conary | yum | apt | box | alpm | smart | pisi |
 --------------------------------------------------------------------
 resolve           |        |  X  |     |  X  |      |   X   |   X  |
-refresh-cache     |   X    |  X  |  X  |  X  |      |       |   X  |
+refresh-cache     |   X    |  X  |  X  |  X  |      |   X   |   X  |
 get-updates       |   X    |  X  |     |  X  |      |   X   |   X  |
 update-system     |   X    |  X  |     |  X  |      |   X   |   X  |
 search-name       |   X    |  X  |  X  |  X  |  X   |   X   |      |

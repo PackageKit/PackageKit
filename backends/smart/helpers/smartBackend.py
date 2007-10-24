@@ -107,6 +107,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             self._show_package(package)
 
+    def refresh_cache(self):
+        self.ctrl.rebuildSysConfChannels()
+        self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
+
     def _show_package(self, package, status=None):
         if not status:
             if package.installed:

@@ -40,7 +40,7 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_get_updates,			/* get_updates */
 	pk_backend_python_install_package,		/* install_package */
 	NULL,						/* install_file */
-	NULL,						/* refresh_cache */
+	pk_backend_python_refresh_cache,		/* refresh_cache */
 	pk_backend_python_remove_package,		/* remove_package */
 	pk_backend_python_resolve,			/* resolve */
 	NULL,						/* rollback */
