@@ -80,6 +80,10 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		/* we might have recently finished this, but not removed it */
+		if (item->finished == TRUE) {
+			continue;
+		}
 		/* we might not have this set yet */
 		if (item->backend == NULL) {
 			continue;
@@ -107,6 +111,7 @@ pk_transaction_list_create (PkTransactionList *tlist)
 	item = g_new0 (PkTransactionItem, 1);
 	item->committed = FALSE;
 	item->running = FALSE;
+	item->finished = FALSE;
 	item->backend = NULL;
 	item->package_list = pk_package_list_new ();
 	item->tid = pk_transaction_id_generate ();
@@ -153,14 +158,17 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	if (item == NULL) {
 		pk_error ("no transaction list found!");
 	}
-	pk_debug ("transaction %s completed, removing", item->tid);
+	pk_debug ("transaction %s completed, marking finished", item->tid);
+	item->finished = TRUE;
 	pk_transaction_list_remove (tlist, item);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE && item->running == FALSE) {
+		if (item->committed == TRUE &&
+		    item->running == FALSE &&
+		    item->finished == FALSE) {
 			pk_debug ("running %s", item->tid);
 			item->running = TRUE;
 			pk_backend_run (item->backend);
@@ -187,7 +195,9 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE && item->running == TRUE) {
+		if (item->committed == TRUE &&
+		    item->running == TRUE &&
+		    item->finished == FALSE) {
 			count++;
 		}
 	}
@@ -272,7 +282,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if it worked */
-		if (item->committed == TRUE) {
+		if (item->committed == TRUE && item->finished == FALSE) {
 			array[count] = g_strdup (item->tid);
 			count++;
 		}

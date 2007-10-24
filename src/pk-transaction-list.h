@@ -53,6 +53,7 @@ typedef struct
 typedef struct {
 	gboolean		 committed;
 	gboolean		 running;
+	gboolean		 finished;
 	PkBackend		*backend;
 	gchar			*tid;
 	PkPackageList		*package_list;
