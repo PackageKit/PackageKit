@@ -78,15 +78,15 @@ class PackageKitBaseBackend:
     def __init__(self,cmds):
         self.cmds = cmds
         self._locked = False
-        
+
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
         self._locked = True
-        
-    def unLock(self):        
+
+    def unLock(self):
         ''' Generic unlocking, overide and extend in child class'''
         self._locked = False
-        
+
     def isLocked(self):
         return self._locked
 

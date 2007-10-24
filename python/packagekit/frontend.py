@@ -145,30 +145,30 @@ class PackageKit:
 # --- PK Signal Handlers ---
 
 	def Finished(self,
-		     jid,          # Job ID
-		     status,       # enum - unknown, success, failed, canceled
-		     running_time  # amount of time transaction has been running in seconds
-		     ):
+			jid,          # Job ID
+			status,       # enum - unknown, success, failed, canceled
+			running_time  # amount of time transaction has been running in seconds
+			):
 		pass
 
 	def Percentage(self,
-		       jid,        # Job ID
-		       progress    # 0.0 - 100.0
-		       ):
+			jid,        # Job ID
+			progress    # 0.0 - 100.0
+			):
 		pass
 
 	def JobStatus(self,
-		      jid,        # Job ID
-		      status      # enum - invalid, setup, download, install, update, exit
-		      ):
+			jid,        # Job ID
+			status      # enum - invalid, setup, download, install, update, exit
+			):
 		pass
 
 	def Package(self,
-		    jid,        # Job ID
-		    value,      # installed=1, not-installed=0 | security=1, normal=0
-		    package_id,
-		    package_summary
-		    ):
+			jid,        # Job ID
+			value,      # installed=1, not-installed=0 | security=1, normal=0
+			package_id,
+			package_summary
+			):
 		pass
 
 	def UpdateDetail(self,
@@ -195,17 +195,17 @@ class PackageKit:
 		pass
 
 	def ErrorCode(self,
-		      jid,        # Job ID
-		      error_code, # enumerated - see pk-enum.c in PackageKit source
-		      details     # non-localized details
-		      ):
+			jid,        # Job ID
+			error_code, # enumerated - see pk-enum.c in PackageKit source
+			details     # non-localized details
+			):
 		pass
 
 	def RequireRestart(self,
-			   jid,        # Job ID
-			   type,       # enum - system,application,session
-			   details     # non-localized details
-			   ):
+			jid,        # Job ID
+			type,       # enum - system,application,session
+			details     # non-localized details
+			):
 		pass
 
 	def Transaction(self,
