@@ -520,10 +520,28 @@ pk_console_get_description(PkClient *client, const gchar *package)
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get depends\n");
+		g_print ("Could not find a package with that name to get description\n");
 		return FALSE;
 	}
 	ret = pk_client_get_description (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
+ * pk_console_get_update_detail
+ **/
+static gboolean
+pk_console_get_update_detail(PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to get update details\n");
+		return FALSE;
+	}
+	ret = pk_client_get_update_detail (client, package_id);
 	g_free (package_id);
 	return ret;
 }
@@ -641,7 +659,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 				g_set_error (error, 0, 0, "you need to specify a search term");
 				return FALSE;
 			} else {
-				wait = pk_client_get_update_detail (client, details);
+				wait = pk_console_get_update_detail (client, details);
 			}
 		} else if (strcmp (value, "requires") == 0) {
 			if (details == NULL) {
