@@ -25,12 +25,12 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
 
+        # FIXME: Only pulsing progress for now.
+        self.percentage(None)
+
         self.ctrl = smart.init()
         self.ctrl.reloadChannels()
         self.ctrl.getCache()
-
-        # FIXME: Only pulsing progress for now.
-        self.percentage(None)
 
     def install(self, packageid):
         idparts = packageid.split(';')
