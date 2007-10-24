@@ -259,7 +259,7 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 
 	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
 		exit = pk_exit_enum_from_text (exit_text);
-		pk_debug ("emit finished %i, %i", exit, runtime);
+		pk_debug ("emit finished %s, %i", exit_text, runtime);
 
 		/* only this instance is finished, and do it before the signal so we can reset */
 		client->priv->is_finished = TRUE;
