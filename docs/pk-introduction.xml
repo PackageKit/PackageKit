@@ -333,6 +333,19 @@
                 stable operation of the system.
               </entry>
             </row>
+            <row>
+              <entry><literal>process-quit</literal></entry>
+              <entry>
+                The process was asked to quit, probably because it was cancelled.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>process-kill</literal></entry>
+              <entry>
+                The process was forcibly killed, probably because ignored the
+                quit request. This is probably due to it being cancelled.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
