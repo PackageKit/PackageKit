@@ -532,7 +532,8 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* could the update list have changed? */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		pk_debug ("emitting updates-changed tid:%s", item->tid);
 		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
 	}
