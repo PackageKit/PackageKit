@@ -18,7 +18,7 @@
 
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE
+        INFO_AVAILABLE, INFO_NORMAL
 
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
@@ -79,6 +79,20 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    def get_updates(self):
+        cache = self.ctrl.getCache()
+        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+                smart.transaction.PolicyUpgrade)
+
+        for package in cache.getPackages():
+            if package.installed:
+                trans.enqueue(package, smart.transaction.UPGRADE)
+
+        trans.run()
+        for (package, op) in trans.getChangeSet().items():
+            if op == smart.transaction.INSTALL:
+                self._show_package(package, status=INFO_NORMAL)
+
     def resolve(self, filters, packagename):
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
@@ -93,16 +107,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             self._show_package(package)
 
-    def _show_package(self, package):
-        if package.installed:
-            status = INFO_INSTALLED
-        else:
-            status = INFO_AVAILABLE
+    def _show_package(self, package, status=None):
+        if not status:
+            if package.installed:
+                status = INFO_INSTALLED
+            else:
+                status = INFO_AVAILABLE
         version, arch = package.version.split('@')
         for loader in package.loaders:
             channel = loader.getChannel()
+            info = loader.getInfo(package)
             self.package(self.get_package_id(package.name, version, arch,
-                channel.getAlias()), status, None)
+                channel.getAlias()), status, info.getSummary())
 
     def _process_search_results(self, results):
         packages = []

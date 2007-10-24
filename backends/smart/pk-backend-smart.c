@@ -37,7 +37,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_description */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
-	NULL,						/* get_updates */
+	pk_backend_python_get_updates,			/* get_updates */
 	pk_backend_python_install_package,		/* install_package */
 	NULL,						/* install_file */
 	NULL,						/* refresh_cache */
