@@ -49,7 +49,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* search_group */
 	pk_backend_python_search_name,			/* search_name */
 	NULL,						/* update_package */
-	NULL,						/* update_system */
+	pk_backend_python_update_system,		/* update_system */
 	NULL,						/* get_repo_list */
 	NULL,						/* repo_enable */
 	NULL						/* repo_set_data */

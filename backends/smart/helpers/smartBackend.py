@@ -69,6 +69,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    def update_system(self):
+        cache = self.ctrl.getCache()
+        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+                smart.transaction.PolicyUpgrade)
+
+        for package in cache.getPackages():
+            if package.installed:
+                trans.enqueue(package, smart.transaction.UPGRADE)
+
+        trans.run()
+        self.ctrl.commitTransaction(trans, confirm=False)
+
     def resolve(self, filters, packagename):
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
