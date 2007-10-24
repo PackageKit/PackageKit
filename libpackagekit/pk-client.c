@@ -56,7 +56,6 @@ struct PkClientPrivate
 	gboolean		 use_buffer;
 	gboolean		 promiscuous;
 	gchar			*tid;
-	gchar			*tid_promiscuous;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
 	PkPolkitClient		*polkit;
@@ -131,10 +130,6 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled)
 gchar *
 pk_client_get_tid (PkClient *client)
 {
-	/* return the last thing */
-	if (client->priv->promiscuous == TRUE) {
-		return g_strdup (client->priv->tid_promiscuous);
-	}
 	return g_strdup (client->priv->tid);
 }
 
@@ -268,8 +263,8 @@ pk_client_should_proxy (PkClient *client, const gchar *tid)
 {
 	/* are we promiscuous? */
 	if (client->priv->promiscuous == TRUE) {
-		g_free (client->priv->tid_promiscuous);
-		client->priv->tid_promiscuous = g_strdup (tid);
+		g_free (client->priv->tid);
+		client->priv->tid = g_strdup (tid);
 		return TRUE;
 	}
 
@@ -741,7 +736,7 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
 	}
 
 	/* we can avoid a trip to the daemon */
-	if (package_id == NULL) {
+	if (client->priv->promiscuous == FALSE && package_id == NULL) {
 		*role = client->priv->role;
 		return TRUE;
 	}
@@ -2276,7 +2271,6 @@ pk_client_init (PkClient *client)
 
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
-	client->priv->tid_promiscuous = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
@@ -2455,7 +2449,6 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->xcached_filter);
 	g_free (client->priv->xcached_search);
 	g_free (client->priv->tid);
-	g_free (client->priv->tid_promiscuous);
 
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
