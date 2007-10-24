@@ -40,7 +40,7 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_get_updates,			/* get_updates */
 	pk_backend_python_install_package,		/* install_package */
 	NULL,						/* install_file */
-	NULL,						/* refresh_cache */
+	pk_backend_python_refresh_cache,		/* refresh_cache */
 	pk_backend_python_remove_package,		/* remove_package */
 	pk_backend_python_resolve,			/* resolve */
 	NULL,						/* rollback */
@@ -48,7 +48,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* search_file */
 	NULL,						/* search_group */
 	pk_backend_python_search_name,			/* search_name */
-	NULL,						/* update_package */
+	pk_backend_python_update_package,		/* update_package */
 	pk_backend_python_update_system,		/* update_system */
 	NULL,						/* get_repo_list */
 	NULL,						/* repo_enable */
