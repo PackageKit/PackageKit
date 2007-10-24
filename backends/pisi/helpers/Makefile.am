@@ -13,6 +13,7 @@ dist_helper_DATA = 			\
 	remove.py			\
 	resolve.py			\
 	update.py			\
+	update-system.py		\
 	pisiBackend.py			\
 	$(NULL)
 
