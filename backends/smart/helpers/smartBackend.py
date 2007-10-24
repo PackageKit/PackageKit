@@ -40,9 +40,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         packages = self._process_search_results(results)
 
-        if len(packages) != 1:
+        installed = [package for package in packages if package.installed]
+        if len(installed) != 1:
             return
-        package = packages[0]
+        package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
         trans.getPolicy()
