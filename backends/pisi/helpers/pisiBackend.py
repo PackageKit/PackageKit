@@ -115,6 +115,17 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
+    def update_system(self):
+        """ Updates all available packages """
+        # FIXME: fetch/install progress
+        self.allow_interrupt(False);
+        self.percentage(None)
+
+        try:
+            pisi.api.upgrade(pisi.api.list_upgradable())
+        except pisi.Error,e:
+            self.error(ERROR_INTERNAL_ERROR, e)
+
     def get_repo_list(self):
         """ Prints available repositories """
         self.allow_interrupt(True);
