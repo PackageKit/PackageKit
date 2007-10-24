@@ -70,8 +70,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         else:
             status = INFO_AVAILABLE
         version, arch = package.version.split('@')
-        self.package(self.get_package_id(package.name, version, arch,
-            "installed"), status, None)
+        for loader in package.loaders:
+            channel = loader.getChannel()
+            self.package(self.get_package_id(package.name, version, arch,
+                channel.getAlias()), status, None)
 
     def _process_search_results(self, results):
         packages = []
