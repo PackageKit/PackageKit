@@ -48,14 +48,6 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSpawnClass;
 
-typedef enum {
-	PK_SPAWN_EXIT_SUCCESS,
-	PK_SPAWN_EXIT_FAILED,
-	PK_SPAWN_EXIT_QUIT,
-	PK_SPAWN_EXIT_KILL,
-	PK_SPAWN_EXIT_UNKNOWN
-} PkSpawnExit;
-
 GType		 pk_spawn_get_type		  	(void);
 PkSpawn		*pk_spawn_new				(void);
 

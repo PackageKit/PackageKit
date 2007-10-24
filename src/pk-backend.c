@@ -468,14 +468,30 @@ pk_backend_spawn_helper_delete (PkBackend *backend)
  * pk_backend_spawn_finished_cb:
  **/
 static void
-pk_backend_spawn_finished_cb (PkSpawn *spawn, gint exitcode, PkBackend *backend)
+pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackend *backend)
 {
-	pk_debug ("deleting spawn %p, exit code %i", spawn, exitcode);
+	pk_debug ("deleting spawn %p, exit %s", spawn, pk_exit_enum_to_text (exit));
 	pk_backend_spawn_helper_delete (backend);
 
-	/* check shit scripts returned an error on failure */
-	if (exitcode != 0 && backend->priv->exit != PK_EXIT_ENUM_FAILED) {
-		pk_warning ("script returned false but did not return error");
+	/* save this for the finished handler */
+	backend->priv->exit = exit;
+
+	/* if we quit the process, set an error */
+	if (exit == PK_EXIT_ENUM_QUIT) {
+		/* we just call this failed, and set an error */
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Transaction was cancelled");
+	}
+
+	/* if we killed the process, set an error */
+	if (exit == PK_EXIT_ENUM_KILL) {
+		/* we just call this failed, and set an error */
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Transaction was killed");
+	}
+
+	if (backend->priv->set_error == FALSE &&
+	    backend->priv->exit == PK_EXIT_ENUM_FAILED) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
 				       "Helper returned non-zero return value but did not set error");
 	}

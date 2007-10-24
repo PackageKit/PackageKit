@@ -39,7 +39,8 @@ static PkTaskEnumMatch task_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
-	{PK_EXIT_ENUM_CANCELED,			"canceled"},
+	{PK_EXIT_ENUM_QUIT,			"quit"},
+	{PK_EXIT_ENUM_KILL,			"kill"},
 	{0, NULL},
 };
 

@@ -41,6 +41,8 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include <pk-enum.h>
+
 #include "pk-debug.h"
 #include "pk-spawn.h"
 #include "pk-marshal.h"
@@ -61,7 +63,7 @@ struct PkSpawnPrivate
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
-	PkSpawnExit		 exit;
+	PkExitEnum		 exit;
 	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
@@ -175,13 +177,13 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	if (WEXITSTATUS (status) > 0) {
 		pk_warning ("Running fork failed with return value %d", WEXITSTATUS (status));
-		if (spawn->priv->exit == PK_SPAWN_EXIT_UNKNOWN) {
-			spawn->priv->exit = PK_SPAWN_EXIT_FAILED;
+		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+			spawn->priv->exit = PK_EXIT_ENUM_FAILED;
 		}
 	} else {
 		pk_debug ("Running fork successful");
-		if (spawn->priv->exit == PK_SPAWN_EXIT_UNKNOWN) {
-			spawn->priv->exit = PK_SPAWN_EXIT_SUCCESS;
+		if (spawn->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+			spawn->priv->exit = PK_EXIT_ENUM_SUCCESS;
 		}
 	}
 
@@ -215,7 +217,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_SPAWN_EXIT_KILL;
+	spawn->priv->exit = PK_EXIT_ENUM_KILL;
 
 	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
@@ -250,7 +252,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_SPAWN_EXIT_QUIT;
+	spawn->priv->exit = PK_EXIT_ENUM_QUIT;
 
 	pk_warning ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
@@ -362,7 +364,7 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
-	spawn->priv->exit = PK_SPAWN_EXIT_UNKNOWN;
+	spawn->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 
 	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
@@ -422,7 +424,7 @@ pk_spawn_new (void)
 #define BAD_EXIT 999
 
 static GMainLoop *loop;
-PkSpawnExit mexit = BAD_EXIT;
+PkExitEnum mexit = BAD_EXIT;
 guint stdout_count = 0;
 guint stderr_count = 0;
 guint finished_count = 0;
@@ -458,7 +460,7 @@ pk_test_get_data (const gchar *filename)
  * pk_test_finished_cb:
  **/
 static void
-pk_test_finished_cb (PkSpawn *spawn, PkSpawnExit exit, LibSelfTest *test)
+pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, LibSelfTest *test)
 {
 	pk_debug ("spawn exit=%i", exit);
 	mexit = exit;
@@ -558,7 +560,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished okay");
-	if (mexit == PK_SPAWN_EXIT_SUCCESS) {
+	if (mexit == PK_EXIT_ENUM_SUCCESS) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish was okay!");
@@ -608,7 +610,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_SPAWN_EXIT_KILL) {
+	if (mexit == PK_EXIT_ENUM_KILL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish %i!", mexit);
@@ -636,7 +638,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_SPAWN_EXIT_QUIT) {
+	if (mexit == PK_EXIT_ENUM_QUIT) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish %i!", mexit);
