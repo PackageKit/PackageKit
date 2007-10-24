@@ -542,8 +542,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, time);
 
-	/* unref */
-	g_object_unref (backend);
+	/* daemon is busy */
 	pk_engine_reset_timer (engine);
 }
 

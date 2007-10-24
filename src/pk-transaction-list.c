@@ -134,11 +134,28 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 	g_free (item->tid);
 	g_free (item);
 
-	/* we have changed what is running */
-	pk_debug ("emmitting ::changed");
-	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
-
 	return TRUE;
+}
+
+/* we need this for the finished data */
+typedef struct {
+	PkTransactionList *tlist;
+	PkTransactionItem *item;
+} PkTransactionFinished;
+
+/**
+ * pk_transaction_list_remove_item_timeout:
+ **/
+static gboolean
+pk_transaction_list_remove_item_timeout (gpointer data)
+{
+	PkTransactionFinished *finished = (PkTransactionFinished *) data;
+
+	pk_debug ("transaction %s completed, removing", finished->item->tid);
+	g_object_unref (finished->item->backend);
+	pk_transaction_list_remove (finished->tlist, finished->item);
+	g_free (finished);
+	return FALSE;
 }
 
 /**
@@ -150,6 +167,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	guint i;
 	guint length;
 	PkTransactionItem *item;
+	PkTransactionFinished *finished;
 
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
@@ -160,7 +178,16 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	}
 	pk_debug ("transaction %s completed, marking finished", item->tid);
 	item->finished = TRUE;
-	pk_transaction_list_remove (tlist, item);
+
+	/* we have changed what is running */
+	pk_debug ("emmitting ::changed");
+	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
+
+	/* give the client a few seconds to still query the backend */
+	finished = g_new0 (PkTransactionFinished, 1);
+	finished->tlist = tlist;
+	finished->item = item;
+	g_timeout_add_seconds (5, pk_transaction_list_remove_item_timeout, finished);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;
