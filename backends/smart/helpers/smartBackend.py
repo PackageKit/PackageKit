@@ -45,7 +45,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         package = available[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
-        trans.getPolicy()
         trans.enqueue(package, smart.transaction.INSTALL)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
@@ -64,7 +63,6 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         package = installed[0]
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyRemove)
-        trans.getPolicy()
         trans.enqueue(package, smart.transaction.REMOVE)
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
