@@ -169,7 +169,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             id = self.get_package_id(pkg.name, version, self.arch, "")
 
             # Internal FIXME: PiSi must provide this information as a single API call :(
-            updates = [i for i in self.packagedb.get_package(package).history if pisi.version.Version(i.release) > pisi.version.Version(pkg.release)]
+            updates = [i for i in self.packagedb.get_package(package).history 
+                    if pisi.version.Version(i.release) > pisi.version.Version(self.installdb.get_package(package).release)]
             if pisi.util.any(lambda i:i.type == "security", updates):
                 self.package(id, INFO_SECURITY, pkg.summary)
             else:
