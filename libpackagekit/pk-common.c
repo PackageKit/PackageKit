@@ -143,6 +143,22 @@ pk_validate_input_char (gchar item)
 }
 
 /**
+ * pk_string_replace_unsafe:
+ **/
+gchar *
+pk_string_replace_unsafe (const gchar *text)
+{
+	gchar *text_safe;
+	const gchar *delimiters;
+
+	/* rip out any insane characters */
+	delimiters = "\\\f\n\r\t\"'";
+	text_safe = g_strdup (text);
+	g_strdelimit (text_safe, delimiters, ' ');
+	return text_safe;
+}
+
+/**
  * pk_validate_input:
  **/
 gboolean
@@ -283,6 +299,7 @@ libst_common (LibSelfTest *test)
 {
 	gboolean ret;
 	gchar **array;
+	gchar *text_safe;
 	const gchar *temp;
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
@@ -570,6 +587,48 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
+
+	/************************************************************
+	 ****************       REPLACE CHARS      ******************
+	 ************************************************************/
+	libst_title (test, "test replace unsafe (okay)");
+	text_safe = pk_string_replace_unsafe ("Richard Hughes");
+	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "test replace unsafe (one invalid)");
+	text_safe = pk_string_replace_unsafe ("Richard\tHughes");
+	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "test replace unsafe (one invalid 2)");
+	text_safe = pk_string_replace_unsafe ("Richard\"Hughes\"");
+	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes ") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "test replace unsafe (multiple invalid)");
+	text_safe = pk_string_replace_unsafe ("'Richard\"Hughes\"");
+	if (text_safe != NULL && strcmp (text_safe, " Richard Hughes ") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
 
 	libst_end (test);
 }
