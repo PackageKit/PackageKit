@@ -10,8 +10,12 @@
 # (at your option) any later version.
 
 import sys
+
+options = sys.argv[1]
+searchlist = sys.argv[2]
+
 from aptBackend import PackageKitAptBackend
 
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.refresh_cache()
+backend.search_name(options,searchlist)
 sys.exit(0)
