@@ -62,7 +62,7 @@ db_open()
 	sqlite3 *db;
 
 	db = box_db_open("/");
-	box_db_attach_repo(db, "/", "core");
+	box_db_attach_repos(db, "/");
 	box_db_repos_init(db);
 
 	return db;
@@ -71,7 +71,7 @@ db_open()
 static void
 db_close(sqlite3 *db)
 {
-	box_db_detach_repo(db, "core");
+	box_db_detach_repos(db);
 	box_db_close(db);
 }
 
