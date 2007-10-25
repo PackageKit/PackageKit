@@ -178,6 +178,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.description(packageid, "unknown", "unknown", description, url,
                 pkgsize, ";".join(info.getPathList()))
 
+    def get_repo_list(self):
+        channels = smart.sysconf.get("channels", ())
+        for alias in channels:
+            channel = smart.sysconf.get(("channels", alias))
+            parsed = smart.channel.parseChannelData(channel)
+            enabled = 'true'
+            if channel.has_key('disabled') and channel['disabled'] == 'yes':
+                enabled = 'false'
+            self.repo_detail(alias, channel['name'], enabled)
+
     def _show_package(self, package, status=None):
         if not status:
             if package.installed:
