@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
@@ -34,7 +35,8 @@
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
 
-#define PROGRESS_BAR_SIZE 60
+#define PROGRESS_BAR_PADDING 30
+#define MINIMUM_COLUMNS (PROGRESS_BAR_PADDING + 5)
 
 static GMainLoop *loop = NULL;
 static gboolean is_console = FALSE;
@@ -176,14 +178,31 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 }
 
 /**
+ * pk_console_get_terminal_columns:
+ **/
+static guint
+pk_console_get_terminal_columns (void)
+{
+	struct winsize ws;
+
+	ioctl (1, TIOCGWINSZ, &ws);
+	if (ws.ws_col < MINIMUM_COLUMNS) {
+		return MINIMUM_COLUMNS;
+	}
+
+	return ws.ws_col;
+}
+
+/**
  * pk_console_draw_progress_bar:
  **/
 static void
 pk_console_draw_progress_bar (guint percentage, guint remaining_time)
 {
 	guint i;
-	guint progress = (gint) (PROGRESS_BAR_SIZE * (gfloat) (percentage) / 100);
-	guint remaining = PROGRESS_BAR_SIZE - progress;
+	guint progress_bar_size = pk_console_get_terminal_columns () - PROGRESS_BAR_PADDING;
+	guint progress = (gint) (progress_bar_size * (gfloat) (percentage) / 100);
+	guint remaining = progress_bar_size - progress;
 
 	/* have we already been spinning? */
 	if (timer_id != 0) {
@@ -219,6 +238,8 @@ static gboolean
 pk_console_pulse_bar (PulseState *pulse_state)
 {
 	guint i;
+	guint progress_bar_size = pk_console_get_terminal_columns () - PROGRESS_BAR_PADDING;
+	gchar *padding;
 
 	/* don't spin if we have had output */
 	if (has_output == TRUE) {
@@ -234,13 +255,13 @@ pk_console_pulse_bar (PulseState *pulse_state)
 		g_print (".");
 	}
 	printf("===");
-	for (i = pulse_state->position; i < PROGRESS_BAR_SIZE - 1; i++) {
+	for (i = pulse_state->position; i < progress_bar_size - 2; i++) {
 		g_print (".");
 	}
 	g_print ("]");
 
 	if (pulse_state->move_forward == TRUE) {
-		if (pulse_state->position == PROGRESS_BAR_SIZE - 1) {
+		if (pulse_state->position == progress_bar_size - 2) {
 			pulse_state->move_forward = FALSE;
 			pulse_state->position--;
 		} else {
@@ -254,6 +275,11 @@ pk_console_pulse_bar (PulseState *pulse_state)
 			pulse_state->position--;
 		}
 	}
+
+	/* Move the cursor off the screen. */
+	padding = g_strnfill (PROGRESS_BAR_PADDING - 6, ' ');
+	g_print ("%s", padding);
+	g_free (padding);
 
 	return TRUE;
 }
@@ -354,7 +380,7 @@ pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gp
 	/* if on console, clear the progress bar line */
 	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
 		g_print ("\r");
-		blanking = g_strnfill (PROGRESS_BAR_SIZE + 7, ' ');
+		blanking = g_strnfill (pk_console_get_terminal_columns (), ' ');
 		g_print ("%s", blanking);
 		g_free (blanking);
 		g_print ("\r");
