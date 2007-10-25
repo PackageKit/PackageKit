@@ -30,6 +30,7 @@
 #include <libbox/libbox-db.h>
 #include <libbox/libbox-db-utils.h>
 #include <libbox/libbox-db-repos.h>
+#include <libbox/libbox-repos.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -582,6 +583,30 @@ backend_update_system (PkBackend *backend)
 	pk_backend_spawn_helper (backend, "update-system.sh", NULL);
 }
 
+/**
+ * backend_get_repo_list:
+ */
+static void
+backend_get_repo_list (PkBackend *backend)
+{
+	GList *list;
+	GList *li;
+	RepoInfo *repo;
+
+	g_return_if_fail (backend != NULL);
+
+
+	list = box_repos_list_get ();
+	for (li = list; li != NULL; li=li->next)
+	{
+		repo = (RepoInfo*) li->data;
+		pk_backend_repo_detail (backend, repo->name, repo->description, repo->enabled);
+	}
+	box_repos_list_free (list);
+
+	pk_backend_finished (backend);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
@@ -609,7 +634,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
-	NULL,					/* get_repo_list */
+	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
 );
