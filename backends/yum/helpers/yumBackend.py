@@ -689,8 +689,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             file_list = ";".join(files)
 
-            self.description(id, "%s-%s" % (pkg.version, pkg.release),
-                                 "unknown", desc, pkg.url, pkg.size, file_list)
+            self.description(id, pkg.license, "unknown", desc, pkg.url,
+                             pkg.size, file_list)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
