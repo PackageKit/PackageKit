@@ -132,6 +132,52 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
 
+    def get_description(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = self._process_search_results(results)
+
+        if len(packages) != 1:
+            return
+
+        package = packages[0]
+        infos = []
+        for loader in package.loaders:
+            info = loader.getInfo(package)
+            infos.append(info)
+
+        infos.sort()
+        info = infos[0]
+
+        version, arch = package.version.split('@')
+        description = info.getDescription()
+        description = description.replace("\n\n", ";")
+        description = description.replace("\n", " ")
+        urls = info.getReferenceURLs()
+        if urls:
+            url = urls[0]
+        else:
+            url = "unknown"
+
+        pkgsize = None
+        seen = {}
+        for loader in package.loaders:
+            info = loader.getInfo(package)
+            for pkgurl in info.getURLs():
+                size = info.getSize(pkgurl)
+                if size:
+                    pkgsize = size
+                    break
+            if pkgsize:
+                break
+        if not pkgsize:
+            pkgsize = "unknown"
+
+        self.description(packageid, "unknown", "unknown", description, url,
+                pkgsize, ";".join(info.getPathList()))
+
     def _show_package(self, package, status=None):
         if not status:
             if package.installed:

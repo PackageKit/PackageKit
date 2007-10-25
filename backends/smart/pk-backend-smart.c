@@ -34,7 +34,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_filters */
 	NULL,						/* cancel */
 	NULL,						/* get_depends */
-	NULL,						/* get_description */
+	pk_backend_python_get_description,		/* get_description */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
 	pk_backend_python_get_updates,			/* get_updates */
