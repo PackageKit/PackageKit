@@ -30,6 +30,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         self.ctrl = smart.init()
+        smart.initPlugins()
+        smart.initPsyco()
+
         self.ctrl.reloadChannels()
         self.ctrl.getCache()
 
