@@ -9,11 +9,12 @@ dist_helper_DATA = 			\
 	get-repo-list.py 		\
 	get-requires.py			\
 	get-updates.py			\
-	install.py			\
 	install-file.py			\
+	install.py			\
 	refresh-cache.py 		\
 	remove.py			\
 	resolve.py			\
+	search-name.py			\
 	update.py			\
 	update-system.py		\
 	pisiBackend.py			\

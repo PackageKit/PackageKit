@@ -223,3 +223,10 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         for pkg in self.packagedb.get_package(package).runtimeDependencies():
             # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
             self.__get_package(pkg.package)
+
+    def search_name(self, filters, package):
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        for pkg in pisi.api.search_package([package]):
+            self.__get_package(pkg)
