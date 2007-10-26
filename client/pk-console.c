@@ -302,6 +302,7 @@ const gchar *summary =
 	"Subcommands:\n"
 	"  search name|details|group|file data\n"
 	"  install <package_id>\n"
+	"  install-file <file>\n"
 	"  remove <package_id>\n"
 	"  update <package_id>\n"
 	"  refresh\n"
@@ -608,6 +609,13 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 			return FALSE;
 		} else {
 			wait = pk_console_install_package (client, value);
+		}
+	} else if (strcmp (mode, "install-file") == 0) {
+		if (value == NULL) {
+			g_set_error (error, 0, 0, "you need to specify a package to install");
+			return FALSE;
+		} else {
+			wait = pk_client_install_file (client, value);
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
