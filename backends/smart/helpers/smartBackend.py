@@ -18,7 +18,8 @@
 
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED
+        INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED, \
+        ERROR_REPO_NOT_FOUND
 
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
@@ -187,6 +188,16 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if channel.has_key('disabled') and channel['disabled'] == 'yes':
                 enabled = 'false'
             self.repo_detail(alias, channel['name'], enabled)
+
+    def repo_enable(self, repoid, enable):
+        if smart.sysconf.has(("channels", repoid)):
+            if enable == "true":
+                smart.sysconf.remove(("channels", repoid, "disabled"))
+            else:
+                smart.sysconf.set(("channels", repoid, "disabled"), "yes")
+            self.ctrl.saveSysConf()
+        else:
+            self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
 
     def _show_package(self, package, status=None):
         if not status:
