@@ -607,6 +607,20 @@ backend_get_repo_list (PkBackend *backend)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+        g_return_if_fail (backend != NULL);
+	
+	box_repos_enable_repo(rid, enabled);
+
+        pk_backend_finished (backend);
+}
+
+
 
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
@@ -635,7 +649,7 @@ PK_BACKEND_OPTIONS (
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL					/* repo_set_data */
 );
 
