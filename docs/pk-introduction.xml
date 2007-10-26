@@ -1141,7 +1141,12 @@
         There are no arguments.
       </para>
       <para>
-        This should fetch the metadata from the repositories.
+        This should fetch updated metadata for all enabled repositories.
+        This operation should be only scheduled when the computer is idle as
+        the network connection will be very active, and will the computer will
+        have have non-trivial levels of hard disk and processor activity.
+        For these reasons, it should not be done automatically when on battery
+        power.
       </para>
       <para>
         This method typically emits
