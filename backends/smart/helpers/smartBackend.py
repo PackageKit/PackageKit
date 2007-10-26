@@ -21,6 +21,17 @@ from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED, \
         ERROR_REPO_NOT_FOUND
 
+
+def needs_cache(func):
+    """ Load smart's channels, and save the cache when done. """
+    def cache_wrap(obj, *args, **kwargs):
+        obj.ctrl.reloadChannels()
+        result = func(obj, *args, **kwargs)
+        obj.ctrl.saveSysConf()
+        return result
+    return cache_wrap
+
+
 class PackageKitSmartBackend(PackageKitBaseBackend):
 
     def __init__(self, args):
@@ -33,9 +44,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPlugins()
         smart.initPsyco()
 
+    @needs_cache
     def install(self, packageid):
-        self.ctrl.reloadChannels()
-
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
@@ -52,9 +62,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    @needs_cache
     def remove(self, allowdeps, packageid):
-        self.ctrl.reloadChannels()
-
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
@@ -71,9 +80,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    @needs_cache
     def update(self, packageid):
-        self.ctrl.reloadChannels()
-
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
@@ -89,9 +97,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    @needs_cache
     def update_system(self):
-        self.ctrl.reloadChannels()
-
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -104,9 +111,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
+    @needs_cache
     def get_updates(self):
-        self.ctrl.reloadChannels()
-
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,
@@ -121,9 +127,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if op == smart.transaction.INSTALL:
                 self._show_package(package, status=INFO_NORMAL)
 
+    @needs_cache
     def resolve(self, filters, packagename):
-        self.ctrl.reloadChannels()
-
         filterlist = filters.split(';')
 
         ratio, results, suggestions = self.ctrl.search(packagename)
@@ -133,9 +138,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             if FILTER_INSTALLED not in filterlist and not result.installed:
                 self._show_package(result)
 
+    @needs_cache
     def search_name(self, filters, packagename):
-        self.ctrl.reloadChannels()
-
         globbed = "*%s*" % packagename
         ratio, results, suggestions = self.ctrl.search(globbed)
 
@@ -147,10 +151,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def refresh_cache(self):
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
+        self.ctrl.saveSysConf()
 
+    @needs_cache
     def get_description(self, packageid):
-        self.ctrl.reloadChannels()
-
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
