@@ -113,6 +113,8 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
 		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		policy = "org.freedesktop.packagekit.repo-change";
+	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		policy = "org.freedesktop.packagekit.refresh-cache";
 	} else {
 		pk_error ("policykit type required for '%s'", pk_role_enum_to_text (role));
 	}

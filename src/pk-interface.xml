@@ -10,6 +10,7 @@
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="RefreshCache">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="b" name="force" direction="in"/>
     </method>

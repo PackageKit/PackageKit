@@ -1459,6 +1459,31 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 }
 
 /**
+ * pk_client_refresh_cache_action:
+ **/
+gboolean
+pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_BOOLEAN, force,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("RefreshCache failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_client_refresh_cache:
  **/
 gboolean
@@ -1480,25 +1505,27 @@ pk_client_refresh_cache (PkClient *client, gboolean force)
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
 	client->priv->xcached_force = force;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", &error,
-				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_BOOLEAN, force,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
+	/* hopefully do the operation first time */
+	ret = pk_client_refresh_cache_action (client, force, &error);
+
+	/* we were refused by policy then try to get auth */
 	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RefreshCache failed!");
-		return FALSE;
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_refresh_cache_action (client, force, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
 	}
 
-	return TRUE;
+	return ret;
 }
 
 /**
