@@ -1629,7 +1629,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id)
 				pk_debug ("gained priv");
 				g_error_free (error);
 				/* do it all over again */
-				ret = pk_client_install_package_action (client, package_id, &error);
+				ret = pk_client_update_package_action (client, package_id, &error);
 			}
 		}
 		if (error != NULL) {
