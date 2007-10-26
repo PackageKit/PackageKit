@@ -34,7 +34,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_filters */
 	NULL,						/* cancel */
 	NULL,						/* get_depends */
-	NULL,						/* get_description */
+	pk_backend_python_get_description,		/* get_description */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
 	pk_backend_python_get_updates,			/* get_updates */
@@ -50,7 +50,7 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_search_name,			/* search_name */
 	pk_backend_python_update_package,		/* update_package */
 	pk_backend_python_update_system,		/* update_system */
-	NULL,						/* get_repo_list */
-	NULL,						/* repo_enable */
+	pk_backend_python_get_repo_list,		/* get_repo_list */
+	pk_backend_python_repo_enable,			/* repo_enable */
 	NULL						/* repo_set_data */
 );
