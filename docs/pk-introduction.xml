@@ -333,6 +333,19 @@
                 stable operation of the system.
               </entry>
             </row>
+            <row>
+              <entry><literal>process-quit</literal></entry>
+              <entry>
+                The process was asked to quit, probably because it was cancelled.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>process-kill</literal></entry>
+              <entry>
+                The process was forcibly killed, probably because ignored the
+                quit request. This is probably due to it being cancelled.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -581,8 +594,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -625,8 +637,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -672,8 +683,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -718,8 +728,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -762,9 +771,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -806,9 +813,7 @@
       </informaltable>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -853,9 +858,7 @@
       </informaltable>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -895,9 +898,7 @@
       </informaltable>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -1010,9 +1011,7 @@
       </informaltable>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -1050,9 +1049,7 @@
       </informaltable>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Description</literal>.
@@ -1090,9 +1087,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Status</literal> and
         <literal>Error</literal> and
         <literal>Package</literal>.
@@ -1106,9 +1101,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>RequireRestart</literal> and
         <literal>Package</literal>.
@@ -1129,8 +1122,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -1155,9 +1147,7 @@
       </para>
       <para>
         This method typically emits
-        <literal>Percentage</literal>,
-        <literal>Subpercentage</literal>,
-        <literal>NoPercentageUpdates</literal>,
+        <literal>Progress</literal>,
         <literal>Error</literal> and
         <literal>Package</literal>.
       </para>
@@ -1264,11 +1254,11 @@
       Signals used by the backends are as follows:
     </para>
     <sect2 id="api-percentage">
-      <title>Percentage</title>
+      <title>Progress</title>
       <para>
         This is optional.
-        Backends should send the DBUS signal NoPercentageUpdates or use
-        no-percentage-updates if the remaining position cannot be calculated.
+        Backends should send the percentage fields to 101 if the amount complete
+        cannot be calculated.
       </para>
       <informaltable>
         <tgroup cols="2">
@@ -1280,43 +1270,30 @@
           </thead>
           <tbody>
             <row>
-              <entry><literal>value</literal></entry>
+              <entry><literal>percentage</literal></entry>
               <entry>The percentage complete of the entire transaction</entry>
             </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-    </sect2>
-
-    <sect2 id="api-subpercentage">
-      <title>Subpercentage</title>
-      <para>
-        This is optional.
-      </para>
-      <informaltable>
-        <tgroup cols="2">
-          <thead>
             <row>
-              <entry>Option</entry>
-              <entry>Description</entry>
+              <entry><literal>subpercentage</literal></entry>
+              <entry>The subpercentage complete of the sub-transaction</entry>
             </row>
-          </thead>
-          <tbody>
             <row>
-              <entry><literal>value</literal></entry>
-              <entry>Percentage complete of the sub-transaction.</entry>
+              <entry><literal>elapsed</literal></entry>
+              <entry>
+                The amount of time in seconds this transaction has been in the
+                running state
+              </entry>
+            </row>
+            <row>
+              <entry><literal>remaining</literal></entry>
+              <entry>
+                The amount of time in seconds this transaction will tyake to
+                complete. Zero is sent for unknown.
+              </entry>
             </row>
           </tbody>
         </tgroup>
       </informaltable>
-    </sect2>
-
-    <sect2 id="api-no-percentage-updates">
-      <title>NoPercentageUpdates</title>
-      <para>
-        This is optional and signifies that the helper is no longer able to
-        send percentage updates.
-      </para>
     </sect2>
 
     <sect2 id="api-error">

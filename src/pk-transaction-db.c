@@ -275,6 +275,7 @@ pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
+	/* TODO: we have to be careful of SQL injection attacks */
 	statement = g_strdup_printf ("UPDATE transactions SET data = \"%s\" WHERE transaction_id = '%s'",
 				     data, tid);
 	pk_transaction_db_sql_statement (tdb, statement);

@@ -37,6 +37,7 @@
 
 #include <glib/gi18n.h>
 #include <gmodule.h>
+#include <pk-common.h>
 #include <pk-package-id.h>
 #include <pk-enum.h>
 #include <pk-network.h>
@@ -479,15 +480,15 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackend *backen
 	/* if we quit the process, set an error */
 	if (exit == PK_EXIT_ENUM_QUIT) {
 		/* we just call this failed, and set an error */
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PROCESS_QUIT,
 				       "Transaction was cancelled");
 	}
 
 	/* if we killed the process, set an error */
 	if (exit == PK_EXIT_ENUM_KILL) {
 		/* we just call this failed, and set an error */
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-				       "Transaction was killed");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PROCESS_KILL,
+				       "Transaction was cancelled");
 	}
 
 	if (backend->priv->set_error == FALSE &&
@@ -737,6 +738,8 @@ pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
 gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, const gchar *summary)
 {
+	gchar *summary_safe;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
@@ -744,9 +747,12 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 	g_free (backend->priv->last_package);
 	backend->priv->last_package = g_strdup (package);
 
-	pk_debug ("emit package %i, %s, %s", info, package, summary);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary);
+	/* replace unsafe chars */
+	summary_safe = pk_string_replace_unsafe (summary);
 
+	pk_debug ("emit package %i, %s, %s", info, package, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
+	g_free (summary_safe);
 	return TRUE;
 }
 
@@ -759,13 +765,18 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *url, const gchar *restart,
 			  const gchar *update_text)
 {
+	gchar *update_text_safe;
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* replace unsafe chars */
+	update_text_safe = pk_string_replace_unsafe (update_text);
+
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, url, restart, update_text);
+		  package_id, updates, obsoletes, url, restart, update_text_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, url, restart, update_text);
+		       package_id, updates, obsoletes, url, restart, update_text_safe);
+	g_free (update_text_safe);
 	return TRUE;
 }
 
@@ -841,14 +852,20 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			const gchar *description, const gchar *url,
 			gulong size, const gchar *filelist)
 {
+	gchar *description_safe;
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s", package_id, licence, group, description, url,
-		  size, filelist);
-	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0, package_id, licence, group, description, url,
-		       size, filelist);
+	/* replace unsafe chars */
+	description_safe = pk_string_replace_unsafe (description);
 
+	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
+		  package_id, licence, group, description_safe, url,
+		  size, filelist);
+	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0,
+		       package_id, licence, group, description_safe, url,
+		       size, filelist);
+	g_free (description_safe);
 	return TRUE;
 }
 

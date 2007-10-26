@@ -239,7 +239,7 @@ dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum (dummy)]))
+			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -254,6 +254,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=box
 	elif test -f /usr/bin/smart ; then
 		with_default_backend=smart
+	elif test -f /usr/bin/pisi ; then
+		with_default_backend=pisi
 	else
 		with_default_backend=dummy
 	fi

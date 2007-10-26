@@ -101,6 +101,8 @@ static PkTaskEnumMatch task_error[] = {
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
 	{PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,	"cannot-remove-system-package"},
+	{PK_ERROR_ENUM_PROCESS_QUIT,		"process-quit"},
+	{PK_ERROR_ENUM_PROCESS_KILL,		"process-kill"},
 	{0, NULL},
 };
 

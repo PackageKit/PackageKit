@@ -4,11 +4,6 @@ helperdir = $(datadir)/PackageKit/helpers/apt
 NULL =
 
 dist_helper_DATA = 			\
-	search-name.py			\
-	search-details.py		\
-	search-group.py			\
-	search-file.py			\
-	get-description.py		\
 	refresh-cache.py		\
 	aptBackend.py			\
 	$(NULL)

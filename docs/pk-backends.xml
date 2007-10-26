@@ -172,6 +172,11 @@
             <entry><literal>stderr</literal></entry>
           </row>
           <row>
+            <entry>AllowUpdate</entry>
+            <entry><literal>allow-interrupt[tab]enabled</literal></entry>
+            <entry><literal>stderr</literal></entry>
+          </row>
+          <row>
             <entry>Package</entry>
             <entry><literal>package_id[tab]status[tab]package_id[tab]summary</literal></entry>
             <entry><literal>stdout</literal></entry>

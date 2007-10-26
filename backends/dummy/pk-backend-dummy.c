@@ -308,7 +308,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	g_return_if_fail (backend != NULL);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
-			    "The vips documentation package.");
+			    "The vips \"documentation\" package.");
 	pk_backend_finished (backend);
 }
 

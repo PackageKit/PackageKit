@@ -32,6 +32,7 @@ G_BEGIN_DECLS
 
 gboolean	 pk_validate_input			(const gchar	*text);
 gboolean	 pk_filter_check			(const gchar	*filter);
+gchar		*pk_string_replace_unsafe		(const gchar	*text);
 gchar		**pk_string_id_split			(const gchar	*id,
 							 guint		 parts);
 gboolean	 pk_string_id_strcmp			(const gchar	*id1,

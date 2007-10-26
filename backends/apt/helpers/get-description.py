@@ -12,6 +12,7 @@
 import sys
 from aptBackend import PackageKitAptBackend
 
+package = sys.argv[1]
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.refresh_cache()
+backend.get_description(package)
 sys.exit(0)
