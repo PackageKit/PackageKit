@@ -773,30 +773,42 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 /**
  * pk_engine_refresh_cache:
  **/
-gboolean
-pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GError **error)
+void
+pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, 
+		       DBusGMethodInvocation *context, GError **dead_error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
+	GError *error;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("RefreshCache method called: %s, %i", tid, force);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
 			     "transaction_id '%s' not found", tid);
-		return FALSE;
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
 	}
 
 	/* create a new backend */
 	item->backend = pk_engine_backend_new (engine);
 	if (item->backend == NULL) {
-		g_warning ("Backend not set yet!");
-		return FALSE;
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			"Could not create backend instance");
+		dbus_g_method_return_error (context, error);	
+		return;
 	}
 
 	/* we unref the update cache if it exists */
@@ -808,14 +820,14 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, GEr
 
 	ret = pk_backend_refresh_cache (item->backend, force);
 	if (ret == FALSE) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
-		return FALSE;
+		dbus_g_method_return_error (context, error);
+		return;
 	}
-
 	pk_engine_item_add (engine, item);
-	return TRUE;
+	dbus_g_method_return (context);
 }
 
 /**

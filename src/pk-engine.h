@@ -129,9 +129,10 @@ void		 pk_engine_rollback			(PkEngine	*engine,
 							 const gchar	*transaction_id,
 							 DBusGMethodInvocation *context,
 							 GError		**error);
-gboolean	 pk_engine_refresh_cache		(PkEngine	*engine,
+void		 pk_engine_refresh_cache		(PkEngine	*engine,
 							 const gchar	*tid,
 							 gboolean	 force,
+							 DBusGMethodInvocation *context,
 							 GError		**error);
 gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
 							 const gchar	*tid,
