@@ -10,6 +10,7 @@ dist_helper_DATA = 			\
 	get-requires.py			\
 	get-updates.py			\
 	install.py			\
+	install-file.py			\
 	refresh-cache.py 		\
 	remove.py			\
 	resolve.py			\

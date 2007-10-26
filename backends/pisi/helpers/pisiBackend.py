@@ -96,6 +96,20 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
+    def install_file(self, file):
+        """ Installs given package into system"""
+        # FIXME: install progress
+        self.allow_interrupt(False);
+        self.percentage(None)
+
+        try:
+            self.status(STATE_INSTALL)
+            pisi.api.install([file])
+        except pisi.Error,e:
+            # FIXME: Error: internal-error : Package re-install declined
+            # Force needed?
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, e)
+
     def update(self, package_id):
         """ Updates given package to its latest version """
         # FIXME: fetch/install progress
