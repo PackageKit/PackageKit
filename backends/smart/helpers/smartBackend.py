@@ -33,10 +33,9 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         smart.initPlugins()
         smart.initPsyco()
 
-        self.ctrl.reloadChannels()
-        self.ctrl.getCache()
-
     def install(self, packageid):
+        self.ctrl.reloadChannels()
+
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
@@ -54,6 +53,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     def remove(self, allowdeps, packageid):
+        self.ctrl.reloadChannels()
 
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
@@ -72,6 +72,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     def update(self, packageid):
+        self.ctrl.reloadChannels()
+
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
@@ -88,8 +90,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     def update_system(self):
+        self.ctrl.reloadChannels()
+
         cache = self.ctrl.getCache()
-        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+
+        trans = smart.transaction.Transaction(cache,
                 smart.transaction.PolicyUpgrade)
 
         for package in cache.getPackages():
@@ -100,8 +105,11 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     def get_updates(self):
+        self.ctrl.reloadChannels()
+
         cache = self.ctrl.getCache()
-        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+
+        trans = smart.transaction.Transaction(cache,
                 smart.transaction.PolicyUpgrade)
 
         for package in cache.getPackages():
@@ -114,6 +122,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(package, status=INFO_NORMAL)
 
     def resolve(self, filters, packagename):
+        self.ctrl.reloadChannels()
+
         filterlist = filters.split(';')
 
         ratio, results, suggestions = self.ctrl.search(packagename)
@@ -124,6 +134,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                 self._show_package(result)
 
     def search_name(self, filters, packagename):
+        self.ctrl.reloadChannels()
+
         globbed = "*%s*" % packagename
         ratio, results, suggestions = self.ctrl.search(globbed)
 
@@ -137,6 +149,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
 
     def get_description(self, packageid):
+        self.ctrl.reloadChannels()
+
         idparts = packageid.split(';')
         packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
         ratio, results, suggestions = self.ctrl.search(packagestring)
