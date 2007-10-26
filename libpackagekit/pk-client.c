@@ -1615,7 +1615,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id)
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
+	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGE;
 	client->priv->xcached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
