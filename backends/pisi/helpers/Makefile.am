@@ -14,6 +14,7 @@ dist_helper_DATA = 			\
 	refresh-cache.py 		\
 	remove.py			\
 	resolve.py			\
+	repo-set-data.py		\
 	search-name.py			\
 	update.py			\
 	update-system.py		\

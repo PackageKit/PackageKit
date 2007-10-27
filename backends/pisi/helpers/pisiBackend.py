@@ -58,6 +58,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def resolve(self, filter, package):
         """ Turns a single package name into a package_id suitable for the other methods """
+
+        #FIXME: Use filter
         self.allow_interrupt(True);
         self.percentage(None)
         self.__get_package(package)
@@ -225,8 +227,34 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.__get_package(pkg.package)
 
     def search_name(self, filters, package):
+        """ Prints a list of packages contains search term """
+
+        # FIXME: Use filter 
         self.allow_interrupt(True)
         self.percentage(None)
 
         for pkg in pisi.api.search_package([package]):
             self.__get_package(pkg)
+
+    def repo_set_data(self, repo_id, parameter, value):
+        self.allow_interrupt(False)
+        self.percentage(None)
+
+        if parameter == "add-repo":
+            try:
+                pisi.api.add_repo(repo_id, value, parameter)
+            except pisi.Error, e:
+                self.error(ERROR_INTERNAL_ERROR, e)
+
+            try:
+                pisi.api.update_repo(repo_id)
+            except pisi.fetcher.FetchError:
+                pisi.api.remove_repo(repo_id)
+                self.error(ERROR_REPO_NOT_FOUND, "Could not be reached to repository, removing from system")
+        elif parameter == "remove-repo":
+            try:
+                pisi.api.remove_repo(repo_id)
+            except pisi.Error:
+                self.error(ERROR_REPO_NOT_FOUND, "Repository is not exists")
+        else:
+            self.error(ERROR_INTERNAL_ERROR, "Parameter not supported")

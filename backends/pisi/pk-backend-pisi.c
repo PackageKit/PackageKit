@@ -51,5 +51,5 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_update_system,		/* update_system */
 	pk_backend_python_get_repo_list,		/* get_repo_list */
 	NULL,						/* repo_enable */
-	NULL						/* repo_set_data */
+	pk_backend_python_repo_set_data			/* repo_set_data */
 );
