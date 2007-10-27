@@ -36,6 +36,7 @@ Released versions are found on
 <table>
 <tr><td><b>Version</b></td><td>&nbsp;&nbsp;</td><td><b>Date</b></td></tr>
 <tr><td>0.1.0</td><td></td><td>2007-10-16</td></tr>
+<tr><td>0.1.1</td><td></td><td>2007-10-23</td></tr>
 </table>
 
 <h2>Dependencies</h2>
@@ -46,7 +47,7 @@ The actual PackageKit daemon needs:
 <li><code>glib</code> 2.14.0</li>
 <li><code>dbus</code> newer than 1.1.3 (20070819 or later)</li>
 <li><code>dbus-glib</code> 0.74</li>
-<li><code>libnm</code> 0.6.4</li>
+<li><code>libnm</code> 0.6.4 (optional)</li>
 <li><code>polkit-dbus</code> 0.5</li>
 <li><code>polkit-grant</code> 0.5</li>
 </ul>
@@ -87,18 +88,8 @@ information.
 <p>
 Backends do not have to be complete; often they just contain basic
 functionality to install and remove but do not provide dependency or file
-lists for example.
-For instance:
+lists for example. See the FAQ <a href="pk-faq.html">here</a> for backends status.
 </p>
-<ul>
-<li>yum (95% complete)</li>
-<li>conary (70% complete)</li>
-<li>box (50% complete)</li>
-<li>apt (40% complete)</li>
-<li>pacman/alpm (10% complete)</li>
-<li>smart (25% complete)</li>
-<li>pisi (25% complete)</li>
-</ul>
 
 <p>
 We need people to create backends, and then package (pardon the pun)
