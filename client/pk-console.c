@@ -357,6 +357,7 @@ const gchar *summary =
 	"  get repos\n"
 	"  enable-repo <repo_id>\n"
 	"  disable-repo <repo_id>\n"
+	"  set-repo-data <repo_id> <parameter> <value>\n"
 	"\n"
 	"  package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development";
 
@@ -593,6 +594,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 	const gchar *mode;
 	const gchar *value = NULL;
 	const gchar *details = NULL;
+	const gchar *parameter = NULL;
 	gboolean wait = FALSE;
 	PkEnumList *elist;
 
@@ -602,6 +604,9 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 	}
 	if (argc > 3) {
 		details = argv[3];
+	}
+	if (argc > 4) {
+		parameter = argv[4];
 	}
 
 	if (strcmp (mode, "search") == 0) {
@@ -687,6 +692,13 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 			return FALSE;
 		} else {
 			wait = pk_client_repo_enable (client, value, FALSE);
+		}
+	} else if (strcmp (mode, "set-repo-data") == 0) {
+		if (value == NULL || details == NULL || parameter == NULL) {
+			g_set_error (error, 0, 0, "you need to specify a repo name/parameter and value");
+			return FALSE;
+		} else {
+			wait = pk_client_repo_set_data (client, value, details, parameter);
 		}
 	} else if (strcmp (mode, "get") == 0) {
 		if (value == NULL) {
