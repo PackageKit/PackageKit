@@ -68,6 +68,9 @@ gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*url,
 							 gulong          size,
 							 const gchar    *filelist);
+gboolean 	 pk_backend_files 			(PkBackend 	*backend,
+							 const gchar	*package_id,
+							 const gchar 	*filelist);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 guint		 code,
 							 const gchar	*details, ...);
@@ -122,6 +125,7 @@ struct _PkBackendDesc {
 	void		(*cancel)		(PkBackend *backend);
 	void		(*get_depends)		(PkBackend *backend, const gchar *package_id);
 	void		(*get_description)	(PkBackend *backend, const gchar *package_id);
+	void		(*get_files)	        (PkBackend *backend, const gchar *package_id);
 	void		(*get_requires)		(PkBackend *backend, const gchar *package_id);
 	void		(*get_update_detail)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_updates)		(PkBackend *backend);
@@ -145,7 +149,7 @@ struct _PkBackendDesc {
 };
 
 #define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
-			   get_groups, get_filters, cancel, get_depends, get_description, \
+			   get_groups, get_filters, cancel, get_depends, get_description, get_files, \
 			   get_requires, get_update_detail, get_updates, install_package, install_file, \
 			   refresh_cache, remove_package, resolve, rollback, search_details, \
 			   search_file, search_group, search_name, update_package, update_system, \
@@ -161,6 +165,7 @@ struct _PkBackendDesc {
 		cancel, \
 		get_depends, \
 		get_description, \
+		get_files, \
 		get_requires, \
 		get_update_detail, \
 		get_updates, \

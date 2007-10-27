@@ -119,6 +119,10 @@ gboolean	 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
 							 GError		**error);
+gboolean	 pk_engine_get_files			(PkEngine	*engine,
+							 const gchar	*tid,
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_engine_resolve			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*filter,

@@ -88,6 +88,7 @@ enum {
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
+	PK_ENGINE_FILES,
 	PK_ENGINE_ALLOW_INTERRUPT,
 	PK_ENGINE_LOCKED,
 	PK_ENGINE_REPO_DETAIL,
@@ -453,6 +454,30 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 }
 
 /**
+ * pk_engine_files_cb:
+ **/
+static void
+pk_engine_files_cb (PkBackend *backend, const gchar *package_id,
+		    const gchar *filelist, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+
+	pk_debug ("emitting files tid:%s, %s, %s",
+		  item->tid, package_id, filelist);
+	g_signal_emit (engine, signals [PK_ENGINE_FILES], 0,
+		       item->tid, package_id, filelist);
+}
+
+/**
  * pk_engine_finished_cb:
  **/
 static void
@@ -651,6 +676,8 @@ pk_engine_backend_new (PkEngine *engine)
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 	g_signal_connect (backend, "description",
 			  G_CALLBACK (pk_engine_description_cb), engine);
+	g_signal_connect (backend, "files",
+			  G_CALLBACK (pk_engine_files_cb), engine);
 	g_signal_connect (backend, "allow-interrupt",
 			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
 	g_signal_connect (backend, "change-transaction-data",
@@ -1448,6 +1475,63 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	ret = pk_backend_get_description (item->backend, package_id);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+			     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		return FALSE;
+	}
+	pk_engine_item_add (engine, item);
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_files:
+ **/
+gboolean
+pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetFiles method called: %s, %s", tid, package_id);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "transaction_id '%s' not found", tid);
+		return FALSE;
+	}
+
+	/* check for sanity */
+	ret = pk_validate_input (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
+				      "Invalid input passed to daemon");
+		return FALSE;
+	}
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (ret == FALSE) {
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
+				      "The package id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
+	/* create a new backend */
+	item->backend = pk_engine_backend_new (engine);
+	if (item->backend == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
+			     "Backend '%s' could not be initialized", engine->priv->backend);
+		return FALSE;
+	}
+
+	ret = pk_backend_get_files (item->backend, package_id);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -2405,6 +2489,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
+	signals [PK_ENGINE_FILES] =
+		g_signal_new ("files",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

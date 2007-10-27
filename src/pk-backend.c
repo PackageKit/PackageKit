@@ -95,6 +95,7 @@ enum {
 	PK_BACKEND_TRANSACTION_STATUS_CHANGED,
 	PK_BACKEND_PROGRESS_CHANGED,
 	PK_BACKEND_DESCRIPTION,
+	PK_BACKEND_FILES,
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
@@ -304,6 +305,14 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 						group, sections[4], sections[5],
 						package_size, sections[7]);
 		}
+	} else if (strcmp (command, "files") == 0) {
+		if (size != 3) {
+			g_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+
+		pk_backend_files (backend, sections[1], sections[2]);
 	} else if (strcmp (command, "repo-detail") == 0) {
 		if (size != 4) {
 			g_warning ("invalid command '%s'", command);
@@ -870,6 +879,23 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 }
 
 /**
+ * pk_backend_files:
+ **/
+gboolean
+pk_backend_files (PkBackend *backend, const gchar *package_id,
+		  const gchar *filelist)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit files %s, %s", package_id, filelist);
+	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
+		       package_id, filelist);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_updates_changed:
  **/
 gboolean
@@ -1142,6 +1168,9 @@ pk_backend_set_running (PkBackend *backend)
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
 		backend->desc->get_description (backend,
 						backend->priv->xcached_package_id);
+	} else if (backend->priv->role == PK_ROLE_ENUM_GET_FILES) {
+		backend->desc->get_files (backend,
+					  backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		backend->desc->get_requires (backend,
 					     backend->priv->xcached_package_id);
@@ -1259,6 +1288,22 @@ pk_backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
 	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_DESCRIPTION);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_files:
+ */
+gboolean
+pk_backend_get_files (PkBackend *backend, const gchar *package_id)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->desc->get_files == NULL) {
+		pk_backend_not_implemented_yet (backend, "GetFiles");
+		return FALSE;
+	}
+	backend->priv->xcached_package_id = g_strdup (package_id);
+	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_FILES);
 	return TRUE;
 }
 
@@ -1579,6 +1624,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (backend->desc->get_description != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_DESCRIPTION);
 	}
+	if (backend->desc->get_files != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_FILES);
+	}
 	if (backend->desc->get_requires != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REQUIRES);
 	}
@@ -1780,6 +1828,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_UINT64, G_TYPE_STRING);
+	signals [PK_BACKEND_FILES] =
+		g_signal_new ("files",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
