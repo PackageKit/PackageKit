@@ -229,3 +229,14 @@ pk_backend_python_repo_enable (PkBackend *backend, const gchar *rid, gboolean en
 		pk_backend_spawn_helper (backend, "repo-enable.py", rid, "false", NULL);
 	}
 }
+
+/**
+ * pk_backend_python_repo_set_data:
+ */
+void
+pk_backend_python_repo_set_data (PkBackend *backend, const gchar *rid, 
+        const gchar *parameter, const gchar *value)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "repo-set-data.py", rid, parameter, value, NULL);
+}

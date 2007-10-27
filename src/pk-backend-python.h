@@ -83,6 +83,11 @@ void	pk_backend_python_repo_enable		(PkBackend	*backend,
 						 const gchar	*rid,
 						 gboolean	 enabled);
 
+void	pk_backend_python_repo_set_data		(PkBackend	*backend,
+						 const gchar	*rid,
+						 const gchar	*parameter,
+						 const gchar	*value);
+
 G_END_DECLS
 
 #endif /* __PK_BACKEND_PYTHON_H */

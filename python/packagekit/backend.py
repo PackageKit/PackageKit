@@ -344,6 +344,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def repo_set_data(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+
     def get_repo_list(self):
         '''
         Implement the {backend}-get-repo-list functionality
