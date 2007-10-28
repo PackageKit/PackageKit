@@ -169,9 +169,9 @@ typedef enum {
 } PkSigTypeEnum;
 
 /* general */
-guint		 pk_task_enum_find_value		(PkEnumMatch	*table,
+guint		 pk_enum_find_value			(PkEnumMatch	*table,
 							 const gchar	*string);
-const gchar	*pk_task_enum_find_string		(PkEnumMatch	*table,
+const gchar	*pk_enum_find_string			(PkEnumMatch	*table,
 							 guint		 value);
 
 PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
