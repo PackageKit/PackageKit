@@ -34,6 +34,7 @@
 #include <pk-client.h>
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
+#include <pk-connection.h>
 
 #define PROGRESS_BAR_PADDING 22
 #define MINIMUM_COLUMNS (PROGRESS_BAR_PADDING + 5)
@@ -827,6 +828,19 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *repository
 }
 
 /**
+ * pk_connection_changed_cb:
+ **/
+static void
+pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointer data)
+{
+	/* if the daemon crashed, don't hang around */
+	if (connected == FALSE && loop != NULL) {
+		pk_warning ("The daemon went away...");
+		g_main_loop_quit (loop);
+	}
+}
+
+/**
  * main:
  **/
 int
@@ -835,6 +849,7 @@ main (int argc, char *argv[])
 	DBusGConnection *system_connection;
 	GError *error = NULL;
 	PkClient *client;
+	PkConnection *pconnection;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
 	gboolean nowait = FALSE;
@@ -890,6 +905,10 @@ main (int argc, char *argv[])
 
 	pk_debug_init (verbose);
 	loop = g_main_loop_new (NULL, FALSE);
+
+	pconnection = pk_connection_new ();
+	g_signal_connect (pconnection, "connection-changed",
+			  G_CALLBACK (pk_connection_changed_cb), loop);
 
 	client = pk_client_new ();
 	g_signal_connect (client, "package",
