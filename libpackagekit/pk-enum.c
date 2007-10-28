@@ -30,7 +30,7 @@
 #include "pk-debug.h"
 #include "pk-enum.h"
 
-static PkEnumMatch task_exit[] = {
+static PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
@@ -39,7 +39,7 @@ static PkEnumMatch task_exit[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_status[] = {
+static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
@@ -52,7 +52,7 @@ static PkEnumMatch task_status[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_role[] = {
+static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
@@ -78,7 +78,7 @@ static PkEnumMatch task_role[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_error[] = {
+static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
 	{PK_ERROR_ENUM_NO_CACHE,		"no-cache"},
@@ -101,7 +101,7 @@ static PkEnumMatch task_error[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_restart[] = {
+static PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_RESTART_ENUM_NONE,			"none"},
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
@@ -110,7 +110,7 @@ static PkEnumMatch task_restart[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_filter[] = {
+static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
@@ -121,7 +121,7 @@ static PkEnumMatch task_filter[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_group[] = {
+static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
@@ -137,7 +137,7 @@ static PkEnumMatch task_group[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_freq[] = {
+static PkEnumMatch enum_freq[] = {
 	{PK_FREQ_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_FREQ_ENUM_HOURLY,			"hourly"},
 	{PK_FREQ_ENUM_DAILY,			"daily"},
@@ -146,7 +146,7 @@ static PkEnumMatch task_freq[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_update[] = {
+static PkEnumMatch enum_update[] = {
 	{PK_UPDATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_ENUM_ALL,			"all"},
 	{PK_UPDATE_ENUM_SECURITY,		"security"},
@@ -154,7 +154,7 @@ static PkEnumMatch task_update[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_info[] = {
+static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -169,17 +169,17 @@ static PkEnumMatch task_info[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch task_sig_type[] = {
+static PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
 	{0, NULL},
 };
 
 /**
- * pk_task_enum_find_value:
+ * pk_enum_enum_find_value:
  */
 guint
-pk_task_enum_find_value (PkEnumMatch *table, const gchar *string)
+pk_enum_enum_find_value (PkEnumMatch *table, const gchar *string)
 {
 	guint i;
 	const gchar *string_tmp;
@@ -201,10 +201,10 @@ pk_task_enum_find_value (PkEnumMatch *table, const gchar *string)
 }
 
 /**
- * pk_task_enum_find_string:
+ * pk_enum_enum_find_string:
  */
 const gchar *
-pk_task_enum_find_string (PkEnumMatch *table, guint value)
+pk_enum_enum_find_string (PkEnumMatch *table, guint value)
 {
 	guint i;
 	guint tmp;
@@ -229,7 +229,7 @@ pk_task_enum_find_string (PkEnumMatch *table, guint value)
 PkSigTypeEnum
 pk_sig_type_enum_from_text (const gchar *sig_type)
 {
-	return pk_task_enum_find_value (task_sig_type, sig_type);
+	return pk_enum_enum_find_value (enum_sig_type, sig_type);
 }
 
 /**
@@ -238,7 +238,7 @@ pk_sig_type_enum_from_text (const gchar *sig_type)
 const gchar *
 pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 {
-	return pk_task_enum_find_string (task_sig_type, sig_type);
+	return pk_enum_enum_find_string (enum_sig_type, sig_type);
 }
 
 /**
@@ -247,7 +247,7 @@ pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 PkInfoEnum
 pk_info_enum_from_text (const gchar *info)
 {
-	return pk_task_enum_find_value (task_info, info);
+	return pk_enum_enum_find_value (enum_info, info);
 }
 
 /**
@@ -256,7 +256,7 @@ pk_info_enum_from_text (const gchar *info)
 const gchar *
 pk_info_enum_to_text (PkInfoEnum info)
 {
-	return pk_task_enum_find_string (task_info, info);
+	return pk_enum_enum_find_string (enum_info, info);
 }
 
 /**
@@ -265,7 +265,7 @@ pk_info_enum_to_text (PkInfoEnum info)
 PkExitEnum
 pk_exit_enum_from_text (const gchar *exit)
 {
-	return pk_task_enum_find_value (task_exit, exit);
+	return pk_enum_enum_find_value (enum_exit, exit);
 }
 
 /**
@@ -274,7 +274,7 @@ pk_exit_enum_from_text (const gchar *exit)
 const gchar *
 pk_exit_enum_to_text (PkExitEnum exit)
 {
-	return pk_task_enum_find_string (task_exit, exit);
+	return pk_enum_enum_find_string (enum_exit, exit);
 }
 
 /**
@@ -283,7 +283,7 @@ pk_exit_enum_to_text (PkExitEnum exit)
 PkStatusEnum
 pk_status_enum_from_text (const gchar *status)
 {
-	return pk_task_enum_find_value (task_status, status);
+	return pk_enum_enum_find_value (enum_status, status);
 }
 
 /**
@@ -292,7 +292,7 @@ pk_status_enum_from_text (const gchar *status)
 const gchar *
 pk_status_enum_to_text (PkStatusEnum status)
 {
-	return pk_task_enum_find_string (task_status, status);
+	return pk_enum_enum_find_string (enum_status, status);
 }
 
 /**
@@ -301,7 +301,7 @@ pk_status_enum_to_text (PkStatusEnum status)
 PkRoleEnum
 pk_role_enum_from_text (const gchar *role)
 {
-	return pk_task_enum_find_value (task_role, role);
+	return pk_enum_enum_find_value (enum_role, role);
 }
 
 /**
@@ -310,7 +310,7 @@ pk_role_enum_from_text (const gchar *role)
 const gchar *
 pk_role_enum_to_text (PkRoleEnum role)
 {
-	return pk_task_enum_find_string (task_role, role);
+	return pk_enum_enum_find_string (enum_role, role);
 }
 
 /**
@@ -319,7 +319,7 @@ pk_role_enum_to_text (PkRoleEnum role)
 PkErrorCodeEnum
 pk_error_enum_from_text (const gchar *code)
 {
-	return pk_task_enum_find_value (task_error, code);
+	return pk_enum_enum_find_value (enum_error, code);
 }
 
 /**
@@ -328,7 +328,7 @@ pk_error_enum_from_text (const gchar *code)
 const gchar *
 pk_error_enum_to_text (PkErrorCodeEnum code)
 {
-	return pk_task_enum_find_string (task_error, code);
+	return pk_enum_enum_find_string (enum_error, code);
 }
 
 /**
@@ -337,7 +337,7 @@ pk_error_enum_to_text (PkErrorCodeEnum code)
 PkRestartEnum
 pk_restart_enum_from_text (const gchar *restart)
 {
-	return pk_task_enum_find_value (task_restart, restart);
+	return pk_enum_enum_find_value (enum_restart, restart);
 }
 
 /**
@@ -346,7 +346,7 @@ pk_restart_enum_from_text (const gchar *restart)
 const gchar *
 pk_restart_enum_to_text (PkRestartEnum restart)
 {
-	return pk_task_enum_find_string (task_restart, restart);
+	return pk_enum_enum_find_string (enum_restart, restart);
 }
 
 /**
@@ -355,7 +355,7 @@ pk_restart_enum_to_text (PkRestartEnum restart)
 PkGroupEnum
 pk_group_enum_from_text (const gchar *group)
 {
-	return pk_task_enum_find_value (task_group, group);
+	return pk_enum_enum_find_value (enum_group, group);
 }
 
 /**
@@ -364,7 +364,7 @@ pk_group_enum_from_text (const gchar *group)
 const gchar *
 pk_group_enum_to_text (PkGroupEnum group)
 {
-	return pk_task_enum_find_string (task_group, group);
+	return pk_enum_enum_find_string (enum_group, group);
 }
 
 /**
@@ -373,7 +373,7 @@ pk_group_enum_to_text (PkGroupEnum group)
 PkFreqEnum
 pk_freq_enum_from_text (const gchar *freq)
 {
-	return pk_task_enum_find_value (task_freq, freq);
+	return pk_enum_enum_find_value (enum_freq, freq);
 }
 
 /**
@@ -382,7 +382,7 @@ pk_freq_enum_from_text (const gchar *freq)
 const gchar *
 pk_freq_enum_to_text (PkFreqEnum freq)
 {
-	return pk_task_enum_find_string (task_freq, freq);
+	return pk_enum_enum_find_string (enum_freq, freq);
 }
 
 /**
@@ -391,7 +391,7 @@ pk_freq_enum_to_text (PkFreqEnum freq)
 PkUpdateEnum
 pk_update_enum_from_text (const gchar *update)
 {
-	return pk_task_enum_find_value (task_update, update);
+	return pk_enum_enum_find_value (enum_update, update);
 }
 
 /**
@@ -400,7 +400,7 @@ pk_update_enum_from_text (const gchar *update)
 const gchar *
 pk_update_enum_to_text (PkUpdateEnum update)
 {
-	return pk_task_enum_find_string (task_update, update);
+	return pk_enum_enum_find_string (enum_update, update);
 }
 
 /**
@@ -409,7 +409,7 @@ pk_update_enum_to_text (PkUpdateEnum update)
 PkFilterEnum
 pk_filter_enum_from_text (const gchar *filter)
 {
-	return pk_task_enum_find_value (task_filter, filter);
+	return pk_enum_enum_find_value (enum_filter, filter);
 }
 
 /**
@@ -418,7 +418,7 @@ pk_filter_enum_from_text (const gchar *filter)
 const gchar *
 pk_filter_enum_to_text (PkFilterEnum filter)
 {
-	return pk_task_enum_find_string (task_filter, filter);
+	return pk_enum_enum_find_string (enum_filter, filter);
 }
 
 /***************************************************************************
@@ -440,7 +440,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "find value");
-	value = pk_task_enum_find_value (task_role, "search-file");
+	value = pk_enum_enum_find_value (enum_role, "search-file");
 	if (PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
@@ -449,7 +449,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "find string");
-	string = pk_task_enum_find_string (task_role, PK_ROLE_ENUM_SEARCH_FILE);
+	string = pk_enum_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
 	if (strcmp (string, "search-file") == 0) {
 		libst_success (test, NULL);
 	} else {
