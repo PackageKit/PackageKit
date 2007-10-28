@@ -53,6 +53,16 @@ pk_backend_python_get_description (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * pk_backend_python_get_files:
+ */
+void
+pk_backend_python_get_files (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "get-files.py", package_id, NULL);
+}
+
+/**
  * pk_backend_python_get_requires:
  */
 void

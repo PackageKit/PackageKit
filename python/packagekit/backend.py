@@ -166,6 +166,13 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
 
+    def files(self, id, file_list):
+        '''
+        Send 'files' signal
+        @param file_list: List of the files in the package, separated by ';'
+        '''
+        print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
+
     def update_detail(self,id,updates,obsoletes,url,restart,update_text):
         '''
         Send 'updatedetail' signal
@@ -329,6 +336,13 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_files(self, package):
+        '''
+        Implement the {backend}-get-files functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
     def get_updates(self, package):
         '''
