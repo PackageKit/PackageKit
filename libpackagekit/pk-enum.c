@@ -33,9 +33,9 @@
 typedef struct {
 	guint		 value;
 	const gchar	*string;
-} PkTaskEnumMatch;
+} PkEnumMatch;
 
-static PkTaskEnumMatch task_exit[] = {
+static PkEnumMatch task_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
@@ -44,7 +44,7 @@ static PkTaskEnumMatch task_exit[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_status[] = {
+static PkEnumMatch task_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
@@ -57,7 +57,7 @@ static PkTaskEnumMatch task_status[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_role[] = {
+static PkEnumMatch task_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
@@ -83,7 +83,7 @@ static PkTaskEnumMatch task_role[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_error[] = {
+static PkEnumMatch task_error[] = {
 	{PK_ERROR_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ERROR_ENUM_OOM,			"out-of-memory"},
 	{PK_ERROR_ENUM_NO_CACHE,		"no-cache"},
@@ -106,7 +106,7 @@ static PkTaskEnumMatch task_error[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_restart[] = {
+static PkEnumMatch task_restart[] = {
 	{PK_RESTART_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_RESTART_ENUM_NONE,			"none"},
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
@@ -115,7 +115,7 @@ static PkTaskEnumMatch task_restart[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_filter[] = {
+static PkEnumMatch task_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
@@ -126,7 +126,7 @@ static PkTaskEnumMatch task_filter[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_group[] = {
+static PkEnumMatch task_group[] = {
 	{PK_GROUP_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_GROUP_ENUM_ACCESSIBILITY,		"accessibility"},
 	{PK_GROUP_ENUM_ACCESSORIES,		"accessories"},
@@ -142,7 +142,7 @@ static PkTaskEnumMatch task_group[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_freq[] = {
+static PkEnumMatch task_freq[] = {
 	{PK_FREQ_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_FREQ_ENUM_HOURLY,			"hourly"},
 	{PK_FREQ_ENUM_DAILY,			"daily"},
@@ -151,7 +151,7 @@ static PkTaskEnumMatch task_freq[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_update[] = {
+static PkEnumMatch task_update[] = {
 	{PK_UPDATE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_UPDATE_ENUM_ALL,			"all"},
 	{PK_UPDATE_ENUM_SECURITY,		"security"},
@@ -159,7 +159,7 @@ static PkTaskEnumMatch task_update[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_info[] = {
+static PkEnumMatch task_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
@@ -174,16 +174,17 @@ static PkTaskEnumMatch task_info[] = {
 	{0, NULL},
 };
 
-static PkTaskEnumMatch task_sig_type[] = {
+static PkEnumMatch task_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
+	{0, NULL},
 };
 
 /**
  * pk_task_enum_find_value:
  */
 static guint
-pk_task_enum_find_value (PkTaskEnumMatch *table, const gchar *string)
+pk_task_enum_find_value (PkEnumMatch *table, const gchar *string)
 {
 	guint i;
 	const gchar *string_tmp;
@@ -208,7 +209,7 @@ pk_task_enum_find_value (PkTaskEnumMatch *table, const gchar *string)
  * pk_task_enum_find_string:
  */
 static const gchar *
-pk_task_enum_find_string (PkTaskEnumMatch *table, guint value)
+pk_task_enum_find_string (PkEnumMatch *table, guint value)
 {
 	guint i;
 	guint tmp;
