@@ -27,6 +27,11 @@
 
 G_BEGIN_DECLS
 
+typedef struct {
+	guint		 value;
+	const gchar	*string;
+} PkEnumMatch;
+
 /* what we asked to do */
 typedef enum {
 	PK_ROLE_ENUM_CANCEL,
@@ -162,6 +167,12 @@ typedef enum {
 	PK_SIGTYPE_ENUM_GPG,
 	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
+
+/* general */
+guint		 pk_task_enum_find_value		(PkEnumMatch	*table,
+							 const gchar	*string);
+const gchar	*pk_task_enum_find_string		(PkEnumMatch	*table,
+							 guint		 value);
 
 PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
 const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_type);

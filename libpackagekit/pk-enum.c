@@ -30,11 +30,6 @@
 #include "pk-debug.h"
 #include "pk-enum.h"
 
-typedef struct {
-	guint		 value;
-	const gchar	*string;
-} PkEnumMatch;
-
 static PkEnumMatch task_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
@@ -183,7 +178,7 @@ static PkEnumMatch task_sig_type[] = {
 /**
  * pk_task_enum_find_value:
  */
-static guint
+guint
 pk_task_enum_find_value (PkEnumMatch *table, const gchar *string)
 {
 	guint i;
@@ -208,7 +203,7 @@ pk_task_enum_find_value (PkEnumMatch *table, const gchar *string)
 /**
  * pk_task_enum_find_string:
  */
-static const gchar *
+const gchar *
 pk_task_enum_find_string (PkEnumMatch *table, guint value)
 {
 	guint i;
