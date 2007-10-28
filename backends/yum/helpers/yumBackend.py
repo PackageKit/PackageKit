@@ -694,6 +694,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
+    def get_files(self, package):
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            files = pkg.returnFileEntries('dir')
+            files.extend(pkg.returnFileEntries()) # regular files
+
+            file_list = ";".join(files)
+
+            self.files(package, file_list)
+        else:
+            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+
     def _show_package(self,pkg,status):
         '''  Show info about package'''
         pkgver = self._get_package_ver(pkg)
