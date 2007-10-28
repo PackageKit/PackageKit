@@ -115,7 +115,6 @@
       <arg type="s" name="detail" direction="out"/>
       <arg type="s" name="url" direction="out"/>
       <arg type="t" name="size" direction="out"/> <!-- size of package file in bytes -->
-      <arg type="s" name="file_list" direction="out"/> <!-- list of files and dirs separated by ';' -->
     </signal>
     <signal name="Files">
       <arg type="s" name="tid" direction="out"/>

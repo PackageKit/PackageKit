@@ -868,12 +868,12 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_string_replace_unsafe (description);
 
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
+	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
 		  package_id, licence, group, description_safe, url,
-		  size, filelist);
+		  size);
 	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0,
 		       package_id, licence, group, description_safe, url,
-		       size, filelist);
+		       size);
 	g_free (description_safe);
 	return TRUE;
 }
@@ -1825,9 +1825,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_UINT64, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_UINT64);
 	signals [PK_BACKEND_FILES] =
 		g_signal_new ("files",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

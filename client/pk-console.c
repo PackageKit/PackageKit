@@ -804,7 +804,7 @@ static void
 pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *licence, PkGroupEnum group,
 			   const gchar *description, const gchar *url,
-			   gulong size, const gchar *filelist, gpointer data)
+			   gulong size, gpointer data)
 {
 	/* if on console, clear the progress bar line */
 	if (is_console == TRUE && printed_bar == TRUE) {
@@ -816,8 +816,6 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
 	g_print ("  description: '%s'\n", description);
 	g_print ("  size:        '%ld' bytes\n", size);
-	/* filelist is probably too long to just dump to the screen */
-	/* g_print ("  files:       '%s'\n", filelist); */
 	g_print ("  url:         '%s'\n", url);
 }
 
