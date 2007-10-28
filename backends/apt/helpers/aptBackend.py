@@ -56,7 +56,7 @@ class Package(object):
         desc = ""
         try:
             s = unicode(self._records.LongDesc,"utf-8")
-        except UnicodeDecodeError,e:
+        except UnicodeDecodeError, e:
             s = _("Invalid unicode in description for '%s' (%s). "
                   "Please report.") % (self.name, e)
         for line in s.splitlines():
@@ -79,6 +79,33 @@ class Package(object):
     @property
     def section(self):
         return self._pkg.Section
+
+    @property
+    def group(self):
+        section = self.section.split('/')[-1].lower()
+        #if section in ():
+        #    return GROUP_ACCESSIBILITY
+        if section in ('utils',):
+            return GROUP_ACCESSORIES
+        #if section in ():
+        #    return GROUP_EDUCATION
+        if section in ('games',):
+            return "games"
+        if section in ('graphics',):
+            return "graphics"
+        if section in ('net', 'news', 'web', 'comm'):
+            return "internet"
+        if section in ('editors', 'tex'):
+            return "office"
+        if section in ('misc',):
+            return "other"
+        if section in ('devel', 'libdevel', 'interpreters', 'perl', 'python'):
+            return "programming"
+        if section in ('sound',):
+            return "multimedia"
+        if section in ('base', 'admin'):
+            return "system"
+        return "unknown"
 
     @property
     def installed_version(self):
@@ -109,7 +136,7 @@ class Package(object):
         name = self.name.lower()
         section = self.section.split('/')[-1].lower()
         return name.endswith('-dev') or name.endswith('-dbg') or \
-                section in ('devel', )
+                section in ('devel', 'libdevel')
 
     @property
     def is_gui(self):
@@ -239,6 +266,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._do_fetch(fetcher)
         finally:
             os.close(lock)
+
+    def get_description(self, package):
+        '''
+        Implement the {backend}-get-description functionality
+        '''
+        name, version, arch, data = self.get_package_from_id(package)
+        pkg = Package(self._apt_cache[name], self)
+        description = re.sub('\s+', ' ', pkg.description).strip()
+        self.description(package, 'unknown', pkg.group, description, '', 0, '')
 
     ### Helpers ###
     def _emit_package(self, package):
