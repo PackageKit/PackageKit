@@ -350,6 +350,7 @@ const gchar *summary =
 	"  get depends <package_id>\n"
 	"  get requires <package_id>\n"
 	"  get description <package_id>\n"
+	"  get files <package_id>\n"
 	"  get updatedetail <package_id>\n"
 	"  get actions\n"
 	"  get groups\n"
@@ -569,6 +570,24 @@ pk_console_get_description(PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_console_get_files:
+ **/
+static gboolean
+pk_console_get_files (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	gchar *package_id;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	if (package_id == NULL) {
+		g_print ("Could not find a package with that name to get files\n");
+		return FALSE;
+	}
+	ret = pk_client_get_files (client, package_id);
+	g_free (package_id);
+	return ret;
+}
+
+/**
  * pk_console_get_update_detail
  **/
 static gboolean
@@ -733,6 +752,13 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 			} else {
 				wait = pk_console_get_description (client, details);
 			}
+		} else if (strcmp (value, "files") == 0) {
+			if (details == NULL) {
+				g_set_error (error, 0, 0, "you need to specify a package to find the files for");
+				return FALSE;
+			} else {
+				wait = pk_console_get_files (client, details);
+			}
 		} else if (strcmp (value, "updates") == 0) {
 			wait = pk_client_get_updates (client);
 		} else if (strcmp (value, "actions") == 0) {
@@ -791,7 +817,7 @@ static void
 pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   const gchar *licence, PkGroupEnum group,
 			   const gchar *description, const gchar *url,
-			   gulong size, const gchar *filelist, gpointer data)
+			   gulong size, gpointer data)
 {
 	/* if on console, clear the progress bar line */
 	if (is_console == TRUE && printed_bar == TRUE) {
@@ -803,9 +829,37 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
 	g_print ("  description: '%s'\n", description);
 	g_print ("  size:        '%ld' bytes\n", size);
-	/* filelist is probably too long to just dump to the screen */
-	/* g_print ("  files:       '%s'\n", filelist); */
 	g_print ("  url:         '%s'\n", url);
+}
+
+/**
+ * pk_console_files_cb:
+ **/
+static void
+pk_console_files_cb (PkClient *client, const gchar *package_id,
+		     const gchar *filelist, gpointer data)
+{
+	gchar **filevector = g_strsplit (filelist, ";", 0);
+
+	/* if on console, clear the progress bar line */
+	if (is_console == TRUE && printed_bar == TRUE) {
+		g_print ("\n");
+	}
+
+	g_print ("Package files\n");
+
+	if (*filevector != NULL) {
+		gchar **current_file = filevector;
+
+		while (*current_file != NULL) {
+			g_print ("  %s\n", *current_file);
+			current_file++;
+		}
+	} else {
+	    g_print ("  no files\n");
+	}
+
+	g_strfreev (filevector);
 }
 
 /**
@@ -917,6 +971,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
 	g_signal_connect (client, "description",
 			  G_CALLBACK (pk_console_description_cb), NULL);
+	g_signal_connect (client, "files",
+			  G_CALLBACK (pk_console_files_cb), NULL);
 	g_signal_connect (client, "repo-signature-required",
 			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
 	g_signal_connect (client, "update-detail",

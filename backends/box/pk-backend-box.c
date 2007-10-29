@@ -633,6 +633,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
+	NULL,					/* get_files */
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */

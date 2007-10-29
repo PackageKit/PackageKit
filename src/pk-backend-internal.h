@@ -73,6 +73,8 @@ gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_description		(PkBackend	*backend,
 							 const gchar	*package_id);
+gboolean	 pk_backend_get_files 			(PkBackend	*backend,
+							 const gchar	*package_id);
 gboolean	 pk_backend_get_requires		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_updates			(PkBackend	*backend);

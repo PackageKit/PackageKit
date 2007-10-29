@@ -103,6 +103,8 @@ gboolean	 pk_client_get_requires			(PkClient	*client,
 							 const gchar	*package_id);
 gboolean	 pk_client_get_description		(PkClient	*client,
 							 const gchar	*package_id);
+gboolean	 pk_client_get_files			(PkClient	*client,
+							 const gchar	*package_id);
 gboolean	 pk_client_remove_package		(PkClient	*client,
 							 const gchar	*package,
 							 gboolean	 allow_deps);

@@ -101,6 +101,16 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_get_description:
+ */
+static void
+backend_get_files (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_requires:
  */
 static void
@@ -305,6 +315,7 @@ PK_BACKEND_OPTIONS (
 	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
+	backend_get_files,			/* get_files */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
