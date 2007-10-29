@@ -44,6 +44,149 @@ from packagekit.backend import PackagekitProgress
 yumbase = None
 progress = PackagekitProgress()  # Progress object to store the progress
 
+groupMap = {          
+'desktops;gnome-desktop'                      : GROUP_SYSTEM, 
+'desktops;window-managers'                    : GROUP_SYSTEM, 
+'desktops;kde-desktop'                        : GROUP_SYSTEM, 
+'desktops;xfce-desktop'                       : GROUP_SYSTEM, 
+'apps;authoring-and-publishing'               : GROUP_OFFICE, 
+'apps;office'                                 : GROUP_OFFICE, 
+'apps;sound-and-video'                        : GROUP_MULTIMEDIA, 
+'apps;editors'                                : GROUP_OFFICE, 
+'apps;engineering-and-scientific'             : GROUP_OTHER, 
+'apps;games'                                  : GROUP_GAMES, 
+'apps;graphics'                               : GROUP_GRAPHICS, 
+'apps;text-internet'                          : GROUP_INTERNET, 
+'apps;graphical-internet'                     : GROUP_INTERNET, 
+'apps;education'                              : GROUP_EDUCATION, 
+'development;kde-software-development'        : GROUP_PROGRAMMING, 
+'development;gnome-software-development'      : GROUP_PROGRAMMING, 
+'development;development-tools'               : GROUP_PROGRAMMING, 
+'development;eclipse'                         : GROUP_PROGRAMMING, 
+'development;development-libs'                : GROUP_PROGRAMMING, 
+'development;x-software-development'          : GROUP_PROGRAMMING, 
+'development;web-development'                 : GROUP_PROGRAMMING, 
+'development;legacy-software-development'     : GROUP_PROGRAMMING, 
+'development;ruby'                            : GROUP_PROGRAMMING, 
+'development;java-development'                : GROUP_PROGRAMMING, 
+'development;xfce-software-development'       : GROUP_PROGRAMMING, 
+'servers;clustering'                          : GROUP_OTHER, 
+'servers;dns-server'                          : GROUP_OTHER, 
+'servers;server-cfg'                          : GROUP_OTHER, 
+'servers;news-server'                         : GROUP_OTHER, 
+'servers;web-server'                          : GROUP_OTHER, 
+'servers;smb-server'                          : GROUP_OTHER, 
+'servers;sql-server'                          : GROUP_OTHER, 
+'servers;ftp-server'                          : GROUP_OTHER, 
+'servers;printing'                            : GROUP_OTHER, 
+'servers;mysql'                               : GROUP_OTHER, 
+'servers;mail-server'                         : GROUP_OTHER, 
+'servers;network-server'                      : GROUP_OTHER, 
+'servers;legacy-network-server'               : GROUP_OTHER, 
+'base-system;java'                            : GROUP_SYSTEM, 
+'base-system;base-x'                          : GROUP_SYSTEM, 
+'base-system;system-tools'                    : GROUP_SYSTEM, 
+'base-system;fonts'                           : GROUP_SYSTEM, 
+'base-system;hardware-support'                : GROUP_SYSTEM, 
+'base-system;dial-up'                         : GROUP_SYSTEM, 
+'base-system;admin-tools'                     : GROUP_SYSTEM, 
+'base-system;legacy-software-support'         : GROUP_SYSTEM, 
+'base-system;base'                            : GROUP_SYSTEM, 
+'base-system;virtualization'                  : GROUP_SYSTEM, 
+'base-system;legacy-fonts'                    : GROUP_SYSTEM, 
+'language-support;khmer-support'              : GROUP_OTHER, 
+'language-support;persian-support'            : GROUP_OTHER, 
+'language-support;georgian-support'           : GROUP_OTHER, 
+'language-support;malay-support'              : GROUP_OTHER, 
+'language-support;tonga-support'              : GROUP_OTHER, 
+'language-support;portuguese-support'         : GROUP_OTHER, 
+'language-support;japanese-support'           : GROUP_OTHER, 
+'language-support;hungarian-support'          : GROUP_OTHER, 
+'language-support;somali-support'             : GROUP_OTHER, 
+'language-support;punjabi-support'            : GROUP_OTHER, 
+'language-support;bhutanese-support'          : GROUP_OTHER, 
+'language-support;british-support'            : GROUP_OTHER, 
+'language-support;korean-support'             : GROUP_OTHER, 
+'language-support;lao-support'                : GROUP_OTHER, 
+'language-support;inuktitut-support'          : GROUP_OTHER, 
+'language-support;german-support'             : GROUP_OTHER, 
+'language-support;hindi-support'              : GROUP_OTHER, 
+'language-support;faeroese-support'           : GROUP_OTHER, 
+'language-support;swedish-support'            : GROUP_OTHER, 
+'language-support;tsonga-support'             : GROUP_OTHER, 
+'language-support;russian-support'            : GROUP_OTHER, 
+'language-support;serbian-support'            : GROUP_OTHER, 
+'language-support;latvian-support'            : GROUP_OTHER, 
+'language-support;samoan-support'             : GROUP_OTHER, 
+'language-support;sinhala-support'            : GROUP_OTHER, 
+'language-support;catalan-support'            : GROUP_OTHER, 
+'language-support;lithuanian-support'         : GROUP_OTHER, 
+'language-support;turkish-support'            : GROUP_OTHER, 
+'language-support;arabic-support'             : GROUP_OTHER, 
+'language-support;vietnamese-support'         : GROUP_OTHER, 
+'language-support;mongolian-support'          : GROUP_OTHER, 
+'language-support;tswana-support'             : GROUP_OTHER, 
+'language-support;irish-support'              : GROUP_OTHER, 
+'language-support;italian-support'            : GROUP_OTHER, 
+'language-support;slovak-support'             : GROUP_OTHER, 
+'language-support;slovenian-support'          : GROUP_OTHER, 
+'language-support;belarusian-support'         : GROUP_OTHER, 
+'language-support;northern-sotho-support'     : GROUP_OTHER, 
+'language-support;kannada-support'            : GROUP_OTHER, 
+'language-support;malayalam-support'          : GROUP_OTHER, 
+'language-support;swati-support'              : GROUP_OTHER, 
+'language-support;breton-support'             : GROUP_OTHER, 
+'language-support;romanian-support'           : GROUP_OTHER, 
+'language-support;greek-support'              : GROUP_OTHER, 
+'language-support;tagalog-support'            : GROUP_OTHER, 
+'language-support;zulu-support'               : GROUP_OTHER, 
+'language-support;tibetan-support'            : GROUP_OTHER, 
+'language-support;danish-support'             : GROUP_OTHER, 
+'language-support;afrikaans-support'          : GROUP_OTHER, 
+'language-support;southern-sotho-support'     : GROUP_OTHER, 
+'language-support;bosnian-support'            : GROUP_OTHER, 
+'language-support;brazilian-support'          : GROUP_OTHER, 
+'language-support;basque-support'             : GROUP_OTHER, 
+'language-support;welsh-support'              : GROUP_OTHER, 
+'language-support;thai-support'               : GROUP_OTHER, 
+'language-support;telugu-support'             : GROUP_OTHER, 
+'language-support;low-saxon-support'          : GROUP_OTHER, 
+'language-support;urdu-support'               : GROUP_OTHER, 
+'language-support;tamil-support'              : GROUP_OTHER, 
+'language-support;indonesian-support'         : GROUP_OTHER, 
+'language-support;gujarati-support'           : GROUP_OTHER, 
+'language-support;xhosa-support'              : GROUP_OTHER, 
+'language-support;chinese-support'            : GROUP_OTHER, 
+'language-support;czech-support'              : GROUP_OTHER, 
+'language-support;venda-support'              : GROUP_OTHER, 
+'language-support;bulgarian-support'          : GROUP_OTHER, 
+'language-support;albanian-support'           : GROUP_OTHER, 
+'language-support;galician-support'           : GROUP_OTHER, 
+'language-support;armenian-support'           : GROUP_OTHER, 
+'language-support;dutch-support'              : GROUP_OTHER, 
+'language-support;oriya-support'              : GROUP_OTHER, 
+'language-support;maori-support'              : GROUP_OTHER, 
+'language-support;nepali-support'             : GROUP_OTHER, 
+'language-support;icelandic-support'          : GROUP_OTHER, 
+'language-support;ukrainian-support'          : GROUP_OTHER, 
+'language-support;assamese-support'           : GROUP_OTHER, 
+'language-support;bengali-support'            : GROUP_OTHER, 
+'language-support;spanish-support'            : GROUP_OTHER, 
+'language-support;hebrew-support'             : GROUP_OTHER, 
+'language-support;estonian-support'           : GROUP_OTHER, 
+'language-support;french-support'             : GROUP_OTHER, 
+'language-support;croatian-support'           : GROUP_OTHER, 
+'language-support;filipino-support'           : GROUP_OTHER, 
+'language-support;finnish-support'            : GROUP_OTHER, 
+'language-support;norwegian-support'          : GROUP_OTHER, 
+'language-support;southern-ndebele-support'   : GROUP_OTHER, 
+'language-support;polish-support'             : GROUP_OTHER, 
+'language-support;gaelic-support'             : GROUP_OTHER, 
+'language-support;marathi-support'            : GROUP_OTHER, 
+'language-support;ethiopic-support'           : GROUP_OTHER 
+}
+
+
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
@@ -194,6 +337,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         searchlist = ['name', 'summary', 'description', 'group']
         self._do_search(searchlist, filters, key)
+        
+    def _buildGroupDict(self):
+        pkgGroups= {}
+        cats = self.yumbase.comps.categories
+        for cat in cats:
+            grps = map( lambda x: self.yumbase.comps.return_group( x ), 
+               filter( lambda x: self.yumbase.comps.has_group( x ), cat.groups ) )
+            grplist = []
+            for group in grps:
+                for pkg in group.mandatory_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)                
+                for pkg in group.default_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+                for pkg in group.optional_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+                for pkg in group.conditional_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+        return pkgGroups 
+        
 
     def search_group(self,filters,key):
         '''
@@ -201,9 +363,34 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        pkgGroupDict = self._buildGroupDict()
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        fltlist = filters.split(';')
+        found = {}
 
+        if not FILTER_NON_INSTALLED in fltlist:
+            # Check installed for group
+            for pkg in self.yumbase.rpmdb:
+                group = GROUP_OTHER                    # Default Group
+                if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
+                    cg = pkgGroupDict[pkg.name]
+                    if groupMap.has_key(cg):
+                        group = groupMap[cg]           # use the pk group name, instead of yum 'category/group' 
+                if group == key:
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+        if not FILTER_INSTALLED in fltlist:
+            # Check available for group
+            for pkg in self.yumbase.pkgSack:
+                group = GROUP_OTHER
+                if pkgGroupDict.has_key(pkg.name):
+                    cg = pkgGroupDict[pkg.name]
+                    if groupMap.has_key(cg):
+                        group = groupMap[cg]
+                if group == key:
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+        
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality

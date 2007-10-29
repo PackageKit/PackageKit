@@ -77,6 +77,19 @@ FILTER_NON_GUI = "~gui"
 FILTER_DEVEL = "devel"
 FILTER_NON_DEVEL = "~devel"
 
+GROUP_ACCESSIBILITY     = "accessibility"
+GROUP_ACCESSORIES       = "accessories"
+GROUP_EDUCATION         = "education"
+GROUP_GAMES             = "games"
+GROUP_GRAPHICS          = "graphics"
+GROUP_INTERNET          = "internet"
+GROUP_OFFICE            = "office"
+GROUP_OTHER             = "other"
+GROUP_PROGRAMMING       = "programming"
+GROUP_MULTIMEDIA        = "multimedia"
+GROUP_SYSTEM            = "system"
+
+
 # Classes
 
 class PackageKitBaseBackend:
