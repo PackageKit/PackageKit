@@ -890,6 +890,26 @@ class PackageKitCallback(RPMBaseCallback):
         self.curpkg = None
         self.startPct = 50
         self.numPct = 50
+        # Map yum transactions with pk info enums
+        self.info_actions = { TS_UPDATE : INFO_UPDATING, 
+                        TS_ERASE: INFO_REMOVING,
+                        TS_INSTALL: INFO_INSTALLING, 
+                        TS_TRUEINSTALL : INFO_INSTALLING,
+                        TS_OBSOLETED: INFO_OBSOLETE,
+                        TS_OBSOLETING: INFO_INSTALLING,
+                        TS_UPDATED: INFO_CLEANUP}
+
+        # Map yum transactions with pk state enums
+        self.state_actions = { TS_UPDATE : STATE_UPDATE, 
+                        TS_ERASE: STATE_REMOVE,
+                        TS_INSTALL: STATE_INSTALL, 
+                        TS_TRUEINSTALL : STATE_INSTALL,
+                        TS_OBSOLETED: STATE_OBSOLETE,
+                        TS_OBSOLETING: STATE_INSTALL,
+                        TS_UPDATED: STATE_CLEANUP}
+
+
+        
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -908,13 +928,8 @@ class PackageKitCallback(RPMBaseCallback):
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            if action in TS_INSTALL_STATES:
-                self.base.status(STATE_INSTALL)
-                status = INFO_INSTALLING
-            elif action in TS_REMOVE_STATES:
-                self.base.status(STATE_REMOVE)
-                status = INFO_REMOVING
-            self._showName(status)
+            self.base.status(self.state_actions[action])
+            self._showName(self.info_actions[action])
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
