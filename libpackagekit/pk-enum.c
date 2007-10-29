@@ -49,6 +49,8 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD,		"download"},
 	{PK_STATUS_ENUM_INSTALL,		"install"},
 	{PK_STATUS_ENUM_UPDATE,			"update"},
+	{PK_STATUS_ENUM_CLEANUP,		"cleanup"},
+	{PK_STATUS_ENUM_OBSOLETE,		"obsolete"},
 	{0, NULL},
 };
 
@@ -167,6 +169,8 @@ static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UPDATING,			"updating"},
 	{PK_INFO_ENUM_INSTALLING,		"installing"},
 	{PK_INFO_ENUM_REMOVING,			"removing"},
+	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
+	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
 	{0, NULL},
 };
 
