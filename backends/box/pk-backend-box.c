@@ -669,6 +669,21 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
         pk_backend_finished (backend);
 }
 
+/**
+ * backend_repo_set_data:
+ */
+static void
+backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
+{
+	g_return_if_fail (backend != NULL);
+
+	if (!box_repos_set_param (rid, parameter, value))
+	{
+		pk_warning ("Cannot set PARAMETER '%s' TO '%s' for REPO '%s'", parameter, value, rid);
+	}
+
+	pk_backend_finished (backend);
+}
 
 
 PK_BACKEND_OPTIONS (
@@ -700,6 +715,6 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
-	NULL					/* repo_set_data */
+	backend_repo_set_data			/* repo_set_data */
 );
 
