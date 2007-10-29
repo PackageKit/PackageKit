@@ -269,7 +269,6 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	PackageSearch *ps;
 	GList *list;
 	ThreadData *d = (ThreadData*) data;
-	gchar *files;
 	sqlite3 *db;
 
 	db = db_open();
@@ -299,12 +298,43 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	}
 	ps = (PackageSearch*) list->data;
 
-	files = box_db_repos_get_files_string (db, pi->name, pi->version);
-
-	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0, files);
+	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0, NULL);
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
+
+	db_close(db);
+
+	g_free (d->package_id);
+	g_free (d);
+
+	return TRUE;
+}
+
+static gboolean
+backend_get_files_thread (PkBackend *backend, gpointer data)
+{
+	PkPackageId *pi;
+	ThreadData *d = (ThreadData*) data;
+	gchar *files;
+	sqlite3 *db;
+
+	db = db_open();
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		db_close (db);
+		g_free (d->package_id);
+		g_free (d);
+		return FALSE;
+	}
+
+	files = box_db_repos_get_files_string (db, pi->name, pi->version);
+        pk_backend_files (backend, d->package_id, files);
+
+	pk_package_id_free (pi);
 
 	db_close(db);
 
@@ -423,6 +453,25 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	} else {
 		data->package_id = g_strdup(package_id);
 		pk_backend_thread_helper (backend, backend_get_description_thread, data);
+	}
+}
+
+/**
+ * backend_get_files:
+ */
+static void
+backend_get_files (PkBackend *backend, const gchar *package_id)
+{
+	ThreadData *data = g_new0(ThreadData, 1);
+
+	g_return_if_fail (backend != NULL);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(package_id);
+		pk_backend_thread_helper (backend, backend_get_files_thread, data);
 	}
 }
 
@@ -633,7 +682,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
-	NULL,					/* get_files */
+	backend_get_files,			/* get_files */
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
