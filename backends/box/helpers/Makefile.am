@@ -7,7 +7,6 @@ dist_helper_DATA = 			\
 	install-file.sh			\
 	install-package.sh		\
 	refresh-cache.sh		\
-	remove-package.sh		\
 	update-package.sh		\
 	update-system.sh		\
 	$(NULL)
