@@ -224,6 +224,29 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
         self.files(packageid, ";".join(paths))
 
+    @needs_cache
+    def get_depends(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = self._process_search_results(results)
+
+        if len(packages) != 1:
+            return
+
+        package = packages[0]
+
+        providers = {}
+        for required in package.requires:
+            for provider in self.ctrl.getCache().getProvides(str(required)):
+                for package in provider.packages:
+                    if not providers.has_key(package):
+                        providers[package] = True
+
+        for package in providers.keys():
+            self._show_package(package)
+
     def get_repo_list(self):
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
