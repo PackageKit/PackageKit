@@ -27,6 +27,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, args)
 
         self.componentdb = pisi.db.componentdb.ComponentDB()
+        self.filesdb = pisi.db.filesdb.FilesDB()
         self.installdb = pisi.db.installdb.InstallDB()
         self.packagedb = pisi.db.packagedb.PackageDB()
         self.repodb = pisi.db.repodb.RepoDB()
@@ -51,12 +52,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR, "Package was not found")
 
-        filterlist = filters.split(';')
+        if filters:
+            filterlist = filters.split(';')
 
-        if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
-            return
-        if FILTER_NON_INSTALLED in filterlist and status != INFO_AVAILABLE:
-            return
+            if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
+                return
+            if FILTER_NON_INSTALLED in filterlist and status != INFO_AVAILABLE:
+                return
 
         version = self.__get_package_version(pkg)
 
@@ -246,6 +248,17 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         self.__get_package(package, filters)
+
+    def search_file(self, filters, key):
+        """ Prints the installed package which contains the specified file """
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        # Internal FIXME: Why it is needed?
+        key = key.lstrip("/")
+
+        for pkg, files in pisi.api.search_file(key):
+            self.__get_package(pkg)
 
     def search_name(self, filters, package):
         """ Prints a list of packages contains search term """

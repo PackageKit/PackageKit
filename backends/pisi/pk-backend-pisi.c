@@ -58,7 +58,7 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_resolve,			/* resolve */
 	NULL,						/* rollback */
 	NULL,						/* search_details */
-	NULL,						/* search_file */
+	pk_backend_python_search_file,			/* search_file */
 	NULL,						/* search_group */
 	pk_backend_python_search_name,			/* search_name */
 	pk_backend_python_update_package,		/* update_package */
