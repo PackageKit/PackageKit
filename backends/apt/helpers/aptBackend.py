@@ -86,7 +86,7 @@ class Package(object):
         #if section in ():
         #    return GROUP_ACCESSIBILITY
         if section in ('utils',):
-            return GROUP_ACCESSORIES
+            return "accessories"
         #if section in ():
         #    return GROUP_EDUCATION
         if section in ('games',):
@@ -158,6 +158,13 @@ class Package(object):
         needle = details.strip().lower()
         haystack = self.description.lower()
         if haystack.find(needle) >= 0:
+            return True
+        return False
+
+    def match_group(self, name):
+        needle = name.strip().lower()
+        haystack = self.group
+        if haystack.startswith(needle):
             return True
         return False
 
@@ -234,10 +241,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-search-group functionality
         '''
         self.allow_interrupt(True)
-        self.percentage(None)
-
-        self.error(ERROR_NOT_SUPPORTED,
-                "This function is not implemented in this backend")
+        for package in self._do_search(filters,
+                lambda pkg: pkg.match_group(key)):
+            self._emit_package(package)
 
     def search_file(self, filters, key):
         '''

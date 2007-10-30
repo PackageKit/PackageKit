@@ -32,9 +32,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSIBILITY,
 				      PK_GROUP_ENUM_ACCESSORIES,
-				      PK_GROUP_ENUM_EDUCATION,
 				      PK_GROUP_ENUM_GAMES,
 				      PK_GROUP_ENUM_GRAPHICS,
 				      PK_GROUP_ENUM_INTERNET,
@@ -155,6 +153,17 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
+ * backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
+}
+
+/**
   * backend_update_package:
  */
 static void
@@ -215,7 +224,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
