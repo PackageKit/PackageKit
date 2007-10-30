@@ -249,7 +249,6 @@
     <method name="GetBackendDetail">
       <arg type="s" name="name" direction="out"/>
       <arg type="s" name="author" direction="out"/>
-      <arg type="s" name="version" direction="out"/>
     </method>
     <method name="GetActions">
       <arg type="s" name="actions" direction="out"/> <!-- list of supported actions -->

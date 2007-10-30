@@ -2032,13 +2032,12 @@ pk_client_get_actions (PkClient *client)
  * pk_client_get_backend_detail:
  **/
 gboolean
-pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, gchar **version)
+pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
 {
 	gboolean ret;
 	GError *error;
 	gchar *tname;
 	gchar *tauthor;
-	gchar *tversion;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -2048,7 +2047,7 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, gc
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &tname,
 				 G_TYPE_STRING, &tauthor,
-				 G_TYPE_STRING, &tversion,
+				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (ret == FALSE) {
 		/* abort as the DBUS method failed */
@@ -2064,10 +2063,6 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, gc
 	/* copy needed bits */
 	if (author != NULL) {
 		*author = g_strdup (tauthor);
-	}
-	/* copy needed bits */
-	if (version != NULL) {
-		*version = g_strdup (tversion);
 	}
 	return TRUE;
 }

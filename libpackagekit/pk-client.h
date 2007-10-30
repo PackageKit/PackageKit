@@ -149,8 +149,7 @@ gboolean	 pk_client_get_old_transactions		(PkClient	*client,
 							 guint		 number);
 gboolean	 pk_client_get_backend_detail		(PkClient	*client,
 							 gchar		**name,
-							 gchar		**author,
-							 gchar		**version);
+							 gchar		**author);
 
 
 G_END_DECLS
