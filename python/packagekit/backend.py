@@ -249,7 +249,7 @@ class PackageKitBaseBackend:
         ''' split up a package id name;ver;arch;data into a tuple
             containing (name,ver,arch,data)
         '''
-        return tuple(id.split(';'))
+        return tuple(id.split(';', 4))
 #
 # Backend Action Methods
 #
