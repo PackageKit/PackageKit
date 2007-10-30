@@ -137,6 +137,13 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_PROGRAMMING,		"programming"},
 	{PK_GROUP_ENUM_MULTIMEDIA,		"multimedia"},
 	{PK_GROUP_ENUM_SYSTEM,			"system"},
+	{PK_GROUP_ENUM_DESKTOPS,		"desktops"},
+	{PK_GROUP_ENUM_PUBLISHING,		"publishing"},
+	{PK_GROUP_ENUM_SERVERS,			"servers"},
+	{PK_GROUP_ENUM_FONTS,			"fonts"},
+	{PK_GROUP_ENUM_ADMIN_TOOLS,		"admin-tools"},
+	{PK_GROUP_ENUM_LEGACY,			"legacy"},
+	{PK_GROUP_ENUM_LOCALIZATION,		"localization"},
 	{0, NULL},
 };
 

@@ -88,7 +88,13 @@ GROUP_OTHER             = "other"
 GROUP_PROGRAMMING       = "programming"
 GROUP_MULTIMEDIA        = "multimedia"
 GROUP_SYSTEM            = "system"
-
+GROUP_DESKTOPS          = "desktops"
+GROUP_PUBLISHING        = "publishing"
+GROUP_SERVERS           = "servers"
+GROUP_FONTS             = "fonts"
+GROUP_ADMIN_TOOLS       = "admin-tools"
+GROUP_LEGACY            = "legacy"
+GROUP_LOCALIZATION      = "localization"
 
 # Classes
 
