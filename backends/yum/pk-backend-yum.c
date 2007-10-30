@@ -52,7 +52,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
-	"0.0.1",				/* version */
 	"Tim Lauridsen <tla@rasmil.dk>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */

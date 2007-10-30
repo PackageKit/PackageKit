@@ -25,7 +25,6 @@
 
 PK_BACKEND_OPTIONS (
 	"PiSi",						/* description */
-	"0.0.1",					/* version */
 	"S.Çağlar Onur <caglar@pardus.org.tr>",		/* author */
 	NULL,						/* initalize */
 	NULL,						/* destroy */

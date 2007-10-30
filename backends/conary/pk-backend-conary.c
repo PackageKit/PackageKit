@@ -62,7 +62,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
-	"0.0.1",				/* version */
 	"Ken VanDine <ken@vandine.org>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */

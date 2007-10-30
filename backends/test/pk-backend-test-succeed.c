@@ -306,7 +306,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 
 PK_BACKEND_OPTIONS (
 	"Test Succeed",				/* description */
-	"0.0.1",				/* version */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */

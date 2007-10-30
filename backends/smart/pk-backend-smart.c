@@ -26,7 +26,6 @@
 
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
-	"0.0.1",					/* version */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
 	NULL,						/* initalize */
 	NULL,						/* destroy */

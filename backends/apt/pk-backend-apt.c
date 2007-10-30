@@ -195,7 +195,6 @@ backend_get_depends (PkBackend *backend, const gchar *package_id)
 
 PK_BACKEND_OPTIONS (
 	"Apt",				/* description */
-	"0.0.1",				/* version */
 	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */

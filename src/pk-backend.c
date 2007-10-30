@@ -1589,7 +1589,7 @@ pk_backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar 
  * pk_backend_get_backend_detail:
  */
 gboolean
-pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author, gchar **version)
+pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	if (name != NULL && backend->desc->description != NULL) {
@@ -1597,9 +1597,6 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author,
 	}
 	if (author != NULL && backend->desc->author != NULL) {
 		*author = g_strdup (backend->desc->author);
-	}
-	if (version != NULL && backend->desc->version != NULL) {
-		*version = g_strdup (backend->desc->version);
 	}
 	return TRUE;
 }

@@ -688,7 +688,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
-	"0.0.1",				/* version */
 	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */

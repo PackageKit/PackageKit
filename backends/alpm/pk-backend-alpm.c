@@ -777,7 +777,6 @@ backend_get_repo_list (PkBackend *backend)
 
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
-	"0.0.1",					/* version */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initalize */
 	backend_destroy,				/* destroy */

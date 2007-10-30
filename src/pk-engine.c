@@ -2365,7 +2365,7 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
  * pk_engine_get_backend_detail:
  **/
 gboolean
-pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gchar **version, GError **error)
+pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GError **error)
 {
 	PkBackend *backend;
 
@@ -2382,7 +2382,7 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, gc
 		return FALSE;
 	}
 
-	pk_backend_get_backend_detail (backend, name, author, version);
+	pk_backend_get_backend_detail (backend, name, author);
 	g_object_unref (backend);
 
 	return TRUE;

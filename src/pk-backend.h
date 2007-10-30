@@ -116,7 +116,6 @@ gboolean	 pk_backend_repo_set_data		(PkBackend	*backend,
  */
 struct _PkBackendDesc {
 	const char	*description;
-	const char	*version;
 	const char	*author;
 	void		(*initialize)		(PkBackend *backend);
 	void		(*destroy)		(PkBackend *backend);
@@ -148,7 +147,7 @@ struct _PkBackendDesc {
 	gpointer	padding[12];
 };
 
-#define PK_BACKEND_OPTIONS(description, version, author, initialize, destroy, \
+#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, \
 			   get_groups, get_filters, cancel, get_depends, get_description, get_files, \
 			   get_requires, get_update_detail, get_updates, install_package, install_file, \
 			   refresh_cache, remove_package, resolve, rollback, search_details, \
@@ -156,7 +155,6 @@ struct _PkBackendDesc {
 			   get_repo_list, repo_enable, repo_set_data) \
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { \
 		description, \
-		version, \
 		author, \
 		initialize, \
 		destroy, \
