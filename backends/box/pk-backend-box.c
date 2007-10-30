@@ -31,6 +31,7 @@
 #include <libbox/libbox-db-utils.h>
 #include <libbox/libbox-db-repos.h>
 #include <libbox/libbox-repos.h>
+#include <libbox/libbox.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -42,6 +43,11 @@ enum PkgSearchType {
 enum DepsType {
 	DEPS_TYPE_DEPENDS = 0,
 	DEPS_TYPE_REQUIRES = 1
+};
+
+enum DepsBehaviour {
+	DEPS_ALLOW = 0,
+	DEPS_NO_ALLOW = 1
 };
 
 typedef struct {
@@ -383,6 +389,39 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 	return TRUE;
 }
 
+static void
+uninstall_progress(int value, gpointer user_data)
+{
+	PkBackend* backend = (PkBackend *) user_data;
+	pk_backend_change_percentage (backend, value);
+}
+
+static gboolean
+backend_remove_package_thread (PkBackend *backend, gpointer data)
+{
+	ThreadData *d = (ThreadData*) data;
+	PkPackageId *pi;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		g_free (d->package_id);
+		g_free (d);
+		return FALSE;
+	}
+
+	if (!box_package_uninstall (pi->name, "/", uninstall_progress, backend))
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
+	}
+
+	pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+
+	return TRUE;
+}
+
 /* ===================================================================== */
 
 /**
@@ -555,15 +594,18 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
-	const gchar *deps;
+	ThreadData *data = g_new0(ThreadData, 1);
 
 	g_return_if_fail (backend != NULL);
+
 	if (allow_deps == TRUE) {
-		deps = "yes";
+		data->type = DEPS_ALLOW;
 	} else {
-		deps = "no";
+		data->type = DEPS_NO_ALLOW;
 	}
-	pk_backend_spawn_helper (backend, "remove-package.sh", deps, package_id, NULL);
+	data->package_id = g_strdup (package_id);
+    
+	pk_backend_thread_helper (backend, backend_remove_package_thread, data);
 }
 
 /**
