@@ -41,6 +41,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         self.ctrl = smart.init()
+        # Use the dummy interface to quiet output.
+        smart.iface.object = smart.interface.Interface(self.ctrl)
         smart.initPlugins()
         smart.initPsyco()
 
