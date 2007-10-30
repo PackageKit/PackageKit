@@ -40,7 +40,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             version = "%s-%s" % (package.version, package.release)
         return version
 
-    def __get_package(self, package):
+    def __get_package(self, package, filters = None):
         """ Returns package object suitable for other methods """
         if self.installdb.has_package(package):
             status = INFO_INSTALLED
@@ -50,6 +50,13 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             pkg = self.packagedb.get_package(package)
         else:
             self.error(ERROR_INTERNAL_ERROR, "Package was not found")
+
+        filterlist = filters.split(';')
+
+        if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
+            return
+        if FILTER_NON_INSTALLED in filterlist and status != INFO_AVAILABLE:
+            return
 
         version = self.__get_package_version(pkg)
 
@@ -238,7 +245,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.allow_interrupt(True);
         self.percentage(None)
 
-        self.__get_package(package)
+        self.__get_package(package, filters)
 
     def search_name(self, filters, package):
         """ Prints a list of packages contains search term """
@@ -246,7 +253,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         for pkg in pisi.api.search_package([package]):
-            self.__get_package(pkg)
+            self.__get_package(pkg, filters)
 
     def update(self, package_id):
         """ Updates given package to its latest version """

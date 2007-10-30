@@ -23,13 +23,27 @@
 #include <pk-backend.h>
 #include <pk-backend-python.h>
 
+/**
+ * backend_get_filters:
+ */
+static void
+backend_get_filters (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				      /* PK_FILTER_ENUM_GUI, */
+				      PK_FILTER_ENUM_INSTALLED,
+				      /* PK_FILTER_ENUM_DEVELOPMENT, */
+				      -1);
+}
+
 PK_BACKEND_OPTIONS (
 	"PiSi",						/* description */
 	"S.Çağlar Onur <caglar@pardus.org.tr>",		/* author */
 	NULL,						/* initalize */
 	NULL,						/* destroy */
 	NULL,						/* get_groups */
-	NULL,						/* get_filters */
+	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
 	pk_backend_python_get_depends,			/* get_depends */
 	pk_backend_python_get_description,		/* get_description */
