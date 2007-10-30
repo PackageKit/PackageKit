@@ -27,6 +27,11 @@
 
 G_BEGIN_DECLS
 
+typedef struct {
+	guint		 value;
+	const gchar	*string;
+} PkEnumMatch;
+
 /* what we asked to do */
 typedef enum {
 	PK_ROLE_ENUM_CANCEL,
@@ -35,6 +40,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_DEPENDS,
 	PK_ROLE_ENUM_GET_UPDATE_DETAIL,
 	PK_ROLE_ENUM_GET_DESCRIPTION,
+	PK_ROLE_ENUM_GET_FILES,
 	PK_ROLE_ENUM_GET_REQUIRES,
 	PK_ROLE_ENUM_GET_UPDATES,
 	PK_ROLE_ENUM_SEARCH_DETAILS,
@@ -63,6 +69,8 @@ typedef enum {
 	PK_STATUS_ENUM_DOWNLOAD,
 	PK_STATUS_ENUM_INSTALL,
 	PK_STATUS_ENUM_UPDATE,
+	PK_STATUS_ENUM_CLEANUP,
+	PK_STATUS_ENUM_OBSOLETE,
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
@@ -155,6 +163,8 @@ typedef enum {
 	PK_INFO_ENUM_UPDATING,
 	PK_INFO_ENUM_INSTALLING,
 	PK_INFO_ENUM_REMOVING,
+	PK_INFO_ENUM_CLEANUP,
+	PK_INFO_ENUM_OBSOLETING,
 	PK_INFO_ENUM_UNKNOWN
 } PkInfoEnum;
 
@@ -162,6 +172,12 @@ typedef enum {
 	PK_SIGTYPE_ENUM_GPG,
 	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
+
+/* general */
+guint		 pk_enum_find_value			(PkEnumMatch	*table,
+							 const gchar	*string);
+const gchar	*pk_enum_find_string			(PkEnumMatch	*table,
+							 guint		 value);
 
 PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
 const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_type);

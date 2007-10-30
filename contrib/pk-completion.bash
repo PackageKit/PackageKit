@@ -88,6 +88,7 @@ _pkcon_get ()
             depends
             requires
             description
+            files
             updatedetail
             actions
             groups

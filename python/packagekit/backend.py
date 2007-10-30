@@ -50,6 +50,8 @@ STATE_INSTALL = "install"
 STATE_UPDATE = "update"
 STATE_REMOVE = "remove"
 STATE_WAIT = "wait"
+STATE_CLEANUP = "cleanup"
+STATE_OBSOLETE = "obsolete"
 
 RESTART_SYSTEM = "system"
 RESTART_APPLICATION = "application"
@@ -65,6 +67,8 @@ INFO_DOWNLOADING = "downloading"
 INFO_UPDATING = "updating"
 INFO_INSTALLING = "installing"
 INFO_REMOVING = "removing"
+INFO_CLEANUP = "cleanup"
+INFO_OBSOLETE = "obsoleting"
 
 FILTER_INSTALLED = "installed"
 FILTER_NON_INSTALLED = "~installed"
@@ -72,6 +76,19 @@ FILTER_GUI = "gui"
 FILTER_NON_GUI = "~gui"
 FILTER_DEVEL = "devel"
 FILTER_NON_DEVEL = "~devel"
+
+GROUP_ACCESSIBILITY     = "accessibility"
+GROUP_ACCESSORIES       = "accessories"
+GROUP_EDUCATION         = "education"
+GROUP_GAMES             = "games"
+GROUP_GRAPHICS          = "graphics"
+GROUP_INTERNET          = "internet"
+GROUP_OFFICE            = "office"
+GROUP_OTHER             = "other"
+GROUP_PROGRAMMING       = "programming"
+GROUP_MULTIMEDIA        = "multimedia"
+GROUP_SYSTEM            = "system"
+
 
 # Classes
 
@@ -165,6 +182,13 @@ class PackageKitBaseBackend:
         @param file_list: List of the files in the package, separated by ';'
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
+
+    def files(self, id, file_list):
+        '''
+        Send 'files' signal
+        @param file_list: List of the files in the package, separated by ';'
+        '''
+        print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
 
     def update_detail(self,id,updates,obsoletes,url,restart,update_text):
         '''
@@ -329,6 +353,13 @@ class PackageKitBaseBackend:
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def get_files(self, package):
+        '''
+        Implement the {backend}-get-files functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
     def get_updates(self, package):
         '''

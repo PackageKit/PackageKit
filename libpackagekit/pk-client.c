@@ -74,6 +74,7 @@ struct PkClientPrivate
 typedef enum {
 	PK_CLIENT_DESCRIPTION,
 	PK_CLIENT_ERROR_CODE,
+	PK_CLIENT_FILES,
 	PK_CLIENT_FINISHED,
 	PK_CLIENT_PACKAGE,
 	PK_CLIENT_PROGRESS_CHANGED,
@@ -467,7 +468,6 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  const gchar *description,
 			  const gchar *url,
 			  guint64      size,
-			  const gchar *filelist,
 			  PkClient    *client)
 {
 	PkGroupEnum group;
@@ -480,10 +480,33 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	}
 
 	group = pk_group_enum_from_text (group_text);
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld, %s",
-		  package_id, licence, group, description, url, (long int) size, filelist);
+	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
+		  package_id, licence, group, description, url, (long int) size);
 	g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
-		       package_id, licence, group, description, url, size, filelist);
+		       package_id, licence, group, description, url, size);
+}
+
+/**
+ * pk_client_files_cb:
+ */
+static void
+pk_client_files_cb (DBusGProxy  *proxy,
+		    const gchar *tid,
+		    const gchar *package_id,
+		    const gchar *filelist,
+		    PkClient    *client)
+{
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
+		return;
+	}
+
+	pk_debug ("emit files %s, %s", package_id, filelist);
+	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id,
+		       filelist);
 }
 
 /**
@@ -1386,6 +1409,49 @@ pk_client_get_description (PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_client_get_files:
+ **/
+gboolean
+pk_client_get_files (PkClient *client, const gchar *package)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_FILES;
+	client->priv->xcached_package_id = g_strdup (package);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", &error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error != NULL) {
+		const gchar *error_name;
+		error_name = pk_client_get_error_name (error);
+		pk_debug ("ERROR: %s: %s", error_name, error->message);
+		g_error_free (error);
+	}
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetFiles failed!");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_client_remove_package_action:
  **/
 gboolean
@@ -2148,6 +2214,8 @@ pk_client_requeue (PkClient *client)
 		pk_client_rollback (client, client->priv->xcached_transaction_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
 		pk_client_get_description (client, client->priv->xcached_package_id);
+	} else if (client->priv->role == PK_ROLE_ENUM_GET_FILES) {
+		pk_client_get_files (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		pk_client_get_requires (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
@@ -2229,9 +2297,14 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64_STRING,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
+			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_UINT64);
+	signals [PK_CLIENT_FILES] =
+		g_signal_new ("files",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2359,9 +2432,14 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Description */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+					   G_TYPE_INVALID);
+
+	/* Files */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Repo Signature Required */
@@ -2426,9 +2504,14 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
-				 G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Description",
 				     G_CALLBACK (pk_client_description_cb), client, NULL);
+
+	dbus_g_proxy_add_signal (proxy, "Files",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "Files",
+				     G_CALLBACK (pk_client_files_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -2492,6 +2575,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_transaction_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Description",
 				        G_CALLBACK (pk_client_description_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
+				        G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
 				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",

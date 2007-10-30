@@ -1056,6 +1056,40 @@
       </para>
     </sect2>
 
+    <sect2 id="api-get-files">
+      <title>Get Files</title>
+      <para>
+        GetFiles should return the file list of that
+        <literal>package_id</literal>.
+      </para>
+      <para>
+        The arguments are:
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>package_id</literal></entry>
+              <entry>A single, valid, package ID.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        This method typically emits
+        <literal>Progress</literal>,
+        <literal>Status</literal> and
+        <literal>Error</literal> and
+        <literal>Files</literal>.
+      </para>
+    </sect2>
+
     <sect2 id="api-update">
       <title>Update Package</title>
       <para>

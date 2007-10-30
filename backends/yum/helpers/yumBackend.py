@@ -14,12 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-# Copyright (C) 2007 
+# Copyright (C) 2007
 #    Tim Lauridsen <timlau@fedoraproject.org>
 #    Seth Vidal <skvidal@fedoraproject.org>
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
-
 
 # imports
 
@@ -44,10 +43,152 @@ from packagekit.backend import PackagekitProgress
 yumbase = None
 progress = PackagekitProgress()  # Progress object to store the progress
 
+groupMap = {
+'desktops;gnome-desktop'                      : GROUP_SYSTEM,
+'desktops;window-managers'                    : GROUP_SYSTEM,
+'desktops;kde-desktop'                        : GROUP_SYSTEM,
+'desktops;xfce-desktop'                       : GROUP_SYSTEM,
+'apps;authoring-and-publishing'               : GROUP_OFFICE,
+'apps;office'                                 : GROUP_OFFICE,
+'apps;sound-and-video'                        : GROUP_MULTIMEDIA,
+'apps;editors'                                : GROUP_OFFICE,
+'apps;engineering-and-scientific'             : GROUP_OTHER,
+'apps;games'                                  : GROUP_GAMES,
+'apps;graphics'                               : GROUP_GRAPHICS,
+'apps;text-internet'                          : GROUP_INTERNET,
+'apps;graphical-internet'                     : GROUP_INTERNET,
+'apps;education'                              : GROUP_EDUCATION,
+'development;kde-software-development'        : GROUP_PROGRAMMING,
+'development;gnome-software-development'      : GROUP_PROGRAMMING,
+'development;development-tools'               : GROUP_PROGRAMMING,
+'development;eclipse'                         : GROUP_PROGRAMMING,
+'development;development-libs'                : GROUP_PROGRAMMING,
+'development;x-software-development'          : GROUP_PROGRAMMING,
+'development;web-development'                 : GROUP_PROGRAMMING,
+'development;legacy-software-development'     : GROUP_PROGRAMMING,
+'development;ruby'                            : GROUP_PROGRAMMING,
+'development;java-development'                : GROUP_PROGRAMMING,
+'development;xfce-software-development'       : GROUP_PROGRAMMING,
+'servers;clustering'                          : GROUP_OTHER,
+'servers;dns-server'                          : GROUP_OTHER,
+'servers;server-cfg'                          : GROUP_OTHER,
+'servers;news-server'                         : GROUP_OTHER,
+'servers;web-server'                          : GROUP_OTHER,
+'servers;smb-server'                          : GROUP_OTHER,
+'servers;sql-server'                          : GROUP_OTHER,
+'servers;ftp-server'                          : GROUP_OTHER,
+'servers;printing'                            : GROUP_OTHER,
+'servers;mysql'                               : GROUP_OTHER,
+'servers;mail-server'                         : GROUP_OTHER,
+'servers;network-server'                      : GROUP_OTHER,
+'servers;legacy-network-server'               : GROUP_OTHER,
+'base-system;java'                            : GROUP_SYSTEM,
+'base-system;base-x'                          : GROUP_SYSTEM,
+'base-system;system-tools'                    : GROUP_SYSTEM,
+'base-system;fonts'                           : GROUP_SYSTEM,
+'base-system;hardware-support'                : GROUP_SYSTEM,
+'base-system;dial-up'                         : GROUP_SYSTEM,
+'base-system;admin-tools'                     : GROUP_SYSTEM,
+'base-system;legacy-software-support'         : GROUP_SYSTEM,
+'base-system;base'                            : GROUP_SYSTEM,
+'base-system;virtualization'                  : GROUP_SYSTEM,
+'base-system;legacy-fonts'                    : GROUP_SYSTEM,
+'language-support;khmer-support'              : GROUP_OTHER,
+'language-support;persian-support'            : GROUP_OTHER,
+'language-support;georgian-support'           : GROUP_OTHER,
+'language-support;malay-support'              : GROUP_OTHER,
+'language-support;tonga-support'              : GROUP_OTHER,
+'language-support;portuguese-support'         : GROUP_OTHER,
+'language-support;japanese-support'           : GROUP_OTHER,
+'language-support;hungarian-support'          : GROUP_OTHER,
+'language-support;somali-support'             : GROUP_OTHER,
+'language-support;punjabi-support'            : GROUP_OTHER,
+'language-support;bhutanese-support'          : GROUP_OTHER,
+'language-support;british-support'            : GROUP_OTHER,
+'language-support;korean-support'             : GROUP_OTHER,
+'language-support;lao-support'                : GROUP_OTHER,
+'language-support;inuktitut-support'          : GROUP_OTHER,
+'language-support;german-support'             : GROUP_OTHER,
+'language-support;hindi-support'              : GROUP_OTHER,
+'language-support;faeroese-support'           : GROUP_OTHER,
+'language-support;swedish-support'            : GROUP_OTHER,
+'language-support;tsonga-support'             : GROUP_OTHER,
+'language-support;russian-support'            : GROUP_OTHER,
+'language-support;serbian-support'            : GROUP_OTHER,
+'language-support;latvian-support'            : GROUP_OTHER,
+'language-support;samoan-support'             : GROUP_OTHER,
+'language-support;sinhala-support'            : GROUP_OTHER,
+'language-support;catalan-support'            : GROUP_OTHER,
+'language-support;lithuanian-support'         : GROUP_OTHER,
+'language-support;turkish-support'            : GROUP_OTHER,
+'language-support;arabic-support'             : GROUP_OTHER,
+'language-support;vietnamese-support'         : GROUP_OTHER,
+'language-support;mongolian-support'          : GROUP_OTHER,
+'language-support;tswana-support'             : GROUP_OTHER,
+'language-support;irish-support'              : GROUP_OTHER,
+'language-support;italian-support'            : GROUP_OTHER,
+'language-support;slovak-support'             : GROUP_OTHER,
+'language-support;slovenian-support'          : GROUP_OTHER,
+'language-support;belarusian-support'         : GROUP_OTHER,
+'language-support;northern-sotho-support'     : GROUP_OTHER,
+'language-support;kannada-support'            : GROUP_OTHER,
+'language-support;malayalam-support'          : GROUP_OTHER,
+'language-support;swati-support'              : GROUP_OTHER,
+'language-support;breton-support'             : GROUP_OTHER,
+'language-support;romanian-support'           : GROUP_OTHER,
+'language-support;greek-support'              : GROUP_OTHER,
+'language-support;tagalog-support'            : GROUP_OTHER,
+'language-support;zulu-support'               : GROUP_OTHER,
+'language-support;tibetan-support'            : GROUP_OTHER,
+'language-support;danish-support'             : GROUP_OTHER,
+'language-support;afrikaans-support'          : GROUP_OTHER,
+'language-support;southern-sotho-support'     : GROUP_OTHER,
+'language-support;bosnian-support'            : GROUP_OTHER,
+'language-support;brazilian-support'          : GROUP_OTHER,
+'language-support;basque-support'             : GROUP_OTHER,
+'language-support;welsh-support'              : GROUP_OTHER,
+'language-support;thai-support'               : GROUP_OTHER,
+'language-support;telugu-support'             : GROUP_OTHER,
+'language-support;low-saxon-support'          : GROUP_OTHER,
+'language-support;urdu-support'               : GROUP_OTHER,
+'language-support;tamil-support'              : GROUP_OTHER,
+'language-support;indonesian-support'         : GROUP_OTHER,
+'language-support;gujarati-support'           : GROUP_OTHER,
+'language-support;xhosa-support'              : GROUP_OTHER,
+'language-support;chinese-support'            : GROUP_OTHER,
+'language-support;czech-support'              : GROUP_OTHER,
+'language-support;venda-support'              : GROUP_OTHER,
+'language-support;bulgarian-support'          : GROUP_OTHER,
+'language-support;albanian-support'           : GROUP_OTHER,
+'language-support;galician-support'           : GROUP_OTHER,
+'language-support;armenian-support'           : GROUP_OTHER,
+'language-support;dutch-support'              : GROUP_OTHER,
+'language-support;oriya-support'              : GROUP_OTHER,
+'language-support;maori-support'              : GROUP_OTHER,
+'language-support;nepali-support'             : GROUP_OTHER,
+'language-support;icelandic-support'          : GROUP_OTHER,
+'language-support;ukrainian-support'          : GROUP_OTHER,
+'language-support;assamese-support'           : GROUP_OTHER,
+'language-support;bengali-support'            : GROUP_OTHER,
+'language-support;spanish-support'            : GROUP_OTHER,
+'language-support;hebrew-support'             : GROUP_OTHER,
+'language-support;estonian-support'           : GROUP_OTHER,
+'language-support;french-support'             : GROUP_OTHER,
+'language-support;croatian-support'           : GROUP_OTHER,
+'language-support;filipino-support'           : GROUP_OTHER,
+'language-support;finnish-support'            : GROUP_OTHER,
+'language-support;norwegian-support'          : GROUP_OTHER,
+'language-support;southern-ndebele-support'   : GROUP_OTHER,
+'language-support;polish-support'             : GROUP_OTHER,
+'language-support;gaelic-support'             : GROUP_OTHER,
+'language-support;marathi-support'            : GROUP_OTHER,
+'language-support;ethiopic-support'           : GROUP_OTHER
+}
+
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
-def sigquit(signum, frame):   
+def sigquit(signum, frame):
     print >> sys.stderr, "Quit signal sent - exiting immediately"
     if yumbase:
         print >> sys.stderr, "unlocking Yum"
@@ -62,17 +203,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
-
     def __init__(self,args,lock=True):
-        signal.signal(signal.SIGQUIT, sigquit)        
+        signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
         yumbase = self.yumbase
         self._setup_yum()
         if lock:
             self.doLock()
-        
- 
+
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
@@ -88,15 +227,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if retries > 100:
                     self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
 
-        
-    def unLock(self):        
+    def unLock(self):
         ''' Unlock Yum'''
         if self.isLocked():
             PackageKitBaseBackend.unLock(self)
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
-        
-                
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
@@ -118,7 +254,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             res = self.yumbase.searchGenerator(searchlist, [key])
             fltlist = filters.split(';')
-    
+
             available = []
             count = 1
             for (pkg,values) in res:
@@ -174,7 +310,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             isDevel = True
         return isDevel == wantDevel
 
-
     def search_name(self,filters,key):
         '''
         Implement the {backend}-search-name functionality
@@ -195,14 +330,57 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         searchlist = ['name', 'summary', 'description', 'group']
         self._do_search(searchlist, filters, key)
 
+    def _buildGroupDict(self):
+        pkgGroups= {}
+        cats = self.yumbase.comps.categories
+        for cat in cats:
+            grps = map( lambda x: self.yumbase.comps.return_group( x ),
+               filter( lambda x: self.yumbase.comps.has_group( x ), cat.groups ) )
+            grplist = []
+            for group in grps:
+                for pkg in group.mandatory_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+                for pkg in group.default_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+                for pkg in group.optional_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+                for pkg in group.conditional_packages.keys():
+                    pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
+        return pkgGroups
+
     def search_group(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        pkgGroupDict = self._buildGroupDict()
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        fltlist = filters.split(';')
+        found = {}
+
+        if not FILTER_NON_INSTALLED in fltlist:
+            # Check installed for group
+            for pkg in self.yumbase.rpmdb:
+                group = GROUP_OTHER                    # Default Group
+                if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
+                    cg = pkgGroupDict[pkg.name]
+                    if groupMap.has_key(cg):
+                        group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
+                if group == key:
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+        if not FILTER_INSTALLED in fltlist:
+            # Check available for group
+            for pkg in self.yumbase.pkgSack:
+                group = GROUP_OTHER
+                if pkgGroupDict.has_key(pkg.name):
+                    cg = pkgGroupDict[pkg.name]
+                    if groupMap.has_key(cg):
+                        group = groupMap[cg]
+                if group == key:
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
 
     def search_file(self,filters,key):
         '''
@@ -210,7 +388,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        
+
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
@@ -233,7 +411,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_AVAILABLE)
                             found[str(pkg)] = 1
-
 
     def _getEVR(self,idver):
         '''
@@ -269,7 +446,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return None,False
 
-
     def get_requires(self,package):
         '''
         Print a list of requires for a given package
@@ -285,14 +461,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _installable(self, pkg, ematch=False):
 
         """check if the package is reasonably installable, true/false"""
-        
-        exactarchlist = self.yumbase.conf.exactarchlist        
+
+        exactarchlist = self.yumbase.conf.exactarchlist
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
-        
+
         if self.yumbase.rpmdb.installed(po=pkg):
             return False
-        
+
         # everything installed that matches the name
         installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name)
         comparable = []
@@ -301,8 +477,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 comparable.append(instpo)
             else:
                 continue
-                
-        # go through each package 
+
+        # go through each package
         if len(comparable) > 0:
             for instpo in comparable:
                 if pkg.EVR > instpo.EVR: # we're newer - this is an update, pass to them
@@ -311,37 +487,36 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             return True
                     else:
                         return True
-                        
+
                 elif pkg.EVR == instpo.EVR: # same, ignore
                     return False
-                    
+
                 elif pkg.EVR < instpo.EVR: # lesser, check if the pkgtup is an exactmatch
                                    # if so then add it to be installed
                                    # if it can be multiply installed
-                                   # this is where we could handle setting 
+                                   # this is where we could handle setting
                                    # it to be an 'oldpackage' revert.
-                                   
+
                     if ematch and self.yumbase.allowedMultipleInstalls(pkg):
                         return True
-                        
+
         else: # we've not got any installed that match n or n+a
             return True
-        
+
         return False
-    
-        
+
     def _get_best_dependencies(self,po):
         ''' find the most recent packages that provides the dependencies for a package
         @param po: yum package object to find deps for
-        @return: a list for yum package object providing the dependencies 
+        @return: a list for yum package object providing the dependencies
         '''
-        results = self.yumbase.findDeps([po])    
+        results = self.yumbase.findDeps([po])
         pkg = results.keys()[0]
         bestdeps=[]
         if len(results[pkg].keys()) == 0: # No dependencies for this package ?
             return bestdeps
         for req in results[pkg].keys():
-            reqlist = results[pkg][req] 
+            reqlist = results[pkg][req]
             if not reqlist: #  Unsatisfied dependency
                 self.error(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req),exit=False)
                 continue
@@ -371,15 +546,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
         for pkg in deps:
             if pkg.name != name:
-                pkgver = self._get_package_ver(pkg)            
+                pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
-                
+
                 if self._is_inst(pkg):
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
                     if self._installable(pkg):
                         self.package(id, INFO_AVAILABLE, pkg.summary)
-
 
     def update_system(self):
         '''
@@ -459,7 +633,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(False)
         self.percentage(0)
-    
+
         pkg,inst = self._findPackage(package)
         if pkg:
             if inst:
@@ -475,21 +649,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
 
     def _localInstall(self, inst_file):
-        """handles installs/updates of rpms provided on the filesystem in a 
+        """handles installs/updates of rpms provided on the filesystem in a
            local dir (ie: not from a repo)"""
-           
+
         # Slightly modified localInstall from yum's cli.py
-           
+
         # read in each package into a YumLocalPackage Object
         # append it to self.yumbase.localPackages
         # check if it can be installed or updated based on nevra versus rpmdb
         # don't import the repos until we absolutely need them for depsolving
-        
+
         oldcount = len(self.yumbase.tsInfo)
-               
+
         installpkgs = []
         updatepkgs = []
-        
+
         pkg = inst_file
         try:
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
@@ -498,7 +672,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # everything installed that matches the name
         installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
-        # go through each package 
+        # go through each package
         if len(installedByKey) == 0: # nothing installed by that name
             installpkgs.append(po)
         else:
@@ -522,7 +696,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         continue
                 else:
                     continue
-        
+
         # handle excludes for a localinstall
         toexc = []
         if len(self.yumbase.conf.exclude) > 0:
@@ -530,8 +704,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                    yum.packages.parsePackages(installpkgs + map(lambda x: x[0], updatepkgs),
                                  self.yumbase.conf.exclude, casematch=1)
            toexc = exactmatch + matched
-       
-        # Process potential installs   
+
+        # Process potential installs
         for po in installpkgs:
             if po in toexc:
                continue     # Exclude package
@@ -545,10 +719,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # Add Package to transaction for updating
             self.yumbase.localPackages.append(po)
             self.yumbase.tsInfo.addUpdate(po, oldpo)
-        
 
-
-            
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -626,7 +797,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 retmsg = "Error in Package Signatures;" +";".join(msgs)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
-                keyData = self.yumbase.missingGPGKey                
+                keyData = self.yumbase.missingGPGKey
                 if not keyData:
                     self.error(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
@@ -668,7 +839,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
 
-
     def get_description(self, package):
         '''
         Print a detailed description for a given package
@@ -694,6 +864,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
+    def get_files(self, package):
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            files = pkg.returnFileEntries('dir')
+            files.extend(pkg.returnFileEntries()) # regular files
+
+            file_list = ";".join(files)
+
+            self.files(package, file_list)
+        else:
+            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+
     def _show_package(self,pkg,status):
         '''  Show info about package'''
         pkgver = self._get_package_ver(pkg)
@@ -707,7 +892,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return INFO_SECURITY
         else:
             return INFO_NORMAL
-
 
     def get_updates(self):
         '''
@@ -745,10 +929,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 if not repo.isEnabled():
                     repo.enablePersistent()
-                
+
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
-        
 
     def get_repo_list(self):
         '''
@@ -765,7 +948,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-update_detail functionality
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
-                
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
@@ -826,7 +1008,6 @@ class DownloadCallback( BaseMeter ):
             frac = self.re.fraction_read()
             self.updateProgress(name,frac,fread,frtime)
 
-
     def _do_end( self, amount_read, now=None ):
         total_time = format_time( self.re.elapsed_time() )
         total_size = format_number( amount_read )
@@ -866,7 +1047,6 @@ class DownloadCallback( BaseMeter ):
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
 
-
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
         RPMBaseCallback.__init__(self)
@@ -875,6 +1055,23 @@ class PackageKitCallback(RPMBaseCallback):
         self.curpkg = None
         self.startPct = 50
         self.numPct = 50
+        # Map yum transactions with pk info enums
+        self.info_actions = { TS_UPDATE : INFO_UPDATING,
+                        TS_ERASE: INFO_REMOVING,
+                        TS_INSTALL: INFO_INSTALLING,
+                        TS_TRUEINSTALL : INFO_INSTALLING,
+                        TS_OBSOLETED: INFO_OBSOLETE,
+                        TS_OBSOLETING: INFO_INSTALLING,
+                        TS_UPDATED: INFO_CLEANUP}
+
+        # Map yum transactions with pk state enums
+        self.state_actions = { TS_UPDATE : STATE_UPDATE,
+                        TS_ERASE: STATE_REMOVE,
+                        TS_INSTALL: STATE_INSTALL,
+                        TS_TRUEINSTALL : STATE_INSTALL,
+                        TS_OBSOLETED: STATE_OBSOLETE,
+                        TS_OBSOLETING: STATE_INSTALL,
+                        TS_UPDATED: STATE_CLEANUP}
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -889,17 +1086,11 @@ class PackageKitCallback(RPMBaseCallback):
             id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
         self.base.package(id,status, "")
 
-
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            if action in TS_INSTALL_STATES:
-                self.base.status(STATE_INSTALL)
-                status = INFO_INSTALLING
-            elif action in TS_REMOVE_STATES:
-                self.base.status(STATE_REMOVE)
-                status = INFO_REMOVING
-            self._showName(status)
+            self.base.status(self.state_actions[action])
+            self._showName(self.info_actions[action])
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total
@@ -934,7 +1125,6 @@ class ProcessTransPackageKitCallback:
             self.base.percentage(50)
             pass
 
-
 class PackageKitYumBase(yum.YumBase):
     """
     Subclass of YumBase.  Needed so we can overload _checkSignatures
@@ -953,7 +1143,7 @@ class PackageKitYumBase(yum.YumBase):
             result, errmsg = self.sigCheckPkg(po)
             if result == 0:
                 # Verified ok, or verify not req'd
-                continue            
+                continue
             elif result == 1:
                 self.getKeyForPackage(po, fullaskcb=self._fullAskForGPGKeyImport)
             else:
@@ -967,8 +1157,8 @@ class PackageKitYumBase(yum.YumBase):
         raise GPGKeyNotImported()
 
     def _askForGPGKeyImport(self, po, userid, hexkeyid):
-        ''' 
-        Ask for GPGKeyImport 
+        '''
+        Ask for GPGKeyImport
         '''
         # TODO: Add code here to send the RepoSignatureRequired signal
         return False

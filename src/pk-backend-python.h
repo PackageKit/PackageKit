@@ -34,6 +34,9 @@ void	pk_backend_python_get_depends		(PkBackend	*backend,
 void	pk_backend_python_get_description	(PkBackend	*backend,
 						 const gchar	*package_id);
 
+void	pk_backend_python_get_files		(PkBackend	*backend,
+						 const gchar	*package_id);
+
 void	pk_backend_python_get_requires		(PkBackend	*backend,
 						 const gchar	*package_id);
 

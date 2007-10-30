@@ -91,6 +91,10 @@
             <entry><literal>get-description.*</literal></entry>
           </row>
           <row>
+            <entry>Get Files</entry>
+            <entry><literal>get-files.*</literal></entry>
+          </row>
+          <row>
             <entry>Update Package</entry>
             <entry><literal>update.*</literal></entry>
           </row>
@@ -184,6 +188,11 @@
           <row>
             <entry>Description</entry>
             <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes[tab]file_list</literal></entry>
+            <entry><literal>stdout</literal></entry>
+          </row>
+          <row>
+            <entry>Files</entry>
+            <entry><literal>files[tab]package_id[tab]file_list</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>

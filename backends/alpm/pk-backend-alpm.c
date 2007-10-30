@@ -786,6 +786,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* cancel */
  	NULL,						/* get_depends */
 	NULL,						/* get_description */
+	NULL,						/* get_files */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
 	NULL,						/* get_updates */
