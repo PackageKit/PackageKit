@@ -13,7 +13,7 @@
 import sys
 import pisiBackend
 
-backend = pisiBackend.PackageKitPisiBackend(sys.argv[2:])
-backend.resolve(sys.argv[1], sys.argv[2])
+backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
+backend.get_files(sys.argv[1])
 
 sys.exit()

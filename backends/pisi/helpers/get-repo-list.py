@@ -13,7 +13,7 @@
 import sys
 import pisiBackend
 
-backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
+backend = pisiBackend.PackageKitPisiBackend(sys.argv[2:])
 backend.get_repo_list()
 
 sys.exit()
