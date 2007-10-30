@@ -30,8 +30,21 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSIBILITY,
+				      PK_GROUP_ENUM_ADMIN_TOOLS,
+				      PK_GROUP_ENUM_DESKTOPS,
+				      PK_GROUP_ENUM_EDUCATION,
+				      PK_GROUP_ENUM_FONTS,
 				      PK_GROUP_ENUM_GAMES,
+				      PK_GROUP_ENUM_GRAPHICS,
+				      PK_GROUP_ENUM_INTERNET,
+				      PK_GROUP_ENUM_LEGACY,
+				      PK_GROUP_ENUM_LOCALIZATION,
+				      PK_GROUP_ENUM_MULTIMEDIA,
+				      PK_GROUP_ENUM_OFFICE,
+				      PK_GROUP_ENUM_OTHER,
+				      PK_GROUP_ENUM_PROGRAMMING,
+				      PK_GROUP_ENUM_PUBLISHING,
+				      PK_GROUP_ENUM_SERVERS,
 				      PK_GROUP_ENUM_SYSTEM,
 				      -1);
 }
@@ -72,7 +85,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	pk_backend_python_search_details,	/* search_details */
 	pk_backend_python_search_file,		/* search_file */
-	NULL,					/* search_group */
+	pk_backend_python_search_group,		/* search_group */
 	pk_backend_python_search_name,		/* search_name */
 	pk_backend_python_update_package,	/* update_package */
 	pk_backend_python_update_system,	/* update_system */
