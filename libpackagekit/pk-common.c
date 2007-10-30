@@ -132,7 +132,6 @@ pk_validate_input_char (gchar item)
 	case '}':
 	case '@':
 	case '#':
-	case '/':
 	case '\\':
 	case '<':
 	case '>':
