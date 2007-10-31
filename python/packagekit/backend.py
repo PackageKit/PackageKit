@@ -97,6 +97,7 @@ GROUP_FONTS             = "fonts"
 GROUP_ADMIN_TOOLS       = "admin-tools"
 GROUP_LEGACY            = "legacy"
 GROUP_LOCALIZATION      = "localization"
+GROUP_UNKNOWN           = "unknown"
 
 # Classes
 
