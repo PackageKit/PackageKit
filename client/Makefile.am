@@ -14,11 +14,6 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-I$(top_srcdir)/libpackagekit			\
-	-I$(top_srcdir)/libselftest			\
-	$(NULL)
-
-SELFTEST_LIBS =						\
-	$(top_builddir)/libselftest/libselftest.la	\
 	$(NULL)
 
 PK_LIBS =						\
@@ -31,9 +26,7 @@ bin_PROGRAMS =						\
 	$(NULL)
 
 pkcon_SOURCES =						\
-	pk-console.h					\
 	pk-console.c					\
-	pk-console-main.c				\
 	$(NULL)
 
 pkcon_LDADD =						\
@@ -52,34 +45,10 @@ pkmon_LDADD =						\
 	$(PK_LIBS)					\
 	$(NULL)
 
-check_PROGRAMS =					\
-	pk-self-test
-
-noinst_PROGRAMS =					\
-	pk-self-test
-
-pk_self_test_SOURCES =					\
-	pk-console.h					\
-	pk-console.c					\
-	pk-self-test.c					\
-	$(NULL)
-
-pk_self_test_LDADD =					\
-	$(GLIB_LIBS)					\
-	$(DBUS_LIBS)					\
-	$(SELFTEST_LIBS)				\
-	$(PK_LIBS)					\
-	$(NULL)
-
-pk_self_test_CPPFLAGS=	\
-	-DPK_BUILD_TESTS
-
 clean-local:
 	rm -f *~
 
 CLEANFILES = $(BUILT_SOURCES)
-
-TESTS = pk-self-test
 
 DISTCLEANFILES =					\
 	$(NULL)
