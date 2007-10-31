@@ -757,7 +757,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 	backend->priv->last_package = g_strdup (package);
 
 	/* replace unsafe chars */
-	summary_safe = pk_string_replace_unsafe (summary);
+	summary_safe = pk_strsafe (summary);
 
 	pk_debug ("emit package %i, %s, %s", info, package, summary_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
@@ -779,7 +779,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* replace unsafe chars */
-	update_text_safe = pk_string_replace_unsafe (update_text);
+	update_text_safe = pk_strsafe (update_text);
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
 		  package_id, updates, obsoletes, url, restart, update_text_safe);
@@ -866,7 +866,7 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* replace unsafe chars */
-	description_safe = pk_string_replace_unsafe (description);
+	description_safe = pk_strsafe (description);
 
 	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
 		  package_id, licence, group, description_safe, url,

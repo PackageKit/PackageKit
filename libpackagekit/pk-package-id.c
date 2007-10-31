@@ -53,7 +53,7 @@ gboolean
 pk_package_id_check (const gchar *package_id)
 {
 	gchar **sections;
-	sections = pk_string_id_split (package_id, 4);
+	sections = pk_strsplit (package_id, 4);
 	if (sections != NULL) {
 		g_strfreev (sections);
 		return TRUE;
@@ -70,7 +70,7 @@ pk_package_id_new_from_string (const gchar *package_id)
 	gchar **sections;
 	PkPackageId *ident = NULL;
 
-	sections = pk_string_id_split (package_id, 4);
+	sections = pk_strsplit (package_id, 4);
 	if (sections == NULL) {
 		return NULL;
 	}
@@ -78,19 +78,19 @@ pk_package_id_new_from_string (const gchar *package_id)
 	/* create new object */
 	ident = pk_package_id_new ();
 	/* ITS4: ignore, not used for allocation */
-	if (strlen (sections[0]) > 0) {
+	if (pk_strzero (sections[0]) == FALSE) {
 		ident->name = g_strdup (sections[0]);
 	}
 	/* ITS4: ignore, not used for allocation */
-	if (strlen (sections[1]) > 0) {
+	if (pk_strzero (sections[1]) == FALSE) {
 		ident->version = g_strdup (sections[1]);
 	}
 	/* ITS4: ignore, not used for allocation */
-	if (strlen (sections[2]) > 0) {
+	if (pk_strzero (sections[2]) == FALSE) {
 		ident->arch = g_strdup (sections[2]);
 	}
 	/* ITS4: ignore, not used for allocation */
-	if (strlen (sections[3]) > 0) {
+	if (pk_strzero (sections[3]) == FALSE) {
 		ident->data = g_strdup (sections[3]);
 	}
 	g_strfreev (sections);
@@ -154,12 +154,12 @@ pk_package_id_free (PkPackageId *ident)
 }
 
 /**
- * pk_string_id_equal:
+ * pk_strcmp_sections:
  **/
 gboolean
 pk_package_id_equal (const gchar *pid1, const gchar *pid2)
 {
-	return pk_string_id_equal (pid1, pid2, 4, 3);
+	return pk_strcmp_sections (pid1, pid2, 4, 3);
 }
 
 /***************************************************************************

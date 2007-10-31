@@ -34,6 +34,7 @@
 #include <pk-client.h>
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
+#include <pk-common.h>
 #include <pk-connection.h>
 
 #define PROGRESS_BAR_PADDING 22
@@ -49,39 +50,6 @@ typedef struct {
 	gint position;
 	gboolean move_forward;
 } PulseState;
-
-/**
- * pk_console_pad_string:
- **/
-static gchar *
-pk_console_pad_string (const gchar *data, guint length, guint *extra)
-{
-	gint size;
-	gchar *text;
-	gchar *padding;
-
-	if (extra != NULL) {
-		*extra = 0;
-	}
-	size = length;
-	if (data != NULL) {
-		/* ITS4: ignore, only used for formatting */
-		size = (length - strlen(data));
-		if (size < 0) {
-			if (extra != NULL) {
-				*extra = -size;
-			}
-			size = 0;
-		}
-	}
-	padding = g_strnfill (size, ' ');
-	if (data == NULL) {
-		return padding;
-	}
-	text = g_strdup_printf ("%s%s", data, padding);
-	g_free (padding);
-	return text;
-}
 
 /**
  * pk_console_package_cb:
@@ -100,17 +68,17 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	}
 
 	/* pass this out */
-	info_text = pk_console_pad_string (pk_info_enum_to_text (info), 12, NULL);
+	info_text = pk_strpad (pk_info_enum_to_text (info), 12);
 
 	spacing = pk_package_id_new ();
 	ident = pk_package_id_new_from_string (package_id);
 
 	/* these numbers are guesses */
 	extra = 0;
-	spacing->name = pk_console_pad_string (ident->name, 20, &extra);
-	spacing->arch = pk_console_pad_string (ident->arch, 7-extra, &extra);
-	spacing->version = pk_console_pad_string (ident->version, 15-extra, &extra);
-	spacing->data = pk_console_pad_string (ident->data, 12-extra, &extra);
+	spacing->name = pk_strpad_extra (ident->name, 20, &extra);
+	spacing->arch = pk_strpad_extra (ident->arch, 7, &extra);
+	spacing->version = pk_strpad_extra (ident->version, 15, &extra);
+	spacing->data = pk_strpad_extra (ident->data, 12, &extra);
 
 	/* pretty print */
 	g_print ("%s %s %s %s %s %s\n", info_text, spacing->name,
@@ -169,7 +137,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
 	gchar *repo;
-	repo = pk_console_pad_string (repo_id, 28, NULL);
+	repo = pk_strpad (repo_id, 28);
 	if (enabled == TRUE) {
 		g_print ("  enabled   %s %s\n", repo, description);
 	} else {

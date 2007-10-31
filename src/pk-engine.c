@@ -546,8 +546,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* add to the database */
 	packages = pk_package_list_get_string (item->package_list);
-	/* ITS4: ignore, GString is always NULL terminated */
-	if (strlen (packages) > 0) {
+	if (pk_strzero (packages) == FALSE) {
 		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
 	}
 	g_free (packages);
@@ -955,7 +954,7 @@ pk_engine_search_check (const gchar *search, GError **error)
 			     "Invalid search containing '?'");
 		return FALSE;
 	}
-	ret = pk_validate_input (search);
+	ret = pk_strvalidate (search);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 			     "Invalid search term");
@@ -973,7 +972,7 @@ pk_engine_filter_check (const gchar *filter, GError **error)
 	gboolean ret;
 
 	/* check for invalid input */
-	ret = pk_validate_input (filter);
+	ret = pk_strvalidate (filter);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 			     "Invalid filter term");
@@ -1231,7 +1230,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter, cons
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package);
+	ret = pk_strvalidate (package);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 			     "Invalid input passed to daemon");
@@ -1280,7 +1279,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				      "Invalid input passed to daemon");
@@ -1337,7 +1336,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				      "Invalid input passed to daemon");
@@ -1394,7 +1393,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				      "Invalid input passed to daemon");
@@ -1451,7 +1450,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				      "Invalid input passed to daemon");
@@ -1508,7 +1507,7 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				      "Invalid input passed to daemon");
@@ -1628,7 +1627,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -1701,7 +1700,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -1838,7 +1837,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (transaction_id);
+	ret = pk_strvalidate (transaction_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -1902,7 +1901,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (package_id);
+	ret = pk_strvalidate (package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -2016,7 +2015,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (repo_id);
+	ret = pk_strvalidate (repo_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
@@ -2081,7 +2080,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	}
 
 	/* check for sanity */
-	ret = pk_validate_input (repo_id);
+	ret = pk_strvalidate (repo_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
