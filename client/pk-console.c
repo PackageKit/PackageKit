@@ -31,6 +31,7 @@
 #include <dbus/dbus-glib.h>
 
 #include <pk-debug.h>
+#include <pk-common.h>
 #include <pk-client.h>
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
@@ -51,6 +52,22 @@ typedef struct {
 } PulseState;
 
 /**
+ * pk_console_get_terminal_columns:
+ **/
+static guint
+pk_console_get_terminal_columns (void)
+{
+	struct winsize ws;
+
+	ioctl (1, TIOCGWINSZ, &ws);
+	if (ws.ws_col < MINIMUM_COLUMNS) {
+		return MINIMUM_COLUMNS;
+	}
+
+	return ws.ws_col;
+}
+
+/**
  * pk_console_pad_string:
  **/
 static gchar *
@@ -59,7 +76,14 @@ pk_console_pad_string (const gchar *data, guint length, guint *extra)
 	gint size;
 	gchar *text;
 	gchar *padding;
+	guint console_size;
+	console_size = pk_console_get_terminal_columns ();
 
+	/* don't span a small console */
+	if (length > console_size) {
+	        pk_debug ("reducing padding from %i to %i", length, console_size);
+	        length = console_size;
+	}
 	if (extra != NULL) {
 		*extra = 0;
 	}
@@ -76,6 +100,7 @@ pk_console_pad_string (const gchar *data, guint length, guint *extra)
 	}
 	padding = g_strnfill (size, ' ');
 	if (data == NULL) {
+		*extra = 0;
 		return padding;
 	}
 	text = g_strdup_printf ("%s%s", data, padding);
@@ -176,22 +201,6 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 		g_print ("  disabled  %s %s\n", repo, description);
 	}
 	g_free (repo);
-}
-
-/**
- * pk_console_get_terminal_columns:
- **/
-static guint
-pk_console_get_terminal_columns (void)
-{
-	struct winsize ws;
-
-	ioctl (1, TIOCGWINSZ, &ws);
-	if (ws.ws_col < MINIMUM_COLUMNS) {
-		return MINIMUM_COLUMNS;
-	}
-
-	return ws.ws_col;
 }
 
 /**
@@ -332,36 +341,6 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
 		g_print ("%i%%\n", percentage);
 	}
 }
-
-const gchar *summary =
-	"PackageKit Console Interface\n"
-	"\n"
-	"Subcommands:\n"
-	"  search name|details|group|file data\n"
-	"  install <package_id>\n"
-	"  install-file <file>\n"
-	"  remove <package_id>\n"
-	"  update <package_id>\n"
-	"  refresh\n"
-	"  resolve\n"
-	"  force-refresh\n"
-	"  update-system\n"
-	"  get updates\n"
-	"  get depends <package_id>\n"
-	"  get requires <package_id>\n"
-	"  get description <package_id>\n"
-	"  get files <package_id>\n"
-	"  get updatedetail <package_id>\n"
-	"  get actions\n"
-	"  get groups\n"
-	"  get filters\n"
-	"  get transactions\n"
-	"  get repos\n"
-	"  enable-repo <repo_id>\n"
-	"  disable-repo <repo_id>\n"
-	"  set-repo-data <repo_id> <parameter> <value>\n"
-	"\n"
-	"  package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development";
 
 /**
  * pk_client_wait:
@@ -895,69 +874,19 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 }
 
 /**
- * main:
+ * pk_console_run:
  **/
-int
-main (int argc, char *argv[])
+gboolean
+pk_console_run (int argc, char *argv[], gboolean wait_override, GError **error)
 {
-	DBusGConnection *system_connection;
-	GError *error = NULL;
 	PkClient *client;
 	PkConnection *pconnection;
-	gboolean verbose = FALSE;
-	gboolean program_version = FALSE;
-	gboolean nowait = FALSE;
-	GOptionContext *context;
-	gchar *options_help;
-
-	const GOptionEntry options[] = {
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			"Show extra debugging information", NULL },
-		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
-			"Show the program version and exit", NULL},
-		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
-			"Exit without waiting for actions to complete", NULL},
-		{ NULL}
-	};
-
-	if (! g_thread_supported ()) {
-		g_thread_init (NULL);
-	}
-	dbus_g_thread_init ();
-	g_type_init ();
 
 	/* check if we are on console */
 	if (isatty (fileno (stdout)) == 1) {
 		is_console = TRUE;
 	}
 
-	/* check dbus connections, exit if not valid */
-	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
-	if (error) {
-		pk_warning ("%s", error->message);
-		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
-	}
-
-	context = g_option_context_new (_("SUBCOMMAND"));
-	g_option_context_set_summary (context, summary) ;
-	g_option_context_add_main_entries (context, options, NULL);
-	g_option_context_parse (context, &argc, &argv, NULL);
-	/* Save the usage string in case command parsing fails. */
-	options_help = g_option_context_get_help (context, TRUE, NULL);
-	g_option_context_free (context);
-
-	if (program_version == TRUE) {
-		g_print (VERSION "\n");
-		return 0;
-	}
-
-	if (argc < 2) {
-		g_print (options_help);
-		return 1;
-	}
-
-	pk_debug_init (verbose);
 	loop = g_main_loop_new (NULL, FALSE);
 
 	pconnection = pk_connection_new ();
@@ -987,15 +916,39 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	/* run the commands */
-	pk_console_process_commands (client, argc, argv, !nowait, &error);
-	if (error != NULL) {
-		g_print ("Error:\n  %s\n\n", error->message);
-		g_error_free (error);
-		g_print (options_help);
+	pk_console_process_commands (client, argc, argv, wait_override, error);
+	g_object_unref (client);
+	return TRUE;
+}
+
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_console (LibSelfTest *test)
+{
+	gchar *text;
+	guint extra = 0;
+
+	if (libst_start (test, "PkConsole", CLASS_AUTO) == FALSE) {
+		return;
 	}
 
-	g_free (options_help);
-	g_object_unref (client);
+	/************************************************************/
+	libst_title (test, "pad small string");
+	text = pk_console_pad_string ("richard", 10, &extra);
+	if (pk_strequal (text, "richard   ") == TRUE && extra == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "padded incorrectly '%s', extra %i", text, extra);
+	}
+	g_free (text);
 
-	return 0;
+	libst_end (test);
 }
+#endif
+

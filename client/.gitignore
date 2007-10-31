@@ -5,6 +5,7 @@ pk-marshal.h
 pk-marshal.c
 pkcon
 pkmon
+pk-self-test
 pk-update-icon
 pk-application
 *.glade.bak
