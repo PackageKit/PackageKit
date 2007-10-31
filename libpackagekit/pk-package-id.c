@@ -53,7 +53,7 @@ gboolean
 pk_package_id_check (const gchar *package_id)
 {
 	gchar **sections;
-	sections = pk_string_id_split (package_id, 4);
+	sections = pk_strsplit (package_id, 4);
 	if (sections != NULL) {
 		g_strfreev (sections);
 		return TRUE;
@@ -70,7 +70,7 @@ pk_package_id_new_from_string (const gchar *package_id)
 	gchar **sections;
 	PkPackageId *ident = NULL;
 
-	sections = pk_string_id_split (package_id, 4);
+	sections = pk_strsplit (package_id, 4);
 	if (sections == NULL) {
 		return NULL;
 	}
@@ -154,12 +154,12 @@ pk_package_id_free (PkPackageId *ident)
 }
 
 /**
- * pk_string_id_equal:
+ * pk_strcmp_sections:
  **/
 gboolean
 pk_package_id_equal (const gchar *pid1, const gchar *pid2)
 {
-	return pk_string_id_equal (pid1, pid2, 4, 3);
+	return pk_strcmp_sections (pid1, pid2, 4, 3);
 }
 
 /***************************************************************************

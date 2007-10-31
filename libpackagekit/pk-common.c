@@ -114,10 +114,10 @@ out:
 }
 
 /**
- * pk_validate_input_char:
+ * pk_strvalidate_char:
  **/
 static gboolean
-pk_validate_input_char (gchar item)
+pk_strvalidate_char (gchar item)
 {
 	switch (item) {
 	case ' ':
@@ -142,10 +142,10 @@ pk_validate_input_char (gchar item)
 }
 
 /**
- * pk_string_replace_unsafe:
+ * pk_strsafe:
  **/
 gchar *
-pk_string_replace_unsafe (const gchar *text)
+pk_strsafe (const gchar *text)
 {
 	gchar *text_safe;
 	const gchar *delimiters;
@@ -158,10 +158,10 @@ pk_string_replace_unsafe (const gchar *text)
 }
 
 /**
- * pk_validate_input:
+ * pk_strvalidate:
  **/
 gboolean
-pk_validate_input (const gchar *text)
+pk_strvalidate (const gchar *text)
 {
 	guint i;
 	guint length;
@@ -173,7 +173,7 @@ pk_validate_input (const gchar *text)
 			pk_debug ("input too long!");
 			return FALSE;
 		}
-		if (pk_validate_input_char (text[i]) == FALSE) {
+		if (pk_strvalidate_char (text[i]) == FALSE) {
 			pk_debug ("invalid char in text!");
 			return FALSE;
 		}
@@ -182,12 +182,12 @@ pk_validate_input (const gchar *text)
 }
 
 /**
- * pk_string_id_split:
+ * pk_strsplit:
  *
  * You need to use g_strfreev on the returned value
  **/
 gchar **
-pk_string_id_split (const gchar *id, guint parts)
+pk_strsplit (const gchar *id, guint parts)
 {
 	gchar **sections = NULL;
 
@@ -235,11 +235,11 @@ pk_string_id_strcmp (const gchar *id1, const gchar *id2)
 }
 
 /**
- * pk_string_id_equal:
+ * pk_strcmp_sections:
  * only compare first sections, not all the data
  **/
 gboolean
-pk_string_id_equal (const gchar *id1, const gchar *id2, guint parts, guint compare)
+pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compare)
 {
 	gchar **sections1;
 	gchar **sections2;
@@ -260,8 +260,8 @@ pk_string_id_equal (const gchar *id1, const gchar *id2, guint parts, guint compa
 	}
 
 	/* split, NULL will be returned if error */
-	sections1 = pk_string_id_split (id1, parts);
-	sections2 = pk_string_id_split (id2, parts);
+	sections1 = pk_strsplit (id1, parts);
+	sections2 = pk_strsplit (id2, parts);
 
 	/* check we split okay */
 	if (sections1 == NULL) {
@@ -309,7 +309,7 @@ libst_common (LibSelfTest *test)
 	 ****************        validate text         **************
 	 ************************************************************/
 	libst_title (test, "validate correct char 1");
-	ret = pk_validate_input_char ('a');
+	ret = pk_strvalidate_char ('a');
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -318,7 +318,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "validate correct char 2");
-	ret = pk_validate_input_char ('~');
+	ret = pk_strvalidate_char ('~');
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -327,7 +327,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "validate incorrect char");
-	ret = pk_validate_input_char ('$');
+	ret = pk_strvalidate_char ('$');
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -336,7 +336,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "validate incorrect text");
-	ret = pk_validate_input ("richard$hughes");
+	ret = pk_strvalidate ("richard$hughes");
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -345,7 +345,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "validate correct text");
-	ret = pk_validate_input ("richardhughes");
+	ret = pk_strvalidate ("richardhughes");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -356,7 +356,7 @@ libst_common (LibSelfTest *test)
 	 ****************          string_id         ****************
 	 ************************************************************/
 	libst_title (test, "test pass 1");
-	array = pk_string_id_split ("foo", 1);
+	array = pk_strsplit ("foo", 1);
 	if (array != NULL &&
 	    strcmp(array[0], "foo") == 0) {
 		libst_success (test, NULL);
@@ -367,7 +367,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test pass 2");
-	array = pk_string_id_split ("foo;moo", 2);
+	array = pk_strsplit ("foo;moo", 2);
 	if (array != NULL &&
 	    strcmp(array[0], "foo") == 0 &&
 	    strcmp(array[1], "moo") == 0) {
@@ -379,7 +379,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test pass 3");
-	array = pk_string_id_split ("foo;moo;bar", 3);
+	array = pk_strsplit ("foo;moo;bar", 3);
 	if (array != NULL &&
 	    strcmp(array[0], "foo") == 0 &&
 	    strcmp(array[1], "moo") == 0 &&
@@ -392,7 +392,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test on real packageid");
-	array = pk_string_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
 	if (array != NULL &&
 	    strcmp(array[0], "kde-i18n-csb") == 0 &&
 	    strcmp(array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
@@ -406,7 +406,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test on short packageid");
-	array = pk_string_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
+	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
 	if (array != NULL &&
 	    strcmp(array[0], "kde-i18n-csb") == 0 &&
 	    strcmp(array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
@@ -420,7 +420,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test fail under");
-	array = pk_string_id_split ("foo;moo", 1);
+	array = pk_strsplit ("foo;moo", 1);
 	if (array == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -429,7 +429,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test fail over");
-	array = pk_string_id_split ("foo;moo", 3);
+	array = pk_strsplit ("foo;moo", 3);
 	if (array == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -438,7 +438,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test fail missing first");
-	array = pk_string_id_split (";moo", 2);
+	array = pk_strsplit (";moo", 2);
 	if (array == NULL) {
 		libst_success (test, NULL);
 	} else {
@@ -464,7 +464,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal pass (same)");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -472,7 +472,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal pass (parts==match)");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -480,7 +480,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal pass (different)");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -488,7 +488,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal fail1");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -496,7 +496,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal fail2");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -504,7 +504,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal fail3");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -512,7 +512,7 @@ libst_common (LibSelfTest *test)
 	}
 
 	libst_title (test, "id equal fail (match too high)");
-	ret = pk_string_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
+	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -625,7 +625,7 @@ libst_common (LibSelfTest *test)
 	 ****************       REPLACE CHARS      ******************
 	 ************************************************************/
 	libst_title (test, "test replace unsafe (okay)");
-	text_safe = pk_string_replace_unsafe ("Richard Hughes");
+	text_safe = pk_strsafe ("Richard Hughes");
 	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -635,7 +635,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid)");
-	text_safe = pk_string_replace_unsafe ("Richard\tHughes");
+	text_safe = pk_strsafe ("Richard\tHughes");
 	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -645,7 +645,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid 2)");
-	text_safe = pk_string_replace_unsafe ("Richard\"Hughes\"");
+	text_safe = pk_strsafe ("Richard\"Hughes\"");
 	if (text_safe != NULL && strcmp (text_safe, "Richard Hughes ") == 0) {
 		libst_success (test, NULL);
 	} else {
@@ -655,7 +655,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test replace unsafe (multiple invalid)");
-	text_safe = pk_string_replace_unsafe ("'Richard\"Hughes\"");
+	text_safe = pk_strsafe ("'Richard\"Hughes\"");
 	if (text_safe != NULL && strcmp (text_safe, " Richard Hughes ") == 0) {
 		libst_success (test, NULL);
 	} else {

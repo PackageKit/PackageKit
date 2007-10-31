@@ -111,7 +111,7 @@ pk_transaction_id_save_job_count (guint job_count)
 gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
-	return pk_string_id_equal (tid1, tid2, 3, 2);
+	return pk_strcmp_sections (tid1, tid2, 3, 2);
 }
 
 /**
