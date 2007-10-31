@@ -30,17 +30,20 @@ G_BEGIN_DECLS
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
-gboolean	 pk_strvalidate			(const gchar	*text);
-gboolean	 pk_filter_check			(const gchar	*filter);
-gchar		*pk_strsafe		(const gchar	*text);
-gchar		**pk_strsplit			(const gchar	*id,
-							 guint		 parts);
-gboolean	 pk_string_id_strcmp			(const gchar	*id1,
+guint		 pk_strlen				(gchar		*text,
+							 guint		 max_length);
+gboolean	 pk_strzero				(const gchar	*text);
+gboolean	 pk_strvalidate				(const gchar	*text);
+gboolean	 pk_strequal				(const gchar	*id1,
 							 const gchar	*id2);
+gchar		*pk_strsafe				(const gchar	*text);
+gchar		**pk_strsplit				(const gchar	*id,
+							 guint		 parts);
 gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 const gchar	*id2,
 							 guint		 parts,
 							 guint		 match);
+gboolean	 pk_filter_check			(const gchar	*filter);
 
 G_END_DECLS
 

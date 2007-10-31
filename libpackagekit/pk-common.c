@@ -158,6 +158,47 @@ pk_strsafe (const gchar *text)
 }
 
 /**
+ * pk_strzero:
+ *
+ * This function is a much safer way of doing "if (strlen (text) == 0))"
+ * as it does not rely on text being NULL terminated. It's also much
+ * quicker as it only checks the first byte rather than scanning the whole
+ * string just to verify it's not zero length.
+ **/
+gboolean
+pk_strzero (const gchar *text)
+{
+	if (text == NULL) {
+		return TRUE;
+	}
+	if (text[0] == '\0') {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_strlen:
+ *
+ * This function is a much safer way of doing strlen as it checks for NULL and
+ * a stupidly long string.
+ * This also modifies the string in place if it is over-range by inserting
+ * a NULL at the max_length.
+ **/
+guint
+pk_strlen (gchar *text, guint max_length)
+{
+	guint length;
+	/* ITS4: ignore, not used for allocation and checked */
+	length = strlen (text);
+	if (length > max_length) {
+		text[max_length] = '\0';
+		return max_length;
+	}
+	return length;
+}
+
+/**
  * pk_strvalidate:
  **/
 gboolean
@@ -222,10 +263,13 @@ out:
 }
 
 /**
- * pk_string_id_strcmp:
+ * pk_strequal:
+ *
+ * This function is a much safer way of doing strcmp as it checks for
+ * stupidly long strings, and returns boolean TRUE, not zero for success
  **/
 gboolean
-pk_string_id_strcmp (const gchar *id1, const gchar *id2)
+pk_strequal (const gchar *id1, const gchar *id2)
 {
 	if (id1 == NULL || id2 == NULL) {
 		pk_warning ("string id compare invalid '%s' and '%s'", id1, id2);
@@ -256,7 +300,7 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 	}
 	if (compare == parts) {
 		pk_debug ("optimise to strcmp");
-		return pk_string_id_strcmp (id1, id2);
+		return pk_strequal (id1, id2);
 	}
 
 	/* split, NULL will be returned if error */
@@ -300,6 +344,7 @@ libst_common (LibSelfTest *test)
 	gchar **array;
 	gchar *text_safe;
 	const gchar *temp;
+	guint length;
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
@@ -353,7 +398,37 @@ libst_common (LibSelfTest *test)
 	}
 
 	/************************************************************
-	 ****************          string_id         ****************
+	 ****************          Zero            ******************
+	 ************************************************************/
+	temp = NULL;
+	libst_title (test, "test strzero (null)");
+	ret = pk_strzero (NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed null");
+	}
+
+	/************************************************************/
+	libst_title (test, "test strzero (null first char)");
+	ret = pk_strzero ("");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed null");
+	}
+
+	/************************************************************/
+	libst_title (test, "test strzero (long string)");
+	ret = pk_strzero ("Richard");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "zero length word!");
+	}
+
+	/************************************************************
+	 ****************          splitting         ****************
 	 ************************************************************/
 	libst_title (test, "test pass 1");
 	array = pk_strsplit ("foo", 1);
@@ -447,7 +522,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "id strcmp pass");
-	ret = pk_string_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
+	ret = pk_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -456,7 +531,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
-	ret = pk_string_id_strcmp ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
+	ret = pk_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
@@ -620,6 +695,32 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed the filter '%s'", temp);
 	}
+
+	/************************************************************
+	 ****************          strlen          ******************
+	 ************************************************************/
+	libst_title (test, "strlen bigger");
+	text_safe = g_strdup ("123456789");
+	length = pk_strlen (text_safe, 20);
+	if (length == 9 && strcmp (text_safe, "123456789") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "strlen smaller");
+	text_safe = g_strdup ("123456789");
+	length = pk_strlen (text_safe, 5);
+	if (length == 5 && strcmp (text_safe, "12345") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
 
 	/************************************************************
 	 ****************       REPLACE CHARS      ******************
