@@ -37,6 +37,8 @@ gboolean	 pk_strvalidate				(const gchar	*text);
 gboolean	 pk_strequal				(const gchar	*id1,
 							 const gchar	*id2);
 gchar		*pk_strpad				(const gchar	*data,
+							 guint		 length);
+gchar		*pk_strpad_extra			(const gchar	*data,
 							 guint		 length,
 							 guint		*extra);
 gchar		*pk_strsafe				(const gchar	*text);

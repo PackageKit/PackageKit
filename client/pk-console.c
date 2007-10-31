@@ -68,17 +68,17 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	}
 
 	/* pass this out */
-	info_text = pk_strpad (pk_info_enum_to_text (info), 12, NULL);
+	info_text = pk_strpad (pk_info_enum_to_text (info), 12);
 
 	spacing = pk_package_id_new ();
 	ident = pk_package_id_new_from_string (package_id);
 
 	/* these numbers are guesses */
 	extra = 0;
-	spacing->name = pk_strpad (ident->name, 20, &extra);
-	spacing->arch = pk_strpad (ident->arch, 7-extra, &extra);
-	spacing->version = pk_strpad (ident->version, 15-extra, &extra);
-	spacing->data = pk_strpad (ident->data, 12-extra, &extra);
+	spacing->name = pk_strpad_extra (ident->name, 20, &extra);
+	spacing->arch = pk_strpad_extra (ident->arch, 7, &extra);
+	spacing->version = pk_strpad_extra (ident->version, 15, &extra);
+	spacing->data = pk_strpad_extra (ident->data, 12, &extra);
 
 	/* pretty print */
 	g_print ("%s %s %s %s %s %s\n", info_text, spacing->name,
@@ -137,7 +137,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 			   const gchar *description, gboolean enabled, gpointer data)
 {
 	gchar *repo;
-	repo = pk_strpad (repo_id, 28, NULL);
+	repo = pk_strpad (repo_id, 28);
 	if (enabled == TRUE) {
 		g_print ("  enabled   %s %s\n", repo, description);
 	} else {

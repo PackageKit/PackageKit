@@ -333,35 +333,58 @@ out:
  * pk_strpad:
  * @data: the input string
  * @length: the desired length of the output string, with padding
- * @extra: if we are running with a deficit, we might have a positive offset
  **/
 gchar *
-pk_strpad (const gchar *data, guint length, guint *extra)
+pk_strpad (const gchar *data, guint length)
 {
 	gint size;
 	gchar *text;
 	gchar *padding;
 
-	if (extra != NULL) {
-		*extra = 0;
-	}
-	size = length;
-	if (data != NULL) {
-		/* ITS4: ignore, only used for formatting */
-		size = (length - strlen(data));
-		if (size < 0) {
-			if (extra != NULL) {
-				*extra = -size;
-			}
-			size = 0;
-		}
-	}
-	padding = g_strnfill (size, ' ');
 	if (data == NULL) {
-		return padding;
+		return g_strnfill (length, ' ');
 	}
+
+	/* ITS4: ignore, only used for formatting */
+	size = (length - strlen(data));
+	if (size <= 0) {
+		return g_strdup (data);
+	}
+
+	padding = g_strnfill (size, ' ');
 	text = g_strdup_printf ("%s%s", data, padding);
 	g_free (padding);
+	return text;
+}
+
+/**
+ * pk_strpad_extra:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ * @extra: if we are running with a deficit, we might have a positive offset
+ **/
+gchar *
+pk_strpad_extra (const gchar *data, guint length, guint *extra)
+{
+	gint size;
+	gchar *text;
+
+	/* can we just do the simple version? */
+	if (data == NULL || extra == NULL) {
+		return pk_strpad (data, length);
+	}
+
+	/* work out what we want to do */
+	size = length - *extra;
+
+	if (size < 0) {
+		size = 0;
+	}
+
+	/* do the padding */
+	text = pk_strpad (data, size);
+	*extra = strlen (text) - size;
+
 	return text;
 }
 
@@ -754,7 +777,102 @@ libst_common (LibSelfTest *test)
 	}
 	g_free (text_safe);
 
+	/************************************************************
+	 ****************         Padding          ******************
+	 ************************************************************/
+	libst_title (test, "pad smaller");
+	text_safe = pk_strpad ("richard", 10);
+	if (pk_strequal (text_safe, "richard   ") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
 	/************************************************************/
+	libst_title (test, "pad NULL");
+	text_safe = pk_strpad (NULL, 10);
+	if (pk_strequal (text_safe, "          ") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad nothing");
+	text_safe = pk_strpad ("", 10);
+	if (pk_strequal (text_safe, "          ") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad over");
+	text_safe = pk_strpad ("richardhughes", 10);
+	if (pk_strequal (text_safe, "richardhughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad zero");
+	text_safe = pk_strpad ("rich", 0);
+	if (pk_strequal (text_safe, "rich") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************
+	 ****************         Padding          ******************
+	 ************************************************************/
+	libst_title (test, "pad smaller, no extra");
+	length = 0;
+	text_safe = pk_strpad_extra ("richard", 10, &length);
+	if (length == 0 && pk_strequal (text_safe, "richard   ") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad over, no extra");
+	length = 0;
+	text_safe = pk_strpad_extra ("richardhughes", 10, &length);
+	if (length == 3 && pk_strequal (text_safe, "richardhughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
+	}
+
+	/************************************************************/
+	g_free (text_safe);
+	libst_title (test, "pad smaller, 1 extra");
+	length = 1;
+	text_safe = pk_strpad_extra ("richard", 10, &length);
+	if (length == 0 && pk_strequal (text_safe, "richard  ") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "pad over, 1 extra");
+	length = 1;
+	text_safe = pk_strpad_extra ("richardhughes", 10, &length);
+	if (length == 4 && pk_strequal (text_safe, "richardhughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
+	}
 
 	/************************************************************
 	 ****************       REPLACE CHARS      ******************
