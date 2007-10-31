@@ -36,6 +36,9 @@ gboolean	 pk_strzero				(const gchar	*text);
 gboolean	 pk_strvalidate				(const gchar	*text);
 gboolean	 pk_strequal				(const gchar	*id1,
 							 const gchar	*id2);
+gchar		*pk_strpad				(const gchar	*data,
+							 guint		 length,
+							 guint		*extra);
 gchar		*pk_strsafe				(const gchar	*text);
 gchar		**pk_strsplit				(const gchar	*id,
 							 guint		 parts);

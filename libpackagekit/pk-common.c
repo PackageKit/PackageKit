@@ -329,6 +329,42 @@ out:
 	return ret;
 }
 
+/**
+ * pk_strpad:
+ * @data: the input string
+ * @length: the desired length of the output string, with padding
+ * @extra: if we are running with a deficit, we might have a positive offset
+ **/
+gchar *
+pk_strpad (const gchar *data, guint length, guint *extra)
+{
+	gint size;
+	gchar *text;
+	gchar *padding;
+
+	if (extra != NULL) {
+		*extra = 0;
+	}
+	size = length;
+	if (data != NULL) {
+		/* ITS4: ignore, only used for formatting */
+		size = (length - strlen(data));
+		if (size < 0) {
+			if (extra != NULL) {
+				*extra = -size;
+			}
+			size = 0;
+		}
+	}
+	padding = g_strnfill (size, ' ');
+	if (data == NULL) {
+		return padding;
+	}
+	text = g_strdup_printf ("%s%s", data, padding);
+	g_free (padding);
+	return text;
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
