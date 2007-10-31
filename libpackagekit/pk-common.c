@@ -357,30 +357,50 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test pass 1");
 	array = pk_string_id_split ("foo", 1);
-	if (array != NULL) {
+	if (array != NULL &&
+	    strcmp(array[0], "foo") == 0) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, NULL);
+		libst_failed (test, "got %s", array[0]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
 	libst_title (test, "test pass 2");
 	array = pk_string_id_split ("foo;moo", 2);
-	if (array != NULL) {
+	if (array != NULL &&
+	    strcmp(array[0], "foo") == 0 &&
+	    strcmp(array[1], "moo") == 0) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, NULL);
+		libst_failed (test, "got %s, %s", array[0], array[1]);
 	}
 	g_strfreev (array);
 
 	/************************************************************/
 	libst_title (test, "test pass 3");
 	array = pk_string_id_split ("foo;moo;bar", 3);
-	if (array != NULL) {
+	if (array != NULL &&
+	    strcmp(array[0], "foo") == 0 &&
+	    strcmp(array[1], "moo") == 0 &&
+	    strcmp(array[2], "bar") == 0) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, NULL);
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "test on real packageid");
+	array = pk_string_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
+	if (array != NULL &&
+	    strcmp(array[0], "kde-i18n-csb") == 0 &&
+	    strcmp(array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
+	    strcmp(array[2], "all") == 0 &&
+	    strcmp(array[3], "") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
 	}
 	g_strfreev (array);
 
