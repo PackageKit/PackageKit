@@ -276,6 +276,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         version, arch = package.version.split('@')
         for loader in package.loaders:
             channel = loader.getChannel()
+            if package.installed and not channel.getType().endswith('-sys'):
+                continue
             info = loader.getInfo(package)
             self.package(self.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
