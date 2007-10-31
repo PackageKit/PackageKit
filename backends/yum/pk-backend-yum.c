@@ -46,6 +46,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 				      PK_GROUP_ENUM_PUBLISHING,
 				      PK_GROUP_ENUM_SERVERS,
 				      PK_GROUP_ENUM_SYSTEM,
+				      PK_GROUP_ENUM_VIRTUALIZATION,
 				      -1);
 }
 

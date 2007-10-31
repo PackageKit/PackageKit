@@ -91,7 +91,7 @@ groupMap = {
 'base-system;admin-tools'                     : GROUP_ADMIN_TOOLS,
 'base-system;legacy-software-support'         : GROUP_LEGACY,
 'base-system;base'                            : GROUP_SYSTEM,
-'base-system;virtualization'                  : GROUP_SYSTEM,
+'base-system;virtualization'                  : GROUP_VIRTUALIZATION,
 'base-system;legacy-fonts'                    : GROUP_FONTS,
 'language-support;khmer-support'              : GROUP_LOCALIZATION,
 'language-support;persian-support'            : GROUP_LOCALIZATION,
