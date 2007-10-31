@@ -87,8 +87,7 @@ pk_filter_check (const gchar *filter)
 		pk_warning ("filter null");
 		return FALSE;
 	}
-	/* ITS4: ignore, not used for allocation */
-	if (strlen (filter) == 0) {
+	if (pk_strzero (filter) == TRUE) {
 		pk_warning ("filter zero length");
 		return FALSE;
 	}
@@ -99,8 +98,7 @@ pk_filter_check (const gchar *filter)
 	ret = FALSE;
 	for (i=0; i<length; i++) {
 		/* only one wrong part is enough to fail the filter */
-		/* ITS4: ignore, not used for allocation */
-		if (strlen (sections[i]) == 0) {
+		if (pk_strzero (sections[i]) == TRUE) {
 			goto out;
 		}
 		if (pk_filter_check_part (sections[i]) == FALSE) {

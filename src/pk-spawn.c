@@ -42,6 +42,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include <pk-enum.h>
+#include <pk-common.h>
 
 #include "pk-debug.h"
 #include "pk-spawn.h"
@@ -110,7 +111,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	guint bytes_processed;
 
 	/* ITS4: ignore, GString is always NULL terminated */
-	if (strlen (string->str) == 0) {
+	if (pk_strzero (string->str) == TRUE) {
 		return FALSE;
 	}
 

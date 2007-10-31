@@ -546,8 +546,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* add to the database */
 	packages = pk_package_list_get_string (item->package_list);
-	/* ITS4: ignore, GString is always NULL terminated */
-	if (strlen (packages) > 0) {
+	if (pk_strzero (packages) == FALSE) {
 		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
 	}
 	g_free (packages);
