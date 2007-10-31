@@ -252,7 +252,8 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "parse package_id from string");
 	ident = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
-	if (strcmp (ident->name, "moo") == 0 &&
+	if (ident != NULL &&
+	    strcmp (ident->name, "moo") == 0 &&
 	    strcmp (ident->arch, "i386") == 0 &&
 	    strcmp (ident->data, "fedora") == 0 &&
 	    strcmp (ident->version, "0.0.1") == 0) {
@@ -270,6 +271,20 @@ libst_package_id (LibSelfTest *test)
 		libst_failed (test, "package_id is '%s'", text);
 	}
 	g_free (text);
+	pk_package_id_free (ident);
+
+	/************************************************************/
+	libst_title (test, "parse short package_id from string");
+	ident = pk_package_id_new_from_string ("moo;0.0.1;;");
+	if (ident != NULL &&
+	    strcmp (ident->name, "moo") == 0 &&
+	    strcmp (ident->version, "0.0.1") == 0 &&
+	    ident->data == NULL &&
+	    ident->arch == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 	pk_package_id_free (ident);
 
 	libst_end (test);

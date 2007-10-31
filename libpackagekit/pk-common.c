@@ -405,6 +405,20 @@ libst_common (LibSelfTest *test)
 	g_strfreev (array);
 
 	/************************************************************/
+	libst_title (test, "test on short packageid");
+	array = pk_string_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
+	if (array != NULL &&
+	    strcmp(array[0], "kde-i18n-csb") == 0 &&
+	    strcmp(array[1], "4:3.5.8~pre20071001-0ubuntu1") == 0 &&
+	    strcmp(array[2], "") == 0 &&
+	    strcmp(array[3], "") == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
 	libst_title (test, "test fail under");
 	array = pk_string_id_split ("foo;moo", 1);
 	if (array == NULL) {
