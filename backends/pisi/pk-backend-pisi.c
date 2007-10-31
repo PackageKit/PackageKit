@@ -44,7 +44,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* destroy */
 	NULL,						/* get_groups */
 	backend_get_filters,				/* get_filters */
-	NULL,						/* cancel */
+	pk_backend_python_cancel,			/* cancel */
 	pk_backend_python_get_depends,			/* get_depends */
 	pk_backend_python_get_description,		/* get_description */
 	pk_backend_python_get_files,				/* get_files */
