@@ -157,7 +157,6 @@ class PackageKitBaseBackend:
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
         '''
-        summary = self._toUTF(summary)
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
 
     def status(self,state):
@@ -193,7 +192,6 @@ class PackageKitBaseBackend:
         @param bytes: The size of the package, in bytes
         @param file_list: List of the files in the package, separated by ';'
         '''
-        desc = self._toUTF(desc)
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
 
     def files(self, id, file_list):
@@ -257,19 +255,7 @@ class PackageKitBaseBackend:
             containing (name,ver,arch,data)
         '''
         return tuple(id.split(';', 4))
-        
-
-    def _toUTF( self, txt ):
-        rc=""
-        if isinstance(txt,types.UnicodeType):
-            return txt
-        else:
-            try:
-                rc = unicode( txt, 'utf-8' )
-            except UnicodeDecodeError, e:
-                rc = unicode( txt, 'iso-8859-1' )
-            return rc
-        
+       
 #
 # Backend Action Methods
 #

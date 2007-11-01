@@ -212,6 +212,42 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
 
+    def description(self,id,licence,group,desc,url,bytes,file_list):
+        '''
+        Send 'description' signal
+        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param licence: The licence of the package
+        @param group: The enumerated group
+        @param desc: The multi line package description
+        @param url: The upstream project homepage
+        @param bytes: The size of the package, in bytes
+        @param file_list: List of the files in the package, separated by ';'
+        '''
+        desc = self._toUTF(desc)
+        PackageKitBaseBackend.description(self,id,licence,group,desc,url,bytes,file_list)
+
+    def package(self,id,status,summary):
+        '''
+        send 'package' signal
+        @param info: the enumerated INFO_* string
+        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param summary: The package Summary
+        '''
+        summary = self._toUTF(summary)
+        PackageKitBaseBackend.package(self,id,status,summary)
+
+    def _toUTF( self, txt ):
+        rc=""
+        if isinstance(txt,types.UnicodeType):
+            return txt
+        else:
+            try:
+                rc = unicode( txt, 'utf-8' )
+            except UnicodeDecodeError, e:
+                rc = unicode( txt, 'iso-8859-1' )
+            return rc
+
+
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
