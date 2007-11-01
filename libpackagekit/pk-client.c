@@ -145,7 +145,7 @@ pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 		pk_warning ("tid compare invalid '%s' and '%s'", tid1, tid2);
 		return FALSE;
 	}
-	return (strcmp (tid1, tid2) == 0);
+	return pk_strequal (tid1, tid2);
 }
 
 /**

@@ -266,7 +266,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 	/* get size */
 	size = g_strv_length (sections);
 
-	if (strcmp (command, "package") == 0) {
+	if (pk_strequal (command, "package") == TRUE) {
 		if (size != 4) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -288,7 +288,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		} else {
 			pk_warning ("invalid package_id");
 		}
-	} else if (strcmp (command, "description") == 0) {
+	} else if (pk_strequal (command, "description") == TRUE) {
 		if (size != 8) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -305,7 +305,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 						group, sections[4], sections[5],
 						package_size, sections[7]);
 		}
-	} else if (strcmp (command, "files") == 0) {
+	} else if (pk_strequal (command, "files") == TRUE) {
 		if (size != 3) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -313,15 +313,15 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		}
 
 		pk_backend_files (backend, sections[1], sections[2]);
-	} else if (strcmp (command, "repo-detail") == 0) {
+	} else if (pk_strequal (command, "repo-detail") == TRUE) {
 		if (size != 4) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		if (strcmp (sections[3], "true") == 0) {
+		if (pk_strequal (sections[3], "true") == TRUE) {
 			pk_backend_repo_detail (backend, sections[1], sections[2], TRUE);
-		} else if (strcmp (sections[3], "false") == 0) {
+		} else if (pk_strequal (sections[3], "false") == TRUE) {
 			pk_backend_repo_detail (backend, sections[1], sections[2], FALSE);
 		} else {
 			g_warning ("invalid qualifier '%s'", sections[3]);
@@ -365,7 +365,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 	/* get size */
 	for (size=0; sections[size]; size++);
 
-	if (strcmp (command, "percentage") == 0) {
+	if (pk_strequal (command, "percentage") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -378,7 +378,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		} else {
 			pk_backend_change_percentage (backend, percentage);
 		}
-	} else if (strcmp (command, "subpercentage") == 0) {
+	} else if (pk_strequal (command, "subpercentage") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -391,7 +391,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		} else {
 			pk_backend_change_sub_percentage (backend, percentage);
 		}
-	} else if (strcmp (command, "error") == 0) {
+	} else if (pk_strequal (command, "error") == TRUE) {
 		if (size != 3) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -399,7 +399,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 		error_enum = pk_error_enum_from_text (sections[1]);
 		pk_backend_error_code (backend, error_enum, sections[2]);
-	} else if (strcmp (command, "requirerestart") == 0) {
+	} else if (pk_strequal (command, "requirerestart") == TRUE) {
 		if (size != 3) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -407,14 +407,14 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 		restart_enum = pk_restart_enum_from_text (sections[1]);
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
-	} else if (strcmp (command, "change-transaction-data") == 0) {
+	} else if (pk_strequal (command, "change-transaction-data") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_change_transaction_data (backend, sections[1]);
-	} else if (strcmp (command, "status") == 0) {
+	} else if (pk_strequal (command, "status") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -422,29 +422,29 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 		status_enum = pk_status_enum_from_text (sections[1]);
 		pk_backend_change_status (backend, status_enum);
-	} else if (strcmp (command, "allow-interrupt") == 0) {
+	} else if (pk_strequal (command, "allow-interrupt") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		if (strcmp (sections[1], "true") == 0) {
+		if (pk_strequal (sections[1], "true") == TRUE) {
 			pk_backend_allow_interrupt (backend, TRUE);
-		} else if (strcmp (sections[1], "false") == 0) {
+		} else if (pk_strequal (sections[1], "false") == TRUE) {
 			pk_backend_allow_interrupt (backend, FALSE);
 		} else {
 			pk_warning ("invalid section '%s'", sections[1]);
 			ret = FALSE;
 			goto out;
 		}
-	} else if (strcmp (command, "no-percentage-updates") == 0) {
+	} else if (pk_strequal (command, "no-percentage-updates") == TRUE) {
 		if (size != 1) {
 			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_no_percentage_updates (backend);
-	} else if (strcmp (command, "repo-signature-required") == 0) {
+	} else if (pk_strequal (command, "repo-signature-required") == TRUE) {
 		ret = FALSE;
 		goto out;
 	} else {

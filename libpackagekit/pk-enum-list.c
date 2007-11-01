@@ -32,6 +32,7 @@
 
 #include <glib/gi18n.h>
 
+#include "pk-common.h"
 #include "pk-debug.h"
 #include "pk-enum.h"
 #include "pk-enum-list.h"
@@ -110,7 +111,7 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 	}
 
 	/* check if we have nothing */
-	if (strcmp (enums, "none") == 0) {
+	if (pk_strequal (enums, "none") == TRUE) {
 		pk_debug ("no values");
 		return TRUE;
 	}
@@ -397,7 +398,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get empty list");
 	text = pk_enum_list_to_string (elist);
-	if (strcmp (text, "none") == 0) {
+	if (pk_strequal (text, "none") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'none'", text);
@@ -452,7 +453,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get single list");
 	text = pk_enum_list_to_string (elist);
-	if (strcmp (text, "search-name") == 0) {
+	if (pk_strequal (text, "search-name") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'search-name'", text);
@@ -480,7 +481,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get multiple list");
 	text = pk_enum_list_to_string (elist);
-	if (strcmp (text, "search-name;search-details;search-group") == 0) {
+	if (pk_strequal (text, "search-name;search-details;search-group") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'search-name;search-details;search-group'", text);
@@ -530,7 +531,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get none enum list");
 	text = pk_enum_list_to_string (elist);
-	if (strcmp (text, "none") == 0) {
+	if (pk_strequal (text, "none") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'none'", text);

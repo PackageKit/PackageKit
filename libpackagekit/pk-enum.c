@@ -28,6 +28,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
+#include "pk-common.h"
 #include "pk-enum.h"
 
 static PkEnumMatch enum_exit[] = {
@@ -207,6 +208,7 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
 		if (string_tmp == NULL) {
 			break;
 		}
+		/* keep strcmp for speed */
 		if (strcmp (string, string_tmp) == 0) {
 			return table[i].value;
 		}
@@ -464,7 +466,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (strcmp (string, "search-file") == 0) {
+	if (pk_strequal (string, "search-file") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -482,7 +484,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (strcmp (string, "search-file") == 0) {
+	if (pk_strequal (string, "search-file") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

@@ -36,6 +36,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
+#include "pk-common.h"
 #include "pk-package-id.h"
 #include "pk-package-list.h"
 
@@ -299,7 +300,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	text = pk_package_list_get_string (plist);
-	if (text != NULL && strcmp (text, "installed\tgnome;1.23;i386;data\tGNOME!") == 0) {
+	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "get string incorrect '%s'", text);

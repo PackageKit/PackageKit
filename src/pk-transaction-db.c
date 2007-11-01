@@ -35,6 +35,7 @@
 
 #include <glib/gi18n.h>
 #include <sqlite3.h>
+#include <pk-common.h>
 
 #include "pk-debug.h"
 #include "pk-transaction-db.h"
@@ -117,30 +118,30 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (strcmp (col, "succeeded") == 0) {
+		if (pk_strequal (col, "succeeded") == TRUE) {
 			/* ITS4: ignore, checked for sanity */
 			item.succeeded = atoi (value);
 			if (item.succeeded > 1) {
 				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (strcmp (col, "role") == 0) {
+		} else if (pk_strequal (col, "role") == TRUE) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
 			}
-		} else if (strcmp (col, "transaction_id") == 0) {
+		} else if (pk_strequal (col, "transaction_id") == TRUE) {
 			if (value != NULL) {
 				item.tid = g_strdup (value);
 			}
-		} else if (strcmp (col, "timespec") == 0) {
+		} else if (pk_strequal (col, "timespec") == TRUE) {
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
-		} else if (strcmp (col, "data") == 0) {
+		} else if (pk_strequal (col, "data") == TRUE) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
-		} else if (strcmp (col, "duration") == 0) {
+		} else if (pk_strequal (col, "duration") == TRUE) {
 			if (value != NULL) {
 				/* ITS4: ignore, checked for sanity */
 				item.duration = atoi (value);

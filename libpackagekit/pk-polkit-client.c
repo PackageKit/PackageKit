@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
+#include "pk-common.h"
 #include "pk-debug.h"
 #include "pk-polkit-client.h"
 
@@ -135,7 +136,7 @@ pk_polkit_client_error_denied_by_policy (GError *error)
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
 	pk_debug ("ERROR: %s: %s", error_name, error->message);
-	if (strcmp (error_name, "org.freedesktop.PackageKit.RefusedByPolicy") == 0) {
+	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy") == TRUE) {
 		return TRUE;
 	}
 	return FALSE;

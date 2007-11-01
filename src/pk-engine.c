@@ -926,7 +926,7 @@ pk_engine_search_check (const gchar *search, GError **error)
 	guint size;
 	gboolean ret;
 
-	/* ITS4: ignore, not used for allocation */
+	/* ITS4: ignore, not used for allocation, and checked */
 	size = strlen (search);
 
 	if (search == NULL) {
@@ -942,6 +942,11 @@ pk_engine_search_check (const gchar *search, GError **error)
 	if (size < 2) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
 			     "The search string length is too small");
+		return FALSE;
+	}
+	if (size > 1024) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_SEARCH_INVALID,
+			     "The search string length is too large");
 		return FALSE;
 	}
 	if (strstr (search, "*") != NULL) {
