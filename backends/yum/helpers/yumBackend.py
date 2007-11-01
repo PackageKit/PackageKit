@@ -391,6 +391,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
+        self.yumbase.conf.cache = 1 # Only look in cache.
         try:
             pkgGroupDict = self._buildGroupDict()
             self.yumbase.conf.cache = 1 # Only look in cache.
@@ -622,7 +624,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 return
 
             #work out the slice for each one
-            bump = (100/len(self.yumbase.repos.listEnabled()))/2
+            bump = (95/len(self.yumbase.repos.listEnabled()))/2
 
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 0
@@ -633,6 +635,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pct+=bump
                 self.percentage(pct)
 
+            self.percentage(95)
+            # Setup categories/groups
+            self.yumbase.doGroupSetup()      
             #we might have a rounding error
             self.percentage(100)
 
@@ -994,6 +999,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
+        
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
