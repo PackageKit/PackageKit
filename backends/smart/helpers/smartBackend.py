@@ -48,9 +48,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def install(self, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
 
@@ -66,9 +64,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def remove(self, allowdeps, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
 
@@ -84,9 +80,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def update(self, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
         installed = [package for package in packages if package.installed]
@@ -157,9 +151,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_description(self, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
 
@@ -204,9 +196,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_files(self, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
 
@@ -226,9 +216,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def get_depends(self, packageid):
-        idparts = packageid.split(';')
-        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
-        ratio, results, suggestions = self.ctrl.search(packagestring)
+        ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
 
@@ -266,6 +254,13 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             self.ctrl.saveSysConf()
         else:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s was not found" % repoid)
+
+    def _search_packageid(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        return (ratio, results, suggestions)
 
     def _show_package(self, package, status=None):
         if not status:
