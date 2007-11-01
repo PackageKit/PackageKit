@@ -32,9 +32,9 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* get_groups */
 	NULL,						/* get_filters */
 	NULL,						/* cancel */
-	NULL,						/* get_depends */
+	pk_backend_python_get_depends,			/* get_depends */
 	pk_backend_python_get_description,		/* get_description */
-	NULL,						/* get_files */
+	pk_backend_python_get_files,			/* get_files */
 	NULL,						/* get_requires */
 	NULL,						/* get_update_detail */
 	pk_backend_python_get_updates,			/* get_updates */

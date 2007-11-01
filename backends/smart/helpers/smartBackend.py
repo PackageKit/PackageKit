@@ -41,6 +41,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         self.ctrl = smart.init()
+        # Use the dummy interface to quiet output.
+        smart.iface.object = smart.interface.Interface(self.ctrl)
         smart.initPlugins()
         smart.initPsyco()
 
@@ -200,6 +202,51 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.description(packageid, "unknown", "unknown", description, url,
                 pkgsize, ";".join(info.getPathList()))
 
+    @needs_cache
+    def get_files(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = self._process_search_results(results)
+
+        if len(packages) != 1:
+            return
+
+        package = packages[0]
+        # FIXME: Only installed packages have path lists.
+        paths = []
+        for loader in package.loaders:
+            info = loader.getInfo(package)
+            paths = info.getPathList()
+            if len(paths) > 0:
+                break
+
+        self.files(packageid, ";".join(paths))
+
+    @needs_cache
+    def get_depends(self, packageid):
+        idparts = packageid.split(';')
+        packagestring = "%s-%s@%s" % (idparts[0], idparts[1], idparts[2])
+        ratio, results, suggestions = self.ctrl.search(packagestring)
+
+        packages = self._process_search_results(results)
+
+        if len(packages) != 1:
+            return
+
+        package = packages[0]
+
+        providers = {}
+        for required in package.requires:
+            for provider in self.ctrl.getCache().getProvides(str(required)):
+                for package in provider.packages:
+                    if not providers.has_key(package):
+                        providers[package] = True
+
+        for package in providers.keys():
+            self._show_package(package)
+
     def get_repo_list(self):
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
@@ -229,6 +276,8 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         version, arch = package.version.split('@')
         for loader in package.loaders:
             channel = loader.getChannel()
+            if package.installed and not channel.getType().endswith('-sys'):
+                continue
             info = loader.getInfo(package)
             self.package(self.get_package_id(package.name, version, arch,
                 channel.getAlias()), status, info.getSummary())
