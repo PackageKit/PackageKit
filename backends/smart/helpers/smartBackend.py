@@ -19,7 +19,7 @@
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
         INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED, \
-        ERROR_REPO_NOT_FOUND
+        ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
 
 
 def needs_cache(func):
@@ -59,6 +59,24 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         trans = smart.transaction.Transaction(self.ctrl.getCache(),
                 smart.transaction.PolicyInstall)
         trans.enqueue(package, smart.transaction.INSTALL)
+        trans.run()
+        self.ctrl.commitTransaction(trans, confirm=False)
+
+    @needs_cache
+    def install_file(self, path):
+        self.ctrl.addFileChannel(path)
+        self.ctrl.reloadChannels()
+        trans = smart.transaction.Transaction(self.ctrl.getCache(),
+                smart.transaction.PolicyInstall)
+
+        for channel in self.ctrl.getFileChannels():
+            for loader in channel.getLoaders():
+                for package in loader.getPackages():
+                    if package.installed:
+                        self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                                'Package %s is already installed' % package)
+                    trans.enqueue(package, smart.transaction.INSTALL)
+
         trans.run()
         self.ctrl.commitTransaction(trans, confirm=False)
 
