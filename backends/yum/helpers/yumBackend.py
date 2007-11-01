@@ -383,6 +383,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in group.conditional_packages.keys():
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
+            
 
     def search_group(self,filters,key):
         '''
@@ -390,33 +391,36 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        pkgGroupDict = self._buildGroupDict()
-        self.yumbase.conf.cache = 1 # Only look in cache.
-        fltlist = filters.split(';')
-        found = {}
-
-        if not FILTER_NON_INSTALLED in fltlist:
-            # Check installed for group
-            for pkg in self.yumbase.rpmdb:
-                group = GROUP_OTHER                    # Default Group
-                if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
-                    cg = pkgGroupDict[pkg.name]
-                    if groupMap.has_key(cg):
-                        group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
-                if group == key:
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
-        if not FILTER_INSTALLED in fltlist:
-            # Check available for group
-            for pkg in self.yumbase.pkgSack:
-                group = GROUP_OTHER
-                if pkgGroupDict.has_key(pkg.name):
-                    cg = pkgGroupDict[pkg.name]
-                    if groupMap.has_key(cg):
-                        group = groupMap[cg]
-                if group == key:
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+        try:
+            pkgGroupDict = self._buildGroupDict()
+            self.yumbase.conf.cache = 1 # Only look in cache.
+            fltlist = filters.split(';')
+            found = {}
+    
+            if not FILTER_NON_INSTALLED in fltlist:
+                # Check installed for group
+                for pkg in self.yumbase.rpmdb:
+                    group = GROUP_OTHER                    # Default Group
+                    if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
+                        cg = pkgGroupDict[pkg.name]
+                        if groupMap.has_key(cg):
+                            group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
+                    if group == key:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+            if not FILTER_INSTALLED in fltlist:
+                # Check available for group
+                for pkg in self.yumbase.pkgSack:
+                    group = GROUP_OTHER
+                    if pkgGroupDict.has_key(pkg.name):
+                        cg = pkgGroupDict[pkg.name]
+                        if groupMap.has_key(cg):
+                            group = groupMap[cg]
+                    if group == key:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_AVAILABLE)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
     def search_file(self,filters,key):
         '''
