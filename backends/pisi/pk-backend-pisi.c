@@ -24,6 +24,38 @@
 #include <pk-backend-python.h>
 
 /**
+ * backend_get_groups:
+ */
+static void
+backend_get_groups (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				         /* PK_GROUP_ENUM_ACCESSIBILITY, */
+				         PK_GROUP_ENUM_ACCESSORIES,
+				         PK_GROUP_ENUM_EDUCATION,
+				         PK_GROUP_ENUM_GAMES,
+				         /* PK_GROUP_ENUM_GRAPHICS, */
+				         PK_GROUP_ENUM_INTERNET,
+				         /* PK_GROUP_ENUM_OFFICE, */
+				         /* PK_GROUP_ENUM_OTHER, */
+				         PK_GROUP_ENUM_PROGRAMMING,
+				         PK_GROUP_ENUM_MULTIMEDIA,
+				         PK_GROUP_ENUM_SYSTEM,
+				         PK_GROUP_ENUM_DESKTOPS,
+				         PK_GROUP_ENUM_PUBLISHING,
+				         PK_GROUP_ENUM_SERVERS,
+				         PK_GROUP_ENUM_FONTS,
+				         PK_GROUP_ENUM_ADMIN_TOOLS,
+				         /* PK_GROUP_ENUM_LEGACY, */
+				         PK_GROUP_ENUM_LOCALIZATION,
+				         PK_GROUP_ENUM_VIRTUALIZATION,
+				         PK_GROUP_ENUM_SECURITY,
+				         PK_GROUP_ENUM_UNKNOWN,
+				         -1);
+}
+
+/**
  * backend_get_filters:
  */
 static void
@@ -42,7 +74,7 @@ PK_BACKEND_OPTIONS (
 	"S.Çağlar Onur <caglar@pardus.org.tr>",		/* author */
 	NULL,						/* initalize */
 	NULL,						/* destroy */
-	NULL,						/* get_groups */
+	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	pk_backend_python_cancel,			/* cancel */
 	pk_backend_python_get_depends,			/* get_depends */
@@ -59,7 +91,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* rollback */
 	NULL,						/* search_details */
 	pk_backend_python_search_file,			/* search_file */
-	NULL,						/* search_group */
+	pk_backend_python_search_group,			/* search_group */
 	pk_backend_python_search_name,			/* search_name */
 	pk_backend_python_update_package,		/* update_package */
 	pk_backend_python_update_system,		/* update_system */
