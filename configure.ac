@@ -14,7 +14,7 @@ AM_CONFIG_HEADER(config.h)
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-LT_CURRENT=2
+LT_CURRENT=3
 LT_REVISION=0
 LT_AGE=0
 AC_SUBST(LT_CURRENT)

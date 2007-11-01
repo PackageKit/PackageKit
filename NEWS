@@ -1,4 +1,47 @@
 ~~~~~~~~~~~~~
+Version 0.1.2
+~~~~~~~~~~~~~
+
+* Backends:
+ - Add a new python based APT backend (Ali Sabil)
+ - Significant smart backend updates (James Bowes)
+ - Significant PiSi backend updates (S.Çağlar Onur)
+ - More yum functionality (James Bowes, Tim Lauridsen)
+ - More box functionality (Grzegorz Dabrowski)
+
+* New features:
+ - Allow PkClient to be set promiscuous, i.e. to report all activity and use to
+   get the errors and completions (Richard Hughes)
+ - Add pk-backend-python.[c|h], for common spawning functions for python
+   backends and switch the backends to use them (James Bowes)
+ - Use pk_strzero, pk_strlen and pk_strcmp to increase performance and
+   potentally improve security (Richard Hughes)
+ - Add resolve support to pkcon get depends/requires/description/updatedetail
+   (S.Çağlar Onur)
+ - Try to guess the remaining time of the transaction using a super nifty
+   algorithm (Richard Hughes)
+ - Add Cleanup and Obsoleting as info states so we don't scare the user with
+   DELETING when they are doing an upgrade (Richard Hughes, Tim Lauridsen)
+
+* API changes:
+ - Switch the discrete GetPercentage and GetSubPercentage to a GetProgress
+   method that allows us to report remaining and elapsed time into the
+   client UI (Richard Hughes)
+
+* Bugfixes:
+ - Sanitise more text from the backends in case the backend sends invalid or
+   malicious text (Richard Hughes)
+ - Defer destroying the backend for 5 seconds so we can query it in the
+   finished handler in clients (Richard Hughes)
+ - Add GetFiles method so we don't slow down the GUI box getting the file list
+   every time we click a package (James Bowes)
+ - Calculate progress bar length based on terminal columns (James Bowes)
+ - Convert RefreshCache to a privileged operation but with default to allow
+   when on active console. The distro can then patch this default to whatever
+   depending on the security policy - and the admin can of course change the
+   default. (S.Çağlar Onur)
+
+~~~~~~~~~~~~~
 Version 0.1.1
 ~~~~~~~~~~~~~
 
