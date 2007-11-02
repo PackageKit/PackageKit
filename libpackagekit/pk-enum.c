@@ -146,6 +146,7 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_LEGACY,			"legacy"},
 	{PK_GROUP_ENUM_LOCALIZATION,		"localization"},
 	{PK_GROUP_ENUM_VIRTUALIZATION,		"virtualization"},
+	{PK_GROUP_ENUM_POWER_MANAGEMENT,	"power-management"},
 	{PK_GROUP_ENUM_SECURITY,		"security"},
 	{0, NULL},
 };

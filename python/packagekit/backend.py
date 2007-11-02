@@ -99,6 +99,7 @@ GROUP_LEGACY            = "legacy"
 GROUP_LOCALIZATION      = "localization"
 GROUP_VIRTUALIZATION    = "virtualization"
 GROUP_SECURITY          = "security"
+GROUP_POWER_MANAGEMENT  = "power-management"
 GROUP_UNKNOWN           = "unknown"
 
 # Classes
