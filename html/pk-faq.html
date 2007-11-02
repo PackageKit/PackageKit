@@ -18,6 +18,7 @@
 <h1>Frequently asked questions</h1>
 
 <h3>How complete are the backends?</h3>
+<h4>Methods</h4>
 <pre>
                   | conary | yum | apt | box | alpm | smart | pisi |
 --------------------------------------------------------------------
@@ -42,6 +43,15 @@ get-repo-list     |        |  X  |     |  X  |  X   |   X   |   X  |
 repo-enable       |        |  X  |     |  X  |      |   X   |      |
 repo-set-data     |        |     |     |  X  |      |       |   X  |
 cancel-transaction|        |  X  |     |     |      |       |   X  |
+</pre>
+
+<h4>Filters</h4>
+<pre>
+                  | conary | yum | apt | box | alpm | smart | pisi |
+--------------------------------------------------------------------
+installed         |   X    |  X  |  X  |  X  |  X   |       |   X  |
+development       |        |  X  |  X  |  X  |      |       |      |
+gui               |        |  X  |  X  |  X  |      |       |      |
 </pre>
 
 <h3>What if the backend package manager doesn't support percentage updates?</h3>
