@@ -606,15 +606,15 @@ pk_backend_spawn_kill (PkBackend *backend)
  * pk_backend_spawn_helper:
  **/
 gboolean
-pk_backend_spawn_helper (PkBackend *backend, const gchar *script, ...)
+pk_backend_spawn_helper (PkBackend *backend, const gchar *script, const gchar *first_element, ...)
 {
 	gboolean ret;
 	va_list args;
 	gchar *arguments;
 
 	/* get the argument list */
-	va_start (args, script);
-	arguments = g_strjoinv (" ", (gchar **)(void *)args);
+	va_start (args, first_element);
+	arguments = pk_strbuild_va (first_element, &args);
 	va_end (args);
 
 	ret = pk_backend_spawn_helper_internal (backend, script, arguments);
