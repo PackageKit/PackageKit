@@ -143,37 +143,27 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def resolve(self, filters, packagename):
-        filterlist = filters.split(';')
-
         ratio, results, suggestions = self.ctrl.search(packagename)
         for result in results:
-            if FILTER_NON_INSTALLED not in filterlist and result.installed:
-                self._show_package(result)
-            if FILTER_INSTALLED not in filterlist and not result.installed:
+            if self._passes_filters(result, filters):
                 self._show_package(result)
 
     @needs_cache
     def search_name(self, filters, packagename):
-        filterlist = filters.split(';')
-
         globbed = "*%s*" % packagename
         ratio, results, suggestions = self.ctrl.search(globbed)
 
         packages = self._process_search_results(results)
 
         for package in packages:
-            if FILTER_NON_INSTALLED not in filterlist and package.installed or \
-                    FILTER_INSTALLED not in filterlist and not package.installed:
+            if self._passes_filters(package, filters):
                 self._show_package(package)
 
     @needs_cache
     def search_details(self, filters, searchstring):
-        filterlist = filters.split(';')
-
         packages = self.ctrl.getCache().getPackages()
         for package in packages:
-            if FILTER_NON_INSTALLED not in filterlist and package.installed or \
-                    FILTER_INSTALLED not in filterlist and not package.installed:
+            if self._passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
                 if searchstring in info.getDescription():
                     self._show_package(package)
@@ -323,3 +313,10 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
                     packages.append(pkg)
 
         return packages
+
+    @staticmethod
+    def _passes_filters(package, filters):
+        filterlist = filters.split(';')
+
+        return (FILTER_NON_INSTALLED not in filterlist and package.installed
+                or FILTER_INSTALLED not in filterlist and not package.installed)
