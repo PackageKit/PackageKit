@@ -439,7 +439,7 @@ libpackagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile
-PackageKit.conf
+org.freedesktop.PackageKit.conf
 ])
 
 dnl ==========================================================================

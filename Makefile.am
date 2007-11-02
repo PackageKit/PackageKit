@@ -21,7 +21,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
-dist_dbus_DATA = PackageKit.conf
+dist_dbus_DATA = org.freedesktop.PackageKit.conf
 
 packagekitpythondir = ${PYTHON_PACKAGE_DIR}
 packagekitpython_PYTHON =				\
@@ -32,7 +32,7 @@ packagekitpython_PYTHON =				\
 	
 
 EXTRA_DIST =						\
-	PackageKit.conf.in				\
+	org.freedesktop.PackageKit.conf.in		\
 	packagekit.pc.in				\
 	COPYING						\
 	MAINTAINERS					\
