@@ -16,6 +16,7 @@ dist_helper_DATA = 			\
 	remove.py			\
 	resolve.py			\
 	repo-set-data.py		\
+	search-details.py		\
 	search-file.py			\
 	search-group.py			\
 	search-name.py			\

@@ -26,30 +26,30 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     # It's an ugly way to sync with PK Groups and PiSi Components
     # Maybe we can provide these with our index?
     groups = {
-            "applications" : GROUP_UNKNOWN,
+            "applications" : GROUP_OTHER,
             "applications.admin" : GROUP_ADMIN_TOOLS,
-            "applications.archive" : GROUP_UNKNOWN,
+            "applications.archive" : GROUP_OTHER,
             "applications.crypto" : GROUP_SECURITY,
             "applications.doc" : GROUP_PUBLISHING,
             "applications.doc.docbook" : GROUP_PUBLISHING,
             "applications.editors" : GROUP_ACCESSORIES,
             "applications.editors.emacs" : GROUP_ACCESSORIES,
-            "applications.emulators" : GROUP_UNKNOWN,
-            "applications.filesystems" : GROUP_UNKNOWN,
+            "applications.emulators" : GROUP_OTHER,
+            "applications.filesystems" : GROUP_OTHER,
             "applications.games" : GROUP_GAMES,
-            "applications.hardware" : GROUP_UNKNOWN,
+            "applications.hardware" : GROUP_OTHER,
             "applications.multimedia" : GROUP_MULTIMEDIA,
             "applications.network" : GROUP_INTERNET,
             "applications.network.mozilla" : GROUP_INTERNET,
             "applications.pda" : GROUP_ACCESSORIES,
-            "applications.powermanagement" : GROUP_UNKNOWN,
+            "applications.powermanagement" : GROUP_POWER_MANAGEMENT,
             "applications.printing" : GROUP_PUBLISHING,
             "applications.science" : GROUP_EDUCATION,
             "applications.science.astronomy" : GROUP_EDUCATION,
             "applications.science.electronics" : GROUP_EDUCATION,
             "applications.science.mathematics" : GROUP_EDUCATION,
             "applications.security" : GROUP_SECURITY,
-            "applications.shells" : GROUP_UNKNOWN,
+            "applications.shells" : GROUP_OTHER,
             "applications.tex" : GROUP_PUBLISHING,
             "applications.util" : GROUP_ACCESSORIES,
             "applications.virtualization" : GROUP_VIRTUALIZATION,
@@ -332,6 +332,15 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         self.__get_package(package, filters)
 
+    def search_details(self, filters, key):
+        """ Prints a detailed list of packages contains search term """
+        self.allow_interrupt(True)
+        self.percentage(None)
+
+        # Internal FIXME: Use search_details instead of _package when API gains that ability :)
+        for pkg in pisi.api.search_package([key]):
+            self.__get_package(pkg, filters)
+
     def search_file(self, filters, key):
         """ Prints the installed package which contains the specified file """
         self.allow_interrupt(True)
@@ -344,7 +353,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.__get_package(pkg)
 
     def search_group(self, filters, group):
-        """ Prints a list of packages contains search term """
+        """ Prints a list of packages belongs to searched group """
         self.allow_interrupt(True)
         self.percentage(None)
 
@@ -357,7 +366,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR, "Component %s was not found" % group)
 
     def search_name(self, filters, package):
-        """ Prints a list of packages contains search term """
+        """ Prints a list of packages contains search term in its name """
         self.allow_interrupt(True)
         self.percentage(None)
 
