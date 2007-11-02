@@ -154,13 +154,17 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
 
     @needs_cache
     def search_name(self, filters, packagename):
+        filterlist = filters.split(';')
+
         globbed = "*%s*" % packagename
         ratio, results, suggestions = self.ctrl.search(globbed)
 
         packages = self._process_search_results(results)
 
         for package in packages:
-            self._show_package(package)
+            if FILTER_NON_INSTALLED not in filterlist and package.installed or \
+                    FILTER_INSTALLED not in filterlist and not package.installed:
+                self._show_package(package)
 
     @needs_cache
     def search_details(self, filters, searchstring):
