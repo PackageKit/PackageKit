@@ -38,7 +38,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 				         /* PK_GROUP_ENUM_GRAPHICS, */
 				         PK_GROUP_ENUM_INTERNET,
 				         /* PK_GROUP_ENUM_OFFICE, */
-				         /* PK_GROUP_ENUM_OTHER, */
+				         PK_GROUP_ENUM_OTHER,
 				         PK_GROUP_ENUM_PROGRAMMING,
 				         PK_GROUP_ENUM_MULTIMEDIA,
 				         PK_GROUP_ENUM_SYSTEM,
@@ -51,6 +51,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 				         PK_GROUP_ENUM_LOCALIZATION,
 				         PK_GROUP_ENUM_VIRTUALIZATION,
 				         PK_GROUP_ENUM_SECURITY,
+				         PK_GROUP_ENUM_POWER_MANAGEMENT,
 				         PK_GROUP_ENUM_UNKNOWN,
 				         -1);
 }
