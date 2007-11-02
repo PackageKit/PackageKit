@@ -7,6 +7,7 @@ dist_helper_DATA = 			\
 	remove.py			\
 	resolve.py			\
 	smartBackend.py			\
+	search-details.py		\
 	$(NULL)
 
 install-data-hook:

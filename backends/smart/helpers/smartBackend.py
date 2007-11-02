@@ -162,6 +162,18 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             self._show_package(package)
 
+    @needs_cache
+    def search_details(self, filters, searchstring):
+        filterlist = filters.split(';')
+
+        packages = self.ctrl.getCache().getPackages()
+        for package in packages:
+            if FILTER_NON_INSTALLED not in filterlist and package.installed or \
+                    FILTER_INSTALLED not in filterlist and not package.installed:
+                info = package.loaders.keys()[0].getInfo(package)
+                if searchstring in info.getDescription():
+                    self._show_package(package)
+
     def refresh_cache(self):
         self.ctrl.rebuildSysConfChannels()
         self.ctrl.reloadChannels(None, caching=smart.const.NEVER)
