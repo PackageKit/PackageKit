@@ -185,6 +185,8 @@ groupMap = {
 'language-support;ethiopic-support'           : GROUP_LOCALIZATION
 }
 
+GUI_KEYS = re.compile(r'(qt)|(gtk)')
+
 class GPGKeyNotImported(exceptions.Exception):
     pass
 
@@ -222,6 +224,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         @param file_list: List of the files in the package, separated by ';'
+        convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
         PackageKitBaseBackend.description(self,id,licence,group,desc,url,bytes,file_list)
@@ -232,6 +235,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
+        convert the summary to UTF before sending
         '''
         summary = self._toUTF(summary)
         PackageKitBaseBackend.package(self,id,status,summary)
@@ -332,8 +336,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             wantGUI = True
         else:
             wantGUI = False
-        isGUI = wantGUI # Fake it for now
+        isGUI = self._check_for_gui(pkg) 
         return isGUI == wantGUI
+    
+    def _check_for_gui(self,pkg):
+        '''  Check if the GUI_KEYS regex matches any package requirements'''
+        try:
+            for req in pkg.requires:
+                reqname = req[0]
+                if GUI_KEYS.search(reqname):
+                    return True
+            return False
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
