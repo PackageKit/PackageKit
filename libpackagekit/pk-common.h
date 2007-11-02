@@ -44,6 +44,8 @@ gchar		*pk_strpad_extra			(const gchar	*data,
 gchar		*pk_strsafe				(const gchar	*text);
 gchar		**pk_strsplit				(const gchar	*id,
 							 guint		 parts);
+gchar		*pk_strbuild_va				(const gchar	*first_element,
+							 va_list	*args);
 gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 const gchar	*id2,
 							 guint		 parts,

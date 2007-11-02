@@ -59,7 +59,7 @@ typedef enum {
 	PK_ROLE_ENUM_UNKNOWN
 } PkRoleEnum;
 
-/* what we are actually doing */
+/* if you add to this, make sure you add filenames in pk-watch */
 typedef enum {
 	PK_STATUS_ENUM_SETUP,
 	PK_STATUS_ENUM_WAIT,

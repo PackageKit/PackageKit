@@ -390,11 +390,67 @@ pk_strpad_extra (const gchar *data, guint length, guint *extra)
 	return text;
 }
 
+/**
+ * pk_strbuild_va:
+ **/
+gchar *
+pk_strbuild_va (const gchar *first_element, va_list *args)
+{
+	const gchar *element;
+	GString *string;
+
+	/* shortcut */
+	if (pk_strzero (first_element) == TRUE) {
+		return NULL;
+	}
+
+	/* set the first entry and a space */
+	string = g_string_new (first_element);
+	g_string_append_c (string, ' ');
+
+	/* do all elements */
+	while (TRUE) {
+		element = va_arg (*args, const gchar *);
+
+		/* are we at the end? Is this safe? */
+		if (element == NULL) {
+			break;
+		}
+
+		/* Ignore empty elements */
+		if (*element == '\0') {
+			continue;
+		}
+
+		g_string_append (string, element);
+		g_string_append_c (string, ' ');
+	}
+
+	/* remove last char */
+	g_string_set_size (string, string->len - 1);
+
+	return g_string_free (string, FALSE);
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+
+static gchar *
+pk_strbuild_test (const gchar *first_element, ...)
+{
+	va_list args;
+	gchar *text;
+
+	/* get the argument list */
+	va_start (args, first_element);
+	text = pk_strbuild_va (first_element, &args);
+	va_end (args);
+
+	return text;
+}
 
 void
 libst_common (LibSelfTest *test)
@@ -408,6 +464,66 @@ libst_common (LibSelfTest *test)
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/************************************************************
+	 ****************        build var args        **************
+	 ************************************************************/
+	libst_title (test, "build_va NULL");
+	text_safe = pk_strbuild_test (NULL);
+	if (text_safe == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "build_va blank");
+	text_safe = pk_strbuild_test ("", NULL);
+	if (text_safe == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret '%s'", text_safe);
+	}
+
+	/************************************************************/
+	libst_title (test, "build_va single");
+	text_safe = pk_strbuild_test ("richard", NULL);
+	if (pk_strequal (text_safe, "richard") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "build_va double");
+	text_safe = pk_strbuild_test ("richard", "hughes", NULL);
+	if (pk_strequal (text_safe, "richard hughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "build_va double with space");
+	text_safe = pk_strbuild_test ("richard", "", "hughes", NULL);
+	if (pk_strequal (text_safe, "richard hughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "build_va triple");
+	text_safe = pk_strbuild_test ("richard", "phillip", "hughes", NULL);
+	if (pk_strequal (text_safe, "richard phillip hughes") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret '%s'", text_safe);
+	}
+	g_free (text_safe);
 
 	/************************************************************
 	 ****************        validate text         **************
