@@ -616,6 +616,10 @@
         running the transaction.
       </para>
       <para>
+        The search query in the backend should not be case sensitive, and
+        should not be sensitive to <literal>_</literal> or <literal>-</literal>.
+      </para>
+      <para>
         This method typically emits
         <literal>Progress</literal>,
         <literal>Error</literal> and
