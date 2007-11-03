@@ -131,13 +131,18 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_INTERNAL_ERROR, "Package was not found")
 
-        if filters or "none" not in filters:
-            filterlist = filters.split(';')
+        if filters:
+            if "none" not in filters:
+                filterlist = filters.split(';')
 
-            if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
-                return
-            if FILTER_NON_INSTALLED in filterlist and status != INFO_AVAILABLE:
-                return
+                if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
+                    return
+                if FILTER_NON_INSTALLED in filterlist and status == INFO_INSTALLED:
+                    return
+                if FILTER_GUI in filterlist and "app:gui" not in pkg.isA:
+                    return
+                if FILTER_NON_GUI in filterlist and "app:gui" in pkg.isA:
+                    return
 
         version = self.__get_package_version(pkg)
 

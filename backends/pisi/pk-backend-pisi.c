@@ -64,7 +64,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      /* PK_FILTER_ENUM_GUI, */
+				      PK_FILTER_ENUM_GUI,
 				      PK_FILTER_ENUM_INSTALLED,
 				      /* PK_FILTER_ENUM_DEVELOPMENT, */
 				      -1);
