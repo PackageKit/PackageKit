@@ -31,7 +31,10 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
 				      PK_GROUP_ENUM_ADMIN_TOOLS,
-				      PK_GROUP_ENUM_DESKTOPS,
+				      PK_GROUP_ENUM_DESKTOP_GNOME,
+				      PK_GROUP_ENUM_DESKTOP_KDE,
+				      PK_GROUP_ENUM_DESKTOP_XFCE,
+				      PK_GROUP_ENUM_DESKTOP_OTHER,
 				      PK_GROUP_ENUM_EDUCATION,
 				      PK_GROUP_ENUM_FONTS,
 				      PK_GROUP_ENUM_GAMES,

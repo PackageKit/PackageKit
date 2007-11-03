@@ -44,10 +44,10 @@ yumbase = None
 progress = PackagekitProgress()  # Progress object to store the progress
 
 groupMap = {
-'desktops;gnome-desktop'                      : GROUP_DESKTOPS,
-'desktops;window-managers'                    : GROUP_DESKTOPS,
-'desktops;kde-desktop'                        : GROUP_DESKTOPS,
-'desktops;xfce-desktop'                       : GROUP_DESKTOPS,
+'desktops;gnome-desktop'                      : GROUP_DESKTOP_GNOME,
+'desktops;window-managers'                    : GROUP_DESKTOP_OTHER,
+'desktops;kde-desktop'                        : GROUP_DESKTOP_KDE,
+'desktops;xfce-desktop'                       : GROUP_DESKTOP_XFCE,
 'apps;authoring-and-publishing'               : GROUP_PUBLISHING,
 'apps;office'                                 : GROUP_OFFICE,
 'apps;sound-and-video'                        : GROUP_MULTIMEDIA,
