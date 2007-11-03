@@ -6,12 +6,6 @@ Requires writing to a database for config stuff
 New method GetHoursSinceLastUpdate
 Use this in the update icon
 
-*** Add new callback for status ***
-TimeRemaining()
-
-*** Prepare download to refresh system ***
-Either use a flag or a new method. I'm not sure which yet.
-
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
