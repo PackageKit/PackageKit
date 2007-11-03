@@ -50,3 +50,5 @@ py-compile
 *.swp
 tags
 *.patch
+NEWS.new
+
