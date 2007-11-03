@@ -25,8 +25,8 @@
     </itemizedlist>
 
     <para>
-      PackageKit is a modular design with an asyncronous API for client programs,
-      a flexible queing module, and run-time selectable backends.
+      PackageKit is a modular design with an asynchronous API for client programs,
+      a flexible queuing module, and run-time selectable backends.
     </para>
 
     <mediaobject id="pk-structure">
@@ -39,27 +39,27 @@
   <sect1 id="introduction-backends">
     <title>Backends</title>
     <para>
-      The following sections explain what a backend is, and how it is implimented.
+      The following sections explain what a backend is, and how it is implemented.
     </para>
     <sect2 id="introduction-backends-overview">
       <title>Overview</title>
       <para>
         A backend is just a compiled <literal>.so</literal> object that is
-        loaded at runtime and provides an interface to the underlying package
+        loaded at run-time and provides an interface to the underlying package
         commands.
         A backend converts an async request into either a new thread which
         in the same process, or using external "glue" files that can be written
         in any language.
       </para>
       <para>
-        Please see the <literal>helpers/BACKENDS</literal> file for the current
+        Please see the <literal>html/pk-faq.html</literal> file for the current
         status of the existing backends.
         Backend maintainers, please keep this file updated.
       </para>
     </sect2>
 
     <sect2 id="introduction-backends-compiled-backends">
-      <title>Compiled backeds</title>
+      <title>Compiled backends</title>
       <para>
         If you have got a C or C++ binding for your package system then you can
         use a compiled backend, which is more efficient than using helpers as
@@ -72,7 +72,7 @@
       </para>
       <para>
         You will have to use threading if your backend does not support async
-        operation as requests have to return immediatly.
+        operation as requests have to return immediately.
         This is very important. Do any significant processing in a thread, and
         certainly don't return package results without creating a thread.
         By keeping the backends async we can make sure that there is no blocking
@@ -90,7 +90,8 @@
         This means a python library can be interfaced easily with a C backend.
       </para>
       <para>
-        Even when using helpers, a compiled backed is still used for two reasons:
+        Even when using helpers, a compiled backend stub is still used for
+        two reasons:
       </para>
       <itemizedlist>
         <listitem>
@@ -106,6 +107,11 @@
           </para>
         </listitem>
       </itemizedlist>
+      <para>
+        Boilerplate code for common backends can be found in
+        <literal>src/pk-backend-language.[c|h]</literal> which eliminates copy
+        and paste in the compiled part of the backend.
+      </para>
     </sect2>
   </sect1>
 
@@ -121,7 +127,7 @@
         This is the <literal>name;version;arch;data</literal> in
         a single string and is meant to represent a single package.
         This is important when multiple versions of a package are installed and
-        only one is removed.
+        only the correct one is removed.
       </para>
       <para>
         The <literal>package_id</literal> is parsed and checked carefully in
@@ -134,7 +140,13 @@
         It is designed to make the life of a backend writer a little bit easier.
       </para>
       <para>
-        The backend must ensure that it only matches on one single package.
+        The data field for an installed package must be
+        <literal>installed</literal> as this is used to identify which packages
+        are installable or installed in the client tools.
+      </para>
+      <para>
+        The backend must ensure that the package_id only matches on one
+        single package.
         A single package_id must be enough to uniquely identify a single object
         in any repository used on the system.
       </para>
@@ -203,7 +215,7 @@
             </row>
             <row>
               <entry><literal>gui;~installed;~devel</literal></entry>
-              <entry>All non-installed, non-devel gui programs.</entry>
+              <entry>All non-installed, non-devel gui programs</entry>
             </row>
           </tbody>
         </tgroup>
@@ -226,8 +238,8 @@
         locale.
         The error description should be descriptive, as it's for power users
         and people trying to debug the problem.
-        For instance, "Out of memory" is not helpful as an error description,
-        but "Could not create database index" is.
+        For instance, "Out of memory" is not helpful as an error description
+        that is reported in a bugzilla, but "Could not create database index" is.
         For the description use <literal>;</literal> to separate the lines if
         required.
       </para>
@@ -250,7 +262,7 @@
             </row>
             <row>
               <entry><literal>no-network</literal></entry>
-              <entry>There is no network connection</entry>
+              <entry>There is no network connection that can be used</entry>
             </row>
             <row>
               <entry><literal>not-supported</literal></entry>
@@ -287,7 +299,7 @@
               <entry><literal>no-cache</literal></entry>
               <entry>
                 The operation is trying to read from the cache, but the cache
-                is not present or invalid.
+                is not present or invalid
               </entry>
             </row>
             <row>
@@ -303,7 +315,7 @@
             </row>
             <row>
               <entry><literal>dep-resolution-failed</literal></entry>
-              <entry>Dependancy resolution failed</entry>
+              <entry>Dependency resolution failed</entry>
             </row>
             <row>
               <entry><literal>filter-invalid</literal></entry>
@@ -320,7 +332,10 @@
             </row>
             <row>
               <entry><literal>transaction-error</literal></entry>
-              <entry>There was a generic transaction error</entry>
+              <entry>
+                There was a generic transaction error, but please give more
+                details in the description
+              </entry>
             </row>
             <row>
               <entry><literal>repo-not-found</literal></entry>
@@ -330,20 +345,20 @@
               <entry><literal>cannot-remove-system-package</literal></entry>
               <entry>
                 Could not remove a protected system package that is needed for
-                stable operation of the system.
+                stable operation of the system
               </entry>
             </row>
             <row>
               <entry><literal>process-quit</literal></entry>
               <entry>
-                The process was asked to quit, probably because it was cancelled.
+                The process was asked to quit, probably because it was cancelled
               </entry>
             </row>
             <row>
               <entry><literal>process-kill</literal></entry>
               <entry>
                 The process was forcibly killed, probably because ignored the
-                quit request. This is probably due to it being cancelled.
+                quit request. This is probably due to it being cancelled
               </entry>
             </row>
           </tbody>
@@ -360,7 +375,8 @@
         shown in the UI.
       </para>
       <para>
-        The following group enumerated types are available:
+        The following group enumerated types are available, but please check
+        <literal>libpackagekit/pk-enum.h</literal> for the latest list.
       </para>
       <informaltable>
         <tgroup cols="2">
@@ -476,12 +492,12 @@
       <itemizedlist>
         <listitem>
           <para>
-            update libxml as a dependancy
+            update libxml2 as a dependency
           </para>
         </listitem>
         <listitem>
           <para>
-            install java as dependancy
+            install java as dependency
           </para>
         </listitem>
         <listitem>
@@ -499,7 +515,7 @@
         This is one single transaction with the role <literal>install</literal>,
         with 4 different sub-transactions.
         This allows the user to rollback transactions with selected backends,
-        rather than select sub-transactions which may need complex complict
+        rather than select sub-transactions which may need complex conflict
         resolution.
       </para>
       <para>
@@ -511,7 +527,7 @@
         <literal>identifier</literal> is random data used by the daemon to
         ensure jobs started in parallel cannot race, and also to make a
         malicious client program harder to write.
-        <literal>data</literal> can be used for refcounting in the backend or
+        <literal>data</literal> can be used for ref-counting in the backend or
         for any other purpose.
         It is designed to make the life of a backend writer a little bit easier.
         An example <literal>transaction_id</literal> would be
@@ -532,7 +548,8 @@
       <sect3 id="config-main-logging">
         <title>TransactionLogging</title>
         <para>
-          This logs all transactions to a database so old transactions can be viewed.
+          This logs all transactions to a database so old transactions can be
+          viewed, and rollbacks can be done.
         </para>
       </sect3>
       <sect3 id="config-main-timeout">
@@ -593,6 +610,12 @@
         Do not refresh the package cache. This should be fast.
       </para>
       <para>
+        Always emit <literal>installed</literal> before
+        <literal>available</literal> packages first, as it allows the client
+        program to perform the GUI filtering and matching whilst the daemon is
+        running the transaction.
+      </para>
+      <para>
         This method typically emits
         <literal>Progress</literal>,
         <literal>Error</literal> and
@@ -627,7 +650,7 @@
             </row>
             <row>
               <entry><literal>group_type</literal></entry>
-              <entry>An enumerated group_type, or <literal>unknown</literal>.</entry>
+              <entry>An enumerated group_type, or <literal>unknown</literal></entry>
             </row>
           </tbody>
         </tgroup>
@@ -677,9 +700,9 @@
       </informaltable>
       <para>
         Do not refresh the package cache. This should be fast.
-        This is very similar to find-package.
+        This is very similar to search-name.
         This should search as much data as possible, including, if possible
-        repo names, package summaries, descriptions and urls.
+        repo names, package summaries, descriptions and URLs.
       </para>
       <para>
         This method typically emits
@@ -1175,7 +1198,7 @@
         There are no arguments.
       </para>
       <para>
-        This should fetch updated metadata for all enabled repositories.
+        This should fetch updated meta-data for all enabled repositories.
         This operation should be only scheduled when the computer is idle as
         the network connection will be very active, and will the computer will
         have have non-trivial levels of hard disk and processor activity.
@@ -1324,7 +1347,7 @@
             <row>
               <entry><literal>remaining</literal></entry>
               <entry>
-                The amount of time in seconds this transaction will tyake to
+                The amount of time in seconds this transaction will take to
                 complete. Zero is sent for unknown.
               </entry>
             </row>
@@ -1353,7 +1376,10 @@
             </row>
             <row>
               <entry><literal>description</literal></entry>
-              <entry>Long description or error, e.g. "<literal>failed to connect to mytry.xml</literal>"</entry>
+              <entry>
+                Long description or error, e.g.
+                <literal>failed to connect to mytry.xml</literal>
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -1364,6 +1390,9 @@
       <title>Status</title>
       <para>
         This is optional, but highly recommended.
+        It gives the GUI tools a chance to show a different icon to show what
+        stage the transaction is in, for instance, a downloading icon can be
+        shown whilst in the <literal>download</literal> state.
       </para>
       <informaltable>
         <tgroup cols="2">
@@ -1445,7 +1474,7 @@
           <tbody>
             <row>
               <entry><literal>info</literal></entry>
-              <entry>A valid <literal>info</literal> string enumunerated type</entry>
+              <entry>A valid <literal>info</literal> string enumerated type</entry>
             </row>
             <row>
               <entry><literal>package_id</literal></entry>
@@ -1453,14 +1482,16 @@
             </row>
             <row>
               <entry><literal>summary</literal></entry>
-              <entry>The one line package summary, e.g. "Clipart for OpenOffice"</entry>
+              <entry>
+                The one line package summary, e.g. "Clipart for OpenOffice"
+              </entry>
             </row>
           </tbody>
         </tgroup>
       </informaltable>
 
       <para>
-        The <literal>info</literal> enumunerated type
+        The <literal>info</literal> enumerated type
       </para>
 
       <informaltable>
@@ -1552,7 +1583,7 @@
             <row>
               <entry><literal>licence</literal></entry>
               <entry>
-                The licence, e.g. "GPL2" or "proprietary".
+                The licence, e.g. "GPLv2+" or "proprietary".
                 If you need to add a EULA then do it like this:
                 "proprietary;By installing this software\nyou may kill a kitten."
               </entry>
@@ -1564,7 +1595,7 @@
             <row>
               <entry><literal>detail</literal></entry>
               <entry>
-                The multi line package description.
+                The multi-line package description.
                 NOTE: Tabs may have to be stripped from the description to
                 avoid being split.
               </entry>
@@ -1619,7 +1650,9 @@
             </row>
             <row>
               <entry><literal>url</literal></entry>
-              <entry>A URL with more details on the update, e.g. a security advisory</entry>
+              <entry>
+                A URL with more details on the update, e.g. a security advisory
+              </entry>
             </row>
             <row>
               <entry><literal>restart_enum</literal></entry>
@@ -1629,7 +1662,7 @@
               <entry><literal>update_text</literal></entry>
               <entry>
                 The update text describing the update in a non-localised way.
-                Newlines should be converted to ";"
+                Newlines should be converted to ";" before printed.
               </entry>
             </row>
           </tbody>
@@ -1663,7 +1696,9 @@
           <tbody>
             <row>
               <entry><literal>repository_name</literal></entry>
-              <entry>The name of the repository associated with the provided key</entry>
+              <entry>
+                The name of the repository associated with the provided key
+              </entry>
             </row>
             <row>
               <entry><literal>key_url</literal></entry>
