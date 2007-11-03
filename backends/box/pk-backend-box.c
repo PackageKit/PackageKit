@@ -390,7 +390,7 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 }
 
 static void
-uninstall_progress(int value, gpointer user_data)
+common_progress(int value, gpointer user_data)
 {
 	PkBackend* backend = (PkBackend *) user_data;
 	pk_backend_change_percentage (backend, value);
@@ -410,7 +410,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	if (!box_package_uninstall (pi->name, "/", uninstall_progress, backend))
+	if (!box_package_uninstall (pi->name, "/", common_progress, backend))
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
 	}
@@ -418,6 +418,14 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
+
+	return TRUE;
+}
+
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+{
+    	box_repos_sync(common_progress, backend);
 
 	return TRUE;
 }
@@ -585,7 +593,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_spawn_helper (backend, "refresh-cache.sh", NULL);
+	pk_backend_thread_helper (backend, backend_refresh_cache_thread, NULL);
 }
 
 /**
