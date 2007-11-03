@@ -28,7 +28,7 @@ intl
 macros
 INSTALL
 PackageKit-*.tar.gz
-PackageKit.conf
+org.freedesktop.PackageKit.conf
 xml-i18n-extract.in
 xml-i18n-extract
 xml-i18n-merge.in
