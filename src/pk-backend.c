@@ -1758,10 +1758,9 @@ pk_backend_finalize (GObject *object)
 	}
 
 	pk_debug ("freeing %s (%p)", backend->priv->name, backend);
-	g_free (backend->priv->name);
-	g_free (backend->priv->last_package);
 	pk_backend_unload (backend);
 
+	g_free (backend->priv->last_package);
 	g_free (backend->priv->xcached_package_id);
 	g_free (backend->priv->xcached_transaction_id);
 	g_free (backend->priv->xcached_filter);
