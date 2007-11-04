@@ -10,6 +10,6 @@ debug.log
 *.gcov
 *.gcda
 *.gcno
-coverage-report.txt
+*.txt
 *.out
 

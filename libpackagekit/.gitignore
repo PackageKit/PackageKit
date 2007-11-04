@@ -10,5 +10,6 @@ pk-self-test
 *.gcov
 *.gcda
 *.gcno
-coverage-report.txt
+*.txt
+*.out
 

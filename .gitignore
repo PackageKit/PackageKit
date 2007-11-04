@@ -51,5 +51,5 @@ py-compile
 tags
 *.patch
 NEWS.new
-coverage-report.txt
+*.txt
 
