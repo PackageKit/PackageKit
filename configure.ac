@@ -42,14 +42,6 @@ if test "$GCC" = "yes"; then
 fi
 
 dnl ---------------------------------------------------------------------------
-dnl - Extra verbose warning switches
-dnl ---------------------------------------------------------------------------
-#if test "$GCC" = "yes"; then
-#	CPPFLAGS="$CPPFLAGS -pg"
-#	LDFLAGS="$LDFLAGS -pg"
-#fi
-
-dnl ---------------------------------------------------------------------------
 dnl - gettext stuff
 dnl ---------------------------------------------------------------------------
 GETTEXT_PACKAGE=PackageKit
@@ -145,17 +137,40 @@ AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the Pac
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(tests, [  --enable-tests          Build self tests],enable_tests=$enableval,enable_tests=no)
-AC_MSG_CHECKING([whether to support tests])
-have_tests=no
-if test x$enable_tests = xyes ; then
-	have_tests=yes
-	AC_MSG_RESULT([yes])
-	AC_DEFINE(PK_BUILD_TESTS, 1, [Define if we want to use the self tests])
-else
-	AC_MSG_RESULT([no])
+AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
+AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
+AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support (gcc only)]),enable_gprof=$enableval,enable_gprof=no)
+
+AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
+if test x$enable_tests = xyes; then
+	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
 fi
-AM_CONDITIONAL([PK_BUILD_TESTS], [test $have_tests = yes])
+
+if test x$enable_gcov = xyes; then
+	## so that config.h changes when you toggle gcov support
+	AC_DEFINE_UNQUOTED(PK_BUILD_GCOV, 1, [Defined if gcov is enabled to force a rebuild due to config.h changing])
+
+	AC_MSG_CHECKING([for gcc 3.3 version of gcov file format])
+	have_gcc33_gcov=no
+	AC_RUN_IFELSE( [AC_LANG_PROGRAM( , [[ if (__GNUC__ >=3 && __GNUC_MINOR__ >= 3) exit (0); else exit (1); ]])],
+			have_gcc33_gcov=yes)
+	if test x$have_gcc33_gcov = xyes ; then
+		AC_DEFINE_UNQUOTED(PK_HAVE_GCC33_GCOV, 1, [Defined if we have gcc 3.3 and thus the new gcov format])
+	fi
+	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+	AC_MSG_RESULT($have_gcc33_gcov)
+fi
+AM_CONDITIONAL(PK_BUILD_GCOV, test x$enable_gcov = xyes)
+
+if test x$enable_gprof = xyes; then
+	## so that config.h changes when you toggle gprof support
+	AC_DEFINE_UNQUOTED(PK_BUILD_GPROF, 1, [Defined if gprof is enabled to force a rebuild due to config.h changing])
+	CPPFLAGS="$CPPFLAGS -pg"
+	LDFLAGS="$LDFLAGS -pg"
+	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+	AC_MSG_RESULT($enable_gprof)
+fi
+AM_CONDITIONAL(PK_BUILD_GPROF, test x$enable_gprof = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
@@ -460,6 +475,9 @@ echo "
         datadir:                   ${datadir}
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
+        Building unit tests:       ${enable_tests}
+        GCC coverage profiling:    ${enable_gcov}
+        GCC time profiling:        ${enable_gprof}
         Default backend:           ${with_default_backend}
         Security Framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}

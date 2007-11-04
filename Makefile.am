@@ -45,10 +45,19 @@ EXTRA_DIST =						\
 	$(NULL)
 
 clean-local :
-	rm -f *~
+	rm -f *~ *.bb *.bbg *.da *.gcov .libs/*.da .libs/*.bbg
 
 security-check:
 	flawfinder `find -name "*.c"`
+
+if PK_BUILD_GCOV
+gcov:
+	make -C src gcov
+	make -C libpackagekit gcov
+	cat src/coverage-report.txt > coverage-report.txt
+	cat libpackagekit/coverage-report.txt >> coverage-report.txt
+	cat coverage-report.txt
+endif
 
 DISTCLEANFILES =					\
 	PackageKit-*.tar.gz				\

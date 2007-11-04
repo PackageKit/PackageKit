@@ -162,6 +162,14 @@ pk_self_test_LDADD =					\
 TESTS = pk-self-test
 endif
 
+if PK_BUILD_GCOV
+clean-gcov:
+	rm -f *.gcov *.gcda
+gcov: clean-gcov all check
+	$(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > coverage-report.txt
+TESTS = pk-self-test
+endif
+
 EXTRA_DIST =						\
 	pk-marshal.list					\
 	pk-security-polkit.c				\
@@ -173,7 +181,7 @@ clean-local:
 	rm -f *~
 	rm -f pk-marshal.c pk-marshal.h
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = *~ $(BUILT_SOURCES) *.bb *.bbg *.da *.gcov *.gcda
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

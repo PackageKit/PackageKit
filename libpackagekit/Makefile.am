@@ -135,9 +135,15 @@ pk-marshal.c: pk-marshal.list
 pk-marshal.h: pk-marshal.list
 	@GLIB_GENMARSHAL@ $< --prefix=pk_marshal --header > $@
 
-clean-local:
-	rm -f *~
-	rm -f pk-marshal.c pk-marshal.h
+if PK_BUILD_GCOV
+clean-gcov:
+	rm -f *.gcov *.gcda
+gcov: clean-gcov all check
+	$(top_srcdir)/tools/create-coverage-report.sh libpackagekit $(filter %.c,$(libpackagekit_la_SOURCES)) > coverage-report.txt
+endif
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = *~ $(BUILT_SOURCES) *.bb *.bbg *.da *.gcov *.gcda
+
+clean-local:
+	rm -f $(CLEANFILES)
 
