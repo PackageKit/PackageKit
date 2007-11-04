@@ -42,6 +42,14 @@ if test "$GCC" = "yes"; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl - Extra verbose warning switches
+dnl ---------------------------------------------------------------------------
+if test "$GCC" = "yes"; then
+#	CPPFLAGS="$CPPFLAGS -pg"
+#	LDFLAGS="$LDFLAGS -pg"
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl - gettext stuff
 dnl ---------------------------------------------------------------------------
 GETTEXT_PACKAGE=PackageKit
@@ -92,16 +100,16 @@ AC_SUBST(DBUS_LIBS)
 dnl ---------------------------------------------------------------------------
 dnl - Is NetworkManager available?
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, HAVE_NETWORKMANAGER="yes", HAVE_NETWORKMANAGER="no")
-if test "x$HAVE_NETWORKMANAGER" = "xyes"; then
+PKG_CHECK_MODULES(LIBNM, libnm_glib >= $LIBNM_GLIB_REQUIRED, PK_BUILD_NETWORKMANAGER="yes", PK_BUILD_NETWORKMANAGER="no")
+if test "x$PK_BUILD_NETWORKMANAGER" = "xyes"; then
 	with_networking_stack="NetworkManager"
-	AC_DEFINE(HAVE_NETWORKMANAGER, 1, [define if NetworkManager is installed])
+	AC_DEFINE(PK_BUILD_NETWORKMANAGER, 1, [define if NetworkManager is installed])
 else
 	with_networking_stack="dummy"
-	HAVE_NETWORKMANAGER=no
+	PK_BUILD_NETWORKMANAGER=no
 fi
 
-AM_CONDITIONAL(HAVE_NETWORKMANAGER, test x$HAVE_NETWORKMANAGER = xyes)
+AM_CONDITIONAL(PK_BUILD_NETWORKMANAGER, test x$PK_BUILD_NETWORKMANAGER = xyes)
 AC_SUBST(LIBNM_CFLAGS)
 AC_SUBST(LIBNM_LIBS)
 
@@ -143,11 +151,11 @@ have_tests=no
 if test x$enable_tests = xyes ; then
 	have_tests=yes
 	AC_MSG_RESULT([yes])
-	AC_DEFINE(HAVE_TESTS, 1, [Define if we want to use the self tests])
+	AC_DEFINE(PK_BUILD_TESTS, 1, [Define if we want to use the self tests])
 else
 	AC_MSG_RESULT([no])
 fi
-AM_CONDITIONAL([HAVE_TESTS], [test $have_tests = yes])
+AM_CONDITIONAL([PK_BUILD_TESTS], [test $have_tests = yes])
 
 dnl ---------------------------------------------------------------------------
 dnl - Are we specifying a different dbus root ?
