@@ -44,10 +44,10 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
-if test "$GCC" = "yes"; then
+#if test "$GCC" = "yes"; then
 #	CPPFLAGS="$CPPFLAGS -pg"
 #	LDFLAGS="$LDFLAGS -pg"
-fi
+#fi
 
 dnl ---------------------------------------------------------------------------
 dnl - gettext stuff
