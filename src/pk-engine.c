@@ -2544,6 +2544,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
+	engine->priv->actions = NULL;
+	engine->priv->groups = NULL;
+	engine->priv->filters = NULL;
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
@@ -2590,14 +2593,20 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
-	g_object_unref (engine->priv->actions);
-	g_object_unref (engine->priv->groups);
-	g_object_unref (engine->priv->filters);
 	g_object_unref (engine->priv->network);
 	g_object_unref (engine->priv->security);
 
+	/* optional gobjects */
+	if (engine->priv->actions != NULL) {
+		g_object_unref (engine->priv->actions);
+	}
+	if (engine->priv->groups != NULL) {
+		g_object_unref (engine->priv->groups);
+	}
+	if (engine->priv->filters != NULL) {
+		g_object_unref (engine->priv->filters);
+	}
 	if (engine->priv->updates_cache != NULL) {
-		pk_debug ("unreffing updates cache");
 		g_object_unref (engine->priv->updates_cache);
 	}
 
