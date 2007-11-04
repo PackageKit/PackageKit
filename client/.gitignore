@@ -10,4 +10,7 @@ pk-application
 *.glade.bak
 *.gladep
 *.gladep.bak
+*.gcov
+*.gcda
+*.gcno
 
