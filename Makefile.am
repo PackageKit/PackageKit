@@ -54,9 +54,18 @@ if PK_BUILD_GCOV
 gcov:
 	make -C src gcov
 	make -C libpackagekit gcov
-	cat src/coverage-report.txt > coverage-report.txt
-	cat libpackagekit/coverage-report.txt >> coverage-report.txt
-	cat coverage-report.txt
+	cat src/gcov.txt > gcov.txt
+	cat libpackagekit/gcov.txt >> gcov.txt
+	cat gcov.txt
+endif
+
+if PK_BUILD_GPROF
+gprof:
+	make -C src gprof
+	make -C libpackagekit gprof
+	cat src/gprof.txt > gprof.txt
+	cat libpackagekit/gprof.txt >> gprof.txt
+	cat gprof.txt
 endif
 
 DISTCLEANFILES =					\

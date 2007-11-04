@@ -19,7 +19,7 @@ process ()
 		return
 	fi
 	if [ ! -e $1.gcov ]; then
-		NOT_TESTED="$1.gcov,$NOT_TESTED"
+		NOT_TESTED="$1,$NOT_TESTED"
 		return
 	fi
 	SOURCE=`cat $1 |wc -l`

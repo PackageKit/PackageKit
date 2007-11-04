@@ -166,8 +166,14 @@ if PK_BUILD_GCOV
 clean-gcov:
 	rm -f *.gcov *.gcda
 gcov: clean-gcov all check
-	$(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > coverage-report.txt
-TESTS = pk-self-test
+	$(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > gcov.txt
+endif
+
+if PK_BUILD_GPROF
+clean-gprof:
+	rm -f *.out
+gprof: clean-gprof all check
+	gprof .libs/pk-self-test > gprof.txt
 endif
 
 EXTRA_DIST =						\

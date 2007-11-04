@@ -139,7 +139,14 @@ if PK_BUILD_GCOV
 clean-gcov:
 	rm -f *.gcov *.gcda
 gcov: clean-gcov all check
-	$(top_srcdir)/tools/create-coverage-report.sh libpackagekit $(filter %.c,$(libpackagekit_la_SOURCES)) > coverage-report.txt
+	$(top_srcdir)/tools/create-coverage-report.sh libpackagekit $(filter %.c,$(libpackagekit_la_SOURCES)) > gcov.txt
+endif
+
+if PK_BUILD_GPROF
+clean-gprof:
+	rm -f *.out
+gprof: clean-gprof all check
+	gprof .libs/pk-self-test > gprof.txt
 endif
 
 CLEANFILES = *~ $(BUILT_SOURCES) *.bb *.bbg *.da *.gcov *.gcda
