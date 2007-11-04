@@ -241,10 +241,12 @@ main (int argc, char *argv[])
 		g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, engine);
 	}
 
-	if (immediate_exit == FALSE) {
-		g_main_loop_run (loop);
+	/* immediatly exit */
+	if (immediate_exit == TRUE) {
+		g_timeout_add (50, (GSourceFunc) timed_exit_cb, loop);
 	}
 
+	g_main_loop_run (loop);
 	g_main_loop_unref (loop);
 	g_object_unref (conf);
 	g_object_unref (engine);
