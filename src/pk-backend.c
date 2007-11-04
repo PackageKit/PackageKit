@@ -148,7 +148,7 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 
 	if (backend->priv->handle != NULL) {
-		pk_warning ("pk_backend_load called multiple times. This is bad");
+		pk_warning ("pk_backend_load called multiple times");
 		return FALSE;
 	}
 
@@ -194,11 +194,15 @@ pk_backend_load (PkBackend *backend, const gchar *backend_name)
 gboolean
 pk_backend_unload (PkBackend *backend)
 {
+	g_return_val_if_fail (backend != NULL, FALSE);
 	if (backend->priv->handle == NULL) {
 		return FALSE;
 	}
 	g_module_close (backend->priv->handle);
+	backend->desc = NULL;
 	backend->priv->handle = NULL;
+	g_free (backend->priv->name);
+	backend->priv->name = NULL;
 	return TRUE;
 }
 
@@ -209,7 +213,6 @@ const gchar *
 pk_backend_get_name (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, NULL);
-
 	return backend->priv->name;
 }
 
@@ -219,6 +222,7 @@ pk_backend_get_name (PkBackend *backend)
 gboolean
 pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
 {
+	g_return_val_if_fail (backend != NULL, FALSE);
 	return pk_thread_list_create (backend->priv->thread_list, (PkThreadFunc) func, backend, data);
 }
 
@@ -1924,7 +1928,8 @@ void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
-//	gboolean ret;
+	const gchar *text;
+	gboolean ret;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1938,32 +1943,88 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
-#if 0
+
 	/************************************************************/
-	libst_title (test, "check connection");
-	if (backend->priv->connection != NULL) {
+	libst_title (test, "get backend name");
+	text = pk_backend_get_name (backend);
+	if (text == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid name %s", text);
+	}
+
+	/************************************************************/
+	libst_title (test, "load an invalid backend");
+	ret = pk_backend_load (backend, "yum2");
+	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "check PolKit context");
-	if (backend->priv->pk_context != NULL) {
+	libst_title (test, "try to load a valid backend");
+	ret = pk_backend_load (backend, "yum");
+	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "map valid role to action");
-	action = pk_backend_role_to_action (backend, PK_ROLE_ENUM_UPDATE_PACKAGE);
-	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
-		libst_success (test, NULL, error);
+	libst_title (test, "load an valid backend again");
+	ret = pk_backend_load (backend, "yum");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
+		libst_failed (test, "loaded twice");
 	}
-#endif
+
+	/************************************************************/
+	libst_title (test, "check we are out of init");
+	if (backend->priv->during_initialize == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "not out of init");
+	}
+
+	/************************************************************/
+	libst_title (test, "get backend name");
+	text = pk_backend_get_name (backend);
+	if (pk_strequal(text, "yum") == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid name %s", text);
+	}
+
+/*************/
+	/************************************************************/
+	libst_title (test, "unload an valid backend");
+	ret = pk_backend_unload (backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to unload");
+	}
+
+	/************************************************************/
+	libst_title (test, "unload an valid backend again");
+	ret = pk_backend_unload (backend);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "unloaded twice");
+	}
+
+	/************************************************************/
+	libst_title (test, "get blank backend name");
+	text = pk_backend_get_name (backend);
+	if (text == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid name %s", text);
+	}
+
 	g_object_unref (backend);
 
 	libst_end (test);
