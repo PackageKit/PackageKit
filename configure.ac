@@ -308,6 +308,7 @@ AC_DEFUN([APT_BACKEND],
 ])
 
 if test x$with_default_backend = xapt; then
+	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 
    AC_ARG_WITH(libapt-pkg-lib,
 	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
