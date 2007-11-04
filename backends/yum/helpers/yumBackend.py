@@ -665,27 +665,30 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True);
         self.percentage(None)
-
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
+        self.yumbase.conf.cache = 1 # Only look in cache.
+      
         fltlist = filters.split(';')
-
-        # Get installed packages
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-        if FILTER_NON_INSTALLED not in fltlist:
-            for pkg in installedByKey:
-                self._show_package(pkg,INFO_INSTALLED)
-        # Get available packages
-        if FILTER_INSTALLED not in fltlist:
-            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                if pkg.name == name:
-                    show = True
-                    for instpo in installedByKey:
-                        # Check if package have a smaller & equal EVR to a inst pkg
-                        if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
-                            show = False
-                    if show:
-                        self._show_package(pkg,INFO_AVAILABLE)
-                        break
-
+        try:
+            # Get installed packages
+            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+            if FILTER_NON_INSTALLED not in fltlist:
+                for pkg in installedByKey:
+                    self._show_package(pkg,INFO_INSTALLED)
+            # Get available packages
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if pkg.name == name:
+                        show = True
+                        for instpo in installedByKey:
+                            # Check if package have a smaller & equal EVR to a inst pkg
+                            if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                                show = False
+                        if show:
+                            self._show_package(pkg,INFO_AVAILABLE)
+                            break
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
     def install(self, package):
         '''
         Implement the {backend}-install functionality
