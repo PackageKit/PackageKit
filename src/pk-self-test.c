@@ -30,6 +30,7 @@ void libst_inhibit (LibSelfTest *test);
 void libst_spawn (LibSelfTest *test);
 void libst_thread_list (LibSelfTest *test);
 void libst_transaction_list (LibSelfTest *test);
+void libst_security (LibSelfTest *test);
 void libst_time (LibSelfTest *test);
 
 int
@@ -45,6 +46,7 @@ main (int argc, char **argv)
 	pk_debug_init (TRUE);
 
 	/* tests go here */
+	libst_security (&test);
 	libst_time (&test);
 	libst_conf (&test);
 	libst_inhibit (&test);
