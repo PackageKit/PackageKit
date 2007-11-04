@@ -129,7 +129,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             status = INFO_AVAILABLE
             pkg = self.packagedb.get_package(package)
         else:
-            self.error(ERROR_INTERNAL_ERROR, "Package was not found")
+            self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 
         if filters:
             if "none" not in filters:
@@ -183,7 +183,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
                             pkg.packageURI,
                             pkg.packageSize, "")
         else:
-            self.error(ERROR_INTERNAL_ERROR, "Package was not found")
+            self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 
     def get_files(self, package_id):
         """ Prints a file list for a given package """
@@ -328,7 +328,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             except pisi.Error:
                 self.error(ERROR_REPO_NOT_FOUND, "Repository is not exists")
         else:
-            self.error(ERROR_INTERNAL_ERROR, "Parameter not supported")
+            self.error(ERROR_NOT_SUPPORTED, "Parameter not supported")
 
     def resolve(self, filters, package):
         """ Turns a single package name into a package_id suitable for the other methods """
@@ -368,7 +368,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
                     for pkg in self.componentdb.get_packages(key, walk = True):
                         self.__get_package(pkg, filters)
         except:
-            self.error(ERROR_INTERNAL_ERROR, "Component %s was not found" % group)
+            self.error(ERROR_GROUP_NOT_FOUND, "Component %s was not found" % group)
 
     def search_name(self, filters, package):
         """ Prints a list of packages contains search term in its name """

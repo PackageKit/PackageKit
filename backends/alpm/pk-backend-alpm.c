@@ -341,7 +341,7 @@ backend_destroy (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	if (alpm_release () == -1)
 	  pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_INTERNAL_ERROR,
+				 PK_ERROR_ENUM_FAILED_FINALISE,
 				 "Failed to release control");
 }
 
@@ -359,7 +359,7 @@ backend_initialize (PkBackend *backend)
 	if (alpm_initialize () == -1)
 	  {
 	    pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_INTERNAL_ERROR,
+				 PK_ERROR_ENUM_FAILED_INITIALIZATION,
 				 "Failed to initialize package manager");
 	    pk_debug ("alpm: %s", alpm_strerror (pm_errno));
 	    //return;
@@ -368,7 +368,7 @@ backend_initialize (PkBackend *backend)
 	if (alpm_parse_config ("/etc/pacman.conf", NULL, "") != 0)
 	  {
 	    pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_INTERNAL_ERROR,
+				 PK_ERROR_ENUM_CONFIG_PARSING,
 				 "Failed to parse config file");
 	    pk_debug ("alpm: %s", alpm_strerror (pm_errno));
 	    backend_destroy (backend);
@@ -379,7 +379,7 @@ backend_initialize (PkBackend *backend)
 	if (alpm_db_register ("local") == NULL)
 	  {
 	    pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_INTERNAL_ERROR,
+				 PK_ERROR_ENUM_CONFIG_PARSING,
 				 "Failed to load local database");
 	    backend_destroy (backend);
 	    return;

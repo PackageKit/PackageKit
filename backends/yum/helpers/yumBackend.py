@@ -600,7 +600,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             deps = self._get_best_dependencies(pkg)
         else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
         for pkg in deps:
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)
