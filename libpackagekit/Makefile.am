@@ -19,6 +19,10 @@ SELFTEST_LIBS =							\
 	$(top_builddir)/libselftest/libselftest.la		\
 	$(NULL)
 
+PK_LIBS =							\
+	$(top_builddir)/libpackagekit/libpackagekit.la		\
+	$(NULL)
+
 lib_LTLIBRARIES =						\
 	libpackagekit.la					\
 	$(NULL)
@@ -68,7 +72,7 @@ libpackagekit_la_SOURCES =					\
 	pk-polkit-client.h					\
 	$(NULL)
 
-if HAVE_NETWORKMANAGER
+if PK_BUILD_NETWORKMANAGER
 libpackagekit_la_SOURCES +=					\
 	pk-network-nm.c						\
 	$(NULL)
@@ -85,10 +89,17 @@ libpackagekit_la_LIBADD =					\
 	$(LIBNM_LIBS)						\
 	$(NULL)
 
+if PK_BUILD_TESTS
+libpackagekit_la_LIBADD +=					\
+	$(SELFTEST_LIBS)					\
+	$(NULL)
+endif
+
 libpackagekit_la_LDFLAGS =					\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	$(NULL)
 
+if PK_BUILD_TESTS
 check_PROGRAMS =						\
 	pk-self-test
 
@@ -96,18 +107,6 @@ noinst_PROGRAMS =						\
 	pk-self-test
 
 pk_self_test_SOURCES =						\
-	pk-debug.c						\
-	pk-debug.h						\
-	pk-enum.h						\
-	pk-enum.c						\
-	pk-common.h						\
-	pk-common.c						\
-	pk-enum-list.h						\
-	pk-enum-list.c						\
-	pk-package-id.h						\
-	pk-package-id.c						\
-	pk-package-list.h					\
-	pk-package-list.c					\
 	pk-self-test.c						\
 	$(NULL)
 
@@ -118,8 +117,8 @@ pk_self_test_LDADD =						\
 	$(PK_LIBS)						\
 	$(NULL)
 
-pk_self_test_CPPFLAGS=	\
-	-DPK_BUILD_TESTS
+TESTS = pk-self-test
+endif
 
 EXTRA_DIST =							\
 	pk-marshal.list
@@ -141,6 +140,4 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = $(BUILT_SOURCES)
-
-TESTS = pk-self-test
 

@@ -84,6 +84,7 @@ packagekitd_LDADD =					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
+	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 if BACKEND_TYPE_BOX
@@ -119,6 +120,8 @@ pk-interface.h: pk-interface.xml
 		--mode=glib-server			\
 		--output=pk-interface.h	\
 		$(srcdir)/pk-interface.xml
+
+if PK_BUILD_TESTS
 
 check_PROGRAMS =					\
 	pk-self-test
@@ -156,8 +159,8 @@ pk_self_test_LDADD =					\
 	$(POLKIT_LIBS)					\
 	$(NULL)
 
-pk_self_test_CPPFLAGS=	\
-	-DPK_BUILD_TESTS
+TESTS = pk-self-test
+endif
 
 EXTRA_DIST =						\
 	pk-marshal.list					\
@@ -171,8 +174,6 @@ clean-local:
 	rm -f pk-marshal.c pk-marshal.h
 
 CLEANFILES = $(BUILT_SOURCES)
-
-TESTS = pk-self-test
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

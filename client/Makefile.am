@@ -14,6 +14,11 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/libselftest			\
+	$(NULL)
+
+SELFTEST_LIBS =						\
+	$(top_builddir)/libselftest/libselftest.la	\
 	$(NULL)
 
 PK_LIBS =						\
@@ -33,6 +38,7 @@ pkcon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
+	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 pkmon_SOURCES =						\
@@ -43,6 +49,7 @@ pkmon_LDADD =						\
 	$(GLIB_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
+	$(SELFTEST_LIBS)				\
 	$(NULL)
 
 clean-local:
