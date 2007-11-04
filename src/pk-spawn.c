@@ -645,6 +645,18 @@ libst_spawn (LibSelfTest *test)
 		libst_failed (test, "finish %i!", mexit);
 	}
 
+	g_free (path);
+
+	/************************************************************/
+	libst_title (test, "run lots of data for profiling");
+	path = pk_test_get_data ("pk-spawn-test-profiling.sh");
+	ret = pk_spawn_command (spawn, path);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not run profiling helper");
+	}
+
 	g_object_unref (spawn);
 	g_free (path);
 
