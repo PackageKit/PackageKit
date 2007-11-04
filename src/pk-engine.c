@@ -2616,3 +2616,60 @@ pk_engine_new (void)
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	return PK_ENGINE (engine);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_engine (LibSelfTest *test)
+{
+	PkEngine *engine;
+//	gboolean ret;
+
+	if (libst_start (test, "PkEngine", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get an instance");
+	engine = pk_engine_new ();
+	if (engine != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+#if 0
+	/************************************************************/
+	libst_title (test, "check connection");
+	if (engine->priv->connection != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check PolKit context");
+	if (engine->priv->pk_context != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "map valid role to action");
+	action = pk_engine_role_to_action (engine, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
+		libst_success (test, NULL, error);
+	} else {
+		libst_failed (test, "did not get correct action '%s'", action);
+	}
+#endif
+	g_object_unref (engine);
+
+	libst_end (test);
+}
+#endif
+

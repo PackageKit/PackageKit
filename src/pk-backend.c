@@ -202,6 +202,9 @@ pk_backend_unload (PkBackend *backend)
 	return TRUE;
 }
 
+/**
+ * pk_backend_get_name:
+ **/
 const gchar *
 pk_backend_get_name (PkBackend *backend)
 {
@@ -1910,4 +1913,60 @@ pk_backend_new (void)
 	backend = g_object_new (PK_TYPE_BACKEND, NULL);
 	return PK_BACKEND (backend);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_backend (LibSelfTest *test)
+{
+	PkBackend *backend;
+//	gboolean ret;
+
+	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get an instance");
+	backend = pk_backend_new ();
+	if (backend != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+#if 0
+	/************************************************************/
+	libst_title (test, "check connection");
+	if (backend->priv->connection != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check PolKit context");
+	if (backend->priv->pk_context != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "map valid role to action");
+	action = pk_backend_role_to_action (backend, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
+		libst_success (test, NULL, error);
+	} else {
+		libst_failed (test, "did not get correct action '%s'", action);
+	}
+#endif
+	g_object_unref (backend);
+
+	libst_end (test);
+}
+#endif
 
