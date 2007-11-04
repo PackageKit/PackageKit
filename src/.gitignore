@@ -11,4 +11,5 @@ debug.log
 *.gcda
 *.gcno
 coverage-report.txt
+*.out
 
