@@ -7,4 +7,8 @@ pk-interface.h
 packagekitd
 pk-self-test
 debug.log
+*.gcov
+*.gcda
+*.gcno
+coverage-report.txt
 

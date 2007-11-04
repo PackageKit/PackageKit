@@ -5,4 +5,7 @@
 *.lo
 *-marshal.c
 *-marshal.h
+*.gcov
+*.gcda
+*.gcno
 

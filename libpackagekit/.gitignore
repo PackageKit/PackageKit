@@ -7,4 +7,8 @@
 *-marshal.h
 pk-self-test
 *.loT
+*.gcov
+*.gcda
+*.gcno
+coverage-report.txt
 

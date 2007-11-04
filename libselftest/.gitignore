@@ -5,4 +5,8 @@
 *.lo
 *-marshal.c
 *-marshal.h
+*.gcov
+*.gcda
+*.gcno
+coverage-report.txt
 
