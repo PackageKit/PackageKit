@@ -76,3 +76,5 @@ MAINTAINERCLEANFILES =					\
 	aclocal.m4					\
 	$(NULL)
 
+DISTCHECK_CONFIGURE_FLAGS = --disable-tests --disable-gcov
+
