@@ -2324,6 +2324,7 @@ gboolean
 pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 {
 	gboolean ret;
+	gchar *error_text = NULL;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -2346,10 +2347,11 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 		return TRUE;
 	}
 
-	ret = pk_backend_cancel (item->backend);
+	/* try to cancel the transaction */
+	ret = pk_backend_cancel (item->backend, &error_text);
 	if (ret == FALSE) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			     "Operation not yet supported by backend");
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, error_text);
+		g_free (error_text);
 		return FALSE;
 	}
 

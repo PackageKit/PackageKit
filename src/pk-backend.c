@@ -1146,25 +1146,28 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
  * pk_backend_cancel:
  */
 gboolean
-pk_backend_cancel (PkBackend *backend)
+pk_backend_cancel (PkBackend *backend, gchar **error_text)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (error_text != NULL, FALSE);
+
+	/* not implemented yet */
 	if (backend->desc->cancel == NULL) {
-		pk_backend_not_implemented_yet (backend, "Cancel");
+		*error_text = g_strdup ("Operation not yet supported by backend");
 		return FALSE;
 	}
 	/* check to see if we have an action */
 	if (backend->priv->assigned == FALSE) {
-		pk_warning ("Not assigned");
+		*error_text = g_strdup ("Not yet assigned");
 		return FALSE;
 	}
 	/* check if it's safe to kill */
 	if (backend->priv->is_killable == FALSE) {
-		pk_warning ("tried to kill a process that is not safe to kill");
+		*error_text = g_strdup ("Tried to kill a process that is not safe to kill");
 		return FALSE;
 	}
 	if (backend->priv->spawn == NULL) {
-		pk_warning ("tried to kill a process that does not exist");
+		*error_text = g_strdup ("Tried to kill a process that does not exist");
 		return FALSE;
 	}
 	backend->desc->cancel (backend);
