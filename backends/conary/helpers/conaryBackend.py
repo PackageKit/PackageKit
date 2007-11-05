@@ -21,9 +21,12 @@ from conaryCallback import UpdateCallback
 class PackageKitConaryBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
+
         self.cfg = conarycfg.ConaryConfiguration(True)
         self.cfg.initializeFlavors()
         self.cfg.autoResolve = True
+        self.cfg.keepRequired = True
+
         self.client = conaryclient.ConaryClient(self.cfg)
         self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
