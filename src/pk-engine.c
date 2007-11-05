@@ -806,6 +806,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force,
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -822,7 +823,9 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force,
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1555,6 +1558,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	gboolean ret;
 	GError *error;
 	PkTransactionItem *item;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1571,7 +1575,9 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1616,6 +1622,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	PkTransactionItem *item;
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1650,7 +1657,9 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1689,6 +1698,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1723,7 +1733,9 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1762,6 +1774,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1787,7 +1800,9 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_INSTALL_FILE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_INSTALL_FILE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1826,6 +1841,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1851,7 +1867,9 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_ROLLBACK, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_ROLLBACK, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1890,6 +1908,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1924,7 +1943,9 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2004,6 +2025,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -2029,7 +2051,9 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_ENABLE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REPO_ENABLE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -2069,6 +2093,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -2094,7 +2119,9 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
