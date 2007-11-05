@@ -509,8 +509,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        name = package.split(';')[0]
+        pkg,inst = self._findPackage(package)
+        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
+        for pkg in pkgs:
+            self._show_package(pkg,inst)
+        
+        
 
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
