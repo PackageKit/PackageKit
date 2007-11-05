@@ -9,7 +9,8 @@ IMAGE_FILES =					\
 	large-preferences-system.png		\
 	large-system-users.png			\
 	packagekit.png				\
-	pk-application.png			\
+	pk-application-search.png		\
+	pk-application-groups.png		\
 	pk-auto-update.png			\
 	pk-backend-status.png			\
 	pk-battery.png				\
