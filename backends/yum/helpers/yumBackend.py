@@ -1056,7 +1056,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc,url,reboot = self._get_update_extras(pkg)
         self.update_detail(package,update,obsolete,url,reboot,desc)
         
+    def repo_set_data(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        '''
+        # Get the repo
+        repo = self.yumbase.repos.getRepo(repoid)
+        if repo:
+            repo.cfg.set(repoid, parameter, value)
+            try:
+                repo.cfg.write(file(repo.repofile, 'w'))
+            except IOError, e:
+                self.error(ERROR_INTERNAL_ERROR,str(e))
+        else:
+            self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
         
+
                 
         
 
