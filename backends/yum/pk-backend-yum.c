@@ -78,8 +78,8 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_get_depends,		/* get_depends */
 	pk_backend_python_get_description,	/* get_description */
 	pk_backend_python_get_files,		/* get_files */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	pk_backend_python_get_requires,		/* get_requires */
+	pk_backend_python_get_update_detail,	/* get_update_detail */
 	pk_backend_python_get_updates,		/* get_updates */
 	pk_backend_python_install_package,	/* install_package */
 	pk_backend_python_install_file,		/* install_file */
@@ -95,6 +95,6 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_update_system,	/* update_system */
 	pk_backend_python_get_repo_list,	/* get_repo_list */
 	pk_backend_python_repo_enable,		/* repo_enable */
-	NULL					/* repo_set_data */
+	pk_backend_python_repo_set_data		/* repo_set_data */
 );
 
