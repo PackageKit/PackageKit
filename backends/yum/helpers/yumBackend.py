@@ -251,7 +251,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 rc = unicode( txt, 'iso-8859-1' )
             return rc
 
-
     def doLock(self):
         ''' Lock Yum'''
         retries = 0
@@ -336,9 +335,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             wantGUI = True
         else:
             wantGUI = False
-        isGUI = self._check_for_gui(pkg) 
+        isGUI = self._check_for_gui(pkg)
         return isGUI == wantGUI
-    
+
     def _check_for_gui(self,pkg):
         '''  Check if the GUI_KEYS regex matches any package requirements'''
         try:
@@ -398,7 +397,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in group.conditional_packages.keys():
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
-            
 
     def search_group(self,filters,key):
         '''
@@ -413,7 +411,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.conf.cache = 1 # Only look in cache.
             fltlist = filters.split(';')
             found = {}
-    
+
             if not FILTER_NON_INSTALLED in fltlist:
                 # Check installed for group
                 for pkg in self.yumbase.rpmdb:
@@ -514,9 +512,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
             self._show_package(pkg,inst)
-        
-        
-
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
@@ -658,7 +653,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             self.percentage(95)
             # Setup categories/groups
-            self.yumbase.doGroupSetup()      
+            self.yumbase.doGroupSetup()
             #we might have a rounding error
             self.percentage(100)
 
@@ -673,7 +668,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
-      
+
         fltlist = filters.split(';')
         try:
             # Get installed packages
@@ -947,12 +942,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.files(package, file_list)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-            
-    def _pkg_to_id(self,pkg):            
+
+    def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         return id
-    
+
     def _show_package(self,pkg,status):
         '''  Show info about package'''
         id = self._pkg_to_id(pkg)
@@ -1015,7 +1010,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.repo_detail(repo.id,repo.name,'true')
             else:
                 self.repo_detail(repo.id,repo.name,'false')
-                
+
     def _get_obsoleted(self,name):
         obsoletes = self.yumbase.up.getObsoletesTuples( newest=1 )
         for ( obsoleting, installed ) in obsoletes:
@@ -1023,7 +1018,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkg =  self.yumbase.rpmdb.searchPkgTuple( installed )[0]
                 return self._pkg_to_id(pkg)
         return ""
-    
+
     def _get_updated(self,pkg):
         updated = None
         pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
@@ -1031,7 +1026,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return self._pkg_to_id(pkgs[0])
         else:
             return ""
-        
+
     def _get_update_extras(self,pkg):
         md = UpdateMetadata()
         if md:
@@ -1042,7 +1037,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 reboot = notice['reboot_suggested']
                 return desc.replace('\n',';'),url,reboot
         return "","",""
-        
+
     def get_update_detail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
@@ -1055,7 +1050,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         obsolete = self._get_obsoleted(pkg.name)
         desc,url,reboot = self._get_update_extras(pkg)
         self.update_detail(package,update,obsolete,url,reboot,desc)
-        
+
     def repo_set_data(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
@@ -1070,18 +1065,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,str(e))
         else:
             self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
-        
-
-                
-        
-
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
-        
 
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
