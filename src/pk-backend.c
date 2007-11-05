@@ -78,6 +78,7 @@ struct _PkBackendPrivate
 	gboolean		 during_initialize;
 	gboolean		 assigned;
 	gboolean		 set_error;
+	gboolean		 finished;
 	PkNetwork		*network;
 	PkInhibit		*inhibit;
 	/* needed for gui coldplugging */
@@ -1047,7 +1048,7 @@ pk_backend_finished (PkBackend *backend)
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize == TRUE) {
 		g_print ("You can't call pk_backend_finished in backend_initialize!\n");
-		pk_error ("Internal error, cannot continue");
+		pk_error ("Internal error, cannot continue!");
 	}
 
 	/* check we have no threads running */
@@ -1059,8 +1060,21 @@ pk_backend_finished (PkBackend *backend)
 		g_print ("   - Return from the function like normal\n");
 		g_print ("* pk_thread_list_create:\n");
 		g_print ("   -  If used internally you _have_ to use pk_thread_list_wait\n");
-		pk_error ("Internal error, cannot continue (will segfault in the near future...)");
+		pk_error ("Internal error, cannot continue!");
 	}
+
+	/* check we have not already finished */
+	if (backend->priv->finished == TRUE) {
+		g_print ("Backends cannot request Finished more than once!\n");
+		g_print ("If you are using :\n");
+		g_print ("* pk_backend_thread_helper\n");
+		g_print ("   - You should _not_ use pk_backend_finished directly");
+		g_print ("   - Return from the function like normal\n");
+		pk_error ("Internal error, cannot continue!");
+	}
+
+	/* we can't ever be re-used */
+	backend->priv->finished = TRUE;
 
 	/* remove any inhibit */
 	pk_inhibit_remove (backend->priv->inhibit, backend);
@@ -1893,6 +1907,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->is_killable = FALSE;
 	backend->priv->set_error = FALSE;
 	backend->priv->during_initialize = FALSE;
+	backend->priv->finished = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
 	backend->priv->xcached_enabled = FALSE;
