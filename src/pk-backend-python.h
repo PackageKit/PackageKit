@@ -40,6 +40,9 @@ void	pk_backend_python_get_files		(PkBackend	*backend,
 void	pk_backend_python_get_requires		(PkBackend	*backend,
 						 const gchar	*package_id);
 
+void	pk_backend_python_get_update_detail	(PkBackend	*backend,
+						 const gchar	*package_id);
+
 void	pk_backend_python_get_updates		(PkBackend	*backend);
 
 void	pk_backend_python_install_package	(PkBackend	*backend,

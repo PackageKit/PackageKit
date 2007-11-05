@@ -83,6 +83,16 @@ pk_backend_python_get_updates (PkBackend *backend)
 }
 
 /**
+ * pk_backend_python_get_update_detail:
+ */
+void
+pk_backend_python_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_spawn_helper (backend, "get-update-detail.py", package_id, NULL);
+}
+
+/**
  * pk_backend_python_install_package:
  */
 void
