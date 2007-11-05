@@ -947,11 +947,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.files(package, file_list)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-
-    def _show_package(self,pkg,status):
-        '''  Show info about package'''
+            
+    def _pkg_to_id(self,pkg):            
         pkgver = self._get_package_ver(pkg)
         id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        return id
+    
+    def _show_package(self,pkg,status):
+        '''  Show info about package'''
+        id = self._pkg_to_id(pkg)
         self.package(id,status, pkg.summary)
 
     def _get_status(self,notice):
@@ -1011,12 +1015,51 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.repo_detail(repo.id,repo.name,'true')
             else:
                 self.repo_detail(repo.id,repo.name,'false')
-
+                
+    def _get_obsoleted(self,name):
+        obsoletes = self.yumbase.up.getObsoletesTuples( newest=1 )
+        for ( obsoleting, installed ) in obsoletes:
+            if obsoleting[0] == name:
+                pkg =  self.yumbase.rpmdb.searchPkgTuple( installed )[0]
+                return self._pkg_to_id(pkg)
+        return ""
+    
+    def _get_updated(self,pkg):
+        updated = None
+        pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+        if pkgs:
+            return self._pkg_to_id(pkgs[0])
+        else:
+            return ""
+        
+    def _get_update_extras(self,pkg):
+        md = UpdateMetadata()
+        if md:
+            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+            if notice:
+                desc = notice['description']
+                url = notice['references']
+                reboot = notice['reboot_suggested']
+                return desc.replace('\n',';'),url,reboot
+        return "","",""
+        
     def get_update_detail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+        self.allow_interrupt(True)
+        self.percentage(None)
+        name = package.split(';')[0]
+        pkg,inst = self._findPackage(package)
+        update = self._get_updated(pkg)
+        obsolete = self._get_obsoleted(pkg.name)
+        desc,url,reboot = self._get_update_extras(pkg)
+        self.update_detail(package,update,obsolete,url,reboot,desc)
+        
+        
+                
+        
+
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
