@@ -335,6 +335,14 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
+	} else if (pk_strequal (command, "updatedetail") == TRUE) {
+		if (size != 7) {
+			g_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_update_detail (backend, sections[1], sections[2],
+					  sections[3], sections[4], sections[5], sections[6]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
