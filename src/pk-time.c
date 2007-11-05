@@ -241,6 +241,7 @@ pk_time_finalize (GObject *object)
 	time = PK_TIME (object);
 	g_return_if_fail (time->priv != NULL);
 	g_ptr_array_free (time->priv->array, TRUE);
+	g_timer_destroy (time->priv->timer);
 
 	G_OBJECT_CLASS (pk_time_parent_class)->finalize (object);
 }
