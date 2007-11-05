@@ -98,7 +98,6 @@ pk_job_list_refresh (PkJobList *jlist)
 {
 	gboolean ret;
 	GError *error;
-	gchar **array;
 
 	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
@@ -111,7 +110,7 @@ pk_job_list_refresh (PkJobList *jlist)
 	error = NULL;
 	ret = dbus_g_proxy_call (jlist->priv->proxy, "GetTransactionList", &error,
 				 G_TYPE_INVALID,
-				 G_TYPE_STRV, &array,
+				 G_TYPE_STRV, &jlist->priv->array,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_debug ("ERROR: %s", error->message);
@@ -123,7 +122,6 @@ pk_job_list_refresh (PkJobList *jlist)
 		jlist->priv->array = NULL;
 		return FALSE;
 	}
-	jlist->priv->array = g_strdupv (array);
 	return TRUE;
 }
 
