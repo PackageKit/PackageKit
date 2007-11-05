@@ -122,11 +122,21 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 {
 	g_print ("Update detail\n");
 	g_print ("  package:    '%s'\n", package_id);
-	g_print ("  updates:    '%s'\n", updates);
-	g_print ("  obsoletes:  '%s'\n", obsoletes);
-	g_print ("  url:        '%s'\n", url);
-	g_print ("  restart:    '%s'\n", restart);
-	g_print ("  update_text:'%s'\n", update_text);
+	if (pk_strzero (updates) == FALSE) {
+		g_print ("  updates:    '%s'\n", updates);
+	}
+	if (pk_strzero (obsoletes) == FALSE) {
+		g_print ("  obsoletes:  '%s'\n", obsoletes);
+	}
+	if (pk_strzero (url) == FALSE) {
+		g_print ("  url:        '%s'\n", url);
+	}
+	if (pk_strzero (restart) == FALSE) {
+		g_print ("  restart:    '%s'\n", restart);
+	}
+	if (pk_strzero (update_text) == FALSE) {
+		g_print ("  update_text:'%s'\n", update_text);
+	}
 }
 
 /**
