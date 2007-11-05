@@ -1558,6 +1558,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	gboolean ret;
 	GError *error;
 	PkTransactionItem *item;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1574,7 +1575,9 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
@@ -1619,6 +1622,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	PkTransactionItem *item;
 	gboolean ret;
 	GError *error;
+	gchar *sender;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1653,7 +1657,9 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
-	ret = pk_engine_action_is_allowed (engine, dbus_g_method_get_sender (context), PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	g_free (sender);
 	if (ret == FALSE) {
 		dbus_g_method_return_error (context, error);
 		return;
