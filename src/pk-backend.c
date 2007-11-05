@@ -1637,6 +1637,9 @@ pk_backend_get_actions (PkBackend *backend)
 	if (backend->desc->get_updates != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATES);
 	}
+	if (backend->desc->get_update_detail != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+	}
 	if (backend->desc->install_package != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_INSTALL_PACKAGE);
 	}
