@@ -13,4 +13,5 @@ pk-application
 *.gcov
 *.gcda
 *.gcno
+*.out
 
