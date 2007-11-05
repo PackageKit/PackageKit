@@ -125,11 +125,16 @@ pk_transaction_list_create (PkTransactionList *tlist)
 gboolean
 pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	/* valid item */
-	g_ptr_array_remove (tlist->priv->array, item);
+	ret = g_ptr_array_remove (tlist->priv->array, item);
+	if (ret == FALSE) {
+		pk_warning ("could not remove %p as not present in list", item);
+	}
 	g_object_unref (item->package_list);
 	g_free (item->tid);
 	g_free (item);
@@ -176,6 +181,13 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	if (item == NULL) {
 		pk_error ("no transaction list found!");
 	}
+
+	/* transaction is already finished? */
+	if (item->finished == TRUE) {
+		pk_warning ("transaction %s finished twice!", item->tid);
+		return;
+	}
+
 	pk_debug ("transaction %s completed, marking finished", item->tid);
 	item->finished = TRUE;
 
