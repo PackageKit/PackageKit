@@ -15,13 +15,13 @@ dist_helper_DATA = 			\
 	get-description.py		\
 	get-repo-list.py		\
 	repo-enable.py			\
-	repo-set-data.py        \
-	get-updates-detail.py   \
+	repo-set-data.py		\
+	get-update-detail.py		\
 	install.py			\
 	remove.py			\
 	resolve.py			\
 	update.py			\
-	install-file.py     \
+	install-file.py			\
 	refresh-cache.py		\
 	update-system.py		\
 	yumBackend.py			\
