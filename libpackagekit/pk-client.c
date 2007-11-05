@@ -656,6 +656,7 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status)
 		return FALSE;
 	}
 	*status = pk_status_enum_from_text (status_text);
+	g_free (status_text);
 	return TRUE;
 }
 
@@ -780,8 +781,11 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
 		return FALSE;
 	}
 	*role = pk_role_enum_from_text (role_text);
+	g_free (role_text);
 	if (package_id != NULL) {
-		*package_id = g_strdup (package_id_temp);
+		*package_id = package_id_temp;
+	} else {
+		g_free (package_id_temp);
 	}
 	return TRUE;
 }
@@ -2060,11 +2064,15 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
 
 	/* copy needed bits */
 	if (name != NULL) {
-		*name = g_strdup (tname);
+		*name = tname;
+	} else {
+		g_free (tauthor);
 	}
 	/* copy needed bits */
 	if (author != NULL) {
-		*author = g_strdup (tauthor);
+		*author = tauthor;
+	} else {
+		g_free (tauthor);
 	}
 	return TRUE;
 }
