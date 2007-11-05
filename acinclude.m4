@@ -8,7 +8,7 @@ dnl Swiped from http://www.initd.org/svn/psycopg/psycopg1/trunk/aclocal.m4
 
 dnl PY_CHECK_MOD(MODNAME [,SYMBOL [,ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND]]])
 dnl Check if a module containing a given symbol is visible to python.
-AC_DEFUN(PY_CHECK_MOD,
+AC_DEFUN([PY_CHECK_MOD],
 [AC_REQUIRE([AM_PATH_PYTHON])
 py_mod_var=`echo $1['_']$2 | sed 'y%./+-%__p_%'`
 AC_MSG_CHECKING(for ifelse([$3],[],,[$2 in ])python module $1)

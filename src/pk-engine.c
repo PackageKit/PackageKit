@@ -2544,6 +2544,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->timer = g_timer_new ();
 	engine->priv->backend = NULL;
+	engine->priv->actions = NULL;
+	engine->priv->groups = NULL;
+	engine->priv->filters = NULL;
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
@@ -2590,14 +2593,20 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
-	g_object_unref (engine->priv->actions);
-	g_object_unref (engine->priv->groups);
-	g_object_unref (engine->priv->filters);
 	g_object_unref (engine->priv->network);
 	g_object_unref (engine->priv->security);
 
+	/* optional gobjects */
+	if (engine->priv->actions != NULL) {
+		g_object_unref (engine->priv->actions);
+	}
+	if (engine->priv->groups != NULL) {
+		g_object_unref (engine->priv->groups);
+	}
+	if (engine->priv->filters != NULL) {
+		g_object_unref (engine->priv->filters);
+	}
 	if (engine->priv->updates_cache != NULL) {
-		pk_debug ("unreffing updates cache");
 		g_object_unref (engine->priv->updates_cache);
 	}
 
@@ -2616,3 +2625,60 @@ pk_engine_new (void)
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	return PK_ENGINE (engine);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_engine (LibSelfTest *test)
+{
+	PkEngine *engine;
+//	gboolean ret;
+
+	if (libst_start (test, "PkEngine", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get an instance");
+	engine = pk_engine_new ();
+	if (engine != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+#if 0
+	/************************************************************/
+	libst_title (test, "check connection");
+	if (engine->priv->connection != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check PolKit context");
+	if (engine->priv->pk_context != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "map valid role to action");
+	action = pk_engine_role_to_action (engine, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
+		libst_success (test, NULL, error);
+	} else {
+		libst_failed (test, "did not get correct action '%s'", action);
+	}
+#endif
+	g_object_unref (engine);
+
+	libst_end (test);
+}
+#endif
+

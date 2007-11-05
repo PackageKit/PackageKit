@@ -35,12 +35,7 @@ pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
 	pk-backend-python.h
 
-sbin_PROGRAMS =						\
-	packagekitd					\
-	$(NULL)
-
-packagekitd_SOURCES =					\
-	pk-main.c					\
+shared_SOURCES =					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-backend-internal.h				\
@@ -70,12 +65,21 @@ packagekitd_SOURCES =					\
 	$(NULL)
 
 if SECURITY_TYPE_POLKIT
-packagekitd_SOURCES += pk-security-polkit.c
+shared_SOURCES += pk-security-polkit.c
 endif
 
 if SECURITY_TYPE_DUMMY
-packagekitd_SOURCES += pk-security-dummy.c
+shared_SOURCES += pk-security-dummy.c
 endif
+
+sbin_PROGRAMS =						\
+	packagekitd					\
+	$(NULL)
+
+packagekitd_SOURCES =					\
+	pk-main.c					\
+	$(shared_SOURCES)				\
+	$(NULL)
 
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
@@ -130,23 +134,8 @@ noinst_PROGRAMS =					\
 	pk-self-test
 
 pk_self_test_SOURCES =					\
-	pk-inhibit.h					\
-	pk-inhibit.c					\
-	pk-backend.h					\
-	pk-backend.c					\
-	pk-time.h					\
-	pk-time.c					\
-	pk-spawn.h					\
-	pk-spawn.c					\
-	pk-conf.h					\
-	pk-conf.c					\
-	pk-thread-list.h				\
-	pk-thread-list.c				\
-	pk-transaction-id.h				\
-	pk-transaction-id.c				\
-	pk-transaction-list.h				\
-	pk-transaction-list.c				\
 	pk-self-test.c					\
+	$(shared_SOURCES)				\
 	$(NULL)
 
 pk_self_test_LDADD =					\
@@ -154,6 +143,7 @@ pk_self_test_LDADD =					\
 	$(GMODULE_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SELFTEST_LIBS)				\
+	$(SQLITE_LIBS)					\
 	$(LIBNM_LIBS)					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\

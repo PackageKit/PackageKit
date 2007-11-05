@@ -19,6 +19,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +37,7 @@
 #include <polkit-dbus/polkit-dbus.h>
 
 #include <pk-enum.h>
+#include <pk-common.h>
 
 #include "pk-debug.h"
 #include "pk-security.h"
@@ -60,6 +65,10 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 
 	/* set action */
 	pk_action = polkit_action_new ();
+	if (pk_action == NULL) {
+		pk_warning ("error: polkit_action_new failed");
+		return POLKIT_RESULT_NO;
+	}
 	polkit_action_set_action_id (pk_action, action);
 
 	/* set caller */
@@ -68,9 +77,10 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
 	if (pk_caller == NULL) {
 		if (dbus_error_is_set (&dbus_error)) {
-			pk_error ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
-				  dbus_error.name, dbus_error.message);
+			pk_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
+				    dbus_error.name, dbus_error.message);
 		}
+		return POLKIT_RESULT_NO;
 	}
 
 	pk_result = polkit_context_can_caller_do_action (security->priv->pk_context, pk_action, pk_caller);
@@ -83,22 +93,16 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 }
 
 /**
- * pk_security_action_is_allowed:
- *
- * Only valid from an async caller, which is fine, as we won't prompt the user
- * when not async.
+ * pk_security_role_to_action:
  **/
-gboolean
-pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
-			       PkRoleEnum role, gchar **error_detail)
+static const gchar *
+pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 {
-	PolKitResult pk_result;
 	const gchar *policy = NULL;
 
-	g_return_val_if_fail (security != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+	g_return_val_if_fail (security != NULL, NULL);
+	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
-	/* map the roles to policykit rules */
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
 	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		policy = "org.freedesktop.packagekit.update";
@@ -116,8 +120,29 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.refresh-cache";
 	} else {
-		pk_error ("policykit type required for '%s'", pk_role_enum_to_text (role));
+		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
 	}
+	return policy;
+}
+
+/**
+ * pk_security_action_is_allowed:
+ *
+ * Only valid from an async caller, which is fine, as we won't prompt the user
+ * when not async.
+ **/
+gboolean
+pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
+			       PkRoleEnum role, gchar **error_detail)
+{
+	PolKitResult pk_result;
+	const gchar *policy;
+
+	g_return_val_if_fail (security != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+
+	/* map the roles to policykit rules */
+	policy = pk_security_role_to_action (security, role);
 
 	/* get the dbus sender */
 	pk_result = pk_security_can_do_action (security, dbus_sender, policy);
@@ -180,7 +205,7 @@ pk_security_init (PkSecurity *security)
 	dbus_error_init (&dbus_error);
 	security->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
 	if (security->priv->connection == NULL) {
-		pk_error ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+		pk_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
 	}
 
 	/* get PolicyKit context */
@@ -188,7 +213,7 @@ pk_security_init (PkSecurity *security)
 	pk_error = NULL;
 	retval = polkit_context_init (security->priv->pk_context, &pk_error);
 	if (retval == FALSE) {
-		pk_error ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
+		pk_warning ("Could not init PolicyKit context: %s", polkit_error_get_error_message (pk_error));
 		polkit_error_free (pk_error);
 	}
 }
@@ -204,4 +229,82 @@ pk_security_new (void)
 	security = g_object_new (PK_TYPE_SECURITY, NULL);
 	return PK_SECURITY (security);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_security (LibSelfTest *test)
+{
+	PkSecurity *security;
+	const gchar *action;
+	gboolean ret;
+	gchar *error;
+
+	if (libst_start (test, "PkSecurity", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get an instance");
+	security = pk_security_new ();
+	if (security != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check connection");
+	if (security->priv->connection != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check PolKit context");
+	if (security->priv->pk_context != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "map valid role to action");
+	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
+		libst_success (test, NULL, error);
+	} else {
+		libst_failed (test, "did not get correct action '%s'", action);
+	}
+
+	/************************************************************/
+	libst_title (test, "map invalid role to action");
+	action = pk_security_role_to_action (security, PK_ROLE_ENUM_SEARCH_NAME);
+	if (action == NULL) {
+		libst_success (test, NULL, error);
+	} else {
+		libst_failed (test, "did not get correct action '%s'", action);
+	}
+
+	/************************************************************/
+	libst_title (test, "get the default backend");
+	error = NULL;
+	ret = pk_security_action_is_allowed (security, ":0", PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	if (ret == FALSE) {
+		libst_success (test, "did not authenticate update-package, error '%s'", error);
+	} else {
+		libst_failed (test, "authenticated update-package!");
+	}
+	g_free (error);
+
+	g_object_unref (security);
+
+	libst_end (test);
+}
+#endif
 
