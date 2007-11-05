@@ -69,7 +69,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
-	"Tim Lauridsen <tla@rasmil.dk>",	/* author */
+	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
 	NULL,					/* initalize */
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
