@@ -438,10 +438,11 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 			    const gchar *updates,
 			    const gchar *obsoletes,
 			    const gchar *url,
-			    const gchar *restart,
+			    const gchar *restart_text,
 			    const gchar *update_text,
 			    PkClient    *client)
 {
+	PkRestartEnum restart;
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -451,7 +452,8 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 	}
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, url, restart, update_text);
+		  package_id, updates, obsoletes, url, restart_text, update_text);
+	restart = pk_restart_enum_from_text (restart_text);
 	g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, url, restart, update_text);
 }
@@ -2288,7 +2290,7 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

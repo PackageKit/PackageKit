@@ -117,7 +117,7 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 static void
 pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 			     const gchar *updates, const gchar *obsoletes,
-			     const gchar *url, const gchar *restart,
+			     const gchar *url, PkRestartEnum restart,
 			     const gchar *update_text, gpointer data)
 {
 	g_print ("Update detail\n");
@@ -131,8 +131,8 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 	if (pk_strzero (url) == FALSE) {
 		g_print ("  url:        '%s'\n", url);
 	}
-	if (pk_strzero (restart) == FALSE) {
-		g_print ("  restart:    '%s'\n", restart);
+	if (restart != PK_RESTART_ENUM_NONE) {
+		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (restart));
 	}
 	if (pk_strzero (update_text) == FALSE) {
 		g_print ("  update_text:'%s'\n", update_text);
