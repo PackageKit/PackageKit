@@ -308,7 +308,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             return True
         elif FILTER_INSTALLED in filterList and installed == INFO_INSTALLED:
             do_print = True
-        elif FILTER_NON_INSTALLED in filterList and installed == INFO_AVAILABLE:
+        elif FILTER_NOT_INSTALLED in filterList and installed == INFO_AVAILABLE:
             do_print = True
 
         if len(filterList) == 1: # Only one filter, return
@@ -323,16 +323,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         ''' do extra filtering (devel etc) '''
 
         for filter in filterList:
-            if filter in (FILTER_INSTALLED, FILTER_NON_INSTALLED):
+            if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
                 continue
-            elif filter in (FILTER_DEVEL, FILTER_NON_DEVEL):
+            elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
                 if not self._do_devel_filtering(flt,pkg):
                     return False
         return True
 
     def _do_devel_filtering(self, flt, pkg):
         isDevel = False
-        if flt == FILTER_DEVEL:
+        if flt == FILTER_DEVELOPMENT:
             wantDevel = True
         else:
             wantDevel = False

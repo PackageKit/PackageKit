@@ -341,15 +341,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return True
         if (FILTER_INSTALLED in filters) and (not package.is_installed):
             return False
-        if (FILTER_NON_INSTALLED in filters) and package.is_installed:
+        if (FILTER_NOT_INSTALLED in filters) and package.is_installed:
             return False
         if (FILTER_GUI in filters) and (not package.is_gui):
             return False
-        if (FILTER_NON_GUI in filters) and package.is_gui:
+        if (FILTER_NOT_GUI in filters) and package.is_gui:
             return False
-        if (FILTER_DEVEL in filters) and (not package.is_development):
+        if (FILTER_DEVELOPMENT in filters) and (not package.is_development):
             return False
-        if (FILTER_NON_DEVEL in filters) and package.is_development:
+        if (FILTER_NOT_DEVELOPMENT in filters) and package.is_development:
             return False
         return TRUE
 

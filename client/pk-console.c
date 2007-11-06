@@ -447,7 +447,7 @@ pk_console_install_package (PkClient *client, const gchar *package)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_AVAILABLE, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to install\n");
 		return FALSE;

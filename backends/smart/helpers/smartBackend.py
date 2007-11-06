@@ -18,7 +18,7 @@
 
 import smart
 from packagekit.backend import PackageKitBaseBackend, INFO_INSTALLED, \
-        INFO_AVAILABLE, INFO_NORMAL, FILTER_NON_INSTALLED, FILTER_INSTALLED, \
+        INFO_AVAILABLE, INFO_NORMAL, FILTER_NOT_INSTALLED, FILTER_INSTALLED, \
         ERROR_REPO_NOT_FOUND, ERROR_PACKAGE_ALREADY_INSTALLED
 
 
@@ -318,5 +318,5 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
     def _passes_filters(package, filters):
         filterlist = filters.split(';')
 
-        return (FILTER_NON_INSTALLED not in filterlist and package.installed
+        return (FILTER_NOT_INSTALLED not in filterlist and package.installed
                 or FILTER_INSTALLED not in filterlist and not package.installed)

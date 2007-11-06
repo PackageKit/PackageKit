@@ -302,7 +302,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 count+=1
                 # are we installed?
                 if pkg.repoid == 'installed':
-                    if FILTER_NON_INSTALLED not in fltlist:
+                    if FILTER_NOT_INSTALLED not in fltlist:
                         if self._do_extra_filtering(pkg,fltlist):
                             self._show_package(pkg, INFO_INSTALLED)
                 else:
@@ -319,12 +319,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
         for filter in filterList:
-            if filter in (FILTER_INSTALLED, FILTER_NON_INSTALLED):
+            if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
                 continue
-            elif filter in (FILTER_GUI, FILTER_NON_GUI):
+            elif filter in (FILTER_GUI, FILTER_NOT_GUI):
                 if not self._do_gui_filtering(filter, pkg):
                     return False
-            elif filter in (FILTER_DEVEL, FILTER_NON_DEVEL):
+            elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
                 if not self._do_devel_filtering(filter, pkg):
                     return False
         return True
@@ -351,7 +351,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
-        if flt == FILTER_DEVEL:
+        if flt == FILTER_DEVELOPMENT:
             wantDevel = True
         else:
             wantDevel = False
@@ -412,7 +412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             fltlist = filters.split(';')
             found = {}
 
-            if not FILTER_NON_INSTALLED in fltlist:
+            if not FILTER_NOT_INSTALLED in fltlist:
                 # Check installed for group
                 for pkg in self.yumbase.rpmdb:
                     group = GROUP_OTHER                    # Default Group
@@ -447,7 +447,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
-        if not FILTER_NON_INSTALLED in fltlist:
+        if not FILTER_NOT_INSTALLED in fltlist:
             # Check installed for file
             for pkg in self.yumbase.rpmdb:
                 filelist = pkg.filelist
@@ -673,7 +673,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             # Get installed packages
             installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-            if FILTER_NON_INSTALLED not in fltlist:
+            if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in installedByKey:
                     self._show_package(pkg,INFO_INSTALLED)
             # Get available packages

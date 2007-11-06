@@ -137,11 +137,11 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
                 if FILTER_INSTALLED in filterlist and status != INFO_INSTALLED:
                     return
-                if FILTER_NON_INSTALLED in filterlist and status == INFO_INSTALLED:
+                if FILTER_NOT_INSTALLED in filterlist and status == INFO_INSTALLED:
                     return
                 if FILTER_GUI in filterlist and "app:gui" not in pkg.isA:
                     return
-                if FILTER_NON_GUI in filterlist and "app:gui" in pkg.isA:
+                if FILTER_NOT_GUI in filterlist and "app:gui" in pkg.isA:
                     return
 
         version = self.__get_package_version(pkg)
