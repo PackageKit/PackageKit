@@ -250,7 +250,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         try:
-            self.status(STATE_INSTALL)
+            self.status(STATUS_INSTALL)
             pisi.api.install([file])
         except pisi.Error,e:
             # FIXME: Error: internal-error : Package re-install declined
@@ -266,7 +266,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         package = self.get_package_from_id(package_id)[0]
 
         if self.packagedb.has_package(package):
-            self.status(STATE_INSTALL)
+            self.status(STATUS_INSTALL)
             try:
                 pisi.api.install([package])
             except pisi.Error,e:
@@ -297,7 +297,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         package = self.get_package_from_id(package_id)[0]
 
         if self.installdb.has_package(package):
-            self.status(STATE_REMOVE)
+            self.status(STATUS_REMOVE)
             try:
                 pisi.api.remove([package])
             except pisi.Error,e:

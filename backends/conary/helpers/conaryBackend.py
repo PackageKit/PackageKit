@@ -188,7 +188,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
             try:
-                self.status(STATE_INSTALL)
+                self.status(STATUS_INSTALL)
                 self._do_package_update(name, version, flavor, apply=True)
             except:
                 pass
@@ -207,7 +207,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                     'Package not installed')
             try:
-                self.status(STATE_REMOVE)
+                self.status(STATUS_REMOVE)
                 name = '-%s' % name
                 self._do_package_update(name, version, flavor, apply=True)
             except:
@@ -395,7 +395,7 @@ class Cache(object):
             # Create all tables if database is empty
             if len(tbllist) == 0:
                 self._create_database()
-                backend.status(STATE_WAIT)
+                backend.status(STATUS_WAIT)
                 self.populate_database()
                 return True
 

@@ -260,7 +260,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 PackageKitBaseBackend.doLock(self)
             except:
                 if retries == 0:
-                    self.status(STATE_WAIT)
+                    self.status(STATUS_WAIT)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
@@ -1177,18 +1177,18 @@ class PackageKitCallback(RPMBaseCallback):
                         TS_ERASE: INFO_REMOVING,
                         TS_INSTALL: INFO_INSTALLING,
                         TS_TRUEINSTALL : INFO_INSTALLING,
-                        TS_OBSOLETED: INFO_OBSOLETE,
+                        TS_OBSOLETED: INFO_OBSOLETING,
                         TS_OBSOLETING: INFO_INSTALLING,
                         TS_UPDATED: INFO_CLEANUP}
 
         # Map yum transactions with pk state enums
-        self.state_actions = { TS_UPDATE : STATE_UPDATE,
-                        TS_ERASE: STATE_REMOVE,
-                        TS_INSTALL: STATE_INSTALL,
-                        TS_TRUEINSTALL : STATE_INSTALL,
-                        TS_OBSOLETED: STATE_OBSOLETE,
-                        TS_OBSOLETING: STATE_INSTALL,
-                        TS_UPDATED: STATE_CLEANUP}
+        self.state_actions = { TS_UPDATE : STATUS_UPDATE,
+                        TS_ERASE: STATUS_REMOVE,
+                        TS_INSTALL: STATUS_INSTALL,
+                        TS_TRUEINSTALL : STATUS_INSTALL,
+                        TS_OBSOLETED: STATUS_OBSOLETE,
+                        TS_OBSOLETING: STATUS_INSTALL,
+                        TS_UPDATED: STATUS_CLEANUP}
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -1227,7 +1227,7 @@ class ProcessTransPackageKitCallback:
         if state == PT_DOWNLOAD:        # Start Downloading
             self.base.allow_interrupt(True)
             self.base.percentage(10)
-            self.base.status(STATE_DOWNLOAD)
+            self.base.status(STATUS_DOWNLOAD)
         if state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:

@@ -86,7 +86,7 @@ class PackageKitBaseBackend:
     def status(self,state):
         '''
         send 'status' signal
-        @param state: STATE_DOWNLOAD, STATE_INSTALL, STATE_UPDATE, STATE_REMOVE, STATE_WAIT
+        @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
         print >> sys.stderr,"status\t%s" % (state)
 
