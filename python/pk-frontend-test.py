@@ -118,6 +118,15 @@ def get_actions(*args):
 	# Quit immediately because no job was scheduled
 	exit(0)
 
+def get_missing_actions(*args):
+	details = p.GetActions().split(";")
+	for x in PackageKitEnum.role:
+		if x not in details and x not in ["unknown"]:
+			print "  %s" % x
+
+	# Quit immediately because no job was scheduled
+	exit(0)
+
 def usage():
 	print "Usage: %s <command> <options>"%argv[0]
 	print "Valid commands are:"
