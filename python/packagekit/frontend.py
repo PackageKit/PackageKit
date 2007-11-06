@@ -99,7 +99,6 @@ class PackageKit:
 				raise PackageKitException(e)
 
 		#self.job = None
-		self.progress = 0.0
 		bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface="org.freedesktop.PackageKit")
 
 	def run(self):
@@ -107,18 +106,11 @@ class PackageKit:
 		self.loop.run()
 
 	def catchall_signal_handler(self,*args, **kwargs):
-		#if args[0] != self.job and kwargs['member']!="TransactionListChanged":
-		#	print "args",args,kwargs
-		#	return
 		if kwargs['member'] == "Finished":
 			self.loop.quit()
 			self.Finished(args[0],args[1],args[2])
-		elif kwargs['member'] == "PercentageChanged":
-			self.progress = float(args[1])+(self.progress%1.0)
-			self.Percentage(args[0], self.progress)
-		elif kwargs['member'] == "SubPercentageChanged":
-			self.progress = (float(args[1])/100.0)+int(self.progress)
-			self.Percentage(args[0], self.progress)
+		elif kwargs['member'] == "ProgressChanged":
+			self.ProgressChanged(args[0], float(args[1])+(float(args[2])/100.0),args[3],args[4])
 		elif kwargs['member'] == "TransactionStatusChanged":
 			self.JobStatus(args[0], args[1])
 		elif kwargs['member'] == "Package":
@@ -133,7 +125,7 @@ class PackageKit:
 			self.RequireRestart(args[0],args[1],args[2])
 		elif kwargs['member'] == "Transaction":
 			self.Transaction(args[0],args[1],args[2],args[3],args[4],args[5])
-		elif kwargs['member'] in ["NoPercentageUpdates","TransactionListChanged",
+		elif kwargs['member'] in ["TransactionListChanged",
 					  "AllowInterrupt","JobListChanged", "Locked"]:
 			pass
 		else:

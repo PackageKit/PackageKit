@@ -30,8 +30,8 @@ from types import FunctionType
 from packagekit.frontend import *
 
 class pkt(PackageKit):
-	def Percentage(self,jid,progress):
-		print "Progress: %.2f%%"%progress
+	def ProgressChanged(self,jid,percent, elapsed, remaining):
+		print "Progress: %.2f%%"%percent, elapsed, remaining
 
 	def JobStatus(self,jid,type):
 		print "Job type: %s"%type
