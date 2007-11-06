@@ -463,6 +463,8 @@ libpackagekit/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile
+python/Makefile
+python/packagekit/Makefile
 org.freedesktop.PackageKit.conf
 ])
 

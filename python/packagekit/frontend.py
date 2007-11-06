@@ -23,6 +23,7 @@ from types import *
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
+from enums import PackageKitEnum
 
 class PackageKitException(Exception):
 	def __init__(self):

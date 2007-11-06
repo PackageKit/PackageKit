@@ -15,6 +15,7 @@ SUBDIRS = 						\
 	src						\
 	client						\
 	backends					\
+	python						\
 	$(NULL)
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -28,6 +29,7 @@ packagekitpython_PYTHON =				\
 	python/packagekit/__init__.py			\
 	python/packagekit/backend.py			\
 	python/packagekit/frontend.py			\
+	python/packagekit/enums.py				\
 	$(NULL)
 	
 
