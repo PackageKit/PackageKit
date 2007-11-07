@@ -121,6 +121,7 @@ static PkEnumMatch enum_restart[] = {
 
 static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_FILTER_ENUM_NONE,			"none"},
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
 	{PK_FILTER_ENUM_GUI,			"gui"},
