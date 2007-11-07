@@ -1188,7 +1188,8 @@ pk_backend_set_running (PkBackend *backend)
 	/* do the correct action with the cached parameters */
 	if (backend->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
 		backend->desc->get_depends (backend,
-					    backend->priv->xcached_package_id);
+					    backend->priv->xcached_package_id,
+					    backend->priv->xcached_force);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		backend->desc->get_update_detail (backend,
 						  backend->priv->xcached_package_id);
@@ -1205,7 +1206,8 @@ pk_backend_set_running (PkBackend *backend)
 					  backend->priv->xcached_package_id);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		backend->desc->get_requires (backend,
-					     backend->priv->xcached_package_id);
+					     backend->priv->xcached_package_id,
+					     backend->priv->xcached_force);
 	} else if (backend->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		backend->desc->get_updates (backend);
 	} else if (backend->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
@@ -1279,7 +1281,7 @@ pk_backend_run (PkBackend *backend)
  * pk_backend_get_depends:
  */
 gboolean
-pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
+pk_backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	if (backend->desc->get_depends == NULL) {
@@ -1287,6 +1289,7 @@ pk_backend_get_depends (PkBackend *backend, const gchar *package_id)
 		return FALSE;
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
+	backend->priv->xcached_force = recursive;
 	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_DEPENDS);
 	return TRUE;
 }
@@ -1343,7 +1346,7 @@ pk_backend_get_files (PkBackend *backend, const gchar *package_id)
  * pk_backend_get_requires:
  */
 gboolean
-pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
+pk_backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	if (backend->desc->get_requires == NULL) {
@@ -1351,6 +1354,7 @@ pk_backend_get_requires (PkBackend *backend, const gchar *package_id)
 		return FALSE;
 	}
 	backend->priv->xcached_package_id = g_strdup (package_id);
+	backend->priv->xcached_force = recursive;
 	pk_backend_set_role (backend, PK_ROLE_ENUM_GET_REQUIRES);
 	return TRUE;
 }

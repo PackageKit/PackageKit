@@ -920,6 +920,16 @@
               <entry><literal>package_id</literal></entry>
               <entry>A single, valid, package ID.</entry>
             </row>
+            <row>
+              <entry><literal>recursive</literal></entry>
+              <entry>
+                Either "yes" or "no". If yes then the requirements should be
+                returned for all packages returned.
+                This means if gnome-power-manager depends on NetworkManager
+                and NetworkManager depends on HAL, then GetDepends on
+                gnome-power-manager should return both HAL and NetworkManager.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
@@ -1032,6 +1042,16 @@
             <row>
               <entry><literal>package_id</literal></entry>
               <entry>A single, valid, package ID.</entry>
+            </row>
+            <row>
+              <entry><literal>recursive</literal></entry>
+              <entry>
+                Either "yes" or "no". If yes then the requirements should be
+                returned for all packages returned.
+                This means if gnome-power-manager depends on NetworkManager
+                and NetworkManager depends on HAL, then GetRequires on
+                HAL should return both gnome-power-manager and NetworkManager.
+              </entry>
             </row>
           </tbody>
         </tgroup>

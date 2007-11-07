@@ -219,14 +219,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_depends(self,package):
+    def get_depends(self,package,recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_requires(self,package):
+    def get_requires(self,package,recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class

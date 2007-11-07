@@ -96,11 +96,13 @@ gboolean	 pk_client_search_file			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*search);
 gboolean	 pk_client_get_depends			(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 gboolean	 recursive);
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 const gchar	*package_id);
 gboolean	 pk_client_get_requires			(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 gboolean	 recursive);
 gboolean	 pk_client_get_description		(PkClient	*client,
 							 const gchar	*package_id);
 gboolean	 pk_client_get_files			(PkClient	*client,

@@ -50,10 +50,12 @@
     <method name="GetDepends">
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
     </method>
     <method name="GetRequires">
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
     </method>
     <method name="GetUpdateDetail">
       <arg type="s" name="tid" direction="in"/>

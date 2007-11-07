@@ -24,6 +24,18 @@
 /**
  * pk_backend_python_cancel:
  */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE) {
+		return "yes";
+	}
+	return "no";
+}
+
+/**
+ * pk_backend_python_cancel:
+ */
 void
 pk_backend_python_cancel (PkBackend *backend)
 {
@@ -36,10 +48,10 @@ pk_backend_python_cancel (PkBackend *backend)
  * pk_backend_python_get_depends:
  */
 void
-pk_backend_python_get_depends (PkBackend *backend, const gchar *package_id)
+pk_backend_python_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
+	pk_backend_spawn_helper (backend, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
 }
 
 /**
@@ -66,10 +78,10 @@ pk_backend_python_get_files (PkBackend *backend, const gchar *package_id)
  * pk_backend_python_get_requires:
  */
 void
-pk_backend_python_get_requires (PkBackend *backend, const gchar *package_id)
+pk_backend_python_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "get-requires.py", package_id, NULL);
+	pk_backend_spawn_helper (backend, "get-requires.py", package_id, pk_backend_bool_to_text (recursive), NULL);
 }
 
 /**
@@ -141,13 +153,7 @@ void
 pk_backend_python_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	const gchar *deps;
-	if (allow_deps == TRUE) {
-		deps = "yes";
-	} else {
-		deps = "no";
-	}
-	pk_backend_spawn_helper (backend, "remove.py", deps, package_id, NULL);
+	pk_backend_spawn_helper (backend, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
 }
 
 /**

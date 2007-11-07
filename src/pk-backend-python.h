@@ -29,7 +29,8 @@ G_BEGIN_DECLS
 void	pk_backend_python_cancel		(PkBackend	*backend);
 
 void	pk_backend_python_get_depends		(PkBackend	*backend,
-						 const gchar	*package_id);
+						 const gchar	*package_id,
+						 gboolean	 recursive);
 
 void	pk_backend_python_get_description	(PkBackend	*backend,
 						 const gchar	*package_id);
@@ -38,7 +39,8 @@ void	pk_backend_python_get_files		(PkBackend	*backend,
 						 const gchar	*package_id);
 
 void	pk_backend_python_get_requires		(PkBackend	*backend,
-						 const gchar	*package_id);
+						 const gchar	*package_id,
+						 gboolean	 recursive);
 
 void	pk_backend_python_get_update_detail	(PkBackend	*backend,
 						 const gchar	*package_id);

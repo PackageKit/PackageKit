@@ -300,12 +300,12 @@ class PackageKit:
 
 	@dbusException
 	@job_id
-	def GetRequires(self,package_id):
+	def GetRequires(self,package_id,recursive):
 		"""
 		Lists package dependancies?
 		(description is a guess, since this not doesn't seem to work for me)
 		"""
-		return self.pk_iface.GetRequires(self.tid(),package_id)
+		return self.pk_iface.GetRequires(self.tid(),package_id,recursive)
 
 	@dbusException
 	@job_id

@@ -1268,7 +1268,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter, cons
  * pk_engine_get_depends:
  **/
 gboolean
-pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
+pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -1276,7 +1276,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("GetDepends method called: %s, %s", tid, package_id);
+	pk_debug ("GetDepends method called: %s, %s, %i", tid, package_id, recursive);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1310,7 +1310,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 		return FALSE;
 	}
 
-	ret = pk_backend_get_depends (item->backend, package_id);
+	ret = pk_backend_get_depends (item->backend, package_id, recursive);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -1325,7 +1325,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
  * pk_engine_get_requires:
  **/
 gboolean
-pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package_id, GError **error)
+pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -1333,7 +1333,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("GetRequires method called: %s, %s", tid, package_id);
+	pk_debug ("GetRequires method called: %s, %s, %i", tid, package_id, recursive);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1367,7 +1367,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 		return FALSE;
 	}
 
-	ret = pk_backend_get_requires (item->backend, package_id);
+	ret = pk_backend_get_requires (item->backend, package_id, recursive);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");

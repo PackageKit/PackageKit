@@ -1158,7 +1158,7 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
  * pk_client_get_depends:
  **/
 gboolean
-pk_client_get_depends (PkClient *client, const gchar *package)
+pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursive)
 {
 	gboolean ret;
 	GError *error;
@@ -1175,11 +1175,13 @@ pk_client_get_depends (PkClient *client, const gchar *package)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
 	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_force = recursive;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", &error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
+				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
@@ -1201,7 +1203,7 @@ pk_client_get_depends (PkClient *client, const gchar *package)
  * pk_client_get_requires:
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *package)
+pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursive)
 {
 	gboolean ret;
 	GError *error;
@@ -1218,11 +1220,13 @@ pk_client_get_requires (PkClient *client, const gchar *package)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
 	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_force = recursive;
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", &error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
+				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID,
 				 G_TYPE_INVALID);
 	if (error != NULL) {
@@ -2209,7 +2213,8 @@ pk_client_requeue (PkClient *client)
 
 	/* do the correct action with the cached parameters */
 	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		pk_client_get_depends (client, client->priv->xcached_package_id);
+		pk_client_get_depends (client, client->priv->xcached_package_id,
+				       client->priv->xcached_force);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		pk_client_get_update_detail (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_RESOLVE) {
@@ -2222,7 +2227,8 @@ pk_client_requeue (PkClient *client)
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_FILES) {
 		pk_client_get_files (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		pk_client_get_requires (client, client->priv->xcached_package_id);
+		pk_client_get_requires (client, client->priv->xcached_package_id,
+					client->priv->xcached_force);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		pk_client_get_updates (client);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {

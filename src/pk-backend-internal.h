@@ -68,7 +68,8 @@ const gchar	*pk_backend_get_name			(PkBackend	*backend);
 gboolean	 pk_backend_cancel			(PkBackend	*backend,
 							 gchar		**error_text);
 gboolean	 pk_backend_get_depends			(PkBackend	*backend,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 gboolean	 recursive);
 gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_description		(PkBackend	*backend,
@@ -76,7 +77,8 @@ gboolean	 pk_backend_get_description		(PkBackend	*backend,
 gboolean	 pk_backend_get_files 			(PkBackend	*backend,
 							 const gchar	*package_id);
 gboolean	 pk_backend_get_requires		(PkBackend	*backend,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 gboolean	 recursive);
 gboolean	 pk_backend_get_updates			(PkBackend	*backend);
 gboolean	 pk_backend_install_package		(PkBackend	*backend,
 							 const gchar	*package_id);
