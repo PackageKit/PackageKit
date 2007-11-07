@@ -501,7 +501,7 @@ pk_console_get_requires (PkClient *client, const gchar *package)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to get requires\n");
 		return FALSE;
@@ -519,7 +519,7 @@ pk_console_get_depends (PkClient *client, const gchar *package)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to get depends\n");
 		return FALSE;
@@ -537,7 +537,7 @@ pk_console_get_description (PkClient *client, const gchar *package)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to get description\n");
 		return FALSE;
@@ -555,7 +555,7 @@ pk_console_get_files (PkClient *client, const gchar *package)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to get files\n");
 		return FALSE;
