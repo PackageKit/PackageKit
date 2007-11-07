@@ -430,11 +430,13 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 		return item->package_id;
 	}
 
-	/* else list the options */
-	g_print ("There are multiple matches\n");
-	for (i=0; i<length; i++) {
-		item = pk_client_package_buffer_get_item (client_resolve, i);
-		g_print ("%i. %s\n", i+1, item->package_id);
+	/* else list the options if multiple matches found */
+	if (length != 0) {
+		g_print ("There are multiple matches\n");
+		for (i=0; i<length; i++) {
+			item = pk_client_package_buffer_get_item (client_resolve, i);
+			g_print ("%i. %s\n", i+1, item->package_id);
+		}
 	}
 	return NULL;
 }
