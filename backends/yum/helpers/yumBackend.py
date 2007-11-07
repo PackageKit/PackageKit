@@ -501,7 +501,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return None,False
 
-    def get_requires(self,package):
+    def get_requires(self,package,recursive):
         '''
         Print a list of requires for a given package
         '''
@@ -588,7 +588,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             bestdeps.append(best)
         return unique(bestdeps)
 
-    def get_depends(self,package):
+    def get_depends(self,package,recursive):
         '''
         Print a list of depends for a given package
         '''
