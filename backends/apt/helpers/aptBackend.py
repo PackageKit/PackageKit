@@ -1,5 +1,8 @@
 #
+# vim: ts=4 et sts=4
+#
 # Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
+# Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -225,7 +228,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkg = Package(self._apt_cache[name], self)
         self._emit_package(pkg)
 
-    ### Helpers ###
+    def get_depends(self,package):
+        '''
+        Implement the {backend}-get-depends functionality
+        '''
+        name, version, arch, data = self.get_package_from_id(package)
+        pkg = Package(self._apt_cache[name], self)
+        print dir(pkg)
+        print dir(pkg._depcache)
+        raise Exception
+
+  ### Helpers ###
     def _emit_package(self, package):
         id = self.get_package_id(package.name,
                 package.installed_version or package.candidate_version,
