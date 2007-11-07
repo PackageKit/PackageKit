@@ -25,9 +25,6 @@ import gobject
 from enums import PackageKitEnum
 
 class PackageKitException(Exception):
-	def __init__(self):
-		Exception.__init__(self)
-
 	def __init__(self,e=None):
 		Exception.__init__(self)
 		if e == None:
@@ -143,9 +140,11 @@ class PackageKit:
 			):
 		pass
 
-	def Percentage(self,
+	def ProgressChanged(self,
 			jid,        # Job ID
-			progress    # 0.0 - 100.0
+			percent,    # 0.0 - 100.0
+			elapsed,	# time
+			remaining	# time
 			):
 		pass
 
