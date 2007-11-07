@@ -34,43 +34,7 @@
 
 #include "pk-debug.h"
 #include "pk-common.h"
-
-/**
- * pk_filter_check_part:
- **/
-gboolean
-pk_filter_check_part (const gchar *filter)
-{
-	if (filter == NULL) {
-		return FALSE;
-	}
-	if (pk_strzero (filter) == TRUE) {
-		return FALSE;
-	}
-	/* keep strcmp for speed */
-	if (strcmp (filter, "none") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "installed") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~installed") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "devel") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~devel") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "gui") == 0) {
-		return TRUE;
-	}
-	if (strcmp (filter, "~gui") == 0) {
-		return TRUE;
-	}
-	return FALSE;
-}
+#include "pk-enum.h"
 
 /**
  * pk_filter_check:
@@ -101,7 +65,7 @@ pk_filter_check (const gchar *filter)
 		if (pk_strzero (sections[i]) == TRUE) {
 			goto out;
 		}
-		if (pk_filter_check_part (sections[i]) == FALSE) {
+		if (pk_filter_enum_from_text (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
 			goto out;
 		}
 	}
