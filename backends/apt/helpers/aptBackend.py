@@ -282,6 +282,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         description = re.sub('\s+', ' ', pkg.description).strip()
         self.description(package, 'unknown', pkg.group, description, '', 0, '')
 
+    def resolve(self, name):
+        '''
+        Implement the {backend}-resolve functionality
+        '''
+        pkg = Package(self._apt_cache[name], self)
+        self._emit_package(pkg)
+
     ### Helpers ###
     def _emit_package(self, package):
         id = self.get_package_id(package.name,

@@ -123,7 +123,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	pk_backend_python_refresh_cache,			/* refresh_cache */
 	pk_backend_python_remove_package,			/* remove_package */
-	NULL,					/* resolve */
+	pk_backend_python_resolve,					/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
