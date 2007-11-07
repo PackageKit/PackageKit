@@ -511,7 +511,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
-            self._show_package(pkg,inst)
+            if inst:
+                self._show_package(pkg,INFO_INSTALLED)
+            else:
+                self._show_package(pkg,INFO_AVAILABLE)
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
