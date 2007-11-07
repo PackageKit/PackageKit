@@ -19,7 +19,6 @@
 #    Tom Parker <palfrey@tevp.net>
 #    Robin Norwood <rnorwood@redhat.com>
 
-from types import *
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
