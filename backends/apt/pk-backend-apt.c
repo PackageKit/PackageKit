@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-python.h>
 
 /**
  * backend_get_groups:
@@ -71,65 +72,6 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 }
 
 /**
- * backend_get_updates:
- */
-static void
-backend_get_updates (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "get-updates.py", NULL);
-}
-
-/**
- * backend_install_package:
- */
-static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "install.py", package_id, NULL);
-}
-
-/**
- * backend_refresh_cache:
- */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
-}
-
-/**
- * backend_remove_package:
- */
-static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
-{
-	g_return_if_fail (backend != NULL);
-	const gchar *deps;
-	if (allow_deps == TRUE) {
-		deps = "yes";
-	} else {
-		deps = "no";
-	}
-	pk_backend_spawn_helper (backend, "remove.py", deps, package_id, NULL);
-}
-
-/**
  * backend_search_details:
  */
 
@@ -163,45 +105,6 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
 }
 
-/**
-  * backend_update_package:
- */
-static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-	pk_backend_spawn_helper (backend, "update.py", package_id, NULL);
-}
-
-/**
- * backend_update_system:
- */
-static void
-backend_update_system (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "update-system.py", NULL);
-}
-
-/**
- * backend_get_depends:
- */
-/**
-static void
-backend_get_depends (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "get-depends.py", package_id, NULL);
-}
- */
-
 PK_BACKEND_OPTIONS (
 	"Apt",				/* description */
 	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
@@ -215,19 +118,19 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
-	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
+	pk_backend_python_get_updates,			/* get_updates */
+	pk_backend_python_install_package,		/* install_package */
 	NULL,					/* install_file */
-	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	pk_backend_python_refresh_cache,			/* refresh_cache */
+	pk_backend_python_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
-	backend_update_system,			/* update_system */
+	pk_backend_python_update_package,			/* update_package */
+	pk_backend_python_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
