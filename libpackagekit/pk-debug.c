@@ -126,7 +126,7 @@ pk_error_real (const gchar *func,
 	fprintf (stderr, "*** ERROR ***\n");
 	pk_print_line (func, file, line, buffer);
 	g_free(buffer);
-	exit (0);
+	exit (1);
 }
 
 /**
