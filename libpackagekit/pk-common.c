@@ -119,6 +119,35 @@ pk_strsafe (const gchar *text)
 }
 
 /**
+ * pk_strnumber:
+ **/
+gboolean
+pk_strnumber (const gchar *text)
+{
+	guint i;
+	guint length;
+
+	/* check explicitly */
+	if (pk_strzero (text) == TRUE) {
+		return FALSE;
+	}
+
+	/* ITS4: ignore, not used for allocation and checked for oversize */
+	length = strlen (text);
+	for (i=0; i<length; i++) {
+		if (i > 10) {
+			pk_debug ("input too long!");
+			return FALSE;
+		}
+		if (g_ascii_isdigit (text[i]) == FALSE) {
+			pk_debug ("not a number '%c' in text!", text[i]);
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+/**
  * pk_strzero:
  *
  * This function is a much safer way of doing "if (strlen (text) == 0))"
@@ -996,6 +1025,62 @@ libst_common (LibSelfTest *test)
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
 	}
 	g_free (text_safe);
+
+	/************************************************************
+	 **************       Check for numbers      ****************
+	 ************************************************************/
+	libst_title (test, "check number valid");
+	ret = pk_strnumber ("123");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number zero");
+	ret = pk_strnumber ("0");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number oversize");
+	ret = pk_strnumber ("123456891234");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number NULL");
+	ret = pk_strnumber (NULL);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number blank");
+	ret = pk_strnumber ("");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number random chars");
+	ret = pk_strnumber ("dave");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	libst_end (test);
 }
