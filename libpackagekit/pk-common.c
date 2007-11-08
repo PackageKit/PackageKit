@@ -92,7 +92,6 @@ pk_strvalidate_char (gchar item)
 	case ']':
 	case '{':
 	case '}':
-	case '@':
 	case '#':
 	case '\\':
 	case '<':
@@ -177,7 +176,7 @@ pk_strvalidate (const gchar *text)
 			return FALSE;
 		}
 		if (pk_strvalidate_char (text[i]) == FALSE) {
-			pk_debug ("invalid char in text!");
+			pk_debug ("invalid char '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
