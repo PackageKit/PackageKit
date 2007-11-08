@@ -363,7 +363,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 {
 	gchar **sections;
 	guint size;
-	guint percentage;
+	gint percentage;
 	gchar *command;
 	PkErrorCodeEnum error_enum;
 	PkStatusEnum status_enum;
@@ -387,10 +387,12 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		/* ITS4: ignore, checked for sanity */
-		percentage = atoi (sections[1]);
-		if (percentage > 100) {
+		ret = pk_strtoint (sections[1], &percentage);
+		if (ret == FALSE) {
+			pk_warning ("invalid percentage value %s", sections[1]);
+		} else if (percentage < 0 || percentage > 100) {
 			pk_warning ("invalid percentage value %i", percentage);
+			ret = FALSE;
 		} else {
 			pk_backend_change_percentage (backend, percentage);
 		}
@@ -400,10 +402,12 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		/* ITS4: ignore, checked for sanity */
-		percentage = atoi (sections[1]);
-		if (percentage > 100) {
+		ret = pk_strtoint (sections[1], &percentage);
+		if (ret == FALSE) {
+			pk_warning ("invalid subpercentage value %s", sections[1]);
+		} else if (percentage < 0 || percentage > 100) {
 			pk_warning ("invalid subpercentage value %i", percentage);
+			ret = FALSE;
 		} else {
 			pk_backend_change_sub_percentage (backend, percentage);
 		}
@@ -1956,12 +1960,36 @@ pk_backend_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+static gboolean
+pk_backend_test_func_true (PkBackend *backend, gpointer data)
+{
+	g_usleep (1000*1000);
+	return TRUE;
+}
+
+static gboolean
+pk_backend_test_func_false (PkBackend *backend, gpointer data)
+{
+	g_usleep (1000*1000);
+	return FALSE;
+}
+
+static gboolean
+pk_backend_test_func_immediate_false (PkBackend *backend, gpointer data)
+{
+	return FALSE;
+}
+
 void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
 	const gchar *text;
 	gboolean ret;
+	gdouble elapsed;
+	GTimer *timer;
+
+	timer = g_timer_new ();
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -2029,7 +2057,6 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "invalid name %s", text);
 	}
 
-/*************/
 	/************************************************************/
 	libst_title (test, "unload an valid backend");
 	ret = pk_backend_unload (backend);
@@ -2057,6 +2084,207 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "invalid name %s", text);
 	}
 
+	/************************************************************/
+	libst_title (test, "check we are not finished");
+	if (backend->priv->finished == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "we did not clear finish!");
+	}
+
+	/************************************************************/
+	libst_title (test, "wait for a thread to return true");
+	g_timer_start (timer);
+	ret = pk_backend_thread_helper (backend, pk_backend_test_func_true, NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wait for a thread failed");
+	}
+
+	/************************************************************/
+	libst_title (test, "did we wait the correct time?");
+	elapsed = g_timer_elapsed (timer, NULL);
+	if (elapsed < 1.1 && elapsed > 0.9) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not wait for thread timeout");
+	}
+
+	/************************************************************/
+	libst_title (test, "check we finished");
+	if (backend->priv->finished == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "we did not finish!");
+	}
+
+	/* reset the backend */
+	g_object_unref (backend);
+	backend = pk_backend_new ();
+
+	/************************************************************/
+	libst_title (test, "wait for a thread to return false");
+	g_timer_start (timer);
+	ret = pk_backend_thread_helper (backend, pk_backend_test_func_false, NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wait for a thread failed");
+	}
+
+	/************************************************************/
+	libst_title (test, "did we wait the correct time2?");
+	elapsed = g_timer_elapsed (timer, NULL);
+	if (elapsed < 1.1 && elapsed > 0.9) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not wait for thread timeout");
+	}
+
+	/* reset the backend */
+	g_object_unref (backend);
+	backend = pk_backend_new ();
+
+	/************************************************************/
+	libst_title (test, "wait for a thread to return false (straight away)");
+	g_timer_start (timer);
+	ret = pk_backend_thread_helper (backend, pk_backend_test_func_immediate_false, NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned false!");
+	}
+
+	/************************************************************/
+	libst_title (test, "did we wait the correct time2?");
+	elapsed = g_timer_elapsed (timer, NULL);
+	if (elapsed < 0.1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not wait for thread timeout2");
+	}
+
+	/************************************************************
+	 **********       Check parsing common error      ***********
+	 ************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Percentage1");
+	ret = pk_backend_parse_common_error (backend, "percentage\t0");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Percentage2");
+	ret = pk_backend_parse_common_error (backend, "percentage\tbrian");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Percentage3");
+	ret = pk_backend_parse_common_error (backend, "percentage\t12345");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Percentage4");
+	ret = pk_backend_parse_common_error (backend, "percentage\t");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Percentage5");
+	ret = pk_backend_parse_common_error (backend, "percentage");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Subpercentage");
+	ret = pk_backend_parse_common_error (backend, "subpercentage\t17");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error NoPercentageUpdates");
+	ret = pk_backend_parse_common_error (backend, "no-percentage-updates");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Error1");
+	ret = pk_backend_parse_common_error (backend, "error\ttransaction-error\tdescription text");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Error2");
+	ret = pk_backend_parse_common_error (backend, "error\tnot-present-woohoo\tdescription text");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error Status");
+	ret = pk_backend_parse_common_error (backend, "status\tquery");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error RequireRestart");
+	ret = pk_backend_parse_common_error (backend, "requirerestart\tsystem\tdetails about the restart");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error AllowUpdate1");
+	ret = pk_backend_parse_common_error (backend, "allow-interrupt\ttrue");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_parse_common_error AllowUpdate2");
+	ret = pk_backend_parse_common_error (backend, "allow-interrupt\tbrian");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	g_timer_destroy (timer);
 	g_object_unref (backend);
 
 	libst_end (test);
