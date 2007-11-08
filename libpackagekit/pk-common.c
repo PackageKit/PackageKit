@@ -139,11 +139,29 @@ pk_strnumber (const gchar *text)
 			pk_debug ("input too long!");
 			return FALSE;
 		}
-		if (g_ascii_isdigit (text[i]) == FALSE) {
+		if (i == 0 && text[i] == '-') {
+			/* negative sign */
+		} else if (g_ascii_isdigit (text[i]) == FALSE) {
 			pk_debug ("not a number '%c' in text!", text[i]);
 			return FALSE;
 		}
 	}
+	return TRUE;
+}
+
+/**
+ * pk_strtoint:
+ **/
+gboolean
+pk_strtoint (const gchar *text, gint *value)
+{
+	gboolean ret;
+	ret = pk_strnumber (text);
+	if (ret == FALSE) {
+		*value = 0;
+		return FALSE;
+	}
+	*value = atoi (text);
 	return TRUE;
 }
 
@@ -452,6 +470,7 @@ libst_common (LibSelfTest *test)
 	gchar *text_safe;
 	const gchar *temp;
 	guint length;
+	gint value;
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
@@ -1038,6 +1057,15 @@ libst_common (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "check number valid");
+	ret = pk_strnumber ("-123");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "check number zero");
 	ret = pk_strnumber ("0");
 	if (ret == TRUE) {
@@ -1074,6 +1102,24 @@ libst_common (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "check number not negative");
+	ret = pk_strnumber ("503-");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check number positive");
+	ret = pk_strnumber ("+503");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "check number random chars");
 	ret = pk_strnumber ("dave");
 	if (ret == FALSE) {
@@ -1081,6 +1127,37 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************
+	 **************        Convert numbers       ****************
+	 ************************************************************/
+	libst_title (test, "convert valid number");
+	ret = pk_strtoint ("234", &value);
+	if (ret == TRUE && value == 234) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "value is %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "convert negative valid number");
+	ret = pk_strtoint ("-234", &value);
+	if (ret == TRUE && value == -234) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "value is %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "don't convert invalid number");
+	ret = pk_strtoint ("dave", &value);
+	if (ret == FALSE && value == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "value is %i", value);
+	}
+
+	/************************************************************/
 
 	libst_end (test);
 }
