@@ -22,7 +22,7 @@
 #include <pk-backend-python.h>
 
 /**
- * pk_backend_python_cancel:
+ * pk_backend_bool_to_text:
  */
 static const gchar *
 pk_backend_bool_to_text (gboolean value)
