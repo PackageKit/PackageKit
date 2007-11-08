@@ -182,12 +182,12 @@
           </row>
           <row>
             <entry>Package</entry>
-            <entry><literal>package_id[tab]status[tab]package_id[tab]summary</literal></entry>
+            <entry><literal>package_id[tab]status[tab]summary</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>Description</entry>
-            <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes[tab]file_list</literal></entry>
+            <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>
