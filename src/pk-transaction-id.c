@@ -71,8 +71,11 @@ pk_transaction_id_load_job_count (void)
 		return FALSE;
 	}
 
-	/* ITS4: ignore, not used for allocation */
-	job_count = atoi (contents);
+	/* convert */
+	ret = pk_strtouint (contents, &job_count);
+	if (ret == FALSE) {
+		pk_warning ("failed to convert");
+	}
 
 	/* check we got a sane number */
 	if (job_count > 10240) {

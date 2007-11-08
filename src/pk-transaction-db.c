@@ -109,6 +109,8 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	gint i;
 	gchar *col;
 	gchar *value;
+	guint temp;
+	gboolean ret;
 
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
@@ -119,8 +121,15 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		col = col_name[i];
 		value = argv[i];
 		if (pk_strequal (col, "succeeded") == TRUE) {
-			/* ITS4: ignore, checked for sanity */
-			item.succeeded = atoi (value);
+			ret = pk_strtouint (value, &temp);
+			if (ret == FALSE) {
+				pk_warning ("failed to convert");
+			}
+			if (temp == 1) {
+				item.succeeded = TRUE;
+			} else {
+				item.succeeded = FALSE;
+			}
 			if (item.succeeded > 1) {
 				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
@@ -142,13 +151,13 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				item.data = g_strdup (value);
 			}
 		} else if (pk_strequal (col, "duration") == TRUE) {
-			if (value != NULL) {
-				/* ITS4: ignore, checked for sanity */
-				item.duration = atoi (value);
-				if (item.duration > 60*60*12) {
-					pk_warning ("insane duartion %i", item.duration);
-					item.duration = 0;
-				}
+			ret = pk_strtouint (value, &item.duration);
+			if (ret == FALSE) {
+				pk_warning ("failed to convert");
+			}
+			if (item.duration > 60*60*12) {
+				pk_warning ("insane duartion %i", item.duration);
+				item.duration = 0;
 			}
 		} else {
 			pk_warning ("%s = %s\n", col, value);
