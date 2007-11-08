@@ -39,6 +39,8 @@ gboolean	 pk_strequal				(const gchar	*id1,
 gboolean	 pk_strnumber				(const gchar	*text);
 gboolean	 pk_strtoint				(const gchar	*text,
 							 gint		*value);
+gboolean	 pk_strtouint				(const gchar	*text,
+							 guint		*value);
 gchar		*pk_strpad				(const gchar	*data,
 							 guint		 length);
 gchar		*pk_strpad_extra			(const gchar	*data,

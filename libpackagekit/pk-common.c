@@ -161,7 +161,25 @@ pk_strtoint (const gchar *text, gint *value)
 		*value = 0;
 		return FALSE;
 	}
+	/* ITS4: ignore, we've already checked for validity */
 	*value = atoi (text);
+	return TRUE;
+}
+
+/**
+ * pk_strtouint:
+ **/
+gboolean
+pk_strtouint (const gchar *text, guint *value)
+{
+	gboolean ret;
+	gint temp;
+	ret = pk_strtoint (text, &temp);
+	if (ret == FALSE || temp < 0) {
+		*value = 0;
+		return FALSE;
+	}
+	*value = (guint) temp;
 	return TRUE;
 }
 
@@ -471,6 +489,7 @@ libst_common (LibSelfTest *test)
 	const gchar *temp;
 	guint length;
 	gint value;
+	guint uvalue;
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
@@ -1158,6 +1177,22 @@ libst_common (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "convert valid uint number");
+	ret = pk_strtouint ("234", &uvalue);
+	if (ret == TRUE && uvalue == 234) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "value is %i", uvalue);
+	}
+
+	/************************************************************/
+	libst_title (test, "convert invalid uint number");
+	ret = pk_strtouint ("-234", &uvalue);
+	if (ret == FALSE && uvalue == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "value is %i", uvalue);
+	}
 
 	libst_end (test);
 }
