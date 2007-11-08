@@ -65,8 +65,14 @@ Remember:
 * Never allocate a buffer on user input
 * Output from backends is trusted, they are run from standard locations
 
-Use flawfinder to find obvious security problems. Use "ITS4: ignore" if you are
-totally 100% sure that it's not a problem.
+Use 'make security-check' to find obvious security problems.
+Use "ITS4: ignore" if you are totally 100% sure that it's not a problem.
+
+If you compile with --enable-gcov you can use 'make gcov' to get coverage
+reports for the unit test code.
+If you compile with --enable-gprof you can use 'make gprof' to get profiling
+data - but you probably don't want to be building packages with these options
+turned on for obvious reasons.
 
 Submitting Patches
 ------------------
