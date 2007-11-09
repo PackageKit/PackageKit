@@ -55,28 +55,29 @@ def configure(conf):
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
 		conf.add_define('PK_BUILD_NETWORKMANAGER', 1)
 
-#TODO: check program docbook2man and set HAVE_DOCBOOK2MAN
-#TODO: check program xmlto and set DOCBOOK_DOCS_ENABLED
+	if conf.find_program('docbook2man', var='DOCBOOK2MAN'):
+		conf.env['HAVE_DOCBOOK2MAN'] = 1
 
-#TODO
-#if Params.g_options.default_backend is empty, then check
-#	if test -f /usr/bin/yum ; then
-#		with_default_backend=yum
-#	elif test -f /usr/lib/libalpm.so; then
-#		with_default_backend=alpm
-#	elif test -f /usr/bin/apt-get ; then
-#		with_default_backend=apt
-#	elif test -f /usr/bin/conary ; then
-#		with_default_backend=conary
-#	elif test -f /usr/bin/box-repos ; then
-#		with_default_backend=box
-#	elif test -f /usr/bin/smart ; then
-#		with_default_backend=smart
-#	elif test -f /usr/bin/pisi ; then
-#		with_default_backend=pisi
-#	else
-#		with_default_backend=dummy
-#	fi
+	if conf.find_program('xmlto', var='XMLTO'):
+		conf.env['DOCBOOK_DOCS_ENABLED'] = 1
+
+	if not Params.g_options.default_backend:
+		if conf.find_program('yum'):
+			with_default_backend = 'yum'
+		elif conf.check_library2('alpm', mandatory=0):
+			with_default_backend = 'alpm'
+		elif conf.find_program('apt-get'):
+			with_default_backend = 'apt-get'
+		elif conf.find_program('conary'):
+			with_default_backend = 'conary'
+		elif conf.find_program('box-repos'):
+			with_default_backend = 'box'
+		elif conf.find_program('smart'):
+			with_default_backend = 'smart'
+		elif conf.find_program('pisi'):
+			with_default_backend = 'pisi'
+		else:
+			with_default_backend = 'dummy'
 
 	#TODO
 	#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
