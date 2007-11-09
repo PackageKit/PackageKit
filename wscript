@@ -83,14 +83,14 @@ def configure(conf):
 	#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
 
 	#the box backend needs another module
-	if Params.g_options.default_backend is 'box':
-		conf.check_pkg('libbox', destvar='BOX')
-		#TODO: fail if not present
+	if Params.g_options.default_backend == 'box':
+		if not conf.check_pkg('libbox', destvar='BOX'):
+			Params.fatal('The "box" backend needs "libbox"')
 
 	#the alpm backend needs a header file
-	if Params.g_options.default_backend is 'alpm':
-		conf.check_header('alpm.h')
-		#TODO: fail if not present
+	if Params.g_options.default_backend == 'alpm':
+		if not conf.check_header('alpm.h'):
+			Params.fatal('The "alpm" backend needs "alpm.h"')
 
 	#process options
 	if Params.g_options.wall:
