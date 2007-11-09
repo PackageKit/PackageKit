@@ -99,6 +99,14 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 /**
  * pk_client_set_tid:
+ * @client: a valid #PkClient instance
+ * @tid: a transaction id
+ *
+ * This method sets the transaction ID that should be used for the DBUS method
+ * and then watched for any callback signals.
+ * You cannot call pk_client_set_tid multiple times for one instance.
+ *
+ * Return value: %TRUE if set correctly
  **/
 gboolean
 pk_client_set_tid (PkClient *client, const gchar *tid)
@@ -107,12 +115,24 @@ pk_client_set_tid (PkClient *client, const gchar *tid)
 		pk_warning ("you can't set the tid on a promiscuous client");
 		return FALSE;
 	}
+	if (client->priv->tid != NULL) {
+		pk_warning ("you can't set the tid on an already set client");
+		return FALSE;
+	}
 	client->priv->tid = g_strdup (tid);
 	return TRUE;
 }
 
 /**
  * pk_client_set_promiscuous:
+ * @client: a valid #PkClient instance
+ * @enabled: if we should set promiscuous mode on
+ *
+ * If we set the client promiscuous then it listens to all signals from
+ * all transactions. You can't set promiscuous mode on an already set tid
+ * instance.
+ *
+ * Return value: %TRUE if we set the mode okay.
  **/
 gboolean
 pk_client_set_promiscuous (PkClient *client, gboolean enabled)
@@ -127,15 +147,26 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled)
 
 /**
  * pk_client_get_tid:
+ * @client: a valid #PkClient instance
+ *
+ * Return value: The transaction_id we are using for this client, or %NULL
  **/
 gchar *
 pk_client_get_tid (PkClient *client)
 {
+	if (client->priv->tid == NULL) {
+		return NULL;
+	}
 	return g_strdup (client->priv->tid);
 }
 
 /**
  * pk_transaction_id_equal:
+ * @client: a valid #PkClient instance
+ * @tid1: the first transaction id
+ * @tid2: the second transaction id
+ *
+ * Return value: %TRUE if tid1 and tid2 are equal
  * TODO: only compare first two sections...
  **/
 static gboolean
@@ -150,6 +181,19 @@ pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 
 /**
  * pk_client_set_use_buffer:
+ * @client: a valid #PkClient instance
+ * @use_buffer: if we should use the package buffer
+ *
+ * If the package buffer is enabled then after the transaction has completed
+ * then the package list can be retrieved in one go, rather than processing
+ * each package request async.
+ * If this is not set true explicitly, then pk_client_package_buffer_get_size
+ * will always return zero items.
+ *
+ * This is not forced on as there may be significant overhead if the list
+ * contains many hundreds of items.
+ *
+ * Return value: %TRUE if the package buffer was enabled
  **/
 gboolean
 pk_client_set_use_buffer (PkClient *client, gboolean use_buffer)
@@ -163,6 +207,9 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer)
 
 /**
  * pk_client_get_use_buffer:
+ * @client: a valid #PkClient instance
+ *
+ * Return value: %TRUE if the package buffer is enabled
  **/
 gboolean
 pk_client_get_use_buffer (PkClient *client)
@@ -174,7 +221,18 @@ pk_client_get_use_buffer (PkClient *client)
 }
 
 /**
- * pk_client_get_use_buffer:
+ * pk_client_get_require_restart:
+ * @client: a valid #PkClient instance
+ *
+ * This method returns the 'worst' restart of all the transactions.
+ * It is needed as multiple sub-transactions may emit require-restart with
+ * different values, and we always want to get the most invasive of all.
+ *
+ * For instance, if a transaction emits RequireRestart(system) and then
+ * RequireRestart(session) then pk_client_get_require_restart will return
+ * system as a session restart is implied with a system restart.
+ *
+ * Return value: a #PkRestartEnum value, e.g. PK_RESTART_ENUM_SYSTEM
  **/
 PkRestartEnum
 pk_client_get_require_restart (PkClient *client)
@@ -187,6 +245,9 @@ pk_client_get_require_restart (PkClient *client)
 
 /**
  * pk_client_package_buffer_get_size:
+ * @client: a valid #PkClient instance
+ *
+ * Return value: The size of the package buffer.
  **/
 guint
 pk_client_package_buffer_get_size (PkClient *client)
@@ -201,6 +262,10 @@ pk_client_package_buffer_get_size (PkClient *client)
 
 /**
  * pk_client_package_buffer_get_item:
+ * @client: a valid #PkClient instance
+ * @item: the item in the package buffer
+ *
+ * Return value: The #PkPackageItem or %NULL if not found or invalid
  **/
 PkPackageItem *
 pk_client_package_buffer_get_item (PkClient *client, guint item)
@@ -215,6 +280,14 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 
 /**
  * pk_client_reset:
+ * @client: a valid #PkClient instance
+ * @tid: a transaction id
+ *
+ * Resetting the client way be needed if we canceled the request without
+ * waiting for ::finished, or if we want to reuse the #PkClient without
+ * unreffing and creating it again.
+ *
+ * Return value: %TRUE if we reset the client
  **/
 gboolean
 pk_client_reset (PkClient *client)
@@ -223,7 +296,7 @@ pk_client_reset (PkClient *client)
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	if (client->priv->is_finished != TRUE) {
-		pk_warning ("not exit status, reset might be invalid");
+		pk_debug ("not exit status, reset might be invalid");
 	}
 	g_free (client->priv->tid);
 	client->priv->tid = NULL;
@@ -2187,6 +2260,13 @@ pk_client_get_filters (PkClient *client)
 
 /**
  * pk_client_requeue:
+ * @client: a valid #PkClient instance
+ *
+ * We might need to requeue if we want to take an existing #PkClient instance
+ * and re-run it after completion. Doing this allows us to do things like
+ * re-searching when the output list may have changed state.
+ *
+ * Return value: %TRUE if we could requeue the client
  */
 gboolean
 pk_client_requeue (PkClient *client)
