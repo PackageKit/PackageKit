@@ -25,6 +25,7 @@ IMAGE_FILES =					\
 	pk-updates.png				\
 	pk-updates-warning.png			\
 	pk-waiting.png				\
+	pk-remove-confirm.png			\
 	$(NULL)
 
 EXTRA_DIST = 					\
