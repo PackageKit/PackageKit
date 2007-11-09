@@ -23,7 +23,7 @@ blddir = 'build'
 def set_options(opt):
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)
 	opt.add_option('--packagekit-user', type='string', help="User for running the PackageKit daemon", dest="user", default='root')
-	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend", default='root')
+	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend", default='dummy')
 	opt.add_option('--enable-tests', action="store_true", help="enable unit test code", dest="tests", default=True)
 	opt.add_option('--enable-gcov', action="store_true", help="compile with gcov support (gcc only)", dest="gcov", default=False)
 	opt.add_option('--enable-gprof', action="store_true", help="compile with gprof support (gcc only)", dest="gprof", default=False)
@@ -45,13 +45,17 @@ def configure(conf):
 		ret = conf.check_pkg('polkit-grant', destvar='POLKIT_GRANT', vnum='0.5')
 	if ret:
 		conf.add_define('SECURITY_TYPE_POLKIT', 1)
+	else:
+		print "*******************************************************************"
+		print "** YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING! **"
+		print "*******************************************************************"
 
 	#optional deps
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
 		conf.add_define('PK_BUILD_NETWORKMANAGER', 1)
 
-	#TODO: check program docbook2man and set HAVE_DOCBOOK2MAN
-	#TODO: check program xmlto and set DOCBOOK_DOCS_ENABLED
+#TODO: check program docbook2man and set HAVE_DOCBOOK2MAN
+#TODO: check program xmlto and set DOCBOOK_DOCS_ENABLED
 
 #TODO
 #if Params.g_options.default_backend is empty, then check
@@ -73,10 +77,18 @@ def configure(conf):
 #		with_default_backend=dummy
 #	fi
 
-#TODO
-#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
+	#TODO
+	#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
 
-#if Params.g_options.default_backend is box then PKG_CHECK_MODULES(BOX, libbox)
+	#the box backend needs another module
+	if Params.g_options.default_backend is 'box':
+		conf.check_pkg('libbox', destvar='BOX')
+		#TODO: fail if not present
+
+	#the alpm backend needs a header file
+	if Params.g_options.default_backend is 'alpm':
+		conf.check_header('alpm.h')
+		#TODO: fail if not present
 
 	#process options
 	if Params.g_options.wall:
