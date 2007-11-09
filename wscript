@@ -21,8 +21,11 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
-	#opt.add_option('--wall', type='boolean', help='compile with all errors', dest='wall')
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)
+	opt.add_option('--packagekit-user', type='string', help="User for running the PackageKit daemon", dest="user", default='root')
+	opt.add_option('--enable-tests', action="store_true", help="enable unit test code", dest="tests", default=True)
+	opt.add_option('--enable-gcov', action="store_true", help="compile with gcov support (gcc only)", dest="gcov", default=False)
+	opt.add_option('--enable-gprof', action="store_true", help="compile with gprof support (gcc only)", dest="gprof", default=False)
 	pass
 
 def configure(conf):
@@ -38,11 +41,23 @@ def configure(conf):
 	conf.check_pkg('polkit-grant', destvar='POLKIT_GRANT', vnum='0.5')
 	conf.check_pkg('sqlite3', destvar='SQLITE')
 
-	if Params.g_options.wall:
-		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
-
+	#optional deps
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
 		conf.add_define('PK_BUILD_NETWORKMANAGER', 1)
+
+	#TODO: check program docbook2man and set HAVE_DOCBOOK2MAN
+
+	#process options
+	if Params.g_options.wall:
+		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
+	if Params.g_options.gcov:
+		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+	if Params.g_options.gprof:
+		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+
+	#do we build the self tests?
+	if Params.g_options.tests:
+		conf.add_define('PK_BUILD_TESTS', 1)
 
 	conf.add_define('VERSION', VERSION)
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
