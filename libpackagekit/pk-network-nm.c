@@ -52,7 +52,7 @@ static void     pk_network_finalize	(GObject        *object);
 struct PkNetworkPrivate
 {
 	libnm_glib_ctx		*ctx;
-	guint			 callbackid;
+	guint			 callback_id;
 };
 
 enum {
@@ -67,6 +67,9 @@ G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 
 /**
  * pk_network_is_online:
+ * @network: a valid #PkNetwork instance
+ *
+ * Return value: %TRUE if the network is online
  **/
 gboolean
 pk_network_is_online (PkNetwork *network)
@@ -125,7 +128,7 @@ pk_network_init (PkNetwork *network)
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
 	context = g_main_context_default ();
 	network->priv->ctx = libnm_glib_init ();
-	network->priv->callbackid =
+	network->priv->callback_id =
 		libnm_glib_register_callback (network->priv->ctx,
 					      pk_network_nm_changed_cb,
 					      network, context);
@@ -144,7 +147,7 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
-	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callbackid);
+	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callback_id);
 	libnm_glib_shutdown (network->priv->ctx);
 
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);

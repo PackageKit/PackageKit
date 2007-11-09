@@ -53,6 +53,14 @@ G_DEFINE_TYPE (PkEnumList, pk_enum_list, G_TYPE_OBJECT)
 
 /**
  * pk_enum_list_set_type:
+ * @elist: a valid #PkEnumList instance
+ * @type: the type of list this should be
+ *
+ * This function sets the type of list. You don't /need/ to use this function,
+ * but is required if you print or get the list as we need to know what
+ * pk_xxxx_enum_to_text function to use for each part.
+ *
+ * Return value: %TRUE if we set the list type
  **/
 gboolean
 pk_enum_list_set_type (PkEnumList *elist, PkEnumListType type)
@@ -65,6 +73,13 @@ pk_enum_list_set_type (PkEnumList *elist, PkEnumListType type)
 
 /**
  * pk_enum_list_append_multiple:
+ * @elist: a valid #PkEnumList instance
+ * @value: the initial value
+ *
+ * Set a many items into a list in one method. Always terminate the enum
+ * list with the value -1
+ *
+ * Return value: %TRUE if we set the data
  **/
 gboolean
 pk_enum_list_append_multiple (PkEnumList *elist, gint value, ...)
@@ -94,6 +109,13 @@ pk_enum_list_append_multiple (PkEnumList *elist, gint value, ...)
 
 /**
  * pk_enum_list_from_string:
+ * @elist: a valid #PkEnumList instance
+ * @enums: a text representation of the list, e.g. "search-name;search-details"
+ *
+ * Set the list with a seed string. Converting the seed string once allows us
+ * to deal with raw enumerated integers, which is often much faster.
+ *
+ * Return value: %TRUE if we appended the data
  **/
 gboolean
 pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
@@ -159,6 +181,12 @@ pk_enum_list_get_item_text (PkEnumList *elist, guint value)
 
 /**
  * pk_enum_list_to_string:
+ * @elist: a valid #PkEnumList instance
+ *
+ * Converts the enumerated list back to a string.
+ *
+ * Return value: A string representing the enumerated list,
+ *  e.g. "search-name;search-details"
  **/
 gchar *
 pk_enum_list_to_string (PkEnumList *elist)
@@ -193,6 +221,11 @@ pk_enum_list_to_string (PkEnumList *elist)
 
 /**
  * pk_enum_list_print:
+ * @elist: a valid #PkEnumList instance
+ *
+ * Prints the enumerated list. This is most useful for debugging.
+ *
+ * Return value: %TRUE for success.
  **/
 gboolean
 pk_enum_list_print (PkEnumList *elist)
@@ -222,6 +255,9 @@ pk_enum_list_print (PkEnumList *elist)
 
 /**
  * pk_enum_list_size:
+ * @elist: a valid #PkEnumList instance
+ *
+ * Return value: the size of the enumerated list.
  **/
 guint
 pk_enum_list_size (PkEnumList *elist)
@@ -233,6 +269,10 @@ pk_enum_list_size (PkEnumList *elist)
 
 /**
  * pk_enum_list_get_item:
+ * @elist: a valid #PkEnumList instance
+ * @item: the item number of the list
+ *
+ * Return value: the enum value for this position, or zero if error.
  **/
 guint
 pk_enum_list_get_item (PkEnumList *elist, guint item)
@@ -248,6 +288,12 @@ pk_enum_list_get_item (PkEnumList *elist, guint item)
 
 /**
  * pk_enum_list_append:
+ * @elist: a valid #PkEnumList instance
+ * @value: the value to add
+ *
+ * Set a single item into a list.
+ *
+ * Return value: %TRUE if we set the data, %FALSE if it already existed
  **/
 gboolean
 pk_enum_list_append (PkEnumList *elist, guint value)
@@ -269,6 +315,12 @@ pk_enum_list_append (PkEnumList *elist, guint value)
 
 /**
  * pk_enum_list_remove:
+ * @elist: a valid #PkEnumList instance
+ * @value: the value to add
+ *
+ * Removes a single item from a list.
+ *
+ * Return value: %TRUE if we set the data, %FALSE if it did not exist
  **/
 gboolean
 pk_enum_list_remove (PkEnumList *elist, guint value)
@@ -290,6 +342,12 @@ pk_enum_list_remove (PkEnumList *elist, guint value)
 
 /**
  * pk_enum_list_contains:
+ * @elist: a valid #PkEnumList instance
+ * @value: the value to search for
+ *
+ * Searches the list looking for a specific value.
+ *
+ * Return value: %TRUE if we found the data in the list
  **/
 gboolean
 pk_enum_list_contains (PkEnumList *elist, guint value)

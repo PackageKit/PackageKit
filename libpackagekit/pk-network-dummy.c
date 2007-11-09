@@ -62,6 +62,10 @@ G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 
 /**
  * pk_network_is_online:
+ * @network: a valid #PkNetwork instance
+ *
+ * Return value: %TRUE if the network is online
+ * Note: This is a dummy file and no checks are done
  **/
 gboolean
 pk_network_is_online (PkNetwork *network)

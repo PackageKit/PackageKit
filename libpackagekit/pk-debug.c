@@ -37,20 +37,16 @@ static gboolean do_verbose = FALSE;	/* if we should print out debugging */
  * pk_print_line:
  **/
 static void
-pk_print_line (const gchar *func,
-		const gchar *file,
-		const int    line,
-		const gchar *buffer)
+pk_print_line (const gchar *func, const gchar *file, const int line, const gchar *buffer)
 {
-	gchar   *str_time;
-	time_t  the_time;
+	gchar *str_time;
+	time_t the_time;
 
 	time (&the_time);
 	str_time = g_new0 (gchar, 255);
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
 
-	fprintf (stderr, "[%s] %s:%d (%s):\t %s\n",
-		 func, file, line, str_time, buffer);
+	fprintf (stderr, "[%s] %s:%d (%s):\t %s\n", func, file, line, str_time, buffer);
 	g_free (str_time);
 }
 
@@ -58,10 +54,7 @@ pk_print_line (const gchar *func,
  * pk_debug_real:
  **/
 void
-pk_debug_real (const gchar *func,
-		const gchar *file,
-		const int    line,
-		const gchar *format, ...)
+pk_debug_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;
@@ -83,10 +76,7 @@ pk_debug_real (const gchar *func,
  * pk_warning_real:
  **/
 void
-pk_warning_real (const gchar *func,
-		  const gchar *file,
-		  const int    line,
-		  const gchar *format, ...)
+pk_warning_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;
@@ -110,10 +100,7 @@ pk_warning_real (const gchar *func,
  * pk_error_real:
  **/
 void
-pk_error_real (const gchar *func,
-		const gchar *file,
-		const int    line,
-		const gchar *format, ...)
+pk_error_real (const gchar *func, const gchar *file, const int line, const gchar *format, ...)
 {
 	va_list args;
 	gchar *buffer = NULL;

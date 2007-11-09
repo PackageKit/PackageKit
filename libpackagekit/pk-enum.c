@@ -202,6 +202,12 @@ static PkEnumMatch enum_sig_type[] = {
 
 /**
  * pk_enum_find_value:
+ * @table: A #PkEnumMatch enum table of values
+ * @string: the string constant to search for, e.g. "desktop-gnome"
+ *
+ * Search for a string value in a table of constants.
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 guint
 pk_enum_find_value (PkEnumMatch *table, const gchar *string)
@@ -228,6 +234,12 @@ pk_enum_find_value (PkEnumMatch *table, const gchar *string)
 
 /**
  * pk_enum_find_string:
+ * @table: A #PkEnumMatch enum table of values
+ * @value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
+ *
+ * Search for a enum value in a table of constants.
+ *
+ * Return value: the string constant, e.g. "desktop-gnome"
  */
 const gchar *
 pk_enum_find_string (PkEnumMatch *table, guint value)

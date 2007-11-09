@@ -33,6 +33,10 @@
 
 /**
  * pk_package_id_new:
+ *
+ * Creates a new #PkPackageId object with default values
+ *
+ * Return value: a new #PkPackageId object
  **/
 PkPackageId *
 pk_package_id_new (void)
@@ -48,6 +52,9 @@ pk_package_id_new (void)
 
 /**
  * pk_package_id_check:
+ * @package_id: the text the check
+ *
+ * Return value: %TRUE if the package_id was well formed.
  **/
 gboolean
 pk_package_id_check (const gchar *package_id)
@@ -63,6 +70,11 @@ pk_package_id_check (const gchar *package_id)
 
 /**
  * pk_package_id_new_from_string:
+ * @package_id: the text to pre-fill the object
+ *
+ * Creates a new #PkPackageId object with values taken from the supplied id.
+ *
+ * Return value: a new #PkPackageId object
  **/
 PkPackageId *
 pk_package_id_new_from_string (const gchar *package_id)
@@ -99,10 +111,17 @@ pk_package_id_new_from_string (const gchar *package_id)
 
 /**
  * pk_package_id_new_from_list:
+ * @name: the package name
+ * @version: the package version
+ * @arch: the package architecture
+ * @data: the package extra data
+ *
+ * Creates a new #PkPackageId object with values.
+ *
+ * Return value: a new #PkPackageId object
  **/
 PkPackageId *
-pk_package_id_new_from_list (const gchar *name, const gchar *version,
-		     const gchar *arch, const gchar *data)
+pk_package_id_new_from_list (const gchar *name, const gchar *version, const gchar *arch, const gchar *data)
 {
 	PkPackageId *ident = NULL;
 
@@ -117,6 +136,9 @@ pk_package_id_new_from_list (const gchar *name, const gchar *version,
 
 /**
  * pk_package_id_to_string:
+ * @indent: A #PkPackageId object
+ *
+ * Return value: returns a string representation of #PkPackageId.
  **/
 gchar *
 pk_package_id_to_string (PkPackageId *ident)
@@ -128,6 +150,12 @@ pk_package_id_to_string (PkPackageId *ident)
 
 /**
  * pk_package_id_build:
+ * @name: the package name
+ * @version: the package version
+ * @arch: the package architecture
+ * @data: the package extra data
+ *
+ * Return value: returns a string putting together the data.
  **/
 gchar *
 pk_package_id_build (const gchar *name, const gchar *version,
@@ -138,6 +166,9 @@ pk_package_id_build (const gchar *name, const gchar *version,
 
 /**
  * pk_package_id_free:
+ * @ident: the #PkPackageId object
+ *
+ * Return value: %TRUE is the #PkPackageId object was freed.
  **/
 gboolean
 pk_package_id_free (PkPackageId *ident)
@@ -155,6 +186,12 @@ pk_package_id_free (PkPackageId *ident)
 
 /**
  * pk_package_id_equal:
+ * @pid1: the first package_id
+ * @pid2: the second package_id
+ *
+ * Only compare the first three sections, data is not part of the match
+ *
+ * Return value: %TRUE if the package_id's can be considered equal.
  **/
 gboolean
 pk_package_id_equal (const gchar *pid1, const gchar *pid2)

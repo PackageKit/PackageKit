@@ -38,6 +38,12 @@
 
 /**
  * pk_filter_check:
+ * @filter: A text failter to test
+ *
+ * Tests a compound filter to see if every element is correct and if it well
+ * formed.
+ *
+ * Return value: %TRUE if the filter is valid
  **/
 gboolean
 pk_filter_check (const gchar *filter)
@@ -77,6 +83,11 @@ out:
 
 /**
  * pk_strvalidate_char:
+ * @item: A single char to test
+ *
+ * Tests a char to see if it may be dangerous.
+ *
+ * Return value: %TRUE if the char is valid
  **/
 static gboolean
 pk_strvalidate_char (gchar item)
@@ -104,6 +115,13 @@ pk_strvalidate_char (gchar item)
 
 /**
  * pk_strsafe:
+ * @text: The input text to make safe
+ *
+ * Replaces chars in the text that may be dangerous, or that may print
+ * incorrectly. These chars include new lines, tabs and quotes, and are
+ * replaced by spaces.
+ *
+ * Return value: the new string with no insane chars
  **/
 gchar *
 pk_strsafe (const gchar *text)
@@ -120,6 +138,12 @@ pk_strsafe (const gchar *text)
 
 /**
  * pk_strnumber:
+ * @text: The text the validate
+ *
+ * Tests a string to see if it is a number. Both positive and negative numbers
+ * are allowed.
+ *
+ * Return value: %TRUE if the string represents a numeric value
  **/
 gboolean
 pk_strnumber (const gchar *text)
@@ -151,6 +175,12 @@ pk_strnumber (const gchar *text)
 
 /**
  * pk_strtoint:
+ * @text: The text the convert
+ * @value: The return numeric return value, or 0 if invalid.
+ *
+ * Converts a string into a signed integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
  **/
 gboolean
 pk_strtoint (const gchar *text, gint *value)
@@ -168,6 +198,12 @@ pk_strtoint (const gchar *text, gint *value)
 
 /**
  * pk_strtouint:
+ * @text: The text the convert
+ * @value: The return numeric return value, or 0 if invalid.
+ *
+ * Converts a string into a unsigned integer value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
  **/
 gboolean
 pk_strtouint (const gchar *text, guint *value)
@@ -185,11 +221,14 @@ pk_strtouint (const gchar *text, guint *value)
 
 /**
  * pk_strzero:
+ * @text: The text to check
  *
  * This function is a much safer way of doing "if (strlen (text) == 0))"
  * as it does not rely on text being NULL terminated. It's also much
  * quicker as it only checks the first byte rather than scanning the whole
  * string just to verify it's not zero length.
+ *
+ * Return value: %TRUE if the string was converted correctly
  **/
 gboolean
 pk_strzero (const gchar *text)
@@ -205,11 +244,15 @@ pk_strzero (const gchar *text)
 
 /**
  * pk_strlen:
+ * @text: The text to check
+ * @max_length: The maximum length of the string
  *
  * This function is a much safer way of doing strlen as it checks for NULL and
  * a stupidly long string.
  * This also modifies the string in place if it is over-range by inserting
  * a NULL at the max_length.
+ *
+ * Return value: the length of the string, or max_length.
  **/
 guint
 pk_strlen (gchar *text, guint max_length)
@@ -226,6 +269,11 @@ pk_strlen (gchar *text, guint max_length)
 
 /**
  * pk_strvalidate:
+ * @text: The text to check for validity
+ *
+ * Tests a string to see if it may be dangerous or invalid.
+ *
+ * Return value: %TRUE if the string is valid
  **/
 gboolean
 pk_strvalidate (const gchar *text)
@@ -250,8 +298,14 @@ pk_strvalidate (const gchar *text)
 
 /**
  * pk_strsplit:
+ * @id: the ; delimited string to split
+ * @parts: how many parts the delimted string should be split into
  *
- * You need to use g_strfreev on the returned value
+ * Splits a string into the correct number of parts, checking the correct
+ * number of delimiters are present.
+ *
+ * Return value: a char array is split correctly, %NULL if invalid
+ * Note: You need to use g_strfreev on the returned value
  **/
 gchar **
 pk_strsplit (const gchar *id, guint parts)
@@ -290,9 +344,13 @@ out:
 
 /**
  * pk_strequal:
+ * @id1: the first item of text to test
+ * @id2: the second item of text to test
  *
  * This function is a much safer way of doing strcmp as it checks for
- * stupidly long strings, and returns boolean TRUE, not zero for success
+ * NULL first, and returns boolean TRUE, not zero for success.
+ *
+ * Return value: %TRUE if the string are bot non-%NULL and the same.
  **/
 gboolean
 pk_strequal (const gchar *id1, const gchar *id2)
@@ -306,7 +364,16 @@ pk_strequal (const gchar *id1, const gchar *id2)
 
 /**
  * pk_strcmp_sections:
- * only compare first sections, not all the data
+ * @id1: the first item of text to test
+ * @id2: the second item of text to test
+ * @parts: the number of parts each id should have
+ * @compare: the leading number of parts to compare
+ *
+ * We only want to compare some first sections, not all the data when
+ * comparing package_id's and transaction_id's.
+ *
+ * Return value: %TRUE if the strings can be considered the same.
+ *
  **/
 gboolean
 pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compare)
@@ -361,6 +428,11 @@ out:
  * pk_strpad:
  * @data: the input string
  * @length: the desired length of the output string, with padding
+ *
+ * Returns the text padded to a length with spaces. If the string is
+ * longer than length then a longer string is returned.
+ *
+ * Return value: The padded string
  **/
 gchar *
 pk_strpad (const gchar *data, guint length)
@@ -390,6 +462,12 @@ pk_strpad (const gchar *data, guint length)
  * @data: the input string
  * @length: the desired length of the output string, with padding
  * @extra: if we are running with a deficit, we might have a positive offset
+ *
+ * This function pads a string, but allows a follow-on value. This is useful
+ * if the function is being used to print columns of text, and one oversize
+ * one has to be absorbed into the next where possible.
+ *
+ * Return value: The padded string
  **/
 gchar *
 pk_strpad_extra (const gchar *data, guint length, guint *extra)
@@ -420,6 +498,13 @@ pk_strpad_extra (const gchar *data, guint length, guint *extra)
 
 /**
  * pk_strbuild_va:
+ * @first_element: The first string item, or NULL
+ * @args: the va_list
+ *
+ * This function converts a va_list into a string in a safe and efficient way,
+ * e.g. pk_strbuild_va("foo","bar","baz") == "foo bar baz"
+ *
+ * Return value: the single string
  **/
 gchar *
 pk_strbuild_va (const gchar *first_element, va_list *args)

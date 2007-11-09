@@ -58,6 +58,9 @@ G_DEFINE_TYPE (PkConnection, pk_connection, G_TYPE_OBJECT)
 
 /**
  * pk_connection_valid:
+ * @connection: a valid #PkConnection instance
+ *
+ * Return value: %TRUE if packagekitd is running
  **/
 gboolean
 pk_connection_valid (PkConnection *connection)
