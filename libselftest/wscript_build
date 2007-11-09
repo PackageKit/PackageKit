@@ -4,9 +4,9 @@
 libselftest = bld.create_obj('gnome', 'staticlib')
 libselftest.uselib = 'GLIB GOBJECT'
 
-libselftest.source='''
-libselftest.c
-'''
+libselftest.source = """
+	libselftest.c
+"""
 
 libselftest.includes = '.'
 libselftest.target   = 'libselftest'

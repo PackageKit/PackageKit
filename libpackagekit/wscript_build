@@ -7,19 +7,19 @@ libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
 libpackagekit.uselib_local = 'libgbus libselftest'
 
-libpackagekit.source='''
-pk-debug.c
-pk-connection.c
-pk-package-id.c
-pk-package-list.c
-pk-enum-list.c
-pk-enum.c
-pk-common.c
-pk-client.c
-pk-task-list.c
-pk-job-list.c
-pk-polkit-client.c
-'''
+libpackagekit.source = """
+	pk-debug.c
+	pk-connection.c
+	pk-package-id.c
+	pk-package-list.c
+	pk-enum-list.c
+	pk-enum.c
+	pk-common.c
+	pk-client.c
+	pk-task-list.c
+	pk-job-list.c
+	pk-polkit-client.c
+"""
 
 libpackagekit.includes      = '. ../libgbus ../libselftest'
 libpackagekit.target        = 'libpackagekit'

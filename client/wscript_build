@@ -10,15 +10,15 @@
 # (at your option) any later version.
 
 obj = bld.create_obj('cc', 'program')
-obj.source='pk-console.c'
-obj.includes='. ../libpackagekit'
-obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
-obj.uselib_local='libpackagekit'
-obj.target='pkcon'
+obj.source = 'pk-console.c'
+obj.includes = '. ../libpackagekit'
+obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
+obj.uselib_local = 'libpackagekit'
+obj.target = 'pkcon'
 
 obj = bld.create_obj('cc', 'program')
-obj.source='pk-monitor.c'
-obj.includes='. ../libpackagekit'
-obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
-obj.uselib_local='libpackagekit'
-obj.target='pkmon'
+obj.source = 'pk-monitor.c'
+obj.includes = '. ../libpackagekit'
+obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
+obj.uselib_local = 'libpackagekit'
+obj.target = 'pkmon'
