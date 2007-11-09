@@ -72,7 +72,7 @@ def configure(conf):
 		elif conf.check_library2('alpm', mandatory=0):
 			default_backend = 'alpm'
 		elif conf.find_program('apt-get'):
-			default_backend = 'apt-get'
+			default_backend = 'apt'
 		elif conf.find_program('conary'):
 			default_backend = 'conary'
 		elif conf.find_program('box-repos'):
@@ -94,7 +94,7 @@ def configure(conf):
 		if not conf.check_header('alpm.h'):
 			Params.fatal('The "alpm" backend needs "alpm.h"')
 
-	if default_backend == 'apt-get':
+	if default_backend == 'apt':
 		try:
 			import apt_pkg
 		except:
