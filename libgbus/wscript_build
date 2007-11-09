@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+#Marshall file
+libgbus = bld.create_obj('gnome', 'staticlib')
+libgbus.add_marshal_file('libgbus-marshal.list', 'libgbus_marshal', '--header')
+libgbus.add_marshal_file('libgbus-marshal.list', 'libgbus_marshal', '--body')
+libgbus.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
+
+libgbus.source='''
+libgbus.c
+libgbus.h
+'''
+
+libgbus.includes = '.'
+libgbus.target   = 'libgbus'
+libgbus.name     = 'libgbus'

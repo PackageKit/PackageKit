@@ -4,7 +4,7 @@
 libpackagekit = bld.create_obj('gnome', 'shlib')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
-libpackagekit.uselib = 'GLIB GOBJECT'
+libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB libgbus'
 
 libpackagekit.source='''
 pk-debug.c
@@ -34,6 +34,6 @@ pk-polkit-client.h
 #pk-marshal.c
 #pk-marshal.h
 
-libpackagekit.includes      = '.'
+libpackagekit.includes      = '. ../libgbus ../libselftest'
 libpackagekit.target        = 'libpackagekit'
 libpackagekit.name          = 'libpackagekit'
