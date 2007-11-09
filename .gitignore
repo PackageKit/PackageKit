@@ -52,4 +52,7 @@ tags
 *.patch
 NEWS.new
 *.txt
+.lock-wscript
+.waf-*
+build/
 
