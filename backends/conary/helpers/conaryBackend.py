@@ -191,7 +191,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 self.status(STATUS_INSTALL)
                 self._do_package_update(name, version, flavor, apply=True)
             except:
-                pass
+                self.error(ERROR_PACKAGE_NOT_FOUND, 'Package was not found')
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
