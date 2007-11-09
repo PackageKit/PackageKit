@@ -63,34 +63,45 @@ def configure(conf):
 
 	if not Params.g_options.default_backend:
 		if conf.find_program('yum'):
-			with_default_backend = 'yum'
+			default_backend = 'yum'
 		elif conf.check_library2('alpm', mandatory=0):
-			with_default_backend = 'alpm'
+			default_backend = 'alpm'
 		elif conf.find_program('apt-get'):
-			with_default_backend = 'apt-get'
+			default_backend = 'apt-get'
 		elif conf.find_program('conary'):
-			with_default_backend = 'conary'
+			default_backend = 'conary'
 		elif conf.find_program('box-repos'):
-			with_default_backend = 'box'
+			default_backend = 'box'
 		elif conf.find_program('smart'):
-			with_default_backend = 'smart'
+			default_backend = 'smart'
 		elif conf.find_program('pisi'):
-			with_default_backend = 'pisi'
+			default_backend = 'pisi'
 		else:
-			with_default_backend = 'dummy'
+			default_backend = 'dummy'
+	else:
+		default_backend = Params.g_options.default_backend
 
 	#TODO
 	#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
 
 	#the box backend needs another module
-	if Params.g_options.default_backend == 'box':
+	if default_backend == 'box':
 		if not conf.check_pkg('libbox', destvar='BOX'):
 			Params.fatal('The "box" backend needs "libbox"')
 
 	#the alpm backend needs a header file
-	if Params.g_options.default_backend == 'alpm':
+	if default_backend == 'alpm':
 		if not conf.check_header('alpm.h'):
 			Params.fatal('The "alpm" backend needs "alpm.h"')
+
+	if default_backend == 'apt':
+		try:
+			import apt_pkg
+		except:
+			Params.fatal('The "apt" backend needs "python-apt"')
+
+		if not conf.check_library2('apt-pkg', uselib='APT'):
+			Params.fatal('The "apt" backend needs "libapt-pkg-dev"')
 
 	#process options
 	if Params.g_options.wall:
