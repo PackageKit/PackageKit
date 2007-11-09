@@ -121,10 +121,10 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	# libpackagekit data docs etc html libgbus libselftest man po policy python tools backends
-        bld.add_subdirs('client')
-	print "more"
+	# data docs etc html libgbus libselftest man po policy python tools backends
+        bld.add_subdirs('libpackagekit client')
 
 def shutdown():
 	# this piece of code may be move right after the pixmap or documentation installation
-	print "done!"
+	pass
+
