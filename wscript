@@ -41,9 +41,14 @@ def configure(conf):
 	conf.check_pkg('dbus-glib-1', destvar='DBUS_GLIB', vnum='0.60')
 	conf.check_pkg('sqlite3', destvar='SQLITE')
 
+	#we need both of these for the server
 	ret = conf.check_pkg('polkit-dbus', destvar='POLKIT_DBUS', vnum='0.5')
 	if ret:
 		ret = conf.check_pkg('polkit-grant', destvar='POLKIT_GRANT', vnum='0.5')
+	if ret:
+		#we only need the validation tool if we are doing the tests
+		if Params.g_options.tests:
+			ret = conf.find_program('polkit-config-file-validate', var='POLKIT_POLICY_FILE_VALIDATE'):
 	if ret:
 		conf.add_define('SECURITY_TYPE_POLKIT', 1)
 	else:
