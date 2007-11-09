@@ -129,10 +129,8 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	# data docs etc libgbus libselftest man po policy python backends
-	#TODO: process packagekit.pc.in and install packagekit.pc into $(libdir)/pkgconfig
-
-        bld.add_subdirs('libpackagekit client libgbus libselftest')
+	# data docs libgbus libselftest man po policy python backends
+        bld.add_subdirs('libpackagekit client libgbus libselftest etc')
 
 	#set the user in packagekit.pc.in and install
 	obj=bld.create_obj('subst')

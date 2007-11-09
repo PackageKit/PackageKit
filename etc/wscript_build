@@ -9,7 +9,15 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-#TODO: need to do a replacement from PackageKit.conf to PackageKit.conf.in
-#      after substituting Params.g_options.user
-install_files('PK_CONF_DIR', 'PackageKit', 'PackageKit.conf')
+import misc
+
+#set the default backend in the installed config file
+obj=bld.create_obj('subst')
+obj.source = 'PackageKit.conf.in'
+obj.target = 'PackageKit.conf'
+#TODO: need to get this from wscript
+obj.dict = {'defaultbackend': 'default_backend'}
+obj.fun = misc.subst_func
+obj.install_var = 'PREFIX'
+obj.install_subdir = 'etc/PackageKit'
 

@@ -9,10 +9,21 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-#TODO: add other sources
+#create the daemon
 obj = bld.create_obj('gnome', 'program')
 obj.source='''
+pk-backend.c
+pk-backend-python.c
+pk-conf.c
 pk-engine.c
+pk-inhibit.c
+pk-main.c
+pk-spawn.c
+pk-thread-list.c
+pk-time.c
+pk-transaction-db.c
+pk-transaction-id.c
+pk-transaction-list.c
 '''
 obj.includes='.'
 obj.uselib='DBUS_GLIB'
@@ -21,5 +32,13 @@ obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 
+#TODO: if SECURITY_TYPE_POLKIT then obj.source needs to have pk-security-polkit.c added else pk-security-dummy.c
+
 #TODO: Need to install backend headers to /usr/include/packagekit-backends/
+
+#TODO: if Params.g_options.gcov then we need to execute $(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > gcov.txt
+
+#TODO: if Params.g_options.gprof then we need to execute gprof .libs/pk-self-test > gprof.txt
+
+#TODO: if Params.g_options.tests then add the self test program: pk-self-test.c and all the libs above and execute the pk-self-test application
 
