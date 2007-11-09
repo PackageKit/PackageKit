@@ -1,0 +1,22 @@
+#! /usr/bin/env python
+# encoding: utf-8
+#
+# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+#
+# Licensed under the GNU General Public License Version 2
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+obj = bld.create_obj('gnome', 'program')
+obj.source='''
+pk-engine.c
+'''
+obj.includes='.'
+obj.uselib='DBUS_GLIB'
+obj.target='packagekitd'
+obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
+
