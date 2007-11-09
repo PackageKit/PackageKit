@@ -129,13 +129,13 @@ def build(bld):
         bld.add_subdirs('libpackagekit client libgbus libselftest')
 
 	#set the user in packagekit.pc.in and install
-#	obj=bld.create_obj('subst')
-#	obj.source = 'packagekit.pc.in'
-#	obj.target = 'packagekit.pc'
-#	obj.dict = {'VERSION': VERSION}
-#	obj.fun = misc.subst_func
-#	obj.destvar = 'PREFIX'
-#	obj.subdir  = 'usr/lib/pkgconfig'
+	obj=bld.create_obj('subst')
+	obj.source = 'packagekit.pc.in'
+	obj.target = 'packagekit.pc'
+	obj.dict = {'VERSION': 'dave', 'prefix':'PREFIX', 'exec_prefix':'PREFIX', 'libdir':'usr/lib', 'includedir':'usr/include'}
+	obj.fun = misc.subst_func
+	obj.install_var = 'PREFIX'
+	obj.install_subdir = 'usr/lib/pkgconfig'
 
 	#set the user in org.freedesktop.PackageKit.conf.in and install
 	obj=bld.create_obj('subst')
@@ -143,8 +143,8 @@ def build(bld):
 	obj.target = 'org.freedesktop.PackageKit.conf'
 	obj.dict = {'PACKAGEKIT_USER': Params.g_options.user}
 	obj.fun = misc.subst_func
-	obj.destvar = 'PREFIX'
-	obj.subdir  = 'etc/dbus-1/system.d'
+	obj.install_var = 'PREFIX'
+	obj.install_subdir = 'etc/dbus-1/system.d'
 
 def shutdown():
 	# this piece of code may be move right after the pixmap or documentation installation
