@@ -24,3 +24,6 @@ pk-polkit-client.c
 libpackagekit.includes      = '. ../libgbus ../libselftest'
 libpackagekit.target        = 'libpackagekit'
 libpackagekit.name          = 'libpackagekit'
+
+#TODO: Need to install headers to /usr/include/packagekit/
+
