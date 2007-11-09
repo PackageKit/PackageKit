@@ -11,6 +11,7 @@
 
 import os
 import Params
+import misc
 
 # the following two variables are used by the target "waf dist"
 VERSION='0.1.3'
@@ -30,7 +31,7 @@ def set_options(opt):
 	pass
 
 def configure(conf):
-	conf.check_tool('gcc gnome')
+	conf.check_tool('gcc gnome misc')
 
 	conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.14.0')
 	conf.check_pkg('gobject-2.0', destvar='GOBJECT', vnum='2.14.0')
@@ -106,7 +107,7 @@ def configure(conf):
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
 	conf.add_define('PACKAGE', 'PackageKit')
 
-	#TODO: expand these
+	#TODO: expand these into PREFIX and something recognised by waf
 	conf.add_define('PK_CONF_DIR', '$(sysconfdir)/PackageKit')
 	conf.add_define('PK_DB_DIR', '$(localstatedir)/lib/PackageKit')
 	conf.add_define('PK_PLUGIN_DIR', '$(libdir)/packagekit-backend')
@@ -122,7 +123,27 @@ def build(bld):
 	# process subfolders from here
 	# Pending dirs:
 	# data docs etc libgbus libselftest man po policy python backends
+	#TODO: process packagekit.pc.in and install packagekit.pc into $(libdir)/pkgconfig
+
         bld.add_subdirs('libpackagekit client libgbus libselftest')
+
+	#set the user in packagekit.pc.in and install
+#	obj=bld.create_obj('subst')
+#	obj.source = 'packagekit.pc.in'
+#	obj.target = 'packagekit.pc'
+#	obj.dict = {'VERSION': VERSION}
+#	obj.fun = misc.subst_func
+#	obj.destvar = 'PREFIX'
+#	obj.subdir  = 'usr/lib/pkgconfig'
+
+	#set the user in org.freedesktop.PackageKit.conf.in and install
+	obj=bld.create_obj('subst')
+	obj.source = 'org.freedesktop.PackageKit.conf.in'
+	obj.target = 'org.freedesktop.PackageKit.conf'
+	obj.dict = {'PACKAGEKIT_USER': Params.g_options.user}
+	obj.fun = misc.subst_func
+	obj.destvar = 'PREFIX'
+	obj.subdir  = 'etc/dbus-1/system.d'
 
 def shutdown():
 	# this piece of code may be move right after the pixmap or documentation installation
