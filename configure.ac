@@ -405,6 +405,8 @@ if test x$with_default_backend = xapt; then
 	AC_SUBST(APT_CFLAGS)
 	AC_SUBST(APT_LIBS)
 	AC_SUBST(APT_PKG_TYPE)
+else
+	AM_CONDITIONAL(APT_SEARCH_PLAIN, [false])
 fi
 
 if test x$with_default_backend = xbox; then
