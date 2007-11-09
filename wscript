@@ -106,16 +106,25 @@ def configure(conf):
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
 	conf.add_define('PACKAGE', 'PackageKit')
 
+	#TODO: expand these
+	conf.add_define('PK_CONF_DIR', '$(sysconfdir)/PackageKit')
+	conf.add_define('PK_DB_DIR', '$(localstatedir)/lib/PackageKit')
+	conf.add_define('PK_PLUGIN_DIR', '$(libdir)/packagekit-backend')
+
+	#TODO: can we define these here?
+	#AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
+	#AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
+
 	conf.env.append_value('CCFLAGS', '-DHAVE_CONFIG_H')
 	conf.write_config_header('config.h')
 
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	# libpackagekit client data docs etc html libgbus libselftest man po policy python tools backends
-        bld.add_subdirs('libpackagekit')
-	print "more"
+	# data docs etc libgbus libselftest man po policy python backends
+        bld.add_subdirs('libpackagekit client')
 
 def shutdown():
 	# this piece of code may be move right after the pixmap or documentation installation
-	print "done!"
+	pass
+
