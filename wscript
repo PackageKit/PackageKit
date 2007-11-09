@@ -48,7 +48,7 @@ def configure(conf):
 	if ret:
 		#we only need the validation tool if we are doing the tests
 		if Params.g_options.tests:
-			ret = conf.find_program('polkit-config-file-validate', var='POLKIT_POLICY_FILE_VALIDATE'):
+			ret = conf.find_program('polkit-config-file-validate', var='POLKIT_POLICY_FILE_VALIDATE')
 	if ret:
 		conf.add_define('SECURITY_TYPE_POLKIT', 1)
 	else:
@@ -120,9 +120,9 @@ def configure(conf):
 	conf.add_define('PACKAGE', 'PackageKit')
 
 	#TODO: expand these into PREFIX and something recognised by waf
-	conf.add_define('PK_CONF_DIR', '$(sysconfdir)/PackageKit')
-	conf.add_define('PK_DB_DIR', '$(localstatedir)/lib/PackageKit')
-	conf.add_define('PK_PLUGIN_DIR', '$(libdir)/packagekit-backend')
+	conf.add_define('PK_CONF_DIR', '/etc/PackageKit')
+	conf.add_define('PK_DB_DIR', '/var/lib/PackageKit')
+	conf.add_define('PK_PLUGIN_DIR', '/usr/lib/packagekit-backend')
 
 	#TODO: can we define these here?
 	#AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
@@ -134,8 +134,8 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	# data docs libgbus libselftest man po policy python backends
-        bld.add_subdirs('libpackagekit client libgbus libselftest etc')
+	#  docs libselftest man python backends
+        bld.add_subdirs('libpackagekit client libgbus libselftest etc policy po data')
 
 	#set the user in packagekit.pc.in and install
 	obj=bld.create_obj('subst')
