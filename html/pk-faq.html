@@ -54,6 +54,13 @@ development       |        |  X  |  X  |  X  |      |       |      |
 gui               |        |  X  |  X  |  X  |      |       |   X  |
 </pre>
 
+<h3>Why doesn't PackageKit work with SELinux?</h3>
+<p>
+<code>packagekitd</code> is not recognised by SELinux yet.
+Until the policy is fixed to handle system activation, you'll have
+to run in permissive mode, rather than enforcing.
+</p>
+
 <h3>What if the backend package manager doesn't support percentage updates?</h3>
 <p>
 You don't have to have a backend that supports percentage updates.
