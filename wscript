@@ -70,7 +70,7 @@ def build(bld):
 	# process subfolders from here
 	# Pending dirs:
 	# libpackagekit client data docs etc html libgbus libselftest man po policy python tools backends
-        bld.add_subdirs('')
+        bld.add_subdirs('libpackagekit')
 	print "more"
 
 def shutdown():
