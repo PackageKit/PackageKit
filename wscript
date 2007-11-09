@@ -24,7 +24,7 @@ blddir = 'build'
 def set_options(opt):
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)
 	opt.add_option('--packagekit-user', type='string', help="User for running the PackageKit daemon", dest="user", default='root')
-	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend", default='dummy')
+	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend")
 	opt.add_option('--enable-tests', action="store_true", help="enable unit test code", dest="tests", default=True)
 	opt.add_option('--enable-gcov', action="store_true", help="compile with gcov support (gcc only)", dest="gcov", default=False)
 	opt.add_option('--enable-gprof', action="store_true", help="compile with gprof support (gcc only)", dest="gprof", default=False)
@@ -81,20 +81,15 @@ def configure(conf):
 	else:
 		default_backend = Params.g_options.default_backend
 
-	#TODO
-	#if Params.g_options.default_backend is apt then CHECK_MOD apt_pkg
-
-	#the box backend needs another module
 	if default_backend == 'box':
 		if not conf.check_pkg('libbox', destvar='BOX'):
 			Params.fatal('The "box" backend needs "libbox"')
 
-	#the alpm backend needs a header file
 	if default_backend == 'alpm':
 		if not conf.check_header('alpm.h'):
 			Params.fatal('The "alpm" backend needs "alpm.h"')
 
-	if default_backend == 'apt':
+	if default_backend == 'apt-get':
 		try:
 			import apt_pkg
 		except:
