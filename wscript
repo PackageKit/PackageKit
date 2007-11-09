@@ -121,7 +121,7 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	# data docs etc html libgbus libselftest man po policy python tools backends
+	# data docs etc libgbus libselftest man po policy python backends
         bld.add_subdirs('libpackagekit client')
 
 def shutdown():
