@@ -11,13 +11,14 @@
 
 obj = bld.create_obj('cc', 'program')
 obj.source='pk-console.c'
-obj.includes='.'
-obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS'
+obj.includes='. ../libpackagekit'
+obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
+obj.uselib_local='libpackagekit'
 obj.target='pkcon'
 
 obj = bld.create_obj('cc', 'program')
 obj.source='pk-monitor.c'
-obj.includes='.'
-obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS'
+obj.includes='. ../libpackagekit'
+obj.uselib='GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
+obj.uselib_local='libpackagekit'
 obj.target='pkmon'
-

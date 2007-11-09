@@ -8,7 +8,6 @@ libgbus.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
 
 libgbus.source='''
 libgbus.c
-libgbus.h
 '''
 
 libgbus.includes = '.'

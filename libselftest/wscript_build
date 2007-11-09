@@ -1,0 +1,13 @@
+#!/usr/bin/python
+
+#Marshall file
+libselftest = bld.create_obj('gnome', 'staticlib')
+libselftest.uselib = 'GLIB GOBJECT'
+
+libselftest.source='''
+libselftest.c
+'''
+
+libselftest.includes = '.'
+libselftest.target   = 'libselftest'
+libselftest.name     = 'libselftest'
