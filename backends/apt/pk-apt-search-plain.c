@@ -23,13 +23,11 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
-#include <pk-backend-python.h>
-#include "pk-apt-search.h"
 
 /**
  * backend_get_groups:
  */
-static void
+void
 backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
@@ -49,7 +47,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 /**
  * backend_get_filters:
  */
-static void
+void
 backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
@@ -60,33 +58,48 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      -1);
 }
 
-PK_BACKEND_OPTIONS (
-	"Apt",				/* description */
-	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
-	backend_get_groups,			/* get_groups */
-	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel */
-	NULL,					/* get_depends */
-	backend_get_description,		/* get_description */
-	NULL,					/* get_files */
-	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
-	pk_backend_python_get_updates,			/* get_updates */
-	pk_backend_python_install_package,		/* install_package */
-	NULL,					/* install_file */
-	pk_backend_python_refresh_cache,			/* refresh_cache */
-	pk_backend_python_remove_package,			/* remove_package */
-	pk_backend_python_resolve,					/* resolve */
-	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
-	backend_search_name,			/* search_name */
-	pk_backend_python_update_package,			/* update_package */
-	pk_backend_python_update_system,			/* update_system */
-	NULL,					/* get_repo_list */
-	NULL,					/* repo_enable */
-	NULL					/* repo_set_data */
-);
+/**
+ * backend_get_description:
+ */
+
+void
+backend_get_description (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
+}
+
+/**
+ * backend_search_details:
+ */
+
+void
+backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
+}
+
+/**
+ * backend_search_name:
+ */
+void
+backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
+}
+
+/**
+ * backend_search_group:
+ */
+void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
+}
