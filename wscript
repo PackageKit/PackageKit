@@ -24,11 +24,11 @@ blddir = 'build'
 def set_options(opt):
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)
 	opt.add_option('--packagekit-user', type='string', help="User for running the PackageKit daemon", dest="user", default='root')
-	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend")
 	opt.add_option('--enable-tests', action="store_true", help="enable unit test code", dest="tests", default=True)
 	opt.add_option('--enable-gcov', action="store_true", help="compile with gcov support (gcc only)", dest="gcov", default=False)
 	opt.add_option('--enable-gprof', action="store_true", help="compile with gprof support (gcc only)", dest="gprof", default=False)
-	pass
+
+	opt.sub_options('backends')
 
 def configure(conf):
 	conf.check_tool('gcc gnome misc')
@@ -66,50 +66,8 @@ def configure(conf):
 	if conf.find_program('xmlto', var='XMLTO'):
 		conf.env['DOCBOOK_DOCS_ENABLED'] = 1
 
-	if not Params.g_options.default_backend:
-		if conf.find_program('yum'):
-			default_backend = 'yum'
-		elif conf.check_library2('alpm', mandatory=0):
-			default_backend = 'alpm'
-		elif conf.find_program('apt-get'):
-			default_backend = 'apt'
-		elif conf.find_program('conary'):
-			default_backend = 'conary'
-		elif conf.find_program('box-repos'):
-			default_backend = 'box'
-		elif conf.find_program('smart'):
-			default_backend = 'smart'
-		elif conf.find_program('pisi'):
-			default_backend = 'pisi'
-		else:
-			default_backend = 'dummy'
-	else:
-		default_backend = Params.g_options.default_backend
-
-	if default_backend == 'box':
-		if not conf.check_pkg('libbox', destvar='BOX'):
-			Params.fatal('The "box" backend needs "libbox"')
-
-	if default_backend == 'alpm':
-		if not conf.check_header('alpm.h'):
-			Params.fatal('The "alpm" backend needs "alpm.h"')
-
-	if default_backend == 'apt':
-		try:
-			import apt_pkg
-		except:
-			Params.fatal('The "apt" backend needs "python-apt"')
-
-		if not conf.check_library2('apt-pkg', uselib='APT'):
-			Params.fatal('The "apt" backend needs "libapt-pkg-dev"')
-
-	#process options
-	if Params.g_options.wall:
-		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
-	if Params.g_options.gcov:
-		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
-	if Params.g_options.gprof:
-		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+	# Check what backend to use
+	conf.sub_config('backends')
 
 	#do we build the self tests?
 	if Params.g_options.tests:
@@ -130,6 +88,16 @@ def configure(conf):
 
 	conf.env.append_value('CCFLAGS', '-DHAVE_CONFIG_H')
 	conf.write_config_header('config.h')
+
+
+	# We want these last as they shouldn't 
+	if Params.g_options.wall:
+		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
+	if Params.g_options.gcov:
+		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+	if Params.g_options.gprof:
+		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+
 
 def build(bld):
 	# process subfolders from here
