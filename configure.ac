@@ -333,6 +333,16 @@ AC_DEFUN([APT_BACKEND],
 if test x$with_default_backend = xapt; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 
+	AC_ARG_WITH([aptsearch],
+	    AS_HELP_STRING([--with-apt-search=<option>],
+			   [Apt search type to use - plain (plain)]))
+	if test x$with_aptsearch = x; then
+		with_aptsearch=plain
+	fi
+	AC_DEFINE(APT_SEARCH, "$with_aptsearch", [apt search type])
+	AC_SUBST(APT_SEARCH, "$with_aptsearch")
+	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_aptsearch = xplain], [using plain apt search])
+
    AC_ARG_WITH(libapt-pkg-lib,
 	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
 	 [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
