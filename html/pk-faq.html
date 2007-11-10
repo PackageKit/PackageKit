@@ -59,7 +59,7 @@ gui               |        |  X  |  X  |  X  |      |       |   X  |
 
 <h3>Why doesn't PackageKit work with SELinux?</h3>
 <p>
-<code>packagekitd</code> is not recognised by SELinux yet.
+<code>packagekitd</code> is not recognized by SELinux yet.
 Until the policy is fixed to handle system activation, you'll have
 to run in permissive mode, rather than enforcing.
 </p>
@@ -68,7 +68,25 @@ to run in permissive mode, rather than enforcing.
 <p>
 You don't have to have a backend that supports percentage updates.
 If you don't know the progress, just emit NoPercentageUpdates and then the UI
-should just do the right thing and spin.
+should just do the right thing and spin backwards and forwards.
+</p>
+
+<h3>Why are the remaining times sometimes not present or wildly wrong?</h3>
+<p>
+The remaining time to completion of the transaction is calculated using an
+average time of the time between percentage updates points, extrapolated to 100%.
+This means that backends that give accurate and frequent percentage-changed
+signals will get accurate times.
+</p>
+<p>
+If a backend updates the percentage using very course updates
+(e.g. 20%, 40%, 60%, 80%, 100%) then the remaining time algorithm will not
+perform well.
+Similarly, if the duration of 0% to 50% takes 2 minutes and 50% to 100% takes
+10 minutes then at first the time will be reported under the true time to
+completion.
+It is up to the backends to map the transaction progress to fine-granularity
+accurate percentage updates, at least as best as possible.
 </p>
 
 <h3>With all the differences between backends, how will PackageKit support all the different options?</h3>
@@ -136,7 +154,7 @@ Although cool, this latter point made things too political in my opinion.
 PackageKit is really fast.
 It takes about 1 second to search for installed and available packages
 with "power" in the description - no blocking of the UI happens at all as it's
-all asyncronous.
+all asynchronous.
 All the applications start instantly with no root password needed at startup.
 </p>
 
@@ -160,7 +178,7 @@ No more fighting over <code>yum</code>, <code>yum-updatesd</code>,
 <h3>Is there an organization or corporation sponsoring development of PackageKit?</h3>
 <p>
 PackageKit is not sponsored by anyone.
-Whilst interning at RedHat I spent a few days on the API and some UI designs,
+Whilst interning at Red Hat I spent a few days on the API and some UI designs,
 but all the coding is done in my free time.
 </p>
 
