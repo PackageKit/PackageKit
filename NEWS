@@ -1,3 +1,47 @@
+Version 0.1.3
+~~~~~~~~~~~~~
+
+* Backends:
+ - smart: Add installed filter (James Bowes)
+ - smart: Add search-details (James Bowes)
+ - smart: Add install-file (James Bowes)
+ - PiSi: Add gui filter (S.Çağlar Onur)
+ - yum: Add gui filter (Tim Lauridsen)
+ - yum: Add repo-set-data (Tim Lauridsen)
+ - yum: Add get-update-detail (Tim Lauridsen)
+ - yum: Add get-requires (Tim Lauridsen)
+ - box: Use C API with percent updates for cache refreshing (Grzegorz Dabrowski)
+
+* New features:
+ - Split out the KDE, GNOME and XFCE desktop groups (Richard Hughes)
+ - Add power-management package group (S.Çağlar Onur)
+ - Add 'make gcov' and 'make gprof' for unit testing (Richard Hughes)
+ - Add a metric ton of unit tests (Richard Hughes)
+ - Check backends do not send finished more than once (Richard Hughes)
+ - Add enums builder for python (Tom Parker)
+ - Add the start of a waf build system - untested and unsupported.
+   (Richard Hughes, Alberto Ruiz, Daniel Svensson)
+ - Add initial work for multiple apt searching backends (Tom Parker)
+
+* API changes:
+ - PkClient restart should be an enumerated type, not free text (Richard Hughes)
+
+* Bugfixes:
+ - Replace the g_strjoinv and use pk_strbuild_va to append a va_list to fix
+   a crash on i86_64 (Richard Hughes)
+ - Immediate exit has to wait a few cycles for registration (Richard Hughes)
+ - Check for existance of apt_pkg python module with apt backend (Tom Parker)
+ - yum: Emit no-cache in resolve if the cache is invalid (Tim Lauridsen)
+ - Correct typos and thinkos, and add a few more application notes to the
+   developer documentation (Richard Hughes)
+ - Fix memleaks in a few places of the daemon code (Grzegorz Dabrowski)
+ - Fix memleaks in PkClient and PkJobList (James Bowes)
+ - Don't emit error for the transaction if cancel is not valid - cancel
+   operates on an existing tid and shouldn't have control of the finished or
+   error signals (Richard Hughes)
+ - Parse updatedetail from stdout and discover get_update_detail (Richard Hughes)
+ - Update packagekit.pc.in to require glib and gobject (Tom Parker)
+
 ~~~~~~~~~~~~~
 Version 0.1.2
 ~~~~~~~~~~~~~

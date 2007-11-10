@@ -54,5 +54,6 @@ NEWS.new
 *.txt
 .lock-wscript
 .waf-*
-build/
+build
+waf-lightc
 

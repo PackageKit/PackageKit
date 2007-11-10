@@ -5,6 +5,8 @@ def build(bld):
 	obj.uselib = 'SMART'
 	obj.uselib_local = 'libpackagekit'
 	obj.includes = '../../src ../../libpackagekit'
+	obj.install_var = 'LIBDIR'
+	obj.install_subdir = 'packagekit-backend'
 
 def configure(conf):
 	if not conf.find_program('smart'):
