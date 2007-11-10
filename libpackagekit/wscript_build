@@ -6,7 +6,6 @@ libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
 libpackagekit.add_objects = 'libgbus libselftest'
-
 libpackagekit.source = """
 	pk-debug.c
 	pk-connection.c
@@ -20,6 +19,14 @@ libpackagekit.source = """
 	pk-job-list.c
 	pk-polkit-client.c
 """
+
+# libtool versioning - CURRENT.REVISION.AGE
+# increment:
+# CURRENT	If the API or ABI interface has changed (reset REVISION to 0)
+# REVISION	If the API and ABI remains the same, but bugs are fixed.
+# AGE		If libpackagekit can be linked into executables which can be
+# 		built with previous versions of this library. Don't use.
+libpackagekit.vnum='3.0.0'
 
 defines = bld.env_of_name('default')['defines']
 if defines.get('PK_BUILD_NETWORKMANAGER', False):
