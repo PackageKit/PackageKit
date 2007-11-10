@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 #Marshall file
-libselftest = bld.create_obj('gnome', 'staticlib')
+libselftest = bld.create_obj('gnome', 'objects')
+libselftest.env.append_value('CCFLAGS', libselftest.env['shlib_CCFLAGS'])
+
 libselftest.uselib = 'GLIB GOBJECT'
 
 libselftest.source = """
@@ -9,5 +11,5 @@ libselftest.source = """
 """
 
 libselftest.includes = '.'
-libselftest.target   = 'libselftest'
+#libselftest.target   = 'libselftest'
 libselftest.name     = 'libselftest'
