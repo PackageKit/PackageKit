@@ -4,6 +4,8 @@ def build(bld):
 	obj.source = 'pk-backend-dummy.c'
 	obj.uselib_local = 'libpackagekit'
 	obj.includes = '../../src ../../libpackagekit'
+	obj.install_var = 'LIBDIR'
+	obj.install_subdir = 'packagekit-backend'
 
 def configure(conf):
 	return True

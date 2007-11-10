@@ -7,6 +7,8 @@ def build(bld):
 	obj.uselib = 'APT'
 	obj.uselib_local = 'libpackagekit'
 	obj.includes = '../../src ../../libpackagekit'
+	obj.install_var = 'LIBDIR'
+	obj.install_subdir = 'packagekit-backend'
 
 	env = bld.env_of_name('default')
 	if env['APT_SEARCH_PLAIN']:

@@ -5,7 +5,7 @@ libpackagekit = bld.create_obj('gnome', 'shlib')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
-libpackagekit.uselib_local = 'libgbus libselftest'
+libpackagekit.add_objects = 'libgbus libselftest'
 libpackagekit.target = 'packagekit'
 
 libpackagekit.source = """
@@ -23,10 +23,25 @@ libpackagekit.source = """
 """
 
 libpackagekit.includes      = '. ../libgbus ../libselftest'
-libpackagekit.target        = 'libpackagekit'
+libpackagekit.target        = 'packagekit'
 libpackagekit.name          = 'libpackagekit'
 
-#TODO: Need to install headers to /usr/include/packagekit/
+# install headers to /usr/include/packagekit/
+install_files('PREFIX', 'include/packagekit',"""
+	pk-debug.h
+	pk-connection.h
+	pk-network.h
+	pk-package-id.h
+	pk-package-list.h
+	pk-enum-list.h
+	pk-enum.h
+	pk-common.h
+	pk-client.h
+	pk-task-list.h
+	pk-job-list.h
+	pk-polkit-client.h
+""")
+
 
 #TODO: if Params.g_options.tests then add the self test program: pk-self-test.c and all the libs above and execute the pk-self-test application
 
