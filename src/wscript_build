@@ -56,10 +56,17 @@ install_files('PREFIX', 'include/packagekit-backends', '''
 	pk-backend-python.h
 ''')
 
+import Runner, Common
 
-#TODO: if Params.g_options.gcov then we need to execute $(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > gcov.txt
+#create and process the gcov output, TODO: pipe to a file
+if Params.g_options.gcov:
+	command = '../tools/create-coverage-report.sh packagekit %s' % obj.source
+	ret = Runner.exec_command(command)
 
-#TODO: if Params.g_options.gprof then we need to execute gprof .libs/pk-self-test > gprof.txt
+#create gprof output, TODO: pipe to a file
+if Params.g_options.gprof:
+	command = 'gprof .libs/pk-self-test'
+	ret = Runner.exec_command(command)
 
 #TODO: if Params.g_options.tests then add the self test program: pk-self-test.c and all the libs above and execute the pk-self-test application
 
