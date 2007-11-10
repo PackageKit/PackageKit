@@ -368,6 +368,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         searchlist = ['name']
+        self.status(STATUS_QUERY)
         self._do_search(searchlist, filters, key)
 
     def search_details(self,filters,key):
@@ -378,6 +379,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         searchlist = ['name', 'summary', 'description', 'group']
+        self.status(STATUS_QUERY)
         self._do_search(searchlist, filters, key)
 
     def _buildGroupDict(self):
@@ -406,6 +408,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
+        self.status(STATUS_QUERY)
+
         try:
             pkgGroupDict = self._buildGroupDict()
             self.yumbase.conf.cache = 1 # Only look in cache.
@@ -443,6 +447,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_QUERY)
 
         #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
@@ -507,6 +512,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_QUERY)
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
@@ -597,6 +603,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_QUERY)
 
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
