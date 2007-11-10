@@ -19,7 +19,7 @@ APPNAME='PackageKit'
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
-blddir = 'build'
+blddir = '_build_'
 
 def set_options(opt):
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)

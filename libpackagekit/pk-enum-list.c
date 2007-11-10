@@ -147,6 +147,8 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 			value_temp = pk_group_enum_from_text (sections[i]);
 		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
 			value_temp = pk_filter_enum_from_text (sections[i]);
+		} else if (elist->priv->type == PK_ENUM_LIST_TYPE_STATUS) {
+			value_temp = pk_status_enum_from_text (sections[i]);
 		} else {
 			pk_error ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
 		}
@@ -173,6 +175,8 @@ pk_enum_list_get_item_text (PkEnumList *elist, guint value)
 		text = pk_group_enum_to_text (value);
 	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
 		text = pk_filter_enum_to_text (value);
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_STATUS) {
+		text = pk_status_enum_to_text (value);
 	} else {
 		pk_warning ("unknown type %i (did you use pk_enum_list_set_type?)", elist->priv->type);
 	}
@@ -243,6 +247,8 @@ pk_enum_list_print (PkEnumList *elist)
 		g_print ("Printing groups:\n");
 	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_FILTER) {
 		g_print ("Printing filters:\n");
+	} else if (elist->priv->type == PK_ENUM_LIST_TYPE_STATUS) {
+		g_print ("Printing status:\n");
 	}
 	for (i=0; i<elist->priv->data->len; i++) {
 		value = GPOINTER_TO_UINT (g_ptr_array_index (elist->priv->data, i));
