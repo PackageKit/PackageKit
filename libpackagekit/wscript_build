@@ -6,7 +6,6 @@ libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
 libpackagekit.add_objects = 'libgbus libselftest'
-libpackagekit.target = 'packagekit'
 
 libpackagekit.source = """
 	pk-debug.c
@@ -21,6 +20,17 @@ libpackagekit.source = """
 	pk-job-list.c
 	pk-polkit-client.c
 """
+
+defines = bld.env_of_name('default')['defines']
+if defines.get('PK_BUILD_NETWORKMANAGER', False):
+    libpackagekit.source += '''
+	pk-network-nm.c
+'''
+else:
+    libpackagekit.source += '''
+	pk-network-dummy.c
+'''
+
 
 libpackagekit.includes      = '. ../libgbus ../libselftest'
 libpackagekit.target        = 'packagekit'

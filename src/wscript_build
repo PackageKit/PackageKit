@@ -25,16 +25,40 @@ pk-transaction-db.c
 pk-transaction-id.c
 pk-transaction-list.c
 '''
-obj.includes='.'
-obj.uselib='DBUS_GLIB'
+
+defines = bld.env_of_name('default')['defines']
+
+if defines.get('SECURITY_TYPE_POLKIT', False):
+    obj.source += '''
+	pk-security-polkit.c
+'''
+
+if defines.get('SECURITY_TYPE_DUMMY', False):
+    obj.source += '''
+	pk-security-dummy.c
+'''
+
+
+obj.includes='. ../libpackagekit ../libselftest'
+obj.uselib='DBUS_GLIB GMODULE SQLITE GTHREAD'
+obj.uselib_local = 'libpackagekit'
+#obj.add_objects = 'selftest'
 obj.target='packagekitd'
 obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
+#obj.env.append_value('CCDEFINES', 'LOCALSTATEDIR="%s"' % obj.env['LOCALSTATEDIR'])
+obj.env.append_value('CCDEFINES', 'DATABASEDIR=PK_DB_DIR')
+
 
 #TODO: if SECURITY_TYPE_POLKIT then obj.source needs to have pk-security-polkit.c added else pk-security-dummy.c
 
-#TODO: Need to install backend headers to /usr/include/packagekit-backends/
+# install backend headers to /usr/include/packagekit-backends/
+install_files('PREFIX', 'include/packagekit-backends', '''
+	pk-backend.h
+	pk-backend-python.h
+''')
+
 
 #TODO: if Params.g_options.gcov then we need to execute $(top_srcdir)/tools/create-coverage-report.sh packagekit $(filter %.c,$(packagekitd_SOURCES)) > gcov.txt
 

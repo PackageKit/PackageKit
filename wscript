@@ -55,6 +55,7 @@ def configure(conf):
 		print "*******************************************************************"
 		print "** YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING! **"
 		print "*******************************************************************"
+		conf.add_define('SECURITY_TYPE_DUMMY', 1)
 
 	#optional deps
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
@@ -104,7 +105,7 @@ def build(bld):
 	# process subfolders from here
 	# Pending dirs:
 	#  docs man python
-        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data')
+        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src')
 
 	#set the user in packagekit.pc.in and install
 	obj=bld.create_obj('subst')
