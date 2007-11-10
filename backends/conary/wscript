@@ -1,0 +1,17 @@
+def build(bld):
+	obj = bld.create_obj('cc', 'plugin')
+	obj.target = 'pk_backend_conary'
+	obj.source = 'pk-backend-conary.c'
+	obj.uselib = 'CONARY'
+	obj.uselib_local = 'libpackagekit'
+	obj.includes = '../../src ../../libpackagekit'
+
+def configure(conf):
+	if not conf.find_program('conary'):
+		return False
+
+	# Additional checks required
+	return False
+
+def set_options(opt):
+	pass

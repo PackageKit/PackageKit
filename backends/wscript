@@ -1,45 +1,32 @@
 import Params
 
 def build(bld):
-	pass
+	env = bld.env_of_name('default')
+	bld.add_subdirs(env['WITH_DEFAULT_BACKEND'])
 
 def configure(conf):
-	if not Params.g_options.default_backend:
-		if conf.find_program('yum'):
-			default_backend = 'yum'
-		elif conf.check_library2('alpm', mandatory=0):
-			default_backend = 'alpm'
-		elif conf.find_program('apt-get'):
-			default_backend = 'apt'
-		elif conf.find_program('conary'):
-			default_backend = 'conary'
-		elif conf.find_program('box-repos'):
-			default_backend = 'box'
-		elif conf.find_program('smart'):
-			default_backend = 'smart'
-		elif conf.find_program('pisi'):
-			default_backend = 'pisi'
-		else:
-			default_backend = 'dummy'
-	else:
+	if Params.g_options.default_backend:
 		default_backend = Params.g_options.default_backend
+	elif conf.sub_config('yum'):
+		default_backend = 'yum'
+	elif conf.sub_config('apt'):
+		default_backend = 'apt'
+	elif conf.sub_config('alpm'):
+		default_backend = 'alpm'
+	elif conf.sub_config('conary'):
+		default_backend = 'conary'
+	elif conf.sub_config('box'):
+		default_backend = 'box'
+	elif conf.sub_config('smart'):
+		default_backend = 'smart'
+	elif conf.sub_config('pisi'):
+		default_backend = 'pisi'
+	else:
+		default_backend = 'dummy'
 
-	if default_backend == 'box':
-		if not conf.check_pkg('libbox', destvar='BOX'):
-			Params.fatal('The "box" backend needs "libbox"')
-
-	if default_backend == 'alpm':
-		if not conf.check_header('alpm.h'):
-			Params.fatal('The "alpm" backend needs "alpm.h"')
-
-	if default_backend == 'apt':
-		try:
-			import apt_pkg
-		except:
-			Params.fatal('The "apt" backend needs "python-apt"')
-
-		if not conf.check_library2('apt-pkg', uselib='APT'):
-			Params.fatal('The "apt" backend needs "libapt-pkg-dev"')
+	conf.env['WITH_DEFAULT_BACKEND'] = default_backend
 
 def set_options(opt):
 	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend")
+
+	opt.sub_options('apt')

@@ -1,0 +1,17 @@
+def build(bld):
+	obj = bld.create_obj('cc', 'plugin')
+	obj.target = 'pk_backend_smart'
+	obj.source = 'pk-backend-smart.c'
+	obj.uselib = 'SMART'
+	obj.uselib_local = 'libpackagekit'
+	obj.includes = '../../src ../../libpackagekit'
+
+def configure(conf):
+	if not conf.find_program('smart'):
+		return False
+
+	# Additional checks required
+	return False
+
+def set_options(opt):
+	pass

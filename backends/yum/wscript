@@ -1,0 +1,17 @@
+def build(bld):
+	obj = bld.create_obj('cc', 'plugin')
+	obj.target = 'pk_backend_yum'
+	obj.source = 'pk-backend-yum.c'
+	obj.uselib = 'YUM'
+	obj.uselib_local = 'libpackagekit'
+	obj.includes = '../../src ../../libpackagekit'
+
+def configure(conf):
+	if not conf.find_program('yum'):
+		return False
+
+	# Additional checks required
+	return False
+
+def set_options(opt):
+	pass

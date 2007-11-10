@@ -1,0 +1,12 @@
+def build(bld):
+	obj = bld.create_obj('cc', 'plugin')
+	obj.target = 'pk_backend_dummy'
+	obj.source = 'pk-backend-dummy.c'
+	obj.uselib_local = 'libpackagekit'
+	obj.includes = '../../src ../../libpackagekit'
+
+def configure(conf):
+	return True
+
+def set_options(opt):
+	pass

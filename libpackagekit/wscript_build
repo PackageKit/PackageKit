@@ -6,6 +6,7 @@ libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
 libpackagekit.uselib_local = 'libgbus libselftest'
+libpackagekit.target = 'packagekit'
 
 libpackagekit.source = """
 	pk-debug.c
