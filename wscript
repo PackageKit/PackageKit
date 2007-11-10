@@ -102,7 +102,7 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	#  docs libselftest man python backends
+	#  docs man python
         bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data')
 
 	#set the user in packagekit.pc.in and install

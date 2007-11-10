@@ -5,27 +5,18 @@ def build(bld):
 	bld.add_subdirs(env['DEFAULT_BACKEND'])
 
 def configure(conf):
+	default_backend = None
 	if Params.g_options.default_backend:
 		if not conf.sub_config(Params.g_options.default_backend):
 			Params.fatal('%s failed to configure' % Params.g_options.default_backend)
 		default_backend = Params.g_options.default_backend
-	elif conf.sub_config('yum'):
-		default_backend = 'yum'
-	elif conf.sub_config('apt'):
-		default_backend = 'apt'
-	elif conf.sub_config('alpm'):
-		default_backend = 'alpm'
-	elif conf.sub_config('conary'):
-		default_backend = 'conary'
-	elif conf.sub_config('box'):
-		default_backend = 'box'
-	elif conf.sub_config('smart'):
-		default_backend = 'smart'
-	elif conf.sub_config('pisi'):
-		default_backend = 'pisi'
-	else:
-		conf.sub_config('dummy')
-		default_backend = 'dummy'
+
+	if not default_backend:
+		#Falls back to dummy if not backend was set
+		for backend in ['yum', 'apt', 'alpm', 'conary', 'box', 'smart', 'pisi', 'dummy']:
+			if conf.sub_config(backend):
+				default_backend = backend
+				break
 
 	conf.env['DEFAULT_BACKEND'] = default_backend
 
