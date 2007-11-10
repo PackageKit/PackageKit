@@ -28,17 +28,6 @@ pk-transaction-list.c
 
 defines = bld.env_of_name('default')['defines']
 
-if defines.get('SECURITY_TYPE_POLKIT', False):
-    obj.source += '''
-	pk-security-polkit.c
-'''
-
-if defines.get('SECURITY_TYPE_DUMMY', False):
-    obj.source += '''
-	pk-security-dummy.c
-'''
-
-
 obj.includes='. ../libpackagekit ../libselftest'
 obj.uselib='DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.uselib_local = 'libpackagekit'
@@ -50,8 +39,16 @@ obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 #obj.env.append_value('CCDEFINES', 'LOCALSTATEDIR="%s"' % obj.env['LOCALSTATEDIR'])
 obj.env.append_value('CCDEFINES', 'DATABASEDIR=PK_DB_DIR')
 
+if defines.get('SECURITY_TYPE_POLKIT', False):
+    obj.uselib += ' POLKIT_DBUS'
+    obj.source += '''
+	pk-security-polkit.c
+'''
 
-#TODO: if SECURITY_TYPE_POLKIT then obj.source needs to have pk-security-polkit.c added else pk-security-dummy.c
+if defines.get('SECURITY_TYPE_DUMMY', False):
+    obj.source += '''
+	pk-security-dummy.c
+'''
 
 # install backend headers to /usr/include/packagekit-backends/
 install_files('PREFIX', 'include/packagekit-backends', '''
