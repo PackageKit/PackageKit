@@ -18,6 +18,6 @@ obj.target = 'PackageKit.conf'
 #TODO: need to get this from wscript
 obj.dict = {'defaultbackend': 'default_backend'}
 obj.fun = misc.subst_func
-obj.install_var = 'PREFIX'
-obj.install_subdir = 'etc/PackageKit'
+obj.install_var = 'SYSCONFDIR'
+obj.install_subdir = 'PackageKit'
 
