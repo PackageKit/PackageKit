@@ -103,9 +103,10 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 	g_return_val_if_fail (security != NULL, NULL);
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		policy = "org.freedesktop.packagekit.update";
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		policy = "org.freedesktop.packagekit.update-package";
+	} else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.update-system";
 	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		policy = "org.freedesktop.packagekit.remove";
 	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
