@@ -22,7 +22,6 @@ obj.fun = misc.subst_func
 obj.install_var = 'PREFIX'
 obj.install_subdir = 'usr/share/dbus-1/system-services'
 
-#TODO: install properly
-install_files('var', 'run', 'PackageKit', 'job_count.dat')
-install_files('var', 'lib', 'PackageKit', 'transactions.db')
+install_files('PREFIX', 'var/run/PackageKit', 'job_count.dat')
+install_files('PREFIX', 'var/lib/PackageKit', 'transactions.db')
 
