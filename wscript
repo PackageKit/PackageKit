@@ -77,10 +77,11 @@ def configure(conf):
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
 	conf.add_define('PACKAGE', 'PackageKit')
 
-	#TODO: expand these into PREFIX and something recognised by waf
-	conf.add_define('PK_CONF_DIR', '/etc/PackageKit')
-	conf.add_define('PK_DB_DIR', '/var/lib/PackageKit')
-	conf.add_define('PK_PLUGIN_DIR', '/usr/lib/packagekit-backend')
+        assert conf.env['SYSCONFDIR'], "You have too old WAF; please update to trunk"
+
+	conf.add_define('PK_CONF_DIR', os.path.join(conf.env['SYSCONFDIR'], 'PackageKit'))
+	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
+	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
 
 	#TODO: can we define these here?
 	#AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
