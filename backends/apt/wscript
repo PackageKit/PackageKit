@@ -13,7 +13,7 @@ def build(bld):
 		obj.source += ' pk-apt-search-plain.c'
 
 def configure(conf):
-	if not conf.find_program('apt-get'):
+	if not conf.find_program('apt-get') and not conf.find_program('apt-rpm'):
 		return False
 
 	# This check assumes the same python version that executes
