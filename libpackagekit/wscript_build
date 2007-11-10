@@ -23,6 +23,7 @@ libpackagekit.source = """
 
 defines = bld.env_of_name('default')['defines']
 if defines.get('PK_BUILD_NETWORKMANAGER', False):
+    libpackagekit.uselib += ' NM_GLIB'
     libpackagekit.source += '''
 	pk-network-nm.c
 '''
