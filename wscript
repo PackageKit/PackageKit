@@ -14,7 +14,7 @@ import Params
 import misc
 
 # the following two variables are used by the target "waf dist"
-VERSION='0.1.3'
+VERSION='0.1.4'
 APPNAME='PackageKit'
 
 # these variables are mandatory ('/' are converted automatically)
@@ -84,10 +84,6 @@ def configure(conf):
 	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
 	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
 
-	#TODO: can we define these here?
-	#AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
-	#AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
-
 	conf.env.append_value('CCFLAGS', '-DHAVE_CONFIG_H')
 	conf.write_config_header('config.h')
 
@@ -104,13 +100,14 @@ def configure(conf):
 def build(bld):
 	# process subfolders from here
 	# Pending dirs:
-	#  docs man python
-        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src')
+	#  man python
+        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src docs')
 
 	#set the user in packagekit.pc.in and install
 	obj=bld.create_obj('subst')
 	obj.source = 'packagekit.pc.in'
 	obj.target = 'packagekit.pc'
+	#TODO: set these correctly
 	obj.dict = {'VERSION': 'dave', 'prefix':'PREFIX', 'exec_prefix':'PREFIX', 'libdir':'usr/lib', 'includedir':'usr/include'}
 	obj.fun = misc.subst_func
 	obj.install_var = 'PREFIX'
