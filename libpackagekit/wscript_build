@@ -37,7 +37,7 @@ libpackagekit.source = """
 # 		built with previous versions of this library. Don't use.
 libpackagekit.vnum='3.0.0'
 
-defines = bld.env_of_name('default')['defines']
+defines = bld.env()['defines']
 if defines.get('PK_BUILD_NETWORKMANAGER', False):
     libpackagekit.uselib += ' NM_GLIB'
     libpackagekit.source += '''

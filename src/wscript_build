@@ -26,7 +26,7 @@ pk-transaction-id.c
 pk-transaction-list.c
 '''
 
-defines = bld.env_of_name('default')['defines']
+defines = bld.env()['defines']
 
 obj.includes='. ../libpackagekit ../libselftest'
 obj.uselib='DBUS_GLIB GMODULE SQLITE GTHREAD'

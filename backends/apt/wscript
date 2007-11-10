@@ -10,7 +10,7 @@ def build(bld):
 	obj.install_var = 'LIBDIR'
 	obj.install_subdir = 'packagekit-backend'
 
-	env = bld.env_of_name('default')
+	env = bld.env()
 	if env['APT_SEARCH_PLAIN']:
 		obj.source += ' pk-apt-search-plain.c'
 
