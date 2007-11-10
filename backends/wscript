@@ -2,10 +2,12 @@ import Params
 
 def build(bld):
 	env = bld.env_of_name('default')
-	bld.add_subdirs(env['WITH_DEFAULT_BACKEND'])
+	bld.add_subdirs(env['DEFAULT_BACKEND'])
 
 def configure(conf):
 	if Params.g_options.default_backend:
+		if not conf.sub_config(Params.g_options.default_backend):
+			Params.fatal('%s failed to configure' % Params.g_options.default_backend)
 		default_backend = Params.g_options.default_backend
 	elif conf.sub_config('yum'):
 		default_backend = 'yum'
@@ -22,9 +24,10 @@ def configure(conf):
 	elif conf.sub_config('pisi'):
 		default_backend = 'pisi'
 	else:
+		conf.sub_config('dummy')
 		default_backend = 'dummy'
 
-	conf.env['WITH_DEFAULT_BACKEND'] = default_backend
+	conf.env['DEFAULT_BACKEND'] = default_backend
 
 def set_options(opt):
 	opt.add_option('--default-backend', type='string', help="Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi", dest="default_backend")
