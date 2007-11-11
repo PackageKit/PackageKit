@@ -67,7 +67,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel */
+	pk_backend_python_cancel,		/* cancel */
 	NULL,					/* get_depends */
 	pk_backend_python_get_description,	/* get_description */
 	NULL,					/* get_files */
@@ -81,7 +81,7 @@ PK_BACKEND_OPTIONS (
 	pk_backend_python_resolve,		/* resolve */
 	NULL,					/* search_details */
 	NULL,					/* rollback */
-	pk_backend_python_cancel,		/* search_file */
+	NULL,					/* search_file */
 	NULL,					/* search_group */
 	pk_backend_python_search_name,		/* search_name */
 	pk_backend_python_update_package,	/* update_package */
