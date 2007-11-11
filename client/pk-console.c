@@ -41,10 +41,12 @@
 #define MINIMUM_COLUMNS (PROGRESS_BAR_PADDING + 5)
 
 static GMainLoop *loop = NULL;
+static PkEnumList *role_list = NULL;
 static gboolean is_console = FALSE;
 static gboolean has_output = FALSE;
 static gboolean printed_bar = FALSE;
 static guint timer_id = 0;
+static gchar *package_id = NULL;
 
 typedef struct {
 	gint position;
@@ -460,21 +462,104 @@ pk_console_install_package (PkClient *client, const gchar *package)
 }
 
 /**
+ * pk_console_remove_only:
+ **/
+static gboolean
+pk_console_remove_only (PkClient *client, gboolean force)
+{
+	gboolean ret;
+
+	pk_debug ("remove %s", package_id);
+	pk_client_reset (client);
+	ret = pk_client_remove_package (client, package_id, force);
+	/* ick, we failed so pretend we didn't do the action */
+	if (ret == FALSE) {
+		pk_warning ("The package could not be removed");
+	}
+	return ret;
+}
+
+/**
+ * pk_console_requires_finished_cb:
+ **/
+static void
+pk_console_requires_finished_cb (PkClient *client2, PkStatusEnum status, guint runtime, PkClient *client)
+{
+	guint length;
+	PkPackageItem *item;
+	PkPackageId *ident;
+	guint i;
+	gboolean remove;
+
+	/* see how many packages there are */
+	length = pk_client_package_buffer_get_size (client2);
+
+	/* if there are no required packages, just do the remove */
+	if (length == 0) {
+		pk_debug ("no requires");
+		pk_console_remove_only (client, FALSE);
+		g_object_unref (client2);
+		return;
+	}
+
+	/* present this to the user */
+	g_print ("The following packages have to be removed:\n");
+	for (i=0; i<length; i++) {
+		item = pk_client_package_buffer_get_item (client2, i);
+		ident = pk_package_id_new_from_string (item->package_id);
+		g_print ("%i\t%s-%s\n", i, ident->name, ident->version);
+		pk_package_id_free (ident);
+	}
+
+	/* check for user input */
+	g_print ("Okay to remove additional packages? [N/y]\n");
+
+	/* TODO: prompt the user */
+	remove = FALSE;
+
+	if (remove == FALSE) {
+		g_print ("Cancelled!\n");
+		if (loop != NULL) {
+			g_main_loop_quit (loop);
+			pk_debug ("<kjjjjjjjjjjjjjjjjjjjjjjjjjjjjj");
+		}
+	} else {
+		pk_debug ("the user aggreed, remove with deps");
+		pk_console_remove_only (client, TRUE);
+	}
+	g_object_unref (client2);
+}
+
+/**
  * pk_console_remove_package:
  **/
 static gboolean
 pk_console_remove_package (PkClient *client, const gchar *package)
 {
-	gboolean ret;
-	gchar *package_id;
+	PkClient *client2;
+
+	g_free (package_id);
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to remove\n");
 		return FALSE;
 	}
-	ret = pk_client_remove_package (client, package_id, FALSE);
-	g_free (package_id);
-	return ret;
+
+	/* are we dumb and can't check for requires? */
+	if (pk_enum_list_contains (role_list, PK_ROLE_ENUM_GET_REQUIRES) == FALSE) {
+		/* no, just try to remove it without deps */
+		pk_console_remove_only (client, FALSE);
+		return TRUE;
+	}
+
+	/* see if any packages require this one */
+	client2 = pk_client_new ();
+	pk_client_set_use_buffer (client2, TRUE);
+	g_signal_connect (client2, "finished",
+			  G_CALLBACK (pk_console_requires_finished_cb), client);
+	pk_debug ("getting requires for %s", package_id);
+	pk_client_get_requires (client2, package_id, TRUE);
+	return TRUE;
 }
 
 /**
@@ -965,6 +1050,9 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 	g_signal_connect (client, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
+
+	role_list = pk_client_get_actions (client);
+	pk_debug ("actions=%s", pk_enum_list_to_string (role_list));
 
 	/* run the commands */
 	pk_console_process_commands (client, argc, argv, !nowait, &error);
