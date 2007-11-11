@@ -281,7 +281,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGE);
-	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
+	if (pk_strequal (action, "org.freedesktop.packagekit.update-package") == TRUE) {
 		libst_success (test, NULL, error);
 	} else {
 		libst_failed (test, "did not get correct action '%s'", action);
