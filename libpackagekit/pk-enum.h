@@ -32,7 +32,10 @@ typedef struct {
 	const gchar	*string;
 } PkEnumMatch;
 
-/* what we asked to do */
+/* What we were asked to do, this never changes for the lifetime of the
+ * transaction
+ * Icons that have to represent the whole "aim" of the transaction will use
+ * these constants */
 typedef enum {
 	PK_ROLE_ENUM_CANCEL,
 	PK_ROLE_ENUM_RESOLVE,
@@ -59,11 +62,16 @@ typedef enum {
 	PK_ROLE_ENUM_UNKNOWN
 } PkRoleEnum;
 
-/* if you add to this, make sure you add filenames in pk-watch */
+/* What status we are now; this can change for each transaction giving a
+ * status of what sort of thing is happening
+ * Icons that change to represent the current status of the transaction will
+ * use these constants
+ * If you add to these, make sure you add filenames in pk-watch also */
 typedef enum {
 	PK_STATUS_ENUM_SETUP,
 	PK_STATUS_ENUM_WAIT,
 	PK_STATUS_ENUM_QUERY,
+	PK_STATUS_ENUM_INFO,
 	PK_STATUS_ENUM_REMOVE,
 	PK_STATUS_ENUM_REFRESH_CACHE,
 	PK_STATUS_ENUM_DOWNLOAD,
@@ -74,6 +82,7 @@ typedef enum {
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
+/* how the backend exited */
 typedef enum {
 	PK_EXIT_ENUM_SUCCESS,
 	PK_EXIT_ENUM_FAILED,
@@ -82,6 +91,7 @@ typedef enum {
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
 
+/* the filter types */
 typedef enum {
 	PK_FILTER_ENUM_DEVELOPMENT,
 	PK_FILTER_ENUM_INSTALLED,
@@ -93,6 +103,7 @@ typedef enum {
 	PK_FILTER_ENUM_UNKNOWN
 } PkFilterEnum;
 
+/* what restart we need to after a transaction */
 typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
@@ -171,6 +182,8 @@ typedef enum {
 	PK_UPDATE_ENUM_UNKNOWN
 } PkUpdateEnum;
 
+/* the enumerated types used in Package() - these have to refer to a specific
+   package action, rather than a general state */
 typedef enum {
 	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_AVAILABLE,
