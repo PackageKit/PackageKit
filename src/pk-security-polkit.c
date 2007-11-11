@@ -79,6 +79,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 		if (dbus_error_is_set (&dbus_error)) {
 			pk_warning ("error: polkit_caller_new_from_dbus_name(): %s: %s\n",
 				    dbus_error.name, dbus_error.message);
+			dbus_error_free (&dbus_error);
 		}
 		return POLKIT_RESULT_NO;
 	}
@@ -206,7 +207,10 @@ pk_security_init (PkSecurity *security)
 	dbus_error_init (&dbus_error);
 	security->priv->connection = dbus_bus_get (DBUS_BUS_SYSTEM, &dbus_error);
 	if (security->priv->connection == NULL) {
-		pk_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+		if (dbus_error_is_set (&dbus_error)) {
+			pk_warning ("failed to get system connection %s: %s\n", dbus_error.name, dbus_error.message);
+			dbus_error_free (&dbus_error);
+		}
 	}
 
 	/* get PolicyKit context */
