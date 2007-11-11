@@ -642,6 +642,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True);
         self.percentage(0)
+        self.status(STATUS_REFRESH_CACHE)
 
         pct = 0
         try:
