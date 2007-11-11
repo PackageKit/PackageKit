@@ -11,9 +11,8 @@
 
 import Utils
 
-## FIXME: shouldn't it be: doc_subdir = os.path.join('doc', Utils.g_module.APPNAME) ?
-doc_subdir = os.path.join(Utils.g_module.APPNAME, 'docs')
-
+#install to a versioned doc folder
+doc_subdir = os.path.join('doc', Utils.g_module.APPNAME+'-'+Utils.g_module.VERSION)
 install_files('DATADIR', doc_subdir, 'pk-reference.html')
 install_files('DATADIR', doc_subdir, 'pk-structure.png')
 install_files('DATADIR', doc_subdir, 'docbook.css')
