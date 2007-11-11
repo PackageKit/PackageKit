@@ -512,7 +512,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        self.status(STATUS_QUERY)
+        self.status(STATUS_INFO)
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
@@ -603,7 +603,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
-        self.status(STATUS_QUERY)
+        self.status(STATUS_INFO)
 
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
@@ -642,6 +642,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True);
         self.percentage(0)
+        self.status(STATUS_REFRESH_CACHE)
 
         pct = 0
         try:
@@ -678,6 +679,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
+        self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
         try:
@@ -919,6 +921,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         pkg,inst = self._findPackage(package)
         if pkg:
@@ -941,6 +944,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def get_files(self, package):
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         pkg,inst = self._findPackage(package)
         if pkg:
@@ -977,6 +981,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
         md = UpdateMetadata()
         # Added extra Update Metadata
         for repo in self.yumbase.repos.listEnabled():
@@ -1015,6 +1020,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
+        self.status(STATUS_INFO)
         for repo in self.yumbase.repos.repos.values():
             if repo.isEnabled():
                 self.repo_detail(repo.id,repo.name,'true')
@@ -1054,6 +1060,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         update = self._get_updated(pkg)

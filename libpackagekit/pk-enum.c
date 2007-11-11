@@ -45,6 +45,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
 	{PK_STATUS_ENUM_QUERY,			"query"},
+	{PK_STATUS_ENUM_INFO,			"info"},
 	{PK_STATUS_ENUM_REFRESH_CACHE,		"refresh-cache"},
 	{PK_STATUS_ENUM_REMOVE,			"remove"},
 	{PK_STATUS_ENUM_DOWNLOAD,		"download"},

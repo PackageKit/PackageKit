@@ -12,6 +12,7 @@
 import os
 import Params
 import misc
+import shutil
 
 # the following two variables are used by the target "waf dist"
 VERSION='0.1.4'
@@ -20,6 +21,11 @@ APPNAME='PackageKit'
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
 blddir = '_build_'
+
+def dist_hook():
+	shutil.rmtree("wafadmin", True)
+	#TODO: why doesn't this delete?
+	shutil.rmtree("waf-lightc", True)
 
 def set_options(opt):
 	opt.add_option('--wall', action="store_true", help="stop on compile warnings", dest="wall", default=True)
@@ -92,7 +98,12 @@ def configure(conf):
 	if Params.g_options.wall:
 		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
 	if Params.g_options.gcov:
-		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
+		conf.env.append_value('CFLAGS', '-fprofile-arcs')
+		conf.env.append_value('CFLAGS', '-ftest-coverage')
+		conf.env.append_value('CXXFLAGS', '-fprofile-arcs')
+		conf.env.append_value('CXXFLAGS', '-ftest-coverage')
+		conf.env.append_value('LINKFLAGS', '-fprofile-arcs')
+
 	if Params.g_options.gprof:
 		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
 
@@ -123,6 +134,25 @@ def build(bld):
 	obj.install_subdir = 'etc/dbus-1/system.d'
 
 def shutdown():
-	# this piece of code may be move right after the pixmap or documentation installation
+	#TODO: why ohh why doesn't this work?
+	if Params.g_options.gcov:
+		gcov_report()
 	pass
+
+def gcov_report():
+	env = Params.g_build.env_of_name('default')
+	os.chdir(blddir)
+	try:
+		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
+		command = "rm -f gcov.txt"
+		if subprocess.Popen(command, shell=True).wait():
+			raise SystemExit(1)
+		command = "../src/pk-self-test'
+		if subprocess.Popen(command, shell=True).wait():
+			raise SystemExit(1)
+		command = "../tools/create-coverage-report.sh packagekit src/*.c'
+		if subprocess.Popen(command, shell=True).wait():
+			raise SystemExit(1)
+	finally:
+		os.chdir("..")
 

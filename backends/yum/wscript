@@ -13,7 +13,7 @@ def configure(conf):
 		return False
 
 	# Additional checks required
-	return False
+	return True
 
 def set_options(opt):
 	pass
