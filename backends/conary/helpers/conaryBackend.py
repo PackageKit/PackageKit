@@ -107,6 +107,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         suggMap = self.client.prepareUpdateJob(updJob, applyList)
 
         if apply:
+            self.allow_interrupt(False)
             restartDir = self.client.applyUpdateJob(updJob)
 
         return updJob, suggMap
@@ -118,6 +119,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             applyList = [(name, (None, None), (version, flavor), True)]
         updJob, suggMap = self._do_update(applyList, apply=apply)
         return updJob, suggMap
+
+    def resolve(self, filter, package):
+        self.allow_interrupt(True)
+        self._do_search(package, filter)
 
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
@@ -168,6 +173,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 'Package was not found')
 
     def update_system(self):
+        self.allow_interrupt(True)
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._do_update(applyList, apply=True)
@@ -182,6 +188,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         '''
         name, version, flavor, installed = self._findPackage(package_id)
+
+        self.allow_interrupt(True)
 
         if name:
             if installed == INFO_INSTALLED:
@@ -201,6 +209,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         '''
         name, version, flavor, installed = self._findPackage(package_id)
+
+        self.allow_interrupt(True)
 
         if name:
             if not installed == INFO_INSTALLED:
@@ -247,8 +257,6 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         name, version, flavor, installed = self._findPackage(id)
 
-
-
         if name:
             shortDesc = self._get_metadata(id, 'shortDesc') or name
             longDesc = self._get_metadata(id, 'longDesc') or ""
@@ -266,7 +274,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         summary = ""
         self.package(id, status, summary)
 
-    def _get_status(self,notice):
+    def _get_status(self, notice):
         # We need to figure out how to get this info, this is a place holder
         #ut = notice['type']
         # TODO : Add more types to check
