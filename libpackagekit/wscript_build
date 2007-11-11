@@ -69,6 +69,12 @@ install_files('PREFIX', 'include/packagekit',"""
 	pk-polkit-client.h
 """)
 
-
-#TODO: if Params.g_options.tests then add the self test program: pk-self-test.c and all the libs above and execute the pk-self-test application
+#TODO: do not install this file!!!
+if Params.g_options.tests:
+	obj = bld.create_obj('cc', 'program')
+	obj.source = libpackagekit.source + ' pk-self-test.c'
+	obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
+	obj.uselib_local = 'libpackagekit'
+	obj.target = 'pk-self-test'
+	obj.includes = '. ../libselftest ../libgbus'
 

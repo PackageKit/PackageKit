@@ -9,15 +9,12 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-#create the daemon
-obj = bld.create_obj('gnome', 'program')
-obj.source='''
+common_source='''
 pk-backend.c
 pk-backend-python.c
 pk-conf.c
 pk-engine.c
 pk-inhibit.c
-pk-main.c
 pk-spawn.c
 pk-thread-list.c
 pk-time.c
@@ -25,6 +22,21 @@ pk-transaction-db.c
 pk-transaction-id.c
 pk-transaction-list.c
 '''
+
+if defines.get('SECURITY_TYPE_POLKIT', False):
+    common_source += '''
+	pk-security-polkit.c
+'''
+
+if defines.get('SECURITY_TYPE_DUMMY', False):
+    common_source += '''
+	pk-security-dummy.c
+'''
+
+#create the daemon
+obj = bld.create_obj('gnome', 'program')
+obj.source = common_source + ' pk-main.c'
+#TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
 
 defines = bld.env()['defines']
 
@@ -37,18 +49,9 @@ obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 #obj.env.append_value('CCDEFINES', 'LOCALSTATEDIR="%s"' % obj.env['LOCALSTATEDIR'])
-obj.env.append_value('CCDEFINES', 'DATABASEDIR=PK_DB_DIR')
 
 if defines.get('SECURITY_TYPE_POLKIT', False):
     obj.uselib += ' POLKIT_DBUS'
-    obj.source += '''
-	pk-security-polkit.c
-'''
-
-if defines.get('SECURITY_TYPE_DUMMY', False):
-    obj.source += '''
-	pk-security-dummy.c
-'''
 
 # install backend headers to /usr/include/packagekit-backends/
 install_files('PREFIX', 'include/packagekit-backends', '''
@@ -56,17 +59,14 @@ install_files('PREFIX', 'include/packagekit-backends', '''
 	pk-backend-python.h
 ''')
 
-import Runner, Common
+#TODO: do not install this file!!!
+if Params.g_options.tests:
+	selftest = bld.create_obj('cc', 'program')
+	selftest.source = common_source + ' pk-self-test.c'
+	selftest.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD GOBJECT POLKIT_DBUS'
+	selftest.uselib_local = 'libpackagekit'
+	selftest.target = 'pk-self-test'
+	selftest.includes = '. ../libselftest ../libpackagekit'
 
-#create and process the gcov output, TODO: pipe to a file
-if Params.g_options.gcov:
-	command = '../tools/create-coverage-report.sh packagekit %s' % obj.source
-	ret = Runner.exec_command(command)
-
-#create gprof output, TODO: pipe to a file
-if Params.g_options.gprof:
-	command = 'gprof .libs/pk-self-test'
-	ret = Runner.exec_command(command)
-
-#TODO: if Params.g_options.tests then add the self test program: pk-self-test.c and all the libs above and execute the pk-self-test application
+#TODO: we really want a /src shutdown() method....
 

@@ -86,7 +86,6 @@ def configure(conf):
 
         assert conf.env['SYSCONFDIR'], "You have too old WAF; please update to trunk"
 
-	conf.add_define('PK_CONF_DIR', os.path.join(conf.env['SYSCONFDIR'], 'PackageKit'))
 	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
 	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
 
@@ -144,13 +143,13 @@ def gcov_report():
 	os.chdir(blddir)
 	try:
 		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
-		command = "rm -f gcov.txt"
+		command = 'rm -f gcov.txt'
 		if subprocess.Popen(command, shell=True).wait():
 			raise SystemExit(1)
-		command = "../src/pk-self-test'
+		command = '../src/pk-self-test'
 		if subprocess.Popen(command, shell=True).wait():
 			raise SystemExit(1)
-		command = "../tools/create-coverage-report.sh packagekit src/*.c'
+		command = '../tools/create-coverage-report.sh packagekit src/*.c'
 		if subprocess.Popen(command, shell=True).wait():
 			raise SystemExit(1)
 	finally:
