@@ -172,6 +172,29 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
+    def get_files(self, package_id):
+        def _get_files(troveSource, n, v, f):
+            files = []
+            troves = [(n, v, f)]
+            trv = troveSource.getTrove(n, v, f)
+            troves.extend([ x for x in trv.iterTroveList(strongRefs=True)
+                                if troveSource.hasTrove(*x)])
+            for n, v, f in troves:
+                for (pathId, path, fileId, version, file) in \
+                    client.db.iterFilesInTrove(n, v, f, sortByPath = True,
+                                                        withFiles = True):
+                    files.append(path)
+            return files
+
+        name, version, flavor, installed = self._findPackage(package_id)
+
+        if installed == INFO_INSTALLED:
+            files = _get_files(client.db, name, version, flavor)
+        else:
+            files = _get_files(client.repos, name, version, flavor)
+
+        self.files(package_id, ';'.join(files))
+
     def update_system(self):
         self.allow_interrupt(True)
         updateItems = self.client.fullUpdateItemList()
