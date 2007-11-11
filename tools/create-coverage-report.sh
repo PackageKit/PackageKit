@@ -13,7 +13,11 @@ process ()
 {
 	if [ -e ".libs/packagekitd" ]; then
 		gcov $1 &> /dev/null
+	elif [ -e "src/.libs/packagekitd" ]; then
+		gcov $1 &> /dev/null
 	elif [ -e ".libs/libpackagekit.la" ]; then
+		gcov $1 -o .libs &> /dev/null
+	elif [ -e "libpackagekit/.libs/libpackagekit.la" ]; then
 		gcov $1 -o .libs &> /dev/null
 	else
 		return
