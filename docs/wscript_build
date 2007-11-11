@@ -11,7 +11,12 @@
 
 # TODO: we want to build this using xmlto, i.e. doxmlto html-nochunks -m config.xsl pk-reference.xml
 
-install_files('DATADIR', 'APPNAME/docs', 'pk-reference.html')
-install_files('DATADIR', 'APPNAME/docs', 'pk-structure.png')
-install_files('DATADIR', 'APPNAME/docs', 'docbook.css')
+import Utils
+
+## FIXME: shouldn't it be: doc_subdir = os.path.join('doc', Utils.g_module.APPNAME) ?
+doc_subdir = os.path.join(Utils.g_module.APPNAME, 'docs')
+
+install_files('DATADIR', doc_subdir, 'pk-reference.html')
+install_files('DATADIR', doc_subdir, 'pk-structure.png')
+install_files('DATADIR', doc_subdir, 'docbook.css')
 
