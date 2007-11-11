@@ -78,10 +78,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	pk_backend_python_refresh_cache,	/* refresh_cache */
 	pk_backend_python_remove_package,	/* remove_package */
-	pk_backend_python_resolve,	/* resolve */
+	pk_backend_python_resolve,		/* resolve */
 	NULL,					/* search_details */
 	NULL,					/* rollback */
-	NULL,					/* search_file */
+	pk_backend_python_cancel,		/* search_file */
 	NULL,					/* search_group */
 	pk_backend_python_search_name,		/* search_name */
 	pk_backend_python_update_package,	/* update_package */
