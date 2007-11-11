@@ -27,7 +27,7 @@ version.h
 intl
 macros
 INSTALL
-PackageKit-*.tar.gz
+PackageKit-*.tar.*
 org.freedesktop.PackageKit.conf
 xml-i18n-extract.in
 xml-i18n-extract
@@ -54,6 +54,7 @@ NEWS.new
 *.txt
 .lock-wscript
 .waf-*
-build
+_build_
 waf-lightc
+wafadmin
 
