@@ -40,7 +40,7 @@ obj = bld.create_obj('gnome', 'program')
 obj.source = common_source + ' pk-main.c'
 #TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
 
-defines = bld.env()['defines']
+defines = env['defines']
 
 obj.includes = '. ../libpackagekit ../libselftest'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
@@ -62,7 +62,7 @@ install_files('PREFIX', 'include/packagekit-backends', """
 	""")
 
 #TODO: do not install this file!!!
-if Params.g_options.tests and env['SECURITY_TYPE_POLKIT']:
+if env['HAVE_TESTS'] and env['SECURITY_TYPE_POLKIT']:
 	selftest = bld.create_obj('cc', 'program')
 	selftest.source = common_source + ' pk-self-test.c'
 	selftest.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD GOBJECT POLKIT_DBUS'

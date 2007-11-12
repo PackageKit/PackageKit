@@ -65,13 +65,13 @@ def configure(conf):
 
 	#optional deps
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
-		conf.add_define('PK_BUILD_NETWORKMANAGER', 1)
+		conf.env['HAVE_NETWORKMANAGER'] = True
 
 	if conf.find_program('docbook2man', var='DOCBOOK2MAN'):
-		conf.env['HAVE_DOCBOOK2MAN'] = 1
+		conf.env['HAVE_DOCBOOK2MAN'] = True
 
 	if conf.find_program('xmlto', var='XMLTO'):
-		conf.env['DOCBOOK_DOCS_ENABLED'] = 1
+		conf.env['DOCBOOK_DOCS_ENABLED'] = True
 
 	# Check what backend to use
 	conf.sub_config('backends')
@@ -79,6 +79,7 @@ def configure(conf):
 	#do we build the self tests?
 	if Params.g_options.tests:
 		conf.add_define('PK_BUILD_TESTS', 1)
+		conf.env['HAVE_TESTS'] = True
 
 	conf.add_define('VERSION', VERSION)
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
