@@ -186,6 +186,7 @@ static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_NORMAL,			"normal"},
 	{PK_INFO_ENUM_IMPORTANT,		"important"},
 	{PK_INFO_ENUM_SECURITY,			"security"},
+	{PK_INFO_ENUM_BLOCKED,			"blocked"},
 	{PK_INFO_ENUM_DOWNLOADING,		"downloading"},
 	{PK_INFO_ENUM_UPDATING,			"updating"},
 	{PK_INFO_ENUM_INSTALLING,		"installing"},

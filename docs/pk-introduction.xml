@@ -1209,10 +1209,19 @@
       </para>
       <para>
         <literal>Package</literal> enumerated types should be
+        <literal>blocked</literal>,
         <literal>low</literal>,
         <literal>normal</literal>,
         <literal>important</literal> or
         <literal>security</literal>.
+      </para>
+      <para>
+        The status <literal>blocked</literal> signifies the package cannot be
+        updated, probably due to other dependencies not being met.
+        This type allows the GUI tools to show to the user that an update
+        exists, but cannot be installed.
+        The reason for it not being installed should be put into the update
+        description when doing GetUpdateDetail.
       </para>
     </sect2>
 
