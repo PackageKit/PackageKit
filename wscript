@@ -13,6 +13,7 @@ import os
 import Params
 import misc
 import shutil
+import subprocess
 
 # the following two variables are used by the target "waf dist"
 VERSION='0.1.4'
@@ -98,6 +99,7 @@ def configure(conf):
 	if Params.g_options.wall:
 		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
 	if Params.g_options.gcov:
+		conf.env['HAVE_GCOV'] = True
 		conf.env.append_value('CFLAGS', '-fprofile-arcs')
 		conf.env.append_value('CFLAGS', '-ftest-coverage')
 		conf.env.append_value('CXXFLAGS', '-fprofile-arcs')
@@ -133,25 +135,42 @@ def build(bld):
 	obj.install_subdir = 'etc/dbus-1/system.d'
 
 def shutdown():
-	#TODO: why ohh why doesn't this work?
-	if Params.g_options.gcov:
+	env = Params.g_build.env()
+	if env['HAVE_GCOV']:
 		gcov_report()
-	pass
 
 def gcov_report():
-	env = Params.g_build.env_of_name('default')
-	os.chdir(blddir)
-	try:
-		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
-		command = 'rm -f gcov.txt'
-		if subprocess.Popen(command, shell=True).wait():
-			raise SystemExit(1)
-		command = '../src/pk-self-test'
-		if subprocess.Popen(command, shell=True).wait():
-			raise SystemExit(1)
-		command = '../tools/create-coverage-report.sh packagekit src/*.c'
-		if subprocess.Popen(command, shell=True).wait():
-			raise SystemExit(1)
-	finally:
-		os.chdir("..")
+	env = Params.g_build.env()
+	variant = env.variant()
 
+	basedir = os.path.join(blddir, variant)
+	rootdir = os.getcwd()
+
+	for test in ['libpackagekit', 'src']:
+		testdir = os.path.join(basedir, test)
+		if not os.path.isdir(testdir):
+			continue
+
+		file = os.path.join(testdir, 'pk-self-test')
+		if not os.path.isfile(file):
+			continue
+
+		os.chdir(testdir)
+
+		try:
+			#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
+			command = 'rm -f gcov.txt'
+			if subprocess.Popen(command, shell=True).wait():
+				raise SystemExit(1)
+
+			command = './pk-self-test'
+			if subprocess.Popen(command, shell=True).wait():
+				raise SystemExit(1)
+
+			report_tool = os.path.join(rootdir, 'tools', 'create-coverage-report.sh')
+			command = report_tool + ' packagekit src/*.c'
+			if subprocess.Popen(command, shell=True).wait():
+				raise SystemExit(1)
+
+		finally:
+			os.chdir(rootdir)
