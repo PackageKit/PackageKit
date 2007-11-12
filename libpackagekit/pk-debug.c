@@ -89,6 +89,9 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
+	/* flush other output */
+	fflush (stdout);
+
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** WARNING ***\n");
 	pk_print_line (func, file, line, buffer);
@@ -109,10 +112,16 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
+	/* flush other output */
+	fflush (stdout);
+
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** ERROR ***\n");
 	pk_print_line (func, file, line, buffer);
 	g_free(buffer);
+
+	/* flush this message */
+	fflush (stderr);
 	exit (1);
 }
 
