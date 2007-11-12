@@ -56,12 +56,12 @@ def configure(conf):
 		if Params.g_options.tests:
 			ret = conf.find_program('polkit-config-file-validate', var='POLKIT_POLICY_FILE_VALIDATE')
 	if ret:
-		conf.add_define('SECURITY_TYPE_POLKIT', 1)
+		conf.env['SECURITY_TYPE_POLKIT'] = True
 	else:
 		print "*******************************************************************"
 		print "** YOU ARE NOT USING A SECURE DAEMON. ALL USERS CAN DO ANYTHING! **"
 		print "*******************************************************************"
-		conf.add_define('SECURITY_TYPE_DUMMY', 1)
+		conf.env['SECURITY_TYPE_DUMMY'] = True
 
 	#optional deps
 	if conf.check_pkg('libnm_glib', destvar='NM_GLIB', vnum='0.6.4'):
@@ -84,7 +84,7 @@ def configure(conf):
 	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
 	conf.add_define('PACKAGE', 'PackageKit')
 
-        assert conf.env['SYSCONFDIR'], "You have too old WAF; please update to trunk"
+	assert conf.env['SYSCONFDIR'], "You have too old WAF; please update to trunk"
 
 	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
 	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
@@ -93,7 +93,7 @@ def configure(conf):
 	conf.write_config_header('config.h')
 
 
-	# We want these last as they shouldn't 
+	# We want these last as they might confligt with configuration checks.
 	if Params.g_options.wall:
 		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
 	if Params.g_options.gcov:
@@ -102,7 +102,6 @@ def configure(conf):
 		conf.env.append_value('CXXFLAGS', '-fprofile-arcs')
 		conf.env.append_value('CXXFLAGS', '-ftest-coverage')
 		conf.env.append_value('LINKFLAGS', '-fprofile-arcs')
-
 	if Params.g_options.gprof:
 		conf.env.append_value('CFLAGS', '-fprofile-arcs -ftest-coverage')
 
