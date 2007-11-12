@@ -1046,8 +1046,14 @@ pk_backend_finished_delay (gpointer data)
 gboolean
 pk_backend_finished (PkBackend *backend)
 {
+	const gchar *role_text;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* find out what we just did */
+	role_text = pk_role_enum_to_text (backend->priv->role);
+	pk_debug ("finished role %s", role_text);
 
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize == TRUE) {
@@ -1070,11 +1076,26 @@ pk_backend_finished (PkBackend *backend)
 	/* check we have not already finished */
 	if (backend->priv->finished == TRUE) {
 		g_print ("Backends cannot request Finished more than once!\n");
-		g_print ("If you are using :\n");
+		g_print ("If you are using:\n");
 		g_print ("* pk_backend_thread_helper\n");
 		g_print ("   - You should _not_ use pk_backend_finished directly");
 		g_print ("   - Return from the function like normal\n");
 		pk_error ("Internal error, cannot continue!");
+	}
+
+	/* check we sent at least one status calls */
+	if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
+		g_print ("Backends should send status <value> signals to update the UI!\n");
+		g_print ("If you are:\n");
+		g_print ("* Calling out to external tools, the compiled backend "
+			 "should call pk_backend_change_status() manually.\n");
+		g_print ("* Using a scripted backend with dumb commands then "
+			 "this should be set at the start of the runtime call\n");
+		g_print ("   - see helpers/yumBackend.py:self.status()\n");
+		g_print ("* Using a scripted backend with clever commands then a "
+			 "  callback should use map values into status enums\n");
+		g_print ("   - see helpers/yumBackend.py:self.state_actions\n");
+		pk_warning ("GUI will remain unchanged!");
 	}
 
 	/* we can't ever be re-used */

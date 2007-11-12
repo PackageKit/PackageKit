@@ -6,6 +6,11 @@ Requires writing to a database for config stuff
 New method GetHoursSinceLastUpdate
 Use this in the update icon
 
+*** package->status ***
+Emitting package download foo should set the status to downloading
+Convert the backends to send more status calls.
+Add a depsolve status enum.
+
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
