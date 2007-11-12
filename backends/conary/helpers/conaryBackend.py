@@ -181,7 +181,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                                 if troveSource.hasTrove(*x)])
             for n, v, f in troves:
                 for (pathId, path, fileId, version, file) in \
-                    client.db.iterFilesInTrove(n, v, f, sortByPath = True,
+                    self.client.db.iterFilesInTrove(n, v, f, sortByPath = True,
                                                         withFiles = True):
                     files.append(path)
             return files
@@ -189,9 +189,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if installed == INFO_INSTALLED:
-            files = _get_files(client.db, name, version, flavor)
+            files = _get_files(self.client.db, name, version, flavor)
         else:
-            files = _get_files(client.repos, name, version, flavor)
+            files = _get_files(self.client.repos, name, version, flavor)
 
         self.files(package_id, ';'.join(files))
 
