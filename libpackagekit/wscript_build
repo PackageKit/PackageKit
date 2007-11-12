@@ -35,26 +35,21 @@ libpackagekit.source = """
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-libpackagekit.vnum='3.0.0'
+libpackagekit.vnum = '3.0.0'
 
 env = bld.env()
 if env['HAVE_NETWORKMANAGER']:
     libpackagekit.uselib += ' NM_GLIB'
-    libpackagekit.source += '''
-	pk-network-nm.c
-'''
+    libpackagekit.source += ' pk-network-nm.c'
 else:
-    libpackagekit.source += '''
-	pk-network-dummy.c
-'''
-
+    libpackagekit.source += ' pk-network-dummy.c'
 
 libpackagekit.includes      = '. ../libgbus ../libselftest'
 libpackagekit.target        = 'packagekit'
 libpackagekit.name          = 'libpackagekit'
 
 # install headers to /usr/include/packagekit/
-install_files('PREFIX', 'include/packagekit',"""
+install_files('PREFIX', 'include/packagekit', """
 	pk-debug.h
 	pk-connection.h
 	pk-network.h
@@ -70,11 +65,10 @@ install_files('PREFIX', 'include/packagekit',"""
 """)
 
 #TODO: do not install this file!!!
-if Params.g_options.tests:
+if env['HAVE_TESTS']:
 	obj = bld.create_obj('cc', 'program')
 	obj.source = libpackagekit.source + ' pk-self-test.c'
 	obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
 	obj.uselib_local = 'libpackagekit'
 	obj.target = 'pk-self-test'
 	obj.includes = '. ../libselftest ../libgbus'
-
