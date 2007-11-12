@@ -18,11 +18,13 @@ install_files('DATADIR', doc_subdir, 'pk-structure.png')
 install_files('DATADIR', doc_subdir, 'docbook.css')
 
 # xmlto html-nochunks -m config.xsl pk-reference.xml
-cmd = bld.create_obj('command-output')
-cmd.hidden_outputs = 'pk-reference.html'
-cmd.command = 'xmlto'
-cmd.command_is_external = True
-cmd.cwd = cmd.input_dir('.') # xmlto is stupid, doesn't work from outside the xml source dir :(
-cmd.argv = ['html-nochunks', '-m', cmd.input_file('config.xsl'),
-            '--searchpath', cmd.input_dir('.'), '-o', cmd.output_dir('.'),
-            cmd.input_file('pk-reference.xml')]
+env = bld.env()
+if env['DOCBOOK_DOCS_ENABLED']:
+	cmd = bld.create_obj('command-output')
+	cmd.hidden_outputs = 'pk-reference.html'
+	cmd.command = 'xmlto'
+	cmd.command_is_external = True
+	cmd.cwd = cmd.input_dir('.') # xmlto is stupid, doesn't work from outside the xml source dir :(
+	cmd.argv = ['html-nochunks', '-m', cmd.input_file('config.xsl'),
+				'--searchpath', cmd.input_dir('.'), '-o', cmd.output_dir('.'),
+				cmd.input_file('pk-reference.xml')]
