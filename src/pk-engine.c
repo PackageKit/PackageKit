@@ -296,8 +296,9 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
-			pk_error ("backend emitted 'installed' rather than 'installing' "
-				  "- you need to do the package *before* you do the action");
+			pk_warning ("backend emitted 'installed' rather than 'installing' "
+				    "- you need to do the package *before* you do the action");
+			return;
 		}
 	}
 
