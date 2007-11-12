@@ -390,7 +390,7 @@ static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, "The same thing");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "The same thing");
 	pk_backend_updates_changed (backend);
 	pk_backend_finished (backend);
 }
