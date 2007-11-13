@@ -91,7 +91,7 @@ def configure(conf):
 	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
 	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
 
-	conf.env.append_value('CCFLAGS', '-DHAVE_CONFIG_H')
+	conf.env['CCDEFINES'] += ['HAVE_CONFIG_H']
 	conf.write_config_header('config.h')
 
 
