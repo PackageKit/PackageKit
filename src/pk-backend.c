@@ -755,7 +755,14 @@ pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* already this? */
+	if (backend->priv->status == status) {
+		pk_debug ("already set same status");
+		return TRUE;
+	}
 	backend->priv->status = status;
+
 	pk_debug ("emiting transaction-status-changed %i", status);
 	g_signal_emit (backend, signals [PK_BACKEND_TRANSACTION_STATUS_CHANGED], 0, status);
 	return TRUE;
@@ -771,6 +778,21 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* we automatically set the transaction status for some infos */
+	if (info == PK_INFO_ENUM_DOWNLOADING) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	} else if (info == PK_INFO_ENUM_UPDATING) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	} else if (info == PK_INFO_ENUM_INSTALLING) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+	} else if (info == PK_INFO_ENUM_REMOVING) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+	} else if (info == PK_INFO_ENUM_CLEANUP) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_CLEANUP);
+	} else if (info == PK_INFO_ENUM_OBSOLETING) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_OBSOLETE);
+	}
 
 	/* save in case we need this from coldplug */
 	g_free (backend->priv->last_package);
