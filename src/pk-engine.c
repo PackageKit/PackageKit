@@ -90,6 +90,7 @@ enum {
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_FILES,
 	PK_ENGINE_ALLOW_INTERRUPT,
+	PK_ENGINE_CALLER_ACTIVE_CHANGED,
 	PK_ENGINE_LOCKED,
 	PK_ENGINE_REPO_DETAIL,
 	PK_ENGINE_LAST_SIGNAL
@@ -2423,6 +2424,16 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GE
 }
 
 /**
+ * pk_engine_is_caller_active:
+ **/
+gboolean
+pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_active, GError **error)
+{
+	//FIXME: handle NOC
+	return TRUE;
+}
+
+/**
  * pk_engine_transaction_cb:
  **/
 static void
@@ -2541,6 +2552,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_BOOL,
+			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_BOOLEAN);
+	signals [PK_ENGINE_CALLER_ACTIVE_CHANGED] =
+		g_signal_new ("caller-active-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_BOOL,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_BOOLEAN);

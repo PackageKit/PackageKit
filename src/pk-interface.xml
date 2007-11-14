@@ -261,6 +261,14 @@
     <method name="GetFilters">
       <arg type="s" name="filters" direction="out"/> <!-- list of supported filters -->
     </method>
+    <method name="IsCallerActive">
+      <arg type="s" name="tid" direction="in"/>
+      <arg type="b" name="is_active" direction="out"/>
+    </method>
+    <signal name="CallerActiveChanged">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="b" name="is_active" direction="out"/>
+    </signal>
 
   </interface>
 </node>

@@ -198,6 +198,10 @@ gboolean	 pk_engine_get_groups			(PkEngine	*engine,
 gboolean	 pk_engine_get_filters			(PkEngine	*engine,
 							 gchar		**filters,
 							 GError		**error);
+gboolean	 pk_engine_is_caller_active		(PkEngine	*engine,
+							 const gchar	*tid,
+							 gboolean	*is_active,
+							 GError		**error);
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 
 gboolean	 pk_engine_get_progress			(PkEngine	*engine,

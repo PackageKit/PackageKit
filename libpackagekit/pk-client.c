@@ -84,6 +84,7 @@ typedef enum {
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_LOCKED,
 	PK_CLIENT_LAST_SIGNAL
@@ -658,6 +659,27 @@ pk_client_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkClient *client)
 {
 	pk_debug ("emit locked %i", is_locked);
 	g_signal_emit (client , signals [PK_CLIENT_LOCKED], 0, is_locked);
+}
+
+/**
+ * pk_client_caller_active_changed_cb:
+ */
+static void
+pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
+				    const gchar *tid,
+				    gboolean     is_active,
+				    PkClient    *client)
+{
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
+		return;
+	}
+
+	pk_debug ("emit caller-active-changed %i", is_active);
+	g_signal_emit (client , signals [PK_CLIENT_CALLER_ACTIVE_CHANGED], 0, is_active);
 }
 
 /**
@@ -2155,6 +2177,30 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
 }
 
 /**
+ * pk_client_is_caller_active:
+ **/
+gboolean
+pk_client_is_caller_active (PkClient *client, gboolean	*is_active)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_BOOLEAN, is_active,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		pk_warning ("IsCallerActive failed :%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
  * pk_client_get_groups:
  **/
 PkEnumList *
@@ -2422,6 +2468,11 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PK_CLIENT_CALLER_ACTIVE_CHANGED] =
+		g_signal_new ("caller-active-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals [PK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2521,6 +2572,10 @@ pk_client_init (PkClient *client)
 	/* ErrorCode, RequireRestart */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
+	/* CallerActiveChanged */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_BOOLEAN,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* Description */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT64,
@@ -2626,6 +2681,11 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
 				     G_CALLBACK (pk_client_require_restart_cb), client, NULL);
 
+	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged",
+				 G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
+				     G_CALLBACK (pk_client_caller_active_changed_cb), client, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Locked",
 				     G_CALLBACK (pk_client_locked_cb), client, NULL);
@@ -2674,6 +2734,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
 				        G_CALLBACK (pk_client_require_restart_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
+					G_CALLBACK (pk_client_caller_active_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Locked",
 				        G_CALLBACK (pk_client_locked_cb), client);
 
