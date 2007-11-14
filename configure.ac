@@ -262,7 +262,7 @@ dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi (dummy)]))
+			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi,zypp (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -279,6 +279,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
+	elif test -f /usr/bin/zypp ; then
+		with_default_backend=zypp
 	else
 		with_default_backend=dummy
 	fi
@@ -439,6 +441,7 @@ AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BO
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
+AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$with_default_backend = xzypp], [using Zypp backend])
 
 
 dnl ---------------------------------------------------------------------------
@@ -469,6 +472,7 @@ backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
+backends/zypp/Makefile
 data/Makefile
 data/tests/Makefile
 libselftest/Makefile

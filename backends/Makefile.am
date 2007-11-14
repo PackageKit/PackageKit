@@ -28,6 +28,10 @@ if BACKEND_TYPE_PISI
 SUBDIRS += pisi
 endif
 
+if BACKEND_TYPE_ZYPP
+SUBDIRS += zypp
+endif
+
 clean-local :
 	rm -f *~
 
