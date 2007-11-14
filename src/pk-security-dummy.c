@@ -30,6 +30,8 @@
 
 #include <pk-enum.h>
 
+#include <config.h>
+
 #include "pk-debug.h"
 #include "pk-security.h"
 
@@ -106,4 +108,14 @@ pk_security_new (void)
 	security = g_object_new (PK_TYPE_SECURITY, NULL);
 	return PK_SECURITY (security);
 }
+
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_security (LibSelfTest *test)
+{
+	return;
+}
+#endif
 

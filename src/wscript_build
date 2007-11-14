@@ -35,22 +35,24 @@ if env['SECURITY_TYPE_DUMMY']:
 		pk-security-dummy.c
 	"""
 
-#create the daemon
-obj = bld.create_obj('gnome', 'program')
-obj.source = common_source + ' pk-main.c'
-#TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
-
-defines = env['defines']
-
+obj = bld.create_obj('cc', 'objects')
+obj.source = common_source
 obj.includes = '. ../libpackagekit ../libselftest'
+obj.target = 'common_source'
+obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
+
+#create the daemon
+#TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
+obj = bld.create_obj('gnome', 'program')
+obj.target = 'packagekitd'
+obj.source = 'pk-main.c'
+obj.includes = '. ../libpackagekit ../libselftest'
+obj.add_objects = 'common_source'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.uselib_local = 'libpackagekit'
-#obj.add_objects = 'selftest'
-obj.target = 'packagekitd'
 obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
-#obj.env.append_value('CCDEFINES', 'LOCALSTATEDIR="%s"' % obj.env['LOCALSTATEDIR'])
 
 if env['SECURITY_TYPE_POLKIT']:
     obj.uselib += ' POLKIT_DBUS'
@@ -62,12 +64,13 @@ install_files('PREFIX', 'include/packagekit-backends', """
 	""")
 
 #TODO: do not install this file!!!
-if env['HAVE_TESTS'] and env['SECURITY_TYPE_POLKIT']:
+if env['HAVE_TESTS']:
 	selftest = bld.create_obj('cc', 'program')
-	selftest.source = common_source + ' pk-self-test.c'
+	selftest.source = 'pk-self-test.c'
+	selftest.add_objects = 'common_source'
 	selftest.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD GOBJECT POLKIT_DBUS'
 	selftest.uselib_local = 'libpackagekit'
-	selftest.target = 'pk-self-test'
+	selftest.target = 'test-packagekitd'
 	selftest.includes = '. ../libselftest ../libpackagekit'
 
 #TODO: we really want a /src shutdown() method....

@@ -11,6 +11,7 @@
 
 import os
 import Params
+import Object
 import misc
 import shutil
 import subprocess
@@ -100,8 +101,8 @@ def configure(conf):
 		conf.env.append_value('CPPFLAGS', '-Wall -Werror -Wcast-align -Wno-uninitialized')
 	if Params.g_options.gcov:
 		conf.env['HAVE_GCOV'] = True
-		conf.env.append_value('CFLAGS', '-fprofile-arcs')
-		conf.env.append_value('CFLAGS', '-ftest-coverage')
+		conf.env.append_value('CCFLAGS', '-fprofile-arcs')
+		conf.env.append_value('CCFLAGS', '-ftest-coverage')
 		conf.env.append_value('CXXFLAGS', '-fprofile-arcs')
 		conf.env.append_value('CXXFLAGS', '-ftest-coverage')
 		conf.env.append_value('LINKFLAGS', '-fprofile-arcs')
@@ -143,34 +144,63 @@ def gcov_report():
 	env = Params.g_build.env()
 	variant = env.variant()
 
-	basedir = os.path.join(blddir, variant)
 	rootdir = os.getcwd()
 
-	for test in ['libpackagekit', 'src']:
-		testdir = os.path.join(basedir, test)
+	cleanup = []
+
+	for test in ['test-libpackagekit', 'test-packagekitd']:
+		obj = Object.name_to_obj(test)
+
+		testdir = os.path.join(blddir, obj.path.bldpath(env))
 		if not os.path.isdir(testdir):
 			continue
 
-		file = os.path.join(testdir, 'pk-self-test')
+		file = os.path.join(testdir, obj.name)
 		if not os.path.isfile(file):
 			continue
 
-		os.chdir(testdir)
+		# Waf currently doesn't name libraries until install. :(
+		#
+		# This should properly link all local libraries in use
+		# to the directory of the test.
+		for uselib in obj.to_list(obj.uselib_local):
+			lib = Object.name_to_obj(uselib)
 
-		try:
-			#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
-			command = 'rm -f gcov.txt'
-			if subprocess.Popen(command, shell=True).wait():
-				raise SystemExit(1)
+			lib_path = lib.path.bldpath(env)
+			lib_name = lib.name + '.so'
 
-			command = './pk-self-test'
-			if subprocess.Popen(command, shell=True).wait():
-				raise SystemExit(1)
+			vnum_lst = lib.vnum.split('.')
 
-			report_tool = os.path.join(rootdir, 'tools', 'create-coverage-report.sh')
-			command = report_tool + ' packagekit src/*.c'
-			if subprocess.Popen(command, shell=True).wait():
-				raise SystemExit(1)
+			for x in range(len(vnum_lst) + 1):
+				suffix = '.'.join(vnum_lst[:x])
+				if suffix:
+					suffix = '.' + suffix
 
-		finally:
-			os.chdir(rootdir)
+				tgt_name = lib_name + suffix
+				tgt_path = os.path.join(rootdir, testdir, tgt_name)
+				src_path = os.path.join(rootdir, blddir, lib_path, lib_name)
+				
+				if not os.path.exists(tgt_path):
+					os.symlink(src_path, tgt_path)
+					cleanup.append(tgt_path)
+
+		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
+		#command = 'rm -f gcov.txt'
+		#if subprocess.Popen(command, shell=True).wait():
+		#	raise SystemExit(1)
+
+		d = obj.path.bldpath(env)
+
+		command = 'LD_LIBRARY_PATH=%s %s/%s' % (testdir, testdir, test)
+		if subprocess.Popen(command, shell=True).wait():
+			raise SystemExit(1)
+
+		os.chdir(rootdir)
+
+		"""
+		report_tool = os.path.join(rootdir, 'tools', 'create-coverage-report.sh')
+		command = report_tool + ' packagekit ../libpackagekit/*.c'
+		print command, os.getcwd()
+		if subprocess.Popen(command, shell=True).wait():
+			raise SystemExit(1)
+		"""

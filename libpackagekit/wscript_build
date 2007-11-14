@@ -67,8 +67,8 @@ install_files('PREFIX', 'include/packagekit', """
 #TODO: do not install this file!!!
 if env['HAVE_TESTS']:
 	obj = bld.create_obj('cc', 'program')
-	obj.source = libpackagekit.source + ' pk-self-test.c'
+	obj.source = 'pk-self-test.c'
 	obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
 	obj.uselib_local = 'libpackagekit'
-	obj.target = 'pk-self-test'
+	obj.target = 'test-libpackagekit'
 	obj.includes = '. ../libselftest ../libgbus'
