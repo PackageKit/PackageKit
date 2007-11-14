@@ -11,6 +11,11 @@ Emitting package download foo should set the status to downloading
 Convert the backends to send more status calls.
 Add a depsolve status enum.
 
+*** Watch NameOwnerChanged ***
+Clients that are still on the bus should handle the error, else let
+PkWatch handle it. We'll need a method to see if a transaction_id has an
+active client, which we'll also need for package notice callbacks in the future.
+
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
 
