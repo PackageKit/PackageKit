@@ -146,9 +146,12 @@ def gcov_report():
 
 	rootdir = os.getcwd()
 
-	cleanup = []
 
-	for test in ['test-libpackagekit', 'test-packagekitd']:
+	#for test in ['test-libpackagekit', 'test-packagekitd']:
+	for test in ['test-libpackagekit']:
+		cleanup = []
+		sources = []
+
 		obj = Object.name_to_obj(test)
 
 		testdir = os.path.join(blddir, obj.path.bldpath(env))
@@ -179,10 +182,12 @@ def gcov_report():
 				tgt_name = lib_name + suffix
 				tgt_path = os.path.join(rootdir, testdir, tgt_name)
 				src_path = os.path.join(rootdir, blddir, lib_path, lib_name)
-				
+
 				if not os.path.exists(tgt_path):
 					os.symlink(src_path, tgt_path)
 					cleanup.append(tgt_path)
+
+		sources += obj.to_list(obj.source)
 
 		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
 		#command = 'rm -f gcov.txt'

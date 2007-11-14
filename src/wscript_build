@@ -9,7 +9,16 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-common_source = """
+env = bld.env()
+
+# Build the objects that are to be a part of both packagekitd and the testsuite
+obj = bld.create_obj('gnome', 'objects')
+obj.includes = '. ../libpackagekit ../libselftest'
+obj.target = 'pkgkitd_common_source'
+obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
+obj.source = """
 	pk-backend.c
 	pk-backend-python.c
 	pk-conf.c
@@ -21,56 +30,42 @@ common_source = """
 	pk-transaction-db.c
 	pk-transaction-id.c
 	pk-transaction-list.c
-"""
-
-env = bld.env()
+""".split()
 
 if env['SECURITY_TYPE_POLKIT']:
-    common_source += """
-		pk-security-polkit.c
-	"""
+    obj.source += ['pk-security-polkit.c']
 
 if env['SECURITY_TYPE_DUMMY']:
-    common_source += """
-		pk-security-dummy.c
-	"""
+    obj.source += ['pk-security-dummy.c']
 
-obj = bld.create_obj('cc', 'objects')
-obj.source = common_source
-obj.includes = '. ../libpackagekit ../libselftest'
-obj.target = 'common_source'
-obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
-
-#create the daemon
+# Build packagekitd
 #TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
 obj = bld.create_obj('gnome', 'program')
 obj.target = 'packagekitd'
 obj.source = 'pk-main.c'
 obj.includes = '. ../libpackagekit ../libselftest'
-obj.add_objects = 'common_source'
+obj.add_objects = 'pkgkitd_common_source'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.uselib_local = 'libpackagekit'
 obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
-obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
-obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
 
 if env['SECURITY_TYPE_POLKIT']:
     obj.uselib += ' POLKIT_DBUS'
 
-# install backend headers to /usr/include/packagekit-backends/
+# Install backend headers to /usr/include/packagekit-backends/
 install_files('PREFIX', 'include/packagekit-backends', """
 		pk-backend.h
 		pk-backend-python.h
-	""")
+""")
 
-#TODO: do not install this file!!!
 if env['HAVE_TESTS']:
-	selftest = bld.create_obj('cc', 'program')
-	selftest.source = 'pk-self-test.c'
-	selftest.add_objects = 'common_source'
-	selftest.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD GOBJECT POLKIT_DBUS'
-	selftest.uselib_local = 'libpackagekit'
-	selftest.target = 'test-packagekitd'
-	selftest.includes = '. ../libselftest ../libpackagekit'
+	obj = bld.create_obj('cc', 'program')
+	obj.source = 'pk-self-test.c'
+	obj.add_objects = 'pkgkitd_common_source'
+	obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD GOBJECT POLKIT_DBUS'
+	obj.uselib_local = 'libpackagekit'
+	obj.target = 'test-packagekitd'
+	obj.includes = '. ../libselftest ../libpackagekit'
+	obj.install_var = 0
 
 #TODO: we really want a /src shutdown() method....

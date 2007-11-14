@@ -9,13 +9,11 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-#Marshall file
-libpackagekit = bld.create_obj('gnome', 'shlib')
-libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
-libpackagekit.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
-libpackagekit.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
-libpackagekit.add_objects = 'libgbus libselftest'
-libpackagekit.source = """
+obj = bld.create_obj('gnome', 'objects')
+obj.includes = '. ../libgbus ../libselftest'
+obj.target = 'libpkgkit_common_source'
+obj.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
+obj.source = """
 	pk-debug.c
 	pk-connection.c
 	pk-package-id.c
@@ -29,24 +27,32 @@ libpackagekit.source = """
 	pk-polkit-client.c
 """
 
+env = bld.env()
+if env['HAVE_NETWORKMANAGER']:
+    obj.uselib += ' NM_GLIB'
+    obj.source += ' pk-network-nm.c'
+else:
+    obj.source += ' pk-network-dummy.c'
+obj.add_objects = 'libgbus libselftest'
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
+obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--body')
+
+
+
+#Marshall file
+obj = bld.create_obj('gnome', 'shlib')
+obj.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
+obj.add_objects = 'libpkgkit_common_source'
 # libtool versioning - CURRENT.REVISION.AGE
 # increment:
 # CURRENT	If the API or ABI interface has changed (reset REVISION to 0)
 # REVISION	If the API and ABI remains the same, but bugs are fixed.
 # AGE		If libpackagekit can be linked into executables which can be
 # 		built with previous versions of this library. Don't use.
-libpackagekit.vnum = '3.0.0'
-
-env = bld.env()
-if env['HAVE_NETWORKMANAGER']:
-    libpackagekit.uselib += ' NM_GLIB'
-    libpackagekit.source += ' pk-network-nm.c'
-else:
-    libpackagekit.source += ' pk-network-dummy.c'
-
-libpackagekit.includes      = '. ../libgbus ../libselftest'
-libpackagekit.target        = 'packagekit'
-libpackagekit.name          = 'libpackagekit'
+obj.vnum = '3.0.0'
+obj.includes      = '. ../libgbus ../libselftest'
+obj.target        = 'packagekit'
+obj.name          = 'libpackagekit'
 
 # install headers to /usr/include/packagekit/
 install_files('PREFIX', 'include/packagekit', """
@@ -68,7 +74,7 @@ install_files('PREFIX', 'include/packagekit', """
 if env['HAVE_TESTS']:
 	obj = bld.create_obj('cc', 'program')
 	obj.source = 'pk-self-test.c'
+	obj.add_objects = 'libpkgkit_common_source'
 	obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
-	obj.uselib_local = 'libpackagekit'
 	obj.target = 'test-libpackagekit'
 	obj.includes = '. ../libselftest ../libgbus'
