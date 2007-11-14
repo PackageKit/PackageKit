@@ -78,3 +78,7 @@ if env['HAVE_TESTS']:
 	obj.uselib = 'GLIB GOBJECT DBUS_GLIB POLKIT_DBUS GTHREAD'
 	obj.target = 'test-libpackagekit'
 	obj.includes = '. ../libselftest ../libgbus'
+
+if env['HAVE_NETWORKMANAGER']:
+	obj.uselib += ' NM_GLIB'
+

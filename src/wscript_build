@@ -38,6 +38,9 @@ if env['SECURITY_TYPE_POLKIT']:
 if env['SECURITY_TYPE_DUMMY']:
     obj.source += ['pk-security-dummy.c']
 
+if env['SECURITY_TYPE_POLKIT']:
+    obj.uselib += ' POLKIT_DBUS'
+
 # Build packagekitd
 #TODO: needs to be installed in /usr/sbin/packagekitd not /usr/bin/packagekitd
 obj = bld.create_obj('gnome', 'program')
@@ -48,9 +51,10 @@ obj.add_objects = 'pkgkitd_common_source'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.uselib_local = 'libpackagekit'
 obj.add_dbus_file('pk-interface.xml', 'pk_engine', 'glib-server')
-
 if env['SECURITY_TYPE_POLKIT']:
     obj.uselib += ' POLKIT_DBUS'
+if env['HAVE_NETWORKMANAGER']:
+	obj.uselib += ' NM_GLIB'
 
 # Install backend headers to /usr/include/packagekit-backends/
 install_files('PREFIX', 'include/packagekit-backends', """
@@ -67,5 +71,7 @@ if env['HAVE_TESTS']:
 	obj.target = 'test-packagekitd'
 	obj.includes = '. ../libselftest ../libpackagekit'
 	obj.install_var = 0
+	if env['HAVE_NETWORKMANAGER']:
+		obj.uselib += ' NM_GLIB'
 
 #TODO: we really want a /src shutdown() method....
