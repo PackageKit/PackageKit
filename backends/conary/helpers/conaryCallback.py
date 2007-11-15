@@ -15,15 +15,15 @@ from packagekit.backend import *
 class UpdateCallback(callbacks.UpdateCallback):
     def resolvingDependencies(self):
         #self.backend.status('Resolving Dependencies')
-        pass
+        self.backend.status(STATUS_DEP_RESOLVE)
 
     def creatingRollback(self):
         #self.backend.status('Creating Rollback')
-        pass
+        self.backend.status(STATUS_ROLLBACK)
 
     def committingTransaction(self):
         #self.backend.status('Committing Transaction')
-        pass
+        self.backend.status(STATUS_COMMIT)
 
     def downloadingFileContents(self, got, need):
         #self.backend.status('Downloading files for changeset')
@@ -34,11 +34,11 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def requestingFileContents(self):
         #self.backend.status('Requesting File Contents')
-        pass
+        self.backend.status(STATUS_REQUEST)
 
     def requestingChangeSet(self):
         #self.backend.status('Requesting Changeset')
-        pass
+        self.backend.status(STATUS_REQUEST)
 
     def done(self):
         #self.backend.status('Done')
