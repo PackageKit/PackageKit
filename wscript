@@ -146,6 +146,7 @@ def gcov_report():
 
 	rootdir = os.getcwd()
 
+	os.chdir(blddir)
 
 	#for test in ['test-libpackagekit', 'test-packagekitd']:
 	for test in ['test-libpackagekit']:
@@ -154,7 +155,7 @@ def gcov_report():
 
 		obj = Object.name_to_obj(test)
 
-		testdir = os.path.join(blddir, obj.path.bldpath(env))
+		testdir = obj.path.bldpath(env)
 		if not os.path.isdir(testdir):
 			continue
 
@@ -180,19 +181,18 @@ def gcov_report():
 					suffix = '.' + suffix
 
 				tgt_name = lib_name + suffix
-				tgt_path = os.path.join(rootdir, testdir, tgt_name)
+				tgt_path = os.path.join(rootdir, blddir, testdir, tgt_name)
 				src_path = os.path.join(rootdir, blddir, lib_path, lib_name)
 
 				if not os.path.exists(tgt_path):
 					os.symlink(src_path, tgt_path)
 					cleanup.append(tgt_path)
 
+		# Gather sources from objects
 		sources += obj.to_list(obj.source)
-
-		#from http://code.nsnam.org/ns-3-dev/file/c21093326f8d/wscript
-		#command = 'rm -f gcov.txt'
-		#if subprocess.Popen(command, shell=True).wait():
-		#	raise SystemExit(1)
+		for x in obj.to_list(obj.add_objects):
+			o = Object.name_to_obj(x)
+			sources += o.to_list(o.source)
 
 		d = obj.path.bldpath(env)
 
@@ -200,12 +200,77 @@ def gcov_report():
 		if subprocess.Popen(command, shell=True).wait():
 			raise SystemExit(1)
 
-		os.chdir(rootdir)
+		# Ignore these
+		ignore = """
+			pk-main.c
+			pk-marshal.c
+			pk-security-dummy.c
+			pk-backend-python.c
+		""".split()
 
-		"""
-		report_tool = os.path.join(rootdir, 'tools', 'create-coverage-report.sh')
-		command = report_tool + ' packagekit ../libpackagekit/*.c'
-		print command, os.getcwd()
-		if subprocess.Popen(command, shell=True).wait():
-			raise SystemExit(1)
-		"""
+		sources = [x for x in sources if x not in ignore]
+
+		total_loc = 0
+		total_covered = 0
+		total_stmts = 0
+
+		print '================================================================================'
+		print ' Test coverage for module packagekit:'
+		print '================================================================================'
+
+		srcdir = obj.path.srcpath(env)
+
+		for src in sources:
+			srcpath = os.path.join(srcdir, src)
+
+			command = 'gcov -o %s %s > /dev/null' % (testdir, srcpath)
+			if subprocess.Popen(command, shell=True).wait():
+				raise SystemExit(1)
+
+			covpath = src + '.gcov'
+			if not os.path.exists(covpath):
+				continue
+
+			cleanup.append(covpath)
+
+			not_covered = 0
+			covered = 0
+			loc = 0
+
+			f = open(covpath, 'rb')
+			for line in f.readlines():
+				if line.startswith('    #####:'):
+					not_covered += 1
+				elif not line.startswith('        -:'):
+					covered += 1
+				loc += 1
+			f.close()
+
+			if (covered + not_covered) > 0:
+				percent = 100.0 * covered / (covered + not_covered)
+			else:
+				percent = 0
+
+			print '%30s: %7.2f%% (%d of %d)' % (covpath, percent, covered, not_covered+covered)
+
+			total_loc += loc
+			total_covered += covered
+			total_stmts += covered + not_covered
+
+		if (total_stmts) > 0:
+			percent = 100.0 * total_covered / (total_stmts)
+		else:
+			percent = 0
+
+		print '================================================================================'
+		print ' Source lines          : %d' % total_loc
+		print ' Actual statements     : %d' % total_stmts
+		print ' Executed statements   : %d' % total_covered
+		print ' Test coverage         : %3.2f%%' % percent
+		print '================================================================================'
+
+		for item in cleanup:
+			os.unlink(item)
+
+
+	os.chdir(rootdir)
