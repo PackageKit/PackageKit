@@ -337,15 +337,18 @@ AC_DEFUN([APT_BACKEND],
 if test x$with_default_backend = xapt; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 
-	AC_ARG_WITH([aptsearch],
+	AC_ARG_WITH([apt_search],
 	    AS_HELP_STRING([--with-apt-search=<option>],
-			   [Apt search type to use - plain (plain)]))
-	if test x$with_aptsearch = x; then
-		with_aptsearch=plain
+			   [Apt search type to use - plain,sqlite (plain)]))
+
+	if test x$with_apt_search = x; then
+		with_apt_search=plain
 	fi
-	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_aptsearch", [apt search type])
-	AC_SUBST(APT_SEARCH, "$with_aptsearch")
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_aptsearch = xplain], [using plain apt search])
+    AC_MSG_NOTICE([using $with_apt_search for apt searching])
+	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_apt_search", [apt search type])
+	AC_SUBST(APT_SEARCH, $with_apt_search)
+	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_apt_search = xplain], [using plain apt search])
+	AM_CONDITIONAL(APT_SEARCH_SQLITE, [test x$with_apt_search = xsqlite], [using sqlite apt search])
 
    AC_ARG_WITH(libapt-pkg-lib,
 	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
@@ -411,6 +414,7 @@ if test x$with_default_backend = xapt; then
 	AC_SUBST(APT_PKG_TYPE)
 else
 	AM_CONDITIONAL(APT_SEARCH_PLAIN, [false])
+	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
 fi
 
 if test x$with_default_backend = xbox; then
