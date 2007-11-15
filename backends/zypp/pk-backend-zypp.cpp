@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <unistd.h>
 #include <pk-debug.h>
 
 #include <zypp/ZYppFactory.h>
@@ -37,6 +38,79 @@
 #include <zypp/Product.h>
 #include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
+
+typedef struct {
+	gchar *package_id;
+	gint type;
+} ThreadData;
+
+// some typedefs and functions to shorten Zypp names
+typedef zypp::ResPoolProxy ZyppPool;
+inline ZyppPool zyppPool() { return zypp::getZYpp()->poolProxy(); }
+typedef zypp::ui::Selectable::Ptr ZyppSelectable;
+typedef zypp::ui::Selectable*		ZyppSelectablePtr;
+typedef zypp::ResObject::constPtr	ZyppObject;
+typedef zypp::Package::constPtr		ZyppPackage;
+typedef zypp::Patch::constPtr		ZyppPatch;
+typedef zypp::Pattern::constPtr		ZyppPattern;
+typedef zypp::Language::constPtr	ZyppLanguage;
+inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
+	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
+
+static gboolean
+backend_get_description_thread (PkBackend *backend, gpointer data)
+{
+	PkPackageId *pi;
+	ThreadData *d = (ThreadData*) data;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		return FALSE;
+	}
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	// FIXME: Call libzypp here to get the "Selectable"
+
+	pk_backend_description (backend,
+				pi->name,		// package_id
+				"unknown",		// const gchar *license
+				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
+				"FIXME: put package description here",	// const gchar *description
+				"FIXME: add package URL here",			// const gchar *url
+				0,			// gulong size
+				"FIXME: put package filelist here");			// const gchar *filelist
+
+	pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+
+	return TRUE;
+}
+
+/**
+ * backend_get_description:
+ */
+static void
+backend_get_description (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	ThreadData *data = g_new0(ThreadData, 1);
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_description");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(package_id);
+		pk_backend_thread_helper (backend, backend_get_description_thread, data);
+	}
+}
+
+
 
 /**
  * backend_get_repo_list:
@@ -97,7 +171,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	backend_get_description,		/* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
