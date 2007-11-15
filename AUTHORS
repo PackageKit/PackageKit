@@ -10,3 +10,6 @@ Backend: conary
 
 Backend: pisi
     S.Çağlar Onur <caglar@pardus.org.tr>
+
+Backend: zypp
+    Boyd Timothy <btimothy@gmail.com>

@@ -53,6 +53,10 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UPDATE,			"update"},
 	{PK_STATUS_ENUM_CLEANUP,		"cleanup"},
 	{PK_STATUS_ENUM_OBSOLETE,		"obsolete"},
+	{PK_STATUS_ENUM_DEP_RESOLVE,		"dep-resolve"},
+	{PK_STATUS_ENUM_ROLLBACK,		"rollback"},
+	{PK_STATUS_ENUM_COMMIT,			"commit"},
+	{PK_STATUS_ENUM_REQUEST,		"request"},
 	{0, NULL},
 };
 

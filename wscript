@@ -148,8 +148,7 @@ def gcov_report():
 
 	os.chdir(blddir)
 
-	#for test in ['test-libpackagekit', 'test-packagekitd']:
-	for test in ['test-libpackagekit']:
+	for test in ['test-libpackagekit', 'test-packagekitd']:
 		cleanup = []
 		sources = []
 
@@ -197,8 +196,15 @@ def gcov_report():
 		d = obj.path.bldpath(env)
 
 		command = 'LD_LIBRARY_PATH=%s %s/%s' % (testdir, testdir, test)
-		if subprocess.Popen(command, shell=True).wait():
-			raise SystemExit(1)
+		proc = subprocess.Popen(command, shell=True,
+								stdout=subprocess.PIPE,
+								stderr=subprocess.PIPE)
+		if proc.wait():
+			print 'Unable to run %s/%s!' % (testdir, test)
+			print proc.stderr.read()
+			continue
+
+		print proc.stdout.read()
 
 		# Ignore these
 		ignore = """
@@ -223,8 +229,12 @@ def gcov_report():
 		for src in sources:
 			srcpath = os.path.join(srcdir, src)
 
-			command = 'gcov -o %s %s > /dev/null' % (testdir, srcpath)
-			if subprocess.Popen(command, shell=True).wait():
+			command = 'gcov -o %s %s' % (testdir, srcpath)
+			proc = subprocess.Popen(command, shell=True,
+			                        stdout=subprocess.PIPE,
+			                        stderr=subprocess.PIPE)
+			if proc.wait():
+				print 'gcov failed when processing %s' % srcpath
 				raise SystemExit(1)
 
 			covpath = src + '.gcov'
@@ -232,6 +242,11 @@ def gcov_report():
 				continue
 
 			cleanup.append(covpath)
+
+			basename, _ = os.path.splitext(src)
+			gcdaname = os.path.join(testdir, basename + '.gcda')
+			if os.path.exists(gcdaname):
+				cleanup.append(gcdaname)
 
 			not_covered = 0
 			covered = 0
@@ -251,7 +266,7 @@ def gcov_report():
 			else:
 				percent = 0
 
-			print '%30s: %7.2f%% (%d of %d)' % (covpath, percent, covered, not_covered+covered)
+			print '%30s: %7.2f%% (%d of %d)' % (src, percent, covered, not_covered+covered)
 
 			total_loc += loc
 			total_covered += covered

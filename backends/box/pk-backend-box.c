@@ -337,6 +337,8 @@ backend_get_files_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
 	files = box_db_repos_get_files_string (db, pi->name, pi->version);
         pk_backend_files (backend, d->package_id, files);
 
@@ -410,6 +412,8 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+
 	if (!box_package_uninstall (pi->name, "/", common_progress, backend))
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
@@ -425,6 +429,8 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 {
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+
     	box_repos_sync(common_progress, backend);
 
 	return TRUE;
@@ -592,7 +598,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_thread_helper (backend, backend_refresh_cache_thread, NULL);
 }
 
@@ -694,6 +699,7 @@ backend_get_repo_list (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	list = box_repos_list_get ();
 	for (li = list; li != NULL; li=li->next)
@@ -714,6 +720,8 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
         g_return_if_fail (backend != NULL);
 	
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
 	box_repos_enable_repo(rid, enabled);
 
         pk_backend_finished (backend);
@@ -726,6 +734,8 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (!box_repos_set_param (rid, parameter, value))
 	{

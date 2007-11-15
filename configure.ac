@@ -425,13 +425,19 @@ if test x$with_default_backend = xalpm; then
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
 
+if test x$with_default_backend = xzypp; then
+	PKG_CHECK_MODULES(ZYPP, libzypp)
+	AC_SUBST(ZYPP_CFLAGS)
+	AC_SUBST(ZYPP_LIBS)
+fi
+
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 
-AC_DEFINE(PK_DB_DIR, "$(localstatedir)/lib/PackageKit", [database dir])
+AC_DEFINE_UNQUOTED(PK_DB_DIR, "${localstatedir}/lib/PackageKit", [database dir])
 
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_default_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_default_backend = xapt], [using APT backend])

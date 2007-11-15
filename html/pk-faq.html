@@ -20,41 +20,41 @@
 <h3>How complete are the backends?</h3>
 <h4>Methods</h4>
 <pre>
-                  | conary | yum | apt | box | alpm | smart | pisi |
---------------------------------------------------------------------
-resolve           |   X    |  X  |     |  X  |      |   X   |   X  |
-refresh-cache     |   X    |  X  |  X  |  X  |      |   X   |   X  |
-  \--force        |        |     |     |     |      |       |      |
-get-updates       |   X    |  X  |     |  X  |      |   X   |   X  |
-update-system     |   X    |  X  |     |  X  |      |   X   |   X  |
-search-name       |   X    |  X  |  X  |  X  |  X   |   X   |   X  |
-search-details    |        |  X  |  X  |  X  |      |   X   |   X  |
-search-file       |        |  X  |     |  X  |      |       |   X  |
-search-group      |        |  X  |     |     |      |       |   X  |
-install-package   |   X    |  X  |     |  X  |  X   |   X   |   X  |
-install-file      |        |  X  |     |  X  |      |   X   |   X  |
-remove-package    |   X    |  X  |     |  X  |  X   |   X   |   X  |
-update-package    |   X    |  X  |     |  X  |      |   X   |   X  |
-get-depends       |        |  X  |     |  X  |      |   X   |   X  |
-  \--recursive    |        |     |     |     |      |       |      |
-get-requires      |   X    |  X  |     |  X  |      |       |   X  |
-  \--recursive    |        |     |     |     |      |       |      |
-get-description   |   X    |  X  |  X  |  X  |      |   X   |   X  |
-get-files         |   X    |  X  |     |  X  |      |   X   |   X  |
-get-update-detail |        |  X  |     |     |      |       |      |
-get-repo-list     |        |  X  |     |  X  |  X   |   X   |   X  |
-repo-enable       |        |  X  |     |  X  |      |   X   |      |
-repo-set-data     |        |  X  |     |  X  |      |       |   X  |
-cancel-transaction|   X    |  X  |     |     |      |       |   X  |
+                  | conary | yum | apt | box | alpm | smart | pisi | zypp |
+---------------------------------------------------------------------------
+resolve           |   X    |  X  |     |  X  |      |   X   |   X  |      |
+refresh-cache     |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
+  \--force        |        |     |     |     |      |       |      |      |
+get-updates       |   X    |  X  |     |  X  |      |   X   |   X  |      |
+update-system     |   X    |  X  |     |  X  |      |   X   |   X  |      |
+search-name       |   X    |  X  |  X  |  X  |  X   |   X   |   X  |      |
+search-details    |        |  X  |  X  |  X  |      |   X   |   X  |      |
+search-file       |        |  X  |     |  X  |      |       |   X  |      |
+search-group      |        |  X  |     |     |      |       |   X  |      |
+install-package   |   X    |  X  |     |  X  |  X   |   X   |   X  |      |
+install-file      |        |  X  |     |  X  |      |   X   |   X  |      |
+remove-package    |   X    |  X  |     |  X  |  X   |   X   |   X  |      |
+update-package    |   X    |  X  |     |  X  |      |   X   |   X  |      |
+get-depends       |        |  X  |     |  X  |      |   X   |   X  |      |
+  \--recursive    |        |     |     |     |      |       |      |      |
+get-requires      |   X    |  X  |     |  X  |      |       |   X  |      |
+  \--recursive    |        |     |     |     |      |       |      |      |
+get-description   |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
+get-files         |   X    |  X  |     |  X  |      |   X   |   X  |      |
+get-update-detail |        |  X  |     |     |      |       |      |      |
+get-repo-list     |        |  X  |     |  X  |  X   |   X   |   X  |   X  |
+repo-enable       |        |  X  |     |  X  |      |   X   |      |      |
+repo-set-data     |        |  X  |     |  X  |      |       |   X  |      |
+cancel-transaction|   X    |  X  |     |     |      |       |   X  |      |
 </pre>
 
 <h4>Filters</h4>
 <pre>
-                  | conary | yum | apt | box | alpm | smart | pisi |
---------------------------------------------------------------------
-installed         |   X    |  X  |  X  |  X  |  X   |   X   |   X  |
-development       |        |  X  |  X  |  X  |      |       |      |
-gui               |        |  X  |  X  |  X  |      |       |   X  |
+                  | conary | yum | apt | box | alpm | smart | pisi | zypp |
+---------------------------------------------------------------------------
+installed         |   X    |  X  |  X  |  X  |  X   |   X   |   X  |      |
+development       |        |  X  |  X  |  X  |      |       |      |      |
+gui               |        |  X  |  X  |  X  |      |       |   X  |      |
 </pre>
 
 <h3>Why doesn't PackageKit work with SELinux?</h3>
