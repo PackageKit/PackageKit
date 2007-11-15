@@ -80,95 +80,88 @@ gboolean	 pk_engine_use_backend			(PkEngine	*engine,
 gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,
 							 GError		**error);
-gboolean	 pk_engine_get_updates			(PkEngine	*engine,
+void		 pk_engine_get_updates			(PkEngine	*engine,
 							 const gchar	*tid,
-							 GError		**error);
-gboolean	 pk_engine_search_name			(PkEngine	*engine,
-							 const gchar	*tid,
-							 const gchar	*filter,
-							 const gchar	*search,
-							 GError		**error);
-gboolean	 pk_engine_search_details		(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_search_name			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
-gboolean	 pk_engine_search_group			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_search_details		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
-gboolean	 pk_engine_search_file			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_search_group			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
-gboolean	 pk_engine_get_depends			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_search_file			(PkEngine	*engine,
+							 const gchar	*tid,
+							 const gchar	*filter,
+							 const gchar	*search,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_get_depends			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
-							 GError		**error);
-gboolean	 pk_engine_get_update_detail		(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_get_update_detail		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
-							 GError		**error);
-gboolean	 pk_engine_get_requires			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_get_requires			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
-							 GError		**error);
-gboolean	 pk_engine_get_description		(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
-							 GError		**error);
-gboolean	 pk_engine_get_files			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_get_files			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
-							 GError		**error);
-gboolean	 pk_engine_resolve			(PkEngine	*engine,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_resolve			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*filter,
 							 const gchar	*package,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_rollback			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*transaction_id,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_refresh_cache		(PkEngine	*engine,
 							 const gchar	*tid,
 							 gboolean	 force,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 gboolean	 pk_engine_get_old_transactions		(PkEngine	*engine,
 							 const gchar	*tid,
 							 guint		 number,
 							 GError		**error);
 void		 pk_engine_update_system		(PkEngine	*engine,
 							 const gchar	*tid,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_remove_package		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
 							 gboolean	 allow_deps,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_install_package		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_install_file			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*full_path,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_update_package		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 
 gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
 							 gchar		***transaction_list,
@@ -217,22 +210,20 @@ gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 GError		**error);
 
 /* repo stuff */
-gboolean	 pk_engine_get_repo_list		(PkEngine	*engine,
+void		 pk_engine_get_repo_list		(PkEngine	*engine,
 							 const gchar	*tid,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_repo_enable			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*repo_id,
 							 gboolean	 enabled,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 void		 pk_engine_repo_set_data		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value,
-							 DBusGMethodInvocation *context,
-							 GError		**error);
+							 DBusGMethodInvocation *context);
 
 G_END_DECLS
 

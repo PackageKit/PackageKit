@@ -7,6 +7,7 @@
       <arg type="s" name="tid" direction="out"/>
     </method>
     <method name="GetUpdates">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="RefreshCache">
@@ -19,53 +20,64 @@
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="Resolve">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="package" direction="in"/>
     </method>
     <method name="Rollback">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="transaction_id" direction="in"/>
     </method>
     <method name="SearchName">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
     </method>
     <method name="SearchDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
     </method>
     <method name="SearchGroup">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
     </method>
     <method name="SearchFile">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="filter" direction="in"/>
       <arg type="s" name="search" direction="in"/>
     </method>
     <method name="GetDepends">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="recursive" direction="in"/>
     </method>
     <method name="GetRequires">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="recursive" direction="in"/>
     </method>
     <method name="GetUpdateDetail">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
     <method name="GetDescription"> <!-- orders Description signals for the package -->
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
     <method name="GetFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
@@ -172,6 +184,7 @@
 
     <!-- Repository stuff -->
     <method name="GetRepoList">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
     </method>
     <method name="RepoEnable">
