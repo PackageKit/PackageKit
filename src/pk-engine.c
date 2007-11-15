@@ -594,6 +594,27 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 }
 
 /**
+ * pk_engine_caller_active_changed_cb:
+ **/
+static void
+pk_engine_caller_active_changed_cb (PkBackend *backend, gboolean is_active, PkEngine *engine)
+{
+	PkTransactionItem *item;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+
+	pk_debug ("emitting caller-active-changed tid:%s, %i", item->tid, is_active);
+	g_signal_emit (engine, signals [PK_ENGINE_CALLER_ACTIVE_CHANGED], 0, item->tid, is_active);
+}
+
+/**
  * pk_engine_change_transaction_data_cb:
  **/
 static void
@@ -685,6 +706,8 @@ pk_engine_backend_new (PkEngine *engine)
 			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
 	g_signal_connect (backend, "repo-detail",
 			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
+	g_signal_connect (backend, "caller-active-changed",
+			  G_CALLBACK (pk_engine_caller_active_changed_cb), engine);
 
 	/* initialise some stuff */
 	pk_engine_reset_timer (engine);
