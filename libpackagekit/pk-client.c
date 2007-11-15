@@ -2180,7 +2180,7 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
  * pk_client_is_caller_active:
  **/
 gboolean
-pk_client_is_caller_active (PkClient *client, gboolean	*is_active)
+pk_client_is_caller_active (PkClient *client, gboolean *is_active)
 {
 	gboolean ret;
 	GError *error;
@@ -2190,6 +2190,7 @@ pk_client_is_caller_active (PkClient *client, gboolean	*is_active)
 
 	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", &error,
+				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_BOOLEAN, is_active,
 				 G_TYPE_INVALID);

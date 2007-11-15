@@ -110,6 +110,7 @@ enum {
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_CALLER_ACTIVE_CHANGED,
 	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_LAST_SIGNAL
 };
@@ -1188,7 +1189,7 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 		pk_inhibit_add (backend->priv->inhibit, backend);
 	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0, allow_restart);
 	return TRUE;
 }
 
@@ -1868,7 +1869,7 @@ static void
 pk_backend_connection_changed_cb (LibGBus *libgbus, gboolean connected, PkBackend *backend)
 {
 	pk_warning ("client disconnected.... %i", connected);
-//	g_signal_emit (backend , signals [CONNECTION_CHANGED], 0, connected);
+	g_signal_emit (backend, signals [PK_BACKEND_CALLER_ACTIVE_CHANGED], 0, FALSE);
 }
 
 /**
@@ -1992,6 +1993,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	signals [PK_BACKEND_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PK_BACKEND_CALLER_ACTIVE_CHANGED] =
+		g_signal_new ("caller-active-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);

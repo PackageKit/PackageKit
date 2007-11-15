@@ -13,7 +13,7 @@ env = bld.env()
 
 # Build the objects that are to be a part of both packagekitd and the testsuite
 obj = bld.create_obj('gnome', 'objects')
-obj.includes = '. ../libpackagekit ../libselftest'
+obj.includes = '. ../libpackagekit ../libselftest ../libgbus'
 obj.target = 'pkgkitd_common_source'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.add_marshal_file('pk-marshal.list', 'pk_marshal', '--header')
@@ -46,7 +46,7 @@ if env['SECURITY_TYPE_POLKIT']:
 obj = bld.create_obj('gnome', 'program')
 obj.target = 'packagekitd'
 obj.source = 'pk-main.c'
-obj.includes = '. ../libpackagekit ../libselftest'
+obj.includes = '. ../libpackagekit ../libselftest ../libgbus'
 obj.add_objects = 'pkgkitd_common_source'
 obj.uselib = 'DBUS_GLIB GMODULE SQLITE GTHREAD'
 obj.uselib_local = 'libpackagekit'
