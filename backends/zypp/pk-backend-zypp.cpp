@@ -316,8 +316,12 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 		return;
 	}
 
-	// FIXME: Do we need to check for errors when calling repo.setEnabled ()?
-	repo.setEnabled (enabled);
+	try {
+		repo.setEnabled (enabled);
+		manager.modifyRepository (rid, repo);
+	} catch (const zypp::Exception &e) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not enable/disable the repo");
+	}
 
         pk_backend_finished (backend);
 }
