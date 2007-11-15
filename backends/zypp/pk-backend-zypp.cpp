@@ -23,18 +23,19 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-debug.h>
 
-//#include <zypp/ZYppFactory.h>
-//#include <zypp/ResObject.h>
-//#include <zypp/ResPoolProxy.h>
-//#include <zypp/ui/Selectable.h>
-//#include <zypp/Patch.h>
-//#include <zypp/Selection.h>
-//#include <zypp/Package.h>
-//#include <zypp/Pattern.h>
-//#include <zypp/Language.h>
-//#include <zypp/Product.h>
-//#include <zypp/Repository.h>
+#include <zypp/ZYppFactory.h>
+#include <zypp/ResObject.h>
+#include <zypp/ResPoolProxy.h>
+#include <zypp/ui/Selectable.h>
+#include <zypp/Patch.h>
+#include <zypp/Selection.h>
+#include <zypp/Package.h>
+#include <zypp/Pattern.h>
+#include <zypp/Language.h>
+#include <zypp/Product.h>
+#include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
 
 /**
@@ -45,16 +46,46 @@ backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
 	zypp::RepoManager manager;
 	std::list <zypp::RepoInfo> repos = manager.knownRepositories();
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+		// RepoInfo::alias - Unique identifier for this source.
+		// RepoInfo::name - Short label or description of the
+		// repository, to be used on the user interface
 		pk_backend_repo_detail (backend,
-					it->name().c_str(),
 					it->alias().c_str(),
+					it->name().c_str(),
 					it->enabled());
 	}
 
 	pk_backend_finished (backend);
+}
+
+/**
+ * backend_repo_enable:
+ */
+static void
+backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
+{
+        g_return_if_fail (backend != NULL);
+
+	zypp::RepoManager manager;
+	zypp::RepoInfo repo;
+	
+	try {
+		repo = manager.getRepositoryInfo (rid);
+	} catch (...) { // FIXME: Don't just catch all exceptions
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	// FIXME: Do we need to check for errors when calling repo.setEnabled ()?
+	repo.setEnabled (enabled);
+
+        pk_backend_finished (backend);
 }
 
 extern "C" PK_BACKEND_OPTIONS (
@@ -84,6 +115,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* update_package */
 	NULL,					/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
-	NULL,					/* repo_enable */
+	backend_repo_enable,			/* repo_enable */
 	NULL					/* repo_set_data */
 );
