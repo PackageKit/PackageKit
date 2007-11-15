@@ -27,10 +27,10 @@ class UpdateCallback(callbacks.UpdateCallback):
 
     def downloadingFileContents(self, got, need):
         #self.backend.status('Downloading files for changeset')
-        self.backend.status(INFO_DOWNLOADING)
+        self.backend.status(STATUS_DOWNLOAD)
 
     def downloadingChangeSet(self, got, need):
-        self.backend.status(INFO_DOWNLOADING)
+        self.backend.status(STATUS_DOWNLOAD)
 
     def requestingFileContents(self):
         #self.backend.status('Requesting File Contents')
@@ -61,15 +61,15 @@ class UpdateCallback(callbacks.UpdateCallback):
         newVersion, newFlavor = job[2]
 
         if oldVersion and newVersion:
-            self.backend.status(INFO_UPDATING)
+            self.backend.status(STATUS_UPDATE)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(id, INFO_UPDATING, '')
         elif oldVersion and not newVersion:
-            self.backend.status(INFO_REMOVING)
+            self.backend.status(STATUS_REMOVE)
             id = self.backend.get_package_id(name, oldVersion, oldFlavor)
             self.backend.package(id, INFO_REMOVING, '')
         elif not oldVersion and newVersion:
-            self.backend.status(INFO_INSTALLING)
+            self.backend.status(STATUS_INSTALL)
             id = self.backend.get_package_id(name, newVersion, newFlavor)
             self.backend.package(id, INFO_INSTALLING, '')
 
