@@ -26,6 +26,7 @@ INCLUDES =						\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
+	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/packagekit-backend

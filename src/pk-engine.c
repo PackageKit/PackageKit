@@ -841,6 +841,9 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	/* we unref the update cache if it exists */
 	if (engine->priv->updates_cache != NULL) {
 		pk_debug ("unreffing updates cache");
@@ -892,6 +895,9 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	/* try and reuse cache */
 	if (engine->priv->updates_cache != NULL) {
@@ -1050,6 +1056,9 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_search_name (item->backend, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1108,6 +1117,9 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_search_details (item->backend, filter, search);
 	if (ret == FALSE) {
@@ -1168,6 +1180,9 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_search_group (item->backend, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1226,6 +1241,9 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_search_file (item->backend, filter, search);
 	if (ret == FALSE) {
@@ -1287,6 +1305,9 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_resolve (item->backend, filter, package);
 	if (ret == FALSE) {
@@ -1351,6 +1372,9 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_get_depends (item->backend, package_id, recursive);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1413,6 +1437,9 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_get_requires (item->backend, package_id, recursive);
 	if (ret == FALSE) {
@@ -1477,6 +1504,9 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_get_update_detail (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1539,6 +1569,9 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_get_description (item->backend, package_id);
 	if (ret == FALSE) {
@@ -1603,6 +1636,9 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_get_files (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1664,6 +1700,9 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_update_system (item->backend);
 	if (ret == FALSE) {
@@ -1739,6 +1778,9 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_remove_package (item->backend, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1813,6 +1855,9 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_install_package (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1878,6 +1923,9 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_install_file (item->backend, full_path);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -1942,6 +1990,9 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_rollback (item->backend, transaction_id);
 	if (ret == FALSE) {
@@ -2016,6 +2067,9 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+
 	ret = pk_backend_update_package (item->backend, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
@@ -2060,6 +2114,9 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_get_repo_list (item->backend);
 	if (ret == FALSE) {
@@ -2124,6 +2181,9 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
 	if (ret == FALSE) {
@@ -2190,6 +2250,9 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
 
 	ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
 	if (ret == FALSE) {
@@ -2414,6 +2477,38 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 }
 
 /**
+ * pk_engine_is_caller_active:
+ **/
+gboolean
+pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_active, GError **error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("is caller active: %s", tid);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "No tid:%s", tid);
+		return FALSE;
+	}
+
+	/* is the caller still active? */
+	ret = pk_backend_is_caller_active (item->backend, is_active);
+	if (ret == FALSE) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, "We don't know if the caller is still there");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_engine_get_actions:
  **/
 gboolean
@@ -2473,16 +2568,6 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GE
 	pk_backend_get_backend_detail (backend, name, author);
 	g_object_unref (backend);
 
-	return TRUE;
-}
-
-/**
- * pk_engine_is_caller_active:
- **/
-gboolean
-pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_active, GError **error)
-{
-	//FIXME: handle NOC
 	return TRUE;
 }
 
