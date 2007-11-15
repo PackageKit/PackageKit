@@ -75,6 +75,14 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// FIXME: Call libzypp here to get the "Selectable"
+	try
+	{
+		zypp::RepoManager manager;
+		//zypp::Repository repository(manager.createFromCach(repo));
+	}
+	catch ( const zypp::Exception &e)
+	{
+	}
 
 	pk_backend_description (backend,
 				pi->name,		// package_id
@@ -123,7 +131,19 @@ backend_get_repo_list (PkBackend *backend)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos = manager.knownRepositories();
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		repos = manager.knownRepositories();
+	}
+	catch ( const zypp::Exception &e)
+	{
+		// FIXME: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return;
+	}
+
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
 		// RepoInfo::alias - Unique identifier for this source.
 		// RepoInfo::name - Short label or description of the
