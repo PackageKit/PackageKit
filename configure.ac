@@ -425,7 +425,7 @@ if test x$with_default_backend = xalpm; then
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
 
-if test x$with_default_backend = zypp; then
+if test x$with_default_backend = xzypp; then
 	PKG_CHECK_MODULES(ZYPP, libzypp)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
