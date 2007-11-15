@@ -38,6 +38,8 @@
 #include <zypp/Product.h>
 #include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
+#include <zypp/RepoInfo.h>
+#include <zypp/repo/RepoException.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -310,16 +312,13 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	
 	try {
 		repo = manager.getRepositoryInfo (rid);
-	} catch (...) { // FIXME: Don't just catch all exceptions
+		repo.setEnabled (enabled);
+		manager.modifyRepository (rid, repo);
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
 		pk_backend_finished (backend);
 		return;
-	}
-
-	try {
-		repo.setEnabled (enabled);
-		manager.modifyRepository (rid, repo);
-	} catch (const zypp::Exception &e) {
+	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not enable/disable the repo");
 	}
 
