@@ -12,8 +12,10 @@ dist_helper_DATA = 			\
 	install.py			\
 	refresh-cache.py		\
 	remove.py			\
+	resolve.py			\
 	update-system.py		\
 	get-description.py		\
+	get-files.py			\
 	conaryBackend.py		\
 	conaryCallback.py		\
 	$(NULL)
