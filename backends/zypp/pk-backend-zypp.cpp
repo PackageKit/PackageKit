@@ -188,6 +188,17 @@ static gboolean
 backend_install_package_thread (PkBackend *backend, gpointer data)
 {
 	gchar *package_id = (gchar *)data;
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	PkPackageId *pi = pk_package_id_new_from_string (package_id);
+        if (pi == NULL) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+                g_free (package_id);
+
+                return FALSE;
+        }
+
 	zypp::Target_Ptr target;
 
 	zypp::ZYpp::Ptr zypp;
@@ -199,6 +210,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 	zypp->addResolvables (target->resolvables(), TRUE);
 
 	// Load resolvables from all the enabled repositories
+	pk_backend_change_status (backend, PK_STATUS_ENUM_WAIT);
 	zypp::RepoManager manager;
 	std::list <zypp::RepoInfo> repos;
 	try
@@ -215,20 +227,69 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
 				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
 			zypp::ui::Selectable::Ptr selectable = *it;
-			
+			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
+				switch (selectable->status ()) {
+					case zypp::ui::S_Update:	// Have installedObj
+					case zypp::ui::S_NoInst:	// No installedObj
+						break;
+					default:
+						continue;
+						break;
+				}
+
+				// This package matches the name we're looking for and
+				// is available for update/install.
+				zypp::ResObject::constPtr installable = selectable->candidateObj();
+				const char *edition_str = installable->edition().asString().c_str();
+
+				if (strcmp (edition_str, pi->version) == 0) {
+printf ("WOOT!  Marking the package to be installed!\n");
+					// this is the one, mark it to be installed
+					selectable->set_status (zypp::ui::S_Install);
+				}
+			}
 		}
+
+printf ("Resolving dependencies...\n");
+		// Gather up any dependencies
+		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		if (zypp->resolver ()->resolvePool () == FALSE) {
+			// Manual intervention required to resolve dependencies
+			// TODO: Figure out what we need to do with PackageKit
+			// to pull off interactive problem solving.
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
+			g_free (package_id);
+			pk_package_id_free (pi);
+			return FALSE;
+		}
+
+printf ("Performing installation...\n");
+		// Perform the installation
+		pk_backend_change_status (backend, PK_STATUS_ENUM_COMMIT);
+		// TODO: If this were an update, you should use PK_INFO_ENUM_UPDATING instead
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "TODO: Put the package summary here");
+		zypp::ZYppCommitPolicy policy;
+		policy.restrictToMedia (0);	// 0 - install all packages regardless to media
+		zypp::ZYppCommitResult result = zypp->commit (policy);
+printf ("Finished the installation.\n");
+
+		// TODO: Check result for success
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, "TODO: Put the package summary here");
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 		g_free (package_id);
+		pk_package_id_free (pi);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
 		g_free (package_id);
+		pk_package_id_free (pi);
 		return FALSE;
 	}
 
 	g_free (package_id);
+	pk_package_id_free (pi);
 	return TRUE;
 }
 
@@ -243,24 +304,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
 	pk_backend_thread_helper (backend, backend_install_package_thread, package_to_install);
-
-	/*
-	if(strcmp(package_id,"signedpackage;1.0-1.fc8;i386;fedora") == 0) {
-		pk_backend_repo_signature_required(backend, "updates", "http://example.com/gpgkey",
-						   "Test Key (Fedora) fedora@example.com", "BB7576AC",
-						   "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
-						   "2007-10-04", PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
-				       "GPG signed package could not be verified");
-		pk_backend_finished (backend);
-	}
-
-	progress_percentage = 0;
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
-			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
-			    "An HTML widget for GTK+ 2.0");
-	g_timeout_add (1000, backend_install_timeout, backend);
-	*/
 }
 
 static int
