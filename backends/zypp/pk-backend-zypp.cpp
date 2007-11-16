@@ -78,6 +78,28 @@ typedef zypp::Language::constPtr	ZyppLanguage;
 inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
 
+/**
+ * Initialize Zypp (Factory method)
+ */
+static zypp::ZYpp::Ptr
+get_zypp ()
+{
+	static gboolean initialized = FALSE;
+	zypp::ZYpp::Ptr zypp = NULL;
+
+	zypp = zypp::ZYppFactory::instance ().getZYpp ();
+	
+	// TODO: Make this threadsafe
+	if (initialized == FALSE) {
+		zypp::filesystem::Pathname pathname("/");
+		zypp->initializeTarget (pathname);
+
+		initialized = TRUE;
+	}
+
+	return zypp;
+}
+
 static gboolean
 backend_get_description_thread (PkBackend *backend, gpointer data)
 {
@@ -138,20 +160,60 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_thread_helper (backend, backend_get_description_thread, data);
 	}
 }
+
+static gboolean
+backend_install_package_thread (PkBackend *backend, gpointer data)
+{
+	gchar *package_id = (gchar *)data;
+	zypp::Target_Ptr target;
+
+	zypp::ZYpp::Ptr zypp;
+	zypp = get_zypp ();
+
+	target = zypp->target ();
+
+	// Load all the local system "resolvables" (packages)
+	zypp->addResolvables (target->resolvables(), TRUE);
+
+	// Load resolvables from all the enabled repositories
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		repos = manager.knownRepositories();
+		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+			zypp::Repository repository = manager.createFromCache (*it);
+			zypp->addResolvables (repository.resolvables ());
+		}
+
+		// Iterate over the resolvables and mark the ones we want to install
+		//zypp->start ();
+		
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
+		// FIXME: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		g_free (package_id);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
+		g_free (package_id);
+		return FALSE;
+	}
+
+	g_free (package_id);
+	return TRUE;
+}
+
 /**
  * backend_install_package:
  */
-
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
-	zypp::filesystem::Pathname pathname("/");
-	//zypp::ZYpp zypper;
-
-	//zypper.initializeTarget(pathname);
-
+	gchar *package_to_install = g_strdup (package_id);
+	pk_backend_thread_helper (backend, backend_install_package_thread, package_to_install);
 
 	/*
 	if(strcmp(package_id,"signedpackage;1.0-1.fc8;i386;fedora") == 0) {
