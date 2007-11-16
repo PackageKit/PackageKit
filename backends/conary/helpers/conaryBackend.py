@@ -122,6 +122,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def resolve(self, filter, package):
         self.allow_interrupt(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
         self._do_search(package, filter)
 
     def check_installed(self, troveTuple):
@@ -140,6 +142,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_QUERY)
 
         self._do_search(searchlist, options)
 
@@ -173,6 +176,9 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 'Package was not found')
 
     def get_files(self, package_id):
+        self.allow_interrupt(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
         def _get_files(troveSource, n, v, f):
             files = []
             troves = [(n, v, f)]
@@ -213,6 +219,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         self.allow_interrupt(True)
+        self.percentage(None)
+        self.status(STATUS_INSTALL)
 
         if name:
             if installed == INFO_INSTALLED:
@@ -262,6 +270,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 longDesc
                 categories
         '''
+
+        self.allow_interrupt(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
         n, v, f = self.get_package_from_id(id)
 
         trvList = self.client.repos.findTrove(self.cfg.installLabelPath,
@@ -278,6 +291,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
+        self.allow_interrupt(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+
         name, version, flavor, installed = self._findPackage(id)
 
         if name:
