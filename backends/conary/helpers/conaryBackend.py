@@ -209,6 +209,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     def refresh_cache(self):
         self.percentage()
+        self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.populate_database()
 
