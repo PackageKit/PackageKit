@@ -216,6 +216,8 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 	try
 	{
 		// TODO: Split the code up so it's not all just in one bit try/catch
+
+		// TODO: Fix up this code so we only iterate through enabled repositories
 		repos = manager.knownRepositories();
 		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
 			zypp::Repository repository = manager.createFromCache (*it);
@@ -246,6 +248,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 printf ("WOOT!  Marking the package to be installed!\n");
 					// this is the one, mark it to be installed
 					selectable->set_status (zypp::ui::S_Install);
+					break; // Found it, get out of the for loop
 				}
 			}
 		}
@@ -274,6 +277,8 @@ printf ("Performing installation...\n");
 printf ("Finished the installation.\n");
 
 		// TODO: Check result for success
+		// TODO: Loop through the installed packages and let
+		// packagekit know we installed them and not just the top-level package
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, package_id, "TODO: Put the package summary here");
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
@@ -346,6 +351,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 	gchar *full_version;
 	SQLData *sql_data = g_new0(SQLData, 1);
 							  
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	printf("\n\nEnter backend_resolve_thread\n");
 	ResolveData *rdata = (ResolveData*) data;
