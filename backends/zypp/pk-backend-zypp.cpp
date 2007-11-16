@@ -180,6 +180,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 	std::list <zypp::RepoInfo> repos;
 	try
 	{
+		// TODO: Split the code up so it's not all just in one bit try/catch
 		repos = manager.knownRepositories();
 		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
 			zypp::Repository repository = manager.createFromCache (*it);
@@ -188,9 +189,13 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 
 		// Iterate over the resolvables and mark the ones we want to install
 		//zypp->start ();
-		
+		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
+				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
+			zypp::ui::Selectable::Ptr selectable = *it;
+			
+		}
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
-		// FIXME: make sure this dumps out the right sring.
+		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 		g_free (package_id);
 		return FALSE;
@@ -200,6 +205,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
+	pk_backend_finished (backend);
 	g_free (package_id);
 	return TRUE;
 }
