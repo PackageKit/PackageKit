@@ -696,7 +696,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	NULL,//backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
-	backend_resolve,		/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
