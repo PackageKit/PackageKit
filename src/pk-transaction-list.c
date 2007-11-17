@@ -315,7 +315,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	length = tlist->priv->array->len;
 
 	/* create new strv list */
-	array = g_new0 (gchar *, length);
+	array = g_new0 (gchar *, length + 1);
 
 	pk_debug ("%i active transactions", length);
 	for (i=0; i<length; i++) {
