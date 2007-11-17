@@ -39,6 +39,19 @@
 #include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
 
+enum PkgSearchType {
+	SEARCH_TYPE_NAME = 0,
+	SEARCH_TYPE_DETAILS = 1,
+	SEARCH_TYPE_FILE = 2,
+	SEARCH_TYPE_RESOLVE = 3
+};
+
+typedef struct {
+	gchar *search;
+	gchar *filter;
+	gint mode;
+} FindData;
+
 typedef struct {
 	gchar *package_id;
 	gint type;
@@ -118,7 +131,134 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
 }
 
+/* TODO: this was taken directly from pk-backend-box.c.  Perhaps this
+ * ought to be part of libpackagekit? */
+static void
+parse_filter (const gchar *filter, gboolean *installed, gboolean *available,
+	      gboolean *devel, gboolean *nondevel, gboolean *gui, gboolean *text)
+{
+	gchar **sections = NULL;
+	gint i = 0;
 
+	*installed = TRUE;
+	*available = TRUE;
+	*devel = TRUE;
+	*nondevel = TRUE;
+	*gui = TRUE;
+	*text = TRUE;
+
+	sections = g_strsplit (filter, ";", 0);
+	while (sections[i]) {
+		if (strcmp(sections[i], "installed") == 0)
+			*available = FALSE;
+		if (strcmp(sections[i], "~installed") == 0)
+			*installed = FALSE;
+		if (strcmp(sections[i], "devel") == 0)
+			*nondevel = FALSE;
+		if (strcmp(sections[i], "~devel") == 0)
+			*devel = FALSE;
+		if (strcmp(sections[i], "gui") == 0)
+			*text = FALSE;
+		if (strcmp(sections[i], "~gui") == 0)
+			*gui = FALSE;
+		i++;
+	}
+	g_strfreev (sections);
+}
+
+static void
+find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+{
+	//GList *list = NULL;
+	gboolean installed;
+	gboolean available;
+	gboolean devel;
+	gboolean nondevel;
+	gboolean gui;
+	gboolean text;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
+
+	pk_backend_no_percentage_updates (backend);
+
+/*
+	if (mode == SEARCH_TYPE_FILE) {
+		if (installed == FALSE && available == FALSE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
+		} else	{
+			list = box_db_repos_search_file_with_filter (db, search, search_filter);
+			add_packages_from_list (backend, list, FALSE);
+			box_db_repos_package_list_free (list);
+		}
+	} else if (mode == SEARCH_TYPE_RESOLVE) {
+		list = box_db_repos_packages_search_one (db, (gchar *)search);
+		add_packages_from_list (backend, list, FALSE);
+		box_db_repos_package_list_free (list);
+	} else {
+		if (installed == FALSE && available == FALSE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
+		} else	{
+			if (installed == TRUE && available == TRUE) {
+				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
+			} else if (installed == TRUE) {
+				list = box_db_repos_packages_search_installed(db, (gchar *)search, search_filter);
+			} else if (available == TRUE) {
+				list = box_db_repos_packages_search_available(db, (gchar *)search, search_filter);
+			}
+			add_packages_from_list (backend, list, FALSE);
+			box_db_repos_package_list_free (list);
+		}
+	}
+*/
+}
+
+static gboolean
+backend_find_packages_thread (PkBackend *backend, gpointer data)
+{
+	FindData *d = (FindData*) data;
+
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	find_packages_real (backend, d->search, d->filter, d->mode);
+
+	g_free(d->search);
+	g_free(d->filter);
+	g_free(d);
+
+	return TRUE;
+}
+
+static void
+find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+{
+	FindData *data = g_new0(FindData, 1);
+
+	g_return_if_fail (backend != NULL);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished (backend);
+	} else {
+		data->search = g_strdup(search);
+		data->filter = g_strdup(filter);
+		data->mode = mode;
+		pk_backend_thread_helper (backend, backend_find_packages_thread, data);
+	}
+}
+
+/**
+ * backend_search_name:
+ */
+static void
+backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
+}
 
 /**
  * backend_get_repo_list:
@@ -205,7 +345,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
-	NULL,					/* search_name */
+	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
