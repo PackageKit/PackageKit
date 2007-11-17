@@ -235,7 +235,7 @@ if test x$with_security_framework = x; then
 	fi
 fi
 
-AC_DEFINE(security_framework, "$with_security_framework", [default security framework])
+AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default security framework])
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
@@ -286,7 +286,7 @@ if test x$with_default_backend = x; then
 	fi
 fi
 
-AC_DEFINE(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
+AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 AC_DEFUN([APT_BACKEND],
