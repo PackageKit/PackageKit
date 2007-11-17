@@ -81,6 +81,12 @@ db_close(sqlite3 *db)
 	box_db_close(db);
 }
 
+static void
+common_progress(int value, gpointer user_data)
+{
+	PkBackend* backend = (PkBackend *) user_data;
+	pk_backend_change_percentage (backend, value);
+}
 
 static void
 add_packages_from_list (PkBackend *backend, GList *list, gboolean updates)
@@ -269,6 +275,49 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
+backend_install_package_thread (PkBackend *backend, gpointer data)
+{
+	ThreadData *d = (ThreadData*) data;
+	gboolean result;
+	PkPackageId *pi;
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+
+		return FALSE;
+	}
+	result = box_package_install(pi->name, "/", common_progress, backend);
+
+	g_free (d->package_id);
+	g_free (d);
+
+	return result;
+}
+
+
+static gboolean
+backend_install_file_thread (PkBackend *backend, gpointer data)
+{
+	ThreadData *d = (ThreadData*) data;
+	gboolean result;
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	result = box_package_install_file(d->package_id, "/", common_progress, backend);
+
+	g_free (d->package_id);
+	g_free (d);
+
+	return result;
+}
+
+static gboolean
 backend_get_description_thread (PkBackend *backend, gpointer data)
 {
 	PkPackageId *pi;
@@ -389,13 +438,6 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 	g_free (d);
 
 	return TRUE;
-}
-
-static void
-common_progress(int value, gpointer user_data)
-{
-	PkBackend* backend = (PkBackend *) user_data;
-	pk_backend_change_percentage (backend, value);
 }
 
 static gboolean
@@ -565,6 +607,8 @@ backend_get_updates (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
+	ThreadData *data = g_new0(ThreadData, 1);
+
 	g_return_if_fail (backend != NULL);
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
@@ -572,7 +616,14 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_spawn_helper (backend, "install-package.sh", package_id, NULL);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(package_id);
+		pk_backend_thread_helper (backend, backend_install_package_thread, data);
+	}
 }
 
 /**
@@ -581,8 +632,17 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 static void
 backend_install_file (PkBackend *backend, const gchar *file)
 {
+	ThreadData *data = g_new0(ThreadData, 1);
+
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "install-file.sh", file, NULL);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(file);
+		pk_backend_thread_helper (backend, backend_install_file_thread, data);
+	}
 }
 
 /**
@@ -667,6 +727,8 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
+	ThreadData *data = g_new0(ThreadData, 1);
+
 	g_return_if_fail (backend != NULL);
 	/* check network state */
 	if (pk_backend_network_is_online (backend) == FALSE) {
@@ -674,7 +736,14 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_spawn_helper (backend, "update-package.sh", package_id, NULL);
+
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(package_id);
+		pk_backend_thread_helper (backend, backend_install_package_thread, data);
+	}
 }
 
 /**
