@@ -275,6 +275,16 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
+backend_update_system_thread (PkBackend *backend, gpointer data)
+{
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
+	box_upgrade_dist("/", common_progress, backend);
+
+	return TRUE;
+}
+
+static gboolean
 backend_install_package_thread (PkBackend *backend, gpointer data)
 {
 	ThreadData *d = (ThreadData*) data;
@@ -753,7 +763,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (backend, "update-system.sh", NULL);
+	pk_backend_thread_helper (backend, backend_update_system_thread, NULL);
 }
 
 /**
