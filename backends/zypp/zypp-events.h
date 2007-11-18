@@ -6,6 +6,21 @@
 #include <pk-backend.h>
 #include <zypp/ZYppCallbacks.h>
 
+/*
+typedef struct {
+	PkBackend *backend;
+	guint percentage;
+} PercentageData;
+
+static gboolean
+emit_sub_percentage (gpointer data)
+{
+	PercentageData *pd = (PercentageData *)data;
+	pk_backend_change_sub_percentage (pd->backend, pd->percentage);
+	free (pd);
+	return FALSE;
+}
+*/
 
 namespace ZyppBackend
 {
@@ -130,6 +145,10 @@ struct ZyppBackendReceiver
 			return;
 
 		_sub_percentage = percentage;
+		//PercentageData *pd = (PercentageData *)malloc (sizeof (PercentageData));
+		//pd->backend = _backend;
+		//pd->percentage = _sub_percentage;
+		//g_idle_add (emit_sub_percentage, pd);
 		pk_backend_change_sub_percentage (_backend, _sub_percentage);
 	}
 
@@ -149,7 +168,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	{
 		clear_package_id ();
 		_package_id = build_package_id_from_resolvable (resolvable);
-		fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
+		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_change_status (_backend, PK_STATUS_ENUM_INSTALL);
 			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, "TODO: Put the package summary here if possible");
@@ -159,7 +178,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
+		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL)
 			update_sub_percentage (value);
 		return true;
@@ -167,13 +186,13 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level)
 	{
-		fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::problem()\n\n");
+		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::problem()\n\n");
 		return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level)
 	{
-		fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::finish(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
+		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::finish(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
 			clear_package_id ();
@@ -185,18 +204,18 @@ struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::P
 {
 	virtual void start (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoProgressReportReceiver::start()\n\n");
+		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::start()\n\n");
 	}
 
 	virtual bool progress (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoProgressReportReceiver::progress(), %s:%d\n\n", data.name().c_str(), (int)data.val());
+		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::progress(), %s:%d\n\n", data.name().c_str(), (int)data.val());
 		return true;
 	}
 
 	virtual void finish (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoProgressReportReceiver::finish()\n\n");
+		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::finish()\n\n");
 	}
 };
 
@@ -204,18 +223,18 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 {
 	virtual void start (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoReportReceiver::start()\n");
+		//fprintf (stderr, "\n\n----> RepoReportReceiver::start()\n");
 	}
 
 	virtual bool progress (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoReportReceiver::progress(), %s:%d\n", data.name().c_str(), (int)data.val());
+		//fprintf (stderr, "\n\n----> RepoReportReceiver::progress(), %s:%d\n", data.name().c_str(), (int)data.val());
 		return true;
 	}
 
 	virtual void finish (const zypp::ProgressData &data)
 	{
-		fprintf (stderr, "\n\n----> RepoReportReceiver::finish()\n");
+		//fprintf (stderr, "\n\n----> RepoReportReceiver::finish()\n");
 	}
 };
 
@@ -226,7 +245,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = build_package_id_from_url (&file);
 
-		fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
+		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_change_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
 			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, "TODO: Put the package summary here if possible");
@@ -236,7 +255,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual bool progress (int value, const zypp::Url &file)
 	{
-		fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
+		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL)
 			update_sub_percentage (value);
 		return true;
@@ -244,7 +263,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual void finish (const zypp::Url & file, Error error, const std::string &konreason)
 	{
-		fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::finish(): %s\n", _package_id == NULL ? "unknown" : _package_id);
+		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::finish(): %s\n", _package_id == NULL ? "unknown" : _package_id);
 		clear_package_id ();
 	}
 };
