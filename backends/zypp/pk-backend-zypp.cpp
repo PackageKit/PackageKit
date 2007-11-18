@@ -174,7 +174,6 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		g_free (d);
 		return FALSE;
 	}
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// FIXME: Call libzypp here to get the "Selectable"
