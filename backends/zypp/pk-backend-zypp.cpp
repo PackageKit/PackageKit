@@ -44,6 +44,8 @@
 #include <zypp/Pathname.h>
 #include <sqlite3.h>
 
+#include "zypp-events.h"
+
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
 	SEARCH_TYPE_DETAILS = 1,
@@ -101,6 +103,8 @@ typedef zypp::Language::constPtr	ZyppLanguage;
 inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
 
+static EventDirector *_eventDirector;
+
 /**
  * Initialize Zypp (Factory method)
  */
@@ -123,6 +127,28 @@ get_zypp ()
 	return zypp;
 }
 
+/**
+ * backend_initialize:
+ */
+static void
+backend_initialize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+fprintf (stderr, "\n\n*** zypp_backend_initialize ***\n\n");
+	_eventDirector = new EventDirector (backend);
+}
+
+/**
+ * backend_destroy
+ */
+static void
+backend_destroy (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+fprintf (stderr, "\n\n*** zypp_backend_destroy ***\n\n");
+	delete (_eventDirector);
+}
+
 static gboolean
 backend_get_description_thread (PkBackend *backend, gpointer data)
 {
@@ -137,7 +163,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		g_free (d);
 		return FALSE;
 	}
-
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	// FIXME: Call libzypp here to get the "Selectable"
@@ -208,6 +234,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 
 	// Load all the local system "resolvables" (packages)
 	zypp->addResolvables (target->resolvables(), TRUE);
+	pk_backend_change_percentage (backend, 10);
 
 	// Load resolvables from all the enabled repositories
 	pk_backend_change_status (backend, PK_STATUS_ENUM_WAIT);
@@ -253,6 +280,8 @@ printf ("WOOT!  Marking the package to be installed!\n");
 			}
 		}
 
+		pk_backend_change_percentage (backend, 40);
+
 printf ("Resolving dependencies...\n");
 		// Gather up any dependencies
 		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -266,15 +295,17 @@ printf ("Resolving dependencies...\n");
 			return FALSE;
 		}
 
+		pk_backend_change_percentage (backend, 60);
+
 printf ("Performing installation...\n");
 		// Perform the installation
-		pk_backend_change_status (backend, PK_STATUS_ENUM_COMMIT);
 		// TODO: If this were an update, you should use PK_INFO_ENUM_UPDATING instead
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "TODO: Put the package summary here");
 		zypp::ZYppCommitPolicy policy;
 		policy.restrictToMedia (0);	// 0 - install all packages regardless to media
 		zypp::ZYppCommitResult result = zypp->commit (policy);
 printf ("Finished the installation.\n");
+
+		pk_backend_change_percentage (backend, 100);
 
 		// TODO: Check result for success
 		// TODO: Loop through the installed packages and let
@@ -309,6 +340,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
+	pk_backend_change_percentage (backend, 0);
 	pk_backend_thread_helper (backend, backend_install_package_thread, package_to_install);
 }
 
@@ -372,7 +404,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 	full_version = g_strconcat (sql_data->version, "-", sql_data->release, NULL);
-	package_id = pk_package_id_build(sql_data->name, full_version, sql_data->arch, sql_data->repo);
+	package_id = pk_package_id_build(sql_data->name, full_version, sql_data->arch, "opensuse");
 	printf("about to return package_id of:%s\n", package_id);
 	//FIXME - return real PK_INFO_ENUM_*
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -681,8 +713,8 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	backend_initialize,			/* initalize */
+	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
 	NULL,					/* cancel */
