@@ -341,7 +341,7 @@ if test x$with_default_backend = xapt; then
 	if test x$with_aptsearch = x; then
 		with_aptsearch=plain
 	fi
-	AC_DEFINE(APT_SEARCH, "$with_aptsearch", [apt search type])
+	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_aptsearch", [apt search type])
 	AC_SUBST(APT_SEARCH, "$with_aptsearch")
 	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_aptsearch = xplain], [using plain apt search])
 
