@@ -75,6 +75,13 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 	sqlite3_exec(db,"insert into params values ('build_complete',1)", NULL, NULL, NULL);
 }
 
+
+void sqlite_finish_cache(PkBackend *backend)
+{
+	sqlite3_close(db);
+}
+
+
 // sqlite_search_packages_thread
 static gboolean
 sqlite_search_packages_thread (PkBackend *backend, gpointer data)

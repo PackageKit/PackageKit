@@ -103,3 +103,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
 }
+
+/* don't need to do any setup/finalize in the plain search mode */
+void backend_init_search(PkBackend *backend) {}
+void backend_finish_search(PkBackend *backend) {}

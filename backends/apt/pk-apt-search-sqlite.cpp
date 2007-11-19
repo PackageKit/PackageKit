@@ -128,3 +128,8 @@ extern "C" void backend_init_search(PkBackend *backend)
 		inited = TRUE;
 	}
 }
+
+extern "C" void backend_finish_search(PkBackend *backend)
+{
+	sqlite_finish_cache(backend);
+}
