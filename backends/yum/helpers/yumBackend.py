@@ -836,11 +836,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
     def _check_for_reboot(self):
+        md = self.updateMetadata
         for txmbr in self.yumbase.tsInfo:
             pkg = txmbr.po
-            # check if package is in reboot list and is installed/updated etc
+            # check if package is in reboot list or flagged with reboot_suggested
+            # in the update metadata and is installed/updated etc
             print pkg.name,txmbr.output_state
-            if pkg.name in self.rebootpkgs and txmbr.ts_state in TS_INSTALL_STATES:
+            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+            if (pkg.name in self.rebootpkgs or (notice and
+                notice.has_key('reboot_suggested') and notice['reboot_suggested']))\
+                and txmbr.ts_state in TS_INSTALL_STATES:
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
@@ -982,14 +987,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        md = UpdateMetadata()
-        # Added extra Update Metadata
-        for repo in self.yumbase.repos.listEnabled():
-            try:
-                md.add(repo)
-            except:
-                pass # No updateinfo.xml.gz in repo
-
+        md = self.updateMetadata
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
         for pkg in ygl.updates:
             # Get info about package in updates info
@@ -1043,15 +1041,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return ""
 
+    def _get_update_metadata(self):
+        if not self._updateMetadata:
+            self._updateMetadata = UpdateMetadata()
+            for repo in self.yumbase.repos.listEnabled():
+                try:
+                    md.add(repo)
+                except:
+                    pass # No updateinfo.xml.gz in repo
+        return self._updateMetadata
+
+    _updateMetadata = None
+    updateMetadata = property(fget=_get_update_metadata)
+
     def _get_update_extras(self,pkg):
-        md = UpdateMetadata()
-        if md:
-            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if notice:
-                desc = notice['description']
-                url = notice['references']
-                reboot = notice['reboot_suggested']
-                return desc.replace('\n',';'),url,reboot
+        md = self.updateMetadata
+        notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+        if notice:
+            desc = notice['description']
+            url = notice['references']
+            reboot = notice['reboot_suggested']
+            return desc.replace('\n',';'),url,reboot
         return "","",""
 
     def get_update_detail(self,package):
