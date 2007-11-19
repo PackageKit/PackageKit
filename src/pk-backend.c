@@ -1911,6 +1911,7 @@ pk_backend_finalize (GObject *object)
 	pk_inhibit_remove (backend->priv->inhibit, backend);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_object_unref (backend->priv->libgbus);
 
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->thread_list);
