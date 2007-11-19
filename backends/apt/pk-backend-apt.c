@@ -63,7 +63,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 PK_BACKEND_OPTIONS (
 	"Apt",				/* description */
 	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
-	NULL,					/* initalize */
+	backend_init_search,					/* initalize */
 	NULL,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

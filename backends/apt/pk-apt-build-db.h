@@ -1,5 +1,5 @@
-#ifndef SQLITE_PKT_CACHE
-#define SQLITE_PKT_CACHE
+#ifndef PK_APT_BUILD_DB
+#define PK_APT_BUILD_DB
 
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
@@ -22,18 +22,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-typedef enum {
-	SEARCH_NAME = 1,
-	SEARCH_DETAILS,
-	SEARCH_FILE
-} SearchDepth;
-
+#include <sqlite3.h>
 #include <pk-backend.h>
 
-void sqlite_init_cache(PkBackend *backend, const char* dbname, const char* compare_fname, void (*build_db)(PkBackend *, sqlite3 *db));
-void sqlite_search_details (PkBackend *backend, const gchar *filter, const gchar *search);
-void sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search);
-void backend_search_common(PkBackend * backend, const gchar * filter, const gchar * search, SearchDepth which, PkBackendThreadFunc func);
-void sqlite_get_description (PkBackend *backend, const gchar *package_id);
+void apt_build_db(PkBackend * backend, sqlite3 *db);
 
 #endif

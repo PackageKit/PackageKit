@@ -24,11 +24,14 @@
 #include <string.h>
 #include <pk-backend.h>
 #include "pk-sqlite-pkg-cache.h"
+#include <apt-pkg/configuration.h>
+#include <apt-pkg/init.h>
+#include "pk-apt-build-db.h"
 
 /**
  * backend_get_groups:
  */
-void
+extern "C" void
 backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
@@ -48,7 +51,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 /**
  * backend_get_filters:
  */
-void
+extern "C" void
 backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
@@ -63,7 +66,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
  * backend_get_description:
  */
 
-void
+extern "C" void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	sqlite_get_description(backend,package_id);
@@ -73,7 +76,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
  * backend_search_details:
  */
 
-void
+extern "C" void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	sqlite_search_details(backend,filter,search);
@@ -82,7 +85,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 /**
  * backend_search_name:
  */
-void
+extern "C" void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	sqlite_search_name(backend,filter,search);
@@ -91,10 +94,37 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 /**
  * backend_search_group:
  */
-void
+extern "C" void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_allow_interrupt (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
+}
+
+static gboolean inited = FALSE;
+
+#define APT_DB PK_DB_DIR "/apt.db"
+
+extern "C" void backend_init_search(PkBackend *backend)
+{
+	if (!inited)
+	{
+		gchar *apt_fname = NULL;
+		if (pkgInitConfig(*_config) == false)
+			pk_debug("pkginitconfig was false");
+		if (pkgInitSystem(*_config, _system) == false)
+			pk_debug("pkginitsystem was false");
+
+		apt_fname = g_strconcat(
+				_config->Find("Dir").c_str(),
+				_config->Find("Dir::Cache").c_str(),
+				_config->Find("Dir::Cache::pkgcache").c_str(),
+				NULL);
+
+		//sqlite_set_installed_check(is_installed);
+		sqlite_init_cache(backend, APT_DB, apt_fname, apt_build_db);
+		g_free(apt_fname);
+		inited = TRUE;
+	}
 }

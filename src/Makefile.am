@@ -99,13 +99,6 @@ packagekitd_LDADD += 					\
 	$(BOX_LIBS)
 endif
 
-if BACKEND_TYPE_APT
-INCLUDES +=						\
-	$(APT_CFLAGS)
-packagekitd_LDADD += 					\
-	$(APT_LIBS)
-endif
-
 BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\

@@ -19,12 +19,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <sqlite3.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-#include "sqlite-pkg-cache.h"
+#include "pk-sqlite-pkg-cache.h"
 
 static sqlite3 *db = NULL;
+static gboolean(*is_installed) (const PkPackageId *) = NULL;
+
+void sqlite_set_installed_check(gboolean(*func) (const PkPackageId *))
+{
+	is_installed = func;
+}
 
 typedef struct {
 	PkPackageId *pi;
@@ -44,6 +49,8 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 	time_t db_age;
 
 	ret = sqlite3_open (dbname, &db);
+	g_assert(ret == SQLITE_OK);
+	g_assert(db!=NULL);
 	ret = sqlite3_exec(db,"PRAGMA synchronous = OFF",NULL,NULL,NULL);
 	g_assert(ret == SQLITE_OK);
 
@@ -102,12 +109,22 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 	res = sqlite3_step(package);
 	while (res == SQLITE_ROW)
 	{
-		gchar *pid = pk_package_id_build((const gchar*)sqlite3_column_text(package,0),
+		PkPackageId *pid = pk_package_id_new_from_list((const gchar*)sqlite3_column_text(package,0),
 				(const gchar*)sqlite3_column_text(package,1),
 				(const gchar*)sqlite3_column_text(package,2),
 				(const gchar*)sqlite3_column_text(package,3));
-		pk_backend_package(backend, PK_INFO_ENUM_UNKNOWN, pid, (const gchar*)sqlite3_column_text(package,4));
-		g_free(pid);
+
+		gchar *cpid = pk_package_id_to_string(pid);
+		PkInfoEnum pie = PK_INFO_ENUM_UNKNOWN;
+
+		if (is_installed != NULL)
+			pie = is_installed(pid)?PK_INFO_ENUM_INSTALLED:PK_INFO_ENUM_AVAILABLE;
+
+		pk_backend_package(backend, pie, cpid, (const gchar*)sqlite3_column_text(package,4));
+
+		g_free(cpid);
+		pk_package_id_free(pid);
+
 		if (res==SQLITE_ROW)
 			res = sqlite3_step(package);
 	}
@@ -201,7 +218,7 @@ static gboolean sqlite_get_description_thread (PkBackend *backend, gpointer data
 /**
  * sqlite_get_description:
  */
-void
+extern "C++" void
 sqlite_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
