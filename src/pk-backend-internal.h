@@ -121,6 +121,10 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*remaining);
 gboolean	 pk_backend_get_package			(PkBackend	*backend,
 							 gchar		**package_id);
+gboolean	 pk_backend_set_dbus_name		(PkBackend	*backend,
+							 const gchar	*dbus_name);
+gboolean	 pk_backend_is_caller_active		(PkBackend	*backend,
+							 gboolean	*is_active);
 
 /* these are external in nature, but we shouldn't be using them in helpers */
 gboolean	 pk_backend_set_role			(PkBackend	*backend,

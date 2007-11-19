@@ -24,8 +24,10 @@ INCLUDES =						\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" 		\
+	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-I$(top_srcdir)/libpackagekit			\
 	-I$(top_srcdir)/libselftest			\
+	-I$(top_srcdir)/libgbus				\
 	$(NULL)
 
 pkbackendincludedir=$(includedir)/packagekit-backend

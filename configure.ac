@@ -235,7 +235,7 @@ if test x$with_security_framework = x; then
 	fi
 fi
 
-AC_DEFINE(security_framework, "$with_security_framework", [default security framework])
+AC_DEFINE_UNQUOTED(security_framework, "$with_security_framework", [default security framework])
 AC_SUBST(security_framework, "$with_security_framework")
 
 if test x$with_security_framework = xpolkit; then
@@ -286,7 +286,7 @@ if test x$with_default_backend = x; then
 	fi
 fi
 
-AC_DEFINE(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
+AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
 AC_DEFUN([APT_BACKEND],
@@ -341,7 +341,7 @@ if test x$with_default_backend = xapt; then
 	if test x$with_aptsearch = x; then
 		with_aptsearch=plain
 	fi
-	AC_DEFINE(APT_SEARCH, "$with_aptsearch", [apt search type])
+	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_aptsearch", [apt search type])
 	AC_SUBST(APT_SEARCH, "$with_aptsearch")
 	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_aptsearch = xplain], [using plain apt search])
 
@@ -436,8 +436,6 @@ AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
-
-AC_DEFINE_UNQUOTED(PK_DB_DIR, "${localstatedir}/lib/PackageKit", [database dir])
 
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_default_backend = xdummy], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_default_backend = xapt], [using APT backend])

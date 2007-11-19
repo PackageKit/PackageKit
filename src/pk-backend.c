@@ -37,6 +37,8 @@
 
 #include <glib/gi18n.h>
 #include <gmodule.h>
+#include <libgbus.h>
+
 #include <pk-common.h>
 #include <pk-package-id.h>
 #include <pk-enum.h>
@@ -74,6 +76,7 @@ struct _PkBackendPrivate
 	PkExitEnum		 exit;
 	PkTime			*time;
 	PkSpawn			*spawn;
+	LibGBus			*libgbus;
 	gboolean		 is_killable;
 	gboolean		 during_initialize;
 	gboolean		 assigned;
@@ -86,6 +89,7 @@ struct _PkBackendPrivate
 	guint			 last_subpercentage;
 	guint			 last_remaining;
 	gchar			*last_package;
+	gchar			*dbus_name;
 	PkThreadList		*thread_list;
 	gulong			 signal_finished;
 	gulong			 signal_stdout;
@@ -106,6 +110,7 @@ enum {
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_CALLER_ACTIVE_CHANGED,
 	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_LAST_SIGNAL
 };
@@ -1184,7 +1189,7 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 		pk_inhibit_add (backend->priv->inhibit, backend);
 	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0);
+	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0, allow_restart);
 	return TRUE;
 }
 
@@ -1693,6 +1698,9 @@ PkEnumList *
 pk_backend_get_actions (PkBackend *backend)
 {
 	PkEnumList *elist;
+
+	g_return_val_if_fail (backend != NULL, NULL);
+
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
 	if (backend->desc->cancel != NULL) {
@@ -1773,6 +1781,9 @@ PkEnumList *
 pk_backend_get_groups (PkBackend *backend)
 {
 	PkEnumList *elist;
+
+	g_return_val_if_fail (backend != NULL, NULL);
+
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
 	if (backend->desc->get_groups != NULL) {
@@ -1790,6 +1801,9 @@ PkEnumList *
 pk_backend_get_filters (PkBackend *backend)
 {
 	PkEnumList *elist;
+
+	g_return_val_if_fail (backend != NULL, NULL);
+
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
 	if (backend->desc->get_filters != NULL) {
@@ -1806,6 +1820,7 @@ pk_backend_get_filters (PkBackend *backend)
 guint
 pk_backend_get_runtime (PkBackend *backend)
 {
+	g_return_val_if_fail (backend != NULL, 0);
 	return pk_time_get_elapsed (backend->priv->time);
 }
 
@@ -1815,7 +1830,46 @@ pk_backend_get_runtime (PkBackend *backend)
 gboolean
 pk_backend_network_is_online (PkBackend *backend)
 {
+	g_return_val_if_fail (backend != NULL, FALSE);
 	return pk_network_is_online (backend->priv->network);
+}
+
+/**
+ * pk_backend_set_dbus_name:
+ */
+gboolean
+pk_backend_set_dbus_name (PkBackend *backend, const gchar *dbus_name)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	if (backend->priv->dbus_name != NULL) {
+		pk_warning ("you can't assign more than once!");
+		return FALSE;
+	}
+	backend->priv->dbus_name = g_strdup (dbus_name);
+	pk_debug ("assiging %s to %p", dbus_name, backend);
+	libgbus_assign (backend->priv->libgbus, LIBGBUS_SYSTEM, dbus_name);
+	return TRUE;
+}
+
+/**
+ * pk_backend_is_caller_active:
+ */
+gboolean
+pk_backend_is_caller_active (PkBackend *backend, gboolean *is_active)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	*is_active = libgbus_is_connected (backend->priv->libgbus);
+	return TRUE;
+}
+
+/**
+ * pk_backend_connection_changed_cb:
+ **/
+static void
+pk_backend_connection_changed_cb (LibGBus *libgbus, gboolean connected, PkBackend *backend)
+{
+	pk_warning ("client disconnected.... %i", connected);
+	g_signal_emit (backend, signals [PK_BACKEND_CALLER_ACTIVE_CHANGED], 0, FALSE);
 }
 
 /**
@@ -1840,6 +1894,7 @@ pk_backend_finalize (GObject *object)
 	pk_backend_unload (backend);
 
 	g_free (backend->priv->last_package);
+	g_free (backend->priv->dbus_name);
 	g_free (backend->priv->xcached_package_id);
 	g_free (backend->priv->xcached_transaction_id);
 	g_free (backend->priv->xcached_filter);
@@ -1856,6 +1911,7 @@ pk_backend_finalize (GObject *object)
 	pk_inhibit_remove (backend->priv->inhibit, backend);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_object_unref (backend->priv->libgbus);
 
 	g_object_unref (backend->priv->network);
 	g_object_unref (backend->priv->thread_list);
@@ -1941,6 +1997,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [PK_BACKEND_CALLER_ACTIVE_CHANGED] =
+		g_signal_new ("caller-active-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 	signals [PK_BACKEND_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1964,6 +2025,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->finished = FALSE;
 	backend->priv->spawn = NULL;
 	backend->priv->handle = NULL;
+	backend->priv->dbus_name = NULL;
 	backend->priv->xcached_enabled = FALSE;
 	backend->priv->xcached_package_id = NULL;
 	backend->priv->xcached_transaction_id = NULL;
@@ -1984,6 +2046,10 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->network = pk_network_new ();
 	backend->priv->thread_list = pk_thread_list_new ();
+
+	backend->priv->libgbus = libgbus_new ();
+	g_signal_connect (backend->priv->libgbus, "connection-changed",
+			  G_CALLBACK (pk_backend_connection_changed_cb), backend);
 }
 
 /**
