@@ -10,10 +10,10 @@ endif
 
 if HAVE_DOCBOOK2MAN
 pkcon.1: pkcon.sgml
-	docbook2man $? > $@
+	docbook2man $? > /dev/null
 
 pkmon.1: pkmon.sgml
-	docbook2man $? > $@
+	docbook2man $? > /dev/null
 endif
 
 clean-local :
