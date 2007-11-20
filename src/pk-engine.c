@@ -58,6 +58,7 @@ static void     pk_engine_init		(PkEngine      *engine);
 static void     pk_engine_finalize	(GObject       *object);
 
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
+#define PK_ENGINE_UPDATES_CHANGED_TIMEOUT	100 /* ms */
 
 struct PkEnginePrivate
 {
@@ -480,33 +481,34 @@ pk_engine_files_cb (PkBackend *backend, const gchar *package_id,
 }
 
 /**
- * pk_engine_finished_cb:
+ * pk_engine_finished_updates_changed_cb:
  **/
-static void
-pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
+static gboolean
+pk_engine_finished_updates_changed_cb (gpointer data)
 {
-	PkTransactionItem *item;
-	PkRoleEnum role;
-	const gchar *exit_text;
-	guint time;
-	gchar *packages;
+	const gchar *tid;
+	PkEngine *engine = PK_ENGINE (data);
 
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
-		return;
-	}
-	/* we might not have this set yet */
-	if (item->backend == NULL) {
-		g_warning ("Backend not set yet!");
-		return;
-	}
+	tid = (const gchar *) g_object_get_data (G_OBJECT (engine), "calling-tid");
 
-	/* get what the role was */
-	pk_backend_get_role (item->backend, &role, NULL);
+	pk_debug ("emitting updates-changed tid:%s", tid);
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, tid);
+	return FALSE;
+}
+
+/**
+ * pk_engine_finish_invalidate_caches:
+ **/
+static gboolean
+pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, PkRoleEnum role)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("invalidating caches");
 
 	/* copy this into the cache if we are getting updates */
 	if (role == PK_ROLE_ENUM_GET_UPDATES) {
@@ -538,9 +540,53 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 			g_object_unref (engine->priv->updates_cache);
 			engine->priv->updates_cache = NULL;
 		}
-		/* this should cause the client program to requeue an update */
-		pk_debug ("emitting updates-changed tid: %s", item->tid);
-		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+	}
+
+	/* could the update list have changed? */
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
+	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		/* this needs to be done after a small delay */
+		g_object_set_data (G_OBJECT (engine), "calling-tid", item->tid);
+		g_timeout_add (PK_ENGINE_UPDATES_CHANGED_TIMEOUT, pk_engine_finished_updates_changed_cb, engine);
+	}
+	return TRUE;
+}
+
+/**
+ * pk_engine_finished_cb:
+ **/
+static void
+pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
+{
+	PkTransactionItem *item;
+	PkRoleEnum role;
+	const gchar *exit_text;
+	guint time;
+	gchar *packages;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+	/* we might not have this set yet */
+	if (item->backend == NULL) {
+		g_warning ("Backend not set yet!");
+		return;
+	}
+
+	/* get what the role was */
+	pk_backend_get_role (item->backend, &role, NULL);
+
+	/* invalidate some caches if we succeeded*/
+	if (exit == PK_EXIT_ENUM_SUCCESS) {
+		pk_engine_finish_invalidate_caches (engine, item, role);
 	}
 
 	/* find the length of time we have been running */
@@ -555,14 +601,6 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	pk_debug ("backend was running for %i ms", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
-
-	/* could the update list have changed? */
-	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
-	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		pk_debug ("emitting updates-changed tid:%s", item->tid);
-		g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
-	}
 
 	exit_text = pk_exit_enum_to_text (exit);
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, time);
