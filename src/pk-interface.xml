@@ -261,6 +261,10 @@
     </signal>
 
     <!-- General methods -->
+    <method name="GetTimeSinceAction">
+      <arg type="s" name="role" direction="in"/>
+      <arg type="u" name="seconds" direction="out"/>
+    </method>
     <method name="GetBackendDetail">
       <arg type="s" name="name" direction="out"/>
       <arg type="s" name="author" direction="out"/>

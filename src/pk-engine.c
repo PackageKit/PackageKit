@@ -2633,6 +2633,22 @@ pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GE
 }
 
 /**
+ * pk_engine_get_time_since_action:
+ *
+ * @seconds: Number of seconds since the role was called, or zero is unknown
+ **/
+gboolean
+pk_engine_get_time_since_action	(PkEngine *engine, const gchar *role_text, guint *seconds, GError **error)
+{
+	PkRoleEnum role;
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	role = pk_role_enum_from_text (role_text);
+	*seconds = 0;
+	return TRUE;
+}
+
+/**
  * pk_engine_transaction_cb:
  **/
 static void

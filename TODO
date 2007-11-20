@@ -3,7 +3,6 @@ Order of no particular importance:
 *** Make the daemon aware on how long between updates ***
 Requires writing to a database for config stuff
  - Probably should move the job number stuff there too
-New method GetHoursSinceLastUpdate
 Use this in the update icon
 
 *** package->status ***

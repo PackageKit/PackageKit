@@ -182,6 +182,10 @@ gboolean	 pk_engine_get_backend_detail		(PkEngine	*engine,
 							 gchar		**name,
 							 gchar		**author,
 							 GError		**error);
+gboolean	 pk_engine_get_time_since_action	(PkEngine	*engine,
+							 const gchar	*role_text,
+							 guint		*seconds,
+							 GError		**error);
 gboolean	 pk_engine_get_actions			(PkEngine	*engine,
 							 gchar		**actions,
 							 GError		**error);
