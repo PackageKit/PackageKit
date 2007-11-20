@@ -41,6 +41,7 @@
 #include <zypp/RepoInfo.h>
 #include <zypp/repo/RepoException.h>
 #include <zypp/parser/ParseException.h>
+#include <zypp/Pathname.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -136,6 +137,39 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		data->package_id = g_strdup(package_id);
 		pk_backend_thread_helper (backend, backend_get_description_thread, data);
 	}
+}
+/**
+ * backend_install_package:
+ */
+
+static void
+backend_install_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	zypp::filesystem::Pathname pathname("/");
+	//zypp::ZYpp zypper;
+
+	//zypper.initializeTarget(pathname);
+
+
+	/*
+	if(strcmp(package_id,"signedpackage;1.0-1.fc8;i386;fedora") == 0) {
+		pk_backend_repo_signature_required(backend, "updates", "http://example.com/gpgkey",
+						   "Test Key (Fedora) fedora@example.com", "BB7576AC",
+						   "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
+						   "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "GPG signed package could not be verified");
+		pk_backend_finished (backend);
+	}
+
+	progress_percentage = 0;
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+			    "An HTML widget for GTK+ 2.0");
+	g_timeout_add (1000, backend_install_timeout, backend);
+	*/
 }
 
 /*
@@ -424,7 +458,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_package */
+	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	NULL,//backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
