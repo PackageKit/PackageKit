@@ -305,7 +305,7 @@ backend_get_repo_list (PkBackend *backend)
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
-        g_return_if_fail (backend != NULL);
+	g_return_if_fail (backend != NULL);
 
 	zypp::RepoManager manager;
 	zypp::RepoInfo repo;
@@ -322,7 +322,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not enable/disable the repo");
 	}
 
-        pk_backend_finished (backend);
+	pk_backend_finished (backend);
 }
 
 extern "C" PK_BACKEND_OPTIONS (
