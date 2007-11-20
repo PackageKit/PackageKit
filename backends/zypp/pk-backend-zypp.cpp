@@ -42,6 +42,7 @@
 #include <zypp/repo/RepoException.h>
 #include <zypp/parser/ParseException.h>
 #include <zypp/Pathname.h>
+#include <sqlite3.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -55,6 +56,16 @@ typedef struct {
 	gchar *filter;
 	gint mode;
 } FindData;
+
+typedef struct {
+	gchar *name;
+	gchar *filter;
+} ResolveData;
+
+typedef struct {
+	gchar *name;
+	gchar *filter;
+} SQLData;
 
 typedef struct {
 	gchar *package_id;
@@ -205,7 +216,6 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_finished (backend);
 	g_free (package_id);
 	return TRUE;
 }
@@ -218,6 +228,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
+	printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
 	pk_backend_thread_helper (backend, backend_install_package_thread, package_to_install);
 
@@ -238,6 +249,105 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 			    "An HTML widget for GTK+ 2.0");
 	g_timeout_add (1000, backend_install_timeout, backend);
 	*/
+}
+
+static int
+select_callback (void* sql_data,int argc ,char** argv, char** cl_name)
+{
+	printf("\n\nEnter select_callback\n");
+	for (int i = 0; i < argc; i++) {
+		printf ("%s=%s\n", cl_name[i], argv[i] ? argv[i] : "null");
+	}
+	return 0;
+}
+
+static gboolean
+backend_resolve_thread (PkBackend *backend, gpointer data)
+{
+	char * error_string;
+	const char * select_statement_template = "SELECT p.name,p.version,p.release,t.name FROM resolvables p JOIN types t ON p.arch = t.id WHERE p.name LIKE \"%s\"";
+	gchar *select_statement;
+	SQLData *sql_data = g_new0(SQLData, 1);
+							  
+
+	printf("\n\nEnter backend_resolve_thread\n");
+	ResolveData *rdata = (ResolveData*) data;
+
+	sqlite3 *db;
+	if (sqlite3_open("/var/cache/zypp/zypp.db", &db) != 0) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Failed to open database");
+		return FALSE;
+	}
+
+	select_statement = g_strdup_printf (select_statement_template, rdata->name);
+	sqlite3_exec (db, select_statement, select_callback, sql_data, &error_string);
+	/*
+	zypp::Target_Ptr target;
+	zypp::ZYpp::Ptr zypp;
+	zypp = get_zypp ();
+
+	target = zypp->target ();
+
+	// Load all the local system "resolvables" (packages)
+	zypp->addResolvables (target->resolvables(), TRUE);
+
+	// Load resolvables from all the enabled repositories
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		// TODO: Split the code up so it's not all just in one bit try/catch
+		repos = manager.knownRepositories();
+		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+			zypp::Repository repository = manager.createFromCache (*it);
+			zypp->addResolvables (repository.resolvables ());
+		}
+
+		// Iterate over the resolvables and mark the ones we want to install
+		//zypp->start ();
+		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
+				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
+			zypp::ui::Selectable::Ptr selectable = *it;
+
+		}
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
+		// TODO: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		g_free (package_id);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
+		g_free (package_id);
+		return FALSE;
+	}
+	*/
+
+	g_free (rdata->name);
+	g_free (rdata->filter);
+	g_free (rdata);
+	g_free (select_statement);
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	return TRUE;
+}
+
+/**
+ * backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	printf("Enter backend_resolve - filter:%s, package_id:%s\n", filter, package_id);
+	ResolveData *data = g_new0(ResolveData, 1);
+	if (data == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_resolve");
+		pk_backend_finished (backend);
+	} else {
+		data->name = g_strdup (package_id);
+		data->filter = g_strdup (filter);
+		pk_backend_thread_helper (backend, backend_resolve_thread, data);
+	}
 }
 
 /*
@@ -530,7 +640,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* install_file */
 	NULL,//backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
-	NULL,					/* resolve */
+	backend_resolve,		/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
