@@ -40,6 +40,7 @@
 #include <zypp/RepoManager.h>
 #include <zypp/RepoInfo.h>
 #include <zypp/repo/RepoException.h>
+#include <zypp/parser/ParseException.h>
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -58,6 +59,10 @@ typedef struct {
 	gchar *package_id;
 	gint type;
 } ThreadData;
+
+typedef struct {
+	gboolean force;
+} RefreshData;
 
 // some typedefs and functions to shorten Zypp names
 typedef zypp::ResPoolProxy ZyppPool;
@@ -132,6 +137,86 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_thread_helper (backend, backend_get_description_thread, data);
 	}
 }
+
+/*
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+{
+	RefreshData *d = (RefreshData*) data;
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_no_percentage_updates (backend);
+	unsigned processed = 0;
+	unsigned repo_count = 0;
+
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		repos = manager.knownRepositories();
+	}
+	catch ( const zypp::Exception &e)
+	{
+		// FIXME: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		g_free (d);
+		return FALSE;
+	}
+
+	repo_count = repos.size ();
+
+	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+		if (it->enabled()) {
+			//refresh_raw_metadata (it, false);
+
+			// Build the Cache
+			try {
+				manager.buildCache (*it,
+						    d->force ?
+							zypp::RepoManager::BuildForced :
+							zypp::RepoManager::BuildIfNeeded);
+			} catch (const zypp::parser::ParseException &ex) {
+				pk_backend_error_code (backend,
+						       PK_ERROR_ENUM_INTERNAL_ERROR,
+						       "Error parsing metadata for '%s'",
+						       it->alias().c_str());
+				continue;
+			}
+
+			processed++;
+			pk_backend_change_percentage (backend, (int) ((processed / repo_count) * 100));
+		}
+	}
+
+	g_free (d);
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+//
+// backend_refresh_cache:
+//
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	g_return_if_fail (backend != NULL);
+	// check network state
+	if (pk_backend_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	RefreshData *data = g_new0(RefreshData, 1);
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_refresh_cache");
+		pk_backend_finished (backend);
+	} else {
+		data->force = force;
+		pk_backend_thread_helper (backend, backend_refresh_cache_thread, data);
+	}
+}
+*/
 
 /* TODO: this was taken directly from pk-backend-box.c.  Perhaps this
  * ought to be part of libpackagekit? */
@@ -341,7 +426,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_updates */
 	NULL,					/* install_package */
 	NULL,					/* install_file */
-	NULL,					/* refresh_cache */
+	NULL,//backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
