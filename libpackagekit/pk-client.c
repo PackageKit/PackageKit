@@ -2177,6 +2177,36 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
 }
 
 /**
+ * pk_client_get_time_since_action:
+ **/
+gboolean
+pk_client_get_time_since_action (PkClient *client, PkRoleEnum role, guint *seconds)
+{
+	gboolean ret;
+	GError *error;
+	const gchar *role_text;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	error = NULL;
+	role_text = pk_role_enum_to_text (role);
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetTimeSinceAction", &error,
+				 G_TYPE_STRING, role_text,
+				 G_TYPE_INVALID,
+				 G_TYPE_UINT, seconds,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetTimeSinceAction failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_client_is_caller_active:
  **/
 gboolean

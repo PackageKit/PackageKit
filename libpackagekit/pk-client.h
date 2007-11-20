@@ -152,6 +152,9 @@ gboolean	 pk_client_get_old_transactions		(PkClient	*client,
 gboolean	 pk_client_get_backend_detail		(PkClient	*client,
 							 gchar		**name,
 							 gchar		**author);
+gboolean	 pk_client_get_time_since_action	(PkClient	*client,
+							 PkRoleEnum	 role,
+							 guint		*seconds);
 gboolean	 pk_client_is_caller_active		(PkClient	*client,
 							 gboolean	*is_active);
 
