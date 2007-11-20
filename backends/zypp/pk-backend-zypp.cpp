@@ -314,14 +314,14 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 static int
 select_callback (void* data,int argc ,char** argv, char** cl_name)
 {
-	printf ("Enter select_callback\n");
+	// printf ("Enter select_callback\n");
 
 	SQLData *sql_data = (SQLData *) data;
 	/* FIXME - for now we prefer later versions, i586 */
 	if (sql_data->name == NULL ||
 			(g_ascii_strcasecmp (argv[SQL_VERSION], sql_data->version) > 0) ||
 			!g_ascii_strcasecmp ("i586", argv[SQL_ARCH]) ) {
-		printf ("Adding to data struct\n");
+		//printf ("Adding to data struct\n");
 		g_free (sql_data->name);
 		g_free (sql_data->version);
 		g_free (sql_data->release);
@@ -333,11 +333,11 @@ select_callback (void* data,int argc ,char** argv, char** cl_name)
 		sql_data->repo = g_strdup (argv[SQL_REPO]);
 		sql_data->arch = g_strdup (argv[SQL_ARCH]);
 	}
-	// /*
+	/*
 	for (int i = 0; i < argc; i++) {
 		printf ("%s=%s\n", cl_name[i], argv[i] ? argv[i] : "null");
 	}
-	// */
+	*/
 	return 0;
 }
 
@@ -353,7 +353,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 							  
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
-	printf("\n\nEnter backend_resolve_thread\n");
+	// printf("\n\nEnter backend_resolve_thread\n");
 	ResolveData *rdata = (ResolveData*) data;
 
 	sqlite3 *db;
@@ -364,6 +364,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 
 	select_statement = g_strdup_printf (select_statement_template, rdata->name);
 	sqlite3_exec (db, select_statement, select_callback, sql_data, &error_string);
+	sqlite3_close (db);
 
 	if (sql_data->name == NULL) {
 		//did not get any matches
