@@ -287,7 +287,8 @@ printf ("Finished the installation.\n");
 		pk_package_id_free (pi);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
+		//pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		g_free (package_id);
 		pk_package_id_free (pi);
 		return FALSE;
