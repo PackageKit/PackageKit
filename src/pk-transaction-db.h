@@ -65,6 +65,10 @@ gboolean	 pk_transaction_db_set_data		(PkTransactionDb	*tdb,
 							 const gchar		*data);
 gboolean	 pk_transaction_db_get_list		(PkTransactionDb	*tdb,
 							 guint			 limit);
+gboolean	 pk_transaction_db_action_time_reset	(PkTransactionDb	*tdb,
+							 PkRoleEnum		 role);
+guint		 pk_transaction_db_action_time_since	(PkTransactionDb	*tdb,
+							 PkRoleEnum		 role);
 
 G_END_DECLS
 

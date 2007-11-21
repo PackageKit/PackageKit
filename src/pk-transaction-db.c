@@ -203,6 +203,103 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 }
 
 /**
+ * pk_time_action_sqlite_callback:
+ **/
+static gint
+pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	gint i;
+	gchar *col;
+	gchar *value;
+	gchar **timespec = (gchar**) data;
+
+	for (i=0; i<argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		if (pk_strequal (col, "timespec") == TRUE) {
+			*timespec = g_strdup (value);
+		} else {
+			pk_warning ("%s = %s\n", col, value);
+		}
+	}
+	return 0;
+}
+
+/**
+ * pk_transaction_db_action_time_since:
+ **/
+guint
+pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
+{
+	gchar *error_msg = NULL;
+	gint rc;
+	const gchar *role_text;
+	gchar *statement;
+	gchar *timespec = NULL;
+	guint time;
+
+	g_return_val_if_fail (tdb != NULL, 0);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
+
+	role_text = pk_role_enum_to_text (role);
+	pk_debug ("get_time_since_action=%s", role_text);
+
+	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'", role_text);
+	rc = sqlite3_exec (tdb->priv->db, statement, pk_time_action_sqlite_callback, &timespec, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return 0;
+	}
+	if (timespec == NULL) {
+		pk_warning ("no response, assume zero");
+		return 0;
+	}
+
+	/* work out the difference */
+	time = pk_iso8601_difference (timespec);
+	pk_debug ("timespec=%s, difference=%i", timespec, time);
+	g_free (timespec);
+
+	return time;
+}
+
+/**
+ * pk_transaction_db_action_time_reset:
+ **/
+gboolean
+pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
+{
+	gchar *error_msg = NULL;
+	gint rc;
+	const gchar *role_text;
+	gchar *statement;
+	gchar *timespec;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	timespec = pk_iso8601_present ();
+	role_text = pk_role_enum_to_text (role);
+	pk_debug ("reset action time=%s to %s", role_text, timespec);
+
+	statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
+	rc = sqlite3_exec (tdb->priv->db, statement, NULL, NULL, &error_msg);
+	g_free (timespec);
+	g_free (statement);
+
+	/* did we fail? */
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_transaction_db_get_list:
  **/
 gboolean
@@ -232,7 +329,6 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 gboolean
 pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 {
-	GTimeVal timeval;
 	gchar *timespec;
 	gchar *statement;
 
@@ -241,11 +337,7 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 
 	pk_debug ("adding transaction %s", tid);
 
-	/* get current time */
-	g_get_current_time (&timeval);
-	timespec = g_time_val_to_iso8601 (&timeval);
-	pk_debug ("timespec=%s", timespec);
-
+	timespec = pk_iso8601_present ();
 	statement = g_strdup_printf ("INSERT INTO transactions (transaction_id, timespec) VALUES ('%s', '%s')", tid, timespec);
 	pk_transaction_db_sql_statement (tdb, statement);
 	g_free (statement);
@@ -363,6 +455,34 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 }
 
 /**
+ * pk_transaction_db_create_table_last_action:
+ **/
+static gboolean
+pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
+{
+	const gchar *role_text;
+	gchar *statement;
+	gchar *timespec;
+	guint i;
+
+	g_return_val_if_fail (tdb != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+
+	timespec = pk_iso8601_present ();
+	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
+	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
+		role_text = pk_role_enum_to_text (i);
+		/* reset to now if the role does not exist */
+		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+		sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+		g_free (statement);
+	}
+	g_free (timespec);
+	return TRUE;
+}
+
+/**
  * pk_transaction_db_init:
  **/
 static void
@@ -399,6 +519,9 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 			sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
 		}
 	}
+
+	/* we might be running an old database, recreate */
+	pk_transaction_db_create_table_last_action (tdb);
 }
 
 /**
@@ -432,3 +555,49 @@ pk_transaction_db_new (void)
 	tdb = g_object_new (PK_TYPE_TRANSACTION_DB, NULL);
 	return PK_TRANSACTION_DB (tdb);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+void
+libst_transaction_db (LibSelfTest *test)
+{
+	PkTransactionDb *db;
+	guint value;
+	gboolean ret;
+
+	if (libst_start (test, "PkTransactionDb", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	db = pk_transaction_db_new ();
+
+	/************************************************************/
+	libst_title (test, "set the correct time");
+	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to reset value");
+	}
+
+	g_usleep (2000000);
+
+	/************************************************************/
+	libst_title (test, "do we get the correct time");
+	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
+	if (value == 2) {
+		libst_success (test, "failed to get correct time");
+	} else {
+		libst_failed (test, "failed to get correct time, %i", value);
+	}
+
+	g_object_unref (db);
+
+	libst_end (test);
+}
+#endif
+
