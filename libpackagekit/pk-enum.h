@@ -116,6 +116,14 @@ typedef enum {
 	PK_RESTART_ENUM_UNKNOWN
 } PkRestartEnum;
 
+/* what message type we need to show */
+typedef enum {
+	PK_MESSAGE_ENUM_NOTICE,
+	PK_MESSAGE_ENUM_WARNING,
+	PK_MESSAGE_ENUM_DAEMON,
+	PK_MESSAGE_ENUM_UNKNOWN
+} PkMessageEnum;
+
 typedef enum {
 	PK_ERROR_ENUM_OOM,
 	PK_ERROR_ENUM_NO_NETWORK,

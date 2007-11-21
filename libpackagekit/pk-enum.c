@@ -124,6 +124,14 @@ static PkEnumMatch enum_restart[] = {
 	{0, NULL},
 };
 
+static PkEnumMatch enum_message[] = {
+	{PK_MESSAGE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_MESSAGE_ENUM_NOTICE,		"notice"},
+	{PK_MESSAGE_ENUM_WARNING,		"warning"},
+	{PK_MESSAGE_ENUM_DAEMON,		"daemon"},
+	{0, NULL},
+};
+
 static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_NONE,			"none"},
@@ -391,6 +399,24 @@ const gchar *
 pk_restart_enum_to_text (PkRestartEnum restart)
 {
 	return pk_enum_find_string (enum_restart, restart);
+}
+
+/**
+ * pk_message_enum_from_text:
+ **/
+PkMessageEnum
+pk_message_enum_from_text (const gchar *message)
+{
+	return pk_enum_find_value (enum_message, message);
+}
+
+/**
+ * pk_message_enum_to_text:
+ **/
+const gchar *
+pk_message_enum_to_text (PkMessageEnum message)
+{
+	return pk_enum_find_string (enum_message, message);
 }
 
 /**

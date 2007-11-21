@@ -1485,6 +1485,38 @@
       </informaltable>
     </sect2>
 
+    <sect2 id="api-message">
+      <title>Message</title>
+      <para>
+        This allows the backend to queue up a message to be shown after the
+        transaction has completed.
+      </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>type</literal></entry>
+              <entry>
+                One of "<literal>warning</literal>",
+                "<literal>notice</literal>",
+                "<literal>daemon</literal>".
+              </entry>
+            </row>
+            <row>
+              <entry><literal>detail</literal></entry>
+              <entry>Required details about the message, non localised</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
     <sect2 id="backends-spawn-package">
       <title>Package</title>
       <para>
