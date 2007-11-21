@@ -464,7 +464,6 @@ backends/alpm/Makefile
 backends/apt/Makefile
 backends/apt/helpers/Makefile
 backends/box/Makefile
-backends/box/helpers/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
 backends/dummy/Makefile
