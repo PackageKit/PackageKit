@@ -80,6 +80,7 @@ typedef enum {
 	PK_CLIENT_PROGRESS_CHANGED,
 	PK_CLIENT_UPDATES_CHANGED,
 	PK_CLIENT_REQUIRE_RESTART,
+	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
 	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
@@ -708,6 +709,27 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 		client->priv->require_restart = restart;
 		pk_debug ("restart status now %s", pk_restart_enum_to_text (restart));
 	}
+}
+
+/**
+ * pk_client_message_cb:
+ */
+static void
+pk_client_message_cb (DBusGProxy  *proxy, const gchar *tid,
+		      const gchar *message_text, const gchar *details, PkClient *client)
+{
+	PkMessageEnum message;
+	g_return_if_fail (client != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	/* not us, ignore */
+	if (pk_client_should_proxy (client, tid) == FALSE) {
+		return;
+	}
+
+	message = pk_message_enum_from_text (message_text);
+	pk_debug ("emit message %i, %s", message, details);
+	g_signal_emit (client , signals [PK_CLIENT_MESSAGE], 0, message, details);
 }
 
 /******************************************************************************
@@ -2494,6 +2516,11 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_CLIENT_MESSAGE] =
+		g_signal_new ("message",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_CLIENT_LOCKED] =
 		g_signal_new ("locked",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2600,7 +2627,7 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
-	/* ErrorCode, RequireRestart */
+	/* ErrorCode, RequireRestart, Message */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
@@ -2712,6 +2739,11 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
 				     G_CALLBACK (pk_client_require_restart_cb), client, NULL);
 
+	dbus_g_proxy_add_signal (proxy, "Message",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "Message",
+				     G_CALLBACK (pk_client_message_cb), client, NULL);
+
 	dbus_g_proxy_add_signal (proxy, "CallerActiveChanged",
 				 G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
@@ -2765,6 +2797,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
 				        G_CALLBACK (pk_client_require_restart_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Message",
+				        G_CALLBACK (pk_client_message_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
 					G_CALLBACK (pk_client_caller_active_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Locked",
