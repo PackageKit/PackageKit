@@ -173,6 +173,8 @@ backend_get_updates (PkBackend *backend)
 
 	/* only find updates one in 5 times */
 	if (number != 1) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Ignoring this GetUpdate!");
 		pk_backend_finished (backend);
 		return;
 	}
