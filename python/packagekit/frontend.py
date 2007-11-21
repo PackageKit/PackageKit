@@ -241,12 +241,12 @@ class PackageKit:
 
 	@dbusException
 	@job_id
-	def Resolve(self,package_name):
+	def Resolve(self,package_name,filter="none"):
 		"""
 		Finds a package with the given name, and gives back a Package that matches that name exactly
 		(not yet supported in yum backend, and maybe others)
 		"""
-		return self.pk_iface.Resolve(self.tid(),package_id)
+		return self.pk_iface.Resolve(self.tid(),filter,package_name)
 
 	@dbusException
 	@job_id
