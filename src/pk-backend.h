@@ -60,6 +60,9 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,
 							 const gchar	*details);
+gboolean	 pk_backend_message			(PkBackend	*backend,
+							 PkMessageEnum	 message,
+							 const gchar	*details);
 gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*package_id,
 							 const gchar	*licence,

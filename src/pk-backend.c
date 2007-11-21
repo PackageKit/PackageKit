@@ -107,6 +107,7 @@ enum {
 	PK_BACKEND_UPDATES_CHANGED,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
+	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
 	PK_BACKEND_ALLOW_INTERRUPT,
@@ -372,6 +373,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 	gchar *command;
 	PkErrorCodeEnum error_enum;
 	PkStatusEnum status_enum;
+	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
 	gboolean ret = TRUE;
 
@@ -432,6 +434,14 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 		restart_enum = pk_restart_enum_from_text (sections[1]);
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
+	} else if (pk_strequal (command, "message") == TRUE) {
+		if (size != 3) {
+			g_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+		message_enum = pk_message_enum_from_text (sections[1]);
+		pk_backend_message (backend, message_enum, sections[2]);
 	} else if (pk_strequal (command, "change-transaction-data") == TRUE) {
 		if (size != 2) {
 			g_warning ("invalid command '%s'", command);
@@ -886,6 +896,21 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 }
 
 /**
+ * pk_backend_message:
+ **/
+gboolean
+pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *details)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	pk_debug ("emit message %i, %s", message, details);
+	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, details);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_change_transaction_data:
  **/
 gboolean
@@ -1084,44 +1109,48 @@ pk_backend_finished (PkBackend *backend)
 
 	/* are we trying to finish in init? */
 	if (backend->priv->during_initialize == TRUE) {
-		g_print ("You can't call pk_backend_finished in backend_initialize!\n");
-		pk_error ("Internal error, cannot continue!");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "You can't call pk_backend_finished in backend_initialize!");
+		return FALSE;
 	}
 
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
-		g_print ("There are threads running and the task has been asked to finish!\n");
-		g_print ("If you are using :\n");
-		g_print ("* pk_backend_thread_helper\n");
-		g_print ("   - You should _not_ use pk_backend_finished directly");
-		g_print ("   - Return from the function like normal\n");
-		g_print ("* pk_thread_list_create:\n");
-		g_print ("   -  If used internally you _have_ to use pk_thread_list_wait\n");
-		pk_error ("Internal error, cannot continue!");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "There are threads running and the task has been asked to finish!\n"
+				    "If you are using :\n"
+				    "* pk_backend_thread_helper\n"
+				    "   - You should _not_ use pk_backend_finished directly"
+				    "   - Return from the function like normal\n"
+				    "* pk_thread_list_create:\n"
+				    "   -  If used internally you _have_ to use pk_thread_list_wait");
+		return FALSE;
 	}
 
 	/* check we have not already finished */
 	if (backend->priv->finished == TRUE) {
-		g_print ("Backends cannot request Finished more than once!\n");
-		g_print ("If you are using:\n");
-		g_print ("* pk_backend_thread_helper\n");
-		g_print ("   - You should _not_ use pk_backend_finished directly");
-		g_print ("   - Return from the function like normal\n");
-		pk_error ("Internal error, cannot continue!");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Backends cannot request Finished more than once!\n"
+				    "If you are using:\n"
+				    "* pk_backend_thread_helper\n"
+				    "   - You should _not_ use pk_backend_finished directly"
+				    "   - Return from the function like normal");
+		return FALSE;
 	}
 
 	/* check we sent at least one status calls */
 	if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-		g_print ("Backends should send status <value> signals to update the UI!\n");
-		g_print ("If you are:\n");
-		g_print ("* Calling out to external tools, the compiled backend "
-			 "should call pk_backend_change_status() manually.\n");
-		g_print ("* Using a scripted backend with dumb commands then "
-			 "this should be set at the start of the runtime call\n");
-		g_print ("   - see helpers/yumBackend.py:self.status()\n");
-		g_print ("* Using a scripted backend with clever commands then a "
-			 "  callback should use map values into status enums\n");
-		g_print ("   - see helpers/yumBackend.py:self.state_actions\n");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Backends should send status <value> signals to update the UI!\n"
+				    "If you are:\n"
+				    "* Calling out to external tools, the compiled backend "
+				    "should call pk_backend_change_status() manually.\n"
+				    "* Using a scripted backend with dumb commands then "
+				    "this should be set at the start of the runtime call\n"
+				    "   - see helpers/yumBackend.py:self.status()\n"
+				    "* Using a scripted backend with clever commands then a "
+				    "  callback should use map values into status enums\n"
+				    "   - see helpers/yumBackend.py:self.state_actions");
 		pk_warning ("GUI will remain unchanged!");
 	}
 
@@ -1952,6 +1981,11 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals [PK_BACKEND_MESSAGE] =
+		g_signal_new ("message",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);

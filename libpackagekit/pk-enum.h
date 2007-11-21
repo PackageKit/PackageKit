@@ -251,6 +251,9 @@ const gchar	*pk_error_enum_to_text			(PkErrorCodeEnum code);
 PkRestartEnum	 pk_restart_enum_from_text		(const gchar	*restart);
 const gchar	*pk_restart_enum_to_text		(PkRestartEnum	 restart);
 
+PkMessageEnum	 pk_message_enum_from_text		(const gchar	*message);
+const gchar	*pk_message_enum_to_text		(PkMessageEnum	 message);
+
 PkGroupEnum	 pk_group_enum_from_text		(const gchar	*group);
 const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 

@@ -160,7 +160,12 @@
     </signal>
     <signal name="RequireRestart">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="type" direction="out"/> <!-- system,application,session -->
+      <arg type="s" name="type" direction="out"/>
+      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
+    </signal>
+    <signal name="Message">
+      <arg type="s" name="tid" direction="out"/>
+      <arg type="s" name="message" direction="out"/>
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
     <signal name="UpdatesChanged">

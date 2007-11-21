@@ -84,6 +84,7 @@ enum {
 	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
+	PK_ENGINE_MESSAGE,
 	PK_ENGINE_UPDATES_CHANGED,
 	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_FINISHED,
@@ -298,8 +299,9 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
-			pk_warning ("backend emitted 'installed' rather than 'installing' "
-				    "- you need to do the package *before* you do the action");
+			pk_backend_message (item->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "backend emitted 'installed' rather than 'installing' "
+					    "- you need to do the package *before* you do the action");
 			return;
 		}
 	}
@@ -426,6 +428,29 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 	restart_text = pk_restart_enum_to_text (restart);
 	pk_debug ("emitting require-restart tid:%s %s, '%s'", item->tid, restart_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, item->tid, restart_text, details);
+	pk_engine_reset_timer (engine);
+}
+
+/**
+ * pk_engine_message_cb:
+ **/
+static void
+pk_engine_message_cb (PkBackend *backend, PkMessageEnum restart, const gchar *details, PkEngine *engine)
+{
+	PkTransactionItem *item;
+	const gchar *message_text;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
+	if (item == NULL) {
+		pk_warning ("could not find backend");
+		return;
+	}
+	message_text = pk_message_enum_to_text (restart);
+	pk_debug ("emitting message tid:%s %s, '%s'", item->tid, message_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_MESSAGE], 0, item->tid, message_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -732,6 +757,8 @@ pk_engine_backend_new (PkEngine *engine)
 			  G_CALLBACK (pk_engine_repo_signature_required_cb), engine);
 	g_signal_connect (backend, "require-restart",
 			  G_CALLBACK (pk_engine_require_restart_cb), engine);
+	g_signal_connect (backend, "message",
+			  G_CALLBACK (pk_engine_message_cb), engine);
 	g_signal_connect (backend, "finished",
 			  G_CALLBACK (pk_engine_finished_cb), engine);
 	g_signal_connect (backend, "description",
@@ -967,7 +994,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		guint length;
 
 		length = pk_package_list_get_size (engine->priv->updates_cache);
-		pk_warning ("we have cached data (%i) we could use!", length);
+		pk_debug ("we have cached data (%i) we could use!", length);
 
 		/* emulate the backend */
 		pk_backend_set_role (item->backend, PK_ROLE_ENUM_GET_UPDATES);
@@ -2729,6 +2756,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_ENGINE_MESSAGE] =
+		g_signal_new ("message",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
