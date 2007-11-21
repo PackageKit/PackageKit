@@ -56,6 +56,8 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 guint		 parts,
 							 guint		 match);
 gboolean	 pk_filter_check			(const gchar	*filter);
+gchar		*pk_iso8601_present			(void);
+guint		 pk_iso8601_difference			(const gchar	*isodate);
 
 G_END_DECLS
 

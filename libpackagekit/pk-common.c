@@ -82,6 +82,54 @@ out:
 }
 
 /**
+ * pk_iso8601_present:
+ *
+ * Return value: The current iso8601 date and time
+ **/
+gchar *
+pk_iso8601_present (void)
+{
+	GTimeVal timeval;
+	gchar *timespec;
+
+	/* get current time */
+	g_get_current_time (&timeval);
+	timespec = g_time_val_to_iso8601 (&timeval);
+	pk_debug ("timespec=%s", timespec);
+
+	return timespec;
+}
+
+/**
+ * pk_iso8601_difference:
+ * @isodate: The ISO8601 date to compare
+ *
+ * Return value: The difference in seconds between the iso8601 date and current
+ **/
+guint
+pk_iso8601_difference (const gchar *isodate)
+{
+	GTimeVal timeval_then;
+	GTimeVal timeval_now;
+	guint time;
+
+	if (pk_strzero (isodate) == TRUE) {
+		return 0;
+	}
+
+	/* convert date */
+	g_time_val_from_iso8601 (isodate, &timeval_then);
+	g_get_current_time (&timeval_now);
+
+	/* work out difference */
+	time = timeval_now.tv_sec - timeval_then.tv_sec;
+	pk_debug ("difference=%i", time);
+
+	return time;
+}
+
+
+/**
  * pk_strvalidate_char:
  * @item: A single char to test
  *
@@ -1278,6 +1326,34 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "value is %i", uvalue);
 	}
+
+	gchar *present;
+	guint seconds;
+
+	/************************************************************
+	 **************            iso8601           ****************
+	 ************************************************************/
+	libst_title (test, "get present iso8601");
+	present = pk_iso8601_present ();
+	if (present != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "present is NULL");
+	}
+
+	g_usleep (2000000);
+
+	/************************************************************/
+	libst_title (test, "get difference in iso8601");
+	seconds = pk_iso8601_difference (present);
+	if (seconds == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "seconds is wrong, %i", seconds);
+	}
+
+	/************************************************************/
+	g_free (present);
 
 	libst_end (test);
 }
