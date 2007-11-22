@@ -25,6 +25,7 @@
 #include <pk-backend.h>
 #include <pk-backend-python.h>
 #include "pk-apt-search.h"
+#include "config.h"
 
 /**
  * backend_get_groups:
@@ -61,8 +62,8 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 PK_BACKEND_OPTIONS (
-	"Apt",				/* description */
-	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
+	"Apt (with " APT_SEARCH " searching)",				/* description */
+	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>",	/* author */
 	backend_init_search,					/* initalize */
 	backend_finish_search,					/* destroy */
 	backend_get_groups,			/* get_groups */
