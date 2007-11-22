@@ -1,13 +1,10 @@
 Order of no particular importance:
 
-*** Make the daemon aware on how long between updates ***
-Requires writing to a database for config stuff
- - Probably should move the job number stuff there too
-Use this in the update icon
+*** write to the database for config stuff
+ - Probably should move the job number too
 
 *** package->status ***
 Convert the backends to send more status calls.
-Add a depsolve status enum.
 
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
