@@ -14,9 +14,13 @@ Have different permissions for signed and unsigned repos.
 
 *** Handle rollbacks for select backends ***
 To do rollbacks sanely in PK we need a few things:
- * allow transaction data to be changed in _db
+ - allow transaction data to be changed in _db
 
 *** Make resolve easier to use ***
 resolve in pkcon has to check for installed package already - and not
 display a cryptic message when already installed
+
+*** Don't display install if something is upgradable
+ - Return update when we search for something that is installed, but an
+   update exists for
 
