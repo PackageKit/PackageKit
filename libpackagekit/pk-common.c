@@ -111,6 +111,7 @@ pk_iso8601_difference (const gchar *isodate)
 {
 	GTimeVal timeval_then;
 	GTimeVal timeval_now;
+	gboolean ret;
 	guint time;
 
 	if (pk_strzero (isodate) == TRUE) {
@@ -118,7 +119,11 @@ pk_iso8601_difference (const gchar *isodate)
 	}
 
 	/* convert date */
-	g_time_val_from_iso8601 (isodate, &timeval_then);
+	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
+	if (ret == FALSE) {
+		pk_warning ("failed to parse '%s'", isodate);
+		return 0;
+	}
 	g_get_current_time (&timeval_now);
 
 	/* work out difference */
