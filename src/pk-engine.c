@@ -627,6 +627,11 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	pk_debug ("backend was running for %i ms", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
 
+	/* only reset the time if we succeeded */
+	if (exit == PK_EXIT_ENUM_SUCCESS) {
+		pk_transaction_db_action_time_reset (engine->priv->transaction_db, role);
+	}
+
 	exit_text = pk_exit_enum_to_text (exit);
 	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, time);
 	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, time);
@@ -2668,10 +2673,13 @@ gboolean
 pk_engine_get_time_since_action	(PkEngine *engine, const gchar *role_text, guint *seconds, GError **error)
 {
 	PkRoleEnum role;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
 	role = pk_role_enum_from_text (role_text);
-	*seconds = 0;
+	*seconds = pk_transaction_db_action_time_since (engine->priv->transaction_db, role);
+
 	return TRUE;
 }
 
