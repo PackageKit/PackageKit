@@ -789,6 +789,25 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], gboolean 
 		if (value == NULL) {
 			g_set_error (error, 0, 0, "you need to specify a get type");
 			return FALSE;
+		} else if (strcmp (value, "time") == 0) {
+			PkRoleEnum role;
+			guint time;
+			gboolean ret;
+			if (details == NULL) {
+				g_set_error (error, 0, 0, "you need to specify a search term");
+				return FALSE;
+			}
+			role = pk_role_enum_from_text (details);
+			if (role == PK_ROLE_ENUM_UNKNOWN) {
+				g_set_error (error, 0, 0, "you need to specify a correct role");
+				return FALSE;
+			}
+			ret = pk_client_get_time_since_action (client, role, &time);
+			if (ret == FALSE) {
+				g_set_error (error, 0, 0, "failed to get last time");
+				return FALSE;
+			}
+			g_print ("time since %s is %is\n", details, time);
 		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, "you need to specify a search term");
