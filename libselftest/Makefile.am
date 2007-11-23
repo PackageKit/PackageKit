@@ -15,6 +15,10 @@ libselftest_la_LIBADD = @DBUS_LIBS@ $(INTLLIBS) $(GLIB_LIBS)
 
 clean-local:
 	rm -f *~
+	rm -f *.gcno
+	rm -f *.out
+	rm -f gcov.txt
+	rm -f gprof.txt
 
 CLEANFILES = $(BUILT_SOURCES)
 

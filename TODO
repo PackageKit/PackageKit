@@ -24,3 +24,9 @@ display a cryptic message when already installed
  - Return update when we search for something that is installed, but an
    update exists for
 
+*** FIX WAF:
+ - build errors
+ - build enum.py
+ - install the bash completion script
+ - install the yum module
+

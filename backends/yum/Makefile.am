@@ -6,3 +6,6 @@ libpk_backend_yum_la_LIBADD = @PK_PLUGIN_LIBS@
 libpk_backend_yum_la_LDFLAGS = -module -avoid-version
 libpk_backend_yum_la_CFLAGS = @PK_PLUGIN_CFLAGS@
 
+clean-local:
+	rm -f *.gcno
+

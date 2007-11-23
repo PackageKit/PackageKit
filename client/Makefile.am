@@ -54,6 +54,11 @@ pkmon_LDADD =						\
 
 clean-local:
 	rm -f *~
+	rm -f *.out
+	rm -f *.gcno
+	rm -f *.gcda
+	rm -f gcov.txt
+	rm -f gprof.txt
 
 CLEANFILES = $(BUILT_SOURCES)
 

@@ -176,9 +176,13 @@ EXTRA_DIST =						\
 
 clean-local:
 	rm -f *~
+	rm -f *.out
+	rm -f *.gcno
+	rm -f gcov.txt
+	rm -f gprof.txt
 	rm -f pk-marshal.c pk-marshal.h
 
-CLEANFILES = *~ $(BUILT_SOURCES) *.bb *.bbg *.da *.gcov *.gcda
+CLEANFILES = *~ $(BUILT_SOURCES)
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

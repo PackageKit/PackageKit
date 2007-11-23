@@ -31,7 +31,12 @@ libgbus-marshal.h: libgbus-marshal.list
 
 clean-local:
 	rm -f *~
-	rm -f libgbus-marshal.c libgbus-marshal.h
+	rm -f *.out
+	rm -f *.gcno
+	rm -f *.gcda
+	rm -f gcov.txt
+	rm -f gprof.txt
+	rm -f $(BUILT_SOURCES)
 
 CLEANFILES = $(BUILT_SOURCES)
 

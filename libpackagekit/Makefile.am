@@ -149,8 +149,13 @@ gprof: clean-gprof all check
 	gprof .libs/pk-self-test > gprof.txt
 endif
 
-CLEANFILES = *~ $(BUILT_SOURCES) *.bb *.bbg *.da *.gcov *.gcda
+CLEANFILES = $(BUILT_SOURCES)
 
 clean-local:
+	rm -f *~
+	rm -f *.gcno
+	rm -f *.out
+	rm -f gcov.txt
+	rm -f gprof.txt
 	rm -f $(CLEANFILES)
 
