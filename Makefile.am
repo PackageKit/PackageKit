@@ -24,15 +24,6 @@ pkgconfig_DATA = packagekit.pc
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = org.freedesktop.PackageKit.conf
 
-packagekitpythondir = ${PYTHON_PACKAGE_DIR}
-packagekitpython_PYTHON =				\
-	python/packagekit/__init__.py			\
-	python/packagekit/backend.py			\
-	python/packagekit/frontend.py			\
-	python/packagekit/enums.py				\
-	$(NULL)
-	
-
 EXTRA_DIST =						\
 	org.freedesktop.PackageKit.conf.in		\
 	packagekit.pc.in				\
