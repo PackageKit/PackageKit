@@ -1,0 +1,6 @@
+This is refresh-packagekit, a plugin for Yum.
+
+refresh-packagekit tells PackageKit to check for updates when yum exits. This
+way, if you run 'yum update' and install all available updates, the PackageKit
+session UI will almost instantly update itself to reflect this.
+

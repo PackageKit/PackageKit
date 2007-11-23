@@ -118,6 +118,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
 AC_SUBST(SYSCONFDIR, $sysconfdir)
+AC_SUBST(LIBDIR, $libdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 AC_SUBST(SBINDIR, $sbindir)
@@ -458,6 +459,7 @@ etc/Makefile
 man/Makefile
 docs/Makefile
 contrib/Makefile
+contrib/yum-packagekit/Makefile
 html/Makefile
 html/img/Makefile
 backends/Makefile
