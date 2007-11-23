@@ -3,10 +3,6 @@ Order of no particular importance:
 *** write to the database for config stuff
  - Probably should move the job number too
 
-*** Write a yum plugin that makes PackageKit reload
- - if there has been updates
- - if there has been a system update
-
 *** package->status ***
 Convert the backends to send more status calls.
 
