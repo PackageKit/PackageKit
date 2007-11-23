@@ -9,6 +9,9 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
+import misc
+import Common
+
 #only install if we are testing
 if Params.g_options.tests:
 	bld.add_subdirs('tests')
@@ -23,6 +26,6 @@ obj.install_var = 'PREFIX'
 obj.install_subdir = 'usr/share/dbus-1/system-services'
 
 #install the data files
-install_files('PREFIX', 'var/run/PackageKit', 'job_count.dat')
-install_files('PREFIX', 'var/lib/PackageKit', 'transactions.db')
+Common.install_files('PREFIX', os.path.join('var', 'run', 'PackageKit'), 'job_count.dat')
+Common.install_files('PREFIX', os.path.join('var', 'lib', 'PackageKit'), 'transactions.db')
 

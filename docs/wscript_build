@@ -10,12 +10,13 @@
 # (at your option) any later version.
 
 import Utils
+import Common
 
 #install to a versioned doc folder
 doc_subdir = os.path.join('doc', Utils.g_module.APPNAME+'-'+Utils.g_module.VERSION)
-install_files('DATADIR', doc_subdir, 'pk-reference.html')
-install_files('DATADIR', doc_subdir, 'pk-structure.png')
-install_files('DATADIR', doc_subdir, 'docbook.css')
+Common.install_files('DATADIR', doc_subdir, 'pk-reference.html')
+Common.install_files('DATADIR', doc_subdir, 'pk-structure.png')
+Common.install_files('DATADIR', doc_subdir, 'docbook.css')
 
 # xmlto html-nochunks -m config.xsl pk-reference.xml
 env = bld.env()

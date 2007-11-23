@@ -9,6 +9,8 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
+import Common
+
 env = bld.env()
 
 # Build the objects that are to be a part of both packagekitd and the testsuite
@@ -57,7 +59,7 @@ if env['HAVE_NETWORKMANAGER']:
 	obj.uselib += ' NM_GLIB'
 
 # Install backend headers to /usr/include/packagekit-backends/
-install_files('PREFIX', 'include/packagekit-backends', """
+Common.install_files('PREFIX', os.path.join('include', 'packagekit-backends'), """
 		pk-backend.h
 		pk-backend-python.h
 """)

@@ -80,17 +80,17 @@ def configure(conf):
 
 	#do we build the self tests?
 	if Params.g_options.tests:
-		conf.add_define('PK_BUILD_TESTS', 1)
+		conf.define('PK_BUILD_TESTS', 1)
 		conf.env['HAVE_TESTS'] = True
 
-	conf.add_define('VERSION', VERSION)
-	conf.add_define('GETTEXT_PACKAGE', 'PackageKit')
-	conf.add_define('PACKAGE', 'PackageKit')
+	conf.define('VERSION', VERSION)
+	conf.define('GETTEXT_PACKAGE', 'PackageKit')
+	conf.define('PACKAGE', 'PackageKit')
 
 	assert conf.env['SYSCONFDIR'], "You have too old WAF; please update to trunk"
 
-	conf.add_define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
-	conf.add_define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
+	conf.define('PK_DB_DIR', os.path.join(conf.env['DATADIR'], 'lib', 'PackageKit'))
+	conf.define('PK_PLUGIN_DIR', os.path.join(conf.env['LIBDIR'], 'packagekit-backend'))
 
 	conf.env['CCDEFINES'] += ['HAVE_CONFIG_H']
 	conf.write_config_header('config.h')
@@ -114,7 +114,7 @@ def build(bld):
 	# process subfolders from here
 	# Pending dirs:
 	#  man python
-        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src docs')
+        bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src docs contrib')
 
 	#set the user in packagekit.pc.in and install
 	obj=bld.create_obj('subst')

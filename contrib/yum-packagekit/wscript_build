@@ -11,6 +11,7 @@
 
 import Common
 
-#install the packagekit.policy file to /usr/share/PolicyKit/policy
-Common.install_files('DATADIR', 'PolicyKit', 'packagekit.policy')
+#install the data files
+Common.install_files('PREFIX', os.path.join('etc', 'yum', 'pluginconf.d'), 'refresh-packagekit.conf')
+Common.install_files('PREFIX', os.path.join('usr', 'lib', 'yum-plugins'), 'refresh-packagekit.py')
 

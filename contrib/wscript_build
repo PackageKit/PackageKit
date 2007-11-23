@@ -11,6 +11,8 @@
 
 import Common
 
-#install the packagekit.policy file to /usr/share/PolicyKit/policy
-Common.install_files('DATADIR', 'PolicyKit', 'packagekit.policy')
+bld.add_subdirs('yum-packagekit')
+
+#install the data files
+Common.install_files('PREFIX', os.path.join('etc', 'bash_completion.d'), 'pk-completion.bash')
 
