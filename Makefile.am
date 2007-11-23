@@ -8,6 +8,7 @@ SUBDIRS = 						\
 	policy						\
 	etc						\
 	man						\
+	contrib						\
 	data						\
 	libselftest					\
 	libgbus						\

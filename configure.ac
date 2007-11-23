@@ -457,6 +457,7 @@ Makefile
 etc/Makefile
 man/Makefile
 docs/Makefile
+contrib/Makefile
 html/Makefile
 html/img/Makefile
 backends/Makefile
