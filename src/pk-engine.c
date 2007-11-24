@@ -617,12 +617,17 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	/* find the length of time we have been running */
 	time = pk_backend_get_runtime (backend);
 
-	/* add to the database */
-	packages = pk_package_list_get_string (item->package_list);
-	if (pk_strzero (packages) == FALSE) {
-		pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
+	/* add to the database if we are going to log it */
+	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	    role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		packages = pk_package_list_get_string (item->package_list);
+		if (pk_strzero (packages) == FALSE) {
+			pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
+		}
+		g_free (packages);
 	}
-	g_free (packages);
 
 	pk_debug ("backend was running for %i ms", time);
 	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
