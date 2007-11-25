@@ -368,7 +368,7 @@ backend_initialize (PkBackend *backend)
 	if (alpm_parse_config ("/etc/pacman.conf", NULL, "") != 0)
 	  {
 	    pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_CONFIG_PARSING,
+				 PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 				 "Failed to parse config file");
 	    pk_debug ("alpm: %s", alpm_strerror (pm_errno));
 	    backend_destroy (backend);
@@ -379,7 +379,7 @@ backend_initialize (PkBackend *backend)
 	if (alpm_db_register ("local") == NULL)
 	  {
 	    pk_backend_error_code (backend,
-				 PK_ERROR_ENUM_CONFIG_PARSING,
+				 PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
 				 "Failed to load local database");
 	    backend_destroy (backend);
 	    return;
