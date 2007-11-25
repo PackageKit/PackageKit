@@ -153,6 +153,8 @@ my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
 gboolean
 pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
 {
+  /*pk_debug (alpm_pkg_get_name (p1));
+  pk_debug (alpm_pkg_get_name (p2));*/
   if (strcmp (alpm_pkg_get_name (p1), alpm_pkg_get_name (p2)) != 0)
     return FALSE;
   if (strcmp (alpm_pkg_get_version (p1), alpm_pkg_get_version (p2)) != 0)
@@ -182,7 +184,7 @@ my_list_remove_node (alpm_list_t *node)
   if(node->prev) {
     node->prev->next = node->next;
     ret = node->prev;
-    node->prev = NULL;
+    //node->prev = NULL;
   }
   if(node->next) {
     node->next->prev = node->prev;
@@ -279,8 +281,8 @@ find_packages ( const gchar *name, pmdb_t *db)
     }
 
   alpm_list_free (needle);
-  if (localresult != NULL)
-    alpm_list_free_inner (localresult, (alpm_list_fn_free)alpm_pkg_free);
+  if (localresult != NULL);
+    //alpm_list_free_inner (localresult, (alpm_list_fn_free)alpm_pkg_free);
   return result;
 }
 
