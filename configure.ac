@@ -453,6 +453,10 @@ AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [usin
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$with_default_backend = xzypp], [using Zypp backend])
 
+if test x$with_default_backend = xapt; then
+	# now we've done the conditionals, rename for searching backend
+	with_default_backend="apt (with $with_apt_search searching)"
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
