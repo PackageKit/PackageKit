@@ -266,6 +266,8 @@
     </signal>
 
     <!-- General methods -->
+    <method name="StateHasChanged"> <!-- drop caches -->
+    </method>
     <method name="GetTimeSinceAction">
       <arg type="s" name="role" direction="in"/>
       <arg type="u" name="seconds" direction="out"/>

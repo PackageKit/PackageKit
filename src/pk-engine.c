@@ -2575,6 +2575,28 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 }
 
 /**
+ * pk_engine_state_has_changed:
+ *
+ * This should be called when tools like pup, pirut and yum-cli
+ * have finished their transaction, and the update cache may not be valid.
+ **/
+gboolean
+pk_engine_state_has_changed (PkEngine *engine, GError **error)
+{
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache as state may have changed");
+		g_object_unref (engine->priv->updates_cache);
+		engine->priv->updates_cache = NULL;
+	}
+	pk_debug ("emitting updates-changed tid:%s", "unknown");
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+	return TRUE;
+}
+
+/**
  * pk_engine_is_caller_active:
  **/
 gboolean
