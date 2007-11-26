@@ -1,3 +1,55 @@
+Version 0.1.4
+~~~~~~~~~~~~~
+
+* Backends:
+ - yum: Mark our status as QUERY when we have finished setting up the
+   transaction so we get the correct icon (Richard Hughes)
+ - yum: Improved yum UpdateMetadata handling for reboot-suggested (Luke Macken)
+ - conary: Add GetFiles (Elliot Peele)
+ - conary: Enable Cancel (Elliot Peele)
+ - conary: Add Resolve support (Elliot Peele)
+ - conary: Added new python files to distfiles (Ken VanDine)
+ - zypp: add initial backend code (Boyd Timothy, Scott Reeves)
+ - zypp: Add GetRepoList (Boyd Timothy)
+ - zypp: emit the correct status from the backend (Boyd Timothy)
+ - zypp: Add InstallPackage method (Boyd Timothy, Scott Reeves)
+ - zypp: Query SQL database to resolve names (Scott Reeves)
+ - box: set Status more often (Grzegorz Dabrowski)
+ - box: Remove all the shell helpers and use C implementations (Grzegorz Dabrowski)
+
+* New features:
+ - Lots more waf build system updates - it now builds and installs 100%
+   but requires waf from svn (Gustavo Carneiro, Daniel Svensson, Richard Hughes)
+ - Add the requires check before remove in pkcon (Richard Hughes)
+ - Monitor when the calling program exits from the system bus (Richard Hughes)
+ - waf: Add unit test reporting in waf buildsystem (Daniel Svensson)
+ - Convert all the active methods async. This lets us get the sender so we can
+   watch to see if they fall off the bus or not (Richard Hughes)
+ - Add a yum-packagekit plugin to refresh the PackageKit data when a manual
+   update command is run. Code is copied from yum-updatesd in yum-utils and
+   was authored by James Bowes.
+ - Install the bash completion file so it works by default (Richard Hughes)
+ - Add into pkcon to get the time since something was checked (Richard Hughes)
+ - Log when the last command is run so we can work out how long since a command
+   was run. This allows us to accuratly preseve the "session" setting of
+   GetUpdates policy (Richard Hughes)
+
+* API changes:
+ - Add a status enum so we get the correct icon when getting data (Richard Hughes)
+ - Add a info enum for blocked updates (Richard Hughes)
+ - Add some more status constants for backend transaction progress (Richard Hughes)
+ - Add messages to be shown from the transaction to the session (Richard Hughes)
+
+* Bugfixes:
+ - Use a different PolicyKit permissions for UpdateSystem and UpdatePackage
+   as both were defined as the same thing in the policy (Richard Hughes)
+ - Build fixes with autogen.sh (Tom Parker, Boyd Timothy)
+ - Free memory in case of dbus error (Grzegorz Dabrowski)
+ - Fix a crash in pk_transaction_list_get_array (JP Rosevear)
+ - We should only invalidate the internal cache if the transaction succeeded.
+   This stops a failed update-system from clearing the cache (Richard Hughes)
+ - Fix the manpage corruption issue described in Bug #12796 (Luke Macken)
+
 Version 0.1.3
 ~~~~~~~~~~~~~
 
