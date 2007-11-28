@@ -46,6 +46,7 @@
 
 #include <map>
 
+#include "zypp-utils.h"
 #include "zypp-events.h"
 
 enum PkgSearchType {
@@ -354,6 +355,104 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 fprintf (stderr, "\n\n\n\n============== Returning from backend_install_package =============\n\n\n\n");
 }
 
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+{
+	RefreshData *d = (RefreshData*) data;
+	gboolean force = d->force;
+	g_free (d);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_change_percentage (backend, 0);
+
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		repos = manager.knownRepositories();
+	}
+	catch ( const zypp::Exception &e)
+	{
+		// FIXME: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	int i = 1;
+	int num_of_repos = repos.size ();
+	int percentage_increment = 100 / num_of_repos;
+	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
+		zypp::RepoInfo repo (*it);
+
+		// skip disabled repos
+		if (repo.enabled () == false)
+			continue;
+
+		// skip changeable meda (DVDs and CDs).  Without doing this,
+		// the disc would be required to be physically present.
+		if (is_changeable_media (*repo.baseUrlsBegin ()) == true)
+			continue;
+
+		try {
+fprintf (stderr, "\n\n *** Refreshing metadata ***\n\n");
+			manager.refreshMetadata (repo, force == TRUE ?
+				zypp::RepoManager::RefreshForced :
+				zypp::RepoManager::RefreshIfNeeded);
+		} catch (const zypp::Exception &ex) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			return FALSE;
+		}
+
+		try {
+fprintf (stderr, "\n\n *** Building cache ***\n\n");
+			manager.buildCache (repo, force == TRUE ?
+				zypp::RepoManager::BuildForced :
+				zypp::RepoManager::BuildIfNeeded);
+		//} catch (const zypp::repo::RepoNoUrlException &ex) {
+		//} catch (const zypp::repo::RepoNoAliasException &ex) {
+		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
+		//} catch (const zypp::repo::RepoException &ex) {
+		} catch (const zypp::Exception &ex) {
+			// TODO: Handle the exceptions in manager.refreshMetadata
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+			return FALSE;
+		}
+
+		// Update the percentage completed
+		pk_backend_change_percentage (backend,
+					      i == num_of_repos ?
+						100 :
+						i * percentage_increment);
+	}
+
+	return TRUE;
+}
+
+/**
+ * backend_refresh_cache
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	g_return_if_fail (backend != NULL);
+
+	// check network state
+	if (pk_backend_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend);
+		return;
+	}
+	RefreshData *data = g_new(RefreshData, 1);
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_refresh_cache");
+		pk_backend_finished (backend);
+	} else {
+		data->force = force;
+		pk_backend_thread_create (backend, backend_refresh_cache_thread, data);
+	}
+}
+
 static int
 select_callback (void* data,int argc ,char** argv, char** cl_name)
 {
@@ -448,86 +547,6 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 		pk_backend_thread_create (backend, backend_resolve_thread, data);
 	}
 }
-
-/*
-static gboolean
-backend_refresh_cache_thread (PkBackend *backend, gpointer data)
-{
-	RefreshData *d = (RefreshData*) data;
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_no_percentage_updates (backend);
-	unsigned processed = 0;
-	unsigned repo_count = 0;
-
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
-	try
-	{
-		repos = manager.knownRepositories();
-	}
-	catch ( const zypp::Exception &e)
-	{
-		// FIXME: make sure this dumps out the right sring.
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
-		g_free (d);
-		return FALSE;
-	}
-
-	repo_count = repos.size ();
-
-	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
-		if (it->enabled()) {
-			//refresh_raw_metadata (it, false);
-
-			// Build the Cache
-			try {
-				manager.buildCache (*it,
-						    d->force ?
-							zypp::RepoManager::BuildForced :
-							zypp::RepoManager::BuildIfNeeded);
-			} catch (const zypp::parser::ParseException &ex) {
-				pk_backend_error_code (backend,
-						       PK_ERROR_ENUM_INTERNAL_ERROR,
-						       "Error parsing metadata for '%s'",
-						       it->alias().c_str());
-				continue;
-			}
-
-			processed++;
-			pk_backend_change_percentage (backend, (int) ((processed / repo_count) * 100));
-		}
-	}
-
-	g_free (d);
-	pk_backend_finished (backend);
-
-	return TRUE;
-}
-
-//
-// backend_refresh_cache:
-//
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	g_return_if_fail (backend != NULL);
-	// check network state
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
-	RefreshData *data = g_new0(RefreshData, 1);
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_refresh_cache");
-		pk_backend_finished (backend);
-	} else {
-		data->force = force;
-		pk_backend_thread_create (backend, backend_refresh_cache_thread, data);
-	}
-}
-*/
 
 /* TODO: this was taken directly from pk-backend-box.c.  Perhaps this
  * ought to be part of libpackagekit? */
@@ -738,7 +757,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
-	NULL,//backend_refresh_cache,			/* refresh_cache */
+	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
