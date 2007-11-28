@@ -2,7 +2,8 @@
 plugindir = @PK_PLUGIN_DIR@
 plugin_LTLIBRARIES = libpk_backend_zypp.la
 libpk_backend_zypp_la_SOURCES =		\
-	pk-backend-zypp.cpp
+	pk-backend-zypp.cpp		\
+	zypp-utils.cpp
 libpk_backend_zypp_la_LIBADD = @PK_PLUGIN_LIBS@
 libpk_backend_zypp_la_LDFLAGS = -module -avoid-version $(ZYPP_LIBS)
 libpk_backend_zypp_la_CFLAGS = @PK_PLUGIN_CFLAGS@

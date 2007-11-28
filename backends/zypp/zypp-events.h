@@ -205,11 +205,13 @@ struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::P
 	virtual void start (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::start()\n\n");
+		reset_sub_percentage ();
 	}
 
 	virtual bool progress (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::progress(), %s:%d\n\n", data.name().c_str(), (int)data.val());
+		update_sub_percentage ((int)data.val ());
 		return true;
 	}
 
@@ -224,11 +226,13 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 	virtual void start (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoReportReceiver::start()\n");
+		reset_sub_percentage ();
 	}
 
 	virtual bool progress (const zypp::ProgressData &data)
 	{
 		//fprintf (stderr, "\n\n----> RepoReportReceiver::progress(), %s:%d\n", data.name().c_str(), (int)data.val());
+		update_sub_percentage ((int)data.val ());
 		return true;
 	}
 
