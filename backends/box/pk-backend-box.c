@@ -233,6 +233,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer data)
 	g_free(d->search);
 	g_free(d->filter);
 	g_free(d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -252,7 +253,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->mode = mode;
-		pk_backend_thread_helper (backend, backend_find_packages_thread, data);
+		pk_backend_thread_create (backend, backend_find_packages_thread, data);
 	}
 }
 
@@ -271,6 +272,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 	box_db_repos_package_list_free (list);
 
 	db_close (db);
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -280,6 +282,7 @@ backend_update_system_thread (PkBackend *backend, gpointer data)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	box_upgrade_dist("/", common_progress, backend);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -306,6 +309,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return result;
 }
@@ -323,6 +327,7 @@ backend_install_file_thread (PkBackend *backend, gpointer data)
 
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return result;
 }
@@ -372,6 +377,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -408,6 +414,7 @@ backend_get_files_thread (PkBackend *backend, gpointer data)
 	g_free (files);
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -446,6 +453,7 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -474,6 +482,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -484,6 +493,7 @@ backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
     	box_repos_sync(common_progress, backend);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -538,7 +548,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	} else {
 		data->package_id = g_strdup(package_id);
 		data->type = DEPS_TYPE_DEPENDS;
-		pk_backend_thread_helper (backend, backend_get_depends_requires_thread, data);
+		pk_backend_thread_create (backend, backend_get_depends_requires_thread, data);
 	}
 }
 
@@ -557,7 +567,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_get_description_thread, data);
+		pk_backend_thread_create (backend, backend_get_description_thread, data);
 	}
 }
 
@@ -576,7 +586,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_get_files_thread, data);
+		pk_backend_thread_create (backend, backend_get_files_thread, data);
 	}
 }
 
@@ -596,7 +606,7 @@ backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recu
 	} else {
 		data->package_id = g_strdup(package_id);
 		data->type = DEPS_TYPE_REQUIRES;
-		pk_backend_thread_helper (backend, backend_get_depends_requires_thread, data);
+		pk_backend_thread_create (backend, backend_get_depends_requires_thread, data);
 	}
 }
 
@@ -607,7 +617,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_helper (backend, backend_get_updates_thread, NULL);
+	pk_backend_thread_create (backend, backend_get_updates_thread, NULL);
 }
 
 
@@ -632,7 +642,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_install_package_thread, data);
+		pk_backend_thread_create (backend, backend_install_package_thread, data);
 	}
 }
 
@@ -651,7 +661,7 @@ backend_install_file (PkBackend *backend, const gchar *file)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(file);
-		pk_backend_thread_helper (backend, backend_install_file_thread, data);
+		pk_backend_thread_create (backend, backend_install_file_thread, data);
 	}
 }
 
@@ -668,7 +678,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_thread_helper (backend, backend_refresh_cache_thread, NULL);
+	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL);
 }
 
 /**
@@ -688,7 +698,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	}
 	data->package_id = g_strdup (package_id);
     
-	pk_backend_thread_helper (backend, backend_remove_package_thread, data);
+	pk_backend_thread_create (backend, backend_remove_package_thread, data);
 }
 
 /**
@@ -752,7 +762,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_install_package_thread, data);
+		pk_backend_thread_create (backend, backend_install_package_thread, data);
 	}
 }
 
@@ -763,7 +773,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_helper (backend, backend_update_system_thread, NULL);
+	pk_backend_thread_create (backend, backend_update_system_thread, NULL);
 }
 
 /**

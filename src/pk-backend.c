@@ -234,25 +234,6 @@ pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func, gpointer
 }
 
 /**
- * pk_backend_thread_helper:
- **/
-gboolean
-pk_backend_thread_helper (PkBackend *backend, PkBackendThreadFunc func, gpointer data)
-{
-	if (pk_backend_thread_create (backend, func, data) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_CREATE_THREAD_FAILED, "Failed to create thread");
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-	pk_debug ("waiting for all threads in this backend");
-	pk_thread_list_wait (backend->priv->thread_list);
-
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
-/**
  * pk_backend_parse_common_output:
  *
  * If you are editing this function creating a new backend,
@@ -1116,15 +1097,8 @@ pk_backend_finished (PkBackend *backend)
 
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "There are threads running and the task has been asked to finish!\n"
-				    "If you are using :\n"
-				    "* pk_backend_thread_helper\n"
-				    "   - You should _not_ use pk_backend_finished directly"
-				    "   - Return from the function like normal\n"
-				    "* pk_thread_list_create:\n"
-				    "   -  If used internally you _have_ to use pk_thread_list_wait");
-		return FALSE;
+		/* wait for threads to complete */
+		//pk_thread_list_wait (backend->priv->thread_list);
 	}
 
 	/* check we have not already finished */

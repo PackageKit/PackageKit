@@ -204,7 +204,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 }
 
 /**
- * pk_spawn_check_child:
+ * pk_spawn_sigkill_cb:
  **/
 static gboolean
 pk_spawn_sigkill_cb (PkSpawn *spawn)

@@ -198,6 +198,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -216,7 +217,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_helper (backend, backend_get_description_thread, data);
+		pk_backend_thread_create (backend, backend_get_description_thread, data);
 	}
 }
 
@@ -334,6 +335,7 @@ printf ("Finished the installation.\n");
 
 	g_free (package_id);
 	pk_package_id_free (pi);
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -347,7 +349,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
-	pk_backend_thread_helper (backend, backend_install_package_thread, package_to_install);
+	pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
 	//pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
 fprintf (stderr, "\n\n\n\n============== Returning from backend_install_package =============\n\n\n\n");
 }
@@ -424,6 +426,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 	g_free (full_version);
 	g_free (package_id);
 	g_free (select_statement);
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -442,7 +445,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	} else {
 		data->name = g_strdup (package_id);
 		data->filter = g_strdup (filter);
-		pk_backend_thread_helper (backend, backend_resolve_thread, data);
+		pk_backend_thread_create (backend, backend_resolve_thread, data);
 	}
 }
 
@@ -521,7 +524,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		pk_backend_finished (backend);
 	} else {
 		data->force = force;
-		pk_backend_thread_helper (backend, backend_refresh_cache_thread, data);
+		pk_backend_thread_create (backend, backend_refresh_cache_thread, data);
 	}
 }
 */
@@ -623,6 +626,7 @@ backend_find_packages_thread (PkBackend *backend, gpointer data)
 	g_free(d->search);
 	g_free(d->filter);
 	g_free(d);
+	pk_backend_finished (backend);
 
 	return TRUE;
 }
@@ -641,7 +645,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->mode = mode;
-		pk_backend_thread_helper (backend, backend_find_packages_thread, data);
+		pk_backend_thread_create (backend, backend_find_packages_thread, data);
 	}
 }
 

@@ -44,7 +44,7 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_helper (backend, backend_search_group_thread, NULL);
+	pk_backend_thread_create (backend, backend_search_group_thread, NULL);
 }
 
 /**
@@ -55,21 +55,28 @@ backend_search_name_thread (PkBackend *backend, gpointer data)
 {
 	GTimer *timer;
 	gdouble elapsed;
+	guint percentage;
 
 	pk_debug ("started task (%p,%p)", backend, data);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
+	percentage = 0;
 	do {
+		pk_backend_change_percentage (backend, percentage);
+		percentage += 1;
 		g_usleep (1000*100);
 		elapsed = g_timer_elapsed (timer, NULL);
 		pk_debug ("elapsed task (%p,%p) = %f", backend, data, elapsed);
-	} while (elapsed < 5.0);
+	} while (elapsed < 10.0);
 	g_timer_destroy (timer);
+	pk_backend_change_percentage (backend, 100);
 	pk_debug ("exited task (%p,%p)", backend, data);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -80,7 +87,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_helper (backend, backend_search_name_thread, NULL);
+	pk_backend_thread_create (backend, backend_search_name_thread, NULL);
 }
 
 PK_BACKEND_OPTIONS (

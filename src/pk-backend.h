@@ -101,9 +101,6 @@ typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend,
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
 							 PkBackendThreadFunc func,
 							 gpointer	 data);
-gboolean	 pk_backend_thread_helper		(PkBackend	*backend,
-							 PkBackendThreadFunc func,
-							 gpointer	 data);
 
 /* repo stuff */
 gboolean	 pk_backend_get_repo_list		(PkBackend	*backend);
