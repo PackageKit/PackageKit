@@ -14,6 +14,6 @@ import sys
 import pisiBackend
 
 backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.get_depends(sys.argv[1])
+backend.get_depends(sys.argv[1], sys.argv[2])
 
 sys.exit()

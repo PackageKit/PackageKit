@@ -150,7 +150,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         return self.package(id, status, pkg.summary)
 
-    def get_depends(self, package_id):
+    def get_depends(self, package_id, recursive):
         """ Prints a list of depends for a given package """
         self.allow_interrupt(True)
         self.percentage(None)
@@ -212,7 +212,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # FIXME: Use repository enabled/disabled state
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
 
-    def get_requires(self, package_id):
+    def get_requires(self, package_id, recursive):
         """ Prints a list of requires for a given package """
         self.allow_interrupt(True)
         self.percentage(None)
@@ -278,6 +278,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         """ Updates repository indexes """
         self.allow_interrupt(False);
         self.percentage(0)
+        self.status(STATUS_REFRESH_CACHE)
 
         slice = (100/len(pisi.api.list_repos()))/2
 
@@ -341,7 +342,8 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         """ Prints a detailed list of packages contains search term """
         self.allow_interrupt(True)
         self.percentage(None)
-
+        self.status(STATUS_INFO)
+        
         # Internal FIXME: Use search_details instead of _package when API gains that ability :)
         for pkg in pisi.api.search_package([key]):
             self.__get_package(pkg, filters)
@@ -350,6 +352,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         """ Prints the installed package which contains the specified file """
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         # Internal FIXME: Why it is needed?
         key = key.lstrip("/")
@@ -361,6 +364,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         """ Prints a list of packages belongs to searched group """
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         try:
             for key in self.groups.keys():
@@ -374,6 +378,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         """ Prints a list of packages contains search term in its name """
         self.allow_interrupt(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         for pkg in pisi.api.search_package([package]):
             self.__get_package(pkg, filters)
