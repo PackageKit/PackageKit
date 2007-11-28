@@ -173,22 +173,34 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		pk_package_id_free (pi);
 		g_free (d->package_id);
 		g_free (d);
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
-	// FIXME: Call libzypp here to get the "Selectable"
-	try
-	{
-		zypp::RepoManager manager;
-		//zypp::Repository repository(manager.createFromCach(repo));
+	zypp::ZYpp::Ptr zypp;
+	zypp = get_zypp ();
+	//zypp::Resolvable::Kind kind = zypp::ResTraits<zypp::Package>::kind;
+
+	zypp::PoolItem item;
+	zypp::ResPool pool = zypp->pool ();
+	for (zypp::ResPool::byName_iterator it = pool.byNameBegin (pi->name);
+			it != pool.byNameEnd (pi->name); ++it) {
+		if (!item || it->status ().isInstalled ())
+			item = *it;
 	}
-	catch ( const zypp::Exception &e)
-	{
+
+	if (!item) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
 	}
 
 	pk_backend_description (backend,
-				pi->name,		// package_id
+				d->package_id,		// package_id
 				"unknown",		// const gchar *license
 				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
 				"FIXME: put package description here",	// const gchar *description
@@ -235,6 +247,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
                 pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
                 g_free (package_id);
 
+		pk_backend_finished (backend);
                 return FALSE;
         }
 
@@ -256,9 +269,14 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 	{
 		// TODO: Split the code up so it's not all just in one bit try/catch
 
-		// TODO: Fix up this code so we only iterate through enabled repositories
 		repos = manager.knownRepositories();
 		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
+			zypp::RepoInfo repo (*it);
+
+			// skip disabled repos
+			if (repo.enabled () == false)
+				continue;
+
 			zypp::Repository repository = manager.createFromCache (*it);
 			zypp->addResolvables (repository.resolvables ());
 		}
@@ -304,6 +322,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
 			g_free (package_id);
 			pk_package_id_free (pi);
+			pk_backend_finished (backend);
 			return FALSE;
 		}
 
@@ -325,12 +344,14 @@ printf ("Finished the installation.\n");
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 		g_free (package_id);
 		pk_package_id_free (pi);
+		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
 		//pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		g_free (package_id);
 		pk_package_id_free (pi);
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 
@@ -351,8 +372,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
 	pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
-	//pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
-fprintf (stderr, "\n\n\n\n============== Returning from backend_install_package =============\n\n\n\n");
 }
 
 static gboolean
@@ -401,6 +420,7 @@ fprintf (stderr, "\n\n *** Refreshing metadata ***\n\n");
 				zypp::RepoManager::RefreshIfNeeded);
 		} catch (const zypp::Exception &ex) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			pk_backend_finished (backend);
 			return FALSE;
 		}
 
@@ -416,6 +436,7 @@ fprintf (stderr, "\n\n *** Building cache ***\n\n");
 		} catch (const zypp::Exception &ex) {
 			// TODO: Handle the exceptions in manager.refreshMetadata
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+			pk_backend_finished (backend);
 			return FALSE;
 		}
 
@@ -426,6 +447,7 @@ fprintf (stderr, "\n\n *** Building cache ***\n\n");
 						i * percentage_increment);
 	}
 
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -501,6 +523,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 	sqlite3 *db;
 	if (sqlite3_open("/var/cache/zypp/zypp.db", &db) != 0) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Failed to open database");
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 
@@ -510,6 +533,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 
 	if (sql_data->name == NULL) {
 		//did not get any matches
+		pk_backend_finished (backend);
 		return FALSE;
 	}
 	full_version = g_strconcat (sql_data->version, "-", sql_data->release, NULL);
