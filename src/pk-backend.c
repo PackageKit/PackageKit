@@ -1871,8 +1871,10 @@ pk_backend_is_caller_active (PkBackend *backend, gboolean *is_active)
 static void
 pk_backend_connection_changed_cb (LibGBus *libgbus, gboolean connected, PkBackend *backend)
 {
-	pk_debug ("client disconnected.... %i", connected);
-	g_signal_emit (backend, signals [PK_BACKEND_CALLER_ACTIVE_CHANGED], 0, FALSE);
+	if (connected == FALSE) {
+		pk_debug ("client disconnected....");
+		g_signal_emit (backend, signals [PK_BACKEND_CALLER_ACTIVE_CHANGED], 0, FALSE);
+	}
 }
 
 /**
