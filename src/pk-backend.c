@@ -1104,11 +1104,7 @@ pk_backend_finished (PkBackend *backend)
 	/* check we have not already finished */
 	if (backend->priv->finished == TRUE) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Backends cannot request Finished more than once!\n"
-				    "If you are using:\n"
-				    "* pk_backend_thread_helper\n"
-				    "   - You should _not_ use pk_backend_finished directly"
-				    "   - Return from the function like normal");
+				    "Backends cannot request Finished more than once!");
 		return FALSE;
 	}
 
@@ -2083,6 +2079,7 @@ static gboolean
 pk_backend_test_func_true (PkBackend *backend, gpointer data)
 {
 	g_usleep (1000*1000);
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -2090,12 +2087,14 @@ static gboolean
 pk_backend_test_func_false (PkBackend *backend, gpointer data)
 {
 	g_usleep (1000*1000);
+	pk_backend_finished (backend);
 	return FALSE;
 }
 
 static gboolean
 pk_backend_test_func_immediate_false (PkBackend *backend, gpointer data)
 {
+	pk_backend_finished (backend);
 	return FALSE;
 }
 
@@ -2214,7 +2213,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
 	g_timer_start (timer);
-	ret = pk_backend_thread_helper (backend, pk_backend_test_func_true, NULL);
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_true, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -2245,7 +2244,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false");
 	g_timer_start (timer);
-	ret = pk_backend_thread_helper (backend, pk_backend_test_func_false, NULL);
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_false, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -2268,7 +2267,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");
 	g_timer_start (timer);
-	ret = pk_backend_thread_helper (backend, pk_backend_test_func_immediate_false, NULL);
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
