@@ -75,7 +75,11 @@ pk_object_register (DBusGConnection *connection,
 		pk_warning ("RequestName failed!");
 		g_clear_error(error);
 		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
-			    "Acquiring D-Bus name %s failed due to security policies on this machine", PK_DBUS_SERVICE);
+			    "Acquiring D-Bus name %s failed due to security policies on this machine\n"
+			    "This can happen for two reasons:\n"
+			    "* The correct user is not launching the executable (usually root)\n"
+			    "* The org.freedesktop.PackageKit.conf file is "
+			    "not installed in the system /etc/dbus-1/system.d directory\n", PK_DBUS_SERVICE);
 		return FALSE;
 	}
 
