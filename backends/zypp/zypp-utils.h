@@ -31,12 +31,13 @@ gboolean zypp_is_changeable_media (const zypp::Url &url);
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.
  */
-zypp::ResPool zypp_build_full_pool ();
+zypp::ResPool zypp_build_pool (gboolean include_local);
 
 /**
  * Returns a list of packages that match the specified package_name.
  */
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name);
 
+gchar * zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable);
 #endif // _ZYPP_UTILS_H_
 

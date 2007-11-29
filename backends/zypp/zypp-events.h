@@ -6,6 +6,8 @@
 #include <pk-backend.h>
 #include <zypp/ZYppCallbacks.h>
 
+#include "zypp-utils.h"
+
 /*
 typedef struct {
 	PkBackend *backend;
@@ -44,23 +46,6 @@ struct ZyppBackendReceiver
 			g_free (_package_id);
 			_package_id = NULL;
 		}
-	}
-
-	/**
-	 * Build a package_id from the specified resolvable.  The returned
-	 * gchar * should be freed with g_free ().
-	 */
-	gchar *
-	build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
-	{
-		gchar *package_id;
-		
-		package_id = pk_package_id_build (resolvable->name ().c_str (),
-						  resolvable->edition ().asString ().c_str (),
-						  resolvable->arch ().asString ().c_str (),
-						  "opensuse");
-
-		return package_id;
 	}
 
 	/**
@@ -167,7 +152,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	virtual void start (zypp::Resolvable::constPtr resolvable)
 	{
 		clear_package_id ();
-		_package_id = build_package_id_from_resolvable (resolvable);
+		_package_id = zypp_build_package_id_from_resolvable (resolvable);
 		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_change_status (_backend, PK_STATUS_ENUM_INSTALL);

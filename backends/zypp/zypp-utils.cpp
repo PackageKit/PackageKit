@@ -18,6 +18,8 @@
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
 
+#include <pk-backend.h>
+
 #include "zypp-utils.h"
 
 /**
@@ -108,6 +110,25 @@ zypp_get_packages_by_name (const gchar *package_name)
 	}
 
 	return v;
+}
+
+/**
+ * Build a package_id from the specified resolvable.  The returned
+ * gchar * should be freed with g_free ().
+ */
+gchar *
+zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
+{
+	gchar *package_id;
+	
+	package_id = pk_package_id_build (resolvable->name ().c_str (),
+					  resolvable->edition ().asString ().c_str (),
+					  resolvable->arch ().asString ().c_str (),
+					  "opensuse");
+	// TODO: Figure out how to check if resolvable is really a ResObject and then cast it to a ResObject and pull of the repository alias for our "data" part in the package id
+//					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
+
+	return package_id;
 }
 
 #endif // _ZYPP_UTILS_H_
