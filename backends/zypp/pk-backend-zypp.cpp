@@ -25,6 +25,7 @@
 #include <pk-backend.h>
 #include <unistd.h>
 #include <pk-debug.h>
+#include <string>
 
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
@@ -45,6 +46,7 @@
 #include <sqlite3.h>
 
 #include <map>
+#include <list>
 
 #include "zypp-utils.h"
 #include "zypp-events.h"
@@ -93,46 +95,11 @@ typedef struct {
 	gboolean force;
 } RefreshData;
 
-// some typedefs and functions to shorten Zypp names
-typedef zypp::ResPoolProxy ZyppPool;
-inline ZyppPool zyppPool() { return zypp::getZYpp()->poolProxy(); }
-typedef zypp::ui::Selectable::Ptr ZyppSelectable;
-typedef zypp::ui::Selectable*		ZyppSelectablePtr;
-typedef zypp::ResObject::constPtr	ZyppObject;
-typedef zypp::Package::constPtr		ZyppPackage;
-typedef zypp::Patch::constPtr		ZyppPatch;
-typedef zypp::Pattern::constPtr		ZyppPattern;
-typedef zypp::Language::constPtr	ZyppLanguage;
-inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
-	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
-
 /**
  * A map to keep track of the EventDirector objects for
  * each zypp backend that is created.
  */
 static std::map<PkBackend *, EventDirector *> _eventDirectors;
-
-/**
- * Initialize Zypp (Factory method)
- */
-static zypp::ZYpp::Ptr
-get_zypp ()
-{
-	static gboolean initialized = FALSE;
-	zypp::ZYpp::Ptr zypp = NULL;
-
-	zypp = zypp::ZYppFactory::instance ().getZYpp ();
-	
-	// TODO: Make this threadsafe
-	if (initialized == FALSE) {
-		zypp::filesystem::Pathname pathname("/");
-		zypp->initializeTarget (pathname);
-
-		initialized = TRUE;
-	}
-
-	return zypp;
-}
 
 /**
  * backend_initialize:
@@ -178,19 +145,24 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	}
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
-	zypp::ZYpp::Ptr zypp;
-	zypp = get_zypp ();
-	//zypp::Resolvable::Kind kind = zypp::ResTraits<zypp::Package>::kind;
+	std::vector<zypp::PoolItem> *v;
+	v = zypp_get_packages_by_name ((const gchar *)pi->name);
 
-	zypp::PoolItem item;
-	zypp::ResPool pool = zypp->pool ();
-	for (zypp::ResPool::byName_iterator it = pool.byNameBegin (pi->name);
-			it != pool.byNameEnd (pi->name); ++it) {
-		if (!item || it->status ().isInstalled ())
-			item = *it;
+	zypp::ResObject::constPtr package;
+	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+			it != v->end (); it++) {
+		zypp::ResObject::constPtr pkg = (*it);
+		const char *version = pkg->edition ().asString ().c_str ();
+fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
+		if (strcmp (pi->version, version) == 0) {
+			package = pkg;
+			break;
+		}
 	}
 
-	if (!item) {
+	delete (v);
+
+	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 		pk_package_id_free (pi);
 		g_free (d->package_id);
@@ -203,10 +175,10 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 				d->package_id,		// package_id
 				"unknown",		// const gchar *license
 				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
-				"FIXME: put package description here",	// const gchar *description
-				"FIXME: add package URL here",			// const gchar *url
-				0,			// gulong size
-				"FIXME: put package filelist here");			// const gchar *filelist
+				package->description ().c_str (),	// const gchar *description
+				"TODO: add package URL here",			// const gchar *url
+				(gulong)package->size(),			// gulong size
+				"TODO: put package filelist here");			// const gchar *filelist
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);
@@ -410,7 +382,7 @@ backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 
 		// skip changeable meda (DVDs and CDs).  Without doing this,
 		// the disc would be required to be physically present.
-		if (is_changeable_media (*repo.baseUrlsBegin ()) == true)
+		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
 			continue;
 
 		try {
