@@ -131,5 +131,22 @@ zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
 	return package_id;
 }
 
+void
+zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v)
+{
+	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+			it != v->end (); it++) {
+		zypp::ResObject::constPtr pkg = (*it);
+
+		// TODO: Determine whether this package is installed or not
+		gchar *package_id = zypp_build_package_id_from_resolvable (pkg);
+		pk_backend_package (backend,
+			    PK_INFO_ENUM_AVAILABLE,
+			    package_id,
+			    pkg->description ().c_str ());
+		g_free (package_id);
+	}
+}
+
 #endif // _ZYPP_UTILS_H_
 

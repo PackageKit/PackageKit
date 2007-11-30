@@ -39,5 +39,7 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name);
 
 gchar * zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable);
+
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v);
 #endif // _ZYPP_UTILS_H_
 

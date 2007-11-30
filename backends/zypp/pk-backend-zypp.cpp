@@ -571,6 +571,14 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	pk_backend_no_percentage_updates (backend);
 
+	switch (mode) {
+		case SEARCH_TYPE_NAME:
+			std::vector<zypp::PoolItem> *v = zypp_get_packages_by_name (search);
+			zypp_emit_packages_in_list (backend, v);
+			delete (v);
+			break;
+	};
+
 /*
 	if (mode == SEARCH_TYPE_FILE) {
 		if (installed == FALSE && available == FALSE) {
