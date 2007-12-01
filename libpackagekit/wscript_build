@@ -15,6 +15,7 @@ obj = bld.create_obj('gnome', 'objects')
 obj.includes = '. ../libgbus ../libselftest'
 obj.target = 'libpkgkit_common_source'
 obj.uselib = 'GLIB GOBJECT DBUS DBUS_GLIB'
+obj.env.append_value('CCFLAGS', obj.env['shlib_CCFLAGS'])
 obj.source = """
 	pk-debug.c
 	pk-connection.c
