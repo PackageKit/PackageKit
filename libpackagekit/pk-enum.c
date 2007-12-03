@@ -138,9 +138,11 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
 	{PK_FILTER_ENUM_GUI,			"gui"},
+	{PK_FILTER_ENUM_FREE,			"free"},
 	{PK_FILTER_ENUM_NOT_DEVELOPMENT,	"~devel"},
 	{PK_FILTER_ENUM_NOT_INSTALLED,		"~installed"},
 	{PK_FILTER_ENUM_NOT_GUI,		"~gui"},
+	{PK_FILTER_ENUM_NOT_FREE,		"~free"},
 	{0, NULL},
 };
 

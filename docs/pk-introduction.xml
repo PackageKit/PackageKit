@@ -184,6 +184,10 @@
               <entry><literal>gui</literal> or <literal>~gui</literal></entry>
               <entry>GUI programs typically depend on gtk, libkde or libxfce.</entry>
             </row>
+            <row>
+              <entry><literal>free</literal> or <literal>~free</literal></entry>
+              <entry>Free software, where the definition of free is given by the FSF</entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
