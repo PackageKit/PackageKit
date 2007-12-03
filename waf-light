@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# Thomas Nagy, 2005, 2006, 2007 (ita)
+# Thomas Nagy, 2005-2008
 
 """
 Redistribution and use in source and binary forms, with or without
@@ -17,7 +17,7 @@ are met:
 3. The name of the author may not be used to endorse or promote products
    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
 IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
@@ -32,335 +32,129 @@ POSSIBILITY OF SUCH DAMAGE.
 
 import os, sys
 if 'PSYCOWAF' in os.environ:
-	try:
-		import psyco
-		psyco.full()
-	except:
-		pass
+	try: import psyco; psyco.full()
+	except: pass
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 REVISION="x"
 INSTALL="x"
-cwd = os.getcwd()
+cwd=os.getcwd()
+j=os.path.join
 
-def decodeAscii85(s):
+def decode(s):
 	out=[]
 	app=out.append
-	s=''.join(s.split()).replace('z','!!!!!')
-	p1,p2=divmod(len(s), 5)
+	s='!!!!!'.join(s.split('z'))
+	d=divmod
+	p1,p2=d(len(s),5)
 	stop=5*p1
 	p3,p4=s[0:stop],s[stop:]
+
+	def u(v, o):
+		return ord(v[o])-33
 	for i in range(p1):
-		off=i*5
-		a=ord(p3[off])-33
-		b=ord(p3[off+1])-33
-		c=ord(p3[off+2])-33
-		d=ord(p3[off+3])-33
-		e=ord(p3[off+4])-33
-		num=(52200625L*a)+(614125*b)+(7225*c)+(85*d)+e
-		x,p=divmod(num,256)
-		x,o=divmod(x,256)
-		m,n=divmod(x,256)
+		o=i*5
+		x=52200625L*u(p3,o)+614125*u(p3,o+1)+7225*u(p3,o+2)+85*u(p3,o+3)+u(p3,o+4)
+		x,p=d(x,256)
+		x,o=d(x,256)
+		m,n=d(x,256)
 		app(chr(m)+chr(n)+chr(o)+chr(p))
 	if p2:
 		while len(p4)<5: p4=p4+'!'
-		a=ord(p4[0])-33
-		b=ord(p4[1])-33
-		c=ord(p4[2])-33
-		d=ord(p4[3])-33
-		e=ord(p4[4])-33
-		num=(52200625L*a)+(614125*b)+(7225*c)+(85*d)+e
-		x,p=divmod(num,256)
-		x,o=divmod(x,256)
-		m,n=divmod(x, 256)
-		if p2==2: app(chr(m))
-		elif p2==3: app(chr(m)+chr(n))
-		elif p2==4: app(chr(m)+chr(n)+chr(o))
+		x=52200625L*u(p4,0)+614125*u(p4,1)+7225*u(p4,2)+85*u(p4,3)+u(p4,4)
+		x,p=d(x,256)
+		x,o=d(x,256)
+		m,n=d(x,256)
+		app(chr(m))
+		if p2>2:app(chr(n))
+		if p2>3:app(chr(o))
 	return ''.join(out)
 
-# wafdir is needed to parse the command-line arguments or print the version number
-wafdir=None # SPECIAL LINE
+def err(m):
+	print m; sys.exit(1)
 
-def uncompress_wafdir(newdir):
-	file = open(sys.argv[0], 'rb')
+def unpack_wafdir(dir):
+	f=open(sys.argv[0],'rb')
+	c="Error: corrupted (%d)"
 	while 1:
-		line = file.readline()
-		if not line:
-			print "This is a stripped-down waf, there is no wafadmin directory available"
-			print "Please set WAFDIR to a directory containing a directory named wafadmin"
-			print "Or use the full waf version available freely at http://freehackers.org/~tnagy/bksys.html"
-			print "\033[91mNo wafadmin: cannot execute anything (error)\033[0m"
-			sys.exit(1)
-		line=line.rstrip()
-		if line=='# ===>BEGIN WOOF<===':
-			cnt = file.readline()
-			if not cnt:
-				print "Corrupted waf (1)"
-				sys.exit(1)
-
-			line = file.readline().rstrip()
-			if line!='# ===>END WOOF<===':
-				print "Corrupted waf (2)"
-				sys.exit(1)
+		line=f.readline()
+		if not line: err("\033[91mError: waf-light must be run from a folder containing wafadmin\033[0m")
+		if line=='#==>\n':
+			txt=f.readline()
+			if not txt: err(c%1)
+			if f.readline()!='#<==\n': err(c%2)
 			break
-	if not cnt:
-		print "Corrupted waf (3)"
-		sys.exit(1)
+	if not txt: err(c%3)
+	txt=decode(txt[1:])
 
-	cnt = decodeAscii85(cnt[1:])
-
-	# create wafadmin
-	import shutil
-	try: shutil.rmtree(newdir)
+	import shutil, tarfile
+	try: shutil.rmtree(dir)
 	except OSError: pass
-	try: os.makedirs(newdir)
-	except OSError:
-		print "Could uncompress waf-local into %s"%newdir
-		print "Please install waf system-wide or move waf in a writeable directory"
-		sys.exit(1)
+	try: os.makedirs(dir)
+	except OSError: err("Error: could not unpack waf-local into %s\
+Install waf system-wide or move waf into a writeable directory"%dir)
 
-	os.chdir(newdir)
-	file = open('wafadmin.tar.bz2', 'wb')
-	file.write(cnt)
-	file.close()
+	os.chdir(dir)
+	tmp='t.tbz2'
+	f=open(tmp,'wb')
+	f.write(txt)
+	f.close()
 
-	# now we have the tar file to open
-	import tarfile
-	tar = tarfile.open('wafadmin.tar.bz2')
-	for tarinfo in tar:
-		tar.extract(tarinfo)
-	tar.close()
+	t=tarfile.open(tmp)
+	for x in t: t.extract(x)
+	t.close()
 
-	# cleanup the tarfile and chdir to the previous directory
-	os.chmod('wafadmin', 0755)
-	os.chmod('wafadmin'+os.sep+'Tools', 0755)
-	os.unlink('wafadmin.tar.bz2')
+	os.chmod('wafadmin',0755)#TODO
+	os.chmod('wafadmin%sTools'%os.sep,0755)
+	os.unlink(tmp)
 	os.chdir(cwd)
 
-	global wafdir
-	wafdir = newdir
+def test(dir):
+	try: os.stat(j(dir,'wafadmin')); return os.path.abspath(dir)
+	except OSError: pass
 
-def try_wafdir(dir):
-	global wafdir
-	if wafdir: return
-	try:
-		os.stat(os.path.join(dir, 'wafadmin'))
-		wafdir = os.path.abspath(dir)
-	except OSError:
-		pass
+def find_lib():
+	name=sys.argv[0]
+	base=os.path.dirname(os.path.abspath(name))
 
-def find_wafadmin():
-	global wafdir
-	name = sys.argv[0]
+	#devs use $WAFDIR
+	w=test(os.environ.get('WAFDIR',''))
+	if w:return w
 
-	# wafadmin may be in $WAFDIR (developers)
-	if 'WAFDIR' in os.environ:
-		try_wafdir(os.environ['WAFDIR'])
-		if wafdir: return
+	#waf-light
+	if name=='waf-light':
+		w=test(base)
+		if w:return w
+		err("\033[91mwaf-light in use, wafadmin not found -> export WAFDIR=/folder\033[0m")
 
-	# waf-light is a special beast
-	if name[-5:] == 'light':
-		try_wafdir(os.path.dirname(os.path.abspath(name)))
-		if wafdir: return
-		print "\033[91mwaf-light in use, wafadmin not found -> export WAFDIR=/folder\033[0m"
-		sys.exit(1)
+	dir="/lib/waf-%s-%s/" % (VERSION, REVISION)
+	for i in [INSTALL,'/usr','/usr/local','/opt']:
+		w=test(i+dir)
+		if w:return w
 
-	if not wafdir:
-		dir = "/lib/waf-%s-%s/" % (VERSION, REVISION)
-		for i in [INSTALL, '/usr', '/usr/local', '/opt']:
-			try_wafdir(i+dir)
-			if wafdir: return
-
-	# remove $HOME/.waf-version if asked to
-	if wafdir:
-		if "--nocache" in sys.argv:
-			import shutil
-			print "removing the local wafdir", wafdir
-			try: shutil.rmtree(wafdir)
-			except OSError: pass
-		try: os.stat(wafdir)
-		except OSError: wafdir=None
-
-	if wafdir: return
-
-	# look in the directory containing waf
-	if sys.platform == 'win32': s='waf-%s-%s'
+	#waf-local
+	if sys.platform=='win32': s='waf-%s-%s'
 	else: s='.waf-%s-%s'
-	dir = os.path.join(os.path.dirname(os.path.abspath(name)), s % (VERSION, REVISION))
-	try_wafdir(dir)
-	if wafdir: return
+	dir=j(base,s%(VERSION,REVISION))
+	w=test(dir)
+	if w:return w
 
-	# not found, uncompress
-	wafdir = dir
-	uncompress_wafdir(dir)
+	#unpack
+	unpack_wafdir(dir)
+	return dir
 
-# run the test
-find_wafadmin()
-if "-vv" in sys.argv: print "wafdir is ", wafdir
+wafdir=find_lib()
+if "-vv" in sys.argv: print "wafdir is %s"%wafdir
 
-# Update sys.path and import our modules
-wafadmindir = os.path.join(wafdir, 'wafadmin')
-tooldir = os.path.join(wafadmindir, 'Tools')
-sys.path = [wafadmindir, tooldir] + sys.path
+w=j(wafdir,'wafadmin')
+t=j(w,'Tools')
+sys.path=[w, t]+sys.path
 
-import Options, Params, Utils
-from Params import fatal, warning
+import Params, Scripting
+Params.g_tooldir=[t]
+Params.g_cwd_launch=cwd
 
-# Set the directory containing the tools
-Params.g_tooldir = [tooldir]
-Params.g_cwd_launch = cwd
-
-if Params.g_version != VERSION:
-	fatal('version mismatch waf %s <-> wafadmin %s (wafdir %s)' % (VERSION, Params.g_version, wafdir))
-
-# some command-line options can be processed immediately
-if '--version' in sys.argv:
-	opt_obj = Options.Handler()
-	opt_obj.parse_args()
-	sys.exit(0)
-
-# now find the wscript file
-msg1 = 'Waf: *** Nothing to do! Please run waf from a directory containing a file named "wscript"'
-
-# Some people want to configure their projects gcc-style:
-# mkdir build && cd build && ../waf configure && ../waf
-# check that this is really what is wanted
-build_dir_override = None
-candidate = None
-
-lst = os.listdir(cwd)
-xml = 0
-#check if a wscript or a wscript_xml file is in current directory
-if (not 'wscript' in lst) and (not 'wscript_xml' in lst):
-	if 'configure' in sys.argv:
-		#set the build directory with the current directory
-		build_dir_override = cwd
-	if 'wscript_build' in lst:
-		#try to find the wscript root
-		candidate = cwd
-else:
-	#wscript or wscript_xml is in current directory, use this directory as candidate
-	candidate = cwd
-
-try:
-	#check the following dirs for wscript or wscript_xml
-	search_for_candidate = True
-	if not candidate:
-		#check first the calldir if there is wscript or wscript_xml
-		#for example: /usr/src/configure the calldir would be /usr/src
-		calldir = os.path.abspath(os.path.dirname(sys.argv[0]))
-		lst_calldir = os.listdir(calldir)
-		if 'wscript'       in lst_calldir:
-			candidate = calldir
-			search_for_candidate = False
-		if 'wscript_xml'   in lst_calldir:
-			candidate = calldir
-			xml = 1
-			search_for_candidate = False
-	if "--make-waf" in sys.argv and candidate:
-		search_for_candidate = False
-
-	#check all directories above current dir for wscript or wscript_xml if still not found
-	while search_for_candidate:
-		if len(cwd) <= 3:
-			break # stop at / or c:
-		dirlst = os.listdir(cwd)
-		if 'wscript' in dirlst:
-			candidate = cwd
-			xml = 0
-		if 'wscript_xml' in dirlst:
-			candidate = cwd
-			xml = 1
-			break
-		if 'configure' in sys.argv and candidate:
-			break
-		if Params.g_lockfile in dirlst:
-			break
-		cwd = cwd[:cwd.rfind(os.sep)] # climb up
-except:
-	fatal(msg1)
-
-if not candidate:
-	# check if the user only wanted to display the help
-	if '-h' in sys.argv or '--help' in sys.argv:
-		warning('No wscript file found: the help message may be incomplete')
-		opt_obj = Options.Handler()
-		opt_obj.parse_args()
-		sys.exit(0)
-	else:
-		fatal(msg1)
-
-# We have found wscript, but there is no guarantee that it is valid
-os.chdir(candidate)
-
-# xml -> jump to the parser
-if xml:
-	from XMLScripting import compile
-	compile(candidate+os.sep+'wscript_xml')
-else:
-	# define the main module containing the functions init, shutdown, ..
-	Utils.set_main_module(os.path.join(candidate, 'wscript'))
-
-if build_dir_override:
-	d = getattr(Utils.g_module, 'blddir', None)
-	if d:
-		# test if user has set the blddir in wscript.
-		msg = 'Overriding build directory %s with %s' % (d, build_dir_override)
-		Params.niceprint(msg, 'WARNING', 'waf')
-	Utils.g_module.blddir = build_dir_override
-
-# fetch the custom command-line options recursively and in a procedural way
-opt_obj = Options.Handler()
-opt_obj.sub_options('') # will look in wscript
-opt_obj.parse_args()
-
-# use the parser results
-if Params.g_commands['dist']:
-	# try to use the user-defined dist function first, fallback to the waf scheme
-	fun = getattr(Utils.g_module, 'dist', None)
-	if fun: fun(); sys.exit(0)
-
-	appname = getattr(Utils.g_module, 'APPNAME', 'noname')
-
-	get_version = getattr(Utils.g_module, 'get_version', None)
-	if get_version: version = get_version()
-	else: version = getattr(Utils.g_module, 'VERSION', None)
-	if not version: version = '1.0'
-
-	from Scripting import Dist
-	Dist(appname, version)
-	sys.exit(0)
-elif Params.g_commands['distclean']:
-	# try to use the user-defined distclean first, fallback to the waf scheme
-	fun = getattr(Utils.g_module, 'distclean', None)
-	if fun: fun(); sys.exit(0)
-	from Scripting import DistClean
-	DistClean()
-	sys.exit(0)
-elif Params.g_commands['distcheck']:
-	# try to use the user-defined dist function first, fallback to the waf scheme
-	fun = getattr(Utils.g_module, 'dist', None)
-	if fun: fun(); sys.exit(0)
-
-	appname = getattr(Utils.g_module, 'APPNAME', 'noname')
-
-	get_version = getattr(Utils.g_module, 'get_version', None)
-	if get_version: version = get_version()
-	else: version = getattr(Utils.g_module, 'VERSION', None)
-	if not version: version = '1.0'
-
-	from Scripting import DistCheck
-	DistCheck(appname, version)
-	sys.exit(0)
-
-fun=getattr(Utils.g_module, 'init', None)
-if fun: fun()
-
-import Scripting
-try: Scripting.Main()
-except KeyboardInterrupt: Params.fatal('build interrupted')
-#import hotshot
-#prof=hotshot.Profile("/tmp/proftest.txt")
-#prof.runcall(Scripting.Main)
-#prof.close()
+if Params.g_version!=VERSION:
+	err('Version mismatch: waf %s <> wafadmin %s (wafdir %s)'%(VERSION,Params.g_version,wafdir))
+Scripting.prepare()
 
