@@ -214,11 +214,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
 
-    def description(self,id,licence,group,desc,url,bytes,file_list):
+    def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param licence: The licence of the package
+        @param license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
@@ -227,7 +227,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
-        PackageKitBaseBackend.description(self,id,licence,group,desc,url,bytes,file_list)
+        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes,file_list)
 
     def package(self,id,status,summary):
         '''

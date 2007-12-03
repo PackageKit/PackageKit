@@ -105,18 +105,18 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
-    def description(self,id,licence,group,desc,url,bytes,file_list):
+    def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param licence: The licence of the package
+        @param license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
+        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,license,group,desc,url,bytes,file_list)
 
     def files(self, id, file_list):
         '''

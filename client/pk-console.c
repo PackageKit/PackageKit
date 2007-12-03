@@ -899,7 +899,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
  **/
 static void
 pk_console_description_cb (PkClient *client, const gchar *package_id,
-			   const gchar *licence, PkGroupEnum group,
+			   const gchar *license, PkGroupEnum group,
 			   const gchar *description, const gchar *url,
 			   gulong size, gpointer data)
 {
@@ -909,7 +909,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 	}
 	g_print ("Package description\n");
 	g_print ("  package:     '%s'\n", package_id);
-	g_print ("  licence:     '%s'\n", licence);
+	g_print ("  license:     '%s'\n", license);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
 	g_print ("  description: '%s'\n", description);
 	g_print ("  size:        '%ld' bytes\n", size);
