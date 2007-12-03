@@ -9,3 +9,7 @@ libpk_backend_zypp_la_LDFLAGS = -module -avoid-version $(ZYPP_LIBS)
 libpk_backend_zypp_la_CFLAGS = @PK_PLUGIN_CFLAGS@
 libpk_backend_zypp_la_CPPFLAGS = @PK_PLUGIN_CFLAGS@ $(ZYPP_CFLAGS)
 
+EXTRA_DIST =		\
+	zypp-utils.h	\
+	zypp-events.h
+

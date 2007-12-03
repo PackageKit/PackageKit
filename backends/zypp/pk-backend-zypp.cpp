@@ -21,7 +21,6 @@
 
 #include <gmodule.h>
 #include <glib.h>
-#include <string.h>
 #include <pk-backend.h>
 #include <unistd.h>
 #include <pk-debug.h>
