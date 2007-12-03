@@ -145,7 +145,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::PoolItem> *v;
-	v = zypp_get_packages_by_name ((const gchar *)pi->name, FALSE);
+	v = zypp_get_packages_by_name ((const gchar *)pi->name, TRUE);
 
 	zypp::ResObject::constPtr package;
 	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
@@ -457,7 +457,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::PoolItem> *v;
-	v = zypp_get_packages_by_name ((const gchar *)rdata->name, FALSE);
+	v = zypp_get_packages_by_name ((const gchar *)rdata->name, TRUE);
 
 	zypp::ResObject::constPtr package = NULL;
 	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
