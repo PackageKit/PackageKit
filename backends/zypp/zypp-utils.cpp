@@ -96,11 +96,11 @@ fprintf (stderr, "TODO: Handle exceptions: %s\n", ex.asUserString ().c_str ());
 }
 
 std::vector<zypp::PoolItem> *
-zypp_get_packages_by_name (const gchar *package_name)
+zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 {
 	std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
 
-	zypp::ResPool pool = zypp_build_pool (FALSE);
+	zypp::ResPool pool = zypp_build_pool (include_local);
 
 	std::string name (package_name);
 	for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
@@ -141,7 +141,9 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v)
 		// TODO: Determine whether this package is installed or not
 		gchar *package_id = zypp_build_package_id_from_resolvable (pkg);
 		pk_backend_package (backend,
-			    PK_INFO_ENUM_AVAILABLE,
+			    it->status().isInstalled() == true ?
+				PK_INFO_ENUM_INSTALLED :
+				PK_INFO_ENUM_AVAILABLE,
 			    package_id,
 			    pkg->description ().c_str ());
 		g_free (package_id);
