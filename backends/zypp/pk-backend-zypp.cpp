@@ -57,6 +57,11 @@ enum PkgSearchType {
 	SEARCH_TYPE_RESOLVE = 3
 };
 
+enum DepsBehavior {
+	DEPS_ALLOW = 0,
+	DEPS_NO_ALLOW = 1
+};
+
 typedef struct {
 	gchar *search;
 	gchar *filter;
@@ -68,23 +73,6 @@ typedef struct {
 	gchar *filter;
 } ResolveData;
 
-/* make sure and keep the struct in sync with the enum */
-enum SqlQuerySchema {
-	SQL_NAME = 0,
-	SQL_VERSION,
-	SQL_RELEASE,
-	SQL_REPO,
-	SQL_ARCH
-};
-
-typedef struct {
-	gchar *name;
-	gchar *version;
-	gchar *release;
-	gchar *repo;
-	gchar *arch;
-} SQLData;
-
 typedef struct {
 	gchar *package_id;
 	gint type;
@@ -93,6 +81,11 @@ typedef struct {
 typedef struct {
 	gboolean force;
 } RefreshData;
+
+typedef struct {
+	gchar *package_id;
+	gint deps_behavior;
+} RemovePackageData;
 
 /**
  * A map to keep track of the EventDirector objects for
@@ -425,6 +418,122 @@ fprintf (stderr, "\n\n *** Building cache ***\n\n");
 	return TRUE;
 }
 
+static gboolean
+backend_remove_package_thread (PkBackend *backend, gpointer data)
+{
+	RemovePackageData *d = (RemovePackageData *)data;
+	PkPackageId *pi;
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_change_percentage (backend, 0);
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	zypp::Target_Ptr target;
+
+	zypp::ZYpp::Ptr zypp;
+	zypp = get_zypp ();
+
+	target = zypp->target ();
+
+	// Load all the local system "resolvables" (packages)
+	zypp->addResolvables (target->resolvables(), TRUE);
+	pk_backend_change_percentage (backend, 10);
+
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		// Iterate over the resolvables and mark the ones we want to remove
+		//zypp->start ();
+		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
+				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
+			zypp::ui::Selectable::Ptr selectable = *it;
+			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
+				if (selectable->status () == zypp::ui::S_KeepInstalled) {
+					selectable->set_status (zypp::ui::S_Del);
+					break;
+				}
+			}
+		}
+
+		pk_backend_change_percentage (backend, 40);
+
+//printf ("Resolving dependencies...\n");
+// TODO: Figure out what to do about d->deps_behavior
+		// Gather up any dependencies
+		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		if (zypp->resolver ()->resolvePool () == FALSE) {
+			// Manual intervention required to resolve dependencies
+			// TODO: Figure out what we need to do with PackageKit
+			// to pull off interactive problem solving.
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
+			g_free (d->package_id);
+			g_free (d);
+			pk_package_id_free (pi);
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		pk_backend_change_percentage (backend, 60);
+
+		zypp::ZYppCommitPolicy policy;
+		zypp::ZYppCommitResult result = zypp->commit (policy);
+printf ("Finished the removal.\n");
+
+		pk_backend_change_percentage (backend, 100);
+
+		// TODO: Check result for success
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
+		// TODO: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		g_free (d->package_id);
+		g_free (d);
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		//pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		g_free (d->package_id);
+		g_free (d);
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	
+
+	g_free (d->package_id);
+	g_free (d);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+
+/**
+ * backend_remove_package:
+ */
+static void
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+{
+	g_return_if_fail (backend != NULL);
+
+	RemovePackageData *data = g_new0 (RemovePackageData, 1);
+	data->package_id = g_strdup (package_id);
+	data->deps_behavior = allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW;
+
+	pk_backend_thread_create (backend, backend_remove_package_thread, data);
+}
+
 /**
  * backend_refresh_cache
  */
@@ -734,7 +843,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
