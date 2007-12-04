@@ -24,61 +24,30 @@ _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
 class Package(object):
     def __init__(self, pkg, backend):
         self._pkg = pkg
-        self._cache = backend._apt_cache
-        self._depcache = backend._apt_dep_cache
-        self._records = backend._apt_records
 
     @property
     def id(self):
-        return self._pkg.ID
+        return self._pkg.id
 
     @property
     def name(self):
-        return self._pkg.Name
+        return self._pkg.name
 
     @property
     def summary(self):
-        if not self._seek_records():
-            return ""
-        ver = self._depcache.GetCandidateVer(self._pkg)
-        desc_iter = ver.TranslatedDescription
-        self._records.Lookup(desc_iter.FileList.pop(0))
-        return self._records.ShortDesc
+        return self._pkg.summary
 
     @property
     def description(self):
-        if not self._seek_records():
-            return ""
-        # get the translated description
-        ver = self._depcache.GetCandidateVer(self._pkg)
-        desc_iter = ver.TranslatedDescription
-        self._records.Lookup(desc_iter.FileList.pop(0))
-        desc = ""
-        try:
-            s = unicode(self._records.LongDesc,"utf-8")
-        except UnicodeDecodeError, e:
-            s = _("Invalid unicode in description for '%s' (%s). "
-                  "Please report.") % (self.name, e)
-        for line in s.splitlines():
-                tmp = line.strip()
-                if tmp == ".":
-                    desc += "\n"
-                else:
-                    desc += tmp + "\n"
-        return desc
+        return self._pkg.description
 
     @property
     def architecture(self):
-        if not self._seek_records():
-            return None
-        sec = apt_pkg.ParseSection(self._records.Record)
-        if sec.has_key("Architecture"):
-            return sec["Architecture"]
-        return None
+        return self._pkg.architecture
 
     @property
     def section(self):
-        return self._pkg.Section
+        return self._pkg.section
 
     @property
     def group(self):
@@ -109,27 +78,19 @@ class Package(object):
 
     @property
     def installed_version(self):
-        version = self._pkg.CurrentVer
-        if version != None:
-            return version.VerStr
-        else:
-            return None
+        return self._pkg.installedVersion
 
     @property
     def candidate_version(self):
-        version = self._depcache.GetCandidateVer(self._pkg)
-        if version != None:
-            return version.VerStr
-        else:
-            return None
+        return self._pkg.candidateVersion
 
     @property
     def is_installed(self):
-        return (self._pkg.CurrentVer != None)
+        return self._pkg.isInstalled
 
     @property
     def is_upgradable(self):
-        return self.is_installed and self._depcache.IsUpgradable(self._pkg)
+        return self._pkg.isUpgradable
 
     @property
     def is_development(self):
@@ -168,20 +129,6 @@ class Package(object):
             return True
         return False
 
-    ### Helpers ###
-    def _seek_records(self, use_candidate=True):
-        if use_candidate:
-            version = self._depcache.GetCandidateVer(self._pkg)
-        else:
-            version = self._pkg.CurrentVer
-
-        # check if we found a version
-        if version == None or version.FileList == None:
-            return False
-        self._records.Lookup(version.FileList.pop(0))
-        return True
-
-
 class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
     def __init__(self, backend):
         self._backend = backend
@@ -212,11 +159,7 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
-        self._apt_cache = apt_pkg.GetCache(PackageKitProgress(self))
-        self._apt_dep_cache = apt_pkg.GetDepCache(self._apt_cache)
-        self._apt_records = apt_pkg.GetPkgRecords(self._apt_cache)
-        self._apt_list = apt_pkg.GetPkgSourceList()
-        self._apt_list.ReadMainList()
+        self._apt_cache = apt.Cache(PackageKitProgress(self))
 
     def search_name(self, filters, key):
         '''
@@ -259,19 +202,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        lockfile = apt_pkg.Config.FindDir("Dir::State::Lists") + "lock"
-        lock = apt_pkg.GetLock(lockfile)
-        if lock < 0:
-            self.error(ERROR_INTERNAL_ERROR,
-                    "Failed to acquire the lock")
-
         try:
-            fetcher = apt_pkg.GetAcquire(PackageKitProgress(self))
-            # this can throw a exception
-            self._apt_list.GetIndexes(fetcher)
-            self._do_fetch(fetcher)
-        finally:
-            os.close(lock)
+            res = self._apt_cache.update(PackageKitProgress(self))
+        except Exception, error_message:
+             self.error(ERROR_INTERNAL_ERROR,
+                        "Failed to fetch the following items:\n%s" % error_message)
+        return res
 
     def get_description(self, package):
         '''
@@ -304,9 +240,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def _do_search(self, filters, condition):
         filters = filters.split(';')
-        size = len(self._apt_cache.Packages)
+        size = len(self._apt_cache)
         percentage = 0
-        for i, pkg in enumerate(self._apt_cache.Packages):
+        for i, pkg in enumerate(self._apt_cache):
             new_percentage = i / float(size) * 100
             if new_percentage - percentage >= 5:
                 percentage = new_percentage
@@ -322,26 +258,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             yield package
         self.percentage(100)
 
-    def _do_fetch(self, fetcher):
-        result = fetcher.Run()
-        failed = False
-        transient = False
-        error_message = ""
-        for item in fetcher.Items:
-            if item.Status == item.StatDone:
-                continue
-            if item.StatIdle:
-                transient = True
-                continue
-            error_message += "%s %s\n" % \
-                    (item.DescURI, item.ErrorText)
-            failed = True
-
-        # we raise a exception if the download failed or it was cancelt
-        if failed:
-            self.error(ERROR_INTERNAL_ERROR,
-                    "Failed to fetch the following items:\n%s" % error_message)
-        return (result == fetcher.ResultContinue)
 
     def _do_filtering(self, package, filters):
         if len(filters) == 0 or filters == ['none']:
@@ -358,5 +274,5 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         if (FILTER_NOT_DEVELOPMENT in filters) and package.is_development:
             return False
-        return TRUE
+        return True
 
