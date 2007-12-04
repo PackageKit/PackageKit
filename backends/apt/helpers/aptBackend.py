@@ -234,8 +234,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
-        print dir(pkg)
         print dir(pkg._depcache)
+        print dir(pkg._pkg)
+        print pkg._pkg.VersionList
+        pkg._depcache.SetCandidateVer(pkg._pkg,pkg._pkg.VersionList[0])
+        print pkg._depcache.getChanges()
         raise Exception
 
   ### Helpers ###
