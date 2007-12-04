@@ -234,11 +234,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
-        print dir(pkg._depcache)
-        print dir(pkg._pkg)
-        print pkg._pkg.VersionList
-        pkg._depcache.SetCandidateVer(pkg._pkg,pkg._pkg.VersionList[0])
-        print pkg._depcache.getChanges()
+        print pkg._pkg._pkg.VersionList
+        print "ok",self._apt_cache._depcache.SetCandidateVer(pkg._pkg._pkg,pkg._pkg._pkg.VersionList[0])
+        print self._apt_cache._depcache.GetCandidateVer(pkg._pkg._pkg),pkg._pkg._pkg.VersionList[0]
+        print "mi",pkg._pkg.markInstall(autoFix=False)
+        print pkg._pkg._pkg.VersionList
+        print "other",self._apt_cache._depcache.SetCandidateVer(pkg._pkg._pkg,pkg._pkg._pkg.VersionList[0])
+        print self._apt_cache._depcache.GetCandidateVer(pkg._pkg._pkg),pkg._pkg._pkg.VersionList[0]
+        print pkg.candidate_version
+        for d in pkg._pkg.candidateDependencies:
+            for o in d.or_dependencies:
+                dep = Package(self._apt_cache[o.name],self)
+        print "changes"
+        for x in self._apt_cache.getChanges():
+            print x.name,x.candidateVersion
         raise Exception
 
   ### Helpers ###
