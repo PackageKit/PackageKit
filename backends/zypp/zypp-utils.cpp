@@ -112,10 +112,35 @@ zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 	return v;
 }
 
-/**
- * Build a package_id from the specified resolvable.  The returned
- * gchar * should be freed with g_free ().
- */
+zypp::Resolvable::constPtr
+zypp_get_package_by_id (const gchar *package_id)
+{
+	PkPackageId *pi;
+	pi = pk_package_id_new_from_string (package_id);
+	if (pi == NULL) {
+		// TODO: Do we need to do something more for this error?
+		return NULL;
+	}
+
+	std::vector<zypp::PoolItem> *v = zypp_get_packages_by_name (pi->name, TRUE);
+	if (v == NULL)
+		return NULL;
+
+	zypp::ResObject::constPtr package = NULL;
+	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+			it != v->end (); it++) {
+		zypp::ResObject::constPtr pkg = (*it);
+		const char *version = pkg->edition ().asString ().c_str ();
+		if (strcmp (pi->version, version) == 0) {
+			package = pkg;
+			break;
+		}
+	}
+
+	delete (v);
+	return package;
+}
+
 gchar *
 zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
 {

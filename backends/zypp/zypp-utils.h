@@ -38,6 +38,15 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
  */
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
 
+/**
+ * Returns the Resolvable for the specified package_id.
+ */
+zypp::Resolvable::constPtr zypp_get_package_by_id (const gchar *package_id);
+
+/**
+ * Build a package_id from the specified resolvable.  The returned
+ * gchar * should be freed with g_free ().
+ */
 gchar * zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable);
 
 void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v);
