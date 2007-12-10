@@ -57,8 +57,8 @@ GLIB_REQUIRED=2.14.0
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.5
-POLKIT_GRANT_REQUIRED=0.5
+POLKIT_DBUS_REQUIRED=0.7
+POLKIT_GRANT_REQUIRED=0.7
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -229,7 +229,7 @@ AC_ARG_WITH([security_framework],
 			   [Default security framework to use polkit,dummy]))
 # try and guess this if nothing is listed
 if test x$with_security_framework = x; then
-	if test -f /usr/bin/polkit-list-actions ; then
+	if test -f /usr/bin/polkit-action ; then
 		with_security_framework=polkit
 	else
 		AC_MSG_ERROR([--with-security-framework explicitly required when not using PolicyKit or RBAC])

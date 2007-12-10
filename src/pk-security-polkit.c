@@ -84,7 +84,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 		return POLKIT_RESULT_NO;
 	}
 
-	pk_result = polkit_context_can_caller_do_action (security->priv->pk_context, pk_action, pk_caller);
+	pk_result = polkit_context_is_caller_authorized (security->priv->pk_context, pk_action, pk_caller, TRUE, NULL);
 	pk_debug ("PolicyKit result = '%s'", polkit_result_to_string_representation (pk_result));
 
 	polkit_action_unref (pk_action);
