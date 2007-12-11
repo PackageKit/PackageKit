@@ -168,7 +168,7 @@ pk_package_id_build (const gchar *name, const gchar *version,
  * pk_package_id_free:
  * @ident: the #PkPackageId object
  *
- * Return value: %TRUE is the #PkPackageId object was freed.
+ * Return value: %TRUE if the #PkPackageId object was freed.
  **/
 gboolean
 pk_package_id_free (PkPackageId *ident)

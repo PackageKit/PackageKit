@@ -403,7 +403,7 @@ out:
  * This function is a much safer way of doing strcmp as it checks for
  * NULL first, and returns boolean TRUE, not zero for success.
  *
- * Return value: %TRUE if the string are bot non-%NULL and the same.
+ * Return value: %TRUE if the string are both non-%NULL and the same.
  **/
 gboolean
 pk_strequal (const gchar *id1, const gchar *id2)
