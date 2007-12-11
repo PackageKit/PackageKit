@@ -4,7 +4,6 @@ AC_INIT(PackageKit, 0.1.5)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
-GTK_DOC_CHECK([1.3])
 
 # libtool versioning - this applies to libpackagekit
 #
@@ -26,6 +25,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
+GTK_DOC_CHECK([1.3])
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
@@ -462,6 +462,7 @@ docs/Makefile
 docs/html/Makefile
 docs/html/img/Makefile
 docs/spec/Makefile
+docs/api/Makefile
 contrib/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
