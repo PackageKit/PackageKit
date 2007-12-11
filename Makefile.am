@@ -4,7 +4,6 @@ NULL =
 
 SUBDIRS = 						\
 	docs						\
-	html						\
 	policy						\
 	etc						\
 	man						\
