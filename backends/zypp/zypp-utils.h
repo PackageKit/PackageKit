@@ -9,6 +9,7 @@
 #include <zypp/ResPool.h>
 
 #include <list>
+#include <set>
 
 // some typedefs and functions to shorten Zypp names
 typedef zypp::ResPoolProxy ZyppPool;
@@ -22,6 +23,7 @@ typedef zypp::Pattern::constPtr		ZyppPattern;
 typedef zypp::Language::constPtr	ZyppLanguage;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
+typedef std::set<zypp::PoolItem_Ref> Candidates;
 
 zypp::ZYpp::Ptr get_zypp ();
 

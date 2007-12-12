@@ -3,8 +3,6 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 SUBDIRS = 						\
-	docs						\
-	html						\
 	policy						\
 	etc						\
 	man						\
@@ -17,6 +15,7 @@ SUBDIRS = 						\
 	client						\
 	backends					\
 	python						\
+	docs						\
 	$(NULL)
 
 pkgconfigdir = $(libdir)/pkgconfig

@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <pk-debug.h>
 #include <string>
+#include <set>
 
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
@@ -42,6 +43,9 @@
 #include <zypp/repo/RepoException.h>
 #include <zypp/parser/ParseException.h>
 #include <zypp/Pathname.h>
+#include <zypp/RelCompare.h>
+#include <zypp/ResFilters.h>
+#include <zypp/base/Algorithm.h>
 #include <sqlite3.h>
 
 #include <map>
@@ -158,9 +162,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
 				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
 				      -1);
 }
 
@@ -400,6 +402,106 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		data->package_id = g_strdup(package_id);
 		pk_backend_thread_create (backend, backend_get_description_thread, data);
 	}
+}
+
+/**
+ * Collect items, select best edition.  This is used to find the best
+ * available or installed.  The name of the class is a bit misleading though ...
+ */
+class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
+{
+	public:
+		zypp::PoolItem_Ref best;
+
+	bool operator() (zypp::PoolItem_Ref provider)
+	{
+		if ((provider.status ().isLocked () == FALSE) && (!best || best->edition ().compare (provider->edition ()) < 0)) {
+			best = provider;
+		}
+
+		return true;
+	}
+};
+
+/**
+ * The following method was taken directly from zypper code
+ *
+ * Find best (according to edition) uninstalled item
+ * with the same kind/name/arch as item.
+ * Similar to zypp::solver::detail::Helper::findUpdateItem
+ * but that allows changing the arch (#222140).
+ */
+static zypp::PoolItem_Ref
+findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem_Ref item)
+{
+	LookForArchUpdate info;
+
+	invokeOnEach (pool.byNameBegin (item->name ()),
+			pool.byNameEnd (item->name ()),
+			// get uninstalled, equal kind and arch, better edition
+			zypp::functor::chain (
+				zypp::functor::chain (
+					zypp::functor::chain (
+						zypp::resfilter::ByUninstalled (),
+						zypp::resfilter::ByKind (item->kind ())),
+					zypp::resfilter::byArch<zypp::CompareByEQ<zypp::Arch> > (item->arch ())),
+				zypp::resfilter::byEdition<zypp::CompareByGT<zypp::Edition> > (item->edition ())),
+			zypp::functor::functorRef<bool,zypp::PoolItem> (info));
+
+	return info.best;
+}
+
+static gboolean
+backend_get_updates_thread (PkBackend *backend, gpointer data)
+{
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_change_percentage (backend, 0);
+
+	zypp::ResPool pool = zypp_build_pool (TRUE);
+	pk_backend_change_percentage (backend, 40);
+
+	Candidates candidates;
+	zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
+	zypp::ResPool::byKind_iterator it = pool.byKindBegin (kind);
+	zypp::ResPool::byKind_iterator e = pool.byKindEnd (kind);
+	for (; it != e; ++it) {
+		if (it->status ().isUninstalled ())
+			continue;
+		zypp::PoolItem_Ref candidate = findArchUpdateItem (pool, *it);
+		if (!candidate.resolvable ())
+			continue;
+
+		candidates.insert (candidate);
+	}
+
+	pk_backend_change_percentage (backend, 80);
+	Candidates::iterator cb = candidates.begin (), ce = candidates.end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+		zypp::ResObject::constPtr res = ci->resolvable();
+
+		// Emit the package
+		gchar *package_id = zypp_build_package_id_from_resolvable (res);
+		pk_backend_package (backend,
+				    PK_INFO_ENUM_AVAILABLE,
+				    package_id,
+				    res->description ().c_str ());
+		g_free (package_id);
+	}
+
+	pk_backend_change_percentage (backend, 100);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+
+/**
+ * backend_get_updates
+ */
+static void
+backend_get_updates (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_thread_create (backend, backend_get_updates_thread, NULL);
 }
 
 static gboolean
@@ -1043,7 +1145,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
+	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */

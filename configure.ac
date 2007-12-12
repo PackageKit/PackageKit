@@ -25,6 +25,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
+GTK_DOC_CHECK([1.3])
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
@@ -458,10 +459,12 @@ Makefile
 etc/Makefile
 man/Makefile
 docs/Makefile
+docs/html/Makefile
+docs/html/img/Makefile
+docs/spec/Makefile
+docs/api/Makefile
 contrib/Makefile
 contrib/yum-packagekit/Makefile
-html/Makefile
-html/img/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
