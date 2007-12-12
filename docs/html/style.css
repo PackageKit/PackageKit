@@ -16,6 +16,12 @@ p.title {
 	font-size: 20px;
 	}
 
+p.footer {
+	color: #000000;
+	text-align: center;
+	font-size: 6px;
+	}
+
 p.caption {
 	color: #000000;
 	text-align: center;
