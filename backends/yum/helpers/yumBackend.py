@@ -327,6 +327,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
                 if not self._do_devel_filtering(filter, pkg):
                     return False
+            elif filter in (FILTER_FREE, FILTER_NOT_FREE):
+                if not self._do_free_filtering(filter, pkg):
+                    return False
         return True
 
     def _do_gui_filtering(self,flt,pkg):
@@ -359,6 +362,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if regex.search(pkg.name):
             isDevel = True
         return isDevel == wantDevel
+
+    def _do_free_filtering(self,flt,pkg):
+        isFree = False
+        if flt == FILTER_FREE:
+            wantFree = True
+        else:
+            wantFree = False
+
+        isFree = self.check_license_field(pkg.license)
+
+        return isFree == wantFree
 
     def search_name(self,filters,key):
         '''

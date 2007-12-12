@@ -179,6 +179,57 @@ class PackageKitBaseBackend:
             containing (name,ver,arch,data)
         '''
         return tuple(id.split(';', 4))
+
+    def check_license_field(self,license_field):
+        '''
+        Check the string license_field for free licenses, as defined
+        by the FSF, indicated by their short names as documented at
+        http://fedoraproject.org/wiki/Licensing#SoftwareLicenses
+
+        Licenses can be grouped by " or " to indicate that the package
+        can be redistributed under any of the licenses in the group.
+        For instance: GPLv2+ or Artistic or FooLicense.
+
+        Groups of licenses can be grouped with " and " to indicate
+        that parts of the package are distributed under one group of
+        licenses, while other parts of the package are distributed
+        under another group.  Groups may be wrapped in parenthesis.
+        For instance: (GPLv2+ or Artistic) and (GPL+ or Artistic) and FooLicense.
+
+        At least one license in each group must be free for the
+        package to be considered Free Software.  If the license_field
+        is empty, the package is considered non-free.
+        '''
+
+        groups = license_field.split(" and ")
+
+        if len(groups) == 0:
+            return False
+
+        one_free_group = False
+
+        for group in groups:
+            group = group.replace("(","")
+            group = group.replace(")","")
+            licenses = group.split(" or ")
+
+            group_is_free = False
+
+            for license in licenses:
+                license = license.strip()
+
+                if license in PackageKitEnum.fsf_free_licenses:
+                    one_free_group = True
+                    group_is_free = True
+                    break
+
+            if group_is_free == False:
+                return False
+
+        if one_free_group == False:
+            return False
+
+        return True
        
 #
 # Backend Action Methods
