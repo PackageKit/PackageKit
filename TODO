@@ -33,11 +33,6 @@ Interface Guidelines (HIG). Someone needs to evaluate the GUI tools and
 suggest changing some control types, adding key-shortcuts and tooltips
 and changing the spacing between widgets where needed.
 
-* Maybe we need to have on the website who is responsible for what, i.e.
-that Ken and Elliot are the conary dudes, and Luke and Tim are the yum
-dudes, etc. Maybe photos and a short two sentence profile might be a
-good idea too.
-
 *** write to the database for config stuff
  - Probably should move the job number too
 
