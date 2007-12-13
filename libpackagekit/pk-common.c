@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-common
+ * @short_description: Common utility functions for PackageKit
+ *
+ * This file contains functions that may be useful.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

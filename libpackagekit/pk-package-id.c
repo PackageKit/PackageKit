@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-package-id
+ * @short_description: Functionality to modify a PackageID
+ *
+ * PackageId's are difficult to read and create.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

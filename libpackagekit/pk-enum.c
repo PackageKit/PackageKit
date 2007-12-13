@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-enum
+ * @short_description: Functions for converting strings to enums and vice-versa
+ *
+ * This file contains functions to convert to and from enumerated types.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

@@ -19,6 +19,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-network-dummy
+ * @short_description: Dummy network detection code
+ *
+ * This file contains a dummy network implimentation.
+ * It is designed for people that don't have NetworkManager installed.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

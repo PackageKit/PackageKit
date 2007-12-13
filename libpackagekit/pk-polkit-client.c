@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-polkit-client
+ * @short_description: Provides a nice GObject to get a PolKit action auth
+ *
+ * This file contains functions that can be used for authorising a PolKit action.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

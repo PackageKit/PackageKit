@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-client
+ * @short_description: GObject class for PackageKit client access
+ *
+ * This file contains a nice GObject to use for accessing PackageKit
+ */
+
 #include "config.h"
 
 #include <stdlib.h>

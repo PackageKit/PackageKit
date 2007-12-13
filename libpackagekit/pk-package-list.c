@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-package-list
+ * @short_description: A list of Package data needed for an offline cache
+ *
+ * These provide a way to query and store a list of packages.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
