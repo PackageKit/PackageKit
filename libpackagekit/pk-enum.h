@@ -27,15 +27,24 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PkEnumMatch:
+ *
+ * Matching an enumerated type to a string
+ **/
 typedef struct {
 	guint		 value;
 	const gchar	*string;
 } PkEnumMatch;
 
-/* What we were asked to do, this never changes for the lifetime of the
- * transaction
+/**
+ * PkRoleEnum:
+ *
+ * What we were asked to do, this never changes for the lifetime of the
+ * transaction.
  * Icons that have to represent the whole "aim" of the transaction will use
- * these constants */
+ * these constants
+ **/
 typedef enum {
 	PK_ROLE_ENUM_CANCEL,
 	PK_ROLE_ENUM_RESOLVE,
@@ -62,11 +71,15 @@ typedef enum {
 	PK_ROLE_ENUM_UNKNOWN
 } PkRoleEnum;
 
-/* What status we are now; this can change for each transaction giving a
+/**
+ * PkStatusEnum:
+ *
+ * What status we are now; this can change for each transaction giving a
  * status of what sort of thing is happening
  * Icons that change to represent the current status of the transaction will
  * use these constants
- * If you add to these, make sure you add filenames in pk-watch also */
+ * If you add to these, make sure you add filenames in pk-watch also
+ **/
 typedef enum {
 	PK_STATUS_ENUM_SETUP,
 	PK_STATUS_ENUM_WAIT,
@@ -86,7 +99,11 @@ typedef enum {
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
-/* how the backend exited */
+/**
+ * PkExitEnum:
+ *
+ * How the backend exited
+ **/
 typedef enum {
 	PK_EXIT_ENUM_SUCCESS,
 	PK_EXIT_ENUM_FAILED,
@@ -95,7 +112,11 @@ typedef enum {
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
 
-/* the filter types */
+/**
+ * PkFilterEnum:
+ *
+ * The filter types
+ **/
 typedef enum {
 	PK_FILTER_ENUM_DEVELOPMENT,
 	PK_FILTER_ENUM_INSTALLED,
@@ -109,7 +130,11 @@ typedef enum {
 	PK_FILTER_ENUM_UNKNOWN
 } PkFilterEnum;
 
-/* what restart we need to after a transaction */
+/**
+ * PkRestartEnum:
+ *
+ * What restart we need to after a transaction
+ **/
 typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
@@ -118,7 +143,11 @@ typedef enum {
 	PK_RESTART_ENUM_UNKNOWN
 } PkRestartEnum;
 
-/* what message type we need to show */
+/**
+ * PkMessageEnum:
+ *
+ * What message type we need to show
+ **/
 typedef enum {
 	PK_MESSAGE_ENUM_NOTICE,
 	PK_MESSAGE_ENUM_WARNING,
@@ -126,6 +155,11 @@ typedef enum {
 	PK_MESSAGE_ENUM_UNKNOWN
 } PkMessageEnum;
 
+/**
+ * PkErrorCodeEnum:
+ *
+ * The error type
+ **/
 typedef enum {
 	PK_ERROR_ENUM_OOM,
 	PK_ERROR_ENUM_NO_NETWORK,
@@ -153,6 +187,11 @@ typedef enum {
 	PK_ERROR_ENUM_UNKNOWN
 } PkErrorCodeEnum;
 
+/**
+ * PkGroupEnum:
+ *
+ * The group type
+ **/
 typedef enum {
 	PK_GROUP_ENUM_ACCESSIBILITY,
 	PK_GROUP_ENUM_ACCESSORIES,
@@ -181,6 +220,11 @@ typedef enum {
 	PK_GROUP_ENUM_UNKNOWN
 } PkGroupEnum;
 
+/**
+ * PkFreqEnum:
+ *
+ * The frequency type
+ **/
 typedef enum {
 	PK_FREQ_ENUM_HOURLY,
 	PK_FREQ_ENUM_DAILY,
@@ -189,6 +233,11 @@ typedef enum {
 	PK_FREQ_ENUM_UNKNOWN
 } PkFreqEnum;
 
+/**
+ * PkUpdateEnum:
+ *
+ * The update type
+ **/
 typedef enum {
 	PK_UPDATE_ENUM_ALL,
 	PK_UPDATE_ENUM_SECURITY,
@@ -196,8 +245,12 @@ typedef enum {
 	PK_UPDATE_ENUM_UNKNOWN
 } PkUpdateEnum;
 
-/* the enumerated types used in Package() - these have to refer to a specific
-   package action, rather than a general state */
+/**
+ * PkInfoEnum:
+ *
+ * The enumerated types used in Package() - these have to refer to a specific
+ * package action, rather than a general state
+ **/
 typedef enum {
 	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_AVAILABLE,
@@ -215,6 +268,11 @@ typedef enum {
 	PK_INFO_ENUM_UNKNOWN
 } PkInfoEnum;
 
+/**
+ * PkSigTypeEnum:
+ *
+ * The signature type type
+ **/
 typedef enum {
 	PK_SIGTYPE_ENUM_GPG,
 	PK_SIGTYPE_ENUM_UNKNOWN

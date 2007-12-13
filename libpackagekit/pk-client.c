@@ -48,6 +48,11 @@ static void     pk_client_finalize	(GObject       *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
 
+/**
+ * PkClientPrivate:
+ *
+ * Private #PkClient data
+ **/
 struct PkClientPrivate
 {
 	DBusGConnection		*connection;

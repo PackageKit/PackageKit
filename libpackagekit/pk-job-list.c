@@ -45,6 +45,11 @@ static void     pk_job_list_finalize		(GObject        *object);
 
 #define PK_JOB_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_JOB_LIST, PkJobListPrivate))
 
+/**
+ * PkJobListPrivate:
+ *
+ * Private #PkJobList data
+ **/
 struct PkJobListPrivate
 {
 	DBusGConnection		*connection;

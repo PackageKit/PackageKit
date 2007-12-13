@@ -46,6 +46,11 @@ static void     pk_package_list_finalize	(GObject            *object);
 
 #define PK_PACKAGE_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PACKAGE_LIST, PkPackageListPrivate))
 
+/**
+ * PkPackageListPrivate:
+ *
+ * Private #PkPackageList data
+ **/
 struct PkPackageListPrivate
 {
 	GPtrArray	*array;

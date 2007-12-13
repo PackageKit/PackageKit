@@ -41,6 +41,11 @@
 
 #define PK_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONNECTION, PkConnectionPrivate))
 
+/**
+ * PkConnectionPrivate:
+ *
+ * Private #PkConnection data
+ **/
 struct PkConnectionPrivate
 {
 	LibGBus			*libgbus;

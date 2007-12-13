@@ -43,6 +43,11 @@ static void     pk_enum_list_finalize		(GObject         *object);
 
 #define PK_ENUM_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENUM_LIST, PkEnumListPrivate))
 
+/**
+ * PkEnumListPrivate:
+ *
+ * Private #PkEnumList data
+ **/
 struct PkEnumListPrivate
 {
 	PkEnumListType		 type;

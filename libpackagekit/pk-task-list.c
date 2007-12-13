@@ -46,6 +46,11 @@ static void     pk_task_list_finalize		(GObject         *object);
 
 #define PK_TASK_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_LIST, PkTaskListPrivate))
 
+/**
+ * PkTaskListPrivate:
+ *
+ * Private #PkTaskList data
+ **/
 struct PkTaskListPrivate
 {
 	GPtrArray		*task_list;

@@ -47,6 +47,11 @@ static void     pk_polkit_client_finalize		(GObject           *object);
 #define POLKIT_DBUS_PATH		"/org/gnome/PolicyKit/Manager"
 #define POLKIT_DBUS_INTERFACE		"org.gnome.PolicyKit.Manager"
 
+/**
+ * PkPolkitClientPrivate:
+ *
+ * Private #PkPolkitClient data
+ **/
 struct PkPolkitClientPrivate
 {
 	DBusGConnection		*connection;
