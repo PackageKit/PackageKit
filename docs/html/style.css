@@ -33,11 +33,14 @@ th {
 	text-align: left;
 	}
 
-p.indextitle {
-	color: #000000;
-	text-align: center;
+a.indextitle {
+	color: #000147;
 	font-weight: bolder;
 	font-size: 20px;
+	}
+
+p.indextitle {
+	text-align: center;
 	}
 
 table.title {
@@ -64,7 +67,7 @@ code {
 pre {
 	color: #000000;
 	background: #eeeeee;
-	padding: 3;
+	padding: 3px;
 }
 
 a:hover {
