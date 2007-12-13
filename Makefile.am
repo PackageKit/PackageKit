@@ -34,6 +34,7 @@ EXTRA_DIST =						\
 	README						\
 	HACKING						\
 	NEWS						\
+	config.h					\
 	ChangeLog					\
 	$(NULL)
 
