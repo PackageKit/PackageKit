@@ -283,7 +283,6 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 /**
  * pk_client_reset:
  * @client: a valid #PkClient instance
- * @tid: a transaction id
  *
  * Resetting the client way be needed if we canceled the request without
  * waiting for ::finished, or if we want to reuse the #PkClient without

@@ -136,7 +136,7 @@ pk_package_id_new_from_list (const gchar *name, const gchar *version, const gcha
 
 /**
  * pk_package_id_to_string:
- * @indent: A #PkPackageId object
+ * @ident: A #PkPackageId object
  *
  * Return value: returns a string representation of #PkPackageId.
  **/

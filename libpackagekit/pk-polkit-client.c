@@ -57,7 +57,7 @@ G_DEFINE_TYPE (PkPolkitClient, pk_polkit_client, G_TYPE_OBJECT)
 
 /**
  * pk_polkit_client_gain_privilege:
- * @pclient; a valid #PkPolkitClient instance
+ * @pclient: a valid #PkPolkitClient instance
  * @pk_action: a PolicyKit action description, e.g. "org.freedesktop.packagekit.installfile"
  *
  * This function is indented to be used by client tools to gain extra privileges
@@ -98,7 +98,7 @@ pk_polkit_client_gain_privilege (PkPolkitClient *pclient, const gchar *pk_action
 
 /**
  * pk_polkit_client_gain_privilege_str:
- * @pclient; a valid #PkPolkitClient instance
+ * @pclient: a valid #PkPolkitClient instance
  * @error_str: the raw output error, e.g. "org.freedesktop.packagekit.installfile no"
  *
  * This function is indented to be passed failure messages from dbus methods

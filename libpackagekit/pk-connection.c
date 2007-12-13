@@ -134,7 +134,8 @@ pk_connection_init (PkConnection *connection)
 
 /**
  * pk_connection_new:
- * Return value: A new connection class instance.
+ *
+ * Return value: A new #PkConnection instance
  **/
 PkConnection *
 pk_connection_new (void)
