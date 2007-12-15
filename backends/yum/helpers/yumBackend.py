@@ -501,7 +501,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _findPackage(self,id):
         '''
-        find a package based on a packahe id (name;version;arch;repoid)
+        find a package based on a package id (name;version;arch;repoid)
         '''
         # Split up the id
         (n,idver,a,d) = self.get_package_from_id(id)
