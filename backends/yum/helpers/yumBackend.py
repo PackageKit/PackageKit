@@ -527,7 +527,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
@@ -1085,7 +1084,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)
