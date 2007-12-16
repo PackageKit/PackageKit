@@ -547,7 +547,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
 
-        if self.yumbase.rpmdb.installed(po=pkg):
+        if self._is_inst(pkg):
             return False
 
         # everything installed that matches the name
