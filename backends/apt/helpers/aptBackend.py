@@ -234,21 +234,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
-        print pkg._pkg._pkg.VersionList
-        print "ok",self._apt_cache._depcache.SetCandidateVer(pkg._pkg._pkg,pkg._pkg._pkg.VersionList[0])
-        print self._apt_cache._depcache.GetCandidateVer(pkg._pkg._pkg),pkg._pkg._pkg.VersionList[0]
-        print "mi",pkg._pkg.markInstall(autoFix=False)
-        print pkg._pkg._pkg.VersionList
-        print "other",self._apt_cache._depcache.SetCandidateVer(pkg._pkg._pkg,pkg._pkg._pkg.VersionList[0])
-        print self._apt_cache._depcache.GetCandidateVer(pkg._pkg._pkg),pkg._pkg._pkg.VersionList[0]
-        print pkg.candidate_version
-        for d in pkg._pkg.candidateDependencies:
-            for o in d.or_dependencies:
-                dep = Package(self._apt_cache[o.name],self)
-        print "changes"
+        pkg._pkg.markInstall()
+        if pkg.candidate_version != version:
+            if data.find("/")!=-1:
+                # FIXME: this is a nasty hack, assuming that the best way to resolve
+				# deps for non-default repos is by switching the default release.
+				# We really need a better resolver (but that's hard)
+				origin = data[data.find("/")+1:]
+                apt_pkg.Config.Set("APT::Default-Release",origin)
+
+                self._apt_cache.open(PackageKitProgress(self))
+                pkg = Package(self._apt_cache[name], self)
+                pkg._pkg.markInstall()
+            if pkg.candidate_version != version:
+                self.error(ERROR_INTERNAL_ERROR,
+                        "Unable to determine dependencies for package version %s (only got %s)"%(version,pkg.candidate_version))
+                return
+            
         for x in self._apt_cache.getChanges():
-            print x.name,x.candidateVersion
-        raise Exception
+            self._emit_package(Package(x,self))
 
   ### Helpers ###
     def _emit_package(self, package):
