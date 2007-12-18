@@ -162,12 +162,14 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
+        self.status(STATUS_SETUP)
         self._apt_cache = apt.Cache(PackageKitProgress(self))
 
     def search_name(self, filters, key):
         '''
         Implement the {backend}-search-name functionality
         '''
+        self.status(STATUS_INFO)
         self.allow_interrupt(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_name(key)):
@@ -177,6 +179,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
+        self.status(STATUS_INFO)
         self.allow_interrupt(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_details(key)):
@@ -186,6 +189,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
+        self.status(STATUS_INFO)
         self.allow_interrupt(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_group(key)):
@@ -205,6 +209,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        self.status(STATUS_REFRESH_CACHE)
         try:
             res = self._apt_cache.update(PackageKitProgress(self))
         except Exception, error_message:
@@ -216,6 +221,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-description functionality
         '''
+        self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
         description = re.sub('\s+', ' ', pkg.description).strip()
@@ -225,6 +231,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        self.status(STATUS_INFO)
         pkg = Package(self._apt_cache[name], self)
         self._emit_package(pkg)
 
@@ -232,15 +239,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-depends functionality
         '''
+        self.allow_interrupt(True)
+        self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
         pkg._pkg.markInstall()
         if pkg.candidate_version != version:
             if data.find("/")!=-1:
                 # FIXME: this is a nasty hack, assuming that the best way to resolve
-				# deps for non-default repos is by switching the default release.
-				# We really need a better resolver (but that's hard)
-				origin = data[data.find("/")+1:]
+                # deps for non-default repos is by switching the default release.
+                # We really need a better resolver (but that's hard)
+                origin = data[data.find("/")+1:]
                 apt_pkg.Config.Set("APT::Default-Release",origin)
 
                 self._apt_cache.open(PackageKitProgress(self))
