@@ -244,24 +244,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
         pkg._pkg.markInstall()
-        if pkg.candidate_version != version:
-            if data.find("/")!=-1:
-                # FIXME: this is a nasty hack, assuming that the best way to resolve
-                # deps for non-default repos is by switching the default release.
-                # We really need a better resolver (but that's hard)
-                origin = data[data.find("/")+1:]
-                apt_pkg.Config.Set("APT::Default-Release",origin)
-
-                self._apt_cache.open(PackageKitProgress(self))
-                pkg = Package(self._apt_cache[name], self)
-                pkg._pkg.markInstall()
+        if pkg.installed_version != version:
+            pkg._pkg.markInstall()
             if pkg.candidate_version != version:
-                self.error(ERROR_INTERNAL_ERROR,
-                        "Unable to determine dependencies for package version %s (only got %s)"%(version,pkg.candidate_version))
-                return
-            
-        for x in self._apt_cache.getChanges():
-            self._emit_package(Package(x,self))
+                if data.find("/")!=-1:
+                    # FIXME: this is a nasty hack, assuming that the best way to resolve
+                    # deps for non-default repos is by switching the default release.
+                    # We really need a better resolver (but that's hard)
+                    origin = data[data.find("/")+1:]
+                    apt_pkg.Config.Set("APT::Default-Release",origin)
+
+                    self._apt_cache.open(PackageKitProgress(self))
+                    pkg = Package(self._apt_cache[name], self)
+                    pkg._pkg.markInstall()
+                if pkg.candidate_version != version:
+                    self.error(ERROR_INTERNAL_ERROR,
+                            "Unable to determine dependencies for package version %s (only got %s)"%(version,pkg.candidate_version))
+                    return
+                
+        for x in pkg._pkg.candidateDependencies:
+            self._emit_package(Package(self._apt_cache[x.or_dependencies[0].name],self))
 
   ### Helpers ###
     def _emit_package(self, package):
