@@ -145,6 +145,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 	g_free(st->search);
 	g_free(st);
 
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
@@ -166,7 +167,7 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->depth = which;
-		pk_backend_thread_helper (backend, func, data);
+		pk_backend_thread_create (backend, func, data);
 	}
 }
 
@@ -245,7 +246,7 @@ sqlite_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_thread_helper (backend, sqlite_get_description_thread, data);
+	pk_backend_thread_create (backend, sqlite_get_description_thread, data);
 	return;
 }
 
