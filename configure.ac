@@ -251,9 +251,9 @@ if test x$with_security_framework = xpolkit; then
 	if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
 	   AC_MSG_ERROR([polkit-policy-file-validate not found])
 	fi
-	AC_DEFINE(USE_SECURITY_POLKIT, "polkit", [if we should use PolicyKit])
+	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
-	AC_DEFINE(USE_SECURITY_DUMMY, "dummy", [if we should use a dummy security framework])
+	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
 fi
 
 AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
