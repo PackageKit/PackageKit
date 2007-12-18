@@ -291,12 +291,12 @@ class PackageKit:
 
 	@dbusException
 	@job_id
-	def GetDepends(self,package_id):
+	def GetDepends(self,package_id,recursive=False):
 		"""
 		Lists package dependancies?
 		(description is a guess, since this doesn't seem to work for me)
 		"""
-		return self.pk_iface.GetDepends(self.tid(),package_id)
+		return self.pk_iface.GetDepends(self.tid(),package_id,recursive)
 
 	@dbusException
 	@job_id
