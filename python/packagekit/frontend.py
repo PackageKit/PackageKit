@@ -64,9 +64,9 @@ class PackageKit:
 				return func(*args,**kwargs)
 			except dbus.exceptions.DBusException,e:
 				if e.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
-					raise PackageKitAccessDenied
+					raise PackageKitAccessDenied(e)
 				elif e.get_dbus_name() == "org.freedesktop.DBus.Error.NoReply":
-					raise PackageKitBackendFailure
+					raise PackageKitBackendFailure(e)
 				else:
 					raise PackageKitException(e)
 		return wrapper
