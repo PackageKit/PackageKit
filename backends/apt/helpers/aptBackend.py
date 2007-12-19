@@ -239,13 +239,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         default = apt_pkg.Config.Find("APT::Default-Release")
         if default=="":
             d = get_distro()
-            print d.id
             if d.id == "Debian":
                 default = "stable"
             elif d.id == "Ubuntu":
                 default = "main"
             else:
-                raise Exception
+                raise Exception,d.id
 
         self._caches[default] = self._apt_cache
             
@@ -376,6 +375,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         repo = {}
 
         sources = SourcesList()
+        repo["__sources"] = sources
+
         root = apt_pkg.Config.FindDir("Dir::State::Lists")
         #print root
         for entry in sources:
@@ -415,8 +416,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         repo = self._build_repo_list()
         for e in repo.keys():
+            if e == "__sources":
+                continue
             self.repo_detail(repo[e]["entry"].line.strip(),e,not repo[e]["entry"].disabled)
         
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        '''
+        enable = (enable == "True")
+        repo = self._build_repo_list()
+        if not repo.has_key(repoid):
+            self.error(ERROR_REPO_NOT_FOUND,"Couldn't find repo '%s'"%repoid)
+            return
+        r = repo[repoid]
+        if not r["entry"].disabled == enable: # already there
+            return
+        r["entry"].set_enabled(enable)
+        repo["__sources"].save()
+
     ### Helpers ###
     def _emit_package(self, package):
         id = self.get_package_id(package.name,
