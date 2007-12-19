@@ -307,9 +307,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self._apt_cache[name], self)
+        pkg = Package(self, self._apt_cache[name])
         description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, '', 0, '')
+        self.description(package, 'unknown', pkg.group, description, '', pkg._pkg.packageSize, '')
 
     def resolve(self, name):
         '''
