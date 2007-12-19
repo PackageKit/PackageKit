@@ -75,11 +75,8 @@ class Package(object):
             if self.candidate_version != version:
                 if self._data == "":
                     for ver in pkg._pkg.VersionList:
-                        print "vers",dir(ver),version,ver
                         f, index = ver.FileList.pop(0)
-                        #print f,index
                         self._data = "%s/%s"%(f.Origin,f.Archive)
-                        #print data
                         if ver.VerStr == version:
                             break
 
