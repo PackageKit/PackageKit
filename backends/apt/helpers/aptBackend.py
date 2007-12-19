@@ -22,21 +22,53 @@ import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 import apt
 from aptsources.distro import get_distro
+from sets import Set
 
 _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
 
 class Package(object):
-    def __init__(self, backend, pkg, version=None, data=None):
+    def __str__(self):
+        return "Package %s, version %s"%(self.name,self._version)
+
+    def _cmp_deps(self,deps, version):
+        for (v,c) in deps:
+            if not apt_pkg.CheckDep(version,c,v):
+                return False
+        return True
+
+    def __init__(self, backend, pkg, data="",version=[]):
         self._pkg = pkg
-        if version!=None and self.installed_version != version:
+        self._version = version
+        self._data = data
+        self._backend = backend
+        wanted_ver = None
+        if self.installed_version!=None and self._cmp_deps(version,self.installed_version):
+            wanted_ver = self.installed_version
+
+        for ver in pkg._pkg.VersionList:
+            #print "vers",dir(ver),version,ver
+            f, index = ver.FileList.pop(0)
+            #print f,index
+            #print data
+            if (wanted_ver == None or wanted_ver == ver.VerStr) and self._cmp_deps(version,ver.VerStr):
+                if self._data == "":
+                    self._data = "%s/%s"%(f.Origin,f.Archive)
+                #print self.name,version,compare,ver.VerStr
+                self._version = ver.VerStr
+                break
+        else:
+            backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
+    
+    def setVersion(self,version,compare="="):
+        if version!=None and (self.installed_version == None or not apt_pkg.CheckDep(version,compare,self.installed_version)):
             self._pkg.markInstall(False,False)
             if self.candidate_version != version:
-                if data == None:
+                if self._data == "":
                     for ver in pkg._pkg.VersionList:
-                        #print "vers",dir(ver),version,ver
+                        print "vers",dir(ver),version,ver
                         f, index = ver.FileList.pop(0)
                         #print f,index
-                        data = "%s/%s"%(f.Origin,f.Archive)
+                        self._data = "%s/%s"%(f.Origin,f.Archive)
                         #print data
                         if ver.VerStr == version:
                             break
@@ -44,20 +76,21 @@ class Package(object):
                 # FIXME: this is a nasty hack, assuming that the best way to resolve
                 # deps for non-default repos is by switching the default release.
                 # We really need a better resolver (but that's hard)
-                origin = data[data.find("/")+1:]
-                #print "origin",origin
+                assert self._data!=""
+                origin = self._data[self._data.find("/")+1:]
+                print "origin",origin
                 name = self.name
-                if not backend._caches.has_key(origin):
-                    apt_pkg.Config.Set("APT::Default-Release",origin)
-                    backend._caches[origin] = apt.Cache(PackageKitProgress(self))
+                apt_pkg.Config.Set("APT::Default-Release",origin)
+                if not self._backend._caches.has_key(origin):
+                    self._backend._caches[origin] = apt.Cache(PackageKitProgress(self))
                     print "new cache for %s"%origin
-                self._pkg = backend._caches[origin][name]
+                self._pkg = self._backend._caches[origin][name]
                 self._pkg.markInstall(False,False)
-                if self.candidate_version != version:
-                    backend.error(ERROR_INTERNAL_ERROR,
-                            "Unable to locate package version %s (only got %s)"%(version,self.candidate_version))
+                if not apt_pkg.CheckDep(self.candidate_version,compare,version):
+                    self._backend.error(ERROR_INTERNAL_ERROR,
+                            "Unable to locate package version %s (only got %s) for %s"%(version,self.candidate_version,name))
                     return
-            self._pkg.markKeep()
+                self._pkg.markKeep()
 
     @property
     def id(self):
@@ -120,7 +153,7 @@ class Package(object):
 
     @property
     def is_installed(self):
-        return self._pkg.isInstalled
+        return self._pkg.isInstalled and self.installed_version == self._version
 
     @property
     def is_upgradable(self):
@@ -287,32 +320,57 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self._apt_cache[name], self)
+        pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
+        pkg.setVersion(version)
         pkg._pkg.markInstall()
+        deps = {}
         for x in pkg._pkg.candidateDependencies:
-            self._emit_package(Package(self._apt_cache[x.or_dependencies[0].name],self))
+            n = x.or_dependencies[0].name
+            if not deps.has_key(n):
+                deps[n] = []
+            deps[n].append((x.or_dependencies[0].version,x.or_dependencies[0].relation))
+        for n in deps.keys():
+            self._emit_package(Package(self,self._apt_cache[n],version=deps[n]))
+
+    def _do_reqs(self,inp,pkgs,recursive):
+        extra = []
+        fails = []
+        for r in inp._pkg._pkg.RevDependsList:
+            ch = apt_pkg.CheckDep(inp._version,r.CompType,r.TargetVer)
+            v = (r.ParentPkg.Name,r.ParentVer.VerStr)
+            if not ch or v in fails:
+                #print "skip",r.TargetVer,r.CompType,r.ParentPkg.Name,r.ParentVer.VerStr
+                fails.append(v)
+                continue
+            p = Package(self,self._apt_cache[r.ParentPkg.Name],r.ParentVer.VerStr)
+            if v not in pkgs:
+                extra.append(p)
+                #print "new pkg",p
+                self._emit_package(p)
+            pkgs.add(v)
+        if recursive:
+            for e in extra:
+                pkgs = self._do_reqs(p, pkgs,recursive)
+        return pkgs
 
     def get_requires(self,package,recursive):
         '''
         Implement the {backend}-get-requires functionality
-        Needed to be implemented in a sub class
         '''
         self.allow_interrupt(True)
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name], version, data)
 
-        for r in pkg._pkg._pkg.RevDependsList:
-            print r.ParentPkg,
-            print version,pkg._pkg._pkg.CurrentVer.VerStr,r.CompType
-            print apt_pkg.CheckDep(version,r.CompType,pkg._pkg._pkg.CurrentVer.VerStr)
+        pkgs = Set()
+        self._do_reqs(pkg,pkgs, recursive)
 
   ### Helpers ###
     def _emit_package(self, package):
         id = self.get_package_id(package.name,
-                package.installed_version or package.candidate_version,
+                package._version,
                 package.architecture,
-                "")
+                package._data)
         if package.is_installed:
             status = INFO_INSTALLED
         else:
@@ -338,7 +396,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not self._do_filtering(package, filters):
                 continue
             for ver in package._pkg._pkg.VersionList:
-                yield Package(self, package._pkg, ver.VerStr)
+                yield Package(self, package._pkg, version=[[ver.VerStr,"="]])
         self.percentage(100)
 
     def _do_filtering(self, package, filters):
