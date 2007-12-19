@@ -44,6 +44,9 @@ class Package(object):
         wanted_ver = None
         if self.installed_version!=None and self._cmp_deps(version,self.installed_version):
             wanted_ver = self.installed_version
+        elif self.installed_version == None:
+            self._pkg.markInstall(False,False)
+            wanted_ver = self.candidate_version
 
         for ver in pkg._pkg.VersionList:
             #print "vers",dir(ver),version,ver
@@ -53,7 +56,6 @@ class Package(object):
             if (wanted_ver == None or wanted_ver == ver.VerStr) and self._cmp_deps(version,ver.VerStr):
                 if self._data == "":
                     self._data = "%s/%s"%(f.Origin,f.Archive)
-                #print self.name,version,compare,ver.VerStr
                 self._version = ver.VerStr
                 break
         else:
@@ -310,7 +312,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-resolve functionality
         '''
         self.status(STATUS_INFO)
-        pkg = Package(self._apt_cache[name], self)
+        pkg = Package(self,self._apt_cache[name])
         self._emit_package(pkg)
 
     def get_depends(self,package):
