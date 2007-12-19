@@ -21,12 +21,43 @@ import apt_pkg
 import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 import apt
+from aptsources.distro import get_distro
 
 _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
 
 class Package(object):
-    def __init__(self, pkg, backend):
+    def __init__(self, backend, pkg, version=None, data=None):
         self._pkg = pkg
+        if version!=None and self.installed_version != version:
+            self._pkg.markInstall(False,False)
+            if self.candidate_version != version:
+                if data == None:
+                    for ver in pkg._pkg.VersionList:
+                        #print "vers",dir(ver),version,ver
+                        f, index = ver.FileList.pop(0)
+                        #print f,index
+                        data = "%s/%s"%(f.Origin,f.Archive)
+                        #print data
+                        if ver.VerStr == version:
+                            break
+
+                # FIXME: this is a nasty hack, assuming that the best way to resolve
+                # deps for non-default repos is by switching the default release.
+                # We really need a better resolver (but that's hard)
+                origin = data[data.find("/")+1:]
+                #print "origin",origin
+                name = self.name
+                if not backend._caches.has_key(origin):
+                    apt_pkg.Config.Set("APT::Default-Release",origin)
+                    backend._caches[origin] = apt.Cache(PackageKitProgress(self))
+                    print "new cache for %s"%origin
+                self._pkg = backend._caches[origin][name]
+                self._pkg.markInstall(False,False)
+                if self.candidate_version != version:
+                    backend.error(ERROR_INTERNAL_ERROR,
+                            "Unable to locate package version %s (only got %s)"%(version,self.candidate_version))
+                    return
+            self._pkg.markKeep()
 
     @property
     def id(self):
@@ -163,7 +194,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
         self.status(STATUS_SETUP)
+        self._caches  = {}
         self._apt_cache = apt.Cache(PackageKitProgress(self))
+        default = apt_pkg.Config.Find("APT::Default-Release")
+        if default=="":
+            d = get_distro()
+            print d.id
+            if d.id == "Debian":
+                default = "stable"
+            elif d.id == "Ubuntu":
+                default = "main"
+            else:
+                raise Exception
+
+        self._caches[default] = self._apt_cache
+            
 
     def search_name(self, filters, key):
         '''
@@ -244,26 +289,23 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self._apt_cache[name], self)
         pkg._pkg.markInstall()
-        if pkg.installed_version != version:
-            pkg._pkg.markInstall()
-            if pkg.candidate_version != version:
-                if data.find("/")!=-1:
-                    # FIXME: this is a nasty hack, assuming that the best way to resolve
-                    # deps for non-default repos is by switching the default release.
-                    # We really need a better resolver (but that's hard)
-                    origin = data[data.find("/")+1:]
-                    apt_pkg.Config.Set("APT::Default-Release",origin)
-
-                    self._apt_cache.open(PackageKitProgress(self))
-                    pkg = Package(self._apt_cache[name], self)
-                    pkg._pkg.markInstall()
-                if pkg.candidate_version != version:
-                    self.error(ERROR_INTERNAL_ERROR,
-                            "Unable to determine dependencies for package version %s (only got %s)"%(version,pkg.candidate_version))
-                    return
-                
         for x in pkg._pkg.candidateDependencies:
             self._emit_package(Package(self._apt_cache[x.or_dependencies[0].name],self))
+
+    def get_requires(self,package,recursive):
+        '''
+        Implement the {backend}-get-requires functionality
+        Needed to be implemented in a sub class
+        '''
+        self.allow_interrupt(True)
+        self.status(STATUS_INFO)
+        name, version, arch, data = self.get_package_from_id(package)
+        pkg = Package(self,self._apt_cache[name], version, data)
+
+        for r in pkg._pkg._pkg.RevDependsList:
+            print r.ParentPkg,
+            print version,pkg._pkg._pkg.CurrentVer.VerStr,r.CompType
+            print apt_pkg.CheckDep(version,r.CompType,pkg._pkg._pkg.CurrentVer.VerStr)
 
   ### Helpers ###
     def _emit_package(self, package):
@@ -287,7 +329,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if new_percentage - percentage >= 5:
                 percentage = new_percentage
                 self.percentage(percentage)
-            package = Package(pkg, self)
+            package = Package(self, pkg)
             if package.installed_version is None and \
                     package.candidate_version is None:
                 continue
@@ -295,9 +337,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 continue
             if not self._do_filtering(package, filters):
                 continue
-            yield package
+            for ver in package._pkg._pkg.VersionList:
+                yield Package(self, package._pkg, ver.VerStr)
         self.percentage(100)
-
 
     def _do_filtering(self, package, filters):
         if len(filters) == 0 or filters == ['none']:
