@@ -22,7 +22,10 @@ import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 import apt
 from aptsources.distro import get_distro
+from aptsources.sourceslist import SourcesList
 from sets import Set
+from os.path import join,exists
+from urlparse import urlparse
 
 _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
 
@@ -44,21 +47,26 @@ class Package(object):
         wanted_ver = None
         if self.installed_version!=None and self._cmp_deps(version,self.installed_version):
             wanted_ver = self.installed_version
-        elif self.installed_version == None:
-            self._pkg.markInstall(False,False)
+        elif self.installed_version == None and version == []:
+            #self._pkg.markInstall(False,False)
             wanted_ver = self.candidate_version
 
         for ver in pkg._pkg.VersionList:
             #print "vers",dir(ver),version,ver
-            f, index = ver.FileList.pop(0)
-            #print f,index
             #print data
             if (wanted_ver == None or wanted_ver == ver.VerStr) and self._cmp_deps(version,ver.VerStr):
+                f, index = ver.FileList.pop(0)
                 if self._data == "":
-                    self._data = "%s/%s"%(f.Origin,f.Archive)
+                    if f.Origin!="" or f.Archive!="":
+                        self._data = "%s/%s"%(f.Origin,f.Archive)
+                    else:
+                        self._data = "%s/unknown"%f.Site
                 self._version = ver.VerStr
                 break
         else:
+            print "wanted",wanted_ver
+            for ver in pkg._pkg.VersionList:
+                print "vers",version,ver.VerStr
             backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
     
     def setVersion(self,version,compare="="):
@@ -367,7 +375,45 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = Set()
         self._do_reqs(pkg,pkgs, recursive)
 
-  ### Helpers ###
+    def get_repo_list(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        self.allow_interrupt(True)
+        self.status(STATUS_INFO)
+        sources = SourcesList()
+        root = apt_pkg.Config.FindDir("Dir::State::Lists")
+        #print root
+        for entry in sources:
+            if entry.type!="":
+                url = entry.uri
+                #if entry.template!=None:
+                url +="/dists/"
+                url += entry.dist
+                url = url.replace("//dists","/dists")
+                #print url
+                path = join(root,"%s_Release"%(apt_pkg.URItoFileName(url)))
+                if not exists(path):
+                    #print path
+                    name = "%s/unknown"%urlparse(entry.uri)[1]
+                else:
+                    lines = file(path).readlines()
+                    origin = ""
+                    suite = ""
+                    for l in lines:
+                        if l.find("Origin: ")==0:
+                            origin = l.split(" ",1)[1].strip()
+                        elif l.find("Suite: ")==0:
+                            suite = l.split(" ",1)[1].strip()
+                    assert origin!="" and suite!=""
+                    name = "%s/%s"%(origin,suite)
+                    
+                #print entry
+                #print name
+                self.repo_detail(entry.line.strip(),name,not entry.disabled)
+                #print
+        
+    ### Helpers ###
     def _emit_package(self, package):
         id = self.get_package_id(package.name,
                 package._version,
