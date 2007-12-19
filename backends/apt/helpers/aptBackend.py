@@ -433,7 +433,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if not r["entry"].disabled == enable: # already there
             return
         r["entry"].set_enabled(enable)
-        repo["__sources"].save()
+        try:
+            repo["__sources"].save()
+        except IOError,e:
+            self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
 
     ### Helpers ###
     def _emit_package(self, package):
