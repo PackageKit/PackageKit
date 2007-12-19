@@ -372,12 +372,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pkgs = Set()
         self._do_reqs(pkg,pkgs, recursive)
 
-    def get_repo_list(self):
-        '''
-        Implement the {backend}-get-repo-list functionality
-        '''
-        self.allow_cancel(True)
-        self.status(STATUS_INFO)
+    def _build_repo_list(self):
+        repo = {}
+
         sources = SourcesList()
         root = apt_pkg.Config.FindDir("Dir::State::Lists")
         #print root
@@ -404,11 +401,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                             suite = l.split(" ",1)[1].strip()
                     assert origin!="" and suite!=""
                     name = "%s/%s"%(origin,suite)
+                if entry.type == "deb-src":
+                    name += "-src"
                     
-                #print entry
-                #print name
-                self.repo_detail(entry.line.strip(),name,not entry.disabled)
-                #print
+                repo[name] = {"entry":entry}
+        return repo
+
+    def get_repo_list(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        self.allow_interrupt(True)
+        self.status(STATUS_INFO)
+        repo = self._build_repo_list()
+        for e in repo.keys():
+            self.repo_detail(repo[e]["entry"].line.strip(),e,not repo[e]["entry"].disabled)
         
     ### Helpers ###
     def _emit_package(self, package):
