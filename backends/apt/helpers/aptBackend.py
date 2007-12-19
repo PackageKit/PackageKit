@@ -316,27 +316,43 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-resolve functionality
         '''
         self.status(STATUS_INFO)
-        pkg = Package(self,self._apt_cache[name])
-        self._emit_package(pkg)
+        try:
+            pkg = Package(self,self._apt_cache[name])
+            self._emit_package(pkg)
+        except KeyError:
+            self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find a package called '%s'"%name)
 
-    def get_depends(self,package):
+    def _do_deps(self,inp,deps,recursive):
+        inp._pkg.markInstall()
+        newkeys = []
+        for x in inp._pkg.candidateDependencies:
+            n = x.or_dependencies[0].name
+            if not deps.has_key(n):
+                deps[n] = []
+                newkeys.append(n)
+            deps[n].append((x.or_dependencies[0].version,x.or_dependencies[0].relation))
+        if recursive:
+            for n in newkeys:
+                try:
+                    deps = self._do_deps(Package(self,self._apt_cache[n],version=deps[n]),deps,recursive)
+                except KeyError: # FIXME: we're assuming this is a virtual package, which we can't cope with yet
+                    del deps[n]
+                    continue
+        return deps
+
+    def get_depends(self,package, recursive):
         '''
         Implement the {backend}-get-depends functionality
         '''
         self.allow_cancel(True)
         self.status(STATUS_INFO)
+        recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
         pkg.setVersion(version)
-        pkg._pkg.markInstall()
-        deps = {}
-        for x in pkg._pkg.candidateDependencies:
-            n = x.or_dependencies[0].name
-            if not deps.has_key(n):
-                deps[n] = []
-            deps[n].append((x.or_dependencies[0].version,x.or_dependencies[0].relation))
+        deps = self._do_deps(pkg, {}, recursive)
         for n in deps.keys():
-            self._emit_package(Package(self,self._apt_cache[n],version=deps[n]))
+           self._emit_package(Package(self,self._apt_cache[n],version=deps[n]))
 
     def _do_reqs(self,inp,pkgs,recursive):
         extra = []
@@ -365,8 +381,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.allow_cancel(True)
         self.status(STATUS_INFO)
+        recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._apt_cache[name], version, data)
+        pkg = Package(self,self._apt_cache[name], version=[(version,"=")], data=data)
 
         pkgs = Set()
         self._do_reqs(pkg,pkgs, recursive)

@@ -13,6 +13,7 @@ import sys
 
 from aptBackend import PackageKitAptBackend
 package=sys.argv[1]
+recursive = sys.argv[2]
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.get_depends(package)
+backend.get_depends(package, recursive)
 sys.exit(0)
