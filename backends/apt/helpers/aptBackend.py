@@ -16,7 +16,7 @@ import os
 import re
 
 from packagekit.backend import *
-import apt_pkg
+import apt_pkg,apt_inst
 
 import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -26,6 +26,8 @@ from aptsources.sourceslist import SourcesList
 from sets import Set
 from os.path import join,exists
 from urlparse import urlparse
+from apt.debfile import DebPackage
+from os import system
 
 _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
 
@@ -57,8 +59,10 @@ class Package(object):
             if (wanted_ver == None or wanted_ver == ver.VerStr) and self._cmp_deps(version,ver.VerStr):
                 f, index = ver.FileList.pop(0)
                 if self._data == "":
-                    if f.Origin!="" or f.Archive!="":
-                        self._data = "%s/%s"%(f.Origin,f.Archive)
+                    if f.Origin=="" and f.Archive=="now":
+                        self._data = "local_install"
+                    elif f.Origin!="" or f.Archive!="":
+                        self._data = "%s/%s"%(f.Origin.replace("/","_"),f.Archive.replace("/","_"))
                     else:
                         self._data = "%s/unknown"%f.Site
                 self._version = ver.VerStr
@@ -454,6 +458,35 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             repo["__sources"].save()
         except IOError,e:
             self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
+
+    def install_file (self, inst_file):
+        '''
+        Implement the {backend}-install_file functionality
+        Install the package containing the inst_file file
+        '''
+        if not exists(inst_file):
+            self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find %s"%inst_file)
+            return
+        deb = DebPackage(inst_file)
+        deps = {}
+        for k in ["Depends","Recommends"]:
+            if not deb._sections.has_key(k):
+                continue
+            for items in apt_pkg.ParseDepends(deb[k]):
+                assert len(items) == 1,"Can't handle or deps properly yet"
+                (pkg,ver,comp) = items[0]
+                if not deps.has_key(pkg):
+                    deps[pkg] = []
+                deps[pkg].append((ver,comp))
+        for n in deps.keys():
+           p = Package(self,self._apt_cache[n],version=deps[n])
+           if not p.is_installed:
+               p.markInstall()
+        assert self._apt_cache.getChanges()==[],"Don't handle install changes yet"
+        # FIXME: nasty hack. Need a better way in
+        ret = system("dpkg -i %s"%inst_file)
+        if ret!=0:
+            self.error(ERROR_INTERNAL_ERROR,"Can't install package")
 
     ### Helpers ###
     def _emit_package(self, package):
