@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
+ * Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
