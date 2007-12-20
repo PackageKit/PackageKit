@@ -517,8 +517,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if not condition(package):
                 continue
                 continue
-            for ver in package._pkg._pkg.VersionList:
-                p = Package(self, package._pkg, version=[[ver.VerStr,"="]])
+            vers = [x.VerStr for x in package._pkg._pkg.VersionList]
+            if package.installed_version!=None:
+                i = package.installed_version
+                if i in vers and vers[0]!=i:
+                    del vers[vers.index(i)]
+                    vers.insert(0,i)
+
+            for ver in vers:
+                p = Package(self, package._pkg, version=[[ver,"="]])
                 if self._do_filtering(p, filters):
                     yield p
         self.percentage(100)
