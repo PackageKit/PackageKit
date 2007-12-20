@@ -516,10 +516,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 continue
             if not condition(package):
                 continue
-            if not self._do_filtering(package, filters):
                 continue
             for ver in package._pkg._pkg.VersionList:
-                yield Package(self, package._pkg, version=[[ver.VerStr,"="]])
+                p = Package(self, package._pkg, version=[[ver.VerStr,"="]])
+                if self._do_filtering(p, filters):
+                    yield p
         self.percentage(100)
 
     def _do_filtering(self, package, filters):
