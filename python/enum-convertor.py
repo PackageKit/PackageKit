@@ -3,7 +3,7 @@
 from re import compile,DOTALL,MULTILINE
 
 enum = compile("static PkEnumMatch enum_([^\]]+)\[\] = {(.*?)};", DOTALL|MULTILINE)
-value = compile("PK_([A-Z]+)_ENUM_([A-Z_]+),\s+\"([^\"]+)\"")
+value = compile("PK_([A-Z]+)_ENUM_([A-Z0-9_]+),\s+\"([^\"]+)\"")
 
 inp = open("../libpackagekit/pk-enum.c").read()
 

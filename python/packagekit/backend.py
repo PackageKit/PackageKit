@@ -193,11 +193,16 @@ class PackageKitBaseBackend:
         can be redistributed under any of the licenses in the group.
         For instance: GPLv2+ or Artistic or FooLicense.
 
+        Also, if a license ends with "+", the "+" is removed before
+        comparing it to the list of valid licenses.  So if license
+        "FooLicense" is free, then "FooLicense+" is considered free.
+
         Groups of licenses can be grouped with " and " to indicate
         that parts of the package are distributed under one group of
         licenses, while other parts of the package are distributed
         under another group.  Groups may be wrapped in parenthesis.
-        For instance: (GPLv2+ or Artistic) and (GPL+ or Artistic) and FooLicense.
+        For instance:
+          (GPLv2+ or Artistic) and (GPL+ or Artistic) and FooLicense.
 
         At least one license in each group must be free for the
         package to be considered Free Software.  If the license_field
@@ -220,6 +225,12 @@ class PackageKitBaseBackend:
 
             for license in licenses:
                 license = license.strip()
+
+                if len(license) < 1:
+                    continue
+
+                if license[-1] == "+":
+                    license = license[0:-1]
 
                 if license in PackageKitEnum.fsf_free_licenses:
                     one_free_group = True
