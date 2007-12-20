@@ -22,6 +22,7 @@
 
 # imports
 import sys
+import traceback
 import types
 from enums import *
 
@@ -30,6 +31,8 @@ from enums import *
 class PackageKitBaseBackend:
 
     def __init__(self,cmds):
+        # Setup a custom exception handler
+        installExceptionHandler(self)
         self.cmds = cmds
         self._locked = False
 
@@ -458,4 +461,21 @@ class PackagekitProgress:
         incr = int(f*deltapct)
         self.percent = startpct + incr
 
-        
+def exceptionHandler(typ, value, tb, base):
+    # Restore original exception handler
+    sys.excepthook = sys.__excepthook__
+    etb = traceback.extract_tb(tb)
+    errmsg = 'Error Type: %s;' % str(typ)
+    errmsg += 'Error Value: %s;' % str(value)
+    for tub in etb:
+        f,l,m,c = tub # file,lineno, function, codeline
+        errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+        errmsg += '    %s;' % c
+    # send the traceback to PackageKit
+    print errmsg
+    base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
+    
+    
+def installExceptionHandler(base):
+    sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
+    
