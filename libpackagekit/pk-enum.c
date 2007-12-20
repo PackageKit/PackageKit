@@ -223,6 +223,114 @@ static PkEnumMatch enum_sig_type[] = {
 	{0, NULL},
 };
 
+static PkEnumMatch enum_fsf_free_licenses[] = {
+	{PK_LICENSE_ENUM_UNKNOWN,              "unknown"},	/* fall though value */
+	{PK_LICENSE_ENUM_GLIDE,                "Glide"},
+	{PK_LICENSE_ENUM_AFL,                  "AFL"},
+	{PK_LICENSE_ENUM_AMPAS_BSD,            "AMPAS BSD"},
+	{PK_LICENSE_ENUM_ADOBE,                "Adobe"},
+	{PK_LICENSE_ENUM_AGPLV1,               "AGPLv1"},
+	{PK_LICENSE_ENUM_AGPLV3,               "AGPLv3"},
+	{PK_LICENSE_ENUM_ASL_1_DOT_0,          "ASL 1.0"},
+	{PK_LICENSE_ENUM_ASL_1_DOT_1,          "ASL 1.1"},
+	{PK_LICENSE_ENUM_ASL_2_DOT_0,          "ASL 2.0"},
+	{PK_LICENSE_ENUM_APSL_2_DOT_0,         "APSL 2.0"},
+	{PK_LICENSE_ENUM_ARTISTIC_CLARIFIED,   "Artistic clarified"},
+	{PK_LICENSE_ENUM_ARTISTIC_2_DOT_0,     "Artistic 2.0"},
+	{PK_LICENSE_ENUM_ARL,                  "ARL"},
+	{PK_LICENSE_ENUM_BITTORRENT,           "BitTorrent"},
+	{PK_LICENSE_ENUM_BOOST,                "Boost"},
+	{PK_LICENSE_ENUM_BSD_WITH_ADVERTISING, "BSD with advertising"},
+	{PK_LICENSE_ENUM_BSD,                  "BSD"},
+	{PK_LICENSE_ENUM_CECILL,               "CeCILL"},
+	{PK_LICENSE_ENUM_CDDL,                 "CDDL"},
+	{PK_LICENSE_ENUM_CPL,                  "CPL"},
+	{PK_LICENSE_ENUM_CONDOR,               "Condor"},
+	{PK_LICENSE_ENUM_COPYRIGHT_ONLY,       "Copyright only"},
+	{PK_LICENSE_ENUM_CRYPTIX,              "Cryptix"},
+	{PK_LICENSE_ENUM_CRYSTAL_STACKER,      "Crystal Stacker"},
+	{PK_LICENSE_ENUM_WTFPL,                "WTFPL"},
+	{PK_LICENSE_ENUM_EPL,                  "EPL"},
+	{PK_LICENSE_ENUM_ECOS,                 "eCos"},
+	{PK_LICENSE_ENUM_EFL_2_DOT_0,          "EFL 2.0"},
+	{PK_LICENSE_ENUM_EU_DATAGRID,          "EU Datagrid"},
+	{PK_LICENSE_ENUM_LGPLV2_WITH_EXCEPTIONS, "LGPLv2 with exceptions"},
+	{PK_LICENSE_ENUM_FTL,                  "FTL"},
+	{PK_LICENSE_ENUM_GIFTWARE,             "Giftware"},
+	{PK_LICENSE_ENUM_GPL_PLUS,             "GPL+"},
+	{PK_LICENSE_ENUM_GPLV2,                "GPLv2"},
+	{PK_LICENSE_ENUM_GPLV2_WITH_EXCEPTIONS, "GPLv2 with exceptions"},
+	{PK_LICENSE_ENUM_GPLV2_PLUS,           "GPLv2+"},
+	{PK_LICENSE_ENUM_GPLV2_PLUS_WITH_EXCEPTIONS, "GPLv2+ with exceptions"},
+	{PK_LICENSE_ENUM_GPLV3,                "GPLv3"},
+	{PK_LICENSE_ENUM_GPLV3_WITH_EXCEPTIONS, "GPLv3 with exceptions"},
+	{PK_LICENSE_ENUM_GPLV3_PLUS,           "GPLv3+"},
+	{PK_LICENSE_ENUM_GPLV3_PLUS_WITH_EXCEPTIONS, "GPLv3+ with exceptions"},
+	{PK_LICENSE_ENUM_LGPLV2,               "LGPLv2"},
+	{PK_LICENSE_ENUM_LGPLV2_PLUS,          "LGPLv2+"},
+	{PK_LICENSE_ENUM_LGPLV3,               "LGPLv3"},
+	{PK_LICENSE_ENUM_LGPLV3_PLUS,          "LGPLv3+"},
+	{PK_LICENSE_ENUM_GNUPLOT,              "gnuplot"},
+	{PK_LICENSE_ENUM_IBM,                  "IBM"},
+	{PK_LICENSE_ENUM_IMATIX,               "iMatix"},
+	{PK_LICENSE_ENUM_IMAGEMAGICK,          "ImageMagick"},
+	{PK_LICENSE_ENUM_IMLIB2,               "Imlib2"},
+	{PK_LICENSE_ENUM_IJG,                  "IJG"},
+	{PK_LICENSE_ENUM_INTEL_ACPI,           "Intel ACPI"},
+	{PK_LICENSE_ENUM_INTERBASE,            "Interbase"},
+	{PK_LICENSE_ENUM_ISC,                  "ISC"},
+	{PK_LICENSE_ENUM_JABBER,               "Jabber"},
+	{PK_LICENSE_ENUM_JASPER,               "JasPer"},
+	{PK_LICENSE_ENUM_LPPL,                 "LPPL"},
+	{PK_LICENSE_ENUM_LIBTIFF,              "libtiff"},
+	{PK_LICENSE_ENUM_LPL,                  "LPL"},
+	{PK_LICENSE_ENUM_MECAB_IPADIC,         "mecab-ipadic"},
+	{PK_LICENSE_ENUM_MIT,                  "MIT"},
+	{PK_LICENSE_ENUM_MPLV1_DOT_0,          "MPLv1.0"},
+	{PK_LICENSE_ENUM_MPLV1_DOT_1,          "MPLv1.1"},
+	{PK_LICENSE_ENUM_NCSA,                 "NCSA"},
+	{PK_LICENSE_ENUM_NGPL,                 "NGPL"},
+	{PK_LICENSE_ENUM_NOSL,                 "NOSL"},
+	{PK_LICENSE_ENUM_NETSCAPE,             "Netscape"},
+	{PK_LICENSE_ENUM_NOKIA,                "Nokia"},
+	{PK_LICENSE_ENUM_OPENLDAP,             "OpenLDAP"},
+	{PK_LICENSE_ENUM_OPENPBS,              "OpenPBS"},
+	{PK_LICENSE_ENUM_OSL_1_DOT_0,          "OSL 1.0"},
+	{PK_LICENSE_ENUM_OSL_1_DOT_1,          "OSL 1.1"},
+	{PK_LICENSE_ENUM_OSL_2_DOT_0,          "OSL 2.0"},
+	{PK_LICENSE_ENUM_OSL_3_DOT_0,          "OSL 3.0"},
+	{PK_LICENSE_ENUM_OPENSSL,              "OpenSSL"},
+	{PK_LICENSE_ENUM_OREILLY,              "OReilly"},
+	{PK_LICENSE_ENUM_GPL_PLUS_OR_ARTISTIC, "GPL+ or Artistic"},
+	{PK_LICENSE_ENUM_GPLV2_PLUS_OR_ARTISTIC, "GPLv2+ or Artistic"},
+	{PK_LICENSE_ENUM_PHORUM,               "Phorum"},
+	{PK_LICENSE_ENUM_PHP,                  "PHP"},
+	{PK_LICENSE_ENUM_PUBLIC_DOMAIN,        "Public Domain"},
+	{PK_LICENSE_ENUM_PYTHON,               "Python"},
+	{PK_LICENSE_ENUM_QPL,                  "QPL"},
+	{PK_LICENSE_ENUM_RPSL,                 "RPSL"},
+	{PK_LICENSE_ENUM_RUBY,                 "Ruby"},
+	{PK_LICENSE_ENUM_SLEEPYCAT,            "Sleepycat"},
+	{PK_LICENSE_ENUM_SLIB,                 "SLIB"},
+	{PK_LICENSE_ENUM_SISSL,                "SISSL"},
+	{PK_LICENSE_ENUM_SPL,                  "SPL"},
+	{PK_LICENSE_ENUM_TCL,                  "TCL"},
+	{PK_LICENSE_ENUM_UCD,                  "UCD"},
+	{PK_LICENSE_ENUM_VIM,                  "Vim"},
+	{PK_LICENSE_ENUM_VNLSL,                "VNLSL"},
+	{PK_LICENSE_ENUM_VSL,                  "VSL"},
+	{PK_LICENSE_ENUM_W3C,                  "W3C"},
+	{PK_LICENSE_ENUM_WXWIDGETS,            "wxWidgets"},
+	{PK_LICENSE_ENUM_XINETD,               "xinetd"},
+	{PK_LICENSE_ENUM_ZEND,                 "Zend"},
+	{PK_LICENSE_ENUM_ZPLV1_DOT_0,          "ZPLv1.0"},
+	{PK_LICENSE_ENUM_ZPLV2_DOT_0,          "ZPLv2.0"},
+	{PK_LICENSE_ENUM_ZPLV2_DOT_1,          "ZPLv2.1"},
+	{PK_LICENSE_ENUM_ZLIB,                 "zlib "},
+	{0, NULL},
+};
+
+
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values
@@ -500,6 +608,24 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 	return pk_enum_find_string (enum_filter, filter);
 }
 
+/**
+ * pk_license_enum_from_text:
+ **/
+PkLicenseEnum
+pk_license_enum_from_text (const gchar *license)
+{
+	return pk_enum_find_value (enum_fsf_free_licenses, license);
+}
+
+/**
+ * pk_license_enum_to_text:
+ **/
+const gchar *
+pk_license_enum_to_text (PkLicenseEnum license)
+{
+	return pk_enum_find_string (enum_fsf_free_licenses, license);
+}
+
 /***************************************************************************
  ***                          MAKE CHECK TESTS                           ***
  ***************************************************************************/
@@ -667,6 +793,17 @@ libst_enum (LibSelfTest *test)
 	libst_title (test, "check we convert all the sig_type enums");
 	for (i=0; i<=PK_SIGTYPE_ENUM_UNKNOWN; i++) {
 		string = pk_sig_type_enum_to_text (i);
+		if (string == NULL) {
+			libst_failed (test, "failed to get %i", i);
+			break;
+		}
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we convert all the license enums");
+	for (i=0; i<=PK_LICENSE_ENUM_UNKNOWN; i++) {
+		string = pk_license_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
 			break;
