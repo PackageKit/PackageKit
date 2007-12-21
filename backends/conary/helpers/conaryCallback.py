@@ -48,8 +48,6 @@ class UpdateCallback(callbacks.UpdateCallback):
         if not self.currentJob or len(self.currentJob) == 0 or troveNum > troveCount:
             return
 
-        print "troveNum: %s, troveCount: %s" % (troveNum, troveCount)
-
         if troveNum > 0 and troveCount > 0:
             sub_percent = (add + troveNum) / (2 * float(troveCount)) * 100
             self.backend.sub_percentage(sub_percent)
