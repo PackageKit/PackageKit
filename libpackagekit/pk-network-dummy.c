@@ -19,6 +19,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-network-dummy
+ * @short_description: Dummy network detection code
+ *
+ * This file contains a dummy network implimentation.
+ * It is designed for people that don't have NetworkManager installed.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -45,6 +53,11 @@ static void     pk_network_finalize	(GObject        *object);
 
 #define PK_NETWORK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK, PkNetworkPrivate))
 
+/**
+ * PkNetworkPrivate:
+ *
+ * Private #PkNetwork data
+ **/
 struct PkNetworkPrivate
 {
 	gpointer		 data;

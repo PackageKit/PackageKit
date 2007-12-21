@@ -9,6 +9,5 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-def build(bld):
-	obj=bld.create_obj('gnome_translations', 'PackageKit')
+obj=bld.create_obj('intltool_po', 'PackageKit')
 

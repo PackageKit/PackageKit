@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-python.h>
 
 /**
  * backend_get_groups:
@@ -65,9 +66,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "get-description.py", package_id, NULL);
+	pk_backend_python_get_description(backend,package_id);
 }
 
 /**
@@ -77,9 +76,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "search-details.py", filter, search, NULL);
+	pk_backend_python_search_details(backend,filter,search);
 }
 
 /**
@@ -88,9 +85,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "search-name.py", filter, search, NULL);
+	pk_backend_python_search_name(backend,filter,search);
 }
 
 /**
@@ -99,7 +94,9 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
-	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
+	pk_backend_python_search_group(backend,filter,search);
 }
+
+/* don't need to do any setup/finalize in the plain search mode */
+void backend_init_search(PkBackend *backend) {}
+void backend_finish_search(PkBackend *backend) {}

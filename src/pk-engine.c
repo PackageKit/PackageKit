@@ -458,7 +458,7 @@ pk_engine_message_cb (PkBackend *backend, PkMessageEnum restart, const gchar *de
  * pk_engine_description_cb:
  **/
 static void
-pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gchar *licence, PkGroupEnum group,
+pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
 			  const gchar *detail, const gchar *url,
 			  guint64 size, PkEngine *engine)
 {
@@ -476,9 +476,9 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	group_text = pk_group_enum_to_text (group);
 
 	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld",
-		  item->tid, package_id, licence, group_text, detail, url, (long int) size);
+		  item->tid, package_id, license, group_text, detail, url, (long int) size);
 	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0,
-		       item->tid, package_id, licence, group_text, detail, url, size);
+		       item->tid, package_id, license, group_text, detail, url, size);
 }
 
 /**

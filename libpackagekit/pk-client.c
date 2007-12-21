@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-client
+ * @short_description: GObject class for PackageKit client access
+ *
+ * This file contains a nice GObject to use for accessing PackageKit
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -48,6 +55,11 @@ static void     pk_client_finalize	(GObject       *object);
 
 #define PK_CLIENT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT, PkClientPrivate))
 
+/**
+ * PkClientPrivate:
+ *
+ * Private #PkClient data
+ **/
 struct PkClientPrivate
 {
 	DBusGConnection		*connection;
@@ -283,7 +295,6 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 /**
  * pk_client_reset:
  * @client: a valid #PkClient instance
- * @tid: a transaction id
  *
  * Resetting the client way be needed if we canceled the request without
  * waiting for ::finished, or if we want to reuse the #PkClient without
@@ -540,7 +551,7 @@ static void
 pk_client_description_cb (DBusGProxy  *proxy,
 			  const gchar *tid,
 			  const gchar *package_id,
-			  const gchar *licence,
+			  const gchar *license,
 			  const gchar *group_text,
 			  const gchar *description,
 			  const gchar *url,
@@ -558,9 +569,9 @@ pk_client_description_cb (DBusGProxy  *proxy,
 
 	group = pk_group_enum_from_text (group_text);
 	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
-		  package_id, licence, group, description, url, (long int) size);
+		  package_id, license, group, description, url, (long int) size);
 	g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
-		       package_id, licence, group, description, url, size);
+		       package_id, license, group, description, url, size);
 }
 
 /**

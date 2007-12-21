@@ -910,7 +910,7 @@ pk_backend_change_transaction_data (PkBackend *backend, const gchar *data)
  **/
 gboolean
 pk_backend_description (PkBackend *backend, const gchar *package_id,
-			const gchar *licence, PkGroupEnum group,
+			const gchar *license, PkGroupEnum group,
 			const gchar *description, const gchar *url,
 			gulong size, const gchar *filelist)
 {
@@ -922,10 +922,10 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	description_safe = pk_strsafe (description);
 
 	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
-		  package_id, licence, group, description_safe, url,
+		  package_id, license, group, description_safe, url,
 		  size);
 	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0,
-		       package_id, licence, group, description_safe, url,
+		       package_id, license, group, description_safe, url,
 		       size);
 	g_free (description_safe);
 	return TRUE;

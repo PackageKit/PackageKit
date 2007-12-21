@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
+ * Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -25,6 +26,7 @@
 #include <pk-backend.h>
 #include <pk-backend-python.h>
 #include "pk-apt-search.h"
+#include "config.h"
 
 /**
  * backend_get_groups:
@@ -61,14 +63,14 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 PK_BACKEND_OPTIONS (
-	"Apt",				/* description */
-	"Ali Sabil <ali.sabil@gmail.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	"Apt (with " APT_SEARCH " searching)",				/* description */
+	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>",	/* author */
+	backend_init_search,					/* initalize */
+	backend_finish_search,					/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
-	NULL,					/* get_depends */
+	pk_backend_python_get_depends,					/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
@@ -86,7 +88,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	pk_backend_python_update_package,			/* update_package */
 	pk_backend_python_update_system,			/* update_system */
-	NULL,					/* get_repo_list */
+	pk_backend_python_get_repo_list,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
 );

@@ -19,6 +19,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-connection
+ * @short_description: Functionality to see when packagekid starts and stops
+ *
+ * This file contains functions that can be used to see when packagekitd starts
+ * and stops.
+ */
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -41,6 +49,11 @@
 
 #define PK_CONNECTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CONNECTION, PkConnectionPrivate))
 
+/**
+ * PkConnectionPrivate:
+ *
+ * Private #PkConnection data
+ **/
 struct PkConnectionPrivate
 {
 	LibGBus			*libgbus;
@@ -134,7 +147,8 @@ pk_connection_init (PkConnection *connection)
 
 /**
  * pk_connection_new:
- * Return value: A new connection class instance.
+ *
+ * Return value: A new #PkConnection instance
  **/
 PkConnection *
 pk_connection_new (void)

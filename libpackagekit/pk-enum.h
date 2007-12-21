@@ -27,15 +27,24 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PkEnumMatch:
+ *
+ * Matching an enumerated type to a string
+ **/
 typedef struct {
 	guint		 value;
 	const gchar	*string;
 } PkEnumMatch;
 
-/* What we were asked to do, this never changes for the lifetime of the
- * transaction
+/**
+ * PkRoleEnum:
+ *
+ * What we were asked to do, this never changes for the lifetime of the
+ * transaction.
  * Icons that have to represent the whole "aim" of the transaction will use
- * these constants */
+ * these constants
+ **/
 typedef enum {
 	PK_ROLE_ENUM_CANCEL,
 	PK_ROLE_ENUM_RESOLVE,
@@ -62,11 +71,15 @@ typedef enum {
 	PK_ROLE_ENUM_UNKNOWN
 } PkRoleEnum;
 
-/* What status we are now; this can change for each transaction giving a
+/**
+ * PkStatusEnum:
+ *
+ * What status we are now; this can change for each transaction giving a
  * status of what sort of thing is happening
  * Icons that change to represent the current status of the transaction will
  * use these constants
- * If you add to these, make sure you add filenames in pk-watch also */
+ * If you add to these, make sure you add filenames in pk-watch also
+ **/
 typedef enum {
 	PK_STATUS_ENUM_SETUP,
 	PK_STATUS_ENUM_WAIT,
@@ -86,7 +99,11 @@ typedef enum {
 	PK_STATUS_ENUM_UNKNOWN
 } PkStatusEnum;
 
-/* how the backend exited */
+/**
+ * PkExitEnum:
+ *
+ * How the backend exited
+ **/
 typedef enum {
 	PK_EXIT_ENUM_SUCCESS,
 	PK_EXIT_ENUM_FAILED,
@@ -95,19 +112,29 @@ typedef enum {
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;
 
-/* the filter types */
+/**
+ * PkFilterEnum:
+ *
+ * The filter types
+ **/
 typedef enum {
 	PK_FILTER_ENUM_DEVELOPMENT,
 	PK_FILTER_ENUM_INSTALLED,
 	PK_FILTER_ENUM_GUI,
+	PK_FILTER_ENUM_FREE,
 	PK_FILTER_ENUM_NOT_DEVELOPMENT,
 	PK_FILTER_ENUM_NOT_INSTALLED,
 	PK_FILTER_ENUM_NOT_GUI,
+	PK_FILTER_ENUM_NOT_FREE,
 	PK_FILTER_ENUM_NONE,
 	PK_FILTER_ENUM_UNKNOWN
 } PkFilterEnum;
 
-/* what restart we need to after a transaction */
+/**
+ * PkRestartEnum:
+ *
+ * What restart we need to after a transaction
+ **/
 typedef enum {
 	PK_RESTART_ENUM_NONE,
 	PK_RESTART_ENUM_APPLICATION,
@@ -116,7 +143,11 @@ typedef enum {
 	PK_RESTART_ENUM_UNKNOWN
 } PkRestartEnum;
 
-/* what message type we need to show */
+/**
+ * PkMessageEnum:
+ *
+ * What message type we need to show
+ **/
 typedef enum {
 	PK_MESSAGE_ENUM_NOTICE,
 	PK_MESSAGE_ENUM_WARNING,
@@ -124,6 +155,11 @@ typedef enum {
 	PK_MESSAGE_ENUM_UNKNOWN
 } PkMessageEnum;
 
+/**
+ * PkErrorCodeEnum:
+ *
+ * The error type
+ **/
 typedef enum {
 	PK_ERROR_ENUM_OOM,
 	PK_ERROR_ENUM_NO_NETWORK,
@@ -151,6 +187,11 @@ typedef enum {
 	PK_ERROR_ENUM_UNKNOWN
 } PkErrorCodeEnum;
 
+/**
+ * PkGroupEnum:
+ *
+ * The group type
+ **/
 typedef enum {
 	PK_GROUP_ENUM_ACCESSIBILITY,
 	PK_GROUP_ENUM_ACCESSORIES,
@@ -179,6 +220,11 @@ typedef enum {
 	PK_GROUP_ENUM_UNKNOWN
 } PkGroupEnum;
 
+/**
+ * PkFreqEnum:
+ *
+ * The frequency type
+ **/
 typedef enum {
 	PK_FREQ_ENUM_HOURLY,
 	PK_FREQ_ENUM_DAILY,
@@ -187,6 +233,11 @@ typedef enum {
 	PK_FREQ_ENUM_UNKNOWN
 } PkFreqEnum;
 
+/**
+ * PkUpdateEnum:
+ *
+ * The update type
+ **/
 typedef enum {
 	PK_UPDATE_ENUM_ALL,
 	PK_UPDATE_ENUM_SECURITY,
@@ -194,8 +245,12 @@ typedef enum {
 	PK_UPDATE_ENUM_UNKNOWN
 } PkUpdateEnum;
 
-/* the enumerated types used in Package() - these have to refer to a specific
-   package action, rather than a general state */
+/**
+ * PkInfoEnum:
+ *
+ * The enumerated types used in Package() - these have to refer to a specific
+ * package action, rather than a general state
+ **/
 typedef enum {
 	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_AVAILABLE,
@@ -213,10 +268,134 @@ typedef enum {
 	PK_INFO_ENUM_UNKNOWN
 } PkInfoEnum;
 
+/**
+ * PkSigTypeEnum:
+ *
+ * The signature type type
+ **/
 typedef enum {
 	PK_SIGTYPE_ENUM_GPG,
 	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
+
+typedef enum {
+	PK_LICENSE_ENUM_GLIDE,
+	PK_LICENSE_ENUM_AFL,
+	PK_LICENSE_ENUM_AMPAS_BSD,
+	PK_LICENSE_ENUM_ADOBE,
+	PK_LICENSE_ENUM_AGPLV1,
+	PK_LICENSE_ENUM_AGPLV3,
+	PK_LICENSE_ENUM_ASL_1_DOT_0,
+	PK_LICENSE_ENUM_ASL_1_DOT_1,
+	PK_LICENSE_ENUM_ASL_2_DOT_0,
+	PK_LICENSE_ENUM_APSL_2_DOT_0,
+	PK_LICENSE_ENUM_ARTISTIC_CLARIFIED,
+	PK_LICENSE_ENUM_ARTISTIC_2_DOT_0,
+	PK_LICENSE_ENUM_ARL,
+	PK_LICENSE_ENUM_BITTORRENT,
+	PK_LICENSE_ENUM_BOOST,
+	PK_LICENSE_ENUM_BSD_WITH_ADVERTISING,
+	PK_LICENSE_ENUM_BSD,
+	PK_LICENSE_ENUM_CECILL,
+	PK_LICENSE_ENUM_CDDL,
+	PK_LICENSE_ENUM_CPL,
+	PK_LICENSE_ENUM_CONDOR,
+	PK_LICENSE_ENUM_COPYRIGHT_ONLY,
+	PK_LICENSE_ENUM_CRYPTIX,
+	PK_LICENSE_ENUM_CRYSTAL_STACKER,
+	PK_LICENSE_ENUM_WTFPL,
+	PK_LICENSE_ENUM_EPL,
+	PK_LICENSE_ENUM_ECOS,
+	PK_LICENSE_ENUM_EFL_2_DOT_0,
+	PK_LICENSE_ENUM_EU_DATAGRID,
+	PK_LICENSE_ENUM_LGPLV2_WITH_EXCEPTIONS,
+	PK_LICENSE_ENUM_FTL,
+	PK_LICENSE_ENUM_GIFTWARE,
+	PK_LICENSE_ENUM_GPLV2,
+	PK_LICENSE_ENUM_GPLV2_WITH_EXCEPTIONS,
+	PK_LICENSE_ENUM_GPLV2_PLUS_WITH_EXCEPTIONS,
+	PK_LICENSE_ENUM_GPLV3,
+	PK_LICENSE_ENUM_GPLV3_WITH_EXCEPTIONS,
+	PK_LICENSE_ENUM_GPLV3_PLUS_WITH_EXCEPTIONS,
+	PK_LICENSE_ENUM_LGPLV2,
+	PK_LICENSE_ENUM_LGPLV3,
+	PK_LICENSE_ENUM_GNUPLOT,
+	PK_LICENSE_ENUM_IBM,
+	PK_LICENSE_ENUM_IMATIX,
+	PK_LICENSE_ENUM_IMAGEMAGICK,
+	PK_LICENSE_ENUM_IMLIB2,
+	PK_LICENSE_ENUM_IJG,
+	PK_LICENSE_ENUM_INTEL_ACPI,
+	PK_LICENSE_ENUM_INTERBASE,
+	PK_LICENSE_ENUM_ISC,
+	PK_LICENSE_ENUM_JABBER,
+	PK_LICENSE_ENUM_JASPER,
+	PK_LICENSE_ENUM_LPPL,
+	PK_LICENSE_ENUM_LIBTIFF,
+	PK_LICENSE_ENUM_LPL,
+	PK_LICENSE_ENUM_MECAB_IPADIC,
+	PK_LICENSE_ENUM_MIT,
+	PK_LICENSE_ENUM_MPLV1_DOT_0,
+	PK_LICENSE_ENUM_MPLV1_DOT_1,
+	PK_LICENSE_ENUM_NCSA,
+	PK_LICENSE_ENUM_NGPL,
+	PK_LICENSE_ENUM_NOSL,
+	PK_LICENSE_ENUM_NETSCAPE,
+	PK_LICENSE_ENUM_NOKIA,
+	PK_LICENSE_ENUM_OPENLDAP,
+	PK_LICENSE_ENUM_OPENPBS,
+	PK_LICENSE_ENUM_OSL_1_DOT_0,
+	PK_LICENSE_ENUM_OSL_1_DOT_1,
+	PK_LICENSE_ENUM_OSL_2_DOT_0,
+	PK_LICENSE_ENUM_OSL_3_DOT_0,
+	PK_LICENSE_ENUM_OPENSSL,
+	PK_LICENSE_ENUM_OREILLY,
+	PK_LICENSE_ENUM_PHORUM,
+	PK_LICENSE_ENUM_PHP,
+	PK_LICENSE_ENUM_PUBLIC_DOMAIN,
+	PK_LICENSE_ENUM_PYTHON,
+	PK_LICENSE_ENUM_QPL,
+	PK_LICENSE_ENUM_RPSL,
+	PK_LICENSE_ENUM_RUBY,
+	PK_LICENSE_ENUM_SLEEPYCAT,
+	PK_LICENSE_ENUM_SLIB,
+	PK_LICENSE_ENUM_SISSL,
+	PK_LICENSE_ENUM_SPL,
+	PK_LICENSE_ENUM_TCL,
+	PK_LICENSE_ENUM_UCD,
+	PK_LICENSE_ENUM_VIM,
+	PK_LICENSE_ENUM_VNLSL,
+	PK_LICENSE_ENUM_VSL,
+	PK_LICENSE_ENUM_W3C,
+	PK_LICENSE_ENUM_WXWIDGETS,
+	PK_LICENSE_ENUM_XINETD,
+	PK_LICENSE_ENUM_ZEND,
+	PK_LICENSE_ENUM_ZPLV1_DOT_0,
+	PK_LICENSE_ENUM_ZPLV2_DOT_0,
+	PK_LICENSE_ENUM_ZPLV2_DOT_1,
+	PK_LICENSE_ENUM_ZLIB,
+	PK_LICENSE_ENUM_CDL,
+	PK_LICENSE_ENUM_FBSDDL,
+	PK_LICENSE_ENUM_GFDL,
+	PK_LICENSE_ENUM_IEEE,
+	PK_LICENSE_ENUM_OFSFDL,
+	PK_LICENSE_ENUM_OPEN_PUBLICATION,
+	PK_LICENSE_ENUM_CC_BY,
+	PK_LICENSE_ENUM_CC_BY_SA,
+	PK_LICENSE_ENUM_CC_BY_ND,
+	PK_LICENSE_ENUM_DSL,
+	PK_LICENSE_ENUM_FREE_ART,
+	PK_LICENSE_ENUM_OFL,
+	PK_LICENSE_ENUM_UTOPIA,
+	PK_LICENSE_ENUM_ARPHIC,
+	PK_LICENSE_ENUM_BAEKMUK,
+	PK_LICENSE_ENUM_BITSTREAM_VERA,
+	PK_LICENSE_ENUM_LUCIDA,
+	PK_LICENSE_ENUM_MPLUS,
+	PK_LICENSE_ENUM_STIX,
+	PK_LICENSE_ENUM_XANO,
+	PK_LICENSE_ENUM_UNKNOWN
+} PkLicenseEnum;
 
 /* general */
 guint		 pk_enum_find_value			(PkEnumMatch	*table,
@@ -259,6 +438,9 @@ const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);
+
+PkLicenseEnum	 pk_license_enum_from_text		(const gchar	*license);
+const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);
 
 G_END_DECLS
 

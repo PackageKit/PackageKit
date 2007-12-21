@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-debug
+ * @short_description: Debugging functions
+ *
+ * This file contains functions that can be used for debugging.
+ */
+
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>

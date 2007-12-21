@@ -39,7 +39,7 @@ def set_options(opt):
 	opt.sub_options('backends')
 
 def configure(conf):
-	conf.check_tool('gcc gnome misc')
+	conf.check_tool('gcc gnome intltool misc')
 
 	conf.check_pkg('glib-2.0', destvar='GLIB', vnum='2.14.0')
 	conf.check_pkg('gobject-2.0', destvar='GOBJECT', vnum='2.14.0')

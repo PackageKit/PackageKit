@@ -49,6 +49,11 @@ static void     pk_network_finalize	(GObject        *object);
 
 #define PK_NETWORK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK, PkNetworkPrivate))
 
+/**
+ * PkNetworkPrivate:
+ *
+ * Private #PkNetwork data
+ **/
 struct PkNetworkPrivate
 {
 	libnm_glib_ctx		*ctx;

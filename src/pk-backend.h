@@ -65,7 +65,7 @@ gboolean	 pk_backend_message			(PkBackend	*backend,
 							 const gchar	*details);
 gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*package_id,
-							 const gchar	*licence,
+							 const gchar	*license,
 							 PkGroupEnum	 group,
 							 const gchar	*description,
 							 const gchar	*url,

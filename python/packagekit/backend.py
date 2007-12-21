@@ -22,6 +22,7 @@
 
 # imports
 import sys
+import traceback
 import types
 from enums import *
 
@@ -30,6 +31,8 @@ from enums import *
 class PackageKitBaseBackend:
 
     def __init__(self,cmds):
+        # Setup a custom exception handler
+        installExceptionHandler(self)
         self.cmds = cmds
         self._locked = False
 
@@ -105,18 +108,18 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
-    def description(self,id,licence,group,desc,url,bytes,file_list):
+    def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param licence: The licence of the package
+        @param license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         @param file_list: List of the files in the package, separated by ';'
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,licence,group,desc,url,bytes,file_list)
+        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld\t%s" % (id,license,group,desc,url,bytes,file_list)
 
     def files(self, id, file_list):
         '''
@@ -179,6 +182,68 @@ class PackageKitBaseBackend:
             containing (name,ver,arch,data)
         '''
         return tuple(id.split(';', 4))
+
+    def check_license_field(self,license_field):
+        '''
+        Check the string license_field for free licenses, as defined
+        by the FSF, indicated by their short names as documented at
+        http://fedoraproject.org/wiki/Licensing#SoftwareLicenses
+
+        Licenses can be grouped by " or " to indicate that the package
+        can be redistributed under any of the licenses in the group.
+        For instance: GPLv2+ or Artistic or FooLicense.
+
+        Also, if a license ends with "+", the "+" is removed before
+        comparing it to the list of valid licenses.  So if license
+        "FooLicense" is free, then "FooLicense+" is considered free.
+
+        Groups of licenses can be grouped with " and " to indicate
+        that parts of the package are distributed under one group of
+        licenses, while other parts of the package are distributed
+        under another group.  Groups may be wrapped in parenthesis.
+        For instance:
+          (GPLv2+ or Artistic) and (GPL+ or Artistic) and FooLicense.
+
+        At least one license in each group must be free for the
+        package to be considered Free Software.  If the license_field
+        is empty, the package is considered non-free.
+        '''
+
+        groups = license_field.split(" and ")
+
+        if len(groups) == 0:
+            return False
+
+        one_free_group = False
+
+        for group in groups:
+            group = group.replace("(","")
+            group = group.replace(")","")
+            licenses = group.split(" or ")
+
+            group_is_free = False
+
+            for license in licenses:
+                license = license.strip()
+
+                if len(license) < 1:
+                    continue
+
+                if license[-1] == "+":
+                    license = license[0:-1]
+
+                if license in PackageKitEnum.fsf_free_licenses:
+                    one_free_group = True
+                    group_is_free = True
+                    break
+
+            if group_is_free == False:
+                return False
+
+        if one_free_group == False:
+            return False
+
+        return True
        
 #
 # Backend Action Methods
@@ -407,4 +472,21 @@ class PackagekitProgress:
         incr = int(f*deltapct)
         self.percent = startpct + incr
 
-        
+def exceptionHandler(typ, value, tb, base):
+    # Restore original exception handler
+    sys.excepthook = sys.__excepthook__
+    etb = traceback.extract_tb(tb)
+    errmsg = 'Error Type: %s;' % str(typ)
+    errmsg += 'Error Value: %s;' % str(value)
+    for tub in etb:
+        f,l,m,c = tub # file,lineno, function, codeline
+        errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+        errmsg += '    %s;' % c
+    # send the traceback to PackageKit
+    print errmsg
+    base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
+    
+    
+def installExceptionHandler(base):
+    sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
+    

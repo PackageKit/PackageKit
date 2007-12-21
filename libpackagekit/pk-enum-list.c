@@ -19,6 +19,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-enum-list
+ * @short_description: Common functions to manifulate lists of enumerated types
+ *
+ * This file contains functions that can manage lists of enumerated values of
+ * different types.
+ * These functions will be much quicker than manipulating strings directly.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -43,6 +52,11 @@ static void     pk_enum_list_finalize		(GObject         *object);
 
 #define PK_ENUM_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENUM_LIST, PkEnumListPrivate))
 
+/**
+ * PkEnumListPrivate:
+ *
+ * Private #PkEnumList data
+ **/
 struct PkEnumListPrivate
 {
 	PkEnumListType		 type;

@@ -1,3 +1,6 @@
+#ifndef PK_APT_BUILD_DB
+#define PK_APT_BUILD_DB
+
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
@@ -8,7 +11,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -19,21 +22,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <sqlite3.h>
 #include <pk-backend.h>
 
-/**
- * python_refresh_cache:
- **/
-void python_refresh_cache(PkBackend * backend, gboolean force)
-{
-	/* check network state */
-	if (pk_backend_network_is_online(backend) == FALSE)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_finished(backend);
-		return;
-	}
+void apt_build_db(PkBackend * backend, sqlite3 *db);
 
-	pk_backend_spawn_helper (backend, "refresh-cache.py", NULL);
-}
-
+#endif

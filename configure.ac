@@ -25,6 +25,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
+GTK_DOC_CHECK([1.3])
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
@@ -57,8 +58,8 @@ GLIB_REQUIRED=2.14.0
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.5
-POLKIT_GRANT_REQUIRED=0.5
+POLKIT_DBUS_REQUIRED=0.7
+POLKIT_GRANT_REQUIRED=0.7
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -229,7 +230,7 @@ AC_ARG_WITH([security_framework],
 			   [Default security framework to use polkit,dummy]))
 # try and guess this if nothing is listed
 if test x$with_security_framework = x; then
-	if test -f /usr/bin/polkit-list-actions ; then
+	if test -f /usr/bin/polkit-action ; then
 		with_security_framework=polkit
 	else
 		AC_MSG_ERROR([--with-security-framework explicitly required when not using PolicyKit or RBAC])
@@ -250,9 +251,9 @@ if test x$with_security_framework = xpolkit; then
 	if test -z "$POLKIT_POLICY_FILE_VALIDATE"; then
 	   AC_MSG_ERROR([polkit-policy-file-validate not found])
 	fi
-	AC_DEFINE(USE_SECURITY_POLKIT, "polkit", [if we should use PolicyKit])
+	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
-	AC_DEFINE(USE_SECURITY_DUMMY, "dummy", [if we should use a dummy security framework])
+	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
 fi
 
 AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
@@ -336,15 +337,18 @@ AC_DEFUN([APT_BACKEND],
 if test x$with_default_backend = xapt; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 
-	AC_ARG_WITH([aptsearch],
+	AC_ARG_WITH([apt_search],
 	    AS_HELP_STRING([--with-apt-search=<option>],
-			   [Apt search type to use - plain (plain)]))
-	if test x$with_aptsearch = x; then
-		with_aptsearch=plain
+			   [Apt search type to use - plain,sqlite (plain)]))
+
+	if test x$with_apt_search = x; then
+		with_apt_search=plain
 	fi
-	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_aptsearch", [apt search type])
-	AC_SUBST(APT_SEARCH, "$with_aptsearch")
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_aptsearch = xplain], [using plain apt search])
+    AC_MSG_NOTICE([using $with_apt_search for apt searching])
+	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_apt_search", [apt search type])
+	AC_SUBST(APT_SEARCH, $with_apt_search)
+	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_apt_search = xplain], [using plain apt search])
+	AM_CONDITIONAL(APT_SEARCH_SQLITE, [test x$with_apt_search = xsqlite], [using sqlite apt search])
 
    AC_ARG_WITH(libapt-pkg-lib,
 	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
@@ -410,6 +414,7 @@ if test x$with_default_backend = xapt; then
 	AC_SUBST(APT_PKG_TYPE)
 else
 	AM_CONDITIONAL(APT_SEARCH_PLAIN, [false])
+	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
 fi
 
 if test x$with_default_backend = xbox; then
@@ -448,6 +453,10 @@ AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [usin
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$with_default_backend = xzypp], [using Zypp backend])
 
+if test x$with_default_backend = xapt; then
+	# now we've done the conditionals, rename for searching backend
+	with_default_backend="apt (with $with_apt_search searching)"
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
@@ -458,10 +467,12 @@ Makefile
 etc/Makefile
 man/Makefile
 docs/Makefile
+docs/html/Makefile
+docs/html/img/Makefile
+docs/spec/Makefile
+docs/api/Makefile
 contrib/Makefile
 contrib/yum-packagekit/Makefile
-html/Makefile
-html/img/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile

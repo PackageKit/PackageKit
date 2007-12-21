@@ -214,11 +214,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
 
-    def description(self,id,licence,group,desc,url,bytes,file_list):
+    def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param licence: The licence of the package
+        @param license: The license of the package
         @param group: The enumerated group
         @param desc: The multi line package description
         @param url: The upstream project homepage
@@ -227,7 +227,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
-        PackageKitBaseBackend.description(self,id,licence,group,desc,url,bytes,file_list)
+        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes,file_list)
 
     def package(self,id,status,summary):
         '''
@@ -327,6 +327,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             elif filter in (FILTER_DEVELOPMENT, FILTER_NOT_DEVELOPMENT):
                 if not self._do_devel_filtering(filter, pkg):
                     return False
+            elif filter in (FILTER_FREE, FILTER_NOT_FREE):
+                if not self._do_free_filtering(filter, pkg):
+                    return False
         return True
 
     def _do_gui_filtering(self,flt,pkg):
@@ -359,6 +362,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if regex.search(pkg.name):
             isDevel = True
         return isDevel == wantDevel
+
+    def _do_free_filtering(self,flt,pkg):
+        isFree = False
+        if flt == FILTER_FREE:
+            wantFree = True
+        else:
+            wantFree = False
+
+        isFree = self.check_license_field(pkg.license)
+
+        return isFree == wantFree
 
     def search_name(self,filters,key):
         '''
@@ -487,7 +501,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _findPackage(self,id):
         '''
-        find a package based on a packahe id (name;version;arch;repoid)
+        find a package based on a package id (name;version;arch;repoid)
         '''
         # Split up the id
         (n,idver,a,d) = self.get_package_from_id(id)
@@ -513,7 +527,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
@@ -533,7 +546,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
 
-        if self.yumbase.rpmdb.installed(po=pkg):
+        if self._is_inst(pkg):
             return False
 
         # everything installed that matches the name
@@ -1071,7 +1084,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)

@@ -26,8 +26,25 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PK_DBUS_SERVICE:
+ *
+ * The SYSTEM service DBUS name
+ */
 #define	PK_DBUS_SERVICE			"org.freedesktop.PackageKit"
+
+/**
+ * PK_DBUS_PATH:
+ *
+ * The DBUS path
+ */
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
+
+/**
+ * PK_DBUS_INTERFACE:
+ *
+ * The DBUS interface
+ */
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
 guint		 pk_strlen				(gchar		*text,

@@ -19,7 +19,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "pk-backend-apt.h"
+//#include "pk-backend-apt.h"
+#include <pk-backend.h>
 #include <apt-pkg/configuration.h>
 #include <sqlite3.h>
 

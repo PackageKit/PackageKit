@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-network
+ * @short_description: An abstract network access GObject
+ *
+ * This allows a switchable network backend.
+ */
+
 #ifndef __PK_NETWORK_H
 #define __PK_NETWORK_H
 

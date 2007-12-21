@@ -58,6 +58,13 @@ class pkt(PackageKit):
 		print "  %s" % timespec
 		print "  %s seconds" % duration
 		print "  %s" % success
+	
+	def ErrorCode(self,
+			jid,        # Job ID
+			error_code, # enumerated - see pk-enum.c in PackageKit source
+			details     # non-localized details
+			):
+		print "Error (type is %s):"%error_code,details
 
 try:
 	p = pkt()

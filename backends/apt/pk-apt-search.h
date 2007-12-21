@@ -25,6 +25,9 @@
 #include <glib.h>
 #include <pk-backend.h>
 
+void backend_init_search(PkBackend *backend);
+void backend_finish_search(PkBackend *backend);
+
 void backend_get_description (PkBackend *backend, const gchar *package_id);
 void backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search);
 void backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search);

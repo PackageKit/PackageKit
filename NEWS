@@ -174,7 +174,7 @@ Version 0.1.1
 * Bugfixes:
  - Fix the resolve method parameter passing - now pk-install-package should work
    correctly (James Bowes)
- - Fix all the copyright notices to be a standard GPL2+ boilerplate licence
+ - Fix all the copyright notices to be a standard GPL2+ boilerplate license
    text (Tom Parker, Robin Norwood)
  - Dist the local apt headers so the apt backend can be compiled from a tarball
    rather than just from git (Richard Hughes)

@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-package-id
+ * @short_description: Functionality to modify a PackageID
+ *
+ * PackageId's are difficult to read and create.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -136,7 +143,7 @@ pk_package_id_new_from_list (const gchar *name, const gchar *version, const gcha
 
 /**
  * pk_package_id_to_string:
- * @indent: A #PkPackageId object
+ * @ident: A #PkPackageId object
  *
  * Return value: returns a string representation of #PkPackageId.
  **/
@@ -168,7 +175,7 @@ pk_package_id_build (const gchar *name, const gchar *version,
  * pk_package_id_free:
  * @ident: the #PkPackageId object
  *
- * Return value: %TRUE is the #PkPackageId object was freed.
+ * Return value: %TRUE if the #PkPackageId object was freed.
  **/
 gboolean
 pk_package_id_free (PkPackageId *ident)

@@ -19,6 +19,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-task-list
+ * @short_description: A nice way to keep a list of the jobs being processed
+ *
+ * These provide a good way to keep a list of the jobs being processed so we
+ * can see what type of jobs and thier status easily.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -46,6 +54,11 @@ static void     pk_task_list_finalize		(GObject         *object);
 
 #define PK_TASK_LIST_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_LIST, PkTaskListPrivate))
 
+/**
+ * PkTaskListPrivate:
+ *
+ * Private #PkTaskList data
+ **/
 struct PkTaskListPrivate
 {
 	GPtrArray		*task_list;

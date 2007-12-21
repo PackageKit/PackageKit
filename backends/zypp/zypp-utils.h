@@ -9,6 +9,7 @@
 #include <zypp/ResPool.h>
 
 #include <list>
+#include <set>
 
 // some typedefs and functions to shorten Zypp names
 typedef zypp::ResPoolProxy ZyppPool;
@@ -22,6 +23,7 @@ typedef zypp::Pattern::constPtr		ZyppPattern;
 typedef zypp::Language::constPtr	ZyppLanguage;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
+typedef std::set<zypp::PoolItem_Ref> Candidates;
 
 zypp::ZYpp::Ptr get_zypp ();
 
@@ -36,8 +38,19 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name);
+std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
 
+/**
+ * Returns the Resolvable for the specified package_id.
+ */
+zypp::Resolvable::constPtr zypp_get_package_by_id (const gchar *package_id);
+
+/**
+ * Build a package_id from the specified resolvable.  The returned
+ * gchar * should be freed with g_free ().
+ */
 gchar * zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable);
+
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v);
 #endif // _ZYPP_UTILS_H_
 
