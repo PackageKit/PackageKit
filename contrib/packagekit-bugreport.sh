@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 #
 # Licensed under the GNU General Public License Version 2
