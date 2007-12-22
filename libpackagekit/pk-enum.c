@@ -223,7 +223,7 @@ static PkEnumMatch enum_sig_type[] = {
 	{0, NULL},
 };
 
-static PkEnumMatch enum_fsf_free_licenses[] = {
+static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_UNKNOWN,              "unknown"},	/* fall though value */
 	{PK_LICENSE_ENUM_GLIDE,                "Glide"},
 	{PK_LICENSE_ENUM_AFL,                  "AFL"},
@@ -627,7 +627,7 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 PkLicenseEnum
 pk_license_enum_from_text (const gchar *license)
 {
-	return pk_enum_find_value (enum_fsf_free_licenses, license);
+	return pk_enum_find_value (enum_free_licenses, license);
 }
 
 /**
@@ -636,7 +636,7 @@ pk_license_enum_from_text (const gchar *license)
 const gchar *
 pk_license_enum_to_text (PkLicenseEnum license)
 {
-	return pk_enum_find_string (enum_fsf_free_licenses, license);
+	return pk_enum_find_string (enum_free_licenses, license);
 }
 
 /***************************************************************************

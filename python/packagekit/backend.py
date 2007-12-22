@@ -185,9 +185,9 @@ class PackageKitBaseBackend:
 
     def check_license_field(self,license_field):
         '''
-        Check the string license_field for free licenses, as defined
-        by the FSF, indicated by their short names as documented at
-        http://fedoraproject.org/wiki/Licensing#SoftwareLicenses
+        Check the string license_field for free licenses, indicated by
+        their short names as documented at
+        http://fedoraproject.org/wiki/Licensing
 
         Licenses can be grouped by " or " to indicate that the package
         can be redistributed under any of the licenses in the group.
@@ -232,7 +232,7 @@ class PackageKitBaseBackend:
                 if license[-1] == "+":
                     license = license[0:-1]
 
-                if license in PackageKitEnum.fsf_free_licenses:
+                if license in PackageKitEnum.free_licenses:
                     one_free_group = True
                     group_is_free = True
                     break

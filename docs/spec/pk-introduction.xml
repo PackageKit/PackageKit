@@ -188,12 +188,13 @@
               <entry><literal>free</literal> or <literal>~free</literal></entry>
 
               <entry>
-                Free software, where the definition of free is given
-                by the Free Software Foundation.  See
-                http://www.fsf.org/licensing/licenses/ for a list of
-                free licenses.  If a license cannot be determined from
-                the package metadata, or the status of the license is
-                not known, the package will be marked as 'non-free'.
+                Free software.  The package contains only software and
+                other content that is available under a free license.
+                See http://fedoraproject.org/wiki/Licensing for a list
+                of licenses that are considered free.  If a license
+                cannot be determined from the package metadata, or the
+                status of the license is not known, the package will
+                be marked as 'non-free'.
               </entry>
 
             </row>
