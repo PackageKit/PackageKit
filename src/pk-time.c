@@ -135,8 +135,8 @@ pk_time_get_remaining (PkTime *time)
 		item = g_ptr_array_index (time->priv->array, i);
 		grad = pk_time_get_gradient (item, item_prev);
 		pk_debug ("gradient between %i/%i=%f", i-1, i, grad);
-		if (grad < 0.0001 || grad > 100) {
-			pk_debug ("ignoring gradient");
+		if (grad < 0.00001 || grad > 100) {
+			pk_debug ("ignoring gradient: %f", grad);
 		} else {
 			grad_ave += grad;
 			averaged++;
@@ -356,7 +356,27 @@ libst_time (LibSelfTest *test)
 	if (value > 9 && value < 11) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "got %i, not ~10000ms", value);
+		libst_failed (test, "got %i", value);
+	}
+
+	/* reset */
+	g_object_unref (time);
+	time = pk_time_new ();
+
+	/************************************************************/
+	libst_title (test, "make sure we can do long times");
+	value = 10;
+	pk_time_add_data (time, 0);
+	while (value < 60) {
+		time->priv->time_offset += 4*60*1000;
+		pk_time_add_data (time, value);
+		value += 10;
+	}
+	value = pk_time_get_remaining (time);
+	if (value > 1199 && value < 1201) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %i", value);
 	}
 
 
