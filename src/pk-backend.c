@@ -1098,7 +1098,6 @@ pk_backend_finished (PkBackend *backend)
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
 		/* wait for threads to complete */
-		//pk_thread_list_wait (backend->priv->thread_list);
 	}
 
 	/* check we have not already finished */
@@ -2220,6 +2219,9 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "wait for a thread failed");
 	}
 
+	/* wait */
+	pk_thread_list_wait (backend->priv->thread_list);
+
 	/************************************************************/
 	libst_title (test, "did we wait the correct time?");
 	elapsed = g_timer_elapsed (timer, NULL);
@@ -2250,6 +2252,9 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "wait for a thread failed");
 	}
+
+	/* wait */
+	pk_thread_list_wait (backend->priv->thread_list);
 
 	/************************************************************/
 	libst_title (test, "did we wait the correct time2?");
