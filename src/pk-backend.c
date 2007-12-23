@@ -2074,6 +2074,7 @@ pk_backend_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+#if 0
 static gboolean
 pk_backend_test_func_true (PkBackend *backend, gpointer data)
 {
@@ -2096,6 +2097,7 @@ pk_backend_test_func_immediate_false (PkBackend *backend, gpointer data)
 	pk_backend_finished (backend);
 	return FALSE;
 }
+#endif
 
 void
 libst_backend (LibSelfTest *test)
@@ -2103,7 +2105,7 @@ libst_backend (LibSelfTest *test)
 	PkBackend *backend;
 	const gchar *text;
 	gboolean ret;
-	gdouble elapsed;
+//	gdouble elapsed;
 	GTimer *timer;
 
 	timer = g_timer_new ();
@@ -2208,7 +2210,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "we did not clear finish!");
 	}
-
+#if 0
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
 	g_timer_start (timer);
@@ -2287,7 +2289,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "did not wait for thread timeout2");
 	}
-
+#endif
 	/************************************************************
 	 **********       Check parsing common error      ***********
 	 ************************************************************/
