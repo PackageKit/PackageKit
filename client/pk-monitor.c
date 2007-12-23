@@ -55,6 +55,17 @@ pk_monitor_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 }
 
 /**
+ * pk_monitor_message_cb:
+ **/
+static void
+pk_monitor_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tMessage: %s, %s\n", tid, pk_message_enum_to_text (message), details);
+	g_free (tid);
+}
+
+/**
  * pk_monitor_finished_cb:
  **/
 static void
@@ -131,6 +142,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_finished_cb), NULL);
 	g_signal_connect (client, "error-code",
 			  G_CALLBACK (pk_monitor_error_code_cb), NULL);
+	g_signal_connect (client, "message",
+			  G_CALLBACK (pk_monitor_message_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",
