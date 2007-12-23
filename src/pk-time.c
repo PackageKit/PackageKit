@@ -55,10 +55,10 @@ static void     pk_time_finalize	(GObject     *object);
 
 struct PkTimePrivate
 {
-	gboolean		 finished;
 	guint			 time_offset; /* ms */
 	GPtrArray		*array;
 	GTimer			*timer;
+	guint			 last_percentage;
 };
 
 typedef struct {
@@ -190,6 +190,13 @@ pk_time_add_data (PkTime *time, guint percentage)
 	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 
+	/* check we are going up */
+	if (percentage < time->priv->last_percentage) {
+		pk_warning ("percentage cannot go down!");
+		return FALSE;
+	}
+	time->priv->last_percentage = percentage;
+
 	/* get runtime in ms */
 	elapsed = pk_time_get_elapsed (time);
 
@@ -225,6 +232,7 @@ pk_time_init (PkTime *time)
 {
 	time->priv = PK_TIME_GET_PRIVATE (time);
 	time->priv->time_offset = 0;
+	time->priv->last_percentage = 0;
 	time->priv->array = g_ptr_array_new ();
 	time->priv->timer = g_timer_new ();
 }
