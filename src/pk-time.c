@@ -56,6 +56,7 @@ static void     pk_time_finalize	(GObject     *object);
 struct PkTimePrivate
 {
 	gboolean		 finished;
+	guint			 time_offset; /* ms */
 	GPtrArray		*array;
 	GTimer			*timer;
 };
@@ -82,6 +83,8 @@ pk_time_get_elapsed (PkTime *time)
 
 	elapsed = g_timer_elapsed (time->priv->timer, NULL);
 	elapsed *= 1000;
+	elapsed += time->priv->time_offset;
+
 	return (guint) elapsed;
 }
 
@@ -182,20 +185,19 @@ gboolean
 pk_time_add_data (PkTime *time, guint percentage)
 {
 	PkTimeItem *item;
-	gdouble elapsed;
+	guint elapsed;
 
 	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 
 	/* get runtime in ms */
-	elapsed = g_timer_elapsed (time->priv->timer, NULL);
-	elapsed *= 1000;
+	elapsed = pk_time_get_elapsed (time);
 
-	pk_debug ("adding %i at %i (ms)", percentage, (guint) elapsed);
+	pk_debug ("adding %i at %i (ms)", percentage, elapsed);
 
 	/* create a new object and add to the array */
 	item = g_new0 (PkTimeItem, 1);
-	item->time = (guint) elapsed;
+	item->time = elapsed;
 	item->percentage = percentage;
 	g_ptr_array_add (time->priv->array, item);
 
@@ -222,6 +224,7 @@ static void
 pk_time_init (PkTime *time)
 {
 	time->priv = PK_TIME_GET_PRIVATE (time);
+	time->priv->time_offset = 0;
 	time->priv->array = g_ptr_array_new ();
 	time->priv->timer = g_timer_new ();
 }
@@ -337,7 +340,7 @@ libst_time (LibSelfTest *test)
 	libst_title (test, "make sure we can get remaining correctly");
 	value = 20;
 	while (value < 60) {
-		g_usleep (2*1000*1000);
+		time->priv->time_offset += 2000;
 		pk_time_add_data (time, value);
 		value += 10;
 	}
