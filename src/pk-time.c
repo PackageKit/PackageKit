@@ -48,17 +48,21 @@ static void     pk_time_init		(PkTime      *time);
 static void     pk_time_finalize	(GObject     *object);
 
 #define PK_TIME_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TIME, PkTimePrivate))
-#define PK_TIME_AVERAGE_MIN		4
-#define PK_TIME_AVERAGE_MAX		10
-#define PK_TIME_VALUE_MIN		5
-#define PK_TIME_VALUE_MAX		60*60
+#define PK_TIME_AVERAGE_DEFAULT_MIN		4     /* samples */
+#define PK_TIME_AVERAGE_DEFAULT_MAX		10    /* samples */
+#define PK_TIME_VALUE_DEFAULT_MIN		5     /* s */
+#define PK_TIME_VALUE_DEFAULT_MAX		60*60 /* s */
 
 struct PkTimePrivate
 {
 	guint			 time_offset; /* ms */
+	guint			 last_percentage;
+	guint			 average_min;
+	guint			 average_max;
+	guint			 value_min;
+	guint			 value_max;
 	GPtrArray		*array;
 	GTimer			*timer;
-	guint			 last_percentage;
 };
 
 typedef struct {
@@ -67,6 +71,42 @@ typedef struct {
 } PkTimeItem;
 
 G_DEFINE_TYPE (PkTime, pk_time, G_TYPE_OBJECT)
+
+/**
+ * pk_time_set_average_limits:
+ * @time: This class instance
+ * @average_min: the smallest number of samples we will try to average
+ * @average_max: the largest number of past samples we will try to average
+ *
+ * Return value: if we set the average limits correctly
+ **/
+gboolean
+pk_time_set_average_limits (PkTime *time, guint average_min, guint average_max)
+{
+	g_return_val_if_fail (time != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
+	time->priv->average_min = average_min;
+	time->priv->average_max = average_max;
+	return TRUE;
+}
+
+/**
+ * pk_time_set_value_limits:
+ * @time: This class instance
+ * @average_min: the smallest value that is acceptable for time (in seconds)
+ * @average_max: the largest value that is acceptable for time (in seconds)
+ *
+ * Return value: if we set the value limits correctly
+ **/
+gboolean
+pk_time_set_value_limits (PkTime *time, guint value_min, guint value_max)
+{
+	g_return_val_if_fail (time != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
+	time->priv->value_min = value_min;
+	time->priv->value_max = value_max;
+	return TRUE;
+}
 
 /**
  * pk_time_get_elapsed:
@@ -140,14 +180,14 @@ pk_time_get_remaining (PkTime *time)
 		} else {
 			grad_ave += grad;
 			averaged++;
-			if (averaged > PK_TIME_AVERAGE_MAX) {
+			if (averaged > time->priv->average_max) {
 				break;
 			}
 		}
 	}
 
 	pk_debug ("averaged %i points", averaged);
-	if (averaged < PK_TIME_AVERAGE_MIN) {
+	if (averaged < time->priv->average_min) {
 		pk_debug ("not enough samples for accurate time: %i", averaged);
 		return 0;
 	}
@@ -170,9 +210,9 @@ pk_time_get_remaining (PkTime *time)
 	estimated /= 1000;
 	pk_debug ("estimated=%f seconds", estimated);
 
-	if (estimated < PK_TIME_VALUE_MIN) {
+	if (estimated < time->priv->value_min) {
 		estimated = 0;
-	} else if (estimated > PK_TIME_VALUE_MAX) {
+	} else if (estimated > time->priv->value_max) {
 		estimated = 0;
 	}
 	return (guint) estimated;
@@ -233,6 +273,11 @@ pk_time_init (PkTime *time)
 	time->priv = PK_TIME_GET_PRIVATE (time);
 	time->priv->time_offset = 0;
 	time->priv->last_percentage = 0;
+	time->priv->average_min = PK_TIME_AVERAGE_DEFAULT_MIN;
+	time->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
+	time->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
+	time->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
+
 	time->priv->array = g_ptr_array_new ();
 	time->priv->timer = g_timer_new ();
 }

@@ -55,6 +55,12 @@ gboolean	 pk_time_add_data			(PkTime		*time,
 							 guint		 percentage);
 guint		 pk_time_get_elapsed			(PkTime		*time);
 guint		 pk_time_get_remaining			(PkTime		*time);
+gboolean	 pk_time_set_average_limits		(PkTime		*time,
+							 guint		 average_min,
+							 guint		 average_max);
+gboolean	 pk_time_set_value_limits		(PkTime		*time,
+							 guint		 value_min,
+							 guint		 value_max);
 
 G_END_DECLS
 
