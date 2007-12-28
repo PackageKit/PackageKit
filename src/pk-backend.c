@@ -1108,7 +1108,8 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we sent at least one status calls */
-	if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
+	if (backend->priv->set_error == FALSE &&
+	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Backends should send status <value> signals to update the UI!\n"
 				    "If you are:\n"
