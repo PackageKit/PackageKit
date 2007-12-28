@@ -462,7 +462,6 @@ dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_OUTPUT([
-packagekit.pc
 Makefile
 etc/Makefile
 man/Makefile
@@ -491,6 +490,8 @@ backends/pisi/Makefile
 backends/pisi/helpers/Makefile
 backends/zypp/Makefile
 data/Makefile
+data/packagekit.pc
+data/org.freedesktop.PackageKit.conf
 data/tests/Makefile
 libselftest/Makefile
 libgbus/Makefile
@@ -500,7 +501,6 @@ src/Makefile
 client/Makefile
 python/Makefile
 python/packagekit/Makefile
-org.freedesktop.PackageKit.conf
 ])
 
 dnl ==========================================================================
