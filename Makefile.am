@@ -18,12 +18,6 @@ SUBDIRS = 						\
 	docs						\
 	$(NULL)
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = packagekit.pc
-
-dbusdir = ${SYSCONFDIR}/dbus-1/system.d
-dist_dbus_DATA = org.freedesktop.PackageKit.conf
-
 EXTRA_DIST =						\
 	org.freedesktop.PackageKit.conf.in		\
 	packagekit.pc.in				\
