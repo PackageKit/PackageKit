@@ -68,6 +68,13 @@ DISTCLEANFILES =					\
 	intltool-extract				\
 	intltool-merge					\
 	intltool-update					\
+	gcov.txt					\
+	gprof.txt					\
+	packagekit-decl-list.txt			\
+	packagekit-decl.txt				\
+	packagekit-overrides.txt			\
+	packagekit-sections.txt				\
+	packagekit.types				\
 	$(NULL)
 
 MAINTAINERCLEANFILES =					\
