@@ -483,7 +483,6 @@ def exceptionHandler(typ, value, tb, base):
         errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
         errmsg += '    %s;' % c
     # send the traceback to PackageKit
-    print errmsg
     base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
     
     
