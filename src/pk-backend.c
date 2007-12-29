@@ -406,7 +406,14 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		error_enum = pk_error_enum_from_text (sections[1]);
-		pk_backend_error_code (backend, error_enum, sections[2]);
+		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
+			command = g_strdup_printf ("Error enum not recognised, and hence ignored: '%s'", sections[1]);
+			pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, command);
+			g_free (command);
+		} else {
+			/* only emit if known */
+			pk_backend_error_code (backend, error_enum, sections[2]);
+		}
 	} else if (pk_strequal (command, "requirerestart") == TRUE) {
 		if (size != 3) {
 			g_warning ("invalid command '%s'", command);
