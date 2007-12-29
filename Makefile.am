@@ -19,8 +19,6 @@ SUBDIRS = 						\
 	$(NULL)
 
 EXTRA_DIST =						\
-	org.freedesktop.PackageKit.conf.in		\
-	packagekit.pc.in				\
 	COPYING						\
 	MAINTAINERS					\
 	AUTHORS						\

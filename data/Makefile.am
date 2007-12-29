@@ -31,6 +31,8 @@ database_DATA =						\
 	$(NULL)
 
 EXTRA_DIST =						\
+	org.freedesktop.PackageKit.conf.in		\
+	packagekit.pc.in				\
 	$(service_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
