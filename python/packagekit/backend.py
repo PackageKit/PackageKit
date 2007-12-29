@@ -244,7 +244,7 @@ class PackageKitBaseBackend:
             return False
 
         return True
-       
+
 #
 # Backend Action Methods
 #
@@ -484,8 +484,8 @@ def exceptionHandler(typ, value, tb, base):
         errmsg += '    %s;' % c
     # send the traceback to PackageKit
     base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
-    
-    
+
+
 def installExceptionHandler(base):
     sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
     
