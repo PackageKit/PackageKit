@@ -29,9 +29,7 @@ from urlparse import urlparse
 from apt.debfile import DebPackage
 from os import system
 
-_HYPHEN_PATTERN = re.compile(r'(\s|_)+')
-
-class Package(object):
+class Package(apt.Package):
     def __str__(self):
         return "Package %s, version %s"%(self.name,self._version)
 
@@ -41,17 +39,21 @@ class Package(object):
                 return False
         return True
 
+    def __setParent(self,pkg):
+        for x in ["_pkg","_depcache","_records"]:
+            setattr(self,x,getattr(pkg,x))
+
     def __init__(self, backend, pkg, data="",version=[]):
-        self._pkg = pkg
+        self.__setParent(pkg)
         self._version = version
         self._data = data
         self._backend = backend
         wanted_ver = None
-        if self.installed_version!=None and self._cmp_deps(version,self.installed_version):
-            wanted_ver = self.installed_version
-        elif self.installed_version == None and version == []:
-            #self._pkg.markInstall(False,False)
-            wanted_ver = self.candidate_version
+        if self.installedVersion!=None and self._cmp_deps(version,self.installedVersion):
+            wanted_ver = self.installedVersion
+        elif self.installedVersion == None and version == []:
+            #self.markInstall(False,False)
+            wanted_ver = self.candidateVersion
 
         for ver in pkg._pkg.VersionList:
             #print "vers",dir(ver),version,ver
@@ -74,9 +76,9 @@ class Package(object):
             backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
     
     def setVersion(self,version,compare="="):
-        if version!=None and (self.installed_version == None or not apt_pkg.CheckDep(version,compare,self.installed_version)):
-            self._pkg.markInstall(False,False)
-            if self.candidate_version != version:
+        if version!=None and (self.installedVersion == None or not apt_pkg.CheckDep(version,compare,self.installedVersion)):
+            self.markInstall(False,False)
+            if self.candidateVersion != version:
                 if self._data == "":
                     for ver in pkg._pkg.VersionList:
                         f, index = ver.FileList.pop(0)
@@ -95,37 +97,13 @@ class Package(object):
                 if not self._backend._caches.has_key(origin):
                     self._backend._caches[origin] = apt.Cache(PackageKitProgress(self))
                     print "new cache for %s"%origin
-                self._pkg = self._backend._caches[origin][name]
-                self._pkg.markInstall(False,False)
-                if not apt_pkg.CheckDep(self.candidate_version,compare,version):
+                self.__setParent(self._backend._caches[origin][name])
+                self.markInstall(False,False)
+                if not apt_pkg.CheckDep(self.candidateVersion,compare,version):
                     self._backend.error(ERROR_INTERNAL_ERROR,
-                            "Unable to locate package version %s (only got %s) for %s"%(version,self.candidate_version,name))
+                            "Unable to locate package version %s (only got %s) for %s"%(version,self.candidateVersion,name))
                     return
-                self._pkg.markKeep()
-
-    @property
-    def id(self):
-        return self._pkg.id
-
-    @property
-    def name(self):
-        return self._pkg.name
-
-    @property
-    def summary(self):
-        return self._pkg.summary
-
-    @property
-    def description(self):
-        return self._pkg.description
-
-    @property
-    def architecture(self):
-        return self._pkg.architecture
-
-    @property
-    def section(self):
-        return self._pkg.section
+                self.markKeep()
 
     @property
     def group(self):
@@ -155,44 +133,34 @@ class Package(object):
         return "unknown"
 
     @property
-    def installed_version(self):
-        return self._pkg.installedVersion
+    def isInstalled(self):
+        return super(self.__class__,self).isInstalled and self.installedVersion == self._version
 
     @property
-    def candidate_version(self):
-        return self._pkg.candidateVersion
-
-    @property
-    def is_installed(self):
-        return self._pkg.isInstalled and self.installed_version == self._version
-
-    @property
-    def is_upgradable(self):
-        return self._pkg.isUpgradable
-
-    @property
-    def is_development(self):
+    def isDevelopment(self):
         name = self.name.lower()
         section = self.section.split('/')[-1].lower()
         return name.endswith('-dev') or name.endswith('-dbg') or \
                 section in ('devel', 'libdevel')
 
     @property
-    def is_gui(self):
+    def isGui(self):
         section = self.section.split('/')[-1].lower()
         return section in ('x11', 'gnome', 'kde')
 
-    def match_name(self, name):
+    _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
+
+    def matchName(self, name):
         needle = name.strip().lower()
         haystack = self.name.lower()
-        needle = _HYPHEN_PATTERN.sub('-', needle)
-        haystack = _HYPHEN_PATTERN.sub('-', haystack)
+        needle = Package._HYPHEN_PATTERN.sub('-', needle)
+        haystack = Package._HYPHEN_PATTERN.sub('-', haystack)
         if haystack.find(needle) >= 0:
             return True
         return False
 
-    def match_details(self, details):
-        if self.match_name(details):
+    def matchDetails(self, details):
+        if self.matchName(details):
             return True
         needle = details.strip().lower()
         haystack = self.description.lower()
@@ -200,7 +168,7 @@ class Package(object):
             return True
         return False
 
-    def match_group(self, name):
+    def matchGroup(self, name):
         needle = name.strip().lower()
         haystack = self.group
         if haystack.startswith(needle):
@@ -233,7 +201,6 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
         self._backend.error(ERROR_INTERNAL_ERROR,
                 "Medium change needed")
 
-
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, args):
         PackageKitBaseBackend.__init__(self, args)
@@ -260,7 +227,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for package in self._do_search(filters,
-                lambda pkg: pkg.match_name(key)):
+                lambda pkg: pkg.matchName(key)):
             self._emit_package(package)
 
     def search_details(self, filters, key):
@@ -270,7 +237,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for package in self._do_search(filters,
-                lambda pkg: pkg.match_details(key)):
+                lambda pkg: pkg.matchDetails(key)):
             self._emit_package(package)
 
     def search_group(self, filters, key):
@@ -280,7 +247,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
         for package in self._do_search(filters,
-                lambda pkg: pkg.match_group(key)):
+                lambda pkg: pkg.matchGroup(key)):
             self._emit_package(package)
 
     def search_file(self, filters, key):
@@ -313,7 +280,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self, self._apt_cache[name])
         description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, '', pkg._pkg.packageSize, '')
+        self.description(package, 'unknown', pkg.group, description, '', pkg.packageSize, '')
 
     def resolve(self, name):
         '''
@@ -327,9 +294,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find a package called '%s'"%name)
 
     def _do_deps(self,inp,deps,recursive):
-        inp._pkg.markInstall()
+        inp.markInstall()
         newkeys = []
-        for x in inp._pkg.candidateDependencies:
+        for x in inp.candidateDependencies:
             n = x.or_dependencies[0].name
             if not deps.has_key(n):
                 deps[n] = []
@@ -361,7 +328,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def _do_reqs(self,inp,pkgs,recursive):
         extra = []
         fails = []
-        for r in inp._pkg._pkg.RevDependsList:
+        for r in inp._pkg.RevDependsList:
             ch = apt_pkg.CheckDep(inp._version,r.CompType,r.TargetVer)
             v = (r.ParentPkg.Name,r.ParentVer.VerStr)
             if not ch or v in fails:
@@ -480,7 +447,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 deps[pkg].append((ver,comp))
         for n in deps.keys():
            p = Package(self,self._apt_cache[n],version=deps[n])
-           if not p.is_installed:
+           if not p.isInstalled:
                p.markInstall()
         assert self._apt_cache.getChanges()==[],"Don't handle install changes yet"
         # FIXME: nasty hack. Need a better way in
@@ -494,7 +461,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 package._version,
                 package.architecture,
                 package._data)
-        if package.is_installed:
+        if package.isInstalled:
             status = INFO_INSTALLED
         else:
             status = INFO_AVAILABLE
@@ -511,21 +478,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 percentage = new_percentage
                 self.percentage(percentage)
             package = Package(self, pkg)
-            if package.installed_version is None and \
-                    package.candidate_version is None:
+            if package.installedVersion is None and \
+                    package.candidateVersion is None:
                 continue
             if not condition(package):
                 continue
                 continue
-            vers = [x.VerStr for x in package._pkg._pkg.VersionList]
-            if package.installed_version!=None:
-                i = package.installed_version
+            vers = [x.VerStr for x in package._pkg.VersionList]
+            if package.installedVersion!=None:
+                i = package.installedVersion
                 if i in vers and vers[0]!=i:
                     del vers[vers.index(i)]
                     vers.insert(0,i)
 
             for ver in vers:
-                p = Package(self, package._pkg, version=[[ver,"="]])
+                p = Package(self, package, version=[[ver,"="]])
                 if self._do_filtering(p, filters):
                     yield p
         self.percentage(100)
@@ -533,17 +500,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def _do_filtering(self, package, filters):
         if len(filters) == 0 or filters == ['none']:
             return True
-        if (FILTER_INSTALLED in filters) and (not package.is_installed):
+        if (FILTER_INSTALLED in filters) and (not package.isInstalled):
             return False
-        if (FILTER_NOT_INSTALLED in filters) and package.is_installed:
+        if (FILTER_NOT_INSTALLED in filters) and package.isInstalled:
             return False
-        if (FILTER_GUI in filters) and (not package.is_gui):
+        if (FILTER_GUI in filters) and (not package.isGui):
             return False
-        if (FILTER_NOT_GUI in filters) and package.is_gui:
+        if (FILTER_NOT_GUI in filters) and package.isGui:
             return False
-        if (FILTER_DEVELOPMENT in filters) and (not package.is_development):
+        if (FILTER_DEVELOPMENT in filters) and (not package.isDevelopment):
             return False
-        if (FILTER_NOT_DEVELOPMENT in filters) and package.is_development:
+        if (FILTER_NOT_DEVELOPMENT in filters) and package.isDevelopment:
             return False
         return True
 
