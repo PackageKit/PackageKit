@@ -62,6 +62,7 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 		ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
 		if (ret != SQLITE_ERROR)
 			return;
+		pk_debug("ages are %lu for db, and %lu for comparism",db_age,st.st_mtime);
 	}
 	ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
 	//g_assert(ret == SQLITE_OK);
