@@ -128,7 +128,9 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	/* we only emit n-1 strings */
 	for (i=0; i<(size-1); i++) {
 		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
-		if (is_stdout == TRUE) {
+		if (message == NULL) {
+			pk_warning ("cannot covert line to UTF8: %s", lines[i]);
+		} else if (is_stdout == TRUE) {
 			pk_debug ("emitting stdout %s", message);
 			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
 		} else {
