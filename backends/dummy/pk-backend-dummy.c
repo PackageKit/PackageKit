@@ -353,6 +353,9 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "bǣwulf-utf8;0.1;noarch;hughsie",
+			    "The bǣwulf server test name.");
 	pk_backend_finished (backend);
 }
 
