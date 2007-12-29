@@ -115,14 +115,14 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 		return FALSE;
 	}
 
-	/* split into lines - the las line may be incomplete */
+	/* split into lines - the last line may be incomplete */
 	lines = g_strsplit (string->str, "\n", 0);
 	if (lines == NULL) {
 		return FALSE;
 	}
 
 	/* find size */
-	for (size=0; lines[size]; size++);
+	size = g_strv_length (lines);
 
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
