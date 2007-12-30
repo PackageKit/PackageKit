@@ -62,7 +62,7 @@ gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 const gchar	*details);
 gboolean	 pk_backend_message			(PkBackend	*backend,
 							 PkMessageEnum	 message,
-							 const gchar	*details);
+							 const gchar	*details, ...);
 gboolean	 pk_backend_description			(PkBackend	*backend,
 							 const gchar	*package_id,
 							 const gchar	*license,
