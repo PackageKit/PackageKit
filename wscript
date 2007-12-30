@@ -116,25 +116,6 @@ def build(bld):
 	#  man python
         bld.add_subdirs('libpackagekit backends client libgbus libselftest etc policy po data src docs contrib')
 
-	#set the user in packagekit.pc.in and install
-	obj=bld.create_obj('subst')
-	obj.source = 'packagekit.pc.in'
-	obj.target = 'packagekit.pc'
-	#TODO: set these correctly
-	obj.dict = {'VERSION': 'dave', 'prefix':'PREFIX', 'exec_prefix':'PREFIX', 'libdir':'usr/lib', 'includedir':'usr/include'}
-	obj.fun = misc.subst_func
-	obj.install_var = 'PREFIX'
-	obj.install_subdir = 'usr/lib/pkgconfig'
-
-	#set the user in org.freedesktop.PackageKit.conf.in and install
-	obj=bld.create_obj('subst')
-	obj.source = 'org.freedesktop.PackageKit.conf.in'
-	obj.target = 'org.freedesktop.PackageKit.conf'
-	obj.dict = {'PACKAGEKIT_USER': Params.g_options.user}
-	obj.fun = misc.subst_func
-	obj.install_var = 'PREFIX'
-	obj.install_subdir = 'etc/dbus-1/system.d'
-
 def shutdown():
 	env = Params.g_build.env()
 	if env['HAVE_GCOV']:

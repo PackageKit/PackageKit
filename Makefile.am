@@ -18,15 +18,7 @@ SUBDIRS = 						\
 	docs						\
 	$(NULL)
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = packagekit.pc
-
-dbusdir = ${SYSCONFDIR}/dbus-1/system.d
-dist_dbus_DATA = org.freedesktop.PackageKit.conf
-
 EXTRA_DIST =						\
-	org.freedesktop.PackageKit.conf.in		\
-	packagekit.pc.in				\
 	COPYING						\
 	MAINTAINERS					\
 	AUTHORS						\
@@ -68,6 +60,13 @@ DISTCLEANFILES =					\
 	intltool-extract				\
 	intltool-merge					\
 	intltool-update					\
+	gcov.txt					\
+	gprof.txt					\
+	packagekit-decl-list.txt			\
+	packagekit-decl.txt				\
+	packagekit-overrides.txt			\
+	packagekit-sections.txt				\
+	packagekit.types				\
 	$(NULL)
 
 MAINTAINERCLEANFILES =					\

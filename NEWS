@@ -1,3 +1,48 @@
+Version 0.1.5
+~~~~~~~~~~~~~
+
+* Backends:
+ - apt: Commit a general cleanup patch (Michael Vogt's)
+ - apt: Add GetRepoList support (Tom Parker)
+ - apt: Fix resolution of not installed packages (Tom Parker)
+ - apt: Do recursive requires (Tom Parker)
+ - apt: Add GetRequires and GetDepends (Tom Parker)
+ - apt: Reduce whining about lack of status messages (Tom Parker)
+ - conary: Add better exception handling (Elliot Peele)
+ - conary: Add some extra sanity checks (Elliot Peele)
+ - pisi: Provide status information (S.Çağlar Onur)
+ - yum: Add support for the "free" filter (Robin Norwood)
+ - zypp: Added initial stab at backend_get_updates() for zypp backend (Boyd Timothy)
+ - zypp: Add RemovePackage (Boyd Timothy)
+ - zypp: SearchName will return both installed and available packages (Boyd Timothy)
+ - zypp: Query the SQL database directly and instead just query the cached
+   repository information (Boyd Timothy)
+ - zypp: Added some sub_progress information for general repo events (Boyd Timothy)
+ - zypp: Add Refresh cache method (Boyd Timothy)
+
+* New features:
+ - Add exception handler so unhandled exceptions are sent as a error signal to
+   packagekit (Tim Lauridsen)
+ - Fully re-integrate sqlite search backend for apt - we've now reintegrated
+   everything from apt.old, so we're dropping that at the same time (Tom Parker)
+ - Add me, Tim Lauridsen, S.Çağlar Onur, Ken VanDine and Elliot Peele to the
+   authors html page (All)
+ - Document a whole lot more with gtk-doc and generate some HTML (Richard Hughes)
+ - Add a bugreport script so we can get info about the system (Richard Hughes)
+ - Add generic licence parsing and add all the enums (Robin Norwood)
+
+* API changes:
+ - Add in a 'free' filter enum to filter non-free and free packages (Richard Hughes)
+
+* Bugfixes:
+ - PackageKitExceptions now include the original DBusException (Tom Parker)
+ - Use the correct bus name and object path in the yum plugin (Luke Macken)
+ - Fix PackageKit to build against PolicyKit 0.7 (Matthias Clasen)
+ - Change from 'licence' to 'license' throughout (Robin Norwood)
+ - Check the user is root before we run packagekitd (Richard Hughes)
+ - Do the threading correctly in the threaded backends (Richard Hughes)
+ - waf: Fix x86_64 build, missing -fPIC (Gustavo Carneiro)
+
 Version 0.1.4
 ~~~~~~~~~~~~~
 

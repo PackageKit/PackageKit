@@ -7,6 +7,12 @@ SUBDIRS = 						\
 	tests						\
 	$(NULL)
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = packagekit.pc
+
+dbusdir = ${SYSCONFDIR}/dbus-1/system.d
+dist_dbus_DATA = org.freedesktop.PackageKit.conf
+
 servicedir       = $(DBUS_SERVICES_DIR)
 service_in_files = org.freedesktop.PackageKit.service.in
 service_DATA     = $(service_in_files:.service.in=.service)
@@ -25,6 +31,8 @@ database_DATA =						\
 	$(NULL)
 
 EXTRA_DIST =						\
+	org.freedesktop.PackageKit.conf.in		\
+	packagekit.pc.in				\
 	$(service_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\

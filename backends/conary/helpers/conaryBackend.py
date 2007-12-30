@@ -11,12 +11,36 @@
 import sys
 import os
 
+from conary import errors
 from conary.deps import deps
 from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
 
 from packagekit.backend import *
 from conaryCallback import UpdateCallback
+
+#from conary.lib import util
+#sys.excepthook = util.genExcepthook()
+
+def ExceptionHandler(func):
+    def display(error):
+        return str(error).replace('\n', ' ')
+
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        #except Exception:
+        #    raise
+        except conaryclient.NoNewTrovesError:
+            return
+        except conaryclient.DepResolutionFailure, e:
+            self.error(ERROR_DEP_RESOLUTION_FAILED, display(e), exit=True)
+        except conaryclient.UpdateError, e:
+            # FIXME: Need a enum for UpdateError
+            self.error(ERROR_UNKNOWN, display(e), exit=True)
+        except Exception, e:
+            self.error(ERROR_UNKNOWN, display(e), exit=True)
+    return wrapper
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
     def __init__(self, args):
@@ -31,6 +55,17 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.callback = UpdateCallback(self, self.cfg)
         self.client.setUpdateCallback(self.callback)
 
+    def _freezeData(self, version, flavor):
+        frzVersion = version.freeze()
+        frzFlavor = flavor.freeze()
+        return ','.join([frzVersion, frzFlavor])
+
+    def _thawData(self, data):
+        frzVersion, frzFlavor = data.split(',')
+        version = versions.ThawVersion(frzVersion)
+        flavor = deps.ThawFlavor(frzFlavor)
+        return version, flavor
+
     def _get_arch(self, flavor):
         isdep = deps.InstructionSetDependency
         arches = [ x.name for x in flavor.iterDepsByClass(isdep) ]
@@ -38,27 +73,20 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             arches = [ 'noarch' ]
         return ','.join(arches)
 
+    @ExceptionHandler
     def get_package_id(self, name, versionObj, flavor):
         version = versionObj.trailingRevision()
-        fullVersion = versionObj.asString()
         arch = self._get_arch(flavor)
+        data = self._freezeData(versionObj, flavor)
         return PackageKitBaseBackend.get_package_id(self, name, version, arch,
-                                                    fullVersion)
+                                                    data)
 
+    @ExceptionHandler
     def get_package_from_id(self, id):
-        name, verString, archString, fullVerString = \
+        name, verString, archString, data = \
             PackageKitBaseBackend.get_package_from_id(self, id)
 
-        if verString:
-            version = versions.VersionFromString(fullVerString)
-        else:
-            version = None
-
-        if archString and archString != 'noarch':
-            arches = 'is: %s' %  ' '.join(archString.split(','))
-            flavor = deps.parseFlavor(arches)
-        else:
-            flavor = deps.parseFlavor('')
+        version, flavor = self._thawData(data)
 
         return name, version, flavor
 
@@ -120,12 +148,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         updJob, suggMap = self._do_update(applyList, apply=apply)
         return updJob, suggMap
 
+    @ExceptionHandler
     def resolve(self, filter, package):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         self._do_search(package, filter)
 
+    @ExceptionHandler
     def check_installed(self, troveTuple):
         db = conaryclient.ConaryClient(self.cfg).db
         try:
@@ -136,6 +166,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             installed = INFO_AVAILABLE
         return installed
 
+    @ExceptionHandler
     def search_name(self, options, searchlist):
         '''
         Implement the {backend}-search-name functionality
@@ -152,6 +183,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def get_requires(self, package_id):
         pass
 
+    @ExceptionHandler
     def get_depends(self, package_id):
         name, version, flavor, installed = self._findPackage(package_id)
 
@@ -175,6 +207,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
+    @ExceptionHandler
     def get_files(self, package_id):
         self.allow_interrupt(True)
         self.percentage(None)
@@ -201,18 +234,21 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         self.files(package_id, ';'.join(files))
 
+    @ExceptionHandler
     def update_system(self):
         self.allow_interrupt(True)
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._do_update(applyList, apply=True)
 
+    @ExceptionHandler
     def refresh_cache(self):
         self.percentage()
         self.status(STATUS_REFRESH_CACHE)
         cache = Cache()
         cache.populate_database()
 
+    @ExceptionHandler
     def install(self, package_id):
         '''
         Implement the {backend}-install functionality
@@ -227,15 +263,14 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if installed == INFO_INSTALLED:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'Package already installed')
-            try:
-                self.status(STATUS_INSTALL)
-                self._do_package_update(name, version, flavor, apply=True)
-            except:
-                self.error(ERROR_PACKAGE_NOT_FOUND, 'Package was not found')
+
+            self.status(STATUS_INSTALL)
+            self._do_package_update(name, version, flavor, apply=True)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
 
+    @ExceptionHandler
     def remove(self, allowDeps, package_id):
         '''
         Implement the {backend}-remove functionality
@@ -248,12 +283,10 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if not installed == INFO_INSTALLED:
                 self.error(ERROR_PACKAGE_NOT_INSTALLED,
                     'Package not installed')
-            try:
-                self.status(STATUS_REMOVE)
-                name = '-%s' % name
-                self._do_package_update(name, version, flavor, apply=True)
-            except:
-                pass
+
+            self.status(STATUS_REMOVE)
+            name = '-%s' % name
+            self._do_package_update(name, version, flavor, apply=True)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
@@ -288,6 +321,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             result = trove.getMetadata()[field]
         return result
 
+    @ExceptionHandler
     def get_description(self, id):
         '''
         Print a detailed description for a given package
@@ -325,29 +359,36 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         #    return INFO_NORMAL
         return INFO_NORMAL
 
+    @ExceptionHandler
     def get_updates(self):
         self.allow_interrupt(True)
         self.percentage()
-        try:
-            updateItems = self.client.fullUpdateItemList()
-            applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-            updJob, suggMap = self._do_update(applyList, apply=False)
 
-            jobLists = updJob.getJobs()
+        updateItems = self.client.fullUpdateItemList()
+        applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
+        updJob, suggMap = self._do_update(applyList, apply=False)
 
-            totalJobs = len(jobLists)
-            for num, job in enumerate(jobLists):
-                status = '2'
-                name = job[0][0]
-                version = job[0][2][0]
-                flavor = job[0][2][1]
-                troveTuple = []
-                troveTuple.append(name)
-                troveTuple.append(version)
-                installed = self.check_installed(troveTuple)
-                self._show_package(name, version, flavor, INFO_NORMAL)
-        except:
-            pass
+        jobLists = updJob.getJobs()
+
+        totalJobs = len(jobLists)
+        for num, job in enumerate(jobLists):
+            status = '2'
+            name = job[0][0]
+
+            # On an erase display the old version/flavor information.
+            version = job[0][2][0]
+            if version is None:
+                version = job[0][1][0]
+
+            flavor = job[0][2][1]
+            if flavor is None:
+                flavor = job[0][1][1]
+
+            troveTuple = []
+            troveTuple.append(name)
+            troveTuple.append(version)
+            installed = self.check_installed(troveTuple)
+            self._show_package(name, version, flavor, INFO_NORMAL)
 
     def _do_filtering(self, pkg, filterList, installed):
         ''' Filter the package, based on the filter in filterList '''
@@ -519,12 +560,8 @@ class Cache(object):
         stmt = ("select distinct trove, version, flavor, description, "
                 "category, packagegroup, size from conary_packages")
 
-        try:
-            self.cursor.execute(stmt)
-            return self.cursor.fetchall()
-        except Exception, e:
-            print str(e)
-            return None
+        self.cursor.execute(stmt)
+        return self.cursor.fetchall()
 
     def search(self, package, fullVersion=None):
         """
@@ -571,11 +608,8 @@ class Cache(object):
         self.cursor.execute(stmt)
 
     def populate_database(self):
-        try:
-            packages = self.conaryquery()
-            # Clear table first
-            self._clear_table()
-            for package in packages:
-                self._insert(package)
-        except Exception, e:
-            print str(e)
+        packages = self.conaryquery()
+        # Clear table first
+        self._clear_table()
+        for package in packages:
+            self._insert(package)

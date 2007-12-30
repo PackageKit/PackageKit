@@ -48,12 +48,14 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 {
 	gchar *str_time;
 	time_t the_time;
+	GThread *thread;
 
 	time (&the_time);
 	str_time = g_new0 (gchar, 255);
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
+	thread = g_thread_self ();
 
-	fprintf (stderr, "[%s] %s:%d (%s):\t %s\n", func, file, line, str_time, buffer);
+	fprintf (stderr, "TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n - %s\n", str_time, thread, file, func, line, buffer);
 	g_free (str_time);
 }
 

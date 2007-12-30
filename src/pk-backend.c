@@ -36,6 +36,8 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
+
 #include <gmodule.h>
 #include <libgbus.h>
 
@@ -263,29 +265,26 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 
 	if (pk_strequal (command, "package") == TRUE) {
 		if (size != 4) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		if (pk_package_id_check (sections[2]) == TRUE) {
-			info = pk_info_enum_from_text (sections[1]);
-			/* just until we've converted the backends */
-			if (info == PK_INFO_ENUM_UNKNOWN) {
-				g_print ("Info enumerated type '%s' not recognised\n", sections[1]);
-				g_print ("See src/pk-enum.c for allowed values.\n");
-				pk_warning ("Runtime error, cannot continue");
-				ret = FALSE;
-				goto out;
-			}
-			pk_debug ("info=%s, package='%s' shortdesc='%s'",
-				  pk_info_enum_to_text (info), sections[2], sections[3]);
-			pk_backend_package (backend, info, sections[2], sections[3]);
-		} else {
+		if (pk_package_id_check (sections[2]) == FALSE) {
 			pk_warning ("invalid package_id");
+			ret = FALSE;
+			goto out;
 		}
+		info = pk_info_enum_from_text (sections[1]);
+		if (info == PK_INFO_ENUM_UNKNOWN) {
+			pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Info enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+		pk_backend_package (backend, info, sections[2], sections[3]);
 	} else if (pk_strequal (command, "description") == TRUE) {
 		if (size != 8) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -295,22 +294,22 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		package_size = atol (sections[6]);
 		if (package_size > 1073741824) {
 			pk_warning ("package size cannot be larger than one Gb");
-		} else {
-			pk_backend_description (backend, sections[1], sections[2],
-						group, sections[4], sections[5],
-						package_size, sections[7]);
-		}
-	} else if (pk_strequal (command, "files") == TRUE) {
-		if (size != 3) {
-			g_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-
+		pk_backend_description (backend, sections[1], sections[2],
+					group, sections[4], sections[5],
+					package_size, sections[7]);
+	} else if (pk_strequal (command, "files") == TRUE) {
+		if (size != 3) {
+			pk_warning ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_files (backend, sections[1], sections[2]);
 	} else if (pk_strequal (command, "repo-detail") == TRUE) {
 		if (size != 4) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -319,13 +318,13 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		} else if (pk_strequal (sections[3], "false") == TRUE) {
 			pk_backend_repo_detail (backend, sections[1], sections[2], FALSE);
 		} else {
-			g_warning ("invalid qualifier '%s'", sections[3]);
+			pk_warning ("invalid qualifier '%s'", sections[3]);
 			ret = FALSE;
 			goto out;
 		}
 	} else if (pk_strequal (command, "updatedetail") == TRUE) {
 		if (size != 7) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -371,7 +370,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 
 	if (pk_strequal (command, "percentage") == TRUE) {
 		if (size != 2) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -386,7 +385,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 	} else if (pk_strequal (command, "subpercentage") == TRUE) {
 		if (size != 2) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -401,15 +400,21 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 	} else if (pk_strequal (command, "error") == TRUE) {
 		if (size != 3) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		error_enum = pk_error_enum_from_text (sections[1]);
+		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
+			pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Error enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_error_code (backend, error_enum, sections[2]);
 	} else if (pk_strequal (command, "requirerestart") == TRUE) {
 		if (size != 3) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -417,30 +422,42 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		pk_backend_require_restart (backend, restart_enum, sections[2]);
 	} else if (pk_strequal (command, "message") == TRUE) {
 		if (size != 3) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		message_enum = pk_message_enum_from_text (sections[1]);
+		if (message_enum == PK_MESSAGE_ENUM_UNKNOWN) {
+			pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Message enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_message (backend, message_enum, sections[2]);
 	} else if (pk_strequal (command, "change-transaction-data") == TRUE) {
 		if (size != 2) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_change_transaction_data (backend, sections[1]);
 	} else if (pk_strequal (command, "status") == TRUE) {
 		if (size != 2) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		status_enum = pk_status_enum_from_text (sections[1]);
+		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
+			pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Status enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_change_status (backend, status_enum);
 	} else if (pk_strequal (command, "allow-interrupt") == TRUE) {
 		if (size != 2) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -455,7 +472,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 		}
 	} else if (pk_strequal (command, "no-percentage-updates") == TRUE) {
 		if (size != 1) {
-			g_warning ("invalid command '%s'", command);
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
@@ -472,7 +489,7 @@ out:
 }
 
 /**
- * pk_backend_spawn_helper_new:
+ * pk_backend_spawn_helper_delete:
  **/
 static gboolean
 pk_backend_spawn_helper_delete (PkBackend *backend)
@@ -880,13 +897,21 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
  * pk_backend_message:
  **/
 gboolean
-pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *details)
+pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *format, ...)
 {
+	va_list args;
+	gchar *buffer;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit message %i, %s", message, details);
-	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, details);
+	va_start (args, format);
+	g_vasprintf (&buffer, format, args);
+	va_end (args);
+
+	pk_debug ("emit message %i, %s", message, buffer);
+	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
+	g_free (buffer);
 
 	return TRUE;
 }
@@ -1098,7 +1123,6 @@ pk_backend_finished (PkBackend *backend)
 	/* check we have no threads running */
 	if (pk_thread_list_number_running (backend->priv->thread_list) != 0) {
 		/* wait for threads to complete */
-		//pk_thread_list_wait (backend->priv->thread_list);
 	}
 
 	/* check we have not already finished */
@@ -1109,7 +1133,8 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* check we sent at least one status calls */
-	if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
+	if (backend->priv->set_error == FALSE &&
+	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Backends should send status <value> signals to update the UI!\n"
 				    "If you are:\n"
@@ -2075,6 +2100,7 @@ pk_backend_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+#if 0
 static gboolean
 pk_backend_test_func_true (PkBackend *backend, gpointer data)
 {
@@ -2097,6 +2123,7 @@ pk_backend_test_func_immediate_false (PkBackend *backend, gpointer data)
 	pk_backend_finished (backend);
 	return FALSE;
 }
+#endif
 
 void
 libst_backend (LibSelfTest *test)
@@ -2104,7 +2131,7 @@ libst_backend (LibSelfTest *test)
 	PkBackend *backend;
 	const gchar *text;
 	gboolean ret;
-	gdouble elapsed;
+//	gdouble elapsed;
 	GTimer *timer;
 
 	timer = g_timer_new ();
@@ -2209,7 +2236,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "we did not clear finish!");
 	}
-
+#if 0
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
 	g_timer_start (timer);
@@ -2219,6 +2246,9 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "wait for a thread failed");
 	}
+
+	/* wait */
+	pk_thread_list_wait (backend->priv->thread_list);
 
 	/************************************************************/
 	libst_title (test, "did we wait the correct time?");
@@ -2251,6 +2281,9 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "wait for a thread failed");
 	}
 
+	/* wait */
+	pk_thread_list_wait (backend->priv->thread_list);
+
 	/************************************************************/
 	libst_title (test, "did we wait the correct time2?");
 	elapsed = g_timer_elapsed (timer, NULL);
@@ -2282,7 +2315,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "did not wait for thread timeout2");
 	}
-
+#endif
 	/************************************************************
 	 **********       Check parsing common error      ***********
 	 ************************************************************/
@@ -2358,12 +2391,12 @@ libst_backend (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "test pk_backend_parse_common_error Error2");
+	libst_title (test, "test pk_backend_parse_common_error failure");
 	ret = pk_backend_parse_common_error (backend, "error\tnot-present-woohoo\tdescription text");
-	if (ret == TRUE) {
+	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "did not validate correctly");
+		libst_failed (test, "did not detect incorrect enum");
 	}
 
 	/************************************************************/

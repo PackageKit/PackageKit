@@ -115,20 +115,22 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 		return FALSE;
 	}
 
-	/* split into lines - the las line may be incomplete */
+	/* split into lines - the last line may be incomplete */
 	lines = g_strsplit (string->str, "\n", 0);
 	if (lines == NULL) {
 		return FALSE;
 	}
 
 	/* find size */
-	for (size=0; lines[size]; size++);
+	size = g_strv_length (lines);
 
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
 	for (i=0; i<(size-1); i++) {
 		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
-		if (is_stdout == TRUE) {
+		if (message == NULL) {
+			pk_warning ("cannot covert line to UTF8: %s", lines[i]);
+		} else if (is_stdout == TRUE) {
 			pk_debug ("emitting stdout %s", message);
 			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
 		} else {

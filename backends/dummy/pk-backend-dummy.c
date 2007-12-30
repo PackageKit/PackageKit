@@ -286,6 +286,7 @@ static void
 backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_finished (backend);
@@ -308,6 +309,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_finished (backend);
 }
@@ -319,6 +321,7 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips \"documentation\" package.");
@@ -332,6 +335,7 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
@@ -345,9 +349,13 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "bǣwulf-utf8;0.1;noarch;hughsie",
+			    "The bǣwulf server test name.");
 	pk_backend_finished (backend);
 }
 
@@ -382,6 +390,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	g_timeout_add (2000, backend_search_name_timeout, backend);
 }
 
