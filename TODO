@@ -1,7 +1,5 @@
 Order of no particular importance:
 
-* Add a pm-utils hook so we can drop caches and check for updates on resume
-
 * Lots of the functions are not well commented with gtk-doc. Most
 important is to get the libpackagekit/*.c annotated as it's used in
 other projects. This is probably quite a boring job but is a good way to

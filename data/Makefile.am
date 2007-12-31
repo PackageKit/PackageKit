@@ -10,6 +10,9 @@ SUBDIRS = 						\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
+pmutilsdir = $(libdir)/pm-utils/sleep.d
+pmutils_DATA = 95packagekit
+
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = org.freedesktop.PackageKit.conf
 
