@@ -34,6 +34,7 @@ database_DATA =						\
 	$(NULL)
 
 EXTRA_DIST =						\
+	95packagekit					\
 	org.freedesktop.PackageKit.conf.in		\
 	packagekit.pc.in				\
 	$(service_in_files)				\
