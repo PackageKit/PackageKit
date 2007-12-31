@@ -1149,6 +1149,9 @@ pk_backend_finished (PkBackend *backend)
 		pk_warning ("GUI will remain unchanged!");
 	}
 
+	/* mark as finished for the UI that might only be watching status */
+	pk_backend_change_status (backend, PK_STATUS_ENUM_FINISHED);
+
 	/* we can't ever be re-used */
 	backend->priv->finished = TRUE;
 

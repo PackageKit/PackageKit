@@ -64,6 +64,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_ROLLBACK,		"rollback"},
 	{PK_STATUS_ENUM_COMMIT,			"commit"},
 	{PK_STATUS_ENUM_REQUEST,		"request"},
+	{PK_STATUS_ENUM_FINISHED,		"finished"},
 	{0, NULL},
 };
 
