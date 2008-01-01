@@ -167,14 +167,16 @@ backend_get_updates (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
 	rand = g_rand_new ();
 	number = g_rand_int_range (rand, 1, 5);
 	g_rand_free (rand);
 
 	/* only find updates one in 5 times */
 	if (number != 1) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Ignoring this GetUpdate!");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE,
+				    "Ignoring this GetUpdate as 4/5!");
 		pk_backend_finished (backend);
 		return;
 	}
@@ -276,6 +278,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
 	progress_percentage = 0;
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 

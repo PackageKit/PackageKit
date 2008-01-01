@@ -1,5 +1,6 @@
 Version 0.1.5
 ~~~~~~~~~~~~~
+Released: 2007-12-21
 
 * Backends:
  - apt: Commit a general cleanup patch (Michael Vogt's)
@@ -45,6 +46,7 @@ Version 0.1.5
 
 Version 0.1.4
 ~~~~~~~~~~~~~
+Released: 2007-11-26
 
 * Backends:
  - yum: Mark our status as QUERY when we have finished setting up the
@@ -97,6 +99,7 @@ Version 0.1.4
 
 Version 0.1.3
 ~~~~~~~~~~~~~
+Released: 2007-11-10
 
 * Backends:
  - smart: Add installed filter (James Bowes)
@@ -142,6 +145,7 @@ Version 0.1.3
 ~~~~~~~~~~~~~
 Version 0.1.2
 ~~~~~~~~~~~~~
+Released: 2007-11-01
 
 * Backends:
  - Add a new python based APT backend (Ali Sabil)
@@ -185,6 +189,7 @@ Version 0.1.2
 ~~~~~~~~~~~~~
 Version 0.1.1
 ~~~~~~~~~~~~~
+Released: 2007-10-23
 
 * New backends:
  - A SMART backend (James Bowes)
@@ -232,6 +237,7 @@ Version 0.1.1
 ~~~~~~~~~~~~~
 Version 0.1.0
 ~~~~~~~~~~~~~
+Released: 2007-10-16
 
 * The first public release of PackageKit:
  - New gobject client library for session software to easily talk to PackageKit.

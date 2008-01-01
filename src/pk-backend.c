@@ -1136,7 +1136,7 @@ pk_backend_finished (PkBackend *backend)
 	if (backend->priv->set_error == FALSE &&
 	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Backends should send status <value> signals to update the UI!\n"
+				    "Backends should send status <value> signals for %s!\n"
 				    "If you are:\n"
 				    "* Calling out to external tools, the compiled backend "
 				    "should call pk_backend_change_status() manually.\n"
@@ -1145,9 +1145,12 @@ pk_backend_finished (PkBackend *backend)
 				    "   - see helpers/yumBackend.py:self.status()\n"
 				    "* Using a scripted backend with clever commands then a "
 				    "  callback should use map values into status enums\n"
-				    "   - see helpers/yumBackend.py:self.state_actions");
+				    "   - see helpers/yumBackend.py:self.state_actions", role_text);
 		pk_warning ("GUI will remain unchanged!");
 	}
+
+	/* mark as finished for the UI that might only be watching status */
+	pk_backend_change_status (backend, PK_STATUS_ENUM_FINISHED);
 
 	/* we can't ever be re-used */
 	backend->priv->finished = TRUE;

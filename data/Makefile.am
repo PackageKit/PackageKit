@@ -10,6 +10,9 @@ SUBDIRS = 						\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
+pmutilsdir = $(libdir)/pm-utils/sleep.d
+pmutils_DATA = 95packagekit
+
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = org.freedesktop.PackageKit.conf
 
@@ -31,6 +34,7 @@ database_DATA =						\
 	$(NULL)
 
 EXTRA_DIST =						\
+	95packagekit					\
 	org.freedesktop.PackageKit.conf.in		\
 	packagekit.pc.in				\
 	$(service_in_files)				\
