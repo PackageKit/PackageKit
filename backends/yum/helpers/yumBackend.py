@@ -857,7 +857,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             print pkg.name,txmbr.output_state
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
             if (pkg.name in self.rebootpkgs or (notice and
-                notice.has_key('reboot_suggested') and notice['reboot_suggested']))\
+                notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
                 and txmbr.ts_state in TS_INSTALL_STATES:
                 self.require_restart(RESTART_SYSTEM,"")
                 break
@@ -1073,7 +1073,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if notice:
             desc = notice['description']
             url = notice['references']
-            reboot = notice['reboot_suggested']
+            if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
+		reboot = 'system'
+	    else:
+		reboot = 'none'
             return desc.replace('\n',';'),url,reboot
         return "","",""
 
