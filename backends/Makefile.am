@@ -16,6 +16,10 @@ if BACKEND_TYPE_CONARY
 SUBDIRS += conary
 endif
 
+if BACKEND_TYPE_IPKG
+SUBDIRS += ipkg
+endif
+
 if BACKEND_TYPE_SMART
 SUBDIRS += smart
 endif
