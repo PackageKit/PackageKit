@@ -1059,7 +1059,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._updateMetadata = UpdateMetadata()
             for repo in self.yumbase.repos.listEnabled():
                 try:
-                    md.add(repo)
+                    self._updateMetadata.add(repo)
                 except:
                     pass # No updateinfo.xml.gz in repo
         return self._updateMetadata
