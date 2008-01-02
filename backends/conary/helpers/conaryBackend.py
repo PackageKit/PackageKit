@@ -362,7 +362,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     @ExceptionHandler
     def get_updates(self):
         self.allow_interrupt(True)
-        self.percentage()
+        self.percentage(None)
+        self.status(STATUS_INFO)
 
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
