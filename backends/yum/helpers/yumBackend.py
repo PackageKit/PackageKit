@@ -715,6 +715,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             break
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            
     def install(self, package):
         '''
         Implement the {backend}-install functionality
@@ -1066,19 +1067,43 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     _updateMetadata = None
     updateMetadata = property(fget=_get_update_metadata)
+    
+    def _format_str(self,str):
+        """
+        Convert a multi line string to a list separated by ';'
+        """
+        if str:
+            lines = str.split('\n')
+            return ";".join(lines)
+        else:
+            return ""
+
+    def _format_list(self,lst):
+        """
+        Convert a multi line string to a list separated by ';'
+        """
+        return ";".join(lst)
 
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
         notice = md.get_notice((pkg.name, pkg.version, pkg.release))
         if notice:
+            # Update Description
             desc = notice['description']
-            url = notice['references']
+            # Update References (Bugzilla,CVE ...)
+            urls = []
+            refs = notice['references']
+            if refs:
+	            for ref in refs: 
+	                urls.append(ref['href'])
+            # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-		reboot = 'system'
-	    else:
-		reboot = 'none'
-            return desc.replace('\n',';'),url,reboot
-        return "","",""
+				reboot = 'system'
+            else:
+                reboot = 'none'
+            return self._format_str(desc),self._format_list(urls),reboot
+        else:
+            return "","","none"
 
     def get_update_detail(self,package):
         '''
