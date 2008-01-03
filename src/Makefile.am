@@ -113,7 +113,7 @@ pk-marshal.h: pk-marshal.list
 	glib-genmarshal $< --prefix=pk_marshal --header > $@
 
 pk-interface.h: pk-interface.xml
-	libtool --mode=execute dbus-binding-tool	\
+	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_engine			\
 		--mode=glib-server			\
 		--output=pk-interface.h	\
