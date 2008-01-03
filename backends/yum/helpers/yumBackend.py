@@ -1129,7 +1129,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)
         desc,url,reboot = self._get_update_extras(pkg)
-        self.update_detail(package,update,obsolete,url,reboot,desc)
+        self.update_detail(package,update,obsolete,url,"","",reboot,desc)
 
     def repo_set_data(self, repoid, parameter, value):
         '''

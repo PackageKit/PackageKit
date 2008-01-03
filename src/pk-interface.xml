@@ -140,7 +140,9 @@
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="updates" direction="out"/>
       <arg type="s" name="obsoletes" direction="out"/>
-      <arg type="s" name="url" direction="out"/>
+      <arg type="s" name="vendor_url" direction="out"/>
+      <arg type="s" name="bugzilla_url" direction="out"/>
+      <arg type="s" name="cve_url" direction="out"/>
       <arg type="s" name="restart" direction="out"/>
       <arg type="s" name="update_text" direction="out"/>
     </signal>
