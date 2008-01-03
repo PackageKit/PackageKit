@@ -37,6 +37,7 @@ import exceptions
 import types
 import signal
 import time
+import os.path
 from packagekit.backend import PackagekitProgress
 
 # Global vars
@@ -183,6 +184,18 @@ groupMap = {
 'language-support;gaelic-support'             : GROUP_LOCALIZATION,
 'language-support;marathi-support'            : GROUP_LOCALIZATION,
 'language-support;ethiopic-support'           : GROUP_LOCALIZATION
+}
+
+MetaDataMap = {
+'repomd.xml'             : "repository",
+'primary.sqlite.bz2'     : "package",
+'primary.xml.gz'         : "package",
+'filelists.sqlite.bz2'   : "filelist",
+'filelists.xml.gz'       : "filelist",
+'other.sqlite.bz2'       : "changelog",
+'other.xml.gz'           : "changelog",
+'comps.xml'              : "group",
+'updateinfo.xml.gz'      : "update"
 }
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
@@ -732,7 +745,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.install(name=pkg.name)
                 self._runYumTransaction()
             except yum.Errors.InstallError,e:
-                print e
                 msgs = ';'.join(e)
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
@@ -827,7 +839,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if len(self.yumbase.tsInfo) > 0:
                 self._runYumTransaction()
         except yum.Errors.InstallError,e:
-            print e
             msgs = ';'.join(e)
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
@@ -855,10 +866,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             pkg = txmbr.po
             # check if package is in reboot list or flagged with reboot_suggested
             # in the update metadata and is installed/updated etc
-            print pkg.name,txmbr.output_state
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if (pkg.name in self.rebootpkgs or (notice and
-                notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
+            if (pkg.name in self.rebootpkgs \
+                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
                 and txmbr.ts_state in TS_INSTALL_STATES:
                 self.require_restart(RESTART_SYSTEM,"")
                 break
@@ -1155,15 +1165,15 @@ class DownloadCallback( BaseMeter ):
 
     def setPackages(self,pkgs,startPct,numPct):
         self.pkgs = pkgs
-        self.numPkgs = len(self.pkgs)
+        self.numPkgs = float(len(self.pkgs))
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
-
+        
     def _getPackage(self,name):
-        name = name.split('-')[0]
         if self.pkgs:
             for pkg in self.pkgs:
-                if pkg.name == name:
+                rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
+                if rpmfn == name:
                     return pkg
         return None
 
@@ -1217,19 +1227,30 @@ class DownloadCallback( BaseMeter ):
         @param ftime : formated string containing remaining or elapsed time
         '''
         pct = int( frac*100 )
-        if self.lastPct != pct:
-            self.lastPct = pct
-            # bump the sub persentage for this package
-            self.base.sub_percentage(int( frac*100 ))
-        if name != self.oldName:
+        if name != self.oldName: # If this a new package
+            if self.oldName:
+                self.base.sub_percentage(100)
             self.oldName = name
             if self.bump > 0.0: # Bump the total download percentage
                 self.totalPct += self.bump
+                self.lastPct = 0
                 self.base.percentage(int(self.totalPct))
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
+                else:
+                    if name in MetaDataMap:
+                        typ = MetaDataMap[name]
+                    else:
+                        typ = 'unknown'
+                    self.base.metadata(typ,name)
+            self.base.sub_percentage(0)        
+        else:
+            if self.lastPct != pct and pct != 0 and pct != 100:
+	            self.lastPct = pct
+	            # bump the sub persentage for this package
+	            self.base.sub_percentage(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -1298,6 +1319,7 @@ class ProcessTransPackageKitCallback:
         if state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
+            sys.exit(1)
             self.base.percentage(40)
             pass
         elif state == PT_TEST_TRANS:

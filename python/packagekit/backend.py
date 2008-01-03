@@ -108,6 +108,14 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
+    def metadata(self,typ,fname):
+        '''
+        send 'metadata' signal:
+        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
+        @param fname:  The filename being downloaded
+        '''
+        print >> sys.stderr,"metadata\t%s\t%s" % (typ,fname)
+
     def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
