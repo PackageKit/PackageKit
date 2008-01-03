@@ -31,5 +31,6 @@ install-data-hook:
 	chmod a+rx $(DESTDIR)$(helperdir)/*.py
 
 clean-local :
+	rm -f *.pyc
 	rm -f *~
 

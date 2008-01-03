@@ -13,3 +13,7 @@ packagekitpython_PYTHON =				\
 	enums.py					\
 	$(NULL)
 
+clean-local :
+	rm -f *.pyc
+	rm -f *~
+
