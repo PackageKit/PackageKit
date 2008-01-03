@@ -998,11 +998,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _get_status(self,notice):
         ut = notice['type']
-        # TODO : Add more types to check
         if ut == 'security':
             return INFO_SECURITY
-        else:
+        elif ut == 'bugfix':
             return INFO_NORMAL
+        elif ut == 'enhancement':
+            return INFO_LOW
+        else:
+            return INFO_UNKNOWN
 
     def get_updates(self):
         '''
@@ -1011,8 +1014,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        md = self.updateMetadata
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+        md = self.updateMetadata
         for pkg in ygl.updates:
             # Get info about package in updates info
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
