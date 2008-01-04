@@ -55,10 +55,11 @@ backend_initalize (PkBackend *backend)
 
 	args_init (&args);
 
+#if 0
 	/* testing only */
 	args.offline_root = "/home/thomas/chroots/openmoko/";
 	args.noaction = 1;
-
+#endif
 
 	err = ipkg_conf_init (&global_conf, &args);
 	if (err) {
