@@ -197,7 +197,7 @@
           </row>
           <row>
             <entry>UpdateDetail</entry>
-            <entry><literal>package_id[tab]updates[tab]obsoletes[tab]url[tab]restart[tab]update_text</literal></entry>
+            <entry><literal>package_id[tab]updates[tab]obsoletes[tab]vendor_url[tab]bugzilla_url[tab]cve_url[tab]restart[tab]update_text</literal></entry>
             <entry><literal>stdout</literal></entry>
           </row>
           <row>

@@ -149,9 +149,12 @@ static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_update_detail (backend, "glib2;2.14.0;i386;fedora",
 				  "glib2;2.12.0;i386;fedora", "",
-				  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381",
+				  "http://www.distro-update.org/page?moo;Bugfix release for PackageKit",
+				  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+				  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
 				  "system", "Update to newest upstream source");
 	pk_backend_finished (backend);
 }

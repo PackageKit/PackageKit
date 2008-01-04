@@ -323,13 +323,14 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 	} else if (pk_strequal (command, "updatedetail") == TRUE) {
-		if (size != 7) {
+		if (size != 9) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		pk_backend_update_detail (backend, sections[1], sections[2],
-					  sections[3], sections[4], sections[5], sections[6]);
+					  sections[3], sections[4], sections[5],
+					  sections[6], sections[7], sections[8]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
@@ -826,7 +827,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 gboolean
 pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updates, const gchar *obsoletes,
-			  const gchar *url, const gchar *restart,
+			  const gchar *vendor_url, const gchar *bugzilla_url,
+			  const gchar *cve_url, const gchar *restart,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
@@ -836,10 +838,10 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, url, restart, update_text_safe);
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, url, restart, update_text_safe);
+		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
 	g_free (update_text_safe);
 	return TRUE;
 }
@@ -1976,9 +1978,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

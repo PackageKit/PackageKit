@@ -108,6 +108,14 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stderr,"data\t%s" % (data)
 
+    def metadata(self,typ,fname):
+        '''
+        send 'metadata' signal:
+        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
+        @param fname:  The filename being downloaded
+        '''
+        print >> sys.stderr,"metadata\t%s\t%s" % (typ,fname)
+
     def description(self,id,license,group,desc,url,bytes,file_list):
         '''
         Send 'description' signal
@@ -128,17 +136,19 @@ class PackageKitBaseBackend:
         '''
         print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
 
-    def update_detail(self,id,updates,obsoletes,url,restart,update_text):
+    def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
         '''
         Send 'updatedetail' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param updates:
         @param obsoletes:
-        @param url:
+        @param vendor_url:
+        @param bugzilla_url:
+        @param cve_url:
         @param restart:
         @param update_text:
         '''
-        print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,url,restart,update_text)
+        print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
 
     def require_restart(self,restart_type,details):
         '''

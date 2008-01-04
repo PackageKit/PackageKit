@@ -135,6 +135,16 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 }
 
 /**
+ * pk_debug_enabled:
+ * Return value: If we have debugging enabled
+ **/
+gboolean
+pk_debug_enabled (void)
+{
+	return do_verbose;
+}
+
+/**
  * pk_debug_init:
  * @debug: If we should print out verbose logging
  **/

@@ -1728,9 +1728,25 @@
               <entry>A list of package_id's that are to be obsoletes</entry>
             </row>
             <row>
-              <entry><literal>url</literal></entry>
+              <entry><literal>vendor_url</literal></entry>
               <entry>
-                A URL with more details on the update, e.g. a security advisory
+                A URL with more details on the update, e.g. a page with more
+                information on the update.
+                The format of this command should be
+                <literal>http://www.foo.org/page.html?4567;Update to SELinux</literal>
+              </entry>
+            </row>
+            <row>
+              <entry><literal>bugzilla_url</literal></entry>
+              <entry>
+                A bugzilla URL with more details on the update.
+                If no URL is available then this field should be left empty.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>cve_url</literal></entry>
+              <entry>
+                A CVE URL with more details on the security advisory
               </entry>
             </row>
             <row>

@@ -119,7 +119,8 @@ pk_console_transaction_cb (PkClient *client, const gchar *tid, const gchar *time
 static void
 pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 			     const gchar *updates, const gchar *obsoletes,
-			     const gchar *url, PkRestartEnum restart,
+			     const gchar *vendor_url, const gchar *bugzilla_url,
+			     const gchar *cve_url, PkRestartEnum restart,
 			     const gchar *update_text, gpointer data)
 {
 	g_print ("Update detail\n");
@@ -130,8 +131,14 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 	if (pk_strzero (obsoletes) == FALSE) {
 		g_print ("  obsoletes:  '%s'\n", obsoletes);
 	}
-	if (pk_strzero (url) == FALSE) {
-		g_print ("  url:        '%s'\n", url);
+	if (pk_strzero (vendor_url) == FALSE) {
+		g_print ("  vendor URL: '%s'\n", vendor_url);
+	}
+	if (pk_strzero (bugzilla_url) == FALSE) {
+		g_print ("  bug URL:    '%s'\n", bugzilla_url);
+	}
+	if (pk_strzero (cve_url) == FALSE) {
+		g_print ("  cve URL:    '%s'\n", cve_url);
 	}
 	if (restart != PK_RESTART_ENUM_NONE) {
 		g_print ("  restart:    '%s'\n", pk_restart_enum_to_text (restart));

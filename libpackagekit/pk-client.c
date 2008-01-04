@@ -523,7 +523,9 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 			    const gchar *package_id,
 			    const gchar *updates,
 			    const gchar *obsoletes,
-			    const gchar *url,
+			    const gchar *vendor_url,
+			    const gchar *bugzilla_url,
+			    const gchar *cve_url,
 			    const gchar *restart_text,
 			    const gchar *update_text,
 			    PkClient    *client)
@@ -537,11 +539,11 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 		return;
 	}
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s",
-		  package_id, updates, obsoletes, url, restart_text, update_text);
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	restart = pk_restart_enum_from_text (restart_text);
 	g_signal_emit (client , signals [PK_CLIENT_UPDATE_DETAIL], 0,
-		       package_id, updates, obsoletes, url, restart, update_text);
+		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
 }
 
 /**
@@ -1434,7 +1436,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id)
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
+	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->xcached_transaction_id = g_strdup (transaction_id);
 
 	error = NULL;
@@ -2492,9 +2494,10 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2671,9 +2674,10 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Transaction */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL_STRING_UINT_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN,
@@ -2712,7 +2716,8 @@ pk_client_init (PkClient *client)
 
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_client_update_detail_cb), client, NULL);
 

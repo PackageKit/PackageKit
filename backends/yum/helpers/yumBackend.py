@@ -37,6 +37,7 @@ import exceptions
 import types
 import signal
 import time
+import os.path
 from packagekit.backend import PackagekitProgress
 
 # Global vars
@@ -185,6 +186,18 @@ groupMap = {
 'language-support;ethiopic-support'           : GROUP_LOCALIZATION
 }
 
+MetaDataMap = {
+'repomd.xml'             : "repository",
+'primary.sqlite.bz2'     : "package",
+'primary.xml.gz'         : "package",
+'filelists.sqlite.bz2'   : "filelist",
+'filelists.xml.gz'       : "filelist",
+'other.sqlite.bz2'       : "changelog",
+'other.xml.gz'           : "changelog",
+'comps.xml'              : "group",
+'updateinfo.xml.gz'      : "update"
+}
+
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
 
 class GPGKeyNotImported(exceptions.Exception):
@@ -297,13 +310,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             available = []
             count = 1
             for (pkg,values) in res:
-                if count > 100:
-                    break
-                count+=1
                 # are we installed?
                 if pkg.repoid == 'installed':
                     if FILTER_NOT_INSTALLED not in fltlist:
                         if self._do_extra_filtering(pkg,fltlist):
+                            count+=1
+                            if count > 100:
+                                break
                             self._show_package(pkg, INFO_INSTALLED)
                 else:
                     available.append(pkg)
@@ -715,6 +728,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             break
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            
     def install(self, package):
         '''
         Implement the {backend}-install functionality
@@ -731,7 +745,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.install(name=pkg.name)
                 self._runYumTransaction()
             except yum.Errors.InstallError,e:
-                print e
                 msgs = ';'.join(e)
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
@@ -826,7 +839,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if len(self.yumbase.tsInfo) > 0:
                 self._runYumTransaction()
         except yum.Errors.InstallError,e:
-            print e
             msgs = ';'.join(e)
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
@@ -854,10 +866,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             pkg = txmbr.po
             # check if package is in reboot list or flagged with reboot_suggested
             # in the update metadata and is installed/updated etc
-            print pkg.name,txmbr.output_state
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if (pkg.name in self.rebootpkgs or (notice and
-                notice.has_key('reboot_suggested') and notice['reboot_suggested']))\
+            if (pkg.name in self.rebootpkgs \
+                or (notice and notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']))\
                 and txmbr.ts_state in TS_INSTALL_STATES:
                 self.require_restart(RESTART_SYSTEM,"")
                 break
@@ -987,11 +998,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _get_status(self,notice):
         ut = notice['type']
-        # TODO : Add more types to check
         if ut == 'security':
             return INFO_SECURITY
-        else:
+        elif ut == 'bugfix':
             return INFO_NORMAL
+        elif ut == 'enhancement':
+            return INFO_LOW
+        else:
+            return INFO_UNKNOWN
 
     def get_updates(self):
         '''
@@ -1000,8 +1014,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        md = self.updateMetadata
         ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+        md = self.updateMetadata
         for pkg in ygl.updates:
             # Get info about package in updates info
             notice = md.get_notice((pkg.name, pkg.version, pkg.release))
@@ -1059,23 +1073,59 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._updateMetadata = UpdateMetadata()
             for repo in self.yumbase.repos.listEnabled():
                 try:
-                    md.add(repo)
+                    self._updateMetadata.add(repo)
                 except:
                     pass # No updateinfo.xml.gz in repo
         return self._updateMetadata
 
     _updateMetadata = None
     updateMetadata = property(fget=_get_update_metadata)
+    
+    def _format_str(self,str):
+        """
+        Convert a multi line string to a list separated by ';'
+        """
+        if str:
+            lines = str.split('\n')
+            return ";".join(lines)
+        else:
+            return ""
+
+    def _format_list(self,lst):
+        """
+        Convert a multi line string to a list separated by ';'
+        """
+        if lst:
+            return ";".join(lst)
+        else:
+            return ""
 
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
         notice = md.get_notice((pkg.name, pkg.version, pkg.release))
         if notice:
+            # Update Description
             desc = notice['description']
-            url = notice['references']
-            reboot = notice['reboot_suggested']
-            return desc.replace('\n',';'),url,reboot
-        return "","",""
+            # Update References (Bugzilla,CVE ...)
+            urls = {'bugzilla':[], 'cve' : []}
+            refs = notice['references']
+            if refs:
+                for ref in refs:
+                    typ = ref['type']
+                    if typ in ('bugzilla','cve'):
+                        urls[typ].append("%s;%s" % (ref['href'],ref['title']))
+                    else:
+                        print " unknown url type : %s " % typ
+                        print ref
+                        
+            # Reboot flag
+            if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
+				reboot = 'system'
+            else:
+                reboot = 'none'
+            return self._format_str(desc),urls,reboot
+        else:
+            return "","","none"
 
     def get_update_detail(self,package):
         '''
@@ -1087,8 +1137,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)
-        desc,url,reboot = self._get_update_extras(pkg)
-        self.update_detail(package,update,obsolete,url,reboot,desc)
+        desc,urls,reboot = self._get_update_extras(pkg)
+        cve_url = self._format_list(urls['cve'])
+        bz_url = self._format_list(urls['bugzilla'])
+        self.update_detail(package,update,obsolete,"none",bz_url,cve_url,reboot,desc)
 
     def repo_set_data(self, repoid, parameter, value):
         '''
@@ -1127,15 +1179,15 @@ class DownloadCallback( BaseMeter ):
 
     def setPackages(self,pkgs,startPct,numPct):
         self.pkgs = pkgs
-        self.numPkgs = len(self.pkgs)
+        self.numPkgs = float(len(self.pkgs))
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
-
+        
     def _getPackage(self,name):
-        name = name.split('-')[0]
         if self.pkgs:
             for pkg in self.pkgs:
-                if pkg.name == name:
+                rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
+                if rpmfn == name:
                     return pkg
         return None
 
@@ -1189,19 +1241,30 @@ class DownloadCallback( BaseMeter ):
         @param ftime : formated string containing remaining or elapsed time
         '''
         pct = int( frac*100 )
-        if self.lastPct != pct:
-            self.lastPct = pct
-            # bump the sub persentage for this package
-            self.base.sub_percentage(int( frac*100 ))
-        if name != self.oldName:
+        if name != self.oldName: # If this a new package
+            if self.oldName:
+                self.base.sub_percentage(100)
             self.oldName = name
             if self.bump > 0.0: # Bump the total download percentage
                 self.totalPct += self.bump
+                self.lastPct = 0
                 self.base.percentage(int(self.totalPct))
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
+                else:
+                    if name in MetaDataMap:
+                        typ = MetaDataMap[name]
+                    else:
+                        typ = 'unknown'
+                    self.base.metadata(typ,name)
+            self.base.sub_percentage(0)        
+        else:
+            if self.lastPct != pct and pct != 0 and pct != 100:
+	            self.lastPct = pct
+	            # bump the sub persentage for this package
+	            self.base.sub_percentage(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):

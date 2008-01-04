@@ -264,7 +264,8 @@ dnl - Compile time default choice of backend
 dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
-			   [Default backend to use alpm,apt,box,conary,dummy,smart,yum,pisi,zypp (dummy)]))
+			   [Default backend to use
+                           alpm,apt,box,conary,dummy,smart,yum,pisi,zypp,ipkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -423,6 +424,12 @@ if test x$with_default_backend = xbox; then
 	AC_SUBST(BOX_LIBS)
 fi
 
+if test x$with_default_backend = xipkg; then
+	PKG_CHECK_MODULES(IPKG, libipkg)
+	AC_SUBST(IPKG_CFLAGS)
+	AC_SUBST(IPKG_LIBS)
+fi
+
 if test x$with_default_backend = xalpm; then
 	with_default_backend=dummy
 	AC_MSG_WARN([The alpm backend doesn't work at all!])
@@ -448,6 +455,7 @@ AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_default_backend = xapt], [using AP
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_default_backend = xyum], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_default_backend = xconary], [using CONARY backend])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BOX backend])
+AM_CONDITIONAL(BACKEND_TYPE_IPKG, [test x$with_default_backend = xipkg], [using IPKG backend])
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
@@ -480,6 +488,7 @@ backends/box/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
 backends/dummy/Makefile
+backends/ipkg/Makefile
 backends/smart/Makefile
 backends/smart/helpers/Makefile
 backends/test/Makefile

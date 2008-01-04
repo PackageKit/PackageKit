@@ -318,7 +318,8 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 static void
 pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 			    const gchar *updates, const gchar *obsoletes,
-			    const gchar *url, const gchar *restart,
+			    const gchar *vendor_url, const gchar *bugzilla_url,
+			    const gchar *cve_url, const gchar *restart,
 			    const gchar *update_text, PkEngine *engine)
 {
 	PkTransactionItem *item;
@@ -331,10 +332,10 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 		pk_warning ("could not find backend");
 		return;
 	}
-	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s", item->tid,
-		  package_id, updates, obsoletes, url, restart, update_text);
+	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s, %s, %s", item->tid,
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
 	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, item->tid,
-		       package_id, updates, obsoletes, url, restart, update_text);
+		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -2829,9 +2830,9 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ALLOW_INTERRUPT] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

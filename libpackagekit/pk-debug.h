@@ -43,6 +43,7 @@ G_BEGIN_DECLS
 #endif
 
 void		pk_debug_init			(gboolean	 debug);
+gboolean	pk_debug_enabled		(void);
 void		pk_debug_real			(const gchar	*func,
 						 const gchar	*file,
 						 int		 line,
