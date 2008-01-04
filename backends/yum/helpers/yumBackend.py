@@ -1095,7 +1095,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         """
         Convert a multi line string to a list separated by ';'
         """
-        return ";".join(lst)
+        if lst:
+            return ";".join(lst)
+        else:
+            return "none"
 
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
@@ -1104,17 +1107,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # Update Description
             desc = notice['description']
             # Update References (Bugzilla,CVE ...)
-            urls = []
+            urls = {'bugzilla':[], 'cve' : []}
             refs = notice['references']
             if refs:
-	            for ref in refs: 
-	                urls.append(ref['href'])
+                for ref in refs:
+                    typ = ref['type']
+                    if typ in ('bugzilla','cve'):
+                        urls[typ].append("%s;%s" % (ref['href'],ref['title']))
+                    else:
+                        print " unknown url type : %s " % typ
+                        print ref
+                        
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
 				reboot = 'system'
             else:
                 reboot = 'none'
-            return self._format_str(desc),self._format_list(urls),reboot
+            return self._format_str(desc),urls,reboot
         else:
             return "","","none"
 
@@ -1128,8 +1137,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)
-        desc,url,reboot = self._get_update_extras(pkg)
-        self.update_detail(package,update,obsolete,url,"","",reboot,desc)
+        desc,urls,reboot = self._get_update_extras(pkg)
+        cve_url = self._format_list(urls['cve'])
+        bz_url = self._format_list(urls['bugzilla'])
+        self.update_detail(package,update,obsolete,"none",bz_url,cve_url,reboot,desc)
 
     def repo_set_data(self, repoid, parameter, value):
         '''
@@ -1322,7 +1333,6 @@ class ProcessTransPackageKitCallback:
         if state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
-            sys.exit(1)
             self.base.percentage(40)
             pass
         elif state == PT_TEST_TRANS:
