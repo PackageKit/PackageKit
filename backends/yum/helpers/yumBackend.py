@@ -1098,7 +1098,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lst:
             return ";".join(lst)
         else:
-            return "none"
+            return ""
 
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
