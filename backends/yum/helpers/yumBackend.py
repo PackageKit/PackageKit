@@ -310,13 +310,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             available = []
             count = 1
             for (pkg,values) in res:
-                if count > 100:
-                    break
-                count+=1
                 # are we installed?
                 if pkg.repoid == 'installed':
                     if FILTER_NOT_INSTALLED not in fltlist:
                         if self._do_extra_filtering(pkg,fltlist):
+                            count+=1
+                            if count > 100:
+                                break
                             self._show_package(pkg, INFO_INSTALLED)
                 else:
                     available.append(pkg)
@@ -1098,7 +1098,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lst:
             return ";".join(lst)
         else:
-            return "none"
+            return ""
 
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
