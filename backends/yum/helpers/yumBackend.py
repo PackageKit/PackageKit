@@ -1112,8 +1112,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if refs:
                 for ref in refs:
                     typ = ref['type']
-                    if typ in ('bugzilla','cve'):
-                        urls[typ].append("%s;%s" % (ref['href'],ref['title']))
+		    href = ref['href']
+		    title = ref['title']
+                    if typ in ('bugzilla','cve') and href != None:
+			if title == None:
+			    title = ""
+                        urls[typ].append("%s;%s" % (href,title))
                     else:
                         print " unknown url type : %s " % typ
                         print ref
@@ -1141,7 +1145,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc,urls,reboot = self._get_update_extras(pkg)
         cve_url = self._format_list(urls['cve'])
         bz_url = self._format_list(urls['bugzilla'])
-        self.update_detail(package,update,obsolete,"none",bz_url,cve_url,reboot,desc)
+        self.update_detail(package,update,obsolete,"",bz_url,cve_url,reboot,desc)
 
     def repo_set_data(self, repoid, parameter, value):
         '''
