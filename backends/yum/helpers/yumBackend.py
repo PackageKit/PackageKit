@@ -1125,7 +1125,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 reboot = 'none'
             return self._format_str(desc),urls,reboot
         else:
-            return "","","none"
+            urls = {'bugzilla':[], 'cve' : []}
+            return "",urls,"none"
 
     def get_update_detail(self,package):
         '''
