@@ -81,25 +81,53 @@ backend_destroy (PkBackend *backend)
 	args_deinit (&args);
 }
 
-/**
- * backend_get_description:
- */
-static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+
+static gboolean
+backend_get_description_thread (PkBackend *backend, gchar *package_id)
 {
 	pkg_t *pkg;
 	PkPackageId *pi;
-	g_return_if_fail (backend != NULL);
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-
 	pi = pk_package_id_new_from_string (package_id);
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	pk_backend_description (backend, pi->name,
 	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0, NULL);
 
+	g_free (package_id);
 	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_get_description:
+ */
+static void
+backend_get_description (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_get_description_thread,
+		g_strdup (package_id));
+}
+
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+{
+	int ret;
+
+	/* set up debug if in verbose mode */
+	if (pk_debug_enabled ())
+		ipkg_cb_message = ipkg_debug;
+
+	ret = ipkg_lists_update (&args);
+	if (ret) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "update failed");
+	}
+	pk_backend_finished (backend);
+
+	return (ret == 0);
 }
 
 /**
@@ -108,19 +136,15 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	int ret;
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_no_percentage_updates (backend);
 
-	ipkg_cb_message = ipkg_debug;
 
-	ret = ipkg_lists_update (&args);
-	if (ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "update failed");
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_refresh_cache_thread,
+		NULL);
 }
 
 /**
