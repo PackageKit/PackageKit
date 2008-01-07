@@ -69,7 +69,6 @@ backend_initalize (PkBackend *backend)
 	if (err) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "init failed");
 	}
-	args_deinit (&args);
 }
 
 /**
@@ -79,8 +78,9 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	/* this appears to be freed elsewhere ... */
+	/* this appears to (sometimes) be freed elsewhere ... */
 	/* ipkg_conf_deinit (&global_conf); */
+	args_deinit (&args);
 }
 
 /**
@@ -189,6 +189,7 @@ backend_install_package_thread (PkBackend *backend, gchar *package_id)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "Install failed");
 
 	g_free (package_id);
+	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return (err == 0);
 }
