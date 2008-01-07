@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-debug.h>
 
 
 #define IPKG_LIB
@@ -32,6 +33,9 @@
 /* global config structures */
 static ipkg_conf_t global_conf;
 static args_t args;
+
+/* Ipkg message callback function */
+extern ipkg_message_callback ipkg_cb_message;
 
 int
 ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
@@ -58,7 +62,7 @@ backend_initalize (PkBackend *backend)
 #if 0
 	/* testing only */
 	args.offline_root = "/home/thomas/chroots/openmoko/";
-	args.noaction = 1;
+	args.noaction = 0;
 #endif
 
 	err = ipkg_conf_init (&global_conf, &args);
@@ -74,8 +78,9 @@ backend_initalize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	ipkg_conf_deinit (&global_conf);
 	g_return_if_fail (backend != NULL);
+	/* this appears to be freed elsewhere ... */
+	/* ipkg_conf_deinit (&global_conf); */
 }
 
 /**
@@ -162,6 +167,42 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, foo);
 }
 
+static gboolean
+backend_install_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	gint err;
+
+	pi = pk_package_id_new_from_string (package_id);
+
+	/* set up debug if in verbose mode */
+	if (pk_debug_enabled ())
+		ipkg_cb_message = ipkg_debug;
+
+	/* libipkg requires PATH env variable to be present, otherwise it
+	 * segfaults */
+	if (!getenv ("PATH"))
+		setenv ("PATH", "", 1);
+
+	err = ipkg_packages_install (&args, pi->name);
+	if (err != 0)
+		pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "Install failed");
+
+	g_free (package_id);
+	pk_backend_finished (backend);
+	return (err == 0);
+}
+
+static void
+backend_install_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_no_percentage_updates (backend);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_install_package_thread,
+		g_strdup (package_id));
+}
 
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
@@ -177,7 +218,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_package */
+	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,					/* remove_package */
