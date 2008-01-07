@@ -204,6 +204,37 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		g_strdup (package_id));
 }
 
+static gboolean
+backend_remove_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	gint err;
+
+	pi = pk_package_id_new_from_string (package_id);
+
+	err = ipkg_packages_remove (&args, pi->name, 0);
+	/* TODO: improve error reporting */
+	if (err != 0)
+		pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "Install failed");
+
+	g_free (package_id);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return (err == 0);
+}
+
+static void
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_no_percentage_updates (backend);
+	/* TODO: allow_deps is currently ignored */
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_remove_package_thread,
+		g_strdup (package_id));
+
+}
+
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
@@ -221,7 +252,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
