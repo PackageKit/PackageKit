@@ -93,6 +93,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	PkPackageId *pi;
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+
 	pi = pk_package_id_new_from_string (package_id);
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
@@ -110,6 +112,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	int ret;
 	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_no_percentage_updates (backend);
 
 	ipkg_cb_message = ipkg_debug;
@@ -134,9 +138,6 @@ backend_search_name_thread (PkBackend *backend, gchar *search)
 	g_return_val_if_fail ((search), FALSE);
 
 	ipkg_cb_message = ipkg_debug;
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
@@ -163,6 +164,9 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	char *foo = g_strdup (search);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
 
 	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, foo);
 }
@@ -199,6 +203,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_thread_create (backend,
 		(PkBackendThreadFunc) backend_install_package_thread,
@@ -228,6 +233,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
 	/* TODO: allow_deps is currently ignored */
 	pk_backend_thread_create (backend,
