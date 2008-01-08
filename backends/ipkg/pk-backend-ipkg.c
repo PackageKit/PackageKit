@@ -315,8 +315,7 @@ backend_install_package_thread (PkBackend *backend, gchar *package_id)
 	if (pk_debug_enabled ())
 		ipkg_cb_message = ipkg_debug;
 
-	/* libipkg requires PATH env variable to be present, otherwise it
-	 * segfaults */
+	/* ITS4: ignore, we've set this to something sane in backend_initalize */
 	if (!getenv ("PATH"))
 		setenv ("PATH", "", 1);
 
