@@ -435,7 +435,7 @@ backend_update_system_timeout (gpointer data)
 				    "The first update");
 	}
 	if (progress_percentage == 60) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
