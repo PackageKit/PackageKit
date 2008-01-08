@@ -54,6 +54,12 @@ backend_initalize (PkBackend *backend)
 	int err;
 	g_return_if_fail (backend != NULL);
 
+	/* Ipkg requires the PATH env variable to be set to find wget when
+	 * downloading packages. PackageKit unsets all env variables as a
+	 * security precaution, so we need to set PATH to something sensible
+	 * here */
+	setenv ("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
+
 	memset(&global_conf, 0 ,sizeof(global_conf));
 	memset(&args, 0 ,sizeof(args));
 
