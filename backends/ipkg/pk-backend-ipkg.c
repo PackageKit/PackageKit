@@ -108,6 +108,7 @@ backend_destroy (PkBackend *backend)
 	/* this appears to (sometimes) be freed elsewhere ... */
 	/* ipkg_conf_deinit (&global_conf); */
 	args_deinit (&args);
+	g_free (last_error);
 }
 
 
