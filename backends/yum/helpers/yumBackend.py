@@ -1103,20 +1103,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _get_update_extras(self,pkg):
         md = self.updateMetadata
         notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+        urls = {'bugzilla':[], 'cve' : [], 'vendor': []}
         if notice:
             # Update Description
             desc = notice['description']
             # Update References (Bugzilla,CVE ...)
-            urls = {'bugzilla':[], 'cve' : []}
             refs = notice['references']
             if refs:
                 for ref in refs:
                     typ = ref['type']
-                    if typ in ('bugzilla','cve'):
-                        urls[typ].append("%s;%s" % (ref['href'],ref['title']))
+		    href = ref['href']
+		    title = ref['title']
+                    if typ in ('bugzilla','cve') and href != None:
+			if title == None:
+			    title = ""
+                        urls[typ].append("%s;%s" % (href,title))
                     else:
-                        print " unknown url type : %s " % typ
-                        print ref
+                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
                         
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
@@ -1125,7 +1128,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 reboot = 'none'
             return self._format_str(desc),urls,reboot
         else:
-            return "","","none"
+            return "",urls,"none"
 
     def get_update_detail(self,package):
         '''
@@ -1140,7 +1143,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc,urls,reboot = self._get_update_extras(pkg)
         cve_url = self._format_list(urls['cve'])
         bz_url = self._format_list(urls['bugzilla'])
-        self.update_detail(package,update,obsolete,"none",bz_url,cve_url,reboot,desc)
+        vendor_url = self._format_list(urls['vendor'])
+        self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
     def repo_set_data(self, repoid, parameter, value):
         '''

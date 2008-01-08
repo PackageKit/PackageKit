@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-debug.h>
 
 
 #define IPKG_LIB
@@ -33,12 +34,35 @@
 static ipkg_conf_t global_conf;
 static args_t args;
 
+/* Ipkg message callback function */
+extern ipkg_message_callback ipkg_cb_message;
+static gchar *last_error;
+
 int
 ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
 {
-	if (level == 0)
+	if (level != 0)
+		return 0;
+
+	/* print messages only if in verbose mode */
+	if (pk_debug_enabled ())
 		printf ("IPKG <%d>: %s", level, msg);
+
+	/* free the last error message and store the new one */
+	g_free (last_error);
+	last_error = g_strdup (msg);
 	return 0;
+}
+
+static void
+ipkg_unknown_error (PkBackend *backend, gint error_code, gchar *failed_cmd)
+{
+	gchar *msg;
+
+	msg = g_strdup_printf ("%s failed with error code %d. Last message was:\n\n%s", failed_cmd, error_code, last_error);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, msg);
+
+	g_free (msg);
 }
 
 /**
@@ -50,21 +74,28 @@ backend_initalize (PkBackend *backend)
 	int err;
 	g_return_if_fail (backend != NULL);
 
+	/* Ipkg requires the PATH env variable to be set to find wget when
+	 * downloading packages. PackageKit unsets all env variables as a
+	 * security precaution, so we need to set PATH to something sensible
+	 * here */
+	setenv ("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
+
+	last_error = NULL;
+	ipkg_cb_message = ipkg_debug;
+
 	memset(&global_conf, 0 ,sizeof(global_conf));
 	memset(&args, 0 ,sizeof(args));
 
 	args_init (&args);
 
-	/* testing only */
-	args.offline_root = "/home/thomas/chroots/openmoko/";
-	args.noaction = 1;
-
+#ifdef IPKG_OFFLINE_ROOT
+	args.offline_root = IPKG_OFFLINE_ROOT;
+#endif
 
 	err = ipkg_conf_init (&global_conf, &args);
 	if (err) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "init failed");
+		ipkg_unknown_error (backend, err, "Initialization");
 	}
-	args_deinit (&args);
 }
 
 /**
@@ -73,8 +104,28 @@ backend_initalize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	ipkg_conf_deinit (&global_conf);
 	g_return_if_fail (backend != NULL);
+	/* this appears to (sometimes) be freed elsewhere ... */
+	/* ipkg_conf_deinit (&global_conf); */
+	args_deinit (&args);
+	g_free (last_error);
+}
+
+
+static gboolean
+backend_get_description_thread (PkBackend *backend, gchar *package_id)
+{
+	pkg_t *pkg;
+	PkPackageId *pi;
+	pi = pk_package_id_new_from_string (package_id);
+	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
+
+	pk_backend_description (backend, pi->name,
+	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0, NULL);
+
+	g_free (package_id);
+	pk_backend_finished (backend);
+	return TRUE;
 }
 
 /**
@@ -83,17 +134,26 @@ backend_destroy (PkBackend *backend)
 static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
-	pkg_t *pkg;
-	PkPackageId *pi;
 	g_return_if_fail (backend != NULL);
 
-	pi = pk_package_id_new_from_string (package_id);
-	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_get_description_thread,
+		g_strdup (package_id));
+}
 
-	pk_backend_description (backend, pi->name,
-	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0, NULL);
+static gboolean
+backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+{
+	int ret;
 
+	ret = ipkg_lists_update (&args);
+	if (ret) {
+		ipkg_unknown_error (backend, ret, "Refreshing cache");
+	}
 	pk_backend_finished (backend);
+
+	return (ret == 0);
 }
 
 /**
@@ -102,17 +162,15 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	int ret;
 	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_no_percentage_updates (backend);
 
-	ipkg_cb_message = ipkg_debug;
 
-	ret = ipkg_lists_update (&args);
-	if (ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "update failed");
-	}
-	pk_backend_finished (backend);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_refresh_cache_thread,
+		NULL);
 }
 
 /**
@@ -128,9 +186,6 @@ backend_search_name_thread (PkBackend *backend, gchar *search)
 	g_return_val_if_fail ((search), FALSE);
 
 	ipkg_cb_message = ipkg_debug;
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
@@ -158,9 +213,82 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	char *foo = g_strdup (search);
 
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
 	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, foo);
 }
 
+static gboolean
+backend_install_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	gint err;
+
+	pi = pk_package_id_new_from_string (package_id);
+
+	/* set up debug if in verbose mode */
+	if (pk_debug_enabled ())
+		ipkg_cb_message = ipkg_debug;
+
+	/* libipkg requires PATH env variable to be present, otherwise it
+	 * segfaults */
+	if (!getenv ("PATH"))
+		setenv ("PATH", "", 1);
+
+	err = ipkg_packages_install (&args, pi->name);
+	if (err != 0)
+		ipkg_unknown_error (backend, err, "Install");
+
+	g_free (package_id);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return (err == 0);
+}
+
+static void
+backend_install_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+	pk_backend_no_percentage_updates (backend);
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_install_package_thread,
+		g_strdup (package_id));
+}
+
+static gboolean
+backend_remove_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	gint err;
+
+	pi = pk_package_id_new_from_string (package_id);
+
+	err = ipkg_packages_remove (&args, pi->name, 0);
+	/* TODO: improve error reporting */
+	if (err != 0)
+		ipkg_unknown_error (backend, err, "Install");
+
+	g_free (package_id);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return (err == 0);
+}
+
+static void
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_no_percentage_updates (backend);
+	/* TODO: allow_deps is currently ignored */
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_remove_package_thread,
+		g_strdup (package_id));
+
+}
 
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
@@ -176,10 +304,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_package */
+	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
