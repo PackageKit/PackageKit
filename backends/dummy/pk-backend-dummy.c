@@ -177,10 +177,10 @@ backend_get_updates (PkBackend *backend)
 	g_rand_free (rand);
 
 	/* only find updates one in 5 times */
-	if (number != 1) {
-		pk_backend_finished (backend);
-		return;
-	}
+//	if (number != 1) {
+//		pk_backend_finished (backend);
+//		return;
+//	}
 
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
@@ -418,7 +418,32 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	if (progress_percentage == 0) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update");
+	}
+	if (progress_percentage == 20) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "update2;2.19.1-4.fc8;i386;fedora",
+				    "The second update");
+	}
+	if (progress_percentage == 40) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update");
+	}
+	if (progress_percentage == 60) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "update2;2.19.1-4.fc8;i386;fedora",
+				    "The second update");
+	}
+	if (progress_percentage == 80) {
+		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update (old version)");
+	}
 	progress_percentage += 10;
 	pk_backend_change_percentage (backend, progress_percentage);
 	return TRUE;
