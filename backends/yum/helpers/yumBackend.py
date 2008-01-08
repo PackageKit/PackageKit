@@ -1001,9 +1001,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if ut == 'security':
             return INFO_SECURITY
         elif ut == 'bugfix':
-            return INFO_NORMAL
+            return INFO_BUGFIX
         elif ut == 'enhancement':
-            return INFO_LOW
+            return INFO_ENHANCEMENT
         else:
             return INFO_UNKNOWN
 
