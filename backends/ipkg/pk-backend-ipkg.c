@@ -30,6 +30,15 @@
 #define IPKG_LIB
 #include <libipkg.h>
 
+enum filters {
+	PKG_INSTALLED = 1,
+	PKG_NOT_INSTALLED = 2,
+	PKG_DEVEL = 4,
+	PKG_NOT_DEVEL = 8,
+	PKG_GUI = 16,
+	PKG_NOT_GUI = 32
+};
+
 /* global config structures */
 static ipkg_conf_t global_conf;
 static args_t args;
@@ -64,6 +73,57 @@ ipkg_unknown_error (PkBackend *backend, gint error_code, gchar *failed_cmd)
 
 	g_free (msg);
 }
+
+/**
+ * ipkg_is_gui_pkg:
+ *
+ * check an ipkg package for known GUI dependancies
+ */
+static gboolean
+ipkg_is_gui_pkg (pkg_t *pkg)
+{
+  gint i;
+
+  for (i = 0; i < pkg->depends_count; i++)
+  {
+    if (g_strrstr (pkg->depends_str[i], "gtk"))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * parse_filter:
+ */
+static int
+parse_filter (const gchar *filter)
+{
+	gchar **sections = NULL;
+	gint i = 0;
+	gint retval = 0;
+
+	sections = g_strsplit (filter, ";", 0);
+	while (sections[i]) {
+		if (strcmp(sections[i], "installed") == 0)
+			retval = retval | PKG_INSTALLED;
+		if (strcmp(sections[i], "~installed") == 0)
+			retval = retval | PKG_NOT_INSTALLED;
+		if (strcmp(sections[i], "devel") == 0)
+			retval = retval | PKG_DEVEL;
+		if (strcmp(sections[i], "~devel") == 0)
+			retval = retval | PKG_NOT_DEVEL;
+		if (strcmp(sections[i], "gui") == 0)
+			retval = retval | PKG_GUI;
+		if (strcmp(sections[i], "~gui") == 0)
+			retval = retval | PKG_NOT_GUI;
+		i++;
+	}
+	g_strfreev (sections);
+
+	return retval;
+}
+
+
 
 /**
  * backend_initalize:
@@ -177,32 +237,47 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_search_name:
  */
 static gboolean
-backend_search_name_thread (PkBackend *backend, gchar *search)
+backend_search_name_thread (PkBackend *backend, gchar *params[2])
 {
 	int i;
 	pkg_vec_t *available;
 	pkg_t *pkg;
+	gchar *search;
+	gint filter;
 
-	g_return_val_if_fail ((search), FALSE);
-
-	ipkg_cb_message = ipkg_debug;
+	search = params[0];
+	filter = GPOINTER_TO_INT (params[1]);
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
 	for (i=0; i < available->len; i++) {
 		char *uid;
 		pkg = available->pkgs[i];
-		if (g_strrstr (pkg->name, search)) {
-			uid = g_strdup_printf ("%s;%s;%s;",
-				pkg->name, pkg->version, pkg->architecture);
+		if (!g_strrstr (pkg->name, search))
+			continue;
+		if ((filter & PKG_DEVEL) && !g_strrstr (pkg->name, "-dev"))
+			continue;
+		if ((filter & PKG_NOT_DEVEL) && g_strrstr (pkg->name, "-dev"))
+			continue;
+		if ((filter & PKG_GUI) && !ipkg_is_gui_pkg (pkg))
+			continue;
+		if ((filter & PKG_NOT_GUI) && ipkg_is_gui_pkg (pkg))
+			continue;
+		if ((filter & PKG_INSTALLED) && (pkg->state_status == SS_NOT_INSTALLED))
+			continue;
+		if ((filter & PKG_NOT_INSTALLED) && (pkg->state_status != SS_NOT_INSTALLED))
+			continue;
 
-			pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, uid,pkg->description);
-		}
+		uid = g_strdup_printf ("%s;%s;%s;",
+			pkg->name, pkg->version, pkg->architecture);
+
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, uid,pkg->description);
 	}
 
 	pkg_vec_free(available);
 	pk_backend_finished (backend);
 
+	g_free (params);
 	g_free (search);
 	return TRUE;
 }
@@ -210,13 +285,22 @@ backend_search_name_thread (PkBackend *backend, gchar *search)
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
+	gint filter_enum;
+	gpointer *params;
+
 	g_return_if_fail (backend != NULL);
-	char *foo = g_strdup (search);
 
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, foo);
+	filter_enum = parse_filter (filter);
+
+	/* params is a small array we can pack our thread parameters into */
+	params = g_new0 (gpointer, 2);
+	params[0] = g_strdup (search);
+	params[1] = GINT_TO_POINTER (filter_enum);
+
+	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, params);
 }
 
 static gboolean
@@ -290,13 +374,54 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 }
 
+/**
+ * backend_get_filters:
+ */
+static void
+backend_get_filters (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				      PK_FILTER_ENUM_INSTALLED,
+				      PK_FILTER_ENUM_DEVELOPMENT,
+				      PK_FILTER_ENUM_GUI,
+				      -1);
+}
+
+
+static gboolean
+backend_update_system_thread (PkBackend *backend, gpointer data)
+{
+	gint err;
+	err = ipkg_packages_upgrade (&args);
+	if (err)
+		ipkg_unknown_error (backend, err, "Upgrading system");
+
+	pk_backend_finished (backend);
+	return (err != 0);
+}
+
+static void
+backend_update_system (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_update_system_thread,
+		NULL);
+}
+
+
+
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
-	NULL,					/* get_filters */
+	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,		/* get_description */
@@ -315,7 +440,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL,					/* update_system */
+	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
