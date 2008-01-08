@@ -36,13 +36,33 @@ static args_t args;
 
 /* Ipkg message callback function */
 extern ipkg_message_callback ipkg_cb_message;
+static gchar *last_error;
 
 int
 ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
 {
-	if (level == 0)
+	if (level != 0)
+		return 0;
+
+	/* print messages only if in verbose mode */
+	if (pk_debug_enabled ())
 		printf ("IPKG <%d>: %s", level, msg);
+
+	/* free the last error message and store the new one */
+	g_free (last_error);
+	last_error = g_strdup (msg);
 	return 0;
+}
+
+static void
+ipkg_unknown_error (PkBackend *backend, gint error_code, gchar *failed_cmd)
+{
+	gchar *msg;
+
+	msg = g_strdup_printf ("%s failed with error code %d. Last message was:\n\n%s", failed_cmd, error_code, last_error);
+	pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, msg);
+
+	g_free (msg);
 }
 
 /**
@@ -60,6 +80,9 @@ backend_initalize (PkBackend *backend)
 	 * here */
 	setenv ("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
 
+	last_error = NULL;
+	ipkg_cb_message = ipkg_debug;
+
 	memset(&global_conf, 0 ,sizeof(global_conf));
 	memset(&args, 0 ,sizeof(args));
 
@@ -71,7 +94,7 @@ backend_initalize (PkBackend *backend)
 
 	err = ipkg_conf_init (&global_conf, &args);
 	if (err) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "init failed");
+		ipkg_unknown_error (backend, err, "Initialization");
 	}
 }
 
@@ -123,13 +146,9 @@ backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 {
 	int ret;
 
-	/* set up debug if in verbose mode */
-	if (pk_debug_enabled ())
-		ipkg_cb_message = ipkg_debug;
-
 	ret = ipkg_lists_update (&args);
 	if (ret) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "update failed");
+		ipkg_unknown_error (backend, ret, "Refreshing cache");
 	}
 	pk_backend_finished (backend);
 
@@ -218,7 +237,7 @@ backend_install_package_thread (PkBackend *backend, gchar *package_id)
 
 	err = ipkg_packages_install (&args, pi->name);
 	if (err != 0)
-		pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "Install failed");
+		ipkg_unknown_error (backend, err, "Install");
 
 	g_free (package_id);
 	pk_package_id_free (pi);
@@ -249,7 +268,7 @@ backend_remove_package_thread (PkBackend *backend, gchar *package_id)
 	err = ipkg_packages_remove (&args, pi->name, 0);
 	/* TODO: improve error reporting */
 	if (err != 0)
-		pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "Install failed");
+		ipkg_unknown_error (backend, err, "Install");
 
 	g_free (package_id);
 	pk_package_id_free (pi);
