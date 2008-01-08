@@ -815,7 +815,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	pk_debug ("emit package %i, %s, %s", info, package, summary_safe);
+	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package, summary_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
 	g_free (summary_safe);
 	return TRUE;
