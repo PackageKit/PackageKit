@@ -389,6 +389,32 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 
+static gboolean
+backend_update_system_thread (PkBackend *backend, gpointer data)
+{
+	gint err;
+	err = ipkg_packages_upgrade (&args);
+	if (err)
+		ipkg_unknown_error (backend, err, "Upgrading system");
+
+	pk_backend_finished (backend);
+	return (err != 0);
+}
+
+static void
+backend_update_system (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_update_system_thread,
+		NULL);
+}
+
+
+
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
@@ -414,7 +440,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL,					/* update_system */
+	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
