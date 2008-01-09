@@ -311,14 +311,6 @@ backend_install_package_thread (PkBackend *backend, gchar *package_id)
 
 	pi = pk_package_id_new_from_string (package_id);
 
-	/* set up debug if in verbose mode */
-	if (pk_debug_enabled ())
-		ipkg_cb_message = ipkg_debug;
-
-	/* ITS4: ignore, we've set this to something sane in backend_initalize */
-	if (!getenv ("PATH"))
-		setenv ("PATH", "", 1);
-
 	err = ipkg_packages_install (&args, pi->name);
 	if (err != 0)
 		ipkg_unknown_error (backend, err, "Install");
