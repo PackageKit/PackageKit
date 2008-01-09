@@ -375,8 +375,7 @@ fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, versio
 				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
 				package->description ().c_str (),	// const gchar *description
 				"TODO: add package URL here",			// const gchar *url
-				(gulong)package->size(),			// gulong size
-				"TODO: put package filelist here");			// const gchar *filelist
+				(gulong)package->size());			// gulong size
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);

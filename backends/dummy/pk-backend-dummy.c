@@ -114,7 +114,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 "understand tools, Scribus offers support for professional publishing "
 "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
 "import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager",
-				11214665, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz"
+				11214665
 				);
 	pk_backend_finished (backend);
 }

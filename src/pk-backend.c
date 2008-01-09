@@ -283,7 +283,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		}
 		pk_backend_package (backend, info, sections[2], sections[3]);
 	} else if (pk_strequal (command, "description") == TRUE) {
-		if (size != 8) {
+		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
@@ -299,7 +299,7 @@ pk_backend_parse_common_output (PkBackend *backend, const gchar *line)
 		}
 		pk_backend_description (backend, sections[1], sections[2],
 					group, sections[4], sections[5],
-					package_size, sections[7]);
+					package_size);
 	} else if (pk_strequal (command, "files") == TRUE) {
 		if (size != 3) {
 			pk_warning ("invalid command '%s'", command);
@@ -939,7 +939,7 @@ gboolean
 pk_backend_description (PkBackend *backend, const gchar *package_id,
 			const gchar *license, PkGroupEnum group,
 			const gchar *description, const gchar *url,
-			gulong size, const gchar *filelist)
+			gulong size)
 {
 	gchar *description_safe;
 	g_return_val_if_fail (backend != NULL, FALSE);

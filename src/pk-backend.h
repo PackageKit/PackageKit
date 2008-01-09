@@ -71,8 +71,7 @@ gboolean	 pk_backend_description			(PkBackend	*backend,
 							 PkGroupEnum	 group,
 							 const gchar	*description,
 							 const gchar	*url,
-							 gulong          size,
-							 const gchar    *filelist);
+							 gulong          size);
 gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 							 const gchar	*package_id,
 							 const gchar 	*filelist);

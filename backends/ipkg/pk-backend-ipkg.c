@@ -181,7 +181,7 @@ backend_get_description_thread (PkBackend *backend, gchar *package_id)
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	pk_backend_description (backend, pi->name,
-	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0, NULL);
+	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
 	g_free (package_id);
 	pk_backend_finished (backend);

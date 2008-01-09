@@ -181,7 +181,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
                             group,
                             pkg.description,
                             pkg.packageURI,
-                            pkg.packageSize, "")
+                            pkg.packageSize)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 
