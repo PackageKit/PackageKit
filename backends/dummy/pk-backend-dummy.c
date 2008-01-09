@@ -89,6 +89,7 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -103,6 +104,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 "Scribus is an desktop open source page layout program with "
 "the aim of producing commercial grade output in PDF and "
@@ -112,7 +114,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 "understand tools, Scribus offers support for professional publishing "
 "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
 "import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager",
-				11214665, "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz"
+				11214665
 				);
 	pk_backend_finished (backend);
 }
@@ -124,6 +126,7 @@ static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
 			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 	pk_backend_finished (backend);
@@ -135,6 +138,7 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -177,10 +181,10 @@ backend_get_updates (PkBackend *backend)
 	g_rand_free (rand);
 
 	/* only find updates one in 5 times */
-	if (number != 1) {
-		pk_backend_finished (backend);
-		return;
-	}
+//	if (number != 1) {
+//		pk_backend_finished (backend);
+//		return;
+//	}
 
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
@@ -418,7 +422,32 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	if (progress_percentage == 0) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update");
+	}
+	if (progress_percentage == 20) {
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+				    "update2;2.19.1-4.fc8;i386;fedora",
+				    "The second update");
+	}
+	if (progress_percentage == 40) {
+		pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update");
+	}
+	if (progress_percentage == 60) {
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
+				    "update2;2.19.1-4.fc8;i386;fedora",
+				    "The second update");
+	}
+	if (progress_percentage == 80) {
+		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
+				    "update1;2.19.1-4.fc8;i386;fedora",
+				    "The first update (old version)");
+	}
 	progress_percentage += 10;
 	pk_backend_change_percentage (backend, progress_percentage);
 	return TRUE;

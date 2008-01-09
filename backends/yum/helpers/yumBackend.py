@@ -227,7 +227,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
 
-    def description(self,id,license,group,desc,url,bytes,file_list):
+    def description(self,id,license,group,desc,url,bytes):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -236,11 +236,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param desc: The multi line package description
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
-        @param file_list: List of the files in the package, separated by ';'
         convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
-        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes,file_list)
+        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
 
     def package(self,id,status,summary):
         '''
@@ -960,13 +959,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             desc = desc.replace('\n\n',';')
             desc = desc.replace('\n',' ')
 
-            files = pkg.returnFileEntries('dir')
-            files.extend(pkg.returnFileEntries()) # regular files
-
-            file_list = ";".join(files)
-
             self.description(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size, file_list)
+                             pkg.size)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
@@ -1001,9 +995,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if ut == 'security':
             return INFO_SECURITY
         elif ut == 'bugfix':
-            return INFO_NORMAL
+            return INFO_BUGFIX
         elif ut == 'enhancement':
-            return INFO_LOW
+            return INFO_ENHANCEMENT
         else:
             return INFO_UNKNOWN
 

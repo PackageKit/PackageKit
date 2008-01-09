@@ -1192,6 +1192,11 @@
     <sect2 id="api-update-system">
       <title>Update System</title>
       <para>
+        The installer should update all the updateable packages on the system,
+        including automatically installing any new packages that are needed for
+        dependancies.
+      </para>
+      <para>
         There are no arguments.
       </para>
       <para>
@@ -1212,6 +1217,10 @@
 
     <sect2 id="api-get-updates">
       <title>Get Updates</title>
+      <para>
+        This function should return a list of packages that are installed and
+        are upgradable.
+      </para>
       <para>
         There are no arguments.
       </para>

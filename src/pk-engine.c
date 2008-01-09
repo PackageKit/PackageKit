@@ -273,7 +273,6 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	PkTransactionItem *item;
 	PkRoleEnum role;
 	const gchar *info_text;
-	gboolean ret;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -284,13 +283,7 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 		return;
 	}
 
-	/* check if already in the package list, to avoid having installed and available in the UI */
-	ret = pk_package_list_contains (item->package_list, package_id);
-	if (ret == TRUE) {
-		return;
-	}
-
-	/* add to package cache */
+	/* add to package cache even if we already got a result */
 	pk_package_list_add (item->package_list, info, package_id, summary);
 
 	/* check the backend is doing the right thing */

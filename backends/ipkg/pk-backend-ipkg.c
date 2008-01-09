@@ -181,7 +181,7 @@ backend_get_description_thread (PkBackend *backend, gchar *package_id)
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	pk_backend_description (backend, pi->name,
-	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0, NULL);
+	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
 	g_free (package_id);
 	pk_backend_finished (backend);
@@ -252,6 +252,8 @@ backend_search_name_thread (PkBackend *backend, gchar *params[2])
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
 	for (i=0; i < available->len; i++) {
 		char *uid;
+		gint status;
+
 		pkg = available->pkgs[i];
 		if (!g_strrstr (pkg->name, search))
 			continue;
@@ -271,7 +273,12 @@ backend_search_name_thread (PkBackend *backend, gchar *params[2])
 		uid = g_strdup_printf ("%s;%s;%s;",
 			pkg->name, pkg->version, pkg->architecture);
 
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, uid,pkg->description);
+		if (pkg->state_status == SS_INSTALLED)
+			status = PK_INFO_ENUM_INSTALLED;
+		else
+			status = PK_INFO_ENUM_AVAILABLE;
+
+		pk_backend_package (backend, status, uid,pkg->description);
 	}
 
 	pkg_vec_free(available);
@@ -310,15 +317,6 @@ backend_install_package_thread (PkBackend *backend, gchar *package_id)
 	gint err;
 
 	pi = pk_package_id_new_from_string (package_id);
-
-	/* set up debug if in verbose mode */
-	if (pk_debug_enabled ())
-		ipkg_cb_message = ipkg_debug;
-
-	/* libipkg requires PATH env variable to be present, otherwise it
-	 * segfaults */
-	if (!getenv ("PATH"))
-		setenv ("PATH", "", 1);
 
 	err = ipkg_packages_install (&args, pi->name);
 	if (err != 0)
@@ -413,7 +411,66 @@ backend_update_system (PkBackend *backend)
 		NULL);
 }
 
+/**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+{
+	/* TODO: revursive is ignored */
+	PkPackageId *pi;
+	pkg_t *pkg = NULL;
+	gint i;
 
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	pi = pk_package_id_new_from_string (package_id);
+	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
+
+	if (!pkg)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Packge not found");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	for (i = 0; i < pkg->depends_count; i++)
+	{
+		pkg_t *d_pkg = NULL;
+		pkg_vec_t *p_vec;
+		gchar *uid = NULL;
+		gint status;
+
+		/* find the package by name if we don't have a version
+		 * specified, and pick the first available package TODO: pick
+		 * the package with the newest version
+		 *
+		 * this currently fails if the depends string includes a version
+		 * constraint, e.g. "libz1 (>= 1.2.3)".  TODO: parse the depends
+		 * string for version number
+		 */
+
+		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash,
+		    pkg->depends_str[i]);
+
+		if (!p_vec || p_vec->len < 1 || !p_vec->pkgs[0])
+			continue;
+		
+		d_pkg = p_vec->pkgs[0];
+
+		uid = g_strdup_printf ("%s;%s;%s;",
+			d_pkg->name, d_pkg->version, d_pkg->architecture);
+		if (d_pkg->state_status == SS_INSTALLED)
+			status = PK_INFO_ENUM_INSTALLED;
+		else
+			status = PK_INFO_ENUM_AVAILABLE;
+		pk_backend_package (backend, status, uid, d_pkg->description);
+	}
+	pk_backend_finished (backend);
+}
 
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
@@ -423,7 +480,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
-	NULL,					/* get_depends */
+	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */

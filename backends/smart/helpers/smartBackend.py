@@ -216,7 +216,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
             pkgsize = "unknown"
 
         self.description(packageid, "unknown", "unknown", description, url,
-                pkgsize, ";".join(info.getPathList()))
+                pkgsize)
 
     @needs_cache
     def get_files(self, packageid):

@@ -208,7 +208,7 @@ static gboolean sqlite_get_description_thread (PkBackend *backend, gpointer data
 	if (res!=SQLITE_OK)
 		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
 	res = sqlite3_step(package);
-	pk_backend_description(backend,dt->pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0,"");
+	pk_backend_description(backend,dt->pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0);
 	res = sqlite3_step(package);
 	if (res==SQLITE_ROW)
 		pk_error("multiple matches for that package!");
