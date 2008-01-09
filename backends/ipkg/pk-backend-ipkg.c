@@ -93,6 +93,27 @@ ipkg_is_gui_pkg (pkg_t *pkg)
 }
 
 /**
+ * ipkg_is_devel_pkg:
+ *
+ * check an ipkg package to determine if it is a development package
+ */
+static gboolean
+ipkg_is_devel_pkg (pkg_t *pkg)
+{
+  if (g_strrstr (pkg->name, "-dev"))
+      return TRUE;
+
+  if (g_strrstr (pkg->name, "-dbg"))
+      return TRUE;
+
+  if (g_strrstr (pkg->section, "devel"))
+      return TRUE;
+
+  return FALSE;
+}
+
+
+/**
  * parse_filter:
  */
 static int
@@ -257,9 +278,9 @@ backend_search_name_thread (PkBackend *backend, gchar *params[2])
 		pkg = available->pkgs[i];
 		if (!g_strrstr (pkg->name, search))
 			continue;
-		if ((filter & PKG_DEVEL) && !g_strrstr (pkg->name, "-dev"))
+		if ((filter & PKG_DEVEL) && !ipkg_is_devel_pkg (pkg))
 			continue;
-		if ((filter & PKG_NOT_DEVEL) && g_strrstr (pkg->name, "-dev"))
+		if ((filter & PKG_NOT_DEVEL) && ipkg_is_devel_pkg (pkg))
 			continue;
 		if ((filter & PKG_GUI) && !ipkg_is_gui_pkg (pkg))
 			continue;
