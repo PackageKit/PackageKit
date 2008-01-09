@@ -252,6 +252,8 @@ backend_search_name_thread (PkBackend *backend, gchar *params[2])
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
 	for (i=0; i < available->len; i++) {
 		char *uid;
+		gint status;
+
 		pkg = available->pkgs[i];
 		if (!g_strrstr (pkg->name, search))
 			continue;
@@ -271,7 +273,12 @@ backend_search_name_thread (PkBackend *backend, gchar *params[2])
 		uid = g_strdup_printf ("%s;%s;%s;",
 			pkg->name, pkg->version, pkg->architecture);
 
-		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, uid,pkg->description);
+		if (pkg->state_status == SS_INSTALLED)
+			status = PK_INFO_ENUM_INSTALLED;
+		else
+			status = PK_INFO_ENUM_AVAILABLE;
+
+		pk_backend_package (backend, status, uid,pkg->description);
 	}
 
 	pkg_vec_free(available);
