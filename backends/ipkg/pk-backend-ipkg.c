@@ -112,6 +112,50 @@ ipkg_is_devel_pkg (pkg_t *pkg)
   return FALSE;
 }
 
+/**
+ * ipkg_vec_find_latest:
+ *
+ * search a pkg_vec for the latest version of a package
+ */
+
+static pkg_t*
+ipkg_vec_find_latest_helper (pkg_vec_t *vec, pkg_t *pkg)
+{
+	gint i;
+	for (i = 0; i < vec->len; i++)
+	{
+		/* if the version found is newer, return it */
+		if (pkg_compare_versions (pkg, vec->pkgs[i]) > 0)
+			return vec->pkgs[i];
+	}
+	/* return NULL if there is no package newer than pkg */
+	return NULL;
+}
+
+static pkg_t*
+ipkg_vec_find_latest (pkg_vec_t *vec)
+{
+	gint i;
+	pkg_t *tmp, *ret;
+
+	if (vec->len < 1)
+		return NULL;
+	if (vec->len == 1)
+		return vec->pkgs[0];
+
+	ret = tmp = vec->pkgs[0];
+
+	for (i = 0; i < vec->len; i++)
+	{
+		tmp = ipkg_vec_find_latest_helper (vec, ret);
+		if (!tmp)
+			return ret;
+		else
+			ret = tmp;
+	}
+	return NULL;
+}
+
 
 /**
  * parse_filter:
@@ -465,22 +509,20 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 		gchar *uid = NULL;
 		gint status;
 
-		/* find the package by name if we don't have a version
-		 * specified, and pick the first available package TODO: pick
-		 * the package with the newest version
+		/* find the package by name and select the package with the
+		 * latest version number
 		 *
-		 * this currently fails if the depends string includes a version
-		 * constraint, e.g. "libz1 (>= 1.2.3)".  TODO: parse the depends
-		 * string for version number
+		 * this currently fails if the package name includes a version
+		 * constraint, e.g. "libz1 (>= 1.2.3)".
+		 * TODO: parse the depends string for version number
 		 */
 
 		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash,
 		    pkg->depends_str[i]);
-
 		if (!p_vec || p_vec->len < 1 || !p_vec->pkgs[0])
 			continue;
 		
-		d_pkg = p_vec->pkgs[0];
+		d_pkg = ipkg_vec_find_latest (p_vec);
 
 		uid = g_strdup_printf ("%s;%s;%s;",
 			d_pkg->name, d_pkg->version, d_pkg->architecture);
