@@ -30,6 +30,10 @@
 #define IPKG_LIB
 #include <libipkg.h>
 
+/* this is implemented in libipkg.a */
+int ipkg_upgrade_pkg(ipkg_conf_t *conf, pkg_t *old);
+
+
 enum filters {
 	PKG_INSTALLED = 1,
 	PKG_NOT_INSTALLED = 2,
@@ -560,6 +564,50 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_update_package:
+ */
+static gboolean
+backend_update_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	pkg_t *pkg;
+	gint err = 0;
+
+	pi = pk_package_id_new_from_string (package_id);
+	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
+
+	if (!pkg) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Packge not found");
+		err = -1;
+	} else {
+		/* TODO: determine if package is already latest? */
+		err = ipkg_upgrade_pkg (&global_conf, pkg);
+		if (err != 0)
+			ipkg_unknown_error (backend, err, "Update package");
+	}
+
+	g_free (package_id);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return (err != 0);
+}
+
+static void
+backend_update_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_update_package_thread,
+		g_strdup (package_id));
+}
+
+
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
@@ -584,7 +632,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
