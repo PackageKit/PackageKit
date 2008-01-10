@@ -486,6 +486,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
+	GRegex *regex;
 
 	g_return_if_fail (backend != NULL);
 
@@ -502,27 +503,48 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 		return;
 	}
 
+	/* compile a regex expression to parse depends_str package names */
+	regex = g_regex_new ("(.+) \\(([>=<]+) (.+)\\)", G_REGEX_OPTIMIZE, 0, NULL);
+
 	for (i = 0; i < pkg->depends_count; i++)
 	{
 		pkg_t *d_pkg = NULL;
 		pkg_vec_t *p_vec;
-		gchar *uid = NULL;
+		GMatchInfo *match_info = NULL;
+		gchar *uid = NULL, *pkg_name = NULL, *pkg_v = NULL, *pkg_req = NULL;
 		gint status;
 
 		/* find the package by name and select the package with the
 		 * latest version number
-		 *
-		 * this currently fails if the package name includes a version
-		 * constraint, e.g. "libz1 (>= 1.2.3)".
-		 * TODO: parse the depends string for version number
 		 */
 
-		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash,
-		    pkg->depends_str[i]);
+		if (!g_regex_match (regex, pkg->depends_str[i], 0, &match_info))
+		{
+			/* we couldn't parse the depends string */
+
+			/* match_info is always allocated, even if the match
+			 * failed */
+			g_match_info_free (match_info);
+			continue;
+		}
+
+		pkg_name = g_match_info_fetch (match_info, 1);
+		pkg_req = g_match_info_fetch (match_info, 2);
+		pkg_v = g_match_info_fetch (match_info, 3);
+		g_match_info_free (match_info);
+
+		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash, pkg_name);
+
 		if (!p_vec || p_vec->len < 1 || !p_vec->pkgs[0])
 			continue;
-		
+
 		d_pkg = ipkg_vec_find_latest (p_vec);
+
+		/* TODO: check the version requirements are satisfied */
+
+		g_free (pkg_name);
+		g_free (pkg_req);
+		g_free (pkg_v);
 
 		uid = g_strdup_printf ("%s;%s;%s;",
 			d_pkg->name, d_pkg->version, d_pkg->architecture);
@@ -532,6 +554,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 			status = PK_INFO_ENUM_AVAILABLE;
 		pk_backend_package (backend, status, uid, d_pkg->description);
 	}
+	g_regex_unref (regex);
 	pk_backend_finished (backend);
 }
 
