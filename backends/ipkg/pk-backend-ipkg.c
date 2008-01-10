@@ -50,7 +50,7 @@ static gchar *last_error;
 int
 ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
 {
-	if (level != 0)
+	if (level != 1)
 		return 0;
 
 	/* print messages only if in verbose mode */
