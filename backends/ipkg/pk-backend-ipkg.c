@@ -498,7 +498,9 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 
 	if (!pkg)
 	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Packge not found");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return;
 	}
