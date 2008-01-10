@@ -365,7 +365,7 @@ pk_client_wait (void)
  * pk_console_finished_cb:
  **/
 static void
-pk_console_finished_cb (PkClient *client, PkStatusEnum status, guint runtime, gpointer data)
+pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
 {
 	PkRoleEnum role;
 	gchar *blanking;
