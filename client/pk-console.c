@@ -371,6 +371,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	gchar *blanking;
 	const gchar *role_text;
 	gfloat time;
+	PkRestartEnum restart;
 
 	/* cancel the spinning */
 	if (timer_id != 0) {
@@ -390,6 +391,13 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	role_text = pk_role_enum_to_text (role);
 	time = (gfloat) runtime / 1000.0;
 	g_print ("%s runtime was %.1f seconds\n", role_text, time);
+
+	/* is there any restart to notify the user? */
+	restart = pk_client_get_require_restart (client);
+	if (restart != PK_RESTART_ENUM_NONE) {
+		g_print ("Requires restart: %s\n", pk_restart_enum_to_text (restart));
+	}
+
 	if (loop != NULL) {
 		g_main_loop_quit (loop);
 	}
