@@ -44,6 +44,7 @@ enum filters {
 };
 
 /* global config structures */
+static int ref = 0;
 static ipkg_conf_t global_conf;
 static args_t args;
 
@@ -203,6 +204,10 @@ backend_initalize (PkBackend *backend)
 	int err;
 	g_return_if_fail (backend != NULL);
 
+	/* reference count for the global variables */
+	if (++ref > 1)
+		return;
+
 	/* Ipkg requires the PATH env variable to be set to find wget when
 	 * downloading packages. PackageKit unsets all env variables as a
 	 * security precaution, so we need to set PATH to something sensible
@@ -234,10 +239,16 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	/* this appears to (sometimes) be freed elsewhere ... */
+
+	if (--ref > 0)
+		return;
+
+	/* this appears to (sometimes) be freed elsewhere, perhaps
+	 * by the functions in libipkg.c */
 	/* ipkg_conf_deinit (&global_conf); */
 	args_deinit (&args);
 	g_free (last_error);
+	last_error = NULL;
 }
 
 
