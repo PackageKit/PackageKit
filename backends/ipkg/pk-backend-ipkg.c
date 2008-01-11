@@ -59,7 +59,7 @@ ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
 
 	/* print messages only if in verbose mode */
 	if (pk_debug_enabled ())
-		printf ("IPKG <%d>: %s", level, msg);
+		printf ("IPKG: %s", msg);
 
 	/* free the last error message and store the new one */
 	g_free (last_error);
