@@ -25,6 +25,28 @@
 #include <pk-backend.h>
 
 /**
+ * backend_initalize:
+ * This should only be run once per backend load, i.e. not every transaction
+ */
+static void
+backend_initalize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_debug ("FILTER: initalize");
+}
+
+/**
+ * backend_destroy:
+ * This should only be run once per backend load, i.e. not every transaction
+ */
+static void
+backend_destroy (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	pk_debug ("FILTER: destroy");
+}
+
+/**
  * backend_search_group_thread:
  */
 static gboolean
@@ -93,8 +115,8 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 PK_BACKEND_OPTIONS (
 	"Test Thread",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	backend_initalize,			/* initalize */
+	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
 	NULL,					/* cancel */
