@@ -352,6 +352,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 	guint size;
 	gint percentage;
 	gchar *command;
+	gchar *text;
 	PkErrorCodeEnum error_enum;
 	PkStatusEnum status_enum;
 	PkMessageEnum message_enum;
@@ -412,7 +413,11 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_error_code (backend, error_enum, sections[2]);
+		/* convert back all the ;'s to newlines */
+		text = g_strdup (sections[2]);
+		g_strdelimit (text, ";", '\n');
+		pk_backend_error_code (backend, error_enum, text);
+		g_free (text);
 	} else if (pk_strequal (command, "requirerestart") == TRUE) {
 		if (size != 3) {
 			pk_warning ("invalid command '%s'", command);

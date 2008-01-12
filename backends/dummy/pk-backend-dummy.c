@@ -22,6 +22,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
+#include <pk-common.h>
 #include <pk-backend.h>
 
 static guint progress_percentage;
@@ -154,12 +155,20 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_update_detail (backend, "glib2;2.14.0;i386;fedora",
-				  "glib2;2.12.0;i386;fedora", "",
-				  "http://www.distro-update.org/page?moo;Bugfix release for PackageKit",
-				  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-				  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-				  "system", "Update to newest upstream source");
+	if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora") == TRUE) {
+		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
+					  "powertop;1.7-1.fc8;i386;installed", "",
+					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
+					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+					  "", "", "Update to newest upstream source");
+	} else {
+		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
+					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
+					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
+					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
+					  "system", "Update to newest version");
+	}
 	pk_backend_finished (backend);
 }
 

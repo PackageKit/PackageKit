@@ -30,6 +30,10 @@
 #define IPKG_LIB
 #include <libipkg.h>
 
+/* this is implemented in libipkg.a */
+int ipkg_upgrade_pkg(ipkg_conf_t *conf, pkg_t *old);
+
+
 enum filters {
 	PKG_INSTALLED = 1,
 	PKG_NOT_INSTALLED = 2,
@@ -40,6 +44,7 @@ enum filters {
 };
 
 /* global config structures */
+static int ref = 0;
 static ipkg_conf_t global_conf;
 static args_t args;
 
@@ -50,12 +55,12 @@ static gchar *last_error;
 int
 ipkg_debug (ipkg_conf_t *conf, message_level_t level, char *msg)
 {
-	if (level != 0)
+	if (level != 1)
 		return 0;
 
 	/* print messages only if in verbose mode */
 	if (pk_debug_enabled ())
-		printf ("IPKG <%d>: %s", level, msg);
+		printf ("IPKG: %s", msg);
 
 	/* free the last error message and store the new one */
 	g_free (last_error);
@@ -199,6 +204,10 @@ backend_initalize (PkBackend *backend)
 	int err;
 	g_return_if_fail (backend != NULL);
 
+	/* reference count for the global variables */
+	if (++ref > 1)
+		return;
+
 	/* Ipkg requires the PATH env variable to be set to find wget when
 	 * downloading packages. PackageKit unsets all env variables as a
 	 * security precaution, so we need to set PATH to something sensible
@@ -230,10 +239,16 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	/* this appears to (sometimes) be freed elsewhere ... */
+
+	if (--ref > 0)
+		return;
+
+	/* this appears to (sometimes) be freed elsewhere, perhaps
+	 * by the functions in libipkg.c */
 	/* ipkg_conf_deinit (&global_conf); */
 	args_deinit (&args);
 	g_free (last_error);
+	last_error = NULL;
 }
 
 
@@ -486,6 +501,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
+	GRegex *regex;
 
 	g_return_if_fail (backend != NULL);
 
@@ -497,32 +513,55 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 
 	if (!pkg)
 	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Packge not found");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return;
 	}
+
+	/* compile a regex expression to parse depends_str package names */
+	regex = g_regex_new ("(.+) \\(([>=<]+) (.+)\\)", G_REGEX_OPTIMIZE, 0, NULL);
 
 	for (i = 0; i < pkg->depends_count; i++)
 	{
 		pkg_t *d_pkg = NULL;
 		pkg_vec_t *p_vec;
-		gchar *uid = NULL;
+		GMatchInfo *match_info = NULL;
+		gchar *uid = NULL, *pkg_name = NULL, *pkg_v = NULL, *pkg_req = NULL;
 		gint status;
 
 		/* find the package by name and select the package with the
 		 * latest version number
-		 *
-		 * this currently fails if the package name includes a version
-		 * constraint, e.g. "libz1 (>= 1.2.3)".
-		 * TODO: parse the depends string for version number
 		 */
 
-		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash,
-		    pkg->depends_str[i]);
+		if (!g_regex_match (regex, pkg->depends_str[i], 0, &match_info))
+		{
+			/* we couldn't parse the depends string */
+
+			/* match_info is always allocated, even if the match
+			 * failed */
+			g_match_info_free (match_info);
+			continue;
+		}
+
+		pkg_name = g_match_info_fetch (match_info, 1);
+		pkg_req = g_match_info_fetch (match_info, 2);
+		pkg_v = g_match_info_fetch (match_info, 3);
+		g_match_info_free (match_info);
+
+		p_vec = pkg_vec_fetch_by_name (&global_conf.pkg_hash, pkg_name);
+
 		if (!p_vec || p_vec->len < 1 || !p_vec->pkgs[0])
 			continue;
-		
+
 		d_pkg = ipkg_vec_find_latest (p_vec);
+
+		/* TODO: check the version requirements are satisfied */
+
+		g_free (pkg_name);
+		g_free (pkg_req);
+		g_free (pkg_v);
 
 		uid = g_strdup_printf ("%s;%s;%s;",
 			d_pkg->name, d_pkg->version, d_pkg->architecture);
@@ -532,8 +571,53 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 			status = PK_INFO_ENUM_AVAILABLE;
 		pk_backend_package (backend, status, uid, d_pkg->description);
 	}
+	g_regex_unref (regex);
 	pk_backend_finished (backend);
 }
+
+/**
+ * backend_update_package:
+ */
+static gboolean
+backend_update_package_thread (PkBackend *backend, gchar *package_id)
+{
+	PkPackageId *pi;
+	pkg_t *pkg;
+	gint err = 0;
+
+	pi = pk_package_id_new_from_string (package_id);
+	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
+
+	if (!pkg) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Packge not found");
+		err = -1;
+	} else {
+		/* TODO: determine if package is already latest? */
+		err = ipkg_upgrade_pkg (&global_conf, pkg);
+		if (err != 0)
+			ipkg_unknown_error (backend, err, "Update package");
+	}
+
+	g_free (package_id);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return (err != 0);
+}
+
+static void
+backend_update_package (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_update_package_thread,
+		g_strdup (package_id));
+}
+
 
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
@@ -559,7 +643,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
