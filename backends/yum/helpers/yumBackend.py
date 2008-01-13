@@ -1008,16 +1008,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
-        md = self.updateMetadata
-        for pkg in ygl.updates:
-            # Get info about package in updates info
-            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if notice:
-                status = self._get_status(notice)
-                self._show_package(pkg,status)
-            else:
-                self._show_package(pkg,INFO_NORMAL)
+        try:
+            ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+            md = self.updateMetadata
+            for pkg in ygl.updates:
+                # Get info about package in updates info
+                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+                if notice:
+                    status = self._get_status(notice)
+                    self._show_package(pkg,status)
+                else:
+                    self._show_package(pkg,INFO_NORMAL)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+                
 
     def repo_enable(self, repoid, enable):
         '''
