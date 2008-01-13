@@ -894,11 +894,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 callback = ProcessTransPackageKitCallback(self)
                 self.yumbase.processTransaction(callback=callback,
                                       rpmDisplay=rpmDisplay)
-            except yum.Errors.YumDownloadError, msgs:
-                retmsg = "Error in Download;" +";".join(msgs)
+            except yum.Errors.YumDownloadError, ye:
+                retmsg = "Error in Download;" +";".join(ye.value)
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
-            except yum.Errors.YumGPGCheckError, msgs:
-                retmsg = "Error in Package Signatures;" +";".join(msgs)
+            except yum.Errors.YumGPGCheckError, ye:
+                retmsg = "Error in Package Signatures;" +";".join(ye.value)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
@@ -918,8 +918,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['timestamp'],
                                              'GPG')
                 self.error(ERROR_SIGNATURE_NOT_IMPORTED,"GPG key not imported.")
-            except yum.Errors.YumBaseError, msgs:
-                retmsg = "Error in Transaction Processing;" +";".join(msgs)
+            except yum.Errors.YumBaseError, ye:
+                retmsg = "Error in Transaction Processing;" +";".join(ye.value)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
 
     def remove(self, allowdep, package):
