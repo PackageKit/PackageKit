@@ -142,10 +142,16 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
 AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
 AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support (gcc only)]),enable_gprof=$enableval,enable_gprof=no)
+AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
 
 AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
 	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
+fi
+
+AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
+if test x$enable_local = xyes; then
+	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
 fi
 
 if test x$enable_gcov = xyes; then
@@ -522,6 +528,7 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         Building unit tests:       ${enable_tests}
+        Able to run locally:       ${enable_local}
         GCC coverage profiling:    ${enable_gcov}
         GCC time profiling:        ${enable_gprof}
         Default backend:           ${with_default_backend}
