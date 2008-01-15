@@ -258,6 +258,16 @@ backend_get_description_thread (PkBackend *backend, gchar *package_id)
 	pkg_t *pkg;
 	PkPackageId *pi;
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	pk_backend_description (backend, pi->name,
@@ -509,6 +519,16 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	pk_backend_no_percentage_updates (backend);
 
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	if (!pkg)
@@ -586,6 +606,16 @@ backend_update_package_thread (PkBackend *backend, gchar *package_id)
 	gint err = 0;
 
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	if (!pkg) {
