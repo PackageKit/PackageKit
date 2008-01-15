@@ -134,11 +134,17 @@ pk_backend_build_library_path (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
+#if PK_BUILD_LOCAL
+	/* prefer the local version */
 	path = g_build_filename ("..", "backends", backend->priv->name, ".libs", filename, NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
+		pk_debug ("local backend not found '%s'", path);
 		g_free (path);
 		path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
 	}
+#else
+	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
+#endif
 	g_free (filename);
 	pk_debug ("dlopening '%s'", path);
 
@@ -601,12 +607,17 @@ pk_backend_spawn_helper_internal (PkBackend *backend, const gchar *script, const
 	gchar *filename;
 	gchar *command;
 
-	/* build script */
+#if PK_BUILD_LOCAL
+	/* prefer the local version */
 	filename = g_build_filename ("..", "backends", backend->priv->name, "helpers", script, NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
+		pk_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
 	}
+#else
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend->priv->name, script, NULL);
+#endif
 	pk_debug ("using spawn filename %s", filename);
 
 	if (argument != NULL) {
