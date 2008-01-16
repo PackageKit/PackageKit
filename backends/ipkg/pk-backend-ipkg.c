@@ -504,19 +504,14 @@ backend_update_system (PkBackend *backend)
 /**
  * backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+
+static gboolean
+backend_get_depends_thread (PkBackend *backend, gchar *package_id)
 {
-	/* TODO: revursive is ignored */
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
 	GRegex *regex;
-
-	g_return_if_fail (backend != NULL);
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -526,7 +521,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 				"Package not found");
 		pk_package_id_free (pi);
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
@@ -537,7 +532,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 				"Package not found");
 		pk_package_id_free (pi);
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
 	}
 
 	/* compile a regex expression to parse depends_str package names */
@@ -591,8 +586,26 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 			status = PK_INFO_ENUM_AVAILABLE;
 		pk_backend_package (backend, status, uid, d_pkg->description);
 	}
+
 	g_regex_unref (regex);
 	pk_backend_finished (backend);
+	g_free (package_id);
+
+	return TRUE;
+}
+
+static void
+backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+{
+	/* TODO: revursive is ignored */
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_get_depends_thread,
+		g_strdup (package_id));
 }
 
 /**
