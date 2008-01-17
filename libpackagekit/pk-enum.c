@@ -180,6 +180,10 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_VIRTUALIZATION,		"virtualization"},
 	{PK_GROUP_ENUM_POWER_MANAGEMENT,	"power-management"},
 	{PK_GROUP_ENUM_SECURITY,		"security"},
+	{PK_GROUP_ENUM_COMMUNICATION,		"communication"},
+	{PK_GROUP_ENUM_NETWORK,			"network"},
+	{PK_GROUP_ENUM_MAPS,			"maps"},
+	{PK_GROUP_ENUM_REPOS,			"repos"},
 	{0, NULL},
 };
 
