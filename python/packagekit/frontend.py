@@ -23,53 +23,17 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 import gobject
 from enums import PackageKitEnum
+from pkdbus import PackageKitDbusInterface, dbusException
+from pkexceptions import PackageKitException, PackageKitNotStarted
+from pkexceptions import PackageKitAccessDenied, PackageKitTransactionFailure
+from pkexceptions import PackageKitBackendFailure
 
-class PackageKitException(Exception):
-	def __init__(self,e=None):
-		Exception.__init__(self)
-		if e == None:
-			self._pk_name = None
-			self._full_str = None
-		else:
-			if not isinstance(e,dbus.exceptions.DBusException):
-				raise Exception,"Can only handle DBusExceptions"
-			self._pk_name = str(e.get_dbus_name())
-			self._full_str = str(e)
+class PackageKit(PackageKitDbusInterface):
+	def __init__(self):
+		PackageKitDbusInterface.__init__(self, 'org.freedesktop.PackageKit')
 
-	def get_backend_name(self):
-		return self._pk_name
-
-	def __str__(self):
-		if self._full_str!=None:
-			return self._full_str
-		else:
-			return ""
-
-class PackageKitNotStarted(PackageKitException):
-	pass
-
-class PackageKitAccessDenied(PackageKitException):
-	pass
-
-class PackageKitTransactionFailure(PackageKitException):
-	pass
-
-class PackageKitBackendFailure(PackageKitException):
-	pass
-
-class PackageKit:
-	def dbusException(func):
-		def wrapper(*args,**kwargs):
-			try:
-				return func(*args,**kwargs)
-			except dbus.exceptions.DBusException,e:
-				if e.get_dbus_name() == "org.freedesktop.DBus.Error.AccessDenied":
-					raise PackageKitAccessDenied(e)
-				elif e.get_dbus_name() == "org.freedesktop.DBus.Error.NoReply":
-					raise PackageKitBackendFailure(e)
-				else:
-					raise PackageKitException(e)
-		return wrapper
+	def tid(self):
+		return self.pk_iface.GetTid()
 
 	def job_id(func):
 		def wrapper(*args,**kwargs):
@@ -79,24 +43,6 @@ class PackageKit:
 			else:
 				return jid
 		return wrapper
-
-	def tid(self):
-		return self.pk_iface.GetTid()
-
-	def __init__(self):
-		DBusGMainLoop(set_as_default=True)
-		bus = dbus.SystemBus()
-		try:
-			pk = bus.get_object('org.freedesktop.PackageKit', '/org/freedesktop/PackageKit')
-			self.pk_iface = dbus.Interface(pk, dbus_interface='org.freedesktop.PackageKit')
-		except dbus.exceptions.DBusException,e:
-			if e.get_dbus_name() == "org.freedesktop.DBus.Error.ServiceUnknown":
-				raise PackageKitNotStarted
-			else:
-				raise PackageKitException(e)
-
-		#self.job = None
-		bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface="org.freedesktop.PackageKit")
 
 	def run(self):
 		self.loop = gobject.MainLoop()
