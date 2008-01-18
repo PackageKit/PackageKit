@@ -894,11 +894,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 callback = ProcessTransPackageKitCallback(self)
                 self.yumbase.processTransaction(callback=callback,
                                       rpmDisplay=rpmDisplay)
-            except yum.Errors.YumDownloadError, msgs:
-                retmsg = "Error in Download;" +";".join(msgs)
+            except yum.Errors.YumDownloadError, ye:
+                retmsg = "Error in Download;" +";".join(ye.value)
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
-            except yum.Errors.YumGPGCheckError, msgs:
-                retmsg = "Error in Package Signatures;" +";".join(msgs)
+            except yum.Errors.YumGPGCheckError, ye:
+                retmsg = "Error in Package Signatures;" +";".join(ye.value)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
@@ -918,8 +918,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['timestamp'],
                                              'GPG')
                 self.error(ERROR_SIGNATURE_NOT_IMPORTED,"GPG key not imported.")
-            except yum.Errors.YumBaseError, msgs:
-                retmsg = "Error in Transaction Processing;" +";".join(msgs)
+            except yum.Errors.YumBaseError, ye:
+                retmsg = "Error in Transaction Processing;" +";".join(ye.value)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
 
     def remove(self, allowdep, package):
@@ -1008,16 +1008,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_interrupt(True)
         self.percentage(None)
         self.status(STATUS_INFO)
-        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
-        md = self.updateMetadata
-        for pkg in ygl.updates:
-            # Get info about package in updates info
-            notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-            if notice:
-                status = self._get_status(notice)
-                self._show_package(pkg,status)
-            else:
-                self._show_package(pkg,INFO_NORMAL)
+        try:
+            ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+            md = self.updateMetadata
+            for pkg in ygl.updates:
+                # Get info about package in updates info
+                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+                if notice:
+                    status = self._get_status(notice)
+                    self._show_package(pkg,status)
+                else:
+                    self._show_package(pkg,INFO_NORMAL)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+                
 
     def repo_enable(self, repoid, enable):
         '''

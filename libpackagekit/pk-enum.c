@@ -147,10 +147,12 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
 	{PK_FILTER_ENUM_GUI,			"gui"},
 	{PK_FILTER_ENUM_FREE,			"free"},
+	{PK_FILTER_ENUM_VISIBLE,		"visible"},
 	{PK_FILTER_ENUM_NOT_DEVELOPMENT,	"~devel"},
 	{PK_FILTER_ENUM_NOT_INSTALLED,		"~installed"},
 	{PK_FILTER_ENUM_NOT_GUI,		"~gui"},
 	{PK_FILTER_ENUM_NOT_FREE,		"~free"},
+	{PK_FILTER_ENUM_NOT_VISIBLE,		"~visible"},
 	{0, NULL},
 };
 
@@ -180,6 +182,10 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_VIRTUALIZATION,		"virtualization"},
 	{PK_GROUP_ENUM_POWER_MANAGEMENT,	"power-management"},
 	{PK_GROUP_ENUM_SECURITY,		"security"},
+	{PK_GROUP_ENUM_COMMUNICATION,		"communication"},
+	{PK_GROUP_ENUM_NETWORK,			"network"},
+	{PK_GROUP_ENUM_MAPS,			"maps"},
+	{PK_GROUP_ENUM_REPOS,			"repos"},
 	{0, NULL},
 };
 

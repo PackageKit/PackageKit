@@ -258,6 +258,16 @@ backend_get_description_thread (PkBackend *backend, gchar *package_id)
 	pkg_t *pkg;
 	PkPackageId *pi;
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	pk_backend_description (backend, pi->name,
@@ -494,21 +504,26 @@ backend_update_system (PkBackend *backend)
 /**
  * backend_get_depends:
  */
-static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+
+static gboolean
+backend_get_depends_thread (PkBackend *backend, gchar *package_id)
 {
-	/* TODO: revursive is ignored */
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
 	GRegex *regex;
 
-	g_return_if_fail (backend != NULL);
-
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
-
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	if (!pkg)
@@ -517,7 +532,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 				"Package not found");
 		pk_package_id_free (pi);
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
 	}
 
 	/* compile a regex expression to parse depends_str package names */
@@ -571,8 +586,26 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 			status = PK_INFO_ENUM_AVAILABLE;
 		pk_backend_package (backend, status, uid, d_pkg->description);
 	}
+
 	g_regex_unref (regex);
 	pk_backend_finished (backend);
+	g_free (package_id);
+
+	return TRUE;
+}
+
+static void
+backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+{
+	/* TODO: revursive is ignored */
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_get_depends_thread,
+		g_strdup (package_id));
 }
 
 /**
@@ -586,6 +619,16 @@ backend_update_package_thread (PkBackend *backend, gchar *package_id)
 	gint err = 0;
 
 	pi = pk_package_id_new_from_string (package_id);
+
+	if (!pi->name || !pi->version)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		pk_package_id_free (pi);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
 	if (!pkg) {
@@ -618,6 +661,65 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		g_strdup (package_id));
 }
 
+/**
+ * backend_get_updates:
+ */
+
+static gboolean
+backend_get_updates_thread (PkBackend *backend, gpointer data)
+{
+	pkg_vec_t *installed;
+	gint i;
+
+
+	installed = pkg_vec_alloc();
+
+	pkg_hash_fetch_all_installed (&global_conf.pkg_hash, installed);
+
+	for (i=0; i < installed->len; i++) {
+
+		gchar *uid;
+		pkg_t *pkg, *best_pkg;
+		gint status;
+
+		pkg = installed->pkgs[i];
+		best_pkg = pkg_hash_fetch_best_installation_candidate_by_name (&global_conf, pkg->name);
+
+		/* couldn't find an install candidate?! */
+		if (!best_pkg)
+			continue;
+
+		/* check to see if the best candidate is actually newer */
+		if (pkg_compare_versions (best_pkg, pkg) <= 0)
+			continue;
+
+		uid = g_strdup_printf ("%s;%s;%s;",
+			pkg->name, pkg->version, pkg->architecture);
+
+		if (pkg->state_status == SS_INSTALLED)
+			status = PK_INFO_ENUM_INSTALLED;
+		else
+			status = PK_INFO_ENUM_AVAILABLE;
+
+		pk_backend_package (backend, status, uid, pkg->description);
+	}
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static void
+backend_get_updates (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+	pk_backend_no_percentage_updates (backend);
+
+	pk_backend_thread_create (backend,
+		(PkBackendThreadFunc) backend_get_updates_thread,
+		NULL);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"ipkg",					/* description */
@@ -632,7 +734,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
-	NULL,					/* get_updates */
+	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */

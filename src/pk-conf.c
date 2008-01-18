@@ -123,15 +123,19 @@ pk_conf_init (PkConf *conf)
 
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
 
+#if PK_BUILD_LOCAL
 	/* try a local path first */
 	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
-		pk_debug ("config file not found '%s'", path);
+		pk_debug ("local config file not found '%s'", path);
 		g_free (path);
 		path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-		if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
-			pk_error ("config file not found '%s'", path);
-		}
+	}
+#else
+	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
+#endif
+	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
+		pk_error ("config file not found '%s'", path);
 	}
 	pk_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();

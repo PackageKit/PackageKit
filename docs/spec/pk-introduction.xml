@@ -196,7 +196,13 @@
                 status of the license is not known, the package will
                 be marked as 'non-free'.
               </entry>
-
+            </row>
+            <row>
+              <entry><literal>visible</literal> or <literal>~visible</literal></entry>
+              <entry>
+                Repositories may want to specify if a package should be visible
+                in an application chooser.
+              </entry>
             </row>
           </tbody>
         </tgroup>
