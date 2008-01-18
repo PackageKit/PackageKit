@@ -252,6 +252,27 @@ pk_time_add_data (PkTime *time, guint percentage)
 }
 
 /**
+ * pk_time_reset:
+ **/
+gboolean
+pk_time_reset (PkTime *time)
+{
+	g_return_val_if_fail (time != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
+
+	time->priv->time_offset = 0;
+	time->priv->last_percentage = 0;
+	time->priv->average_min = PK_TIME_AVERAGE_DEFAULT_MIN;
+	time->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
+	time->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
+	time->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
+	g_ptr_array_set_size (time->priv->array, 0);
+	g_timer_reset (time->priv->timer);
+
+	return TRUE;
+}
+
+/**
  * pk_time_class_init:
  * @klass: The PkTimeClass
  **/
@@ -271,15 +292,9 @@ static void
 pk_time_init (PkTime *time)
 {
 	time->priv = PK_TIME_GET_PRIVATE (time);
-	time->priv->time_offset = 0;
-	time->priv->last_percentage = 0;
-	time->priv->average_min = PK_TIME_AVERAGE_DEFAULT_MIN;
-	time->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
-	time->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
-	time->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
-
 	time->priv->array = g_ptr_array_new ();
 	time->priv->timer = g_timer_new ();
+	pk_time_reset (time);
 }
 
 /**

@@ -53,6 +53,7 @@ PkTime		*pk_time_new				(void);
 
 gboolean	 pk_time_add_data			(PkTime		*time,
 							 guint		 percentage);
+gboolean	 pk_time_reset				(PkTime		*time);
 guint		 pk_time_get_elapsed			(PkTime		*time);
 guint		 pk_time_get_remaining			(PkTime		*time);
 gboolean	 pk_time_set_average_limits		(PkTime		*time,
