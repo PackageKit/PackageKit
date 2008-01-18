@@ -78,7 +78,7 @@ struct PkEnginePrivate
 
 enum {
 	PK_ENGINE_TRANSACTION_LIST_CHANGED,
-	PK_ENGINE_TRANSACTION_STATUS_CHANGED,
+	PK_ENGINE_STATUS_CHANGED,
 	PK_ENGINE_PROGRESS_CHANGED,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_TRANSACTION,
@@ -217,10 +217,10 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 }
 
 /**
- * pk_engine_transaction_status_changed_cb:
+ * pk_engine_status_changed_cb:
  **/
 static void
-pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *engine)
+pk_engine_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *engine)
 {
 	PkTransactionItem *item;
 	const gchar *status_text;
@@ -235,8 +235,8 @@ pk_engine_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status
 	}
 	status_text = pk_status_enum_to_text (status);
 
-	pk_debug ("emitting transaction-status-changed tid:%s, '%s'", item->tid, status_text);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION_STATUS_CHANGED], 0, item->tid, status_text);
+	pk_debug ("emitting status-changed tid:%s, '%s'", item->tid, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_STATUS_CHANGED], 0, item->tid, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -745,8 +745,8 @@ pk_engine_backend_new (PkEngine *engine)
 	}
 
 	/* connect up signals */
-	g_signal_connect (backend, "transaction-status-changed",
-			  G_CALLBACK (pk_engine_transaction_status_changed_cb), engine);
+	g_signal_connect (backend, "status-changed",
+			  G_CALLBACK (pk_engine_status_changed_cb), engine);
 	g_signal_connect (backend, "progress-changed",
 			  G_CALLBACK (pk_engine_progress_changed_cb), engine);
 	g_signal_connect (backend, "package",
@@ -2763,8 +2763,8 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, G_TYPE_STRV);
-	signals [PK_ENGINE_TRANSACTION_STATUS_CHANGED] =
-		g_signal_new ("transaction-status-changed",
+	signals [PK_ENGINE_STATUS_CHANGED] =
+		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);

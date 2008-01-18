@@ -94,7 +94,7 @@ typedef enum {
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
-	PK_CLIENT_TRANSACTION_STATUS_CHANGED,
+	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
@@ -419,10 +419,10 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
 }
 
 /**
- * pk_client_transaction_status_changed_cb:
+ * pk_client_status_changed_cb:
  */
 static void
-pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
+pk_client_status_changed_cb (DBusGProxy  *proxy,
 				         const gchar *tid,
 				         const gchar *status_text,
 				         PkClient    *client)
@@ -439,8 +439,8 @@ pk_client_transaction_status_changed_cb (DBusGProxy  *proxy,
 
 	status = pk_status_enum_from_text (status_text);
 
-	pk_debug ("emit transaction-status-changed %s", status_text);
-	g_signal_emit (client , signals [PK_CLIENT_TRANSACTION_STATUS_CHANGED], 0, status);
+	pk_debug ("emit status-changed %s", status_text);
+	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
 
 	client->priv->last_status = status;
 }
@@ -2465,8 +2465,8 @@ pk_client_class_init (PkClientClass *klass)
 
 	object_class->finalize = pk_client_finalize;
 
-	signals [PK_CLIENT_TRANSACTION_STATUS_CHANGED] =
-		g_signal_new ("transaction-status-changed",
+	signals [PK_CLIENT_STATUS_CHANGED] =
+		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
@@ -2696,7 +2696,7 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_add_signal (proxy, "TransactionStatusChanged",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "TransactionStatusChanged",
-				     G_CALLBACK (pk_client_transaction_status_changed_cb), client, NULL);
+				     G_CALLBACK (pk_client_status_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -2796,7 +2796,7 @@ pk_client_finalize (GObject *object)
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
 				        G_CALLBACK (pk_client_progress_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "TransactionStatusChanged",
-				        G_CALLBACK (pk_client_transaction_status_changed_cb), client);
+				        G_CALLBACK (pk_client_status_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",
 				        G_CALLBACK (pk_client_updates_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
