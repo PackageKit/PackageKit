@@ -1,3 +1,51 @@
+Version 0.1.6
+~~~~~~~~~~~~~
+Released: 2008-01-18
+
+* Backends:
+ - ipkg: use threads for refresh cache and get description functions (Thomas Wood)
+ - ipkg: Implement remove package function (Thomas Wood)
+ - ipkg: Implement install package (Thomas Wood)
+ - ipkg: implement initial get_updates function (Thomas Wood)
+ - ipkg: move get_depends function into a thread (Thomas Wood)
+ - ipkg: protect against NULL user input (Thomas Wood)
+ - ipkg: do not run init and destroy functions more times than required (Thomas Wood)
+ - ipkg: add backend_update_package function (Thomas Wood)
+ - ipkg: improve devel filter (Thomas Wood)
+ - ipkg: implement update system function (Thomas Wood)
+ - ipkg: Add Installed, Development and GUI filter support (Thomas Wood)
+ - yum: implemented vendor_url for urls not bugzilla or cve (Tim Lauridsen)
+ - yum: Implemented bugzilla_url, cve_url, vendor_url in GetUpdateDetails (Tim Lauridsen)
+ - yum: make the updates severity work and show all 3 types (Tim Lauridsen)
+ - yum: fix missing package signals when downloading packages with '-' in names (Tim Lauridsen)
+ - yum: fix percent not shown if the bump is < 1% (Tim Lauridsen)
+ - yum: make get-update-detail work better and dont brake on missing update metadata (Tim Lauridsen)
+ - yum: catch RepoError in get-updates and submit ERROR_NO_CACHE to frontend (Tim Lauridsen)
+ - yum: make Yum Traceback send the right values to the frontend (Tim Lauridsen)
+
+* New features:
+ - Add initial ipkg backend (Thomas Wood)
+ - Add the visible filter (Richard Hughes)
+ - Add some more info and group enums (Richard Hughes)
+ - Replace the UpdateDetail url parameter with vendor, bugzilla, cve (Richard Hughes)
+ - Add PK_STATUS_ENUM_FINISHED when we are just watching status (Richard Hughes)
+ - Add a pm-utils hook so we can drop caches and check for updates on resume (Richard Hughes)
+ - First stab at daemonizing the yum backend (Robin Norwood)
+
+* Bugfixes:
+ - Only do the 100 limit count on emitted packages, not on searched packages.
+   This bug becomes evident when using a couple of filters and searching a large number
+   of package_ids (Richard Hughes)
+ - An empty url list should be empty, not 'none' (Richard Hughes, Matthias Clasen)
+ - Use $(LIBTOOL) rather than hardcoding libtool filename to prevent problems
+   when cross compiling (Thomas Wood)
+ - Add details about what we are winging about in the daemon messages (Richard Hughes)
+ - Include pk-apt-search.h in the tarball to fix fd:13406 (Richard Hughes)
+ - Capture and show the Message() in pkmon (Richard Hughes)
+ - Only look for helpers and the config file in a local root if we have configured
+   with --enable-local to make people less uneasy with path globbing (Richard Hughes)
+ - Finish removing filelist from package description (James Bowes)
+
 Version 0.1.5
 ~~~~~~~~~~~~~
 Released: 2007-12-21
