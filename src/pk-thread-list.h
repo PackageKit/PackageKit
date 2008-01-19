@@ -23,7 +23,6 @@
 #define __PK_THREAD_LIST_H
 
 #include <glib-object.h>
-#include "pk-backend-internal.h"
 
 G_BEGIN_DECLS
 
