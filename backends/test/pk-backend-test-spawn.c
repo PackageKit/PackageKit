@@ -31,7 +31,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_allow_interrupt (backend, TRUE);
+	pk_backend_set_interruptable (backend, TRUE);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_spawn_helper (backend, "search-name.sh", filter, search, NULL);
 }

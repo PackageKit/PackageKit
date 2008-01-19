@@ -85,7 +85,7 @@ static void
 common_progress(int value, gpointer user_data)
 {
 	PkBackend* backend = (PkBackend *) user_data;
-	pk_backend_change_percentage (backend, value);
+	pk_backend_set_percentage (backend, value);
 }
 
 static void
@@ -160,7 +160,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
@@ -263,7 +263,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 	GList *list = NULL;
 	sqlite3 *db = NULL;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	db = db_open ();
 
@@ -279,7 +279,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 static gboolean
 backend_update_system_thread (PkBackend *backend, gpointer data)
 {
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	box_upgrade_dist("/", common_progress, backend);
 	pk_backend_finished (backend);
@@ -294,7 +294,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 	gboolean result;
 	PkPackageId *pi;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
@@ -321,7 +321,7 @@ backend_install_file_thread (PkBackend *backend, gpointer data)
 	ThreadData *d = (ThreadData*) data;
 	gboolean result;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	result = box_package_install_file(d->package_id, "/", common_progress, backend);
 
@@ -353,7 +353,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* only one element is returned */
 	list = box_db_repos_packages_search_by_data(db, pi->name, pi->version);
@@ -402,7 +402,7 @@ backend_get_files_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	files = box_db_repos_get_files_string (db, pi->name, pi->version);
         pk_backend_files (backend, d->package_id, files);
@@ -438,7 +438,7 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (d->type == DEPS_TYPE_DEPENDS)
 		list = box_db_repos_get_depends(db, pi->name);
@@ -472,7 +472,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 		return FALSE;
 	}
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 
 	if (!box_package_uninstall (pi->name, "/", common_progress, backend))
 	{
@@ -490,7 +490,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 {
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
     	box_repos_sync(common_progress, backend);
 	pk_backend_finished (backend);
@@ -788,7 +788,7 @@ backend_get_repo_list (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	list = box_repos_list_get ();
 	for (li = list; li != NULL; li=li->next)
@@ -809,7 +809,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
         g_return_if_fail (backend != NULL);
 	
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	box_repos_enable_repo(rid, enabled);
 
@@ -824,7 +824,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 {
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	if (!box_repos_set_param (rid, parameter, value))
 	{

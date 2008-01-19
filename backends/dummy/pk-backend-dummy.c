@@ -90,7 +90,7 @@ static void
 backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -105,7 +105,7 @@ static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 "Scribus is an desktop open source page layout program with "
 "the aim of producing commercial grade output in PDF and "
@@ -127,7 +127,7 @@ static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
 			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
 	pk_backend_finished (backend);
@@ -139,7 +139,7 @@ static void
 backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -154,7 +154,7 @@ static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora") == TRUE) {
 		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
 					  "powertop;1.7-1.fc8;i386;installed", "",
@@ -183,7 +183,7 @@ backend_get_updates (PkBackend *backend)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	rand = g_rand_new ();
 	number = g_rand_int_range (rand, 1, 5);
@@ -220,16 +220,16 @@ backend_install_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
-		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
 	if (progress_percentage == 50) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
-		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
 	progress_percentage += 10;
-	pk_backend_change_percentage (backend, progress_percentage);
+	pk_backend_set_percentage (backend, progress_percentage);
 	return TRUE;
 }
 
@@ -280,7 +280,7 @@ backend_refresh_cache_timeout (gpointer data)
 		return FALSE;
 	}
 	progress_percentage += 10;
-	pk_backend_change_percentage (backend, progress_percentage);
+	pk_backend_set_percentage (backend, progress_percentage);
 	return TRUE;
 }
 
@@ -292,7 +292,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
 	progress_percentage = 0;
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
@@ -303,7 +303,7 @@ static void
 backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_finished (backend);
@@ -326,7 +326,7 @@ static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_finished (backend);
 }
@@ -338,7 +338,7 @@ static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips \"documentation\" package.");
@@ -352,7 +352,7 @@ static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
@@ -366,7 +366,7 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
@@ -407,7 +407,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	g_timeout_add (2000, backend_search_name_timeout, backend);
 }
 
@@ -442,7 +442,7 @@ backend_update_system_timeout (gpointer data)
 				    "The second update");
 	}
 	if (progress_percentage == 40) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
@@ -458,7 +458,7 @@ backend_update_system_timeout (gpointer data)
 				    "The first update (old version)");
 	}
 	progress_percentage += 10;
-	pk_backend_change_percentage (backend, progress_percentage);
+	pk_backend_set_percentage (backend, progress_percentage);
 	return TRUE;
 }
 
@@ -469,7 +469,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
 	g_timeout_add (1000, backend_update_system_timeout, backend);

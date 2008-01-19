@@ -68,7 +68,7 @@ trans_prog_cb (pmtransprog_t prog, const char *pkgname, int percent,
 {
   pk_debug ("Percentage is %i", percent);
   subprogress_percentage = percent;
-  pk_backend_change_percentage ((PkBackend *)install_backend, subprogress_percentage);
+  pk_backend_set_percentage ((PkBackend *)install_backend, subprogress_percentage);
 }
 
 gboolean
@@ -79,7 +79,7 @@ update_subprogress (void *data)
 
   pk_debug ("alpm: subprogress is %i", subprogress_percentage);
 
-  pk_backend_change_percentage ((PkBackend *)data, subprogress_percentage);
+  pk_backend_set_percentage ((PkBackend *)data, subprogress_percentage);
   return TRUE;
 }
 
@@ -89,7 +89,7 @@ update_progress (void *data)
   if (progress_percentage == -1)
     return FALSE;
 
-  pk_backend_change_percentage ((PkBackend *)data, progress_percentage);
+  pk_backend_set_percentage ((PkBackend *)data, progress_percentage);
   return TRUE;
 }
 
@@ -527,7 +527,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	  }*/
 
 	alpm_list_t *i = NULL;
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_timeout_add (ALPM_PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
 	for (i = dbs; i; i = alpm_list_next (i))
 	  {

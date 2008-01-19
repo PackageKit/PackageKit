@@ -90,7 +90,7 @@ sqlite_search_packages_thread (PkBackend *backend, gpointer data)
 	int res;
 	gchar *sel;
 
-	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", st->search);
@@ -195,7 +195,7 @@ static gboolean sqlite_get_description_thread (PkBackend *backend, gpointer data
 	desc_task *dt = (desc_task *) data;
 	int res;
 
-	pk_backend_change_status(backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
 	pk_debug("finding %s", dt->pi->name);

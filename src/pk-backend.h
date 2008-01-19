@@ -34,11 +34,11 @@ typedef struct _PkBackend PkBackend;
 typedef struct _PkBackendDesc PkBackendDesc;
 
 /* used by backends that implement an interface */
-gboolean	 pk_backend_change_percentage		(PkBackend	*backend,
+gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
-gboolean	 pk_backend_change_sub_percentage	(PkBackend	*backend,
+gboolean	 pk_backend_set_sub_percentage	(PkBackend	*backend,
 							 guint		 percentage);
-gboolean	 pk_backend_change_status		(PkBackend	*backend,
+gboolean	 pk_backend_set_status		(PkBackend	*backend,
 							 PkStatusEnum	 status);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_finished			(PkBackend	*backend);
@@ -93,7 +93,7 @@ gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
 gboolean	 pk_backend_change_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
 gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);
-gboolean	 pk_backend_allow_interrupt		(PkBackend	*backend,
+gboolean	 pk_backend_set_interruptable		(PkBackend	*backend,
 							 gboolean	 allow_restart);
 gboolean	 pk_backend_network_is_online		(PkBackend	*backend);
 

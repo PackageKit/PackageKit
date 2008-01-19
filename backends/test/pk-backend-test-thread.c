@@ -80,18 +80,18 @@ backend_search_name_thread (PkBackend *backend, gpointer data)
 	guint percentage;
 
 	pk_debug ("started task (%p,%p)", backend, data);
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	timer = g_timer_new ();
 	percentage = 0;
 	do {
-		pk_backend_change_percentage (backend, percentage);
+		pk_backend_set_percentage (backend, percentage);
 		percentage += 1;
 		g_usleep (1000*100);
 		elapsed = g_timer_elapsed (timer, NULL);
 		pk_debug ("elapsed task (%p,%p) = %f", backend, data, elapsed);
 	} while (elapsed < 10.0);
 	g_timer_destroy (timer);
-	pk_backend_change_percentage (backend, 100);
+	pk_backend_set_percentage (backend, 100);
 	pk_debug ("exited task (%p,%p)", backend, data);
 
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,

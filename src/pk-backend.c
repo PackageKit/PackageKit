@@ -112,7 +112,7 @@ enum {
 	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
-	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_set_interruptable,
 	PK_BACKEND_CALLER_ACTIVE_CHANGED,
 	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_LAST_SIGNAL
@@ -389,7 +389,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			pk_warning ("invalid percentage value %i", percentage);
 			ret = FALSE;
 		} else {
-			pk_backend_change_percentage (backend, percentage);
+			pk_backend_set_percentage (backend, percentage);
 		}
 	} else if (pk_strequal (command, "subpercentage") == TRUE) {
 		if (size != 2) {
@@ -404,7 +404,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			pk_warning ("invalid subpercentage value %i", percentage);
 			ret = FALSE;
 		} else {
-			pk_backend_change_sub_percentage (backend, percentage);
+			pk_backend_set_sub_percentage (backend, percentage);
 		}
 	} else if (pk_strequal (command, "error") == TRUE) {
 		if (size != 3) {
@@ -466,7 +466,7 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_change_status (backend, status_enum);
+		pk_backend_set_status (backend, status_enum);
 	} else if (pk_strequal (command, "allow-interrupt") == TRUE) {
 		if (size != 2) {
 			pk_warning ("invalid command '%s'", command);
@@ -474,9 +474,9 @@ pk_backend_parse_common_error (PkBackend *backend, const gchar *line)
 			goto out;
 		}
 		if (pk_strequal (sections[1], "true") == TRUE) {
-			pk_backend_allow_interrupt (backend, TRUE);
+			pk_backend_set_interruptable (backend, TRUE);
 		} else if (pk_strequal (sections[1], "false") == TRUE) {
-			pk_backend_allow_interrupt (backend, FALSE);
+			pk_backend_set_interruptable (backend, FALSE);
 		} else {
 			pk_warning ("invalid section '%s'", sections[1]);
 			ret = FALSE;
@@ -715,10 +715,10 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 }
 
 /**
- * pk_backend_change_percentage:
+ * pk_backend_set_percentage:
  **/
 gboolean
-pk_backend_change_percentage (PkBackend *backend, guint percentage)
+pk_backend_set_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -739,10 +739,10 @@ pk_backend_change_percentage (PkBackend *backend, guint percentage)
 }
 
 /**
- * pk_backend_change_sub_percentage:
+ * pk_backend_set_sub_percentage:
  **/
 gboolean
-pk_backend_change_sub_percentage (PkBackend *backend, guint percentage)
+pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -778,10 +778,10 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 }
 
 /**
- * pk_backend_change_status:
+ * pk_backend_set_status:
  **/
 gboolean
-pk_backend_change_status (PkBackend *backend, PkStatusEnum status)
+pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -811,17 +811,17 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 
 	/* we automatically set the transaction status for some infos */
 	if (info == PK_INFO_ENUM_DOWNLOADING) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	} else if (info == PK_INFO_ENUM_UPDATING) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	} else if (info == PK_INFO_ENUM_INSTALLING) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_INSTALL);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	} else if (info == PK_INFO_ENUM_REMOVING) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	} else if (info == PK_INFO_ENUM_CLEANUP) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_CLEANUP);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_CLEANUP);
 	} else if (info == PK_INFO_ENUM_OBSOLETING) {
-		pk_backend_change_status (backend, PK_STATUS_ENUM_OBSOLETE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
 	}
 
 	/* save in case we need this from coldplug */
@@ -1157,7 +1157,7 @@ pk_backend_finished (PkBackend *backend)
 				    "Backends should send status <value> signals for %s!\n"
 				    "If you are:\n"
 				    "* Calling out to external tools, the compiled backend "
-				    "should call pk_backend_change_status() manually.\n"
+				    "should call pk_backend_set_status() manually.\n"
 				    "* Using a scripted backend with dumb commands then "
 				    "this should be set at the start of the runtime call\n"
 				    "   - see helpers/yumBackend.py:self.status()\n"
@@ -1168,7 +1168,7 @@ pk_backend_finished (PkBackend *backend)
 	}
 
 	/* mark as finished for the UI that might only be watching status */
-	pk_backend_change_status (backend, PK_STATUS_ENUM_FINISHED);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
 
 	/* we can't ever be re-used */
 	backend->priv->finished = TRUE;
@@ -1216,10 +1216,10 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 }
 
 /**
- * pk_backend_allow_interrupt:
+ * pk_backend_set_interruptable:
  **/
 gboolean
-pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
+pk_backend_set_interruptable (PkBackend *backend, gboolean allow_restart)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -1234,7 +1234,7 @@ pk_backend_allow_interrupt (PkBackend *backend, gboolean allow_restart)
 		pk_inhibit_add (backend->priv->inhibit, backend);
 	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0, allow_restart);
+	g_signal_emit (backend, signals [PK_BACKEND_set_interruptable], 0, allow_restart);
 	return TRUE;
 }
 
@@ -2044,7 +2044,7 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_ALLOW_INTERRUPT] =
+	signals [PK_BACKEND_set_interruptable] =
 		g_signal_new ("allow-interrupt",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
