@@ -142,49 +142,48 @@ struct _PkBackendDesc {
 	void		(*search_name)		(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*update_package)	(PkBackend *backend, const gchar *package_id);
 	void		(*update_system)	(PkBackend *backend);
-	/* repo stuff */
 	void		(*get_repo_list)	(PkBackend *backend);
 	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
 	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
 	gpointer	padding[12];
 };
 
-#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, \
-			   get_groups, get_filters, cancel, get_depends, get_description, get_files, \
-			   get_requires, get_update_detail, get_updates, install_package, install_file, \
-			   refresh_cache, remove_package, resolve, rollback, search_details, \
-			   search_file, search_group, search_name, update_package, update_system, \
-			   get_repo_list, repo_enable, repo_set_data) \
-	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { \
-		description, \
-		author, \
-		initialize, \
-		destroy, \
-		get_groups, \
-		get_filters, \
-		cancel, \
-		get_depends, \
-		get_description, \
-		get_files, \
-		get_requires, \
-		get_update_detail, \
-		get_updates, \
-		install_package, \
-		install_file, \
-		refresh_cache, \
-		remove_package, \
-		resolve, \
-		rollback, \
-		search_details, \
-		search_file, \
-		search_group, \
-		search_name, \
-		update_package, \
-		update_system, \
-		get_repo_list, \
-		repo_enable, \
-		repo_set_data, \
-		{0} \
+#define PK_BACKEND_OPTIONS(description, author, initialize, destroy,						\
+			   get_groups, get_filters, cancel, get_depends, get_description, get_files,		\
+			   get_requires, get_update_detail, get_updates, install_package, install_file,		\
+			   refresh_cache, remove_package, resolve, rollback, search_details,			\
+			   search_file, search_group, search_name, update_package, update_system,		\
+			   get_repo_list, repo_enable, repo_set_data) 						\
+	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 						\
+		description,		\
+		author,			\
+		initialize,		\
+		destroy,		\
+		get_groups,		\
+		get_filters,		\
+		cancel,			\
+		get_depends,		\
+		get_description,	\
+		get_files,		\
+		get_requires,		\
+		get_update_detail,	\
+		get_updates,		\
+		install_package,	\
+		install_file,		\
+		refresh_cache,		\
+		remove_package,		\
+		resolve,		\
+		rollback,		\
+		search_details,		\
+		search_file,		\
+		search_group,		\
+		search_name,		\
+		update_package,		\
+		update_system,		\
+		get_repo_list,		\
+		repo_enable,		\
+		repo_set_data,		\
+		{0} 			\
 	}
 
 G_END_DECLS
