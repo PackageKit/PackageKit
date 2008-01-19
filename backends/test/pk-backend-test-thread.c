@@ -23,6 +23,9 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-thread.h>
+
+static PkBackendThread *thread;
 
 /**
  * backend_initalize:
@@ -33,6 +36,8 @@ backend_initalize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
+	thread = pk_backend_thread_new ();
+	pk_backend_thread_set_backend (thread, backend);
 }
 
 /**
@@ -44,14 +49,21 @@ backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: destroy");
+	g_object_unref (thread);
 }
 
 /**
  * backend_search_group_thread:
  */
 static gboolean
-backend_search_group_thread (PkBackend *backend, gpointer data)
+backend_search_group_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
+	/* emit */
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
@@ -66,18 +78,22 @@ static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (backend, backend_search_group_thread, NULL);
+	pk_backend_thread_create (thread, backend_search_group_thread, NULL);
 }
 
 /**
  * backend_search_name_thread:
  */
 static gboolean
-backend_search_name_thread (PkBackend *backend, gpointer data)
+backend_search_name_thread (PkBackendThread *thread, gpointer data)
 {
 	GTimer *timer;
 	gdouble elapsed;
 	guint percentage;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pk_debug ("started task (%p,%p)", backend, data);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -109,7 +125,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (backend, backend_search_name_thread, NULL);
+	pk_backend_thread_create (thread, backend_search_name_thread, NULL);
 }
 
 PK_BACKEND_OPTIONS (

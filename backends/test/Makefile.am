@@ -1,11 +1,17 @@
 SUBDIRS = helpers
 plugindir = @PK_PLUGIN_DIR@
 plugin_LTLIBRARIES =			\
+	libpk_backend_test_dbus.la	\
 	libpk_backend_test_nop.la	\
 	libpk_backend_test_fail.la	\
 	libpk_backend_test_spawn.la	\
 	libpk_backend_test_succeed.la	\
 	libpk_backend_test_thread.la
+
+libpk_backend_test_dbus_la_SOURCES = pk-backend-test-dbus.c
+libpk_backend_test_dbus_la_LIBADD = @PK_PLUGIN_LIBS@
+libpk_backend_test_dbus_la_LDFLAGS = -module -avoid-version
+libpk_backend_test_dbus_la_CFLAGS = @PK_PLUGIN_CFLAGS@
 
 libpk_backend_test_nop_la_SOURCES = pk-backend-test-nop.c
 libpk_backend_test_nop_la_LIBADD = @PK_PLUGIN_LIBS@
