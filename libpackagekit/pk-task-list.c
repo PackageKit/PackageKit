@@ -206,7 +206,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item = g_new0 (PkTaskListItem, 1);
 			item->tid = g_strdup (tid);
 			item->monitor = pk_client_new ();
-			g_signal_connect (item->monitor, "transaction-status-changed",
+			g_signal_connect (item->monitor, "status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
 			pk_client_set_tid (item->monitor, tid);
 			pk_client_get_role (item->monitor, &item->role, &item->package_id);
