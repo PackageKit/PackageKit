@@ -35,6 +35,7 @@ void libst_security (LibSelfTest *test);
 void libst_time (LibSelfTest *test);
 void libst_backend (LibSelfTest *test);
 void libst_backend_spawn (LibSelfTest *test);
+void libst_backend_thread (LibSelfTest *test);
 void libst_engine (LibSelfTest *test);
 
 int
@@ -62,6 +63,7 @@ main (int argc, char **argv)
 	/* backend stuff */
 	libst_backend (&test);
 //	libst_backend_spawn (&test);
+//	libst_backend_thread (&test);
 
 	/* system */
 	libst_engine (&test);
