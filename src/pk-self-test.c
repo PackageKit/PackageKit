@@ -63,9 +63,9 @@ main (int argc, char **argv)
 
 	/* backend stuff */
 	libst_backend (&test);
-//	libst_backend_spawn (&test);
-//	libst_backend_thread (&test);
-//	libst_backend_dbus (&test);
+	libst_backend_spawn (&test);
+	libst_backend_thread (&test);
+	libst_backend_dbus (&test);
 
 	/* system */
 	libst_engine (&test);

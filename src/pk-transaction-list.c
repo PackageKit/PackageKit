@@ -36,6 +36,7 @@
 
 #include <glib/gi18n.h>
 #include "pk-debug.h"
+#include "pk-backend-internal.h"
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
 
@@ -48,6 +49,8 @@ static void     pk_transaction_list_finalize	(GObject        *object);
 struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
+	gchar			*current_tid;
+	PkBackend		*backend;
 };
 
 enum {
@@ -85,10 +88,10 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 			continue;
 		}
 		/* we might not have this set yet */
-		if (item->backend == NULL) {
+		if (item->runner == NULL) {
 			continue;
 		}
-		pk_backend_get_role (item->backend, &role_temp, NULL);
+		role_temp = pk_runner_get_role (item->runner);
 		if (role_temp == role) {
 			return TRUE;
 		}
@@ -112,8 +115,7 @@ pk_transaction_list_create (PkTransactionList *tlist)
 	item->committed = FALSE;
 	item->running = FALSE;
 	item->finished = FALSE;
-	item->backend = NULL;
-	item->package_list = pk_package_list_new ();
+	item->runner = NULL;
 	item->tid = pk_transaction_id_generate ();
 	g_ptr_array_add (tlist->priv->array, item);
 	return item;
@@ -135,7 +137,6 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 	if (ret == FALSE) {
 		pk_warning ("could not remove %p as not present in list", item);
 	}
-	g_object_unref (item->package_list);
 	g_free (item->tid);
 	g_free (item);
 
@@ -157,7 +158,7 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 	PkTransactionFinished *finished = (PkTransactionFinished *) data;
 
 	pk_debug ("transaction %s completed, removing", finished->item->tid);
-	g_object_unref (finished->item->backend);
+	g_object_unref (finished->item->runner);
 	pk_transaction_list_remove (finished->tlist, finished->item);
 	g_free (finished);
 	return FALSE;
@@ -173,11 +174,18 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	guint length;
 	PkTransactionItem *item;
 	PkTransactionFinished *finished;
+	const gchar *c_tid;
 
 	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	item = pk_transaction_list_get_from_backend (tlist, backend);
+	c_tid = pk_backend_get_current_tid (backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid");
+		return;
+	}
+
+	item = pk_transaction_list_get_from_tid (tlist, c_tid);
 	if (item == NULL) {
 		pk_error ("no transaction list found!");
 	}
@@ -195,11 +203,14 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	pk_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
-	/* give the client a few seconds to still query the backend */
+	/* give the client a few seconds to still query the runner */
 	finished = g_new0 (PkTransactionFinished, 1);
 	finished->tlist = tlist;
 	finished->item = item;
 	g_timeout_add_seconds (5, pk_transaction_list_remove_item_timeout, finished);
+
+	/* reset the backend  -- is this the correct place to do this? */
+	pk_backend_reset (tlist->priv->backend);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;
@@ -210,7 +221,8 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 		    item->finished == FALSE) {
 			pk_debug ("running %s", item->tid);
 			item->running = TRUE;
-			pk_backend_run (item->backend);
+			pk_runner_set_tid (item->runner, item->tid);
+			pk_runner_run (item->runner);
 			break;
 		}
 	}
@@ -259,15 +271,12 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
 	pk_debug ("emmitting ::changed");
 	g_signal_emit (tlist, signals [PK_TRANSACTION_LIST_CHANGED], 0);
 
-	/* connect up finished so we can start the next backend */
-	g_signal_connect (item->backend, "finished",
-			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
-
 	/* do the transaction now if we have no other in progress */
 	if (pk_transaction_list_number_running (tlist) == 0) {
 		pk_debug ("running %s", item->tid);
 		item->running = TRUE;
-		pk_backend_run (item->backend);
+		pk_runner_set_tid (item->runner, item->tid);
+		pk_runner_run (item->runner);
 	}
 
 	return TRUE;
@@ -330,7 +339,7 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find the backend with the transaction ID */
+	/* find the runner with the transaction ID */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
@@ -342,10 +351,10 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 }
 
 /**
- * pk_transaction_list_get_from_backend:
+ * pk_transaction_list_get_from_runner:
  **/
 PkTransactionItem *
-pk_transaction_list_get_from_backend (PkTransactionList *tlist, PkBackend *backend)
+pk_transaction_list_get_from_runner (PkTransactionList *tlist, PkRunner *runner)
 {
 	guint i;
 	guint length;
@@ -354,11 +363,11 @@ pk_transaction_list_get_from_backend (PkTransactionList *tlist, PkBackend *backe
 	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
-	/* find the backend with the transaction ID */
+	/* find the runner with the transaction ID */
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->backend == backend) {
+		if (item->runner == runner) {
 			return item;
 		}
 	}
@@ -394,6 +403,9 @@ pk_transaction_list_init (PkTransactionList *tlist)
 {
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
 	tlist->priv->array = g_ptr_array_new ();
+	tlist->priv->backend = pk_backend_new ();
+	g_signal_connect (tlist->priv->backend, "finished",
+			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
 }
 
 /**
@@ -413,6 +425,8 @@ pk_transaction_list_finalize (GObject *object)
 	g_return_if_fail (tlist->priv != NULL);
 
 	g_ptr_array_free (tlist->priv->array, TRUE);
+	g_object_unref (tlist->priv->backend);
+
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }
 

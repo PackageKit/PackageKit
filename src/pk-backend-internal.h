@@ -40,9 +40,9 @@ typedef struct _PkBackendClass PkBackendClass;
 
 struct _PkBackend
 {
-	GObject		 parent;
-	const PkBackendDesc *desc;
-	PkBackendPrivate *priv;
+	GObject			 parent;
+	PkBackendDesc		*desc;
+	PkBackendPrivate	*priv;
 };
 
 struct _PkBackendClass
@@ -50,88 +50,19 @@ struct _PkBackendClass
 	GObjectClass	parent_class;
 };
 
-/* general */
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-PkEnumList	*pk_backend_get_actions			(PkBackend	*backend);
+gboolean	 pk_backend_lock			(PkBackend	*backend);
+gboolean	 pk_backend_unlock			(PkBackend	*backend);
+gboolean	 pk_backend_reset			(PkBackend	*backend);
+gboolean	 pk_backend_set_name			(PkBackend	*backend,
+							 const gchar	*name);
+gchar		*pk_backend_get_name			(PkBackend	*backend);
 gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
 							 gchar		**name,
 							 gchar		**author);
-PkEnumList	*pk_backend_get_groups			(PkBackend	*backend);
-PkEnumList	*pk_backend_get_filters			(PkBackend	*backend);
-guint		 pk_backend_get_runtime			(PkBackend	*backend);
-gboolean	 pk_backend_load			(PkBackend      *backend,
-							 const gchar	*name);
-gboolean	 pk_backend_run				(PkBackend      *backend);
-gboolean	 pk_backend_unload			(PkBackend      *backend);
-const gchar	*pk_backend_get_name			(PkBackend	*backend);
-gboolean	 pk_backend_cancel			(PkBackend	*backend,
-							 gchar		**error_text);
-gboolean	 pk_backend_get_depends			(PkBackend	*backend,
-							 const gchar	*package_id,
-							 gboolean	 recursive);
-gboolean	 pk_backend_get_update_detail		(PkBackend	*backend,
-							 const gchar	*package_id);
-gboolean	 pk_backend_get_description		(PkBackend	*backend,
-							 const gchar	*package_id);
-gboolean	 pk_backend_get_files 			(PkBackend	*backend,
-							 const gchar	*package_id);
-gboolean	 pk_backend_get_requires		(PkBackend	*backend,
-							 const gchar	*package_id,
-							 gboolean	 recursive);
-gboolean	 pk_backend_get_updates			(PkBackend	*backend);
-gboolean	 pk_backend_install_package		(PkBackend	*backend,
-							 const gchar	*package_id);
-gboolean	 pk_backend_install_file		(PkBackend	*backend,
-							 const gchar	*full_path);
-gboolean	 pk_backend_refresh_cache		(PkBackend	*backend,
-							 gboolean	 force);
-gboolean	 pk_backend_remove_package		(PkBackend	*backend,
-							 const gchar	*package_id,
-							 gboolean	 allow_deps);
-gboolean	 pk_backend_search_details		(PkBackend	*backend,
-							 const gchar	*filter,
-							 const gchar	*search);
-gboolean	 pk_backend_resolve			(PkBackend	*backend,
-							 const gchar	*filter,
-							 const gchar	*package);
-gboolean	 pk_backend_rollback			(PkBackend	*backend,
-							 const gchar	*transaction_id);
-gboolean	 pk_backend_search_file			(PkBackend	*backend,
-							 const gchar	*filter,
-							 const gchar	*search);
-gboolean	 pk_backend_search_group		(PkBackend	*backend,
-							 const gchar	*filter,
-							 const gchar	*search);
-gboolean	 pk_backend_search_name			(PkBackend	*backend,
-							 const gchar	*filter,
-							 const gchar	*search);
-gboolean	 pk_backend_update_package		(PkBackend	*backend,
-							 const gchar	*package_id);
-gboolean	 pk_backend_update_system		(PkBackend	*backend);
-gboolean	 pk_backend_get_status			(PkBackend	*backend,
-							 PkStatusEnum	*status);
-gboolean	 pk_backend_get_role			(PkBackend	*backend,
-							 PkRoleEnum	*role,
-							 const gchar	**package_id);
-gboolean	 pk_backend_get_progress		(PkBackend	*backend,
-							 guint		*percentage,
-							 guint		*subpercentage,
-							 guint		*elapsed,
-							 guint		*remaining);
-gboolean	 pk_backend_get_package			(PkBackend	*backend,
-							 gchar		**package_id);
-gboolean	 pk_backend_set_dbus_name		(PkBackend	*backend,
-							 const gchar	*dbus_name);
-gboolean	 pk_backend_is_caller_active		(PkBackend	*backend,
-							 gboolean	*is_active);
-
-/* these are external in nature, but we shouldn't be using them in helpers */
-gboolean	 pk_backend_set_role			(PkBackend	*backend,
-							 PkRoleEnum	 role);
-gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
-							 const gchar	*method);
 
 G_END_DECLS
 
 #endif /* __PK_BACKEND_INTERNAL_H */
+

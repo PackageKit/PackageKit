@@ -45,7 +45,9 @@
 #include <pk-package-list.h>
 #include <pk-enum.h>
 
+#include "pk-backend.h"
 #include "pk-backend-internal.h"
+#include "pk-runner.h"
 #include "pk-engine.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction-list.h"
@@ -63,11 +65,11 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GTimer			*timer;
-	gchar			*backend;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkTransactionItem	*sync_item;
 	PkPackageList		*updates_cache;
+	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
 	PkSecurity		*security;
@@ -101,9 +103,6 @@ enum {
 static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
-
-/* prototypes */
-static PkBackend *pk_engine_backend_new (PkEngine *engine);
 
 /**
  * pk_engine_error_quark:
@@ -148,32 +147,6 @@ pk_engine_error_get_type (void)
 		etype = g_enum_register_static ("PkEngineError", values);
 	}
 	return etype;
-}
-
-/**
- * pk_engine_use_backend:
- **/
-gboolean
-pk_engine_use_backend (PkEngine *engine, const gchar *backend_name)
-{
-	PkBackend *backend;
-	if (engine->priv->backend != NULL) {
-		pk_error ("The backend to use can only be specified once");
-	}
-	pk_debug ("trying backend %s", backend_name);
-	engine->priv->backend = g_strdup (backend_name);
-
-	/* create a new backend so we can get the static stuff */
-	backend = pk_engine_backend_new (engine);
-	if (backend == NULL) {
-		pk_error ("Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-	engine->priv->actions = pk_backend_get_actions (backend);
-	engine->priv->groups = pk_backend_get_groups (backend);
-	engine->priv->filters = pk_backend_get_filters (backend);
-	g_object_unref (backend);
-	return TRUE;
 }
 
 /**
@@ -222,21 +195,21 @@ pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *e
 static void
 pk_engine_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *status_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	status_text = pk_status_enum_to_text (status);
 
-	pk_debug ("emitting status-changed tid:%s, '%s'", item->tid, status_text);
-	g_signal_emit (engine, signals [PK_ENGINE_STATUS_CHANGED], 0, item->tid, status_text);
+	pk_debug ("emitting status-changed tid:%s, '%s'", c_tid, status_text);
+	g_signal_emit (engine, signals [PK_ENGINE_STATUS_CHANGED], 0, c_tid, status_text);
 	pk_engine_reset_timer (engine);
 }
 
@@ -247,20 +220,20 @@ static void
 pk_engine_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage,
 			       guint elapsed, guint remaining, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	pk_debug ("emitting percentage-changed tid:%s %i, %i, %i, %i",
-		  item->tid, percentage, subpercentage, elapsed, remaining);
+		  c_tid, percentage, subpercentage, elapsed, remaining);
 	g_signal_emit (engine, signals [PK_ENGINE_PROGRESS_CHANGED], 0,
-		       item->tid, percentage, subpercentage, elapsed, remaining);
+		       c_tid, percentage, subpercentage, elapsed, remaining);
 	pk_engine_reset_timer (engine);
 }
 
@@ -270,38 +243,21 @@ pk_engine_progress_changed_cb (PkBackend *backend, guint percentage, guint subpe
 static void
 pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
-	PkTransactionItem *item;
-	PkRoleEnum role;
 	const gchar *info_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
-	/* add to package cache even if we already got a result */
-	pk_package_list_add (item->package_list, info, package_id, summary);
-
-	/* check the backend is doing the right thing */
-	pk_backend_get_role (item->backend, &role, NULL);
-	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		if (info == PK_INFO_ENUM_INSTALLED) {
-			pk_backend_message (item->backend, PK_MESSAGE_ENUM_DAEMON,
-					    "backend emitted 'installed' rather than 'installing' "
-					    "- you need to do the package *before* you do the action");
-			return;
-		}
-	}
-
 	info_text = pk_info_enum_to_text (info);
-	pk_debug ("emitting package tid:%s info=%s %s, %s", item->tid, info_text, package_id, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, item->tid, info_text, package_id, summary);
+	pk_debug ("emitting package tid:%s info=%s %s, %s", c_tid, info_text, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, c_tid, info_text, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -315,19 +271,19 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 			    const gchar *cve_url, const gchar *restart,
 			    const gchar *update_text, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
-	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s, %s, %s", item->tid,
+	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s, %s, %s", c_tid,
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, item->tid,
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, c_tid,
 		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
 	pk_engine_reset_timer (engine);
 }
@@ -338,18 +294,18 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 static void
 pk_engine_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
-	pk_debug ("emitting updates-changed tid:%s", item->tid);
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, item->tid);
+	pk_debug ("emitting updates-changed tid:%s", c_tid);
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, c_tid);
 }
 
 /**
@@ -360,23 +316,23 @@ pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repositor
 				      const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				      const gchar *key_timestamp, PkSigTypeEnum type, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *type_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	type_text = pk_sig_type_enum_to_text (type);
 
 	pk_debug ("emitting repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
-		  item->tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+		  c_tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (engine, signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED], 0,
-		       item->tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+		       c_tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 }
 
 /**
@@ -385,20 +341,20 @@ pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repositor
 static void
 pk_engine_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *details, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *code_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	code_text = pk_error_enum_to_text (code);
-	pk_debug ("emitting error-code tid:%s %s, '%s'", item->tid, code_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, item->tid, code_text, details);
+	pk_debug ("emitting error-code tid:%s %s, '%s'", c_tid, code_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_ERROR_CODE], 0, c_tid, code_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -408,20 +364,20 @@ pk_engine_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *
 static void
 pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const gchar *details, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *restart_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	restart_text = pk_restart_enum_to_text (restart);
-	pk_debug ("emitting require-restart tid:%s %s, '%s'", item->tid, restart_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, item->tid, restart_text, details);
+	pk_debug ("emitting require-restart tid:%s %s, '%s'", c_tid, restart_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_REQUIRE_RESTART], 0, c_tid, restart_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -431,20 +387,20 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 static void
 pk_engine_message_cb (PkBackend *backend, PkMessageEnum restart, const gchar *details, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *message_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	message_text = pk_message_enum_to_text (restart);
-	pk_debug ("emitting message tid:%s %s, '%s'", item->tid, message_text, details);
-	g_signal_emit (engine, signals [PK_ENGINE_MESSAGE], 0, item->tid, message_text, details);
+	pk_debug ("emitting message tid:%s %s, '%s'", c_tid, message_text, details);
+	g_signal_emit (engine, signals [PK_ENGINE_MESSAGE], 0, c_tid, message_text, details);
 	pk_engine_reset_timer (engine);
 }
 
@@ -456,23 +412,23 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 			  const gchar *detail, const gchar *url,
 			  guint64 size, PkEngine *engine)
 {
-	PkTransactionItem *item;
 	const gchar *group_text;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 	group_text = pk_group_enum_to_text (group);
 
 	pk_debug ("emitting description tid:%s, %s, %s, %s, %s, %s, %ld",
-		  item->tid, package_id, license, group_text, detail, url, (long int) size);
+		  c_tid, package_id, license, group_text, detail, url, (long int) size);
 	g_signal_emit (engine, signals [PK_ENGINE_DESCRIPTION], 0,
-		       item->tid, package_id, license, group_text, detail, url, size);
+		       c_tid, package_id, license, group_text, detail, url, size);
 }
 
 /**
@@ -482,21 +438,21 @@ static void
 pk_engine_files_cb (PkBackend *backend, const gchar *package_id,
 		    const gchar *filelist, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
 	pk_debug ("emitting files tid:%s, %s, %s",
-		  item->tid, package_id, filelist);
+		  c_tid, package_id, filelist);
 	g_signal_emit (engine, signals [PK_ENGINE_FILES], 0,
-		       item->tid, package_id, filelist);
+		       c_tid, package_id, filelist);
 }
 
 /**
@@ -524,8 +480,16 @@ pk_engine_finished_updates_changed_cb (gpointer data)
 static gboolean
 pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, PkRoleEnum role)
 {
+	const gchar *c_tid;
+
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
+		return FALSE;
+	}
 
 	pk_debug ("invalidating caches");
 
@@ -535,7 +499,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 			pk_debug ("unreffing updates cache");
 			g_object_unref (engine->priv->updates_cache);
 		}
-		engine->priv->updates_cache = item->package_list;
+		engine->priv->updates_cache = pk_runner_get_package_list (item->runner);
 		pk_debug ("reffing updates cache");
 		g_object_ref (engine->priv->updates_cache);
 		g_object_add_weak_pointer (G_OBJECT (engine->priv->updates_cache), (gpointer) &engine->priv->updates_cache);
@@ -568,7 +532,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		/* this needs to be done after a small delay */
-		g_object_set_data (G_OBJECT (engine), "calling-tid", item->tid);
+		g_object_set_data (G_OBJECT (engine), "calling-tid", g_strdup (c_tid));
 		g_timeout_add (PK_ENGINE_UPDATES_CHANGED_TIMEOUT, pk_engine_finished_updates_changed_cb, engine);
 	}
 	return TRUE;
@@ -585,23 +549,31 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	const gchar *exit_text;
 	guint time;
 	gchar *packages;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
+
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, c_tid);
+	if (item == NULL) {
+		pk_warning ("tid not found in transaction list");
+		return;
+	}
+
 	/* we might not have this set yet */
-	if (item->backend == NULL) {
-		g_warning ("Backend not set yet!");
+	if (item->runner == NULL) {
+		pk_warning ("Backend not set yet!");
 		return;
 	}
 
 	/* get what the role was */
-	pk_backend_get_role (item->backend, &role, NULL);
+	role = pk_runner_get_role (item->runner);
 
 	/* invalidate some caches if we succeeded*/
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
@@ -609,22 +581,22 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	}
 
 	/* find the length of time we have been running */
-	time = pk_backend_get_runtime (backend);
+	time = pk_runner_get_runtime (item->runner);
 
 	/* add to the database if we are going to log it */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		packages = pk_package_list_get_string (item->package_list);
+		packages = pk_package_list_get_string (pk_runner_get_package_list (item->runner));
 		if (pk_strzero (packages) == FALSE) {
-			pk_transaction_db_set_data (engine->priv->transaction_db, item->tid, packages);
+			pk_transaction_db_set_data (engine->priv->transaction_db, c_tid, packages);
 		}
 		g_free (packages);
 	}
 
 	pk_debug ("backend was running for %i ms", time);
-	pk_transaction_db_set_finished (engine->priv->transaction_db, item->tid, TRUE, time);
+	pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
 
 	/* only reset the time if we succeeded */
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
@@ -632,8 +604,8 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	}
 
 	exit_text = pk_exit_enum_to_text (exit);
-	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, exit_text, time);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, exit_text, time);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", c_tid, exit_text, time);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, c_tid, exit_text, time);
 
 	/* daemon is busy */
 	pk_engine_reset_timer (engine);
@@ -645,19 +617,19 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 static void
 pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
-	pk_debug ("emitting allow-interrpt tid:%s, %i", item->tid, allow_kill);
-	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, item->tid, allow_kill);
+	pk_debug ("emitting allow-interrpt tid:%s, %i", c_tid, allow_kill);
+	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, c_tid, allow_kill);
 }
 
 /**
@@ -666,19 +638,19 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 static void
 pk_engine_caller_active_changed_cb (PkBackend *backend, gboolean is_active, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
-	pk_debug ("emitting caller-active-changed tid:%s, %i", item->tid, is_active);
-	g_signal_emit (engine, signals [PK_ENGINE_CALLER_ACTIVE_CHANGED], 0, item->tid, is_active);
+	pk_debug ("emitting caller-active-changed tid:%s, %i", c_tid, is_active);
+	g_signal_emit (engine, signals [PK_ENGINE_CALLER_ACTIVE_CHANGED], 0, c_tid, is_active);
 }
 
 /**
@@ -687,19 +659,19 @@ pk_engine_caller_active_changed_cb (PkBackend *backend, gboolean is_active, PkEn
 static void
 pk_engine_change_transaction_data_cb (PkBackend *backend, gchar *data, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
 	/* change the database */
-	pk_warning ("TODO: change the item->tid and resave to database");
+	pk_warning ("TODO: change the c_tid and resave to database");
 }
 
 /**
@@ -709,105 +681,43 @@ static void
 pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 			  const gchar *description, gboolean enabled, PkEngine *engine)
 {
-	PkTransactionItem *item;
+	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	item = pk_transaction_list_get_from_backend (engine->priv->transaction_list, backend);
-	if (item == NULL) {
-		pk_warning ("could not find backend");
+	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	if (c_tid == NULL) {
+		pk_warning ("could not get current tid from backend");
 		return;
 	}
 
-	pk_debug ("emitting repo-detail tid:%s, %s, %s, %i", item->tid, repo_id, description, enabled);
-	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, item->tid, repo_id, description, enabled);
+	pk_debug ("emitting repo-detail tid:%s, %s, %s, %i", c_tid, repo_id, description, enabled);
+	g_signal_emit (engine, signals [PK_ENGINE_REPO_DETAIL], 0, c_tid, repo_id, description, enabled);
 }
 
 /**
- * pk_engine_backend_new:
- **/
-static PkBackend *
-pk_engine_backend_new (PkEngine *engine)
-{
-	PkBackend *backend;
-	gboolean ret;
-
-	g_return_val_if_fail (engine != NULL, NULL);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
-
-	/* allocate a new backend */
-	backend = pk_backend_new ();
-	ret = pk_backend_load (backend, engine->priv->backend);
-	if (ret == FALSE) {
-		pk_warning ("Cannot use backend '%s'", engine->priv->backend);
-		return NULL;
-	}
-
-	/* connect up signals */
-	g_signal_connect (backend, "status-changed",
-			  G_CALLBACK (pk_engine_status_changed_cb), engine);
-	g_signal_connect (backend, "progress-changed",
-			  G_CALLBACK (pk_engine_progress_changed_cb), engine);
-	g_signal_connect (backend, "package",
-			  G_CALLBACK (pk_engine_package_cb), engine);
-	g_signal_connect (backend, "update-detail",
-			  G_CALLBACK (pk_engine_update_detail_cb), engine);
-	g_signal_connect (backend, "error-code",
-			  G_CALLBACK (pk_engine_error_code_cb), engine);
-	g_signal_connect (backend, "updates-changed",
-			  G_CALLBACK (pk_engine_updates_changed_cb), engine);
-	g_signal_connect (backend, "repo-signature-required",
-			  G_CALLBACK (pk_engine_repo_signature_required_cb), engine);
-	g_signal_connect (backend, "require-restart",
-			  G_CALLBACK (pk_engine_require_restart_cb), engine);
-	g_signal_connect (backend, "message",
-			  G_CALLBACK (pk_engine_message_cb), engine);
-	g_signal_connect (backend, "finished",
-			  G_CALLBACK (pk_engine_finished_cb), engine);
-	g_signal_connect (backend, "description",
-			  G_CALLBACK (pk_engine_description_cb), engine);
-	g_signal_connect (backend, "files",
-			  G_CALLBACK (pk_engine_files_cb), engine);
-	g_signal_connect (backend, "allow-interrupt",
-			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
-	g_signal_connect (backend, "change-transaction-data",
-			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
-	g_signal_connect (backend, "repo-detail",
-			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
-	g_signal_connect (backend, "caller-active-changed",
-			  G_CALLBACK (pk_engine_caller_active_changed_cb), engine);
-
-	/* initialise some stuff */
-	pk_engine_reset_timer (engine);
-
-	/* we don't add to the array or do the transaction-list-changed yet
-	 * as this transaction might fail */
-	return backend;
-}
-
-/**
- * pk_engine_item_add:
+ * pk_engine_item_commit:
  **/
 static gboolean
-pk_engine_item_add (PkEngine *engine, PkTransactionItem *item)
+pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 {
 	PkRoleEnum role;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* commit, so it appears in the JobList */
-	pk_transaction_list_commit (engine->priv->transaction_list, item);
-
 	/* we might not have this set yet */
-	if (item->backend == NULL) {
-		g_warning ("Backend not set yet!");
+	if (item->runner == NULL) {
+		pk_warning ("Backend not set yet!");
 		return FALSE;
 	}
 
+	/* commit, so it appears in the JobList */
+	pk_transaction_list_commit (engine->priv->transaction_list, item);
+
 	/* only save into the database for useful stuff */
-	pk_backend_get_role (item->backend, &role, NULL);
+	role = pk_runner_get_role (item->runner);
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
@@ -833,7 +743,7 @@ pk_engine_item_delete (PkEngine *engine, PkTransactionItem *item)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	pk_debug ("removing backend %p as it failed", item->backend);
+	pk_debug ("removing backend %p as it failed", item->runner);
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
 
 	/* we don't do g_object_unref (backend) here as it is done in the
@@ -891,6 +801,27 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 }
 
 /**
+ * pk_engine_runner_new:
+ **/
+static PkRunner *
+pk_engine_runner_new (PkEngine *engine)
+{
+	PkRunner *runner;
+
+	g_return_val_if_fail (engine != NULL, NULL);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
+
+	runner = pk_runner_new ();
+	g_signal_connect (runner, "caller-active-changed",
+			  G_CALLBACK (pk_engine_caller_active_changed_cb), engine);
+
+	/* reset the timer */
+	pk_engine_reset_timer (engine);
+
+	return runner;
+}
+
+/**
  * pk_engine_refresh_cache:
  **/
 void
@@ -924,17 +855,11 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-			"Could not create backend instance");
-		dbus_g_method_return_error (context, error);	
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	/* we unref the update cache if it exists */
 	if (engine->priv->updates_cache != NULL) {
@@ -943,7 +868,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 		engine->priv->updates_cache = NULL;
 	}
 
-	ret = pk_backend_refresh_cache (item->backend, force);
+	ret = pk_runner_refresh_cache (item->runner, force);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
@@ -951,7 +876,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -979,20 +904,23 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
+
+	ret = pk_runner_get_updates (item->runner);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-
-	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_engine_item_commit (engine, item);
 
 	/* try and reuse cache */
-	if (engine->priv->updates_cache != NULL) {
+	if (FALSE && engine->priv->updates_cache != NULL) {
 		PkPackageItem *package;
 		guint i;
 		guint length;
@@ -1001,25 +929,17 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		pk_debug ("we have cached data (%i) we could use!", length);
 
 		/* emulate the backend */
-		pk_backend_set_role (item->backend, PK_ROLE_ENUM_GET_UPDATES);
+		pk_runner_set_role (item->runner, PK_ROLE_ENUM_GET_UPDATES);
 		for (i=0; i<length; i++) {
 			package = pk_package_list_get_item (engine->priv->updates_cache, i);
-			pk_engine_package_cb (item->backend, package->info, package->package_id, package->summary, engine);
+			pk_engine_package_cb (engine->priv->backend, package->info, package->package_id, package->summary, engine);
 		}
-		pk_engine_finished_cb (item->backend, PK_EXIT_ENUM_SUCCESS, engine);
+		pk_engine_finished_cb (engine->priv->backend, PK_EXIT_ENUM_SUCCESS, engine);
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return (context);
 		return;
 	}
 
-	ret = pk_backend_get_updates (item->backend);
-	if (ret == FALSE) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-	pk_engine_item_add (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1139,26 +1059,20 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_search_name (item->backend, filter, search);
+	ret = pk_runner_search_name (item->runner, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1201,26 +1115,20 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_search_details (item->backend, filter, search);
+	ret = pk_runner_search_details (item->runner, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1263,26 +1171,20 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_search_group (item->backend, filter, search);
+	ret = pk_runner_search_group (item->runner, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1325,26 +1227,20 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_search_file (item->backend, filter, search);
+	ret = pk_runner_search_file (item->runner, filter, search);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1389,26 +1285,20 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_resolve (item->backend, filter, package);
+	ret = pk_runner_resolve (item->runner, filter, package);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1455,26 +1345,20 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_depends (item->backend, package_id, recursive);
+	ret = pk_runner_get_depends (item->runner, package_id, recursive);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1521,26 +1405,20 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_requires (item->backend, package_id, recursive);
+	ret = pk_runner_get_requires (item->runner, package_id, recursive);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1587,26 +1465,20 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_update_detail (item->backend, package_id);
+	ret = pk_runner_get_update_detail (item->runner, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1653,26 +1525,20 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_description (item->backend, package_id);
+	ret = pk_runner_get_description (item->runner, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1719,26 +1585,20 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_files (item->backend, package_id);
+	ret = pk_runner_get_files (item->runner, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1784,19 +1644,13 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_update_system (item->backend);
+	ret = pk_runner_update_system (item->runner);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -1804,7 +1658,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1861,19 +1715,13 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_remove_package (item->backend, package_id, allow_deps);
+	ret = pk_runner_remove_package (item->runner, package_id, allow_deps);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -1881,7 +1729,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -1938,19 +1786,13 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_install_package (item->backend, package_id);
+	ret = pk_runner_install_package (item->runner, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -1958,7 +1800,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2006,19 +1848,13 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_install_file (item->backend, full_path);
+	ret = pk_runner_install_file (item->runner, full_path);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2026,7 +1862,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2074,19 +1910,13 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_rollback (item->backend, transaction_id);
+	ret = pk_runner_rollback (item->runner, transaction_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2094,7 +1924,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2150,19 +1980,13 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_update_package (item->backend, package_id);
+	ret = pk_runner_update_package (item->runner, package_id);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2170,7 +1994,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2181,8 +2005,8 @@ void
 pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	PkTransactionItem *item;
 	GError *error;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -2198,26 +2022,20 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-				     "Backend '%s' could not be initialized", engine->priv->backend);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_get_repo_list (item->backend);
+	ret = pk_runner_get_repo_list (item->runner);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2229,9 +2047,9 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		       DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	PkTransactionItem *item;
 	GError *error;
 	gchar *sender;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -2265,19 +2083,14 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_repo_enable (item->backend, repo_id, enabled);
+	ret = pk_runner_repo_enable (item->runner, repo_id, enabled);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2285,7 +2098,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2298,9 +2111,9 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 		         DBusGMethodInvocation *context)
 {
 	gboolean ret;
-	PkTransactionItem *item;
 	GError *error;
 	gchar *sender;
+	PkTransactionItem *item;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -2334,19 +2147,13 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 		return;
 	}
 
-	/* create a new backend */
-	item->backend = pk_engine_backend_new (engine);
-	if (item->backend == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Could not create backend instance");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
-	pk_backend_set_dbus_name (item->backend, dbus_g_method_get_sender (context));
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_backend_repo_set_data (item->backend, repo_id, parameter, value);
+	ret = pk_runner_repo_set_data (item->runner, repo_id, parameter, value);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2354,7 +2161,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_add (engine, item);
+	pk_engine_item_commit (engine, item);
 	dbus_g_method_return (context);
 }
 
@@ -2395,7 +2202,7 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	pk_backend_get_status (item->backend, &status_enum);
+	status_enum = pk_runner_get_status (item->runner);
 	*status = g_strdup (pk_status_enum_to_text (status_enum));
 
 	return TRUE;
@@ -2408,8 +2215,9 @@ gboolean
 pk_engine_get_role (PkEngine *engine, const gchar *tid,
 		    const gchar **role, const gchar **package_id, GError **error)
 {
-	PkTransactionItem *item;
 	PkRoleEnum role_enum;
+	PkTransactionItem *item;
+	const gchar *text;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -2425,13 +2233,16 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	}
 
 	/* we might not have this set yet */
-	if (item->backend == NULL) {
+	if (item->runner == NULL) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
 			     "Backend not set with tid:%s", tid);
 		return FALSE;
 	}
-	pk_backend_get_role (item->backend, &role_enum, package_id);
+
+	role_enum = pk_runner_get_role (item->runner);
+	text = pk_runner_get_text (item->runner);
 	*role = g_strdup (pk_role_enum_to_text (role_enum));
+	*package_id = g_strdup (text);
 
 	return TRUE;
 }
@@ -2444,8 +2255,8 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 			guint *percentage, guint *subpercentage,
 			guint *elapsed, guint *remaining, GError **error)
 {
-	PkTransactionItem *item;
 	gboolean ret;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -2459,7 +2270,7 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_progress (item->backend, percentage, subpercentage, elapsed, remaining);
+	ret = pk_backend_get_progress (engine->priv->backend, percentage, subpercentage, elapsed, remaining);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No progress data available");
@@ -2474,8 +2285,8 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 gboolean
 pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GError **error)
 {
-	PkTransactionItem *item;
 	gboolean ret;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -2489,7 +2300,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 			     "No tid:%s", tid);
 		return FALSE;
 	}
-	ret = pk_backend_get_package (item->backend, package);
+	ret = pk_runner_get_package (item->runner, package);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No package data available");
@@ -2521,8 +2332,8 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	engine->priv->sync_item = item;
 
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
-	pk_debug ("emitting finished transaction:%s, '%s', %i", item->tid, "", 0);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, item->tid, "", 0);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", tid, "", 0);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, "", 0);
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
 	return TRUE;
 }
@@ -2558,7 +2369,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	}
 
 	/* try to cancel the transaction */
-	ret = pk_backend_cancel (item->backend, &error_text);
+	ret = pk_runner_cancel (item->runner, &error_text);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, error_text);
 		g_free (error_text);
@@ -2613,7 +2424,7 @@ pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_act
 	}
 
 	/* is the caller still active? */
-	ret = pk_backend_is_caller_active (item->backend, is_active);
+	ret = pk_runner_is_caller_active (item->runner, is_active);
 	if (ret == FALSE) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, "We don't know if the caller is still there");
 		return FALSE;
@@ -2664,24 +2475,11 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 gboolean
 pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GError **error)
 {
-	PkBackend *backend;
-
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetBackendDetail method called");
-
-	/* create a new backend */
-	backend = pk_engine_backend_new (engine);
-	if (backend == NULL) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INITIALIZE_FAILED,
-			     "Backend '%s' could not be initialized", engine->priv->backend);
-		return FALSE;
-	}
-
-	pk_backend_get_backend_detail (backend, name, author);
-	g_object_unref (backend);
-
+	pk_backend_get_backend_detail (engine->priv->backend, name, author);
 	return TRUE;
 }
 
@@ -2715,7 +2513,8 @@ pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gcha
 	const gchar *role_text;
 	const gchar *tid;
 
-	tid = engine->priv->sync_item->tid;
+//	tid = engine->priv->sync_tid;
+	tid = "foo";
 	role_text = pk_role_enum_to_text (role);
 	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", tid, old_tid, timespec, succeeded, role_text, duration, data);
 	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration, data);
@@ -2863,12 +2662,55 @@ pk_engine_class_init (PkEngineClass *klass)
 static void
 pk_engine_init (PkEngine *engine)
 {
+	PkRunner *runner;
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
+
+	/* setup the backend backend */
+	engine->priv->backend = pk_backend_new ();
+
+	/* connect up signals */
+	g_signal_connect (engine->priv->backend, "status-changed",
+			  G_CALLBACK (pk_engine_status_changed_cb), engine);
+	g_signal_connect (engine->priv->backend, "progress-changed",
+			  G_CALLBACK (pk_engine_progress_changed_cb), engine);
+	g_signal_connect (engine->priv->backend, "package",
+			  G_CALLBACK (pk_engine_package_cb), engine);
+	g_signal_connect (engine->priv->backend, "update-detail",
+			  G_CALLBACK (pk_engine_update_detail_cb), engine);
+	g_signal_connect (engine->priv->backend, "error-code",
+			  G_CALLBACK (pk_engine_error_code_cb), engine);
+	g_signal_connect (engine->priv->backend, "updates-changed",
+			  G_CALLBACK (pk_engine_updates_changed_cb), engine);
+	g_signal_connect (engine->priv->backend, "repo-signature-required",
+			  G_CALLBACK (pk_engine_repo_signature_required_cb), engine);
+	g_signal_connect (engine->priv->backend, "require-restart",
+			  G_CALLBACK (pk_engine_require_restart_cb), engine);
+	g_signal_connect (engine->priv->backend, "message",
+			  G_CALLBACK (pk_engine_message_cb), engine);
+	g_signal_connect (engine->priv->backend, "finished",
+			  G_CALLBACK (pk_engine_finished_cb), engine);
+	g_signal_connect (engine->priv->backend, "description",
+			  G_CALLBACK (pk_engine_description_cb), engine);
+	g_signal_connect (engine->priv->backend, "files",
+			  G_CALLBACK (pk_engine_files_cb), engine);
+	g_signal_connect (engine->priv->backend, "allow-interrupt",
+			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
+	g_signal_connect (engine->priv->backend, "change-transaction-data",
+			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
+	g_signal_connect (engine->priv->backend, "repo-detail",
+			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
+
+	/* lock database */
+	pk_backend_lock (engine->priv->backend);
+
+	/* create a new backend so we can get the static stuff */
+	runner = pk_runner_new ();
+	engine->priv->actions = pk_runner_get_actions (runner);
+	engine->priv->groups = pk_runner_get_groups (runner);
+	engine->priv->filters = pk_runner_get_filters (runner);
+	g_object_unref (runner);
+
 	engine->priv->timer = g_timer_new ();
-	engine->priv->backend = NULL;
-	engine->priv->actions = NULL;
-	engine->priv->groups = NULL;
-	engine->priv->filters = NULL;
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
@@ -2911,12 +2753,12 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
-	g_free (engine->priv->backend);
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
 	g_object_unref (engine->priv->security);
+	g_object_unref (engine->priv->backend);
 
 	/* optional gobjects */
 	if (engine->priv->actions != NULL) {
@@ -2958,46 +2800,34 @@ void
 libst_engine (LibSelfTest *test)
 {
 	PkEngine *engine;
-//	gboolean ret;
+	PkBackend *backend;
 
 	if (libst_start (test, "PkEngine", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
-	libst_title (test, "get an instance");
+	libst_title (test, "get a backend instance");
+	backend = pk_backend_new ();
+	if (backend != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* set the type, as we have no pk-main doing this for us */
+	pk_backend_set_name (backend, "dummy");
+
+	/************************************************************/
+	libst_title (test, "get an engine instance");
 	engine = pk_engine_new ();
 	if (engine != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
-#if 0
-	/************************************************************/
-	libst_title (test, "check connection");
-	if (engine->priv->connection != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
 
-	/************************************************************/
-	libst_title (test, "check PolKit context");
-	if (engine->priv->pk_context != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "map valid role to action");
-	action = pk_engine_role_to_action (engine, PK_ROLE_ENUM_UPDATE_PACKAGE);
-	if (pk_strequal (action, "org.freedesktop.packagekit.update") == TRUE) {
-		libst_success (test, NULL, error);
-	} else {
-		libst_failed (test, "did not get correct action '%s'", action);
-	}
-#endif
+	g_object_unref (backend);
 	g_object_unref (engine);
 
 	libst_end (test);

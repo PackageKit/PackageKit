@@ -74,8 +74,6 @@ GQuark		 pk_engine_error_quark			(void);
 GType		 pk_engine_error_get_type		(void);
 GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
-gboolean	 pk_engine_use_backend			(PkEngine	*engine,
-							 const gchar	*backend);
 
 gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,

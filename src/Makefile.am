@@ -35,16 +35,17 @@ pkbackendincludedir=$(includedir)/packagekit-backend
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
 	pk-backend-spawn.h				\
-	pk-backend-python.h
+	pk-backend-thread.h				\
+	$(NULL)
 
 shared_SOURCES =					\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-backend-internal.h				\
+	pk-runner.c					\
+	pk-runner.h					\
 	pk-backend.c					\
 	pk-backend.h					\
-	pk-backend-python.c				\
-	pk-backend-python.h				\
+	pk-backend-internal.h				\
 	pk-security.h					\
 	pk-time.h					\
 	pk-time.c					\
@@ -58,6 +59,12 @@ shared_SOURCES =					\
 	pk-inhibit.c					\
 	pk-thread-list.h				\
 	pk-thread-list.c				\
+	pk-backend-spawn.h				\
+	pk-backend-spawn.c				\
+	pk-backend-thread.h				\
+	pk-backend-thread.c				\
+	pk-backend-dbus.h				\
+	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
 	pk-transaction-db.c				\
 	pk-transaction-id.h				\

@@ -23,7 +23,7 @@
 #define __PK_TRANSACTION_LIST_H
 
 #include <glib-object.h>
-#include "pk-backend-internal.h"
+#include "pk-runner.h"
 #include "pk-package-list.h"
 
 G_BEGIN_DECLS
@@ -54,9 +54,8 @@ typedef struct {
 	gboolean		 committed;
 	gboolean		 running;
 	gboolean		 finished;
-	PkBackend		*backend;
+	PkRunner		*runner;
 	gchar			*tid;
-	PkPackageList		*package_list;
 } PkTransactionItem;
 
 GType		 pk_transaction_list_get_type	  	(void);
@@ -73,8 +72,8 @@ gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist);
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransactionItem *pk_transaction_list_get_from_tid	(PkTransactionList	*tlist,
 							 const gchar		*tid);
-PkTransactionItem *pk_transaction_list_get_from_backend	(PkTransactionList	*tlist,
-							 PkBackend		*backend);
+PkTransactionItem *pk_transaction_list_get_from_runner	(PkTransactionList	*tlist,
+							 PkRunner		*runner);
 
 G_END_DECLS
 

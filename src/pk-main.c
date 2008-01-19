@@ -33,6 +33,7 @@
 #include <pk-debug.h>
 #include "pk-conf.h"
 #include "pk-engine.h"
+#include "pk-backend-internal.h"
 #include "pk-interface.h"
 
 static guint exit_idle_time;
@@ -138,20 +139,22 @@ main (int argc, char *argv[])
 {
 	GMainLoop *loop;
 	DBusGConnection *system_connection;
+	gboolean ret;
 	gboolean verbose = FALSE;
 	gboolean disable_timer = FALSE;
 	gboolean version = FALSE;
 	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
-	gchar *backend = NULL;
+	gchar *backend_name = NULL;
 	PkConf *conf = NULL;
+	PkBackend *backend;
 	PkEngine *engine = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 
 	const GOptionEntry options[] = {
-		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend,
+		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  "Backend to use (for debugging)", NULL },
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
 		  "Daemonize and detach", NULL },
@@ -185,9 +188,6 @@ main (int argc, char *argv[])
 		goto unref_program;
 	}
 
-	/* force to crash for development releases */
-	setenv ("G_DEBUG", "fatal_criticals", 1);
-
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
@@ -217,14 +217,23 @@ main (int argc, char *argv[])
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
 	pk_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
-	if (backend == NULL) {
-		backend = pk_conf_get_string (conf, "DefaultBackend");
-		pk_debug ("using default backend %s", backend);
+	if (backend_name == NULL) {
+		backend_name = pk_conf_get_string (conf, "DefaultBackend");
+		pk_debug ("using default backend %s", backend_name);
+	}
+
+	/* load our chosen backend */
+	backend = pk_backend_new ();
+	ret = pk_backend_set_name (backend, backend_name);
+	g_free (backend_name);
+
+	/* all okay? */
+	if (ret == FALSE) {
+		pk_error ("cannot continue, backend invalid");
 	}
 
 	/* create a new engine object */
 	engine = pk_engine_new ();
-	pk_engine_use_backend (engine, backend);
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
 		g_error ("Error trying to start: %s", error->message);
@@ -254,7 +263,7 @@ main (int argc, char *argv[])
 	g_main_loop_unref (loop);
 	g_object_unref (conf);
 	g_object_unref (engine);
-	g_free (backend);
+	g_object_unref (backend);
 
 unref_program:
 	return 0;

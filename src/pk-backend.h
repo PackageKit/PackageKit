@@ -23,6 +23,7 @@
 #define __PK_BACKEND_H
 
 #include <glib.h>
+#include <gmodule.h>
 #include <pk-enum.h>
 #include <pk-enum-list.h>
 #include <pk-package-id.h>
@@ -31,16 +32,37 @@
 G_BEGIN_DECLS
 
 typedef struct _PkBackend PkBackend;
-typedef struct _PkBackendDesc PkBackendDesc;
 
-/* used by backends that implement an interface */
+/* set the state */
+gboolean	 pk_backend_set_current_tid		(PkBackend	*backend,
+							 const gchar	*tid);
+gboolean	 pk_backend_set_role			(PkBackend	*backend,
+							 PkRoleEnum	 role);
+gboolean	 pk_backend_set_status			(PkBackend	*backend,
+							 PkStatusEnum	 status);
+gboolean	 pk_backend_set_interruptable		(PkBackend	*backend,
+							 gboolean	 is_interruptable);
 gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
-gboolean	 pk_backend_set_sub_percentage	(PkBackend	*backend,
+gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
-gboolean	 pk_backend_set_status		(PkBackend	*backend,
-							 PkStatusEnum	 status);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
+gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
+							 const gchar	*data);
+
+/* get the state */
+const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);
+PkRoleEnum	 pk_backend_get_role			(PkBackend	*backend);
+PkStatusEnum	 pk_backend_get_status			(PkBackend	*backend);
+gboolean	 pk_backend_get_interruptable		(PkBackend	*backend);
+gboolean	 pk_backend_get_progress		(PkBackend	*backend,
+							 guint		*percentage,
+							 guint		*subpercentage,
+							 guint		*elapsed,
+							 guint		*remaining);
+guint		 pk_backend_get_runtime			(PkBackend	*backend);
+
+/* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 PkInfoEnum	 info,
@@ -87,36 +109,15 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 const gchar    *key_fingerprint,
 							 const gchar    *key_timestamp,
 							 PkSigTypeEnum   type);
-gboolean	 pk_backend_spawn_helper		(PkBackend	*backend,
-							 const gchar	*script,
-							 const gchar	*first_element, ...);
-gboolean	 pk_backend_change_transaction_data	(PkBackend	*backend,
-							 const gchar	*data);
-gboolean	 pk_backend_spawn_kill			(PkBackend	*backend);
-gboolean	 pk_backend_set_interruptable		(PkBackend	*backend,
-							 gboolean	 allow_restart);
-gboolean	 pk_backend_network_is_online		(PkBackend	*backend);
 
-typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend,
-							 gpointer	 data);
-gboolean	 pk_backend_thread_create		(PkBackend	*backend,
-							 PkBackendThreadFunc func,
-							 gpointer	 data);
-
-/* repo stuff */
-gboolean	 pk_backend_get_repo_list		(PkBackend	*backend);
-gboolean	 pk_backend_repo_enable			(PkBackend	*backend,
-							 const gchar	*repo_id,
-							 gboolean	 enabled);
-gboolean	 pk_backend_repo_set_data		(PkBackend	*backend,
-							 const gchar	*repo_id,
-							 const gchar	*parameter,
-							 const gchar	*value);
+/* helper functions */
+gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
+							 const gchar	*method);
 
 /**
  * PkBackendDesc:
  */
-struct _PkBackendDesc {
+typedef struct {
 	const char	*description;
 	const char	*author;
 	void		(*initialize)		(PkBackend *backend);
@@ -146,7 +147,7 @@ struct _PkBackendDesc {
 	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
 	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
 	gpointer	padding[12];
-};
+} PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy,						\
 			   get_groups, get_filters, cancel, get_depends, get_description, get_files,		\
@@ -189,3 +190,4 @@ struct _PkBackendDesc {
 G_END_DECLS
 
 #endif /* __PK_BACKEND_H */
+
