@@ -34,6 +34,7 @@ pkbackendincludedir=$(includedir)/packagekit-backend
 
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
+	pk-backend-spawn.h				\
 	pk-backend-python.h
 
 shared_SOURCES =					\

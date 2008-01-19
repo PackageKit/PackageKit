@@ -34,6 +34,7 @@ void libst_transaction_db (LibSelfTest *test);
 void libst_security (LibSelfTest *test);
 void libst_time (LibSelfTest *test);
 void libst_backend (LibSelfTest *test);
+void libst_backend_spawn (LibSelfTest *test);
 void libst_engine (LibSelfTest *test);
 
 int
@@ -48,9 +49,7 @@ main (int argc, char **argv)
 	libst_init (&test);
 	pk_debug_init (TRUE);
 
-	/* tests go here */
-	libst_backend (&test);
-	libst_engine (&test);
+	/* components */
 	libst_security (&test);
 	libst_time (&test);
 	libst_conf (&test);
@@ -59,6 +58,13 @@ main (int argc, char **argv)
 	libst_thread_list (&test);
 	libst_transaction_list (&test);
 	libst_transaction_db (&test);
+
+	/* backend stuff */
+	libst_backend (&test);
+//	libst_backend_spawn (&test);
+
+	/* system */
+	libst_engine (&test);
 
 	return (libst_finish (&test));
 }
