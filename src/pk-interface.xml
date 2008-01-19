@@ -104,7 +104,7 @@
     </method>
 
     <!-- signals emitted from any transaction -->
-    <signal name="TransactionStatusChanged">
+    <signal name="StatusChanged">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
     </signal>
