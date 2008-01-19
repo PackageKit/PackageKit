@@ -915,7 +915,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['fingerprint'],
                                              keyData['timestamp'],
                                              'GPG')
-                self.error(ERROR_SIGNATURE_NOT_IMPORTED,"GPG key not imported.")
+                self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing;" +";".join(ye.value)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
