@@ -18,7 +18,7 @@ static gboolean
 emit_sub_percentage (gpointer data)
 {
 	PercentageData *pd = (PercentageData *)data;
-	pk_backend_change_sub_percentage (pd->backend, pd->percentage);
+	pk_backend_set_sub_percentage (pd->backend, pd->percentage);
 	free (pd);
 	return FALSE;
 }
@@ -134,14 +134,14 @@ struct ZyppBackendReceiver
 		//pd->backend = _backend;
 		//pd->percentage = _sub_percentage;
 		//g_idle_add (emit_sub_percentage, pd);
-		pk_backend_change_sub_percentage (_backend, _sub_percentage);
+		pk_backend_set_sub_percentage (_backend, _sub_percentage);
 	}
 
 	void
 	reset_sub_percentage ()
 	{
 		_sub_percentage = 0;
-		pk_backend_change_sub_percentage (_backend, _sub_percentage);
+		pk_backend_set_sub_percentage (_backend, _sub_percentage);
 	}
 };
 
@@ -155,7 +155,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		_package_id = zypp_build_package_id_from_resolvable (resolvable);
 		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
-			pk_backend_change_status (_backend, PK_STATUS_ENUM_INSTALL);
+			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
 			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, "TODO: Put the package summary here if possible");
 			reset_sub_percentage ();
 		}
@@ -236,7 +236,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
-			pk_backend_change_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
+			pk_backend_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
 			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, "TODO: Put the package summary here if possible");
 			reset_sub_percentage ();
 		}

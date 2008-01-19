@@ -181,8 +181,8 @@ backend_get_depends_thread (PkBackend *backend, gpointer data)
 */
 	ThreadData *d = (ThreadData*) data;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_change_percentage (backend, 0);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
 
 	PkPackageId *pi = pk_package_id_new_from_string (d->package_id);
         if (pi == NULL) {
@@ -238,7 +238,7 @@ fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
 			}
 		}
 
-		pk_backend_change_percentage (backend, 40);
+		pk_backend_set_percentage (backend, 40);
 
 		if (pool_item_found == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Did not find the specified package.");
@@ -250,7 +250,7 @@ fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
 
 //printf ("Resolving dependencies...\n");
 		// Gather up any dependencies
-		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 		if (zypp->resolver ()->resolvePool () == FALSE) {
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
@@ -263,7 +263,7 @@ fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
 			return FALSE;
 		}
 
-		pk_backend_change_percentage (backend, 60);
+		pk_backend_set_percentage (backend, 60);
 
 		zypp::solver::detail::ItemCapKindList installList = zypp->resolver ()->installs (pool_item);
 		for (zypp::solver::detail::ItemCapKindList::const_iterator it = installList.begin ();
@@ -281,7 +281,7 @@ fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
 			g_free (package_id);
 		}
 
-		pk_backend_change_percentage (backend, 100);
+		pk_backend_set_percentage (backend, 100);
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
@@ -341,7 +341,7 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::PoolItem> *v;
 	v = zypp_get_packages_by_name ((const gchar *)pi->name, TRUE);
@@ -453,11 +453,11 @@ findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem_Ref item)
 static gboolean
 backend_get_updates_thread (PkBackend *backend, gpointer data)
 {
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_change_percentage (backend, 0);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
-	pk_backend_change_percentage (backend, 40);
+	pk_backend_set_percentage (backend, 40);
 
 	Candidates candidates;
 	zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
@@ -473,7 +473,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 		candidates.insert (candidate);
 	}
 
-	pk_backend_change_percentage (backend, 80);
+	pk_backend_set_percentage (backend, 80);
 	Candidates::iterator cb = candidates.begin (), ce = candidates.end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		zypp::ResObject::constPtr res = ci->resolvable();
@@ -487,7 +487,7 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 		g_free (package_id);
 	}
 
-	pk_backend_change_percentage (backend, 100);
+	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -508,8 +508,8 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 {
 	gchar *package_id = (gchar *)data;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_change_percentage (backend, 0);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
 
 	PkPackageId *pi = pk_package_id_new_from_string (package_id);
         if (pi == NULL) {
@@ -529,7 +529,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 
 	// Load all the local system "resolvables" (packages)
 	zypp->addResolvables (target->resolvables(), TRUE);
-	pk_backend_change_percentage (backend, 10);
+	pk_backend_set_percentage (backend, 10);
 
 	// Load resolvables from all the enabled repositories
 	zypp::RepoManager manager;
@@ -579,11 +579,11 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 			}
 		}
 
-		pk_backend_change_percentage (backend, 40);
+		pk_backend_set_percentage (backend, 40);
 
 //printf ("Resolving dependencies...\n");
 		// Gather up any dependencies
-		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 		if (zypp->resolver ()->resolvePool () == FALSE) {
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
@@ -595,7 +595,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 			return FALSE;
 		}
 
-		pk_backend_change_percentage (backend, 60);
+		pk_backend_set_percentage (backend, 60);
 
 //printf ("Performing installation...\n");
 		// Perform the installation
@@ -605,7 +605,7 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 		zypp::ZYppCommitResult result = zypp->commit (policy);
 printf ("Finished the installation.\n");
 
-		pk_backend_change_percentage (backend, 100);
+		pk_backend_set_percentage (backend, 100);
 
 		// TODO: Check result for success
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
@@ -639,7 +639,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	// For now, don't let the user cancel the install once it's started
-	pk_backend_allow_interrupt (backend, FALSE);
+	pk_backend_set_interruptable (backend, FALSE);
 
 	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
@@ -653,8 +653,8 @@ backend_refresh_cache_thread (PkBackend *backend, gpointer data)
 	gboolean force = d->force;
 	g_free (d);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_change_percentage (backend, 0);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_percentage (backend, 0);
 
 	zypp::RepoManager manager;
 	std::list <zypp::RepoInfo> repos;
@@ -713,7 +713,7 @@ fprintf (stderr, "\n\n *** Building cache ***\n\n");
 		}
 
 		// Update the percentage completed
-		pk_backend_change_percentage (backend,
+		pk_backend_set_percentage (backend,
 					      i == num_of_repos ?
 						100 :
 						i * percentage_increment);
@@ -729,8 +729,8 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 	RemovePackageData *d = (RemovePackageData *)data;
 	PkPackageId *pi;
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_change_percentage (backend, 0);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+	pk_backend_set_percentage (backend, 0);
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
@@ -750,7 +750,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 
 	// Load all the local system "resolvables" (packages)
 	zypp->addResolvables (target->resolvables(), TRUE);
-	pk_backend_change_percentage (backend, 10);
+	pk_backend_set_percentage (backend, 10);
 
 	zypp::RepoManager manager;
 	std::list <zypp::RepoInfo> repos;
@@ -769,12 +769,12 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 			}
 		}
 
-		pk_backend_change_percentage (backend, 40);
+		pk_backend_set_percentage (backend, 40);
 
 //printf ("Resolving dependencies...\n");
 // TODO: Figure out what to do about d->deps_behavior
 		// Gather up any dependencies
-		pk_backend_change_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 		if (zypp->resolver ()->resolvePool () == FALSE) {
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
@@ -787,13 +787,13 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 			return FALSE;
 		}
 
-		pk_backend_change_percentage (backend, 60);
+		pk_backend_set_percentage (backend, 60);
 
 		zypp::ZYppCommitPolicy policy;
 		zypp::ZYppCommitResult result = zypp->commit (policy);
 printf ("Finished the removal.\n");
 
-		pk_backend_change_percentage (backend, 100);
+		pk_backend_set_percentage (backend, 100);
 
 		// TODO: Check result for success
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
@@ -868,7 +868,7 @@ backend_resolve_thread (PkBackend *backend, gpointer data)
 {
 	gchar *package_id;
 	ResolveData *rdata = (ResolveData*) data;
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::PoolItem> *v;
 	v = zypp_get_packages_by_name ((const gchar *)rdata->name, TRUE);
@@ -978,7 +978,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
 
@@ -1076,7 +1076,7 @@ backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_change_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	zypp::RepoManager manager;
 	std::list <zypp::RepoInfo> repos;
