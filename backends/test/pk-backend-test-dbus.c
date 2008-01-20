@@ -27,9 +27,9 @@
 
 static PkBackendDbus *dbus;
 
-#define PACKAGEKIT_DBUS_INTERFACE	"org.freedesktop.PackageKitYum"
-#define PACKAGEKIT_DBUS_SERVICE		"org.freedesktop.PackageKitYum"
-#define PACKAGEKIT_DBUS_PATH		"/org/freedesktop/PackageKitYum"
+#define PACKAGEKIT_DBUS_INTERFACE	"org.freedesktop.PackageKitDbus"
+#define PACKAGEKIT_DBUS_SERVICE		"org.freedesktop.PackageKitDbus"
+#define PACKAGEKIT_DBUS_PATH		"/org/freedesktop/PackageKitDbus"
 
 /**
  * backend_search_name:

@@ -120,6 +120,7 @@ dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
 AC_SUBST(SYSCONFDIR, $sysconfdir)
 AC_SUBST(LIBDIR, $libdir)
+AC_SUBST(LIBEXECDIR, $libexecdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 AC_SUBST(SBINDIR, $sbindir)
@@ -425,7 +426,7 @@ else
 fi
 
 if test x$with_default_backend = xbox; then
-	PKG_CHECK_MODULES(BOX, libbox)
+	PKG_CHECK_MODULES(BOX, libbox >= 0.1.2 )
 	AC_SUBST(BOX_CFLAGS)
 	AC_SUBST(BOX_LIBS)
 fi
@@ -499,6 +500,7 @@ backends/smart/Makefile
 backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
+backends/test/helpers/org.freedesktop.PackageKitDbus.service
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/pisi/Makefile
