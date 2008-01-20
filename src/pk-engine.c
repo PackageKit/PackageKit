@@ -2510,14 +2510,17 @@ pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gcha
 			  gboolean succeeded, PkRoleEnum role, guint duration,
 			  const gchar *data, PkEngine *engine)
 {
+	PkTransactionItem *item;
 	const gchar *role_text;
-	const gchar *tid;
 
-//	tid = engine->priv->sync_tid;
-	tid = "foo";
+	item = engine->priv->sync_item;
+	if (item == NULL) {
+		pk_warning ("no sync tid");
+		return;
+	}
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", tid, old_tid, timespec, succeeded, role_text, duration, data);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration, data);
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", item->tid, old_tid, timespec, succeeded, role_text, duration, data);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, item->tid, old_tid, timespec, succeeded, role_text, duration, data);
 }
 
 /**
