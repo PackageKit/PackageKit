@@ -939,6 +939,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_time_reset (backend->priv->time);
 
 	return TRUE;
 }
