@@ -36,6 +36,8 @@ backend_initalize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
+
+	/* we use the thread helper */
 	thread = pk_backend_thread_new ();
 }
 
