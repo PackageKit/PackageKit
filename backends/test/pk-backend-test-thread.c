@@ -37,7 +37,6 @@ backend_initalize (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
 	thread = pk_backend_thread_new ();
-	pk_backend_thread_set_backend (thread, backend);
 }
 
 /**

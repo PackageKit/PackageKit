@@ -87,19 +87,6 @@ pk_backend_thread_get_backend (PkBackendThread *backend_thread)
 }
 
 /**
- * pk_backend_thread_get_backend:
- * Convenience function.
- **/
-gboolean
-pk_backend_thread_set_backend (PkBackendThread *backend_thread, PkBackend *backend)
-{
-	g_return_val_if_fail (backend_thread != NULL, FALSE);
-	g_return_val_if_fail (backend != NULL, FALSE);
-	backend_thread->priv->backend = backend;
-	return TRUE;
-}
-
-/**
  * pk_backend_thread_finalize:
  **/
 static void
@@ -221,18 +208,9 @@ libst_backend_thread (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "get an backend");
-	backend = pk_backend_new ();
+	libst_title (test, "get a backend");
+	backend = pk_backend_thread_get_backend (backend_thread);
 	if (backend != NULL) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "set the instance");
-	ret = pk_backend_thread_set_backend (backend_thread, backend);
-	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
