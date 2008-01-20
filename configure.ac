@@ -425,7 +425,7 @@ else
 fi
 
 if test x$with_default_backend = xbox; then
-	PKG_CHECK_MODULES(BOX, libbox)
+	PKG_CHECK_MODULES(BOX, libbox >= 0.1.2 )
 	AC_SUBST(BOX_CFLAGS)
 	AC_SUBST(BOX_LIBS)
 fi

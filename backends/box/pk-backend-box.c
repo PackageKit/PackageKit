@@ -22,9 +22,11 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
-#include <pk-backend.h>
 #include <unistd.h>
+#include <pk-backend.h>
+#include <pk-backend-thread.h>
 #include <pk-debug.h>
+#include <pk-network.h>
 
 #include <sqlite3.h>
 #include <libbox/libbox-db.h>
@@ -32,6 +34,9 @@
 #include <libbox/libbox-db-repos.h>
 #include <libbox/libbox-repos.h>
 #include <libbox/libbox.h>
+
+static PkBackendThread *thread;
+static PkNetwork *network;
 
 enum PkgSearchType {
 	SEARCH_TYPE_NAME = 0,
@@ -222,11 +227,13 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 }
 
 static gboolean
-backend_find_packages_thread (PkBackend *backend, gpointer data)
+backend_find_packages_thread (PkBackendThread *thread, gpointer data)
 {
 	FindData *d = (FindData*) data;
+	PkBackend *backend;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	find_packages_real (backend, d->search, d->filter, d->mode);
 
@@ -253,15 +260,19 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->mode = mode;
-		pk_backend_thread_create (backend, backend_find_packages_thread, data);
+		pk_backend_thread_create (thread, backend_find_packages_thread, data);
 	}
 }
 
 static gboolean
-backend_get_updates_thread (PkBackend *backend, gpointer data)
+backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 {
 	GList *list = NULL;
 	sqlite3 *db = NULL;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -277,8 +288,13 @@ backend_get_updates_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_update_system_thread (PkBackend *backend, gpointer data)
+backend_update_system_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	box_upgrade_dist("/", common_progress, backend);
@@ -288,11 +304,15 @@ backend_update_system_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_install_package_thread (PkBackend *backend, gpointer data)
+backend_install_package_thread (PkBackendThread *thread, gpointer data)
 {
 	ThreadData *d = (ThreadData*) data;
 	gboolean result;
 	PkPackageId *pi;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -316,10 +336,14 @@ backend_install_package_thread (PkBackend *backend, gpointer data)
 
 
 static gboolean
-backend_install_file_thread (PkBackend *backend, gpointer data)
+backend_install_file_thread (PkBackendThread *thread, gpointer data)
 {
 	ThreadData *d = (ThreadData*) data;
 	gboolean result;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -333,13 +357,17 @@ backend_install_file_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_get_description_thread (PkBackend *backend, gpointer data)
+backend_get_description_thread (PkBackendThread *thread, gpointer data)
 {
 	PkPackageId *pi;
 	PackageSearch *ps;
 	GList *list;
 	ThreadData *d = (ThreadData*) data;
 	sqlite3 *db;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	db = db_open();
 
@@ -383,12 +411,16 @@ backend_get_description_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_get_files_thread (PkBackend *backend, gpointer data)
+backend_get_files_thread (PkBackendThread *thread, gpointer data)
 {
 	PkPackageId *pi;
 	ThreadData *d = (ThreadData*) data;
 	gchar *files;
 	sqlite3 *db;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	db = db_open();
 
@@ -420,12 +452,16 @@ backend_get_files_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
+backend_get_depends_requires_thread (PkBackendThread *thread, gpointer data)
 {
 	PkPackageId *pi;
 	GList *list = NULL;
 	ThreadData *d = (ThreadData*) data;
 	sqlite3 *db;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	db = db_open ();
 
@@ -459,10 +495,14 @@ backend_get_depends_requires_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend, gpointer data)
+backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 {
 	ThreadData *d = (ThreadData*) data;
 	PkPackageId *pi;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
@@ -474,7 +514,7 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 
-	if (!box_package_uninstall (pi->name, "/", common_progress, backend))
+	if (!box_package_uninstall (pi->name, "/", common_progress, backend, FALSE))
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
 	}
@@ -488,8 +528,13 @@ backend_remove_package_thread (PkBackend *backend, gpointer data)
 }
 
 static gboolean
-backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
     	box_repos_sync(common_progress, backend);
@@ -507,6 +552,10 @@ static void
 backend_initalize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+
+	thread = pk_backend_thread_new ();
+	pk_backend_thread_set_backend (thread, backend);
+	network = pk_network_new ();
 }
 
 /**
@@ -516,6 +565,9 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+   
+	g_object_unref (thread);
+	g_object_unref (network);
 }
 
 /**
@@ -548,7 +600,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	} else {
 		data->package_id = g_strdup(package_id);
 		data->type = DEPS_TYPE_DEPENDS;
-		pk_backend_thread_create (backend, backend_get_depends_requires_thread, data);
+		pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
 	}
 }
 
@@ -567,7 +619,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (backend, backend_get_description_thread, data);
+		pk_backend_thread_create (thread, backend_get_description_thread, data);
 	}
 }
 
@@ -586,7 +638,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (backend, backend_get_files_thread, data);
+		pk_backend_thread_create (thread, backend_get_files_thread, data);
 	}
 }
 
@@ -606,7 +658,7 @@ backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recu
 	} else {
 		data->package_id = g_strdup(package_id);
 		data->type = DEPS_TYPE_REQUIRES;
-		pk_backend_thread_create (backend, backend_get_depends_requires_thread, data);
+		pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
 	}
 }
 
@@ -617,7 +669,7 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (backend, backend_get_updates_thread, NULL);
+	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
 }
 
 
@@ -631,7 +683,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
@@ -642,7 +694,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (backend, backend_install_package_thread, data);
+		pk_backend_thread_create (thread, backend_install_package_thread, data);
 	}
 }
 
@@ -661,7 +713,7 @@ backend_install_file (PkBackend *backend, const gchar *file)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(file);
-		pk_backend_thread_create (backend, backend_install_file_thread, data);
+		pk_backend_thread_create (thread, backend_install_file_thread, data);
 	}
 }
 
@@ -673,12 +725,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
 	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_thread_create (backend, backend_refresh_cache_thread, NULL);
+	pk_backend_thread_create (thread, backend_refresh_cache_thread, NULL);
 }
 
 /**
@@ -698,7 +750,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	}
 	data->package_id = g_strdup (package_id);
     
-	pk_backend_thread_create (backend, backend_remove_package_thread, data);
+	pk_backend_thread_create (thread, backend_remove_package_thread, data);
 }
 
 /**
@@ -751,7 +803,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
 		pk_backend_finished (backend);
 		return;
@@ -762,7 +814,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (backend, backend_install_package_thread, data);
+		pk_backend_thread_create (thread, backend_install_package_thread, data);
 	}
 }
 
@@ -773,7 +825,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (backend, backend_update_system_thread, NULL);
+	pk_backend_thread_create (thread, backend_update_system_thread, NULL);
 }
 
 /**
