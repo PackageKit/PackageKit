@@ -28,10 +28,11 @@ import types
 from enums import *
 import gobject
 import os
+from pkdbus import PackageKitDbusInterface
 
 # Classes
 
-class PackageKitBaseBackend:
+class PackageKitBaseBackend(PackageKitDbusInterface):
 
     def __init__(self,cmds):
         self.daemonize()
