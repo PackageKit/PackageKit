@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.freedesktop.PackageKitDbus
+Exec=@servicedir@/PackageKitDbusTest.py
+User=root
+

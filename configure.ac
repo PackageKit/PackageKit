@@ -499,6 +499,7 @@ backends/smart/Makefile
 backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
+backends/test/helpers/org.freedesktop.PackageKitDbus.service
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/pisi/Makefile

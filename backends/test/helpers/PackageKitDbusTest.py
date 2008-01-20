@@ -17,13 +17,13 @@ import dbus.glib
 import dbus.service
 import gobject
 
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitYum'
-PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYum'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitYum'
+PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitDbus'
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitDbus'
+PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitDbus'
 
-#sudo dbus-send --system --dest=org.freedesktop.PackageKitYum --type=method_call --print-reply /org/freedesktop/PackageKitYum org.freedesktop.PackageKitYum.SearchName string:filter string:search
+#sudo dbus-send --system --dest=org.freedesktop.PackageKitDbus --type=method_call --print-reply /org/freedesktop/PackageKitDbus org.freedesktop.PackageKitDbus.SearchName string:filter string:search
 
-class PackageKitYumService(dbus.service.Object):
+class PackageKitDbusService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='i', out_signature='')
     def exit(self, source):
@@ -44,7 +44,7 @@ class PackageKitYumService(dbus.service.Object):
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
-manager = PackageKitYumService(bus_name, PACKAGEKIT_DBUS_PATH)
+manager = PackageKitDbusService(bus_name, PACKAGEKIT_DBUS_PATH)
 
 mainloop = gobject.MainLoop()
 mainloop.run()
