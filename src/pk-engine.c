@@ -636,16 +636,16 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
  * pk_engine_caller_active_changed_cb:
  **/
 static void
-pk_engine_caller_active_changed_cb (PkBackend *backend, gboolean is_active, PkEngine *engine)
+pk_engine_caller_active_changed_cb (PkRunner *runner, gboolean is_active, PkEngine *engine)
 {
 	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	c_tid = pk_runner_get_tid (runner);
 	if (c_tid == NULL) {
-		pk_warning ("could not get current tid from backend");
+		pk_warning ("could not get current tid from runner");
 		return;
 	}
 
