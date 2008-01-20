@@ -2693,9 +2693,9 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
 				     G_CALLBACK (pk_client_progress_changed_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "TransactionStatusChanged",
+	dbus_g_proxy_add_signal (proxy, "StatusChanged",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "TransactionStatusChanged",
+	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
 				     G_CALLBACK (pk_client_status_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
