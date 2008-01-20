@@ -120,6 +120,7 @@ dnl - Make paths available for source files
 dnl ---------------------------------------------------------------------------
 AC_SUBST(SYSCONFDIR, $sysconfdir)
 AC_SUBST(LIBDIR, $libdir)
+AC_SUBST(LIBEXECDIR, $libexecdir)
 AC_SUBST(DATADIR, $datadir)
 AC_SUBST(BINDIR, $bindir)
 AC_SUBST(SBINDIR, $sbindir)

@@ -3,6 +3,11 @@ helperdir = $(datadir)/PackageKit/helpers/test_spawn
 
 NULL =
 
+dbusinstancedir = $(LIBEXECDIR)
+dbusinstance_DATA =					\
+	PackageKitDbusTest.py				\
+	$(NULL)
+
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = org.freedesktop.PackageKitDbus.conf
 
