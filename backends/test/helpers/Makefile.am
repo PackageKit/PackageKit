@@ -15,8 +15,12 @@ servicedir       = $(DBUS_SERVICES_DIR)
 service_in_files = org.freedesktop.PackageKitDbus.service.in
 service_DATA     = $(service_in_files:.service.in=.service)
 
-dist_helper_DATA = 			\
-	search-name.sh			\
+dist_helper_DATA = 					\
+	search-name.sh					\
+	$(NULL)
+
+EXTRA_DIST =						\
+	$(dbusinstance_DATA)				\
 	$(NULL)
 
 install-data-hook:
