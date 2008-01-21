@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-thread.h>
 #include <pk-debug.h>
 
 
@@ -298,7 +299,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_get_description_thread,
 		g_strdup (package_id));
 }
@@ -333,7 +334,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_no_percentage_updates (backend);
 
 
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_refresh_cache_thread,
 		NULL);
 }
@@ -416,7 +417,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	params[0] = g_strdup (search);
 	params[1] = GINT_TO_POINTER (filter_enum);
 
-	pk_backend_thread_create (backend,(PkBackendThreadFunc) backend_search_name_thread, params);
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_name_thread, params);
 }
 
 static gboolean
@@ -448,7 +449,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	pk_backend_no_percentage_updates (backend);
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_install_package_thread,
 		g_strdup (package_id));
 }
@@ -483,7 +484,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
 	/* TODO: allow_deps is currently ignored */
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_remove_package_thread,
 		g_strdup (package_id));
 
@@ -528,7 +529,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_update_system_thread,
 		NULL);
 }
@@ -639,7 +640,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_get_depends_thread,
 		g_strdup (package_id));
 }
@@ -696,7 +697,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_update_package_thread,
 		g_strdup (package_id));
 }
@@ -758,7 +759,7 @@ backend_get_updates (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (backend,
+	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_get_updates_thread,
 		NULL);
 }
