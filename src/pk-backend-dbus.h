@@ -51,9 +51,47 @@ typedef struct
 /* general */
 GType		 pk_backend_dbus_get_type		(void);
 PkBackendDbus	*pk_backend_dbus_new			(void);
+gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus	*backend_dbus,
+							 gboolean	 force);
+gboolean	 pk_backend_dbus_update_system		(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_resolve		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 const gchar	*package);
+gboolean	 pk_backend_dbus_rollback		(PkBackendDbus	*backend_dbus,
+							 const gchar	*transaction_id);
 gboolean	 pk_backend_dbus_search_name		(PkBackendDbus	*backend_dbus,
 							 const gchar	*filter,
 							 const gchar	*search);
+gboolean	 pk_backend_dbus_search_details		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 const gchar	*search);
+gboolean	 pk_backend_dbus_search_group		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 const gchar	*search);
+gboolean	 pk_backend_dbus_search_file		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 const gchar	*search);
+gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_get_description	(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_get_files		(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_remove_package		(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id,
+							 gboolean	 allow_deps);
+gboolean	 pk_backend_dbus_install_package	(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_update_package		(PkBackendDbus	*backend_dbus,
+							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
+							 const gchar	*full_path);
 gboolean	 pk_backend_dbus_kill			(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_set_name		(PkBackendDbus	*backend_dbus,
 							 const gchar	*service,

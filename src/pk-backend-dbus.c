@@ -189,6 +189,131 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 	return ret;
 }
 
+
+/**
+ * pk_backend_dbus_refresh_cache:
+ **/
+gboolean
+pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RefreshCache", &error,
+				 G_TYPE_BOOLEAN, force,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_update_system:
+ **/
+gboolean
+pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdateSystem", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_resolve:
+ **/
+gboolean
+pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_rollback:
+ **/
+gboolean
+pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Rollback", &error,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
 /**
  * pk_backend_dbus_search_name:
  **/
@@ -208,6 +333,390 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_search_details:
+ **/
+gboolean
+pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchDetails", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_search_group:
+ **/
+gboolean
+pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchGroup", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_search_file:
+ **/
+gboolean
+pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchFile", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_depends:
+ **/
+gboolean
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_requires:
+ **/
+gboolean
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_update_detail:
+ **/
+gboolean
+pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdateDetail", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_description:
+ **/
+gboolean
+pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDescription", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_files:
+ **/
+gboolean
+pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetFiles", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_remove_package:
+ **/
+gboolean
+pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, allow_deps,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_install_package:
+ **/
+gboolean
+pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_update_package:
+ **/
+gboolean
+pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_install_file:
+ **/
+gboolean
+pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_path)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+				 G_TYPE_STRING, full_path,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (ret == FALSE) {
+		pk_backend_dbus_unlock (backend_dbus);
+	}
+
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
