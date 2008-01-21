@@ -89,6 +89,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 			  const gchar *interface, const gchar *path)
 {
 	DBusGProxy *proxy;
+	gboolean ret;
+	GError *error = NULL;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 
@@ -113,6 +115,16 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 	backend_dbus->priv->service = g_strdup (service);
 	backend_dbus->priv->interface = g_strdup (interface);
 	backend_dbus->priv->path = g_strdup (path);
+
+	/* manually init the backend, which should get things spawned for us */
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+
 	return TRUE;
 }
 
@@ -128,8 +140,7 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Exit", &error,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
@@ -151,8 +162,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchName", &error,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);

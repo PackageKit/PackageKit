@@ -26,6 +26,11 @@ PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitDbus'
 class PackageKitDbusService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
+    def Init(self):
+        print 'we have started!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
     def Exit(self):
         sys.exit(0)
 
