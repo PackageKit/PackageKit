@@ -51,7 +51,7 @@ class PackageKitDbusService(dbus.service.Object):
         self.Finished(0)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='i')
+                         signature='u')
     def Finished(self, exit):
         print "Finished (%d)" % (exit)
 

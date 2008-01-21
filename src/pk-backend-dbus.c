@@ -143,8 +143,45 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 	/* grab this */
 	proxy = dbus_g_proxy_new_for_name (backend_dbus->priv->connection,
 					   service, path, interface);
+
+	dbus_g_proxy_add_signal (proxy, "RepoDetail",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "StatusChanged",
+				 G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "PercentageChanged",
+				 G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "SubPercentageChanged",
+				 G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Package",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Description",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Files",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
-				 G_TYPE_INT, G_TYPE_INVALID);
+				 G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "AllowInterrupt",
+				 G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "ErrorCode",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "RequireRestart",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Message",
+				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "UpdatesChanged", G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "Locked",
+				 G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_UINT, G_TYPE_INVALID);
+
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_backend_dbus_finished_cb), backend_dbus, NULL);
 	backend_dbus->priv->proxy = proxy;
