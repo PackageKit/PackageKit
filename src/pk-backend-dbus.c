@@ -122,15 +122,19 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 gboolean
 pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 {
-#if 0
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
-	if (backend_dbus->priv->dbus == NULL) {
-		pk_warning ("cannot kill missing process");
-		return FALSE;
+
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Exit", &error,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
 	}
-	pk_dbus_kill (backend_dbus->priv->dbus);
-#endif
-	return TRUE;
+	return ret;
 }
 
 /**

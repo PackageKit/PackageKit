@@ -636,16 +636,16 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
  * pk_engine_caller_active_changed_cb:
  **/
 static void
-pk_engine_caller_active_changed_cb (PkBackend *backend, gboolean is_active, PkEngine *engine)
+pk_engine_caller_active_changed_cb (PkRunner *runner, gboolean is_active, PkEngine *engine)
 {
 	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	c_tid = pk_backend_get_current_tid (engine->priv->backend);
+	c_tid = pk_runner_get_tid (runner);
 	if (c_tid == NULL) {
-		pk_warning ("could not get current tid from backend");
+		pk_warning ("could not get current tid from runner");
 		return;
 	}
 
@@ -2510,14 +2510,17 @@ pk_engine_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const gcha
 			  gboolean succeeded, PkRoleEnum role, guint duration,
 			  const gchar *data, PkEngine *engine)
 {
+	PkTransactionItem *item;
 	const gchar *role_text;
-	const gchar *tid;
 
-//	tid = engine->priv->sync_tid;
-	tid = "foo";
+	item = engine->priv->sync_item;
+	if (item == NULL) {
+		pk_warning ("no sync tid");
+		return;
+	}
 	role_text = pk_role_enum_to_text (role);
-	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", tid, old_tid, timespec, succeeded, role_text, duration, data);
-	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, tid, old_tid, timespec, succeeded, role_text, duration, data);
+	pk_debug ("emitting transaction %s, %s, %s, %i, %s, %i, %s", item->tid, old_tid, timespec, succeeded, role_text, duration, data);
+	g_signal_emit (engine, signals [PK_ENGINE_TRANSACTION], 0, item->tid, old_tid, timespec, succeeded, role_text, duration, data);
 }
 
 /**

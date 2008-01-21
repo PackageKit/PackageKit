@@ -77,6 +77,17 @@ pk_monitor_require_restart_cb (PkClient *client, PkRestartEnum restart, const gc
 }
 
 /**
+ * pk_monitor_status_changed_cb:
+ **/
+static void
+pk_monitor_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tStatus: %s\n", tid, pk_status_enum_to_text (status));
+	g_free (tid);
+}
+
+/**
  * pk_monitor_finished_cb:
  **/
 static void
@@ -157,6 +168,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_message_cb), NULL);
 	g_signal_connect (client, "require-restart",
 			  G_CALLBACK (pk_monitor_require_restart_cb), NULL);
+	g_signal_connect (client, "status-changed",
+			  G_CALLBACK (pk_monitor_status_changed_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",

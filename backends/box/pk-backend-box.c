@@ -554,7 +554,6 @@ backend_initalize (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 
 	thread = pk_backend_thread_new ();
-	pk_backend_thread_set_backend (thread, backend);
 	network = pk_network_new ();
 }
 

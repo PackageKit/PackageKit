@@ -57,7 +57,7 @@ class PackageKit(PackageKitDbusInterface):
 			self.Finished(args[0],args[1],args[2])
 		elif kwargs['member'] == "ProgressChanged":
 			self.ProgressChanged(args[0], float(args[1])+(float(args[2])/100.0),args[3],args[4])
-		elif kwargs['member'] == "TransactionStatusChanged":
+		elif kwargs['member'] == "StatusChanged":
 			self.JobStatus(args[0], args[1])
 		elif kwargs['member'] == "Package":
 			self.Package(args[0],args[1],args[2],args[3])

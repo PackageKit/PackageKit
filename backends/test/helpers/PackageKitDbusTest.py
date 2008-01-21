@@ -25,22 +25,14 @@ PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitDbus'
 
 class PackageKitDbusService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='i', out_signature='')
-    def exit(self, source):
-        if source != 1:
-            print 'foo'
-            return
-        print 'bar'
+                         in_signature='', out_signature='')
+    def Exit(self):
+        sys.exit(0)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
     def SearchName(self, filterx, search):
         print 'filter'
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-        in_signature='', out_signature='i')
-    def get_display_brightness(self):
-        return 666
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)

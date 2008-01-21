@@ -59,8 +59,6 @@ gboolean	 pk_backend_thread_create		(PkBackendThread	*backend_thread,
 							 PkBackendThreadFunc	 func,
 							 gpointer		 data);
 PkBackend	*pk_backend_thread_get_backend		(PkBackendThread	*backend_thread);
-gboolean	 pk_backend_thread_set_backend		(PkBackendThread	*backend_thread,
-							 PkBackend		*backend);
 
 
 G_END_DECLS

@@ -346,7 +346,7 @@ pk_runner_get_depends (PkRunner *runner, const gchar *package_id, gboolean recur
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_depends == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetDepends");
+		pk_debug ("Not implemented yet: GetDepends");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -363,7 +363,7 @@ pk_runner_get_update_detail (PkRunner *runner, const gchar *package_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_update_detail == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetUpdateDetail");
+		pk_debug ("Not implemented yet: GetUpdateDetail");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -379,7 +379,7 @@ pk_runner_get_description (PkRunner *runner, const gchar *package_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_description == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetDescription");
+		pk_debug ("Not implemented yet: GetDescription");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -395,7 +395,7 @@ pk_runner_get_files (PkRunner *runner, const gchar *package_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_files == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetFiles");
+		pk_debug ("Not implemented yet: GetFiles");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -411,7 +411,7 @@ pk_runner_get_requires (PkRunner *runner, const gchar *package_id, gboolean recu
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_requires == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetRequires");
+		pk_debug ("Not implemented yet: GetRequires");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -428,7 +428,7 @@ pk_runner_get_updates (PkRunner *runner)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_updates == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetUpdates");
+		pk_debug ("Not implemented yet: GetUpdates");
 		return FALSE;
 	}
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_UPDATES);
@@ -443,7 +443,7 @@ pk_runner_install_package (PkRunner *runner, const gchar *package_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->install_package == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "InstallPackage");
+		pk_debug ("Not implemented yet: InstallPackage");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -459,7 +459,7 @@ pk_runner_install_file (PkRunner *runner, const gchar *full_path)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->install_file == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "InstallFile");
+		pk_debug ("Not implemented yet: InstallFile");
 		return FALSE;
 	}
 	runner->priv->cached_full_path = g_strdup (full_path);
@@ -475,7 +475,7 @@ pk_runner_refresh_cache (PkRunner *runner, gboolean force)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->refresh_cache == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "RefreshCache");
+		pk_debug ("Not implemented yet: RefreshCache");
 		return FALSE;
 	}
 	runner->priv->cached_force = force;
@@ -491,7 +491,7 @@ pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean al
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->remove_package == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "RemovePackage");
+		pk_debug ("Not implemented yet: RemovePackage");
 		return FALSE;
 	}
 	runner->priv->cached_allow_deps = allow_deps;
@@ -508,7 +508,7 @@ pk_runner_resolve (PkRunner *runner, const gchar *filter, const gchar *package)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->resolve == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "Resolve");
+		pk_debug ("Not implemented yet: Resolve");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package);
@@ -525,7 +525,7 @@ pk_runner_rollback (PkRunner *runner, const gchar *transaction_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->rollback == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "Rollback");
+		pk_debug ("Not implemented yet: Rollback");
 		return FALSE;
 	}
 	runner->priv->cached_transaction_id = g_strdup (transaction_id);
@@ -541,7 +541,7 @@ pk_runner_search_details (PkRunner *runner, const gchar *filter, const gchar *se
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->search_details == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "SearchDetails");
+		pk_debug ("Not implemented yet: SearchDetails");
 		return FALSE;
 	}
 	runner->priv->cached_filter = g_strdup (filter);
@@ -558,7 +558,7 @@ pk_runner_search_file (PkRunner *runner, const gchar *filter, const gchar *searc
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->search_file == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "SearchFile");
+		pk_debug ("Not implemented yet: SearchFile");
 		return FALSE;
 	}
 	runner->priv->cached_filter = g_strdup (filter);
@@ -575,7 +575,7 @@ pk_runner_search_group (PkRunner *runner, const gchar *filter, const gchar *sear
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->search_group == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "SearchGroup");
+		pk_debug ("Not implemented yet: SearchGroup");
 		return FALSE;
 	}
 	runner->priv->cached_filter = g_strdup (filter);
@@ -592,7 +592,7 @@ pk_runner_search_name (PkRunner *runner, const gchar *filter, const gchar *searc
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->search_name == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "SearchName");
+		pk_debug ("Not implemented yet: SearchName");
 		return FALSE;
 	}
 	runner->priv->cached_filter = g_strdup (filter);
@@ -609,7 +609,7 @@ pk_runner_update_package (PkRunner *runner, const gchar *package_id)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->update_package == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "UpdatePackage");
+		pk_debug ("Not implemented yet: UpdatePackage");
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
@@ -625,7 +625,7 @@ pk_runner_update_system (PkRunner *runner)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->update_system == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "UpdateSystem");
+		pk_debug ("Not implemented yet: UpdateSystem");
 		return FALSE;
 	}
 	pk_runner_set_role (runner, PK_ROLE_ENUM_UPDATE_SYSTEM);
@@ -640,7 +640,7 @@ pk_runner_get_repo_list (PkRunner *runner)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_repo_list == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "GetRepoList");
+		pk_debug ("Not implemented yet: GetRepoList");
 		return FALSE;
 	}
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_REPO_LIST);
@@ -655,7 +655,7 @@ pk_runner_repo_enable (PkRunner *runner, const gchar	*repo_id, gboolean enabled)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->repo_enable == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "RepoEnable");
+		pk_debug ("Not implemented yet: RepoEnable");
 		return FALSE;
 	}
 	runner->priv->cached_repo_id = g_strdup (repo_id);
@@ -672,7 +672,7 @@ pk_runner_repo_set_data (PkRunner *runner, const gchar *repo_id, const gchar *pa
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->repo_set_data == NULL) {
-		pk_backend_not_implemented_yet (runner->priv->backend, "RepoSetData");
+		pk_debug ("Not implemented yet: RepoSetData");
 		return FALSE;
 	}
 	runner->priv->cached_repo_id = g_strdup (repo_id);

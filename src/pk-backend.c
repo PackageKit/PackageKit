@@ -578,9 +578,8 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 
 	/* did we set a duplicate error? */
 	if (backend->priv->set_error == TRUE) {
-		g_print ("pk_backend_error_code was used more than once in the same backend backend!\n");
-		g_print ("You tried to set '%s'\n", buffer);
-		pk_warning ("Internal error");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "More than one error emitted! You tried to set '%s'", buffer);
 		return FALSE;
 	}
 	backend->priv->set_error = TRUE;
@@ -745,6 +744,11 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* this function is only valid when we have a running transaction */
+	if (backend->priv->c_tid != NULL) {
+		pk_error ("only valid when we have a running transaction");
+		return FALSE;
+	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
 	backend->priv->exit = PK_EXIT_ENUM_FAILED;
@@ -939,6 +943,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
+	pk_time_reset (backend->priv->time);
 
 	return TRUE;
 }

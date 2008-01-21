@@ -2634,7 +2634,7 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
 					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
-	/* TransactionStatusChanged */
+	/* StatusChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	/* Finished */
@@ -2693,9 +2693,9 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "ProgressChanged",
 				     G_CALLBACK (pk_client_progress_changed_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "TransactionStatusChanged",
+	dbus_g_proxy_add_signal (proxy, "StatusChanged",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "TransactionStatusChanged",
+	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
 				     G_CALLBACK (pk_client_status_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
@@ -2795,7 +2795,7 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_finished_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
 				        G_CALLBACK (pk_client_progress_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "TransactionStatusChanged",
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
 				        G_CALLBACK (pk_client_status_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",
 				        G_CALLBACK (pk_client_updates_changed_cb), client);

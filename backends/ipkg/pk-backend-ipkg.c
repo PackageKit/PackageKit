@@ -30,6 +30,8 @@
 #define IPKG_LIB
 #include <libipkg.h>
 
+static PkBackendThread *thread;
+
 /* this is implemented in libipkg.a */
 int ipkg_upgrade_pkg(ipkg_conf_t *conf, pkg_t *old);
 
@@ -204,6 +206,9 @@ backend_initalize (PkBackend *backend)
 	int err;
 	g_return_if_fail (backend != NULL);
 
+	/* we use the thread helper */
+	thread = pk_backend_thread_new ();
+
 	/* reference count for the global variables */
 	if (++ref > 1)
 		return;
@@ -243,6 +248,8 @@ backend_destroy (PkBackend *backend)
 	if (--ref > 0)
 		return;
 
+	g_object_unref (thread);
+
 	/* this appears to (sometimes) be freed elsewhere, perhaps
 	 * by the functions in libipkg.c */
 	/* ipkg_conf_deinit (&global_conf); */
@@ -253,10 +260,14 @@ backend_destroy (PkBackend *backend)
 
 
 static gboolean
-backend_get_description_thread (PkBackend *backend, gchar *package_id)
+backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 {
 	pkg_t *pkg;
 	PkPackageId *pi;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 	pi = pk_package_id_new_from_string (package_id);
 
 	if (!pi->name || !pi->version)
@@ -293,9 +304,13 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 {
 	int ret;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	ret = ipkg_lists_update (&args);
 	if (ret) {
@@ -327,13 +342,17 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_search_name:
  */
 static gboolean
-backend_search_name_thread (PkBackend *backend, gchar *params[2])
+backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 {
 	int i;
 	pkg_vec_t *available;
 	pkg_t *pkg;
 	gchar *search;
 	gint filter;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	search = params[0];
 	filter = GPOINTER_TO_INT (params[1]);
@@ -401,10 +420,14 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 static gboolean
-backend_install_package_thread (PkBackend *backend, gchar *package_id)
+backend_install_package_thread (PkBackendThread *thread, gchar *package_id)
 {
 	PkPackageId *pi;
 	gint err;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -431,10 +454,14 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend, gchar *package_id)
+backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
 {
 	PkPackageId *pi;
 	gint err;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -478,10 +505,15 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 
 
 static gboolean
-backend_update_system_thread (PkBackend *backend, gpointer data)
+backend_update_system_thread (PkBackendThread *thread, gpointer data)
 {
 	gint err;
 	err = ipkg_packages_upgrade (&args);
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
 	if (err)
 		ipkg_unknown_error (backend, err, "Upgrading system");
 
@@ -506,12 +538,16 @@ backend_update_system (PkBackend *backend)
  */
 
 static gboolean
-backend_get_depends_thread (PkBackend *backend, gchar *package_id)
+backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 {
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
 	GRegex *regex;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -612,11 +648,15 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
  * backend_update_package:
  */
 static gboolean
-backend_update_package_thread (PkBackend *backend, gchar *package_id)
+backend_update_package_thread (PkBackendThread *thread, gchar *package_id)
 {
 	PkPackageId *pi;
 	pkg_t *pkg;
 	gint err = 0;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -666,11 +706,14 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
  */
 
 static gboolean
-backend_get_updates_thread (PkBackend *backend, gpointer data)
+backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 {
 	pkg_vec_t *installed;
 	gint i;
+	PkBackend *backend;
 
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
 
 	installed = pkg_vec_alloc();
 

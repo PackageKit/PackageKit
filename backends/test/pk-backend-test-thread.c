@@ -36,8 +36,9 @@ backend_initalize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
+
+	/* we use the thread helper */
 	thread = pk_backend_thread_new ();
-	pk_backend_thread_set_backend (thread, backend);
 }
 
 /**
@@ -62,12 +63,14 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* emit */
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
