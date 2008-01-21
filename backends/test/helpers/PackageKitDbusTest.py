@@ -33,6 +33,12 @@ class PackageKitDbusService(dbus.service.Object):
                          in_signature='ss', out_signature='')
     def SearchName(self, filterx, search):
         print 'filter'
+        self.Finished(0)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='i')
+    def Finished(self, exit):
+        print "%d exit status" % (exit)
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
