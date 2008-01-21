@@ -72,17 +72,58 @@ struct PkBackendDbusPrivate
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
 
 /**
+ * pk_backend_dbus_lock:
+ **/
+static gboolean
+pk_backend_dbus_lock (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Lock", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_unlock:
+ **/
+static gboolean
+pk_backend_dbus_unlock (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Unlock", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
  * pk_backend_dbus_finished_cb:
  **/
 static void
 pk_backend_dbus_finished_cb (DBusGProxy *proxy, PkExitEnum exit, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("deleting dbus %p, exit %s", backend_dbus, pk_exit_enum_to_text (exit));
+	pk_backend_dbus_unlock (backend_dbus);
 	pk_backend_finished (backend_dbus->priv->backend);
 }
 
 /**
- * pk_backend_dbus_kill:
+ * pk_backend_dbus_set_name:
  **/
 gboolean
 pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
@@ -159,6 +200,10 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchName", &error,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,

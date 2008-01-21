@@ -27,7 +27,17 @@ class PackageKitDbusService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
-        print 'we have started!'
+        print 'Init!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Lock(self):
+        print 'Lock!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Unlock(self):
+        print 'Unlock!'
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -43,7 +53,7 @@ class PackageKitDbusService(dbus.service.Object):
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='i')
     def Finished(self, exit):
-        print "%d exit status" % (exit)
+        print "Finished (%d)" % (exit)
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
