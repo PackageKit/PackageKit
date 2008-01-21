@@ -182,8 +182,46 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_UINT, G_TYPE_INVALID);
 
+	/* add callbacks */
+#if 0
+	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
+				     G_CALLBACK (pk_backend_dbus_repo_detail_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "StatusChanged",
+				     G_CALLBACK (pk_backend_dbus_status_changed_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "PercentageChanged",
+				     G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "SubPercentageChanged",
+				     G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "NoPercentageChanged",
+				     G_CALLBACK (pk_backend_dbus_no_percentage_changed_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Package",
+				     G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Description",
+				     G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Files",
+				     G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
+				     G_CALLBACK (pk_backend_dbus_update_detail_cb), backend_dbus, NULL);
+#endif
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_backend_dbus_finished_cb), backend_dbus, NULL);
+#if 0
+	dbus_g_proxy_connect_signal (proxy, "AllowInterrupt",
+				     G_CALLBACK (pk_backend_dbus_allow_interrupt_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
+				     G_CALLBACK (pk_backend_dbus_error_code_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RequireRestart",
+				     G_CALLBACK (pk_backend_dbus_require_restart_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Message",
+				     G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "UpdatesChanged",
+				     G_CALLBACK (pk_backend_dbus_updates_changed_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Locked",
+				     G_CALLBACK (pk_backend_dbus_locked_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
+				     G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus, NULL);
+#endif
+
 	backend_dbus->priv->proxy = proxy;
 
 	/* save for later */
