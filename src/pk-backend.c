@@ -381,7 +381,7 @@ gboolean
 pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *updates, const gchar *obsoletes,
 			  const gchar *vendor_url, const gchar *bugzilla_url,
-			  const gchar *cve_url, const gchar *restart,
+			  const gchar *cve_url, PkRestartEnum restart,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
@@ -392,7 +392,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
 
-	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
+	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %i, %s",
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text_safe);
@@ -862,9 +862,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	signals [PK_BACKEND_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

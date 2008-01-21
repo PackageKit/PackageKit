@@ -268,10 +268,11 @@ static void
 pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 			    const gchar *updates, const gchar *obsoletes,
 			    const gchar *vendor_url, const gchar *bugzilla_url,
-			    const gchar *cve_url, const gchar *restart,
+			    const gchar *cve_url, PkRestartEnum restart,
 			    const gchar *update_text, PkEngine *engine)
 {
 	const gchar *c_tid;
+	const gchar *restart_text;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -281,10 +282,11 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 		pk_warning ("could not get current tid from backend");
 		return;
 	}
+	restart_text = pk_restart_enum_to_text (restart);
 	pk_debug ("emitting package tid:%s value=%s, %s, %s, %s, %s, %s, %s, %s", c_tid,
-		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
+		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	g_signal_emit (engine, signals [PK_ENGINE_UPDATE_DETAIL], 0, c_tid,
-		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text);
+		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	pk_engine_reset_timer (engine);
 }
 

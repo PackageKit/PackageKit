@@ -79,7 +79,7 @@ gboolean	 pk_backend_update_detail		(PkBackend	*backend,
 							 const gchar	*vendor_url,
 							 const gchar	*bugzilla_url,
 							 const gchar	*cve_url,
-							 const gchar	*restart,
+							 PkRestartEnum	 restart,
 							 const gchar	*update_text);
 gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 							 PkRestartEnum	 restart,

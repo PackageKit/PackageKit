@@ -85,6 +85,7 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 	gchar *command;
 	gboolean ret = TRUE;
 	PkInfoEnum info;
+	PkRestartEnum restart;
 	PkGroupEnum group;
 	gulong package_size;
 
@@ -166,9 +167,16 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			ret = FALSE;
 			goto out;
 		}
+		restart = pk_restart_enum_from_text (sections[7]);
+		if (restart == PK_RESTART_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_update_detail (backend_spawn->priv->backend, sections[1], sections[2],
 					  sections[3], sections[4], sections[5],
-					  sections[6], sections[7], sections[8]);
+					  sections[6], restart, sections[8]);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
