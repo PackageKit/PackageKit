@@ -16,12 +16,14 @@ pmutils_DATA = 95packagekit
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
 dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf			\
+	org.freedesktop.PackageKitTestBackend.conf	\
 	org.freedesktop.PackageKitYumBackend.conf	\
 	$(NULL)
 
 servicedir       = $(DBUS_SERVICES_DIR)
 service_in_files = 					\
 	org.freedesktop.PackageKit.service.in		\
+	org.freedesktop.PackageKitTestBackend.service.in \
 	org.freedesktop.PackageKitYumBackend.service.in	\
 	$(NULL)
 service_DATA     = $(service_in_files:.service.in=.service)
@@ -42,6 +44,7 @@ database_DATA =						\
 EXTRA_DIST =						\
 	95packagekit					\
 	org.freedesktop.PackageKit.conf.in		\
+	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitYumBackend.conf.in	\
 	packagekit.pc.in				\
 	$(service_in_files)				\

@@ -17,13 +17,13 @@ import dbus.glib
 import dbus.service
 import gobject
 
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitDbus'
-PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitDbus'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitDbus'
+PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitTestBackend'
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitTestBackend'
+PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitTestBackend'
 
-#sudo dbus-send --system --dest=org.freedesktop.PackageKitDbus --type=method_call --print-reply /org/freedesktop/PackageKitDbus org.freedesktop.PackageKitDbus.SearchName string:filter string:search
+#sudo dbus-send --system --dest=org.freedesktop.PackageKitTestBackend --type=method_call --print-reply /org/freedesktop/PackageKitTestBackend org.freedesktop.PackageKitTestBackend.SearchName string:filter string:search
 
-class PackageKitDbusService(dbus.service.Object):
+class PackageKitTestBackendService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
@@ -57,7 +57,7 @@ class PackageKitDbusService(dbus.service.Object):
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
-manager = PackageKitDbusService(bus_name, PACKAGEKIT_DBUS_PATH)
+manager = PackageKitTestBackendService(bus_name, PACKAGEKIT_DBUS_PATH)
 
 mainloop = gobject.MainLoop()
 mainloop.run()
