@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,12 +20,15 @@
 #    Seth Vidal <skvidal@fedoraproject.org>
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
+#    Robin Norwood <rnorwood@redhat.com>
 
 # imports
 
 import re
 
-from packagekit.deamonBackend import *
+from packagekit.daemonBackend import PackageKitBaseBackend
+from packagekit.enums import *
+from packagekit.daemonBackend import PackagekitProgress
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
 from yum.rpmtrans import RPMBaseCallback
@@ -38,7 +42,6 @@ import types
 import signal
 import time
 import os.path
-from packagekit.deamonBackend import PackagekitProgress
 
 # Global vars
 yumbase = None
@@ -218,9 +221,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
-    def __init__(self,args,lock=True):
+    def __init__(self,lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
-        PackageKitBaseBackend.__init__(self,args)
+        PackageKitBaseBackend.__init__(self)
         self.yumbase = PackageKitYumBase()
         yumbase = self.yumbase
         self._setup_yum()
@@ -1381,3 +1384,6 @@ class PackageKitYumBase(yum.YumBase):
         '''
         # TODO: Add code here to send the RepoSignatureRequired signal
         return False
+
+if __name__ == '__main__':
+    backend = PackageKitYumBackend()

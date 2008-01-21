@@ -30,7 +30,10 @@ from pkexceptions import PackageKitBackendFailure
 
 class PackageKit(PackageKitDbusInterface):
 	def __init__(self):
-		PackageKitDbusInterface.__init__(self, 'org.freedesktop.PackageKit')
+		PackageKitDbusInterface.__init__(self,
+						 'org.freedesktop.PackageKit',
+						 'org.freedesktop.PackageKit',
+						 '/org/freedesktop/PackageKit')
 
 	def tid(self):
 		return self.pk_iface.GetTid()

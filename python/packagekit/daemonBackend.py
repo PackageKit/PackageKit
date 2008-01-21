@@ -34,10 +34,14 @@ from pkdbus import PackageKitDbusInterface
 
 class PackageKitBaseBackend(PackageKitDbusInterface):
 
-    def __init__(self,cmds):
-        self.daemonize()
-        PackageKitDbusInterface.__init__(self, 'org.freedesktop.PackageKit')
-        self.cmds = cmds
+    def __init__(self, daemon=False):
+        if daemon:
+            self.daemonize()
+
+        PackageKitDbusInterface.__init__(self,
+                                         'org.freedesktop.PackageKitDbus',
+                                         'org.freedesktop.PackageKitDbus',
+                                         '/org/freedesktop/PackageKitDbus')
         self._locked = False
 
         self.loop = gobject.MainLoop()
@@ -72,48 +76,47 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
     def catchall_signal_handler(self,*args,**kwargs):
         self.tid = args[0]
 
-        if kwargs['member'] == "quit":
-            self.loop.quit()
+        if kwargs['member'] == "Finished":
             self.quit()
-        if kwargs['member'] == "search_name":
+        if kwargs['member'] == "SearchName":
             self.search_name(args[1],args[2])
-        if kwargs['member'] == "search_details":
+        if kwargs['member'] == "SearchDetails":
             self.search_details(args[1],args[2])
-        if kwargs['member'] == "search_group":
+        if kwargs['member'] == "SearchGroup":
             self.search_group(args[1],args[2])
-        if kwargs['member'] == "search_file":
+        if kwargs['member'] == "SearchFile":
             self.search_file(args[1],args[2])
-        if kwargs['member'] == "get_update_detail":
+        if kwargs['member'] == "GetUpdateDetails":
             self.get_update_detail(args[1])
-        if kwargs['member'] == "get_depends":
+        if kwargs['member'] == "GetDepends":
             self.get_depends(args[1],args[2])
-        if kwargs['member'] == "get_requires":
+        if kwargs['member'] == "GetRequires":
             self.get_requires(args[1],args[2])
-        if kwargs['member'] == "update_system":
+        if kwargs['member'] == "UpdateSystem":
             self.update_system()
-        if kwargs['member'] == "refresh_cache":
+        if kwargs['member'] == "RefreshCache":
             self.refresh_cache()
-        if kwargs['member'] == "install":
+        if kwargs['member'] == "Install":
             self.install(args[1])
-        if kwargs['member'] == "install_file":
+        if kwargs['member'] == "InstallFile":
             self.install_file(args[1])
-        if kwargs['member'] == "resolve":
+        if kwargs['member'] == "Resolve":
             self.resolve(args[1],args[2])
-        if kwargs['member'] == "remove":
+        if kwargs['member'] == "Remove":
             self.remove(args[1],args[2])
-        if kwargs['member'] == "update":
+        if kwargs['member'] == "Update":
             self.update(args[1])
-        if kwargs['member'] == "get_description":
+        if kwargs['member'] == "GetDescription":
             self.get_description(args[1])
-        if kwargs['member'] == "get_files":
+        if kwargs['member'] == "GetFiles":
             self.get_files(args[1])
-        if kwargs['member'] == "get_updates":
+        if kwargs['member'] == "GetUpdates":
             self.get_updates()
-        if kwargs['member'] == "repo_enable":
+        if kwargs['member'] == "RepoEnable":
             self.repo_enable(args[1],args[2])
-        if kwargs['member'] == "repo_set_data":
+        if kwargs['member'] == "RepoSetData":
             self.repo_set_data(args[1],args[2],args[3])
-        if kwargs['member'] == "get_repo_list":
+        if kwargs['member'] == "GetRepoList":
             self.get_repo_list()
         else:
             print "Caught unhandled signal %s"% kwargs['member']
