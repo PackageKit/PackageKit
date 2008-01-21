@@ -160,14 +160,14 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 					  "powertop;1.7-1.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
-					  "", "", "Update to newest upstream source");
+					  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
 	} else {
 		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
 					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
 					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
-					  "system", "Update to newest version");
+					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
 	}
 	pk_backend_finished (backend);
 }
