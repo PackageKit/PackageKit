@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>PackageKit - Reporting Bugs</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+</head>
+<body>
+
+<table align="center" class="title">
+<tr>
+ <td><img src="img/packagekit.png" alt="[img]"/></td>
+ <td width="95%" valign="middle"><p class="title">Reporting Bugs</p></td>
+ <td><img src="img/packagekit.png" alt="[img]"/></td>
+</tr>
+</table>
+
+<p>Back to the <a href="index.html">main page</a></p>
+
+<h1>Reporting Bugs</h1>
+
+<p>
+First, please look at the <a href="http://tinyurl.com/2s4tnt">list of bugs</a>
+so that you are sure the bug you are reporting isn't a duplicate bug that
+someone else has fixed or reported.
+If not present, then please create a new bug attaching all the information
+to this new bug.
+</p>
+<p>
+Please do not email individual developers with bug reports, as the volume of
+email we get is already huge.
+Bugzilla lets us keep it all the information in one place, so we don't loose track!
+</p>
+
+<h2>General Bugs</h2>
+
+<p>
+When PackageKit doesn't work, there is lots that could be wrong.
+To help us diagnose the problem, please supply the following information:
+</p>
+
+<ul>
+<li>The version of packagekit installed</li>
+<li>The version of gnome-packagekit installed</li>
+<li>The installation method you used (i.e. FC8 RPM, tarball)</li>
+<li>Your distribution and version</li>
+<li>The verbose trace from packagekitd</li>
+<li>Any other information that may be relevant</li>
+</ul>
+
+<h2>packagekitd Verbose Trace</h2>
+
+<p>
+This will turn on verbose debugging for the PackageKit daemon that will be
+useful when debugging problems.
+</p>
+
+<pre>
+sudo killall packagekitd
+sudo /usr/sbin/packagekitd --verbose
+</pre>
+
+<h2>GConf session settings</h2>
+<p>
+This will display your session user settings for the GNOME PackageKit Tools.
+</p>
+<pre>
+gconftool-2 -R /apps/gnome-packagekit
+</pre>
+
+<h2>Segfaults or random crashes</h2>
+<p>
+We would really appreciate it if you could send us more information about the
+crash, specifically a backtrace with gdb.
+Make sure you have the packagekit-debuginfo or packagekit-gdb package installed,
+else the reports from gdb won't mean much to any of us.
+</p>
+
+<pre>
+gdb /usr/sbin/packagekitd
+</pre>
+<p>
+The GNU debugger (gdb) will start and put you at a prompt:
+</p>
+<pre>
+(gdb) _
+</pre>
+
+<p>
+Then type the following.
+</p>
+
+<pre>
+(gdb) run --verbose
+</pre>
+
+<p>
+In another command window, you may have to exeute the action that is crashing
+the daemon, for instance:
+</p>
+<pre>
+pkcon get updates
+</pre>
+<p>
+You should be back in the gdb shell if the daemon has crashed.
+Then type bt at the prompt and send us all the output that follows.
+This will tell us exactly what the program was doing when it crashed.
+</p>
+<p>
+This <a href="http://www.cs.usfca.edu/benson/cs326/gdb/gdb.pdf">link</a> will
+give you more information.
+</p>
+<p>Back to the <a href="index.html">main page</a></p>
+
+<p class="footer">
+ Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007</a><br/>
+ <a href="http://validator.w3.org/check/referer">Optimized</a>
+ for <a href="http://www.w3.org/">standards</a>.
+</p>
+
+</body>
+</html>
