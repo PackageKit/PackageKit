@@ -26,6 +26,21 @@ PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitDbus'
 class PackageKitDbusService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
+    def Init(self):
+        print 'Init!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Lock(self):
+        print 'Lock!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Unlock(self):
+        print 'Unlock!'
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
     def Exit(self):
         sys.exit(0)
 
@@ -33,6 +48,12 @@ class PackageKitDbusService(dbus.service.Object):
                          in_signature='ss', out_signature='')
     def SearchName(self, filterx, search):
         print 'filter'
+        self.Finished(0)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='i')
+    def Finished(self, exit):
+        print "Finished (%d)" % (exit)
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
