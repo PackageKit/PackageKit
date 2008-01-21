@@ -14,11 +14,16 @@ pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
 dbusdir = ${SYSCONFDIR}/dbus-1/system.d
-dist_dbus_DATA = org.freedesktop.PackageKit.conf org.freedesktop.PackageKit.yumBackend.conf
+dist_dbus_DATA = 					\
+	org.freedesktop.PackageKit.conf			\
+	org.freedesktop.PackageKitYumBackend.conf	\
+	$(NULL)
 
 servicedir       = $(DBUS_SERVICES_DIR)
-service_in_files = org.freedesktop.PackageKit.service.in \
-	org.freedesktop.PackageKit.yumBackend.service.in
+service_in_files = 					\
+	org.freedesktop.PackageKit.service.in		\
+	org.freedesktop.PackageKitYumBackend.service.in	\
+	$(NULL)
 service_DATA     = $(service_in_files:.service.in=.service)
 
 $(service_DATA): $(service_in_files) Makefile
@@ -37,7 +42,7 @@ database_DATA =						\
 EXTRA_DIST =						\
 	95packagekit					\
 	org.freedesktop.PackageKit.conf.in		\
-	org.freedesktop.PackageKit.yumBackend.conf.in	\
+	org.freedesktop.PackageKitYumBackend.conf.in	\
 	packagekit.pc.in				\
 	$(service_in_files)				\
 	$(localcache_DATA)				\
@@ -49,7 +54,7 @@ clean-local:
 
 DISTCLEANFILES =					\
 	org.freedesktop.PackageKit.service		\
-	org.freedesktop.PackageKit.yumBackend.service
+	org.freedesktop.PackageKitYumBackend.service
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\

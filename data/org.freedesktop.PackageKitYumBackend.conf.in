@@ -1,0 +1,25 @@
+<!DOCTYPE busconfig PUBLIC
+ "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <policy user="@PACKAGEKIT_USER@">
+    <allow own="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_destination="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_interface="org.freedesktop.PackageKitYumBackend"/>
+  </policy>
+  <policy user="root">
+    <allow own="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_destination="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_interface="org.freedesktop.PackageKitYumBackend"/>
+  </policy>
+  <policy at_console="true">
+    <deny send_destination="org.freedesktop.PackageKitYumBackend"/>
+    <deny send_interface="org.freedesktop.PackageKitYumBackend"/>
+  </policy>
+  <policy context="default">
+    <deny own="org.freedesktop.PackageKitYumBackend"/>
+    <deny send_destination="org.freedesktop.PackageKitYumBackend"/>
+    <deny send_interface="org.freedesktop.PackageKitYumBackend"/>
+  </policy>
+</busconfig>
+

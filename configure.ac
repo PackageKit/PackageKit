@@ -509,6 +509,7 @@ backends/zypp/Makefile
 data/Makefile
 data/packagekit.pc
 data/org.freedesktop.PackageKit.conf
+data/org.freedesktop.PackageKitYumBackend.conf
 data/tests/Makefile
 libselftest/Makefile
 libgbus/Makefile
