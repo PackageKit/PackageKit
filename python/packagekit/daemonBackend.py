@@ -29,6 +29,7 @@ from enums import *
 import gobject
 import os
 from pkdbus import PackageKitDbusInterface
+from pkexceptions import *
 
 # Classes
 
@@ -78,45 +79,53 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
 
         if kwargs['member'] == "Finished":
             self.quit()
-        if kwargs['member'] == "SearchName":
+        elif kwargs['member'] == "Lock":
+            self.lock()
+        elif kwargs['member'] == "Unlock":
+            self.unlock()
+
+        if not self.isLocked():
+            raise PackageKitBackendNotLocked()
+
+        elif kwargs['member'] == "SearchName":
             self.search_name(args[1],args[2])
-        if kwargs['member'] == "SearchDetails":
+        elif kwargs['member'] == "SearchDetails":
             self.search_details(args[1],args[2])
-        if kwargs['member'] == "SearchGroup":
+        elif kwargs['member'] == "SearchGroup":
             self.search_group(args[1],args[2])
-        if kwargs['member'] == "SearchFile":
+        elif kwargs['member'] == "SearchFile":
             self.search_file(args[1],args[2])
-        if kwargs['member'] == "GetUpdateDetails":
+        elif kwargs['member'] == "GetUpdateDetails":
             self.get_update_detail(args[1])
-        if kwargs['member'] == "GetDepends":
+        elif kwargs['member'] == "GetDepends":
             self.get_depends(args[1],args[2])
-        if kwargs['member'] == "GetRequires":
+        elif kwargs['member'] == "GetRequires":
             self.get_requires(args[1],args[2])
-        if kwargs['member'] == "UpdateSystem":
+        elif kwargs['member'] == "UpdateSystem":
             self.update_system()
-        if kwargs['member'] == "RefreshCache":
+        elif kwargs['member'] == "RefreshCache":
             self.refresh_cache()
-        if kwargs['member'] == "Install":
+        elif kwargs['member'] == "Install":
             self.install(args[1])
-        if kwargs['member'] == "InstallFile":
+        elif kwargs['member'] == "InstallFile":
             self.install_file(args[1])
-        if kwargs['member'] == "Resolve":
+        elif kwargs['member'] == "Resolve":
             self.resolve(args[1],args[2])
-        if kwargs['member'] == "Remove":
+        elif kwargs['member'] == "Remove":
             self.remove(args[1],args[2])
-        if kwargs['member'] == "Update":
+        elif kwargs['member'] == "Update":
             self.update(args[1])
-        if kwargs['member'] == "GetDescription":
+        elif kwargs['member'] == "GetDescription":
             self.get_description(args[1])
-        if kwargs['member'] == "GetFiles":
+        elif kwargs['member'] == "GetFiles":
             self.get_files(args[1])
-        if kwargs['member'] == "GetUpdates":
+        elif kwargs['member'] == "GetUpdates":
             self.get_updates()
-        if kwargs['member'] == "RepoEnable":
+        elif kwargs['member'] == "RepoEnable":
             self.repo_enable(args[1],args[2])
-        if kwargs['member'] == "RepoSetData":
+        elif kwargs['member'] == "RepoSetData":
             self.repo_set_data(args[1],args[2],args[3])
-        if kwargs['member'] == "GetRepoList":
+        elif kwargs['member'] == "GetRepoList":
             self.get_repo_list()
         else:
             print "Caught unhandled signal %s"% kwargs['member']

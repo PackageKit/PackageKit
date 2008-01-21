@@ -52,3 +52,5 @@ class PackageKitTransactionFailure(PackageKitException):
 class PackageKitBackendFailure(PackageKitException):
 	pass
 
+class PackageKitBackendNotLocked(PackageKitException):
+	pass
