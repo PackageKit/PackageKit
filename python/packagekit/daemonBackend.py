@@ -74,10 +74,15 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
     def isLocked(self):
         return self._locked
 
+    def start(self):
+        pass
+
     def catchall_signal_handler(self,*args,**kwargs):
         self.tid = args[0]
 
-        if kwargs['member'] == "Finished":
+        if kwargs['member'] == "Init":
+            self.start()
+        elif kwargs['member'] == "Exit":
             self.quit()
         elif kwargs['member'] == "Lock":
             self.lock()
@@ -85,7 +90,8 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             self.unlock()
 
         if not self.isLocked():
-            raise PackageKitBackendNotLocked()
+            self.error(ERROR_INTERNAL_ERROR,
+                       "A method call %s was attempted before the backend was locked." % kwargs['member'])
 
         elif kwargs['member'] == "SearchName":
             self.search_name(args[1],args[2])
@@ -95,7 +101,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             self.search_group(args[1],args[2])
         elif kwargs['member'] == "SearchFile":
             self.search_file(args[1],args[2])
-        elif kwargs['member'] == "GetUpdateDetails":
+        elif kwargs['member'] == "GetUpdateDetail":
             self.get_update_detail(args[1])
         elif kwargs['member'] == "GetDepends":
             self.get_depends(args[1],args[2])
@@ -105,6 +111,8 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             self.update_system()
         elif kwargs['member'] == "RefreshCache":
             self.refresh_cache()
+        elif kwargs['member'] == "RemovePackage":
+            self.remove_package(args[1],args[2])
         elif kwargs['member'] == "Install":
             self.install(args[1])
         elif kwargs['member'] == "InstallFile":
@@ -127,6 +135,8 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             self.repo_set_data(args[1],args[2],args[3])
         elif kwargs['member'] == "GetRepoList":
             self.get_repo_list()
+        elif kwargs['member'] == "Rollback":
+            self.rollback(args[1])
         else:
             print "Caught unhandled signal %s"% kwargs['member']
             print "  args:"
@@ -416,6 +426,13 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
     def get_repo_list(self,tid):
         '''
         Implement the {backend}-get-repo-list functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def rollback(self,tid,rollback_transaction_id):
+        '''
+        Implement the {backend}-rollback functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
