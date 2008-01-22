@@ -55,6 +55,9 @@ static args_t args;
 extern opkg_message_callback opkg_cb_message;
 static gchar *last_error;
 
+/* Opkg progress callback function */
+extern opkg_download_progress_callback opkg_cb_download_progress;
+
 int
 opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 {
@@ -420,6 +423,16 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_name_thread, params);
 }
 
+static void
+pk_opkg_install_progress_cb (int percent)
+{
+	PkBackend *backend;
+
+	/* get current backend and set percentage */
+	backend = pk_backend_thread_get_backend (thread);
+	pk_backend_set_percentage (backend, percent);
+}
+
 static gboolean
 backend_install_package_thread (PkBackendThread *thread, gchar *package_id)
 {
@@ -432,9 +445,15 @@ backend_install_package_thread (PkBackendThread *thread, gchar *package_id)
 
 	pi = pk_package_id_new_from_string (package_id);
 
+	/* set the download progress callback */
+	opkg_cb_download_progress = pk_opkg_install_progress_cb;
+
 	err = opkg_packages_install (&args, pi->name);
 	if (err != 0)
 		opkg_unknown_error (backend, err, "Install");
+
+	/* unset the download progress callback */
+	opkg_cb_download_progress = NULL;
 
 	g_free (package_id);
 	pk_package_id_free (pi);
@@ -448,7 +467,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-	pk_backend_no_percentage_updates (backend);
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_install_package_thread,
 		g_strdup (package_id));
