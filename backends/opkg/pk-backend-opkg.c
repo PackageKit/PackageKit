@@ -340,10 +340,21 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 		};
 	}
 
+	if (!old_url)
+	{
+		old_url = g_strdup (url);
+	}
+
 	/* increase the total progress mark if we are moving onto the next file */
-	if (old_url && url != old_url)
+	if (old_url && url && strcmp (old_url, url))
 	{
 		total_progress += 100 / sources_list_count;
+
+		/* store the current url for comparison next time the progress callback
+		 * is called */
+		g_free (old_url);
+		old_url = g_strdup (url);
+
 	}
 
 	/* get current backend */
@@ -352,10 +363,6 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 	/* set the percentage as a fraction of the current progress plus the
 	 * progress we have already recorded */
 	pk_backend_set_percentage (backend, total_progress + (progress / sources_list_count));
-
-	/* store the current url for comparison next time the progress callback
-	 * is called */
-	old_url = url;
 
 }
 
