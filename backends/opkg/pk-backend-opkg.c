@@ -307,6 +307,58 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		g_strdup (package_id));
 }
 
+static void
+pk_opkg_refresh_cache_progress_cb (int progress, char *url)
+{
+	PkBackend *backend;
+	static gint sources_list_count = 0;
+	static gint total_progress = 0;
+	static char *old_url = NULL;
+
+	/* this is a bit awkward, but basically in a package refresh there are
+	 * multiple files to download but we only have a progress callback for
+	 * each download. To create a combined total progress indication, we
+	 * have to:
+	 *
+	 *  1. calculate the number of files we are downloading
+	 *  2. notice when the file being downloaded changes, and increase the
+	 *     total progress mark
+	 *  3. report the progress percentage as a fraction of the current file
+	 *     progress, plus the percentage of files we have already
+	 *     downloaded
+	 */
+
+	/* calculate the number of files we are going to download */
+	if (sources_list_count == 0)
+	{
+		pkg_src_list_elt_t *p;
+		p = global_conf.pkg_src_list.head;
+		while (p)
+		{
+			sources_list_count++;
+			p = p->next;
+		};
+	}
+
+	/* increase the total progress mark if we are moving onto the next file */
+	if (old_url && url != old_url)
+	{
+		total_progress += 100 / sources_list_count;
+	}
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
+	/* set the percentage as a fraction of the current progress plus the
+	 * progress we have already recorded */
+	pk_backend_set_percentage (backend, total_progress + (progress / sources_list_count));
+
+	/* store the current url for comparison next time the progress callback
+	 * is called */
+	old_url = url;
+
+}
+
 static gboolean
 backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 {
@@ -316,11 +368,17 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 
+	/* set the download progress callback */
+	opkg_cb_download_progress = pk_opkg_refresh_cache_progress_cb;
+
 	ret = opkg_lists_update (&args);
 	if (ret) {
 		opkg_unknown_error (backend, ret, "Refreshing cache");
 	}
 	pk_backend_finished (backend);
+
+	/* unset the download progress callback */
+	opkg_cb_download_progress = NULL;
 
 	return (ret == 0);
 }
@@ -424,7 +482,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 static void
-pk_opkg_install_progress_cb (int percent)
+pk_opkg_install_progress_cb (int percent, char* url)
 {
 	PkBackend *backend;
 
