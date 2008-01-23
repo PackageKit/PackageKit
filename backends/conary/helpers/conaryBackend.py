@@ -220,8 +220,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                                 if troveSource.hasTrove(*x)])
             for n, v, f in troves:
                 for (pathId, path, fileId, version, file) in \
-                    self.client.db.iterFilesInTrove(n, v, f, sortByPath = True,
-                                                        withFiles = True):
+                    troveSource.iterFilesInTrove(n, v, f, sortByPath = True,
+                                                 withFiles = True):
                     files.append(path)
             return files
 
