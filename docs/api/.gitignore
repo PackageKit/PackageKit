@@ -1,6 +1,7 @@
 Makefile.in
 Makefile.libs
 .libs
+*.bak
 tmpl
 xml
 html
