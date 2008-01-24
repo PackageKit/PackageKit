@@ -113,6 +113,7 @@ PkRoleEnum	 pk_runner_get_role			(PkRunner	*runner);
 const gchar	*pk_runner_get_text			(PkRunner	*runner);
 gboolean	 pk_runner_get_package			(PkRunner	*runner,
 							 gchar		**package_id);
+gboolean	 pk_runner_get_allow_cancel		(PkRunner	*runner);
 PkPackageList	*pk_runner_get_package_list		(PkRunner	*runner);
 PkEnumList	*pk_runner_get_actions			(PkRunner	*runner);
 PkEnumList	*pk_runner_get_groups			(PkRunner	*runner);

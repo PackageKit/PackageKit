@@ -153,7 +153,7 @@
     </signal>
     <signal name="AllowCancel">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="allow_cancel" direction="out"/> <!-- if the transaction can be SIGKILL'd -->
+      <arg type="b" name="allow_cancel" direction="out"/>
     </signal>
     <signal name="ErrorCode">
       <arg type="s" name="tid" direction="out"/>
@@ -237,6 +237,11 @@
       <arg type="u" name="subpercentage" direction="out"/>
       <arg type="u" name="elapsed" direction="out"/>
       <arg type="u" name="remaining" direction="out"/>
+    </method>
+    <method name="GetAllowCancel">
+      <!-- throws NoSuchTransaction -->
+      <arg type="s" name="tid" direction="in"/>
+      <arg type="b" name="allow_cancel" direction="out"/>
     </method>
     <method name="GetPackage">
       <!-- throws NoSuchTransaction -->

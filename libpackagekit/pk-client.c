@@ -67,7 +67,6 @@ struct PkClientPrivate
 	gboolean		 is_finished;
 	gboolean		 use_buffer;
 	gboolean		 promiscuous;
-	gboolean		 allow_cancel;
 	gchar			*tid;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
@@ -692,9 +691,6 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
 		return;
 	}
 
-	/* cache */
-	client->priv->allow_cancel = allow_cancel;
-
 	pk_debug ("emit allow-cancel %i", allow_cancel);
 	g_signal_emit (client , signals [PK_CLIENT_ALLOW_CANCEL], 0, allow_cancel);
 }
@@ -705,10 +701,33 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
 gboolean
 pk_client_get_allow_cancel (PkClient *client)
 {
+	GError *error = NULL;
+	gboolean value = FALSE;
+	gboolean ret;
+
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
 
-	return client->priv->allow_cancel;
+	/* check to see if we have a valid transaction */
+	if (client->priv->tid == NULL) {
+		pk_warning ("Transaction ID not set");
+		return FALSE;
+	}
+
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", &error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_INVALID,
+				 G_TYPE_BOOLEAN, &value,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("GetAllowCancel failed :%s", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	return value;
 }
 
 /**
@@ -2628,7 +2647,6 @@ pk_client_init (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
-	client->priv->allow_cancel = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;

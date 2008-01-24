@@ -2312,6 +2312,30 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 }
 
 /**
+ * pk_engine_get_allow_cancel:
+ **/
+gboolean
+pk_engine_get_allow_cancel (PkEngine *engine, const gchar *tid, gboolean *allow_cancel, GError **error)
+{
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	pk_debug ("GetAllowCancel method called: %s", tid);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_TRANSACTION,
+			     "No tid:%s", tid);
+		return FALSE;
+	}
+	*allow_cancel = pk_runner_get_allow_cancel (item->runner);
+	return TRUE;
+}
+
+/**
  * pk_engine_get_old_transactions:
  **/
 gboolean
