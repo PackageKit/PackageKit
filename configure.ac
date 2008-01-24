@@ -143,7 +143,31 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
 AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
 AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support (gcc only)]),enable_gprof=$enableval,enable_gprof=no)
-AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
+AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),enable_local=$enableval,enable_local=$USE_MAINTAINER_MODE)
+
+# backends
+AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
+AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
+AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
+AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
+AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
+AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
+AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
+AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
+AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
+AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
+
+# export to Makefile.am's
+AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes], [using ALPM backend])
+AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes], [using APT backend])
+AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes], [using BOX backend])
+AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY backend])
+AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
+AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backend])
+AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
+AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
+AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
+AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
 
 AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
 if test x$enable_tests = xyes; then
@@ -342,7 +366,7 @@ AC_DEFUN([APT_BACKEND],
  	fi
 ])
 
-if test x$with_default_backend = xapt; then
+if test x$enable_apt = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 
 	AC_ARG_WITH([apt_search],
@@ -425,19 +449,19 @@ else
 	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
 fi
 
-if test x$with_default_backend = xbox; then
+if test x$enable_box = xyes; then
 	PKG_CHECK_MODULES(BOX, libbox >= 0.1.2 )
 	AC_SUBST(BOX_CFLAGS)
 	AC_SUBST(BOX_LIBS)
 fi
 
-if test x$with_default_backend = xopkg; then
+if test x$enable_opkg = xyes; then
 	PKG_CHECK_MODULES(OPKG, libopkg)
 	AC_SUBST(OPKG_CFLAGS)
 	AC_SUBST(OPKG_LIBS)
 fi
 
-if test x$with_default_backend = xalpm; then
+if test x$enable_alpm = xyes; then
 	with_default_backend=dummy
 	AC_MSG_WARN([The alpm backend doesn't work at all!])
 	AC_CHECK_HEADER([alpm.h],
@@ -445,7 +469,7 @@ if test x$with_default_backend = xalpm; then
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
 
-if test x$with_default_backend = xzypp; then
+if test x$enable_zypp = xyes; then
 	PKG_CHECK_MODULES(ZYPP, libzypp)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
@@ -456,17 +480,6 @@ AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
-
-AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$with_default_backend = xdummy], [using dummy backend])
-AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$with_default_backend = xapt], [using APT backend])
-AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$with_default_backend = xyum], [using YUM backend])
-AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$with_default_backend = xconary], [using CONARY backend])
-AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$with_default_backend = xbox], [using BOX backend])
-AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$with_default_backend = xopkg], [using OPKG backend])
-AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$with_default_backend = xalpm], [using ALPM backend])
-AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$with_default_backend = xsmart], [using SMART backend])
-AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$with_default_backend = xpisi], [using PiSi backend])
-AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$with_default_backend = xzypp], [using Zypp backend])
 
 if test x$with_default_backend = xapt; then
 	# now we've done the conditionals, rename for searching backend
@@ -534,10 +547,24 @@ echo "
         Able to run locally:       ${enable_local}
         GCC coverage profiling:    ${enable_gcov}
         GCC time profiling:        ${enable_gprof}
-        Default backend:           ${with_default_backend}
-        Security Framework:        ${with_security_framework}
+        Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
+
+        Backends:
+        ALPM backend:              ${enable_alpm}
+        APT backend:               ${enable_apt}
+        BOX backend:               ${enable_box}
+        CONARY backend:            ${enable_conary}
+        dummy backend:             ${enable_dummy}
+        OPKG backend:              ${enable_opkg}
+        PiSi backend:              ${enable_pisi}
+        SMART backend:             ${enable_smart}
+        YUM backend:               ${enable_yum}
+        Zypp backend:              ${enable_zypp}
+        Default backend:           ${with_default_backend}
 "
+
+
 
 # warn that dummy is basically broken
 if test x$with_security_framework = xdummy; then

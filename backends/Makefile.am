@@ -1,4 +1,4 @@
-SUBDIRS = dummy test
+SUBDIRS = test
 
 if BACKEND_TYPE_ALPM
 SUBDIRS += alpm
@@ -14,6 +14,10 @@ endif
 
 if BACKEND_TYPE_CONARY
 SUBDIRS += conary
+endif
+
+if BACKEND_TYPE_DUMMY
+SUBDIRS += dummy
 endif
 
 if BACKEND_TYPE_OPKG
