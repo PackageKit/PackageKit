@@ -120,6 +120,49 @@ pk_enum_list_append_multiple (PkEnumList *elist, gint value, ...)
 	return TRUE;
 }
 
+/**
+ * pk_enum_list_contains_priority:
+ * @elist: a valid #PkEnumList instance
+ * @value: the values we are searching for
+ *
+ * Finds elements in a list, but with priority going to the preceeding entry
+ *
+ * Return value: The return enumerated type, or -1 if none are found
+ **/
+gint
+pk_enum_list_contains_priority (PkEnumList *elist, gint value, ...)
+{
+	va_list args;
+	guint i;
+	guint value_temp;
+	gint retval = -1;
+
+	g_return_val_if_fail (elist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
+
+	/* we must query at least one thing */
+	if (pk_enum_list_contains (elist, value) == TRUE) {
+		return value;
+	}
+
+	/* process the valist */
+	va_start (args, value);
+	for (i=0;; i++) {
+		value_temp = va_arg (args, gint);
+		/* do we have this one? */
+		if (pk_enum_list_contains (elist, value_temp) == TRUE) {
+			retval = value_temp;
+			break;
+		}
+		/* end of the list */
+		if (value_temp == -1) {
+			break;
+		}
+	}
+	va_end (args);
+
+	return retval;
+}
 
 /**
  * pk_enum_list_from_string:
@@ -554,6 +597,34 @@ libst_enum_list (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid size %i, should be 3", value);
+	}
+
+
+	/************************************************************/
+	libst_title (test, "priority check missing");
+	value = pk_enum_list_contains_priority (elist, PK_ROLE_ENUM_SEARCH_FILE, -1);
+	if (value == -1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned priority %i when should be missing", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check first");
+	value = pk_enum_list_contains_priority (elist, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check second, correct");
+	value = pk_enum_list_contains_priority (elist, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
 	}
 
 	/************************************************************/

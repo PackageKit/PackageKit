@@ -67,6 +67,8 @@ guint		 pk_enum_list_get_item			(PkEnumList	*elist,
 							 guint		 item);
 gboolean	 pk_enum_list_contains			(PkEnumList	*elist,
 							 guint		 value);
+gint		 pk_enum_list_contains_priority		(PkEnumList	*elist,
+							 gint		 value, ...);
 gboolean	 pk_enum_list_append			(PkEnumList	*elist,
 							 guint		 value);
 gboolean	 pk_enum_list_remove			(PkEnumList	*elist,
