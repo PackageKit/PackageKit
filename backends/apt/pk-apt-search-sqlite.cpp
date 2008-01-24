@@ -98,7 +98,7 @@ extern "C" void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_set_interruptable (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
 }
 

@@ -443,7 +443,7 @@ backend_update_system_timeout (gpointer data)
 	}
 	if (progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-		pk_backend_set_interruptable (backend, FALSE);
+		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
@@ -471,7 +471,7 @@ backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
-	pk_backend_set_interruptable (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, TRUE);
 	progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
 	g_timeout_add (1000, backend_update_system_timeout, backend);

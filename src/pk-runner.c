@@ -214,7 +214,7 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 	}
 
 	/* check if it's safe to kill */
-	killable = pk_backend_get_interruptable (runner->priv->backend);
+	killable = pk_backend_get_allow_cancel (runner->priv->backend);
 	if (killable == FALSE) {
 		*error_text = g_strdup ("Tried to kill a process that is not safe to kill");
 		return FALSE;

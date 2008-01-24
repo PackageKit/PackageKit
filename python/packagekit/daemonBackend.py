@@ -256,16 +256,16 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         '''
         self.pk_iface.require_restart(self.tid,restart_type,details)
 
-    def allow_interrupt(self,allow):
+    def allow_cancel(self,allow):
         '''
-        send 'allow-interrupt' signal:
+        send 'allow-cancel' signal:
         @param allow:  Allow the current process to be aborted.
         '''
         if allow:
             data = 'true'
         else:
             data = 'false'
-        self.pk_iface.allow_interrupt(self.tid,data)
+        self.pk_iface.allow_cancel(self.tid,data)
 
     def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''

@@ -177,7 +177,7 @@
           </row>
           <row>
             <entry>AllowUpdate</entry>
-            <entry><literal>allow-interrupt[tab]enabled</literal></entry>
+            <entry><literal>allow-cancel[tab]enabled</literal></entry>
             <entry><literal>stderr</literal></entry>
           </row>
           <row>

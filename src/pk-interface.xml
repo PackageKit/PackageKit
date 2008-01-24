@@ -151,9 +151,9 @@
       <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
       <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in ms -->
     </signal>
-    <signal name="AllowInterrupt">
+    <signal name="AllowCancel">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="allow_kill" direction="out"/> <!-- if the transaction can be SIGKILL'd -->
+      <arg type="b" name="allow_cancel" direction="out"/> <!-- if the transaction can be SIGKILL'd -->
     </signal>
     <signal name="ErrorCode">
       <arg type="s" name="tid" direction="out"/>

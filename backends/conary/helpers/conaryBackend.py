@@ -135,7 +135,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         suggMap = self.client.prepareUpdateJob(updJob, applyList)
 
         if apply:
-            self.allow_interrupt(False)
+            self.allow_cancel(False)
             restartDir = self.client.applyUpdateJob(updJob)
 
         return updJob, suggMap
@@ -150,7 +150,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def resolve(self, filter, package):
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         self._do_search(package, filter)
@@ -171,7 +171,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
 
@@ -209,7 +209,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def get_files(self, package_id):
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         def _get_files(troveSource, n, v, f):
@@ -236,7 +236,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def update_system(self):
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
         updJob, suggMap = self._do_update(applyList, apply=True)
@@ -255,7 +255,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         name, version, flavor, installed = self._findPackage(package_id)
 
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INSTALL)
 
@@ -277,7 +277,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         name, version, flavor, installed = self._findPackage(package_id)
 
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
 
         if name:
             if not installed == INFO_INSTALLED:
@@ -305,7 +305,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                 categories
         '''
 
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
 
@@ -326,7 +326,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -361,7 +361,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
     @ExceptionHandler
     def get_updates(self):
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 

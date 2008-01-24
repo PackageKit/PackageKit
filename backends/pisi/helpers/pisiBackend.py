@@ -152,7 +152,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_depends(self, package_id, recursive):
         """ Prints a list of depends for a given package """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -163,7 +163,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_description(self, package_id):
         """ Prints a detailed description for a given package """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -187,7 +187,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_files(self, package_id):
         """ Prints a file list for a given package """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -204,7 +204,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_repo_list(self):
         """ Prints available repositories """
-        self.allow_interrupt(True);
+        self.allow_cancel(True);
         self.percentage(None)
 
         for repo in pisi.api.list_repos():
@@ -214,7 +214,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_requires(self, package_id, recursive):
         """ Prints a list of requires for a given package """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -225,7 +225,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def get_updates(self):
         """ Prints available updates and types """
-        self.allow_interrupt(True);
+        self.allow_cancel(True);
         self.percentage(None)
 
         for package in pisi.api.list_upgradable():
@@ -246,7 +246,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def install_file(self, file):
         """ Installs given package into system"""
         # FIXME: install progress
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(None)
 
         try:
@@ -260,7 +260,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def install(self, package_id):
         """ Installs given package into system"""
         # FIXME: fetch/install progress
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -276,7 +276,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def refresh_cache(self):
         """ Updates repository indexes """
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
 
@@ -292,7 +292,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def remove(self, deps, package_id):
         """ Removes given package from system"""
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -309,7 +309,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def repo_set_data(self, repo_id, parameter, value):
         """ Sets a parameter for the repository specified """
-        self.allow_interrupt(False)
+        self.allow_cancel(False)
         self.percentage(None)
 
         if parameter == "add-repo":
@@ -333,14 +333,14 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def resolve(self, filters, package):
         """ Turns a single package name into a package_id suitable for the other methods """
-        self.allow_interrupt(True);
+        self.allow_cancel(True);
         self.percentage(None)
 
         self.__get_package(package, filters)
 
     def search_details(self, filters, key):
         """ Prints a detailed list of packages contains search term """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         
@@ -350,7 +350,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def search_file(self, filters, key):
         """ Prints the installed package which contains the specified file """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -362,7 +362,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def search_group(self, filters, group):
         """ Prints a list of packages belongs to searched group """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -376,7 +376,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
     def search_name(self, filters, package):
         """ Prints a list of packages contains search term in its name """
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -386,7 +386,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def update(self, package_id):
         """ Updates given package to its latest version """
         # FIXME: fetch/install progress
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(None)
 
         package = self.get_package_from_id(package_id)[0]
@@ -402,7 +402,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
     def update_system(self):
         """ Updates all available packages """
         # FIXME: fetch/install progress
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(None)
 
         if not len(pisi.api.list_upgradable()) > 0:

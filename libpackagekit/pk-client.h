@@ -68,7 +68,7 @@ gchar		*pk_client_get_tid			(PkClient	*client);
 gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 							 gboolean	 use_buffer);
 gboolean	 pk_client_get_use_buffer		(PkClient	*client);
-gboolean	 pk_client_get_allow_interrupt		(PkClient	*client);
+gboolean	 pk_client_get_allow_cancel		(PkClient	*client);
 
 /* general methods */
 gboolean	 pk_client_get_status			(PkClient	*client,

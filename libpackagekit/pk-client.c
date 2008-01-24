@@ -67,7 +67,7 @@ struct PkClientPrivate
 	gboolean		 is_finished;
 	gboolean		 use_buffer;
 	gboolean		 promiscuous;
-	gboolean		 allow_kill;
+	gboolean		 allow_cancel;
 	gchar			*tid;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
@@ -100,7 +100,7 @@ typedef enum {
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
-	PK_CLIENT_ALLOW_INTERRUPT,
+	PK_CLIENT_ALLOW_CANCEL,
 	PK_CLIENT_LOCKED,
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
@@ -678,11 +678,11 @@ pk_client_locked_cb (DBusGProxy *proxy, gboolean is_locked, PkClient *client)
 }
 
 /**
- * pk_client_allow_interrupt_cb:
+ * pk_client_allow_cancel_cb:
  */
 static void
-pk_client_allow_interrupt_cb (DBusGProxy *proxy, const gchar *tid,
-			      gboolean allow_kill, PkClient *client)
+pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
+			      gboolean allow_cancel, PkClient *client)
 {
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -693,22 +693,22 @@ pk_client_allow_interrupt_cb (DBusGProxy *proxy, const gchar *tid,
 	}
 
 	/* cache */
-	client->priv->allow_kill = allow_kill;
+	client->priv->allow_cancel = allow_cancel;
 
-	pk_debug ("emit allow-interrupt %i", allow_kill);
-	g_signal_emit (client , signals [PK_CLIENT_ALLOW_INTERRUPT], 0, allow_kill);
+	pk_debug ("emit allow-cancel %i", allow_cancel);
+	g_signal_emit (client , signals [PK_CLIENT_ALLOW_CANCEL], 0, allow_cancel);
 }
 
 /**
- * pk_client_get_allow_interrupt:
+ * pk_client_get_allow_cancel:
  */
 gboolean
-pk_client_get_allow_interrupt (PkClient *client)
+pk_client_get_allow_cancel (PkClient *client)
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	return client->priv->allow_kill;
+	return client->priv->allow_cancel;
 }
 
 /**
@@ -2571,8 +2571,8 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_CLIENT_ALLOW_INTERRUPT] =
-		g_signal_new ("allow-interrupt",
+	signals [PK_CLIENT_ALLOW_CANCEL] =
+		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
@@ -2628,7 +2628,7 @@ pk_client_init (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
-	client->priv->allow_kill = FALSE;
+	client->priv->allow_cancel = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -2672,7 +2672,7 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_UINT,
 					   G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_INVALID);
 
-	/* AllowInterrupt */
+	/* AllowCancel */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_BOOLEAN,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
@@ -2812,9 +2812,9 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "CallerActiveChanged",
 				     G_CALLBACK (pk_client_caller_active_changed_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "AllowInterrupt", G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "AllowInterrupt",
-				     G_CALLBACK (pk_client_allow_interrupt_cb), client, NULL);
+	dbus_g_proxy_add_signal (proxy, "AllowCancel", G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
+				     G_CALLBACK (pk_client_allow_cancel_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Locked", G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Locked",
@@ -2868,8 +2868,8 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_message_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
 					G_CALLBACK (pk_client_caller_active_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowInterrupt",
-				        G_CALLBACK (pk_client_allow_interrupt_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
+				        G_CALLBACK (pk_client_allow_cancel_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Locked",
 				        G_CALLBACK (pk_client_locked_cb), client);
 

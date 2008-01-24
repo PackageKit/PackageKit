@@ -93,7 +93,7 @@ enum {
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
 	PK_ENGINE_FILES,
-	PK_ENGINE_ALLOW_INTERRUPT,
+	PK_ENGINE_ALLOW_CANCEL,
 	PK_ENGINE_CALLER_ACTIVE_CHANGED,
 	PK_ENGINE_LOCKED,
 	PK_ENGINE_REPO_DETAIL,
@@ -614,10 +614,10 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 }
 
 /**
- * pk_engine_allow_interrupt_cb:
+ * pk_engine_allow_cancel_cb:
  **/
 static void
-pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine *engine)
+pk_engine_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkEngine *engine)
 {
 	const gchar *c_tid;
 
@@ -630,8 +630,8 @@ pk_engine_allow_interrupt_cb (PkBackend *backend, gboolean allow_kill, PkEngine 
 		return;
 	}
 
-	pk_debug ("emitting allow-interrpt tid:%s, %i", c_tid, allow_kill);
-	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_INTERRUPT], 0, c_tid, allow_kill);
+	pk_debug ("emitting allow-interrpt tid:%s, %i", c_tid, allow_cancel);
+	g_signal_emit (engine, signals [PK_ENGINE_ALLOW_CANCEL], 0, c_tid, allow_cancel);
 }
 
 /**
@@ -2630,8 +2630,8 @@ pk_engine_class_init (PkEngineClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_ENGINE_ALLOW_INTERRUPT] =
-		g_signal_new ("allow-interrupt",
+	signals [PK_ENGINE_ALLOW_CANCEL] =
+		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_BOOL,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_BOOLEAN);
@@ -2698,8 +2698,8 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_description_cb), engine);
 	g_signal_connect (engine->priv->backend, "files",
 			  G_CALLBACK (pk_engine_files_cb), engine);
-	g_signal_connect (engine->priv->backend, "allow-interrupt",
-			  G_CALLBACK (pk_engine_allow_interrupt_cb), engine);
+	g_signal_connect (engine->priv->backend, "allow-cancel",
+			  G_CALLBACK (pk_engine_allow_cancel_cb), engine);
 	g_signal_connect (engine->priv->backend, "change-transaction-data",
 			  G_CALLBACK (pk_engine_change_transaction_data_cb), engine);
 	g_signal_connect (engine->priv->backend, "repo-detail",
