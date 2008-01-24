@@ -100,6 +100,17 @@ pk_monitor_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 }
 
 /**
+ * pk_monitor_allow_interrupt_cb:
+ **/
+static void
+pk_monitor_allow_interrupt_cb (PkClient *client, gboolean allow_kill, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tAllow Interrupt: %i\n", tid, allow_kill);
+	g_free (tid);
+}
+
+/**
  * pk_monitor_finished_cb:
  **/
 static void
@@ -184,6 +195,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_status_changed_cb), NULL);
 	g_signal_connect (client, "package",
 			  G_CALLBACK (pk_monitor_package_cb), NULL);
+	g_signal_connect (client, "allow-interrupt",
+			  G_CALLBACK (pk_monitor_allow_interrupt_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",
