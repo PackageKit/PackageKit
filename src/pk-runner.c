@@ -156,7 +156,7 @@ pk_runner_get_status (PkRunner *runner)
 {
 	g_return_val_if_fail (runner != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), PK_ROLE_ENUM_UNKNOWN);
-	return runner->priv->role;
+	return runner->priv->status;
 }
 
 /**
@@ -351,6 +351,7 @@ pk_runner_get_depends (PkRunner *runner, const gchar *package_id, gboolean recur
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
 	runner->priv->cached_force = recursive;
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_DEPENDS);
 	return TRUE;
 }
@@ -367,6 +368,7 @@ pk_runner_get_update_detail (PkRunner *runner, const gchar *package_id)
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	return TRUE;
 }
@@ -383,6 +385,7 @@ pk_runner_get_description (PkRunner *runner, const gchar *package_id)
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_DESCRIPTION);
 	return TRUE;
 }
@@ -399,6 +402,7 @@ pk_runner_get_files (PkRunner *runner, const gchar *package_id)
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_FILES);
 	return TRUE;
 }
@@ -416,6 +420,7 @@ pk_runner_get_requires (PkRunner *runner, const gchar *package_id, gboolean recu
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
 	runner->priv->cached_force = recursive;
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_REQUIRES);
 	return TRUE;
 }
@@ -431,6 +436,7 @@ pk_runner_get_updates (PkRunner *runner)
 		pk_debug ("Not implemented yet: GetUpdates");
 		return FALSE;
 	}
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_UPDATES);
 	return TRUE;
 }
@@ -447,6 +453,7 @@ pk_runner_install_package (PkRunner *runner, const gchar *package_id)
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_INSTALL_PACKAGE);
 	return TRUE;
 }
@@ -463,6 +470,7 @@ pk_runner_install_file (PkRunner *runner, const gchar *full_path)
 		return FALSE;
 	}
 	runner->priv->cached_full_path = g_strdup (full_path);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_INSTALL_FILE);
 	return TRUE;
 }
@@ -479,6 +487,7 @@ pk_runner_refresh_cache (PkRunner *runner, gboolean force)
 		return FALSE;
 	}
 	runner->priv->cached_force = force;
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_REFRESH_CACHE);
 	return TRUE;
 }
@@ -496,6 +505,7 @@ pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean al
 	}
 	runner->priv->cached_allow_deps = allow_deps;
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_REMOVE_PACKAGE);
 	return TRUE;
 }
@@ -513,6 +523,7 @@ pk_runner_resolve (PkRunner *runner, const gchar *filter, const gchar *package)
 	}
 	runner->priv->cached_package_id = g_strdup (package);
 	runner->priv->cached_filter = g_strdup (filter);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_RESOLVE);
 	return TRUE;
 }
@@ -529,6 +540,7 @@ pk_runner_rollback (PkRunner *runner, const gchar *transaction_id)
 		return FALSE;
 	}
 	runner->priv->cached_transaction_id = g_strdup (transaction_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_ROLLBACK);
 	return TRUE;
 }
@@ -546,6 +558,7 @@ pk_runner_search_details (PkRunner *runner, const gchar *filter, const gchar *se
 	}
 	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_search = g_strdup (search);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_SEARCH_DETAILS);
 	return TRUE;
 }
@@ -563,6 +576,7 @@ pk_runner_search_file (PkRunner *runner, const gchar *filter, const gchar *searc
 	}
 	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_search = g_strdup (search);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_SEARCH_FILE);
 	return TRUE;
 }
@@ -580,6 +594,7 @@ pk_runner_search_group (PkRunner *runner, const gchar *filter, const gchar *sear
 	}
 	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_search = g_strdup (search);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_SEARCH_GROUP);
 	return TRUE;
 }
@@ -597,6 +612,7 @@ pk_runner_search_name (PkRunner *runner, const gchar *filter, const gchar *searc
 	}
 	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_search = g_strdup (search);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_SEARCH_NAME);
 	return TRUE;
 }
@@ -613,6 +629,7 @@ pk_runner_update_package (PkRunner *runner, const gchar *package_id)
 		return FALSE;
 	}
 	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_UPDATE_PACKAGE);
 	return TRUE;
 }
@@ -628,6 +645,7 @@ pk_runner_update_system (PkRunner *runner)
 		pk_debug ("Not implemented yet: UpdateSystem");
 		return FALSE;
 	}
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_UPDATE_SYSTEM);
 	return TRUE;
 }
@@ -643,6 +661,7 @@ pk_runner_get_repo_list (PkRunner *runner)
 		pk_debug ("Not implemented yet: GetRepoList");
 		return FALSE;
 	}
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_REPO_LIST);
 	return TRUE;
 }
@@ -660,6 +679,7 @@ pk_runner_repo_enable (PkRunner *runner, const gchar	*repo_id, gboolean enabled)
 	}
 	runner->priv->cached_repo_id = g_strdup (repo_id);
 	runner->priv->cached_enabled = enabled;
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_REPO_ENABLE);
 	return TRUE;
 }
@@ -678,6 +698,7 @@ pk_runner_repo_set_data (PkRunner *runner, const gchar *repo_id, const gchar *pa
 	runner->priv->cached_repo_id = g_strdup (repo_id);
 	runner->priv->cached_parameter = g_strdup (parameter);
 	runner->priv->cached_value = g_strdup (value);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_REPO_SET_DATA);
 	return TRUE;
 }
