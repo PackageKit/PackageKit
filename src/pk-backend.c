@@ -602,9 +602,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit allow-cancel %i", allow_cancel);
-	backend->priv->allow_cancel = allow_cancel;
-
 	/* remove or add the hal inhibit */
 	if (allow_cancel == TRUE) {
 		pk_inhibit_remove (backend->priv->inhibit, backend);
@@ -612,7 +609,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		pk_inhibit_add (backend->priv->inhibit, backend);
 	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_CANCEL], 0, allow_cancel);
+	/* can we do the action? */
+	if (backend->desc->cancel != NULL) {
+		backend->priv->allow_cancel = allow_cancel;
+		pk_debug ("emit allow-cancel %i", allow_cancel);
+		g_signal_emit (backend, signals [PK_BACKEND_ALLOW_CANCEL], 0, allow_cancel);
+	}
 	return TRUE;
 }
 

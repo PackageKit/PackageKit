@@ -1129,7 +1129,7 @@ pk_runner_init (PkRunner *runner)
 {
 	runner->priv = PK_RUNNER_GET_PRIVATE (runner);
 	runner->priv->finished = FALSE;
-	runner->priv->allow_cancel = TRUE;
+	runner->priv->allow_cancel = FALSE;
 	runner->priv->dbus_name = NULL;
 	runner->priv->cached_enabled = FALSE;
 	runner->priv->cached_package_id = NULL;

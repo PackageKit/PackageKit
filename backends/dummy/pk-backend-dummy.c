@@ -74,6 +74,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      -1);
 }
 
+#if 0
 /**
  * backend_cancel:
  */
@@ -82,6 +83,7 @@ backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 }
+#endif
 
 /**
  * backend_get_depends:
@@ -532,7 +534,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	backend_cancel,				/* cancel */
+	NULL,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
