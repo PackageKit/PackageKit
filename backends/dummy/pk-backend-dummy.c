@@ -26,6 +26,7 @@
 #include <pk-backend.h>
 
 static guint progress_percentage;
+static gulong signal_timeout = 0;
 
 /**
  * backend_initalize:
@@ -74,7 +75,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 				      -1);
 }
 
-#if 0
 /**
  * backend_cancel:
  */
@@ -82,8 +82,16 @@ static void
 backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	/* cancel the timeout */
+	if (signal_timeout != 0) {
+		g_source_remove (signal_timeout);
+		signal_timeout = 0;
+		/* now mark as finished */
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "The task was stopped successfully");
+		pk_backend_finished (backend);
+	}
 }
-#endif
 
 /**
  * backend_get_depends:
@@ -257,7 +265,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	g_timeout_add (1000, backend_install_timeout, backend);
+	signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
 }
 
 /**
@@ -295,7 +303,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 	progress_percentage = 0;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	g_timeout_add (500, backend_refresh_cache_timeout, backend);
+	signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
 /**
@@ -410,7 +418,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	g_timeout_add (2000, backend_search_name_timeout, backend);
+	signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
 }
 
 /**
@@ -476,7 +484,7 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_allow_cancel (backend, TRUE);
 	progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
-	g_timeout_add (1000, backend_update_system_timeout, backend);
+	signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
 /**
@@ -534,7 +542,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,				/* cancel */
+	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
