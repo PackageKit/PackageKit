@@ -376,7 +376,7 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *b
 	/* if we quit the process, set an error */
 	if (exit == PK_EXIT_ENUM_QUIT) {
 		/* we just call this failed, and set an error */
-		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_PROCESS_QUIT,
+		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "Transaction was cancelled");
 	}
 

@@ -87,7 +87,7 @@ backend_cancel (PkBackend *backend)
 		g_source_remove (signal_timeout);
 		signal_timeout = 0;
 		/* now mark as finished */
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "The task was stopped successfully");
 		pk_backend_finished (backend);
 	}
