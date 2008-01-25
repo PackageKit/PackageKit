@@ -1028,6 +1028,7 @@ pk_runner_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkRunner *
 {
 	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
+	g_return_if_fail (runner->priv->backend->desc->cancel != NULL);
 
 	pk_debug ("AllowCancel now %i", allow_cancel);
 	runner->priv->allow_cancel = allow_cancel;
