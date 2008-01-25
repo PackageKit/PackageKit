@@ -40,9 +40,9 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             self.daemonize()
 
         PackageKitDbusInterface.__init__(self,
-                                         'org.freedesktop.PackageKitDbus',
-                                         'org.freedesktop.PackageKitDbus',
-                                         '/org/freedesktop/PackageKitDbus')
+                                         'org.freedesktop.PackageKitYumBackend',
+                                         'org.freedesktop.PackageKitYumBackend',
+                                         '/org/freedesktop/PackageKitYumBackend')
         self._locked = False
 
         self.loop = gobject.MainLoop()
