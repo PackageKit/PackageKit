@@ -38,7 +38,7 @@ static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_set_interruptable (backend, TRUE);
+	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_dbus_search_name (dbus, filter, search);
 }

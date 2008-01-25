@@ -88,6 +88,29 @@ pk_monitor_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer da
 }
 
 /**
+ * pk_monitor_package_cb:
+ **/
+static void
+pk_monitor_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id,
+		       const gchar *summary, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tPackage: %s\t%s\t%s\n", tid, pk_info_enum_to_text (info), package_id, summary);
+	g_free (tid);
+}
+
+/**
+ * pk_monitor_allow_cancel_cb:
+ **/
+static void
+pk_monitor_allow_cancel_cb (PkClient *client, gboolean allow_cancel, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("%s\tAllow Cancel: %i\n", tid, allow_cancel);
+	g_free (tid);
+}
+
+/**
  * pk_monitor_finished_cb:
  **/
 static void
@@ -170,6 +193,10 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_require_restart_cb), NULL);
 	g_signal_connect (client, "status-changed",
 			  G_CALLBACK (pk_monitor_status_changed_cb), NULL);
+	g_signal_connect (client, "package",
+			  G_CALLBACK (pk_monitor_package_cb), NULL);
+	g_signal_connect (client, "allow-cancel",
+			  G_CALLBACK (pk_monitor_allow_cancel_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",

@@ -639,7 +639,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	// For now, don't let the user cancel the install once it's started
-	pk_backend_set_interruptable (backend, FALSE);
+	pk_backend_set_allow_cancel (backend, FALSE);
 
 	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);

@@ -460,15 +460,15 @@
       <title>Cancellation</title>
       <para>
         If you have a multipart transaction that can be aborted in one phase but
-        not another then the AllowInterrupt signal can be sent.
+        not another then the AllowCancel signal can be sent.
         This allows for example the yum download to be cancelled, but not the
         install transaction.
         By cancelling a job all subtransactions are killed.
       </para>
       <para>
         By default actions cannot be cancelled unless enabled in the backend.
-        Use <literal>AllowInterrupt(true)</literal> to enable cancellation
-        and <literal>AllowInterrupt(false)</literal> to disable it.
+        Use <literal>AllowCancel(true)</literal> to enable cancellation
+        and <literal>AllowCancel(false)</literal> to disable it.
         This can be done for any job type.
       </para>
       <para>

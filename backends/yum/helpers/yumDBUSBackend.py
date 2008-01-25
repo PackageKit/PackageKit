@@ -393,7 +393,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         searchlist = ['name']
@@ -404,7 +404,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         searchlist = ['name', 'summary', 'description', 'group']
@@ -433,7 +433,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.yumbase.conf.cache = 1 # Only look in cache.
         self.status(STATUS_QUERY)
@@ -473,7 +473,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-file functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
 
@@ -538,7 +538,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         pkg,inst = self._findPackage(package)
@@ -628,7 +628,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of depends for a given package
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -654,7 +654,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
-        self.allow_interrupt(False)
+        self.allow_cancel(False)
         self.percentage(0)
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
@@ -667,7 +667,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        self.allow_interrupt(True);
+        self.allow_cancel(True);
         self.percentage(0)
         self.status(STATUS_REFRESH_CACHE)
 
@@ -702,7 +702,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
-        self.allow_interrupt(True);
+        self.allow_cancel(True);
         self.percentage(None)
         self.yumbase.conf.cache = 1 # Only look in cache.
         self.status(STATUS_QUERY)
@@ -734,7 +734,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.allow_interrupt(False)
+        self.allow_cancel(False)
         self.percentage(0)
 
         pkg,inst = self._findPackage(package)
@@ -828,7 +828,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(0)
 
         pkgs_to_inst = []
@@ -847,7 +847,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(0)
 
         pkg,inst = self._findPackage(package)
@@ -928,7 +928,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self.allow_interrupt(False);
+        self.allow_cancel(False);
         self.percentage(0)
 
         pkg,inst = self._findPackage( package)
@@ -948,7 +948,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -966,7 +966,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
 
     def get_files(self, package):
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
 
@@ -1006,7 +1006,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-updates functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         try:
@@ -1133,7 +1133,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
         pkg,inst = self._findPackage(package)
@@ -1330,7 +1330,7 @@ class ProcessTransPackageKitCallback:
 
     def event(self,state,data=None):
         if state == PT_DOWNLOAD:        # Start Downloading
-            self.base.allow_interrupt(True)
+            self.base.allow_cancel(True)
             self.base.percentage(10)
             self.base.status(STATUS_DOWNLOAD)
         if state == PT_DOWNLOAD_PKGS:   # Packages to download
@@ -1339,11 +1339,11 @@ class ProcessTransPackageKitCallback:
             self.base.percentage(40)
             pass
         elif state == PT_TEST_TRANS:
-            self.base.allow_interrupt(False)
+            self.base.allow_cancel(False)
             self.base.percentage(45)
             pass
         elif state == PT_TRANSACTION:
-            self.base.allow_interrupt(False)
+            self.base.allow_cancel(False)
             self.base.percentage(50)
             pass
 

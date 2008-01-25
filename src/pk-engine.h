@@ -212,6 +212,10 @@ gboolean	 pk_engine_get_package			(PkEngine	*engine,
 							 const gchar	*tid,
 							 gchar		**package,
 							 GError		**error);
+gboolean	 pk_engine_get_allow_cancel		(PkEngine	*engine,
+							 const gchar	*tid,
+							 gboolean	*allow_cancel,
+							 GError		**error);
 
 /* repo stuff */
 void		 pk_engine_get_repo_list		(PkEngine	*engine,

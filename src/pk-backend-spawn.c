@@ -309,16 +309,16 @@ pk_backend_spawn_parse_common_error (PkBackendSpawn *backend_spawn, const gchar 
 			goto out;
 		}
 		pk_backend_set_status (backend_spawn->priv->backend, status_enum);
-	} else if (pk_strequal (command, "allow-interrupt") == TRUE) {
+	} else if (pk_strequal (command, "allow-cancel") == TRUE) {
 		if (size != 2) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
 		if (pk_strequal (sections[1], "true") == TRUE) {
-			pk_backend_set_interruptable (backend_spawn->priv->backend, TRUE);
+			pk_backend_set_allow_cancel (backend_spawn->priv->backend, TRUE);
 		} else if (pk_strequal (sections[1], "false") == TRUE) {
-			pk_backend_set_interruptable (backend_spawn->priv->backend, FALSE);
+			pk_backend_set_allow_cancel (backend_spawn->priv->backend, FALSE);
 		} else {
 			pk_warning ("invalid section '%s'", sections[1]);
 			ret = FALSE;
@@ -376,7 +376,7 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *b
 	/* if we quit the process, set an error */
 	if (exit == PK_EXIT_ENUM_QUIT) {
 		/* we just call this failed, and set an error */
-		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_PROCESS_QUIT,
+		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "Transaction was cancelled");
 	}
 
@@ -760,7 +760,7 @@ libst_backend_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");
-	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-interrupt\ttrue");
+	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-cancel\ttrue");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -769,7 +769,7 @@ libst_backend_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate2");
-	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-interrupt\tbrian");
+	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-cancel\tbrian");
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {

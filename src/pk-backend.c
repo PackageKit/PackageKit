@@ -56,7 +56,7 @@ struct _PkBackendPrivate
 	PkExitEnum		 exit;
 	PkInhibit		*inhibit;
 	gboolean		 during_initialize;
-	gboolean		 is_interruptable;
+	gboolean		 allow_cancel;
 	gboolean		 finished;
 	guint			 last_percentage;
 	guint			 last_subpercentage;
@@ -81,7 +81,7 @@ enum {
 	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
 	PK_BACKEND_FINISHED,
-	PK_BACKEND_ALLOW_INTERRUPT,
+	PK_BACKEND_ALLOW_CANCEL,
 	PK_BACKEND_REPO_DETAIL,
 	PK_BACKEND_LAST_SIGNAL
 };
@@ -594,37 +594,39 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 }
 
 /**
- * pk_backend_set_interruptable:
+ * pk_backend_set_allow_cancel:
  **/
 gboolean
-pk_backend_set_interruptable (PkBackend *backend, gboolean is_interruptable)
+pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	pk_debug ("emit allow-interrupt %i", is_interruptable);
-	backend->priv->is_interruptable = is_interruptable;
-
 	/* remove or add the hal inhibit */
-	if (is_interruptable == TRUE) {
+	if (allow_cancel == TRUE) {
 		pk_inhibit_remove (backend->priv->inhibit, backend);
 	} else {
 		pk_inhibit_add (backend->priv->inhibit, backend);
 	}
 
-	g_signal_emit (backend, signals [PK_BACKEND_ALLOW_INTERRUPT], 0, is_interruptable);
+	/* can we do the action? */
+	if (backend->desc->cancel != NULL) {
+		backend->priv->allow_cancel = allow_cancel;
+		pk_debug ("emit allow-cancel %i", allow_cancel);
+		g_signal_emit (backend, signals [PK_BACKEND_ALLOW_CANCEL], 0, allow_cancel);
+	}
 	return TRUE;
 }
 
 /**
- * pk_backend_get_interruptable:
+ * pk_backend_get_allow_cancel:
  **/
 gboolean
-pk_backend_get_interruptable (PkBackend *backend)
+pk_backend_get_allow_cancel (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return backend->priv->is_interruptable;
+	return backend->priv->allow_cancel;
 }
 
 /**
@@ -912,8 +914,8 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	signals [PK_BACKEND_ALLOW_INTERRUPT] =
-		g_signal_new ("allow-interrupt",
+	signals [PK_BACKEND_ALLOW_CANCEL] =
+		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
@@ -935,7 +937,7 @@ pk_backend_reset (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	backend->priv->set_error = FALSE;
-	backend->priv->is_interruptable = FALSE;
+	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;

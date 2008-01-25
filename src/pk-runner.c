@@ -64,6 +64,7 @@ struct PkRunnerPrivate
 	PkRoleEnum		 role;
 	PkStatusEnum		 status;
 	gboolean		 finished;
+	gboolean		 allow_cancel;
 	gboolean		 cached_force;
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_enabled;
@@ -82,6 +83,7 @@ struct PkRunnerPrivate
 	gulong			 signal_package;
 	gulong			 signal_finished;
 	gulong			 signal_status;
+	gulong			 signal_allow_cancel;
 	/* needed for gui coldplugging */
 	gchar			*last_package;
 	gchar			*dbus_name;
@@ -147,6 +149,17 @@ pk_runner_get_package (PkRunner *runner, gchar **package_id)
 }
 
 /**
+ * pk_runner_get_allow_cancel:
+ **/
+gboolean
+pk_runner_get_allow_cancel (PkRunner *runner)
+{
+	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+	return runner->priv->allow_cancel;
+}
+
+/**
  * pk_runner_get_status:
  *
  * Even valid when the backend has moved on
@@ -196,8 +209,6 @@ pk_runner_get_text (PkRunner *runner)
 gboolean
 pk_runner_cancel (PkRunner *runner, gchar **error_text)
 {
-	gboolean killable;
-
 	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (error_text != NULL, FALSE);
 
@@ -214,9 +225,8 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 	}
 
 	/* check if it's safe to kill */
-	killable = pk_backend_get_interruptable (runner->priv->backend);
-	if (killable == FALSE) {
-		*error_text = g_strdup ("Tried to kill a process that is not safe to kill");
+	if (runner->priv->allow_cancel == FALSE) {
+		*error_text = g_strdup ("Tried to cancel a runner that is not safe to kill");
 		return FALSE;
 	}
 	runner->priv->backend->desc->cancel (runner->priv->backend);
@@ -1011,6 +1021,20 @@ pk_runner_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkRunner *
 }
 
 /**
+ * pk_runner_allow_cancel_cb:
+ **/
+static void
+pk_runner_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkRunner *runner)
+{
+	g_return_if_fail (runner != NULL);
+	g_return_if_fail (PK_IS_RUNNER (runner));
+	g_return_if_fail (runner->priv->backend->desc->cancel != NULL);
+
+	pk_debug ("AllowCancel now %i", allow_cancel);
+	runner->priv->allow_cancel = allow_cancel;
+}
+
+/**
  * pk_runner_get_tid:
  */
 const gchar *
@@ -1054,6 +1078,7 @@ pk_runner_finalize (GObject *object)
 	g_signal_handler_disconnect (runner->priv->backend, runner->priv->signal_package);
 	g_signal_handler_disconnect (runner->priv->backend, runner->priv->signal_finished);
 	g_signal_handler_disconnect (runner->priv->backend, runner->priv->signal_status);
+	g_signal_handler_disconnect (runner->priv->backend, runner->priv->signal_allow_cancel);
 
 	g_free (runner->priv->last_package);
 	g_free (runner->priv->dbus_name);
@@ -1105,6 +1130,7 @@ pk_runner_init (PkRunner *runner)
 {
 	runner->priv = PK_RUNNER_GET_PRIVATE (runner);
 	runner->priv->finished = FALSE;
+	runner->priv->allow_cancel = FALSE;
 	runner->priv->dbus_name = NULL;
 	runner->priv->cached_enabled = FALSE;
 	runner->priv->cached_package_id = NULL;
@@ -1129,6 +1155,9 @@ pk_runner_init (PkRunner *runner)
 	runner->priv->signal_status =
 		g_signal_connect (runner->priv->backend, "status-changed",
 			  G_CALLBACK (pk_runner_status_changed_cb), runner);
+	runner->priv->signal_allow_cancel =
+		g_signal_connect (runner->priv->backend, "allow-cancel",
+			  G_CALLBACK (pk_runner_allow_cancel_cb), runner);
 
 	runner->priv->inhibit = pk_inhibit_new ();
 	runner->priv->network = pk_network_new ();

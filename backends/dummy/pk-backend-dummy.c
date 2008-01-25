@@ -26,6 +26,7 @@
 #include <pk-backend.h>
 
 static guint progress_percentage;
+static gulong signal_timeout = 0;
 
 /**
  * backend_initalize:
@@ -81,6 +82,15 @@ static void
 backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	/* cancel the timeout */
+	if (signal_timeout != 0) {
+		g_source_remove (signal_timeout);
+		signal_timeout = 0;
+		/* now mark as finished */
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				       "The task was stopped successfully");
+		pk_backend_finished (backend);
+	}
 }
 
 /**
@@ -255,7 +265,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	g_timeout_add (1000, backend_install_timeout, backend);
+	signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
 }
 
 /**
@@ -293,7 +303,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 	progress_percentage = 0;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	g_timeout_add (500, backend_refresh_cache_timeout, backend);
+	signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
 /**
@@ -408,7 +418,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	g_timeout_add (2000, backend_search_name_timeout, backend);
+	signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
 }
 
 /**
@@ -443,6 +453,7 @@ backend_update_system_timeout (gpointer data)
 	}
 	if (progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
@@ -470,9 +481,10 @@ backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	pk_backend_set_allow_cancel (backend, TRUE);
 	progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
-	g_timeout_add (1000, backend_update_system_timeout, backend);
+	signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
 /**

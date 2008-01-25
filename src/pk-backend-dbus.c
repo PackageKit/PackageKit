@@ -225,13 +225,13 @@ pk_backend_dbus_finished_cb (DBusGProxy *proxy, PkExitEnum exit, PkBackendDbus *
 }
 
 /**
- * pk_backend_dbus_allow_interrupt_cb:
+ * pk_backend_dbus_allow_cancel_cb:
  **/
 static void
-pk_backend_dbus_allow_interrupt_cb (DBusGProxy *proxy, gboolean allow_kill, PkBackendDbus *backend_dbus)
+pk_backend_dbus_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_set_interruptable (backend_dbus->priv->backend, allow_kill);
+	pk_backend_set_allow_cancel (backend_dbus->priv->backend, allow_cancel);
 }
 
 /**
@@ -325,7 +325,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "AllowInterrupt",
+	dbus_g_proxy_add_signal (proxy, "AllowCancel",
 				 G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "ErrorCode",
 				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
@@ -359,8 +359,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 				     G_CALLBACK (pk_backend_dbus_update_detail_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Finished",
 				     G_CALLBACK (pk_backend_dbus_finished_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "AllowInterrupt",
-				     G_CALLBACK (pk_backend_dbus_allow_interrupt_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "AllowCancel",
+				     G_CALLBACK (pk_backend_dbus_allow_cancel_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
 				     G_CALLBACK (pk_backend_dbus_error_code_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RequireRestart",

@@ -40,8 +40,8 @@ gboolean	 pk_backend_set_role			(PkBackend	*backend,
 							 PkRoleEnum	 role);
 gboolean	 pk_backend_set_status			(PkBackend	*backend,
 							 PkStatusEnum	 status);
-gboolean	 pk_backend_set_interruptable		(PkBackend	*backend,
-							 gboolean	 is_interruptable);
+gboolean	 pk_backend_set_allow_cancel		(PkBackend	*backend,
+							 gboolean	 allow_cancel);
 gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
@@ -54,7 +54,7 @@ gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 const gchar	*pk_backend_get_current_tid		(PkBackend	*backend);
 PkRoleEnum	 pk_backend_get_role			(PkBackend	*backend);
 PkStatusEnum	 pk_backend_get_status			(PkBackend	*backend);
-gboolean	 pk_backend_get_interruptable		(PkBackend	*backend);
+gboolean	 pk_backend_get_allow_cancel		(PkBackend	*backend);
 gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*percentage,
 							 guint		*subpercentage,

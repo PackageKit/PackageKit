@@ -255,7 +255,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-search-name functionality
         '''
         self.status(STATUS_INFO)
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_name(key)):
             self._emit_package(package)
@@ -265,7 +265,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-search-details functionality
         '''
         self.status(STATUS_INFO)
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_details(key)):
             self._emit_package(package)
@@ -275,7 +275,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-search-group functionality
         '''
         self.status(STATUS_INFO)
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         for package in self._do_search(filters,
                 lambda pkg: pkg.match_group(key)):
             self._emit_package(package)
@@ -284,7 +284,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-file functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.percentage(None)
 
         self.error(ERROR_NOT_SUPPORTED,
@@ -324,7 +324,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-depends functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
@@ -364,7 +364,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-requires functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self,self._apt_cache[name], version, data)
@@ -376,7 +376,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
-        self.allow_interrupt(True)
+        self.allow_cancel(True)
         self.status(STATUS_INFO)
         sources = SourcesList()
         root = apt_pkg.Config.FindDir("Dir::State::Lists")
