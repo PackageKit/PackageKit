@@ -922,21 +922,29 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 	pk_engine_item_commit (engine, item);
 
 	/* try and reuse cache */
-	if (FALSE && engine->priv->updates_cache != NULL) {
+	if (engine->priv->updates_cache != NULL) {
 		PkPackageItem *package;
+		const gchar *info_text;
+		const gchar *exit_text;
 		guint i;
 		guint length;
 
 		length = pk_package_list_get_size (engine->priv->updates_cache);
-		pk_debug ("we have cached data (%i) we could use!", length);
+		pk_debug ("we have cached data (%i) we should use!", length);
 
 		/* emulate the backend */
 		pk_runner_set_role (item->runner, PK_ROLE_ENUM_GET_UPDATES);
 		for (i=0; i<length; i++) {
 			package = pk_package_list_get_item (engine->priv->updates_cache, i);
-			pk_engine_package_cb (engine->priv->backend, package->info, package->package_id, package->summary, engine);
+			info_text = pk_info_enum_to_text (package->info);
+			g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, tid, info_text, package->package_id, package->summary);
 		}
-		pk_engine_finished_cb (engine->priv->backend, PK_EXIT_ENUM_SUCCESS, engine);
+
+		/* we are done */
+		exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+		pk_debug ("emitting finished transaction:%s, '%s'", tid, exit_text);
+		g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, exit_text, 0);
+
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return (context);
 		return;
