@@ -312,7 +312,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             count = 1
             for (pkg,values) in res:
                 # are we installed?
-                if pkg.repoid == 'installed':
+                if pkg.repo.id == 'installed':
                     if FILTER_NOT_INSTALLED not in fltlist:
                         if self._do_extra_filtering(pkg,fltlist):
                             count+=1
