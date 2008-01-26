@@ -647,7 +647,8 @@ pk_engine_caller_active_changed_cb (PkRunner *runner, gboolean is_active, PkEngi
 
 	c_tid = pk_runner_get_tid (runner);
 	if (c_tid == NULL) {
-		pk_warning ("could not get current tid from runner");
+		/* we might get this if we emulated a backend */
+		pk_debug ("could not get current tid from runner");
 		return;
 	}
 
@@ -919,7 +920,6 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
 
 	/* try and reuse cache */
 	if (engine->priv->updates_cache != NULL) {
@@ -949,6 +949,9 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		dbus_g_method_return (context);
 		return;
 	}
+
+	/* only commit if we haven't emulated */
+	pk_engine_item_commit (engine, item);
 
 	dbus_g_method_return (context);
 }
