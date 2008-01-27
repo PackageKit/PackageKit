@@ -218,6 +218,12 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 		return FALSE;
 	}
 
+	/* have we already been marked as finished? */
+	if (runner->priv->finished == TRUE) {
+		*error_text = g_strdup ("Already finished");
+		return FALSE;
+	}
+
 	/* check to see if we have an action */
 	if (runner->priv->role == PK_ROLE_ENUM_UNKNOWN) {
 		*error_text = g_strdup ("No role");
@@ -229,6 +235,8 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 		*error_text = g_strdup ("Tried to cancel a runner that is not safe to kill");
 		return FALSE;
 	}
+
+	/* actually run the method */
 	runner->priv->backend->desc->cancel (runner->priv->backend);
 	return TRUE;
 }

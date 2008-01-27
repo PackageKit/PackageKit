@@ -76,6 +76,24 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 /**
+ * backend_cancel_timeout:
+ */
+static gboolean
+backend_cancel_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
+
+	/* we can now cancel again */
+	signal_timeout = 0;
+
+	/* now mark as finished */
+	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+			       "The task was stopped successfully");
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
+/**
  * backend_cancel:
  */
 static void
@@ -85,11 +103,10 @@ backend_cancel (PkBackend *backend)
 	/* cancel the timeout */
 	if (signal_timeout != 0) {
 		g_source_remove (signal_timeout);
-		signal_timeout = 0;
-		/* now mark as finished */
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				       "The task was stopped successfully");
-		pk_backend_finished (backend);
+
+		/* emulate that it takes us a few ms to cancel */
+		pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
 }
 
@@ -124,9 +141,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 "While the goals of the program are for ease of use and simple easy to "
 "understand tools, Scribus offers support for professional publishing "
 "features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager",
-				11214665
-				);
+"import/export and creation of color separations.", "http://live.gnome.org/GnomePowerManager", 11214665);
 	pk_backend_finished (backend);
 }
 
