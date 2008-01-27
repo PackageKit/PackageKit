@@ -1,7 +1,5 @@
 Order of no particular importance:
 
-* Add cancelling (present tense) as a status and assign it from ->cancel
-
 * Find out why yum doesn't output some package status calls.
 
 * Lots of the functions are not well commented with gtk-doc. Most
