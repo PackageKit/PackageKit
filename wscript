@@ -36,6 +36,7 @@ def set_options(opt):
 	opt.add_option('--enable-gcov', action="store_true", help="compile with gcov support (gcc only)", dest="gcov", default=False)
 	opt.add_option('--enable-gprof', action="store_true", help="compile with gprof support (gcc only)", dest="gprof", default=False)
 
+	opt.tool_options("gcc")
 	opt.sub_options('backends')
 
 def configure(conf):
