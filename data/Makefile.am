@@ -58,7 +58,8 @@ clean-local:
 DISTCLEANFILES =					\
 	org.freedesktop.PackageKit.service		\
 	org.freedesktop.PackageKitTestBackend.service	\
-	org.freedesktop.PackageKitYumBackend.service
+	org.freedesktop.PackageKitYumBackend.service	\
+	$(NULL)
 
 MAINTAINERCLEANFILES =					\
 	*~			      			\
