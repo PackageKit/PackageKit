@@ -155,6 +155,7 @@ AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enabl
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
+AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
 
 # export to Makefile.am's
@@ -167,6 +168,7 @@ AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backe
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
+AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
 
 AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
@@ -515,6 +517,8 @@ backends/test/Makefile
 backends/test/helpers/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
+backends/yum2/Makefile
+backends/yum2/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
 backends/zypp/Makefile
@@ -560,6 +564,7 @@ echo "
         PiSi backend:              ${enable_pisi}
         SMART backend:             ${enable_smart}
         YUM backend:               ${enable_yum}
+        YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}
         Default backend:           ${with_default_backend}
 "

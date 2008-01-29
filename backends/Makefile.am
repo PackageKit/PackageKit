@@ -32,6 +32,10 @@ if BACKEND_TYPE_YUM
 SUBDIRS += yum
 endif
 
+if BACKEND_TYPE_YUM2
+SUBDIRS += yum2
+endif
+
 if BACKEND_TYPE_PISI
 SUBDIRS += pisi
 endif
