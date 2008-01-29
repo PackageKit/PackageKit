@@ -55,7 +55,9 @@ EXTRA_DIST =						\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitYumBackend.conf.in	\
 	packagekit.pc.in				\
-	$(service_in_files)				\
+	$(servicemain_in_files)				\
+	$(serviceyum_in_files)				\
+	$(servicetest_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
 	$(NULL)
