@@ -13,6 +13,7 @@ packagekitpython_PYTHON =				\
 	enums.py					\
 	daemonBackend.py				\
 	pkexceptions.py					\
+	pkdbus.py					\
 	$(NULL)
 
 clean-local :
