@@ -20,16 +20,24 @@ dist_dbus_DATA = 					\
 	org.freedesktop.PackageKitYumBackend.conf	\
 	$(NULL)
 
-servicedir       = $(DBUS_SERVICES_DIR)
-service_in_files = 					\
-	org.freedesktop.PackageKit.service.in		\
-	org.freedesktop.PackageKitTestBackend.service.in \
-	org.freedesktop.PackageKitYumBackend.service.in	\
-	$(NULL)
-service_DATA     = $(service_in_files:.service.in=.service)
+servicemaindir       = $(DBUS_SERVICES_DIR)
+servicemain_in_files = org.freedesktop.PackageKit.service.in
+servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
 
-$(service_DATA): $(service_in_files) Makefile
+$(servicemain_DATA): $(servicemain_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
+
+serviceyumdir       = $(DBUS_SERVICES_DIR)
+serviceyum_in_files = org.freedesktop.PackageKitYumBackend.service.in
+serviceyum_DATA     = $(serviceyum_in_files:.service.in=.service)
+$(serviceyum_DATA): $(serviceyum_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
+
+servicetestdir       = $(DBUS_SERVICES_DIR)
+servicetest_in_files = org.freedesktop.PackageKitTestBackend.service.in
+servicetest_DATA     = $(servicetest_in_files:.service.in=.service)
+$(servicetest_DATA): $(servicetest_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
 
 localcachedir = $(localstatedir)/run/PackageKit
 localcache_DATA =					\
