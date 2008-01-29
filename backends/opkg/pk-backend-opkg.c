@@ -61,6 +61,14 @@ extern opkg_download_progress_callback opkg_cb_download_progress;
 int
 opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 {
+	PkBackend *backend;
+	backend = pk_backend_thread_get_backend (thread);
+
+	if (level == OPKG_NOTICE)
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, msg);
+	if (level == OPKG_ERROR)
+		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, msg);
+
 	if (level != 1)
 		return 0;
 
@@ -362,7 +370,11 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 
 	/* set the percentage as a fraction of the current progress plus the
 	 * progress we have already recorded */
-	pk_backend_set_percentage (backend, total_progress + (progress / sources_list_count));
+	if (total_progress  + (progress / sources_list_count) > 100)
+		return;
+
+	pk_backend_set_percentage (backend,
+			total_progress + (progress / sources_list_count));
 
 }
 
