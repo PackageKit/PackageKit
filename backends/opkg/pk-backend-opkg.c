@@ -61,6 +61,14 @@ extern opkg_download_progress_callback opkg_cb_download_progress;
 int
 opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 {
+	PkBackend *backend;
+	backend = pk_backend_thread_get_backend (thread);
+
+	if (level == OPKG_NOTICE)
+		pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, msg);
+	if (level == OPKG_ERROR)
+		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, msg);
+
 	if (level != 1)
 		return 0;
 
