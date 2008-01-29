@@ -362,7 +362,11 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 
 	/* set the percentage as a fraction of the current progress plus the
 	 * progress we have already recorded */
-	pk_backend_set_percentage (backend, total_progress + (progress / sources_list_count));
+	if (total_progress  + (progress / sources_list_count) > 100)
+		return;
+
+	pk_backend_set_percentage (backend,
+			total_progress + (progress / sources_list_count));
 
 }
 
