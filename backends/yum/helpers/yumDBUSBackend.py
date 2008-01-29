@@ -223,7 +223,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def __init__(self,lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
-        PackageKitBaseBackend.__init__(self)
+        PackageKitBaseBackend.__init__(self,backend = 'yum')
         self.yumbase = PackageKitYumBase()
         yumbase = self.yumbase
         self._setup_yum()

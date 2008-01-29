@@ -35,14 +35,14 @@ from pkexceptions import *
 
 class PackageKitBaseBackend(PackageKitDbusInterface):
 
-    def __init__(self, daemon=False):
+    def __init__(self,backend, daemon=False):
         if daemon:
             self.daemonize()
 
         PackageKitDbusInterface.__init__(self,
-                                         'org.freedesktop.PackageKitYumBackend',
-                                         'org.freedesktop.PackageKitYumBackend',
-                                         '/org/freedesktop/PackageKitYumBackend')
+                                         'org.freedesktop.PackageKit%s' % backend,
+                                         'org.freedesktop.PackageKit%s'% backend,
+                                         '/org/freedesktop/PackageKit%s'% backend)
         self._locked = False
 
         self.loop = gobject.MainLoop()
