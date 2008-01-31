@@ -31,6 +31,7 @@ static PkNetwork *network;
  * backend_initalize:
  * This should only be run once per backend load, i.e. not every transaction
  */
+/**
 static void
 backend_initalize (PkBackend *backend)
 {
@@ -40,11 +41,13 @@ backend_initalize (PkBackend *backend)
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "conary");
 }
+ */
 
 /**
  * backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
+/**
 static void
 backend_destroy (PkBackend *backend)
 {
@@ -54,6 +57,7 @@ backend_destroy (PkBackend *backend)
 	g_object_unref (network);
 	g_object_unref (spawn);
 }
+ */
 
 /**
  * backend_get_groups:
@@ -118,6 +122,7 @@ backend_cancel (PkBackend *backend)
 /**
  * backend_get_depends:
  */
+/**
 static void
 backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
@@ -125,6 +130,7 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
 }
+ */
 
 /**
  * backend_get_description:
@@ -151,6 +157,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 /**
  * backend_get_requires:
  */
+/**
 static void
 backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
@@ -158,6 +165,7 @@ backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recu
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-requires.py", package_id, pk_backend_bool_to_text (recursive), NULL);
 }
+ */
 
 /**
  * backend_get_updates:
@@ -203,6 +211,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 /**
  * backend_install_file:
  */
+/**
 static void
 backend_install_file (PkBackend *backend, const gchar *full_path)
 {
@@ -210,6 +219,7 @@ backend_install_file (PkBackend *backend, const gchar *full_path)
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "install-file.py", full_path, NULL);
 }
+ */
 
 /**
  * backend_refresh_cache:
@@ -244,6 +254,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 /**
  * pk_backend_search_details:
  */
+/**
 static void
 backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
 {
@@ -251,10 +262,12 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "search-details.py", filter, search, NULL);
 }
+ */
 
 /**
  * pk_backend_search_file:
  */
+/**
 static void
 backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
 {
@@ -262,10 +275,12 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "search-file.py", filter, search, NULL);
 }
+ */
 
 /**
  * pk_backend_search_group:
  */
+/**
 static void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
@@ -273,6 +288,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "search-group.py", filter, search, NULL);
 }
+ */
 
 /**
  * pk_backend_search_name:
@@ -294,7 +310,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	/* check network state */
-	if (pk_backend_network_is_online (backend) == FALSE) {
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
 		pk_backend_finished (backend);
 		return;
@@ -327,6 +343,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 /**
  * pk_backend_get_repo_list:
  */
+/**
 static void
 backend_get_repo_list (PkBackend *backend)
 {
@@ -334,10 +351,12 @@ backend_get_repo_list (PkBackend *backend)
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-repo-list.py", NULL);
 }
+ */
 
 /**
  * pk_backend_repo_enable:
  */
+/**
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
@@ -349,10 +368,12 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 		pk_backend_spawn_helper (spawn, "repo-enable.py", rid, "false", NULL);
 	}
 }
+ */
 
 /**
  * pk_backend_repo_set_data:
  */
+/**
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
@@ -360,6 +381,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
 }
+ */
 
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
@@ -373,7 +395,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_update_detail,              /* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
