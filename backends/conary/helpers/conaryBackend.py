@@ -121,13 +121,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
-            # We don't have summary data yet... so leave it blank for now
-            summary = " "
+            id = self.get_package_id(name, version, flavor)
+            summary = self._get_metadata(id, 'shortDesc') or " "
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
 
             if self._do_filtering(name,fltlist,installed):
-                id = self.get_package_id(name, version, flavor)
                 self.package(id, installed, summary)
 
     def _do_update(self, applyList, apply=False):
@@ -346,7 +345,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _show_package(self,name, version, flavor, status):
         '''  Show info about package'''
         id = self.get_package_id(name, version, flavor)
-        summary = ""
+        summary = self._get_metadata(id, 'shortDesc') or ""
         self.package(id, status, summary)
 
     def _get_status(self, notice):
