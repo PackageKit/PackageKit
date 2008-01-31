@@ -31,7 +31,7 @@ static PkNetwork *network;
  * backend_initalize:
  * This should only be run once per backend load, i.e. not every transaction
  */
-/**
+
 static void
 backend_initalize (PkBackend *backend)
 {
@@ -41,13 +41,11 @@ backend_initalize (PkBackend *backend)
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "conary");
 }
- */
 
 /**
  * backend_destroy:
  * This should only be run once per backend load, i.e. not every transaction
  */
-/**
 static void
 backend_destroy (PkBackend *backend)
 {
@@ -57,7 +55,6 @@ backend_destroy (PkBackend *backend)
 	g_object_unref (network);
 	g_object_unref (spawn);
 }
- */
 
 /**
  * backend_get_groups:
@@ -386,8 +383,8 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 PK_BACKEND_OPTIONS (
 	"Conary",				/* description */
 	"Ken VanDine <ken@vandine.org>",	/* author */
-	NULL,					/* initalize */
-	NULL,					/* destroy */
+	backend_initalize,			/* initalize */
+	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
