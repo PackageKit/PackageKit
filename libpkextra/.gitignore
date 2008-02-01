@@ -1,0 +1,15 @@
+.deps
+.libs
+*.o
+*.la
+*.lo
+*-marshal.c
+*-marshal.h
+pk-self-test
+*.loT
+*.gcov
+*.gcda
+*.gcno
+*.txt
+*.out
+

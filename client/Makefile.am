@@ -13,7 +13,9 @@ INCLUDES =						\
 	-DLIBDIR=\""$(libdir)"\" 			\
 	-DVERSION="\"$(VERSION)\"" 			\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
+	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/libpkextra			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
@@ -25,9 +27,14 @@ PK_LIBS =						\
 	$(top_builddir)/libpackagekit/libpackagekit.la	\
 	$(NULL)
 
+PKEXTRA_LIBS =						\
+	$(top_builddir)/libpkextra/libpkextra.la	\
+	$(NULL)
+
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
+	pk-import-desktop				\
 	$(NULL)
 
 pkcon_SOURCES =						\
@@ -50,6 +57,16 @@ pkmon_LDADD =						\
 	$(DBUS_LIBS)					\
 	$(PK_LIBS)					\
 	$(SELFTEST_LIBS)				\
+	$(NULL)
+
+pk_import_desktop_SOURCES =				\
+	pk-import-desktop.c				\
+	$(NULL)
+
+pk_import_desktop_LDADD =				\
+	$(GLIB_LIBS)					\
+	$(PKEXTRA_LIBS)					\
+	$(SQLITE_LIBS)					\
 	$(NULL)
 
 clean-local:
