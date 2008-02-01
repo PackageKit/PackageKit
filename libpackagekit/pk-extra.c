@@ -142,6 +142,12 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **nam
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
 
+	/* do we have a connection */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database connection");
+		return FALSE;
+	}
+
 	statement = g_strdup_printf ("SELECT package, name, genericname, comment, locale "
 				     "FROM localised WHERE package = '%s' AND locale = '%s'",
 				     package, extra->priv->locale);
@@ -221,6 +227,12 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
 
+	/* do we have a connection */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database connection");
+		return FALSE;
+	}
+
 	statement = g_strdup_printf ("SELECT icon, exec FROM data WHERE package = '%s'", package);
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_package_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
@@ -264,6 +276,12 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
+
+	/* do we have a connection */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database connection");
+		return FALSE;
+	}
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM localised WHERE package = '%s' AND locale = '%s'", package, extra->priv->locale);
@@ -321,6 +339,12 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
+
+	/* do we have a connection */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database connection");
+		return FALSE;
+	}
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM data WHERE package = '%s'", package);
@@ -397,6 +421,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	if (rc) {
 		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (extra->priv->db));
 		sqlite3_close (extra->priv->db);
+		extra->priv->db = NULL;
 		return FALSE;
 	} else {
 		if (create_file == FALSE) {
