@@ -531,7 +531,6 @@ data/tests/Makefile
 libselftest/Makefile
 libgbus/Makefile
 libpackagekit/Makefile
-libpkextra/Makefile
 policy/Makefile
 src/Makefile
 client/Makefile

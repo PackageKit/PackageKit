@@ -11,7 +11,6 @@ SUBDIRS = 						\
 	libselftest					\
 	libgbus						\
 	libpackagekit					\
-	libpkextra					\
 	src						\
 	client						\
 	backends					\

@@ -15,7 +15,6 @@ INCLUDES =						\
 	-DPK_DATA=\"$(pkgdatadir)\"			\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 			\
 	-I$(top_srcdir)/libpackagekit			\
-	-I$(top_srcdir)/libpkextra			\
 	-I$(top_srcdir)/libselftest			\
 	$(NULL)
 
@@ -25,10 +24,6 @@ SELFTEST_LIBS =						\
 
 PK_LIBS =						\
 	$(top_builddir)/libpackagekit/libpackagekit.la	\
-	$(NULL)
-
-PKEXTRA_LIBS =						\
-	$(top_builddir)/libpkextra/libpkextra.la	\
 	$(NULL)
 
 bin_PROGRAMS =						\
@@ -65,8 +60,8 @@ pk_import_desktop_SOURCES =				\
 
 pk_import_desktop_LDADD =				\
 	$(GLIB_LIBS)					\
-	$(PKEXTRA_LIBS)					\
 	$(SQLITE_LIBS)					\
+	$(PK_LIBS)					\
 	$(NULL)
 
 clean-local:
