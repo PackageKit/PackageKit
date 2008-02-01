@@ -38,6 +38,7 @@
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
+static GPtrArray *locale_array = NULL;
 
 static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
@@ -87,6 +88,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 {
 	GKeyFile *key;
 	gboolean ret;
+	guint i;
 	gchar *name = NULL;
 	gchar *name_unlocalised = NULL;
 	gchar *exec = NULL;
@@ -101,18 +103,14 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		pk_error ("bad!!");
 	}
 
-	guint i = 0;
-	const gchar *locale_array[] = {"ar", "bg", "ca", "da", "de", "dz", "el", "es", "et", "fi", "gl",
-				       "hu", "it", "ja", "ka", "mk", "nb", "pa", "pl", "pt", "pt_BR",
-				       "ru", "sl", "sv", "th", "uk", "vi", "zh_CN", "zh_HK", "zh_TW", NULL};
-	g_print ("PackageName:\t%s\t[default", package_name);
+	g_print ("PackageName:\t%s\t[", package_name);
 
 	/* get the default entry */
 	name_unlocalised = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", NULL);
 
 	/* for each locale */
-	do {
-		locale = locale_array[i];
+	for (i=0; i<locale_array->len; i++) {
+		locale = g_ptr_array_index (locale_array, i);
 		/* compare the translated against the default */
 		name = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Name", locale, NULL);
 
@@ -128,7 +126,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 			g_free (genericname);
 		}
 		g_free (name);
-	} while (locale_array[i++] != NULL); /* this means we get one last run with NULL */
+	}
 	g_free (name_unlocalised);
 	g_print ("]\n");
 
@@ -177,6 +175,28 @@ pk_desktop_process_directory (const gchar *directory)
 	g_dir_close (dir);
 }
 
+static void
+pk_desktop_get_locale_list (const gchar *directory)
+{
+	GDir *dir;
+	const gchar *name;
+
+	locale_array = g_ptr_array_new ();
+
+	dir = g_dir_open (directory, 0, NULL);
+	if (dir == NULL) {
+		pk_error ("not a valid locale dir!");
+	}
+
+	name = g_dir_read_name (dir);
+	while (name != NULL) {
+		pk_debug ("locale=%s", name);
+		name = g_dir_read_name (dir);
+		g_ptr_array_add (locale_array, g_strdup (name));
+	}
+	g_dir_close (dir);
+}
+
 /**
  * main:
  **/
@@ -207,6 +227,8 @@ main (int argc, char *argv[])
 
 	pk_debug_init (verbose);
 
+	pk_desktop_get_locale_list ("/usr/share/locale");
+
 	/* set defaults */
 	if (desktop_location == NULL) {
 		desktop_location = PK_EXTRA_DESKTOP_DATABASE;
@@ -218,6 +240,7 @@ main (int argc, char *argv[])
 
 	pk_desktop_process_directory (desktop_location);
 
+	g_ptr_array_free (locale_array, TRUE);
 	g_object_unref (extra);
 	g_object_unref (client);
 	return 0;
