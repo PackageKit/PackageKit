@@ -93,6 +93,16 @@ gboolean	 pk_backend_dbus_update_package		(PkBackendDbus	*backend_dbus,
 gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
 							 const gchar	*full_path);
 gboolean	 pk_backend_dbus_kill			(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_repo_enable		(PkBackendDbus	*backend_dbus,
+							 const gchar	*rid,
+							 gboolean	 enabled);
+gboolean	 pk_backend_dbus_repo_set_data		(PkBackendDbus	*backend_dbus,
+							 const gchar	*rid,
+							 const gchar	*parameter,
+							 const gchar	*value);
+gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_cancel			(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_set_name		(PkBackendDbus	*backend_dbus,
 							 const gchar	*service,
 							 const gchar	*interface,

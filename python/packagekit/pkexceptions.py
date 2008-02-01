@@ -19,6 +19,8 @@
 #    Tom Parker <palfrey@tevp.net>
 #    Robin Norwood <rnorwood@redhat.com>
 
+import dbus
+
 class PackageKitException(Exception):
 	def __init__(self,e=None):
 		Exception.__init__(self)

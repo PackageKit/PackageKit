@@ -3,11 +3,6 @@ helperdir = $(datadir)/PackageKit/helpers/yum
 
 NULL =
 
-dbusinstancedir = $(LIBEXECDIR)
-dbusinstance_DATA =					\
-	yumDBUSBackend.py				\
-	$(NULL)
-
 dist_helper_DATA = 			\
 	search-name.py			\
 	search-details.py		\
@@ -30,10 +25,6 @@ dist_helper_DATA = 			\
 	refresh-cache.py		\
 	update-system.py		\
 	yumBackend.py			\
-	$(NULL)
-
-EXTRA_DIST =						\
-	$(dbusinstance_DATA)				\
 	$(NULL)
 
 install-data-hook:

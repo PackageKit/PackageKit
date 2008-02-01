@@ -31,11 +31,13 @@ POSSIBILITY OF SUCH DAMAGE.
 """
 
 import os, sys
-if 'PSYCOWAF' in os.environ:
-	try: import psyco; psyco.full()
-	except: pass
+if sys.hexversion<0x203000f: raise "Waf needs Python >= 2.3"
 
-VERSION="1.3.0"
+if 'PSYCOWAF' in os.environ:
+	try:import psyco;psyco.full()
+	except:pass
+
+VERSION="1.3.2"
 REVISION="x"
 INSTALL="x"
 cwd=os.getcwd()
@@ -43,8 +45,7 @@ j=os.path.join
 
 def decode(s):
 	out=[]
-	app=out.append
-	s='!!!!!'.join(s.split('z'))
+	a=out.append
 	d=divmod
 	p1,p2=d(len(s),5)
 	stop=5*p1
@@ -58,54 +59,51 @@ def decode(s):
 		x,p=d(x,256)
 		x,o=d(x,256)
 		m,n=d(x,256)
-		app(chr(m)+chr(n)+chr(o)+chr(p))
+		a(chr(m)+chr(n)+chr(o)+chr(p))
 	if p2:
-		while len(p4)<5: p4=p4+'!'
+		p4+=(5-len(p4))*'!'
 		x=52200625L*u(p4,0)+614125*u(p4,1)+7225*u(p4,2)+85*u(p4,3)+u(p4,4)
 		x,p=d(x,256)
 		x,o=d(x,256)
 		m,n=d(x,256)
-		app(chr(m))
-		if p2>2:app(chr(n))
-		if p2>3:app(chr(o))
+		a(chr(m))
+		if p2>2:a(chr(n))
+		if p2>3:a(chr(o))
 	return ''.join(out)
 
 def err(m):
-	print m; sys.exit(1)
+	print '\033[91mError: %s\033[0m'%m
+	sys.exit(1)
 
 def unpack_wafdir(dir):
 	f=open(sys.argv[0],'rb')
-	c="Error: corrupted (%d)"
+	c="corrupted waf (%d)"
 	while 1:
 		line=f.readline()
-		if not line: err("\033[91mError: waf-light must be run from a folder containing wafadmin\033[0m")
+		if not line: err("waf-light must be run from a folder containing wafadmin")
 		if line=='#==>\n':
 			txt=f.readline()
 			if not txt: err(c%1)
 			if f.readline()!='#<==\n': err(c%2)
 			break
 	if not txt: err(c%3)
-	txt=decode(txt[1:])
+	try: txt=decode(txt[1:-1].replace('z', '!!!!!'))
+	except: err(c%4)
 
 	import shutil, tarfile
 	try: shutil.rmtree(dir)
 	except OSError: pass
-	try: os.makedirs(dir)
-	except OSError: err("Error: could not unpack waf-local into %s\
-Install waf system-wide or move waf into a writeable directory"%dir)
+	try: os.makedirs(j(dir, 'wafadmin', 'Tools'))
+	except OSError: err("cannot unpack waf-local into %s Install waf system-wide or move waf into a writeable directory"%dir)
 
 	os.chdir(dir)
 	tmp='t.tbz2'
-	f=open(tmp,'wb')
-	f.write(txt)
-	f.close()
+	t=open(tmp,'wb');t.write(txt);t.close()
 
 	t=tarfile.open(tmp)
 	for x in t: t.extract(x)
 	t.close()
 
-	os.chmod('wafadmin',0755)#TODO
-	os.chmod('wafadmin%sTools'%os.sep,0755)
 	os.unlink(tmp)
 	os.chdir(cwd)
 
@@ -119,13 +117,13 @@ def find_lib():
 
 	#devs use $WAFDIR
 	w=test(os.environ.get('WAFDIR',''))
-	if w:return w
+	if w: return w
 
 	#waf-light
-	if name=='waf-light':
+	if os.path.basename(name)=='waf-light':
 		w=test(base)
 		if w:return w
-		err("\033[91mwaf-light in use, wafadmin not found -> export WAFDIR=/folder\033[0m")
+		err("waf-light in use, wafadmin not found -> export WAFDIR=/folder")
 
 	dir="/lib/waf-%s-%s/" % (VERSION, REVISION)
 	for i in [INSTALL,'/usr','/usr/local','/opt']:
@@ -148,7 +146,7 @@ if "-vv" in sys.argv: print "wafdir is %s"%wafdir
 
 w=j(wafdir,'wafadmin')
 t=j(w,'Tools')
-sys.path=[w, t]+sys.path
+sys.path.extend([w,t])
 
 import Params, Scripting
 Params.g_tooldir=[t]

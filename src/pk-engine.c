@@ -387,7 +387,7 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
  * pk_engine_message_cb:
  **/
 static void
-pk_engine_message_cb (PkBackend *backend, PkMessageEnum restart, const gchar *details, PkEngine *engine)
+pk_engine_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *details, PkEngine *engine)
 {
 	const gchar *message_text;
 	const gchar *c_tid;
@@ -400,7 +400,7 @@ pk_engine_message_cb (PkBackend *backend, PkMessageEnum restart, const gchar *de
 		pk_warning ("could not get current tid from backend");
 		return;
 	}
-	message_text = pk_message_enum_to_text (restart);
+	message_text = pk_message_enum_to_text (message);
 	pk_debug ("emitting message tid:%s %s, '%s'", c_tid, message_text, details);
 	g_signal_emit (engine, signals [PK_ENGINE_MESSAGE], 0, c_tid, message_text, details);
 	pk_engine_reset_timer (engine);

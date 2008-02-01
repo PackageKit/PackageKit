@@ -27,9 +27,9 @@
 
 static PkBackendDbus *dbus;
 
-#define PACKAGEKIT_DBUS_INTERFACE	"org.freedesktop.PackageKitTestBackend"
-#define PACKAGEKIT_DBUS_SERVICE		"org.freedesktop.PackageKitTestBackend"
-#define PACKAGEKIT_DBUS_PATH		"/org/freedesktop/PackageKitTestBackend"
+#define PK_DBUS_TEST_INTERFACE		"org.freedesktop.PackageKitTestBackend"
+#define PK_DBUS_TEST_SERVICE		"org.freedesktop.PackageKitTestBackend"
+#define PK_DBUS_TEST_PATH		"/org/freedesktop/PackageKitTestBackend"
 
 /**
  * backend_search_name:
@@ -53,8 +53,8 @@ backend_initalize (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
 	dbus = pk_backend_dbus_new ();
-	pk_backend_dbus_set_name (dbus, PACKAGEKIT_DBUS_SERVICE,
-				  PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH);
+	pk_backend_dbus_set_name (dbus, PK_DBUS_TEST_SERVICE,
+				  PK_DBUS_TEST_INTERFACE, PK_DBUS_TEST_PATH);
 }
 
 /**

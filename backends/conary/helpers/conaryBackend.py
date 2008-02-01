@@ -121,13 +121,12 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             name = troveTuple[0]
             version = versions.ThawVersion(troveTuple[1])
             flavor = deps.ThawFlavor(troveTuple[2])
-            # We don't have summary data yet... so leave it blank for now
-            summary = " "
+            id = self.get_package_id(name, version, flavor)
+            summary = self._get_metadata(id, 'shortDesc') or " "
             troveTuple = tuple([name, version, flavor])
             installed = self.check_installed(troveTuple)
 
             if self._do_filtering(name,fltlist,installed):
-                id = self.get_package_id(name, version, flavor)
                 self.package(id, installed, summary)
 
     def _do_update(self, applyList, apply=False):
@@ -321,6 +320,68 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             result = trove.getMetadata()[field]
         return result
 
+    def _format_list(self,lst):
+        """
+        Convert a multi line string to a list separated by ';'
+        """
+        if lst:
+            return ";".join(lst)
+        else:
+            return ""
+
+    def _get_update_extras(self,id):
+        notice = self._get_metadata(id, 'notice') or " "
+        urls = {'jira':[], 'cve' : [], 'vendor': []}
+        if notice:
+            # Update Description
+            desc = notice['description']
+            # Update References (Jira,CVE ...)
+            refs = notice['references']
+            if refs:
+                for ref in refs:
+                    typ = ref['type']
+                    href = ref['href']
+                    title = ref['title']
+                    if typ in ('jira','cve') and href != None:
+                        if title == None:
+                            title = ""
+                        urls[typ].append("%s;%s" % (href,title))
+                    else:
+                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
+
+            # Reboot flag
+            if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
+                                reboot = 'system'
+            else:
+                reboot = 'none'
+            return self._format_str(desc),urls,reboot
+        else:
+            return "",urls,"none"
+
+
+    @ExceptionHandler
+    def get_update_detail(self,id):
+        '''
+        Implement the {backend}-get-update_detail functionality
+        '''
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+        name, version, flavor, installed = self._findPackage(id)
+        #update = self._get_updated(pkg)
+        update = ""
+        obsolete = ""
+        #desc,urls,reboot = self._get_update_extras(id)
+        #cve_url = self._format_list(urls['cve'])
+        cve_url = ""
+        #bz_url = self._format_list(urls['jira'])
+        bz_url = ""
+        #vendor_url = self._format_list(urls['vendor'])
+        vendor_url = ""
+        reboot = "none"
+        desc = self._get_metadata(id, 'longDesc') or " "
+        self.update_detail(id,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+
     @ExceptionHandler
     def get_description(self, id):
         '''
@@ -346,7 +407,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def _show_package(self,name, version, flavor, status):
         '''  Show info about package'''
         id = self.get_package_id(name, version, flavor)
-        summary = ""
+        summary = self._get_metadata(id, 'shortDesc') or ""
         self.package(id, status, summary)
 
     def _get_status(self, notice):
