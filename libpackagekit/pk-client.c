@@ -43,6 +43,7 @@
 #include "pk-enum.h"
 #include "pk-client.h"
 #include "pk-connection.h"
+#include "pk-package-id.h"
 #include "pk-package-list.h"
 #include "pk-debug.h"
 #include "pk-marshal.h"
@@ -65,9 +66,11 @@ struct PkClientPrivate
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 	GMainLoop		*loop;
+	GHashTable		*hash;
 	gboolean		 is_finished;
 	gboolean		 use_buffer;
 	gboolean		 synchronous;
+	gboolean		 name_filter;
 	gboolean		 promiscuous;
 	gchar			*tid;
 	PkPackageList		*package_list;
@@ -240,6 +243,23 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous)
 }
 
 /**
+ * pk_client_set_name_filter:
+ * @client: a valid #PkClient instance
+ * @name_filter: if we should check for previous packages before we emit
+ *
+ * Return value: %TRUE if the name_filter mode was enabled
+ **/
+gboolean
+pk_client_set_name_filter (PkClient *client, gboolean name_filter)
+{
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	client->priv->name_filter = name_filter;
+	return TRUE;
+}
+
+/**
  * pk_client_get_use_buffer:
  * @client: a valid #PkClient instance
  *
@@ -335,6 +355,7 @@ pk_client_reset (PkClient *client)
 	client->priv->tid = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->synchronous = FALSE;
+	client->priv->name_filter = FALSE;
 	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -483,6 +504,9 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		      PkClient     *client)
 {
 	PkInfoEnum info;
+	PkPackageId *pid;
+	const gchar *data;
+
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -490,6 +514,27 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	if (pk_client_should_proxy (client, tid) == FALSE) {
 		return;
 	}
+
+	/* filter repeat names */
+	if (client->priv->name_filter == TRUE) {
+		/* get the package name */
+		pid = pk_package_id_new_from_string (package_id);
+		pk_debug ("searching hash for %s", pid->name);
+
+		/* is already in the cache? */
+		data = (const gchar *) g_hash_table_lookup (client->priv->hash, pid->name);
+		if (data != NULL) {
+			pk_package_id_free (pid);
+			pk_debug ("ignoring as name filter is on, and previous found; %s", data);
+			return;
+		}
+
+		/* add to the cache */
+		pk_debug ("adding %s into the hash", pid->name);
+		g_hash_table_insert (client->priv->hash, g_strdup (pid->name), g_strdup (pid->name));
+		pk_package_id_free (pid);
+	}
+
 
 	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	info = pk_info_enum_from_text (info_text);
@@ -2781,6 +2826,7 @@ pk_client_init (PkClient *client)
 
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
+	client->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	client->priv->loop = g_main_loop_new (NULL, FALSE);
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
@@ -2998,6 +3044,9 @@ pk_client_finalize (GObject *object)
 
 	/* clear the loop, if we were using it */
 	g_main_loop_unref (client->priv->loop);
+
+	/* free the hash table */
+	g_hash_table_destroy (client->priv->hash);
 
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
