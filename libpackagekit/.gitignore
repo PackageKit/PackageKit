@@ -12,4 +12,5 @@ pk-self-test
 *.gcno
 *.txt
 *.out
+*.db
 
