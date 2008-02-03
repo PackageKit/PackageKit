@@ -62,6 +62,7 @@ struct PkExtraPrivate
 };
 
 G_DEFINE_TYPE (PkExtra, pk_extra, G_TYPE_OBJECT)
+static gpointer pk_extra_object = NULL;
 
 /**
  * pk_extra_set_locale:
@@ -508,9 +509,13 @@ pk_extra_finalize (GObject *object)
 PkExtra *
 pk_extra_new (void)
 {
-	PkExtra *extra;
-	extra = g_object_new (PK_TYPE_EXTRA, NULL);
-	return PK_EXTRA (extra);
+	if (pk_extra_object != NULL) {
+		g_object_ref (pk_extra_object);
+	} else {
+		pk_extra_object = g_object_new (PK_TYPE_EXTRA, NULL);
+		g_object_add_weak_pointer (pk_extra_object, &pk_extra_object);
+	}
+	return PK_EXTRA (pk_extra_object);
 }
 
 /***************************************************************************
