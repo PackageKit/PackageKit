@@ -42,7 +42,7 @@ static void     pk_extra_init		(PkExtra      *extra);
 static void     pk_extra_finalize	(GObject     *object);
 
 #define PK_EXTRA_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_EXTRA, PkExtraPrivate))
-#define PK_EXTRA_DEFAULT_DATABASE	PK_DB_DIR "/extra-data.db"
+#define PK_EXTRA_DEFAULT_DATABASE_INTERNAL	PK_DB_DIR "/extra-data.db"
 
 /**
  * PkExtraPrivate:
@@ -407,7 +407,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 
 	/* if this is NULL, then assume default */
 	if (filename == NULL) {
-		filename = PK_EXTRA_DEFAULT_DATABASE;
+		filename = PK_EXTRA_DEFAULT_DATABASE_INTERNAL;
 	}
 
 	/* save for later */

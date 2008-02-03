@@ -36,6 +36,9 @@ G_BEGIN_DECLS
 #define PK_IS_EXTRA_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_EXTRA))
 #define PK_EXTRA_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_EXTRA, PkExtraClass))
 
+/* convenience */
+#define PK_EXTRA_DEFAULT_DATABASE	"/var/lib/PackageKit/extra-data.db"
+
 typedef struct PkExtraPrivate PkExtraPrivate;
 
 typedef struct
