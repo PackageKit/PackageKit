@@ -50,13 +50,13 @@
 PkExtraObj *
 pk_extra_obj_new (void)
 {
-	PkExtraObj *extra_obj;
-	extra_obj = g_new0 (PkExtraObj, 1);
-	extra_obj->id = NULL;
-	extra_obj->icon = NULL;
-	extra_obj->exec = NULL;
-	extra_obj->summary = NULL;
-	return extra_obj;
+	PkExtraObj *eobj;
+	eobj = g_new0 (PkExtraObj, 1);
+	eobj->id = NULL;
+	eobj->icon = NULL;
+	eobj->exec = NULL;
+	eobj->summary = NULL;
+	return eobj;
 }
 
 /**
@@ -71,17 +71,18 @@ PkExtraObj *
 pk_extra_obj_new_from_package_id (const gchar *package_id)
 {
 	PkExtra *extra;
-	PkExtraObj *extra_obj;
+	PkExtraObj *eobj;
 
-	extra_obj = pk_extra_obj_new ();
-	extra_obj->id = pk_package_id_new_from_string (package_id);
+	eobj = pk_extra_obj_new ();
+	eobj->id = pk_package_id_new_from_string (package_id);
 
 	extra = pk_extra_new ();
-	pk_extra_get_localised_detail (extra, extra_obj->id->name, &extra_obj->summary, NULL, NULL);
-	pk_extra_get_package_detail (extra, extra_obj->id->name, &extra_obj->icon, &extra_obj->exec);
+	pk_debug ("getting localised for %s", eobj->id->name);
+	pk_extra_get_localised_detail (extra, eobj->id->name, &eobj->summary, NULL, NULL);
+	pk_extra_get_package_detail (extra, eobj->id->name, &eobj->icon, &eobj->exec);
 	g_object_unref (extra);
 
-	return extra_obj;
+	return eobj;
 }
 
 /**
@@ -95,13 +96,13 @@ pk_extra_obj_new_from_package_id (const gchar *package_id)
 PkExtraObj *
 pk_extra_obj_new_from_package_id_summary (const gchar *package_id, const gchar *summary)
 {
-	PkExtraObj *extra_obj;
-	extra_obj = pk_extra_obj_new_from_package_id (package_id);
+	PkExtraObj *eobj;
+	eobj = pk_extra_obj_new_from_package_id (package_id);
 	/* nothing better */
-	if (extra_obj->summary == NULL) {
-		extra_obj->summary = g_strdup (summary);
+	if (eobj->summary == NULL) {
+		eobj->summary = g_strdup (summary);
 	}
-	return extra_obj;
+	return eobj;
 }
 
 /**
@@ -111,18 +112,18 @@ pk_extra_obj_new_from_package_id_summary (const gchar *package_id, const gchar *
  * Return value: %TRUE if the #PkExtraObj object was freed.
  **/
 gboolean
-pk_extra_obj_free (PkExtraObj *extra_obj)
+pk_extra_obj_free (PkExtraObj *eobj)
 {
-	if (extra_obj == NULL) {
+	if (eobj == NULL) {
 		return FALSE;
 	}
-	if (extra_obj->id != NULL) {
-		pk_package_id_free (extra_obj->id);
+	if (eobj->id != NULL) {
+		pk_package_id_free (eobj->id);
 	}
-	g_free (extra_obj->icon);
-	g_free (extra_obj->exec);
-	g_free (extra_obj->summary);
-	g_free (extra_obj);
+	g_free (eobj->icon);
+	g_free (eobj->exec);
+	g_free (eobj->summary);
+	g_free (eobj);
 	return TRUE;
 }
 
@@ -137,7 +138,7 @@ libst_extra_obj (LibSelfTest *test)
 {
 	gboolean ret;
 	PkExtra *extra;
-	PkExtraObj *extra_obj;
+	PkExtraObj *eobj;
 
 	if (libst_start (test, "PkExtraObj", CLASS_AUTO) == FALSE) {
 		return;
@@ -150,8 +151,8 @@ libst_extra_obj (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "get an extra_obj object");
-	extra_obj = pk_extra_obj_new_from_package_id ("gnome-power-manager;0.0.1;i386;fedora");
-	if (extra_obj != NULL) {
+	eobj = pk_extra_obj_new_from_package_id ("gnome-power-manager;0.0.1;i386;fedora");
+	if (eobj != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -159,31 +160,31 @@ libst_extra_obj (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "got an icon");
-	if (extra_obj->icon != NULL) {
-		libst_success (test, "got %s", extra_obj->icon);
+	if (eobj->icon != NULL) {
+		libst_success (test, "got %s", eobj->icon);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
 	libst_title (test, "got an exec");
-	if (extra_obj->exec != NULL) {
-		libst_success (test, "got %s", extra_obj->exec);
+	if (eobj->exec != NULL) {
+		libst_success (test, "got %s", eobj->exec);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
 	libst_title (test, "got an summary");
-	if (extra_obj->summary != NULL) {
-		libst_success (test, "got %s", extra_obj->summary);
+	if (eobj->summary != NULL) {
+		libst_success (test, "got %s", eobj->summary);
 	} else {
 		libst_failed (test, NULL);
 	}
 
 	/************************************************************/
-	libst_title (test, "free extra_obj");
-	ret = pk_extra_obj_free (extra_obj);
+	libst_title (test, "free eobj");
+	ret = pk_extra_obj_free (eobj);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
