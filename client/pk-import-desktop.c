@@ -34,7 +34,7 @@
 #include <pk-package-id.h>
 #include <pk-extra.h>
 
-#define PK_EXTRA_DESKTOP_DATABASE		"/usr/share/applications"
+#include "pk-import-common.h"
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
@@ -176,28 +176,6 @@ pk_desktop_process_directory (const gchar *directory)
 	g_dir_close (dir);
 }
 
-static void
-pk_desktop_get_locale_list (const gchar *directory)
-{
-	GDir *dir;
-	const gchar *name;
-
-	locale_array = g_ptr_array_new ();
-
-	dir = g_dir_open (directory, 0, NULL);
-	if (dir == NULL) {
-		pk_error ("not a valid locale dir!");
-	}
-
-	name = g_dir_read_name (dir);
-	while (name != NULL) {
-		pk_debug ("locale=%s", name);
-		name = g_dir_read_name (dir);
-		g_ptr_array_add (locale_array, g_strdup (name));
-	}
-	g_dir_close (dir);
-}
-
 /**
  * main:
  **/
@@ -215,7 +193,7 @@ main (int argc, char *argv[])
 		{ "database-location", '\0', 0, G_OPTION_ARG_STRING, &database_location,
 			"Database location (default set from daemon)", NULL },
 		{ "desktop-location", '\0', 0, G_OPTION_ARG_STRING, &desktop_location,
-			"Desktop location (default " PK_EXTRA_DESKTOP_DATABASE ")", NULL },
+			"Desktop location (default " PK_IMPORT_APPLICATIONSDIR ")", NULL },
 		{ NULL}
 	};
 
@@ -228,11 +206,11 @@ main (int argc, char *argv[])
 
 	pk_debug_init (verbose);
 
-	pk_desktop_get_locale_list ("/usr/share/locale");
+	locale_array = pk_import_get_locale_list ();
 
 	/* set defaults */
 	if (desktop_location == NULL) {
-		desktop_location = PK_EXTRA_DESKTOP_DATABASE;
+		desktop_location = PK_IMPORT_APPLICATIONSDIR;
 	}
 
 	client = pk_client_new ();

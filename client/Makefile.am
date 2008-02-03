@@ -55,6 +55,8 @@ pkmon_LDADD =						\
 	$(NULL)
 
 pk_import_desktop_SOURCES =				\
+	pk-import-common.c				\
+	pk-import-common.h				\
 	pk-import-desktop.c				\
 	$(NULL)
 
