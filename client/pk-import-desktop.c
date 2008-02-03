@@ -158,6 +158,7 @@ pk_desktop_process_directory (const gchar *directory)
 	pattern = g_pattern_spec_new ("*.desktop");
 	name = g_dir_read_name (dir);
 	while (name != NULL) {
+		/* ITS4: ignore, not used for allocation */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
 		if (match == TRUE) {
 			filename = g_build_filename (directory, name, NULL);
