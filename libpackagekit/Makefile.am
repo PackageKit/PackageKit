@@ -34,6 +34,7 @@ libpackagekit_includedir = $(includedir)/packagekit
 libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-extra.h						\
+	pk-extra-obj.h						\
 	pk-connection.h						\
 	pk-network.h						\
 	pk-package-id.h						\
@@ -54,6 +55,8 @@ libpackagekit_la_SOURCES =					\
 	pk-marshal.h						\
 	pk-extra.c						\
 	pk-extra.h						\
+	pk-extra-obj.c						\
+	pk-extra-obj.h						\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-network.h						\

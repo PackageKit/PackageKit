@@ -19,38 +19,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "config.h"
+#ifndef __PK_EXTRA_OBJ_H
+#define __PK_EXTRA_OBJ_H
 
-#include <glib.h>
 #include <glib-object.h>
-#include <libselftest.h>
+#include "pk-package-id.h"
 
-/* prototypes */
-void libst_package_id (LibSelfTest *test);
-void libst_package_list (LibSelfTest *test);
-void libst_enum (LibSelfTest *test);
-void libst_common (LibSelfTest *test);
-void libst_enum_list (LibSelfTest *test);
-void libst_extra (LibSelfTest *test);
-void libst_extra_obj (LibSelfTest *test);
+G_BEGIN_DECLS
 
-int
-main (int argc, char **argv)
-{
-	LibSelfTest test;
+typedef struct {
+	PkPackageId	*id;
+	gchar		*icon;
+	gchar		*exec;
+	gchar		*summary;	/* one line quick description */
+} PkExtraObj;
 
-	g_type_init ();
-	libst_init (&test);
+PkExtraObj	*pk_extra_obj_new			(void);
+PkExtraObj	*pk_extra_obj_new_from_package_id	(const gchar	*package_id);
+PkExtraObj	*pk_extra_obj_new_from_package_id_summary (const gchar	*package_id,
+							 const gchar	*summary);
+gboolean	 pk_extra_obj_free			(PkExtraObj	*extra_obj);
 
-	/* tests go here */
-	libst_common (&test);
-	libst_package_id (&test);
-	libst_package_list (&test);
-	libst_enum (&test);
-	libst_enum_list (&test);
-	libst_extra (&test);
-	libst_extra_obj (&test);
+G_END_DECLS
 
-	return (libst_finish (&test));
-}
-
+#endif /* __PK_EXTRA_OBJ_H */
