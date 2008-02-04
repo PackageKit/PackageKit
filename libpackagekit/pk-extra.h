@@ -61,14 +61,10 @@ gboolean	 pk_extra_set_database			(PkExtra	*extra,
 							 const gchar	*filename);
 gboolean	 pk_extra_get_localised_detail		(PkExtra	*extra,
 							 const gchar	*package,
-							 gchar		**name,
-							 gchar		**genericname,
-							 gchar		**comment);
+							 gchar		**summary);
 gboolean	 pk_extra_set_localised_detail		(PkExtra	*extra,
 							 const gchar	*package,
-							 const gchar	*name,
-							 const gchar	*genericname,
-							 const gchar	*comment);
+							 const gchar	*summary);
 gboolean	 pk_extra_get_package_detail		(PkExtra	*extra,
 							 const gchar	*package,
 							 gchar		**icon,

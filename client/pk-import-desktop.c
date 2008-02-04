@@ -117,11 +117,22 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		/* if different, then save */
 		if (pk_strequal (name_unlocalised, name) == FALSE) {
 			g_print (" %s", locale);
-			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Comment", locale, NULL);
-			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "GenericName", locale, NULL);
-			pk_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s", package_name, locale, name, genericname, comment);
+			comment = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
+								"Comment", locale, NULL);
+			genericname = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP,
+								    "GenericName", locale, NULL);
+			pk_debug ("PackageName=%s, Locale=%s, Name=%s, GenericName=%s, Comment=%s",
+				  package_name, locale, name, genericname, comment);
 			pk_extra_set_locale (extra, locale);
-			pk_extra_set_localised_detail (extra, package_name, name, genericname, comment);
+
+			/* save in order of priority */
+			if (comment != NULL) {
+				pk_extra_set_localised_detail (extra, package_name, comment);
+			} else if (genericname != NULL) {
+				pk_extra_set_localised_detail (extra, package_name, genericname);
+			} else {
+				pk_extra_set_localised_detail (extra, package_name, name);
+			}
 			g_free (comment);
 			g_free (genericname);
 		}

@@ -78,7 +78,7 @@ pk_extra_obj_new_from_package_id (const gchar *package_id)
 
 	extra = pk_extra_new ();
 	pk_debug ("getting localised for %s", eobj->id->name);
-	pk_extra_get_localised_detail (extra, eobj->id->name, &eobj->summary, NULL, NULL);
+	pk_extra_get_localised_detail (extra, eobj->id->name, &eobj->summary);
 	pk_extra_get_package_detail (extra, eobj->id->name, &eobj->icon, &eobj->exec);
 	g_object_unref (extra);
 
@@ -146,8 +146,10 @@ libst_extra_obj (LibSelfTest *test)
 
 	/* should be single instance */
 	extra = pk_extra_new ();
-	pk_extra_set_database (extra, PK_EXTRA_DEFAULT_DATABASE);
-	pk_extra_set_locale (extra, "fr");
+	pk_extra_set_database (extra, "extra.db");
+
+	/* set correct locale */
+	pk_extra_set_locale (extra, "en_GB");
 
 	/************************************************************/
 	libst_title (test, "get an extra_obj object");
@@ -175,7 +177,7 @@ libst_extra_obj (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "got an summary");
+	libst_title (test, "got a summary");
 	if (eobj->summary != NULL) {
 		libst_success (test, "got %s", eobj->summary);
 	} else {
@@ -190,6 +192,27 @@ libst_extra_obj (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/* set incorrect locale */
+	pk_extra_set_locale (extra, "fr_GB");
+
+	/************************************************************/
+	libst_title (test, "get an extra_obj object");
+	eobj = pk_extra_obj_new_from_package_id ("gnome-power-manager;0.0.1;i386;fedora");
+	if (eobj != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "got an icon");
+	if (eobj->icon != NULL) {
+		libst_success (test, "got %s", eobj->icon);
+	} else {
+		libst_failed (test, NULL);
+	}
+	pk_extra_obj_free (eobj);
 
 	libst_end (test);
 }

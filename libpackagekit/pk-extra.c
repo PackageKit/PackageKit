@@ -53,11 +53,9 @@ struct PkExtraPrivate
 {
 	gchar			*database;
 	gchar			*locale;
-	gchar			*name;
 	gchar			*icon;
 	gchar			*exec;
-	gchar			*genericname;
-	gchar			*comment;
+	gchar			*summary;
 	sqlite3			*db;
 };
 
@@ -108,12 +106,8 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "name") == TRUE) {
-			extra->priv->name = g_strdup (value);
-		} else if (pk_strequal (col, "genericname") == TRUE) {
-			extra->priv->genericname = g_strdup (value);
-		} else if (pk_strequal (col, "comment") == TRUE) {
-			extra->priv->comment = g_strdup (value);
+		if (pk_strequal (col, "summary") == TRUE) {
+			extra->priv->summary = g_strdup (value);
 		} else if (pk_strequal (col, "locale") == TRUE) {
 			pk_debug ("locale: %s", value);
 		} else if (pk_strequal (col, "package") == TRUE) {
@@ -132,7 +126,7 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
  * Return value: the current locale
  **/
 gboolean
-pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **name, gchar **genericname, gchar **comment)
+pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **summary)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
@@ -149,8 +143,8 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **nam
 		return FALSE;
 	}
 
-	statement = g_strdup_printf ("SELECT package, name, genericname, comment, locale "
-				     "FROM localised WHERE package = '%s' AND locale = '%s'",
+	statement = g_strdup_printf ("SELECT package, summary, locale FROM localised "
+				     "WHERE package = '%s' AND locale = '%s'",
 				     package, extra->priv->locale);
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_localised_callback, extra, &error_msg);
 	g_free (statement);
@@ -160,25 +154,12 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **nam
 		return FALSE;
 	}
 
-	/* report back */
-	if (name != NULL) {
-		*name = extra->priv->name;
+	if (summary != NULL) {
+		*summary = extra->priv->summary;
 	} else {
-		g_free (extra->priv->name);
+		g_free (extra->priv->summary);
 	}
-	if (genericname != NULL) {
-		*genericname = extra->priv->genericname;
-	} else {
-		g_free (extra->priv->genericname);
-	}
-	if (comment != NULL) {
-		*comment = extra->priv->comment;
-	} else {
-		g_free (extra->priv->comment);
-	}
-	extra->priv->name = NULL;
-	extra->priv->genericname = NULL;
-	extra->priv->comment = NULL;
+	extra->priv->summary = NULL;
 	return TRUE;
 }
 
@@ -266,7 +247,7 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
  * Return value: the current locale
  **/
 gboolean
-pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar *name, const gchar *genericname, const gchar *comment)
+pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar *summary)
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
@@ -285,7 +266,9 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	}
 
 	/* the row might already exist */
-	statement = g_strdup_printf ("DELETE FROM localised WHERE package = '%s' AND locale = '%s'", package, extra->priv->locale);
+	statement = g_strdup_printf ("DELETE FROM localised WHERE "
+				     "package = '%s' AND locale = '%s'",
+				     package, extra->priv->locale);
 	rc = sqlite3_exec (extra->priv->db, statement, NULL, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
@@ -296,8 +279,8 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 
 	/* prepare the query, as we don't escape it */
 	rc = sqlite3_prepare_v2 (extra->priv->db,
-				 "INSERT INTO localised (package, locale, name, genericname, comment) "
-				 "VALUES (?, ?, ?, ?, ?)", -1, &sql_statement, 0);
+				 "INSERT INTO localised (package, locale, summary) "
+				 "VALUES (?, ?, ?)", -1, &sql_statement, 0);
 	if (rc != SQLITE_OK) {
 		pk_error ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
@@ -307,9 +290,7 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	/* add data */
 	sqlite3_bind_text(sql_statement, 1, package, -1, SQLITE_STATIC);
 	sqlite3_bind_text(sql_statement, 2, extra->priv->locale, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 3, name, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 4, genericname, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 5, comment, -1, SQLITE_STATIC);
+	sqlite3_bind_text(sql_statement, 3, summary, -1, SQLITE_STATIC);
 
 	/* save this */
 	sqlite3_step(sql_statement);
@@ -430,9 +411,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "id INTEGER PRIMARY KEY,"
 				    "package TEXT,"
 				    "locale TEXT,"
-				    "name TEXT,"
-				    "genericname TEXT,"
-				    "comment TEXT);";
+				    "summary TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, 0, &error_msg);
 			if (rc != SQLITE_OK) {
 				pk_error ("SQL error: %s\n", error_msg);
@@ -473,11 +452,9 @@ pk_extra_init (PkExtra *extra)
 	extra->priv = PK_EXTRA_GET_PRIVATE (extra);
 	extra->priv->database = NULL;
 	extra->priv->locale = NULL;
-	extra->priv->name = NULL;
 	extra->priv->icon = NULL;
 	extra->priv->exec = NULL;
-	extra->priv->genericname = NULL;
-	extra->priv->comment = NULL;
+	extra->priv->summary = NULL;
 }
 
 /**
@@ -494,9 +471,7 @@ pk_extra_finalize (GObject *object)
 
 	g_free (extra->priv->icon);
 	g_free (extra->priv->exec);
-	g_free (extra->priv->name);
-	g_free (extra->priv->genericname);
-	g_free (extra->priv->comment);
+	g_free (extra->priv->summary);
 	g_free (extra->priv->locale);
 	sqlite3_close (extra->priv->db);
 
@@ -583,18 +558,14 @@ libst_extra (LibSelfTest *test)
 		libst_failed (test, "locale was %s", text);
 	}
 
-	gchar *name;
-	gchar *genericname;
 	gchar *icon;
 	gchar *exec;
-	gchar *comment;
+	gchar *summary;
 
 	/************************************************************/
 	libst_title (test, "insert localised data");
 	ret = pk_extra_set_localised_detail (extra, "gnome-power-manager",
-					    "GNOMEY Power Managerer",
-					    "Power's Managerer",
-					    "Power manager for the GNOME Ddesktop");
+					     "Power manager for the GNOME's desktop");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -603,16 +574,16 @@ libst_extra (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "retrieve localised data");
-	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &name, &genericname, &comment);
+	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
 	if (ret == TRUE) {
-		libst_success (test, "%s:%s:%s", name, genericname, comment);
+		libst_success (test, "%s", summary);
 	} else {
 		libst_failed (test, "failed!");
 	}
 
 	/************************************************************/
 	libst_title (test, "insert package data");
-	ret = pk_extra_set_package_detail (extra, "gnome-power-manager", "gpm-main.png", "gnome-'power'-manager");
+	ret = pk_extra_set_package_detail (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
