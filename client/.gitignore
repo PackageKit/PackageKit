@@ -8,6 +8,7 @@ pkmon
 pk-update-icon
 pk-application
 pk-import-desktop
+pk-import-specspo
 *.glade.bak
 *.gladep
 *.gladep.bak
