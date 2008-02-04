@@ -251,7 +251,7 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
-	sqlite3_stmt *sql_statement;
+	sqlite3_stmt *sql_statement = NULL;
 	gint rc;
 
 	g_return_val_if_fail (extra != NULL, FALSE);
@@ -269,21 +269,15 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	statement = g_strdup_printf ("DELETE FROM localised WHERE "
 				     "package = '%s' AND locale = '%s'",
 				     package, extra->priv->locale);
-	rc = sqlite3_exec (extra->priv->db, statement, NULL, extra, &error_msg);
+//	sqlite3_exec (extra->priv->db, statement, NULL, extra, NULL);
 	g_free (statement);
-	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-		return FALSE;
-	}
 
 	/* prepare the query, as we don't escape it */
 	rc = sqlite3_prepare_v2 (extra->priv->db,
 				 "INSERT INTO localised (package, locale, summary) "
-				 "VALUES (?, ?, ?)", -1, &sql_statement, 0);
+				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
+		pk_error ("SQL failed to prepare");
 		return FALSE;
 	}
 
@@ -315,6 +309,7 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 {
 	gchar *statement;
 	gchar *error_msg = NULL;
+	sqlite3_stmt *sql_statement = NULL;
 	gint rc;
 
 	g_return_val_if_fail (extra != NULL, FALSE);
@@ -330,20 +325,14 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM data WHERE package = '%s'", package);
-	rc = sqlite3_exec (extra->priv->db, statement, NULL, extra, &error_msg);
+	sqlite3_exec (extra->priv->db, statement, NULL, extra, NULL);
 	g_free (statement);
-	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-		return FALSE;
-	}
 
-	sqlite3_stmt *sql_statement;
 	/* prepare the query, as we don't escape it */
-	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) VALUES (?, ?, ?)", -1, &sql_statement, 0);
+	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) "
+				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
+		pk_error ("SQL failed to prepare");
 		return FALSE;
 	}
 
