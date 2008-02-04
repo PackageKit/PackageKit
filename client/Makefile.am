@@ -30,6 +30,7 @@ bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
 	pk-import-desktop				\
+	pk-import-specspo				\
 	$(NULL)
 
 pkcon_SOURCES =						\
@@ -61,6 +62,18 @@ pk_import_desktop_SOURCES =				\
 	$(NULL)
 
 pk_import_desktop_LDADD =				\
+	$(GLIB_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_LIBS)					\
+	$(NULL)
+
+pk_import_specspo_SOURCES =				\
+	pk-import-common.c				\
+	pk-import-common.h				\
+	pk-import-specspo.c				\
+	$(NULL)
+
+pk_import_specspo_LDADD =				\
 	$(GLIB_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\

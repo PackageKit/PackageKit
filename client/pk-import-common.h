@@ -26,5 +26,6 @@
 #define PK_IMPORT_LOCALEDIR			"/usr/share/locale"
 
 GPtrArray	*pk_import_get_locale_list	(void);
+GPtrArray	*pk_import_get_package_list	(void);
 
 #endif /* __PK_IMPORT_COMMON_H */
