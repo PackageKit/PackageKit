@@ -206,12 +206,30 @@ libst_extra_obj (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "got an icon");
-	if (eobj->icon != NULL) {
-		libst_success (test, "got %s", eobj->icon);
+	libst_title (test, "make sure we don't get a summary for a wrong locale");
+	if (eobj->summary == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s", eobj->summary);
+	}
+
+	/************************************************************/
+	libst_title (test, "get an wrong object");
+	eobj = pk_extra_obj_new_from_package_id ("gnome-baz-manager;0.0.1;i386;fedora");
+	if (eobj != NULL) {
+		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "make sure we don't get a summary for a wrong package");
+	if (eobj->summary == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got %s", eobj->summary);
+	}
+
 	pk_extra_obj_free (eobj);
 
 	libst_end (test);
