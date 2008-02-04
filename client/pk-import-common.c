@@ -64,7 +64,7 @@ pk_import_get_package_list (void)
 
 	/* generate package list */
 //	system ("rpm -qa --qf \"%{NAME}\n\" > /tmp/list.txt");
-
+//	system ("yum list all | cut -f1 -d\" \" | cut -f1 -d\".\"");
 	package_array = g_ptr_array_new ();
 
 	ret = g_file_get_contents ("/tmp/list.txt", &contents, NULL, NULL);

@@ -149,7 +149,7 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **sum
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_localised_callback, extra, &error_msg);
 	g_free (statement);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
+		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -218,7 +218,7 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	statement = g_strdup_printf ("SELECT icon, exec FROM data WHERE package = '%s'", package);
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_package_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
+		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -269,7 +269,7 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	statement = g_strdup_printf ("DELETE FROM localised WHERE "
 				     "package = '%s' AND locale = '%s'",
 				     package, extra->priv->locale);
-//	sqlite3_exec (extra->priv->db, statement, NULL, extra, NULL);
+	sqlite3_exec (extra->priv->db, statement, NULL, extra, NULL);
 	g_free (statement);
 
 	/* prepare the query, as we don't escape it */
@@ -277,20 +277,20 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 				 "INSERT INTO localised (package, locale, summary) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL failed to prepare");
+		pk_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
 	/* add data */
-	sqlite3_bind_text(sql_statement, 1, package, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 2, extra->priv->locale, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 3, summary, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 1, package, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 2, extra->priv->locale, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 3, summary, -1, SQLITE_STATIC);
 
 	/* save this */
-	sqlite3_step(sql_statement);
-	rc = sqlite3_finalize(sql_statement);
+	sqlite3_step (sql_statement);
+	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
+		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -332,20 +332,20 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 	rc = sqlite3_prepare_v2 (extra->priv->db, "INSERT INTO data (package, icon, exec) "
 				 "VALUES (?, ?, ?)", -1, &sql_statement, NULL);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL failed to prepare");
+		pk_warning ("SQL failed to prepare");
 		return FALSE;
 	}
 
 	/* add data */
-	sqlite3_bind_text(sql_statement, 1, package, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 2, icon, -1, SQLITE_STATIC);
-	sqlite3_bind_text(sql_statement, 3, exec, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 1, package, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 2, icon, -1, SQLITE_STATIC);
+	sqlite3_bind_text (sql_statement, 3, exec, -1, SQLITE_STATIC);
 
 	/* save this */
-	sqlite3_step(sql_statement);
-	rc = sqlite3_finalize(sql_statement);
+	sqlite3_step (sql_statement);
+	rc = sqlite3_finalize (sql_statement);
 	if (rc != SQLITE_OK) {
-		pk_error ("SQL error: %s\n", error_msg);
+		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
@@ -403,7 +403,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "summary TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, 0, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_error ("SQL error: %s\n", error_msg);
+				pk_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 			statement = "CREATE TABLE data ("
@@ -413,7 +413,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "exec TEXT);";
 			rc = sqlite3_exec (extra->priv->db, statement, NULL, 0, &error_msg);
 			if (rc != SQLITE_OK) {
-				pk_error ("SQL error: %s\n", error_msg);
+				pk_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
 			}
 		}
