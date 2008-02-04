@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,38 +19,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "config.h"
+#ifndef __PK_IMPORT_COMMON_H
+#define __PK_IMPORT_COMMON_H
 
-#include <glib.h>
-#include <glib-object.h>
-#include <libselftest.h>
+#define PK_IMPORT_APPLICATIONSDIR		"/usr/share/applications"
+#define PK_IMPORT_LOCALEDIR			"/usr/share/locale"
 
-/* prototypes */
-void libst_package_id (LibSelfTest *test);
-void libst_package_list (LibSelfTest *test);
-void libst_enum (LibSelfTest *test);
-void libst_common (LibSelfTest *test);
-void libst_enum_list (LibSelfTest *test);
-void libst_extra (LibSelfTest *test);
-void libst_extra_obj (LibSelfTest *test);
+GPtrArray	*pk_import_get_locale_list	(void);
 
-int
-main (int argc, char **argv)
-{
-	LibSelfTest test;
-
-	g_type_init ();
-	libst_init (&test);
-
-	/* tests go here */
-	libst_common (&test);
-	libst_package_id (&test);
-	libst_package_list (&test);
-	libst_enum (&test);
-	libst_enum_list (&test);
-	libst_extra (&test);
-	libst_extra_obj (&test);
-
-	return (libst_finish (&test));
-}
-
+#endif /* __PK_IMPORT_COMMON_H */

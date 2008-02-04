@@ -644,6 +644,10 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 			    pk_role_enum_to_text (backend->priv->role));
 		return FALSE;
 	}
+
+	/* reset the timer */
+	pk_time_reset (backend->priv->time);
+
 	pk_debug ("setting role to %s", pk_role_enum_to_text (role));
 	backend->priv->role = role;
 	backend->priv->status = PK_STATUS_ENUM_WAIT;

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,37 +20,32 @@
  */
 
 #include "config.h"
-
 #include <glib.h>
-#include <glib-object.h>
-#include <libselftest.h>
 
-/* prototypes */
-void libst_package_id (LibSelfTest *test);
-void libst_package_list (LibSelfTest *test);
-void libst_enum (LibSelfTest *test);
-void libst_common (LibSelfTest *test);
-void libst_enum_list (LibSelfTest *test);
-void libst_extra (LibSelfTest *test);
-void libst_extra_obj (LibSelfTest *test);
+#include <pk-debug.h>
+#include "pk-import-common.h"
 
-int
-main (int argc, char **argv)
+GPtrArray *
+pk_import_get_locale_list (void)
 {
-	LibSelfTest test;
+	GDir *dir;
+	const gchar *name;
+	GPtrArray *locale_array;
 
-	g_type_init ();
-	libst_init (&test);
+	locale_array = g_ptr_array_new ();
 
-	/* tests go here */
-	libst_common (&test);
-	libst_package_id (&test);
-	libst_package_list (&test);
-	libst_enum (&test);
-	libst_enum_list (&test);
-	libst_extra (&test);
-	libst_extra_obj (&test);
+	dir = g_dir_open (PK_IMPORT_LOCALEDIR, 0, NULL);
+	if (dir == NULL) {
+		pk_error ("not a valid locale dir!");
+	}
 
-	return (libst_finish (&test));
+	name = g_dir_read_name (dir);
+	while (name != NULL) {
+		pk_debug ("locale=%s", name);
+		name = g_dir_read_name (dir);
+		g_ptr_array_add (locale_array, g_strdup (name));
+	}
+	g_dir_close (dir);
+	return locale_array;
 }
 

@@ -5,9 +5,11 @@ INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
 	$(LIBNM_CFLAGS)						\
+	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
 	-I$(top_srcdir)/libselftest				\
+	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 
@@ -31,6 +33,8 @@ libpackagekit_includedir = $(includedir)/packagekit
 
 libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
+	pk-extra.h						\
+	pk-extra-obj.h						\
 	pk-connection.h						\
 	pk-network.h						\
 	pk-package-id.h						\
@@ -49,6 +53,10 @@ libpackagekit_la_SOURCES =					\
 	pk-debug.h						\
 	pk-marshal.c						\
 	pk-marshal.h						\
+	pk-extra.c						\
+	pk-extra.h						\
+	pk-extra-obj.c						\
+	pk-extra-obj.h						\
 	pk-connection.c						\
 	pk-connection.h						\
 	pk-network.h						\
@@ -87,6 +95,7 @@ libpackagekit_la_LIBADD =					\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
 	$(LIBNM_LIBS)						\
+	$(SQLITE_LIBS)						\
 	$(NULL)
 
 if PK_BUILD_TESTS

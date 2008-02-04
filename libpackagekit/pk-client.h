@@ -67,6 +67,10 @@ gchar		*pk_client_get_tid			(PkClient	*client);
 
 gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 							 gboolean	 use_buffer);
+gboolean	 pk_client_set_synchronous		(PkClient	*client,
+							 gboolean	 synchronous);
+gboolean	 pk_client_set_name_filter		(PkClient	*client,
+							 gboolean	 name_filter);
 gboolean	 pk_client_get_use_buffer		(PkClient	*client);
 gboolean	 pk_client_get_allow_cancel		(PkClient	*client);
 
