@@ -23,6 +23,7 @@
 #include <glib.h>
 
 #include <pk-debug.h>
+#include <pk-common.h>
 #include "pk-import-common.h"
 
 GPtrArray *
@@ -47,5 +48,42 @@ pk_import_get_locale_list (void)
 	}
 	g_dir_close (dir);
 	return locale_array;
+}
+
+/**
+ * pk_import_get_package_list:
+ **/
+GPtrArray *
+pk_import_get_package_list (void)
+{
+	gboolean ret;
+	gchar **lines;
+	gchar *contents;
+	guint i;
+	GPtrArray *package_array;
+
+	/* generate package list */
+//	system ("rpm -qa --qf \"%{NAME}\n\" > /tmp/list.txt");
+
+	package_array = g_ptr_array_new ();
+
+	ret = g_file_get_contents ("/tmp/list.txt", &contents, NULL, NULL);
+	if (ret == FALSE) {
+		pk_error ("failed to open file");
+	}
+
+	lines = g_strsplit (contents, "\n", -1);
+	g_free (contents);
+
+	i = 0;
+	do {
+		if (pk_strzero (lines[i]) == FALSE) {
+			g_ptr_array_add (package_array, g_strdup (lines[i]));;
+		}
+	} while (lines[++i] != NULL);
+
+	/* delete the file */
+	//g_unlink ("/tmp/list.txt");
+	return package_array;
 }
 
