@@ -219,6 +219,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "glibc", "hal", "dbus", "xen")
 
     def __init__(self,args,lock=True):
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
