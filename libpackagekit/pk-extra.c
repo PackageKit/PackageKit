@@ -582,10 +582,41 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve package data");
 	ret = pk_extra_get_package_detail (extra, "gnome-power-manager", &icon, &exec);
-	if (ret == TRUE) {
+	if (ret == TRUE &&
+	    pk_strequal (icon, "gpm-main.png") == TRUE &&
+	    pk_strequal (exec, "gnome-power-manager") == TRUE) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
+		libst_failed (test, "%s:%s", icon, exec);
+	}
+
+	/************************************************************/
+	libst_title (test, "insert new package data");
+	ret = pk_extra_set_package_detail (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
 		libst_failed (test, "failed!");
+	}
+
+	/************************************************************/
+	libst_title (test, "retrieve new package data");
+	ret = pk_extra_get_package_detail (extra, "gnome-power-manager", &icon, &exec);
+	if (ret == TRUE &&
+	    pk_strequal (icon, "gpm-prefs.png") == TRUE &&
+	    pk_strequal (exec, "gnome-power-preferences") == TRUE) {
+		libst_success (test, "%s:%s", icon, exec);
+	} else {
+		libst_failed (test, "%s:%s", icon, exec);
+	}
+
+	/************************************************************/
+	libst_title (test, "retrieve missing package data");
+	ret = pk_extra_get_package_detail (extra, "gnome-moo-manager", &icon, &exec);
+	if (ret == TRUE && icon == NULL && exec == NULL) {
+		libst_success (test, "passed");
+	} else {
+		libst_failed (test, "%s:%s", icon, exec);
 	}
 
 	g_object_unref (extra);
