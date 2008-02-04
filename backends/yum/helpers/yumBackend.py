@@ -261,7 +261,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 rc = unicode( txt, 'utf-8' )
             except UnicodeDecodeError, e:
                 rc = unicode( txt, 'iso-8859-1' )
-            return rc
+            return rc.encode('utf-8')
 
     def doLock(self):
         ''' Lock Yum'''
