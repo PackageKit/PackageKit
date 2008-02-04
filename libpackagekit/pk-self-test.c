@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <libselftest.h>
+#include <pk-debug.h>
 
 /* prototypes */
 void libst_package_id (LibSelfTest *test);
@@ -41,6 +42,7 @@ main (int argc, char **argv)
 
 	g_type_init ();
 	libst_init (&test);
+	pk_debug_init (TRUE);
 
 	/* tests go here */
 	libst_common (&test);
