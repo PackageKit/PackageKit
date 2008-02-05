@@ -69,7 +69,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
     def unLock(self):
         ''' Generic unlocking, overide and extend in child class'''
         self._locked = False
-        self.tid = None
+#        self.tid = None
 
     def isLocked(self):
         return self._locked
@@ -78,7 +78,8 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         pass
 
     def catchall_signal_handler(self,*args,**kwargs):
-        self.tid = args[0]
+	print "FIXME, the concept of a TID does not exist when backend->daemon"
+#        self.tid = args[0]
 
         if kwargs['member'] == "Init":
             self.start()
@@ -153,16 +154,16 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param percent: Progress percentage
         '''
         if percent != None:
-            self.pk_iface.percentage(self.tid,percent)
+            self.pk_iface.percentage(percent)
         else:
-            self.pk_iface.no_percentage_updates(self.tid)
+            self.pk_iface.no_percentage_updates()
 
     def sub_percentage(self,percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
         @param percent: subprogress percentage
         '''
-        self.pk_iface.subpercentage(self.tid,percent)
+        self.pk_iface.subpercentage(percent)
 
     def error(self,err,description,exit=True):
         '''
@@ -171,7 +172,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param description: Error description
         @param exit: exit application with rc=1, if true
         '''
-        self.pk_iface.error(self.tid,err,description)
+        self.pk_iface.error(err,description)
         if exit:
             self.quit()
 
@@ -182,14 +183,14 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
         '''
-        self.pk_iface.package(self.tid,status,id,summary)
+        self.pk_iface.package(status,id,summary)
 
     def status(self,state):
         '''
         send 'status' signal
         @param state: STATUS_DOWNLOAD,STATUS_INSTALL,STATUS_UPDATE,STATUS_REMOVE,STATUS_WAIT
         '''
-        self.pk_iface.status(self.tid,state)
+        self.pk_iface.status(state)
 
     def repo_detail(self,repoid,name,state):
         '''
@@ -197,14 +198,14 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        self.pk_iface.repo_detail(self.tid,repoid,name,state)
+        self.pk_iface.repo_detail(repoid,name,state)
 
     def data(self,data_out):
         '''
         send 'data' signal:
         @param data_out:  The current worked on package
         '''
-        self.pk_iface.data(self.tid,data_out)
+        self.pk_iface.data(data_out)
 
     def metadata(self,typ,fname):
         '''
@@ -212,7 +213,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
         @param fname:  The filename being downloaded
         '''
-        self.pk_iface.metadata(self.tid,typ,fname)
+        self.pk_iface.metadata(typ,fname)
 
     def description(self,id,license,group,desc,url,bytes):
         '''
@@ -225,14 +226,14 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param bytes: The size of the package, in bytes
         '''
         
-        self.pk_iface.description(self.tid,id,license,group,desc,url,bytes)
+        self.pk_iface.description(id,license,group,desc,url,bytes)
 
     def files(self,id,file_list):
         '''
         Send 'files' signal
         @param file_list: List of the files in the package, separated by ';'
         '''
-        self.pk_iface.files(self.tid,id,file_list)
+        self.pk_iface.files(id,file_list)
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
         '''
@@ -246,7 +247,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param restart:
         @param update_text:
         '''
-        self.pk_iface.update_detail(self.tid,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
+        self.pk_iface.update_detail(id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
 
     def require_restart(self,restart_type,details):
         '''
@@ -254,7 +255,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param restart_type: RESTART_SYSTEM,RESTART_APPLICATION,RESTART_SESSION
         @param details: Optional details about the restart
         '''
-        self.pk_iface.require_restart(self.tid,restart_type,details)
+        self.pk_iface.require_restart(restart_type,details)
 
     def allow_cancel(self,allow):
         '''
@@ -265,7 +266,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
             data = 'true'
         else:
             data = 'false'
-        self.pk_iface.allow_cancel(self.tid,data)
+        self.pk_iface.allow_cancel(data)
 
     def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''
@@ -278,7 +279,7 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         @param key_timestamp:   Key timestamp
         @param type:            Key type (GPG)
         '''
-        self.pk_iface.repo_signature_required(self.tid,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type)
+        self.pk_iface.repo_signature_required(repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type)
 
 #
 # Actions ( client -> engine -> backend )
@@ -289,77 +290,77 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
 
         self.loop.quit()
 
-    def search_name(self,tid,filters,key):
+    def search_name(self,filters,key):
         '''
         Implement the {backend}-search-name functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def search_details(self,tid,filters,key):
+    def search_details(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def search_group(self,tid,filters,key):
+    def search_group(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def search_file(self,tid,filters,key):
+    def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_update_detail(self,tid,package):
+    def get_update_detail(self,package):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_depends(self,tid,package,recursive):
+    def get_depends(self,package,recursive):
         '''
         Implement the {backend}-get-depends functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_requires(self,tid,package,recursive):
+    def get_requires(self,package,recursive):
         '''
         Implement the {backend}-get-requires functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def update_system(self,tid):
+    def update_system(self):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def refresh_cache(self,tid):
+    def refresh_cache(self):
         '''
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install(self,tid,package):
+    def install(self,package):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_file (self,tid,inst_file):
+    def install_file (self,inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
@@ -367,70 +368,70 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def resolve(self,tid,name):
+    def resolve(self,name):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def remove(self,tid,allowdep,package):
+    def remove(self,allowdep,package):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def update(self,tid,package):
+    def update(self,package):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_description(self,tid,package):
+    def get_description(self,package):
         '''
         Implement the {backend}-get-description functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_files(self,tid,package):
+    def get_files(self,package):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_updates(self,tid,package):
+    def get_updates(self,package):
         '''
         Implement the {backend}-get-updates functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_enable(self,tid,repoid,enable):
+    def repo_enable(self,repoid,enable):
         '''
         Implement the {backend}-repo-enable functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def repo_set_data(self,tid,repoid,parameter,value):
+    def repo_set_data(self,repoid,parameter,value):
         '''
         Implement the {backend}-repo-set-data functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_repo_list(self,tid):
+    def get_repo_list(self):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def rollback(self,tid,rollback_transaction_id):
+    def rollback(self,rollback_transaction_id):
         '''
         Implement the {backend}-rollback functionality
         Needed to be implemented in a sub class
