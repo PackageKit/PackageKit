@@ -69,7 +69,6 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
     def unLock(self):
         ''' Generic unlocking, overide and extend in child class'''
         self._locked = False
-#        self.tid = None
 
     def isLocked(self):
         return self._locked
@@ -78,9 +77,6 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
         pass
 
     def catchall_signal_handler(self,*args,**kwargs):
-	print "FIXME, the concept of a TID does not exist when backend->daemon"
-#        self.tid = args[0]
-
         if kwargs['member'] == "Init":
             self.start()
         elif kwargs['member'] == "Exit":
@@ -95,45 +91,45 @@ class PackageKitBaseBackend(PackageKitDbusInterface):
                        "A method call %s was attempted before the backend was locked." % kwargs['member'])
 
         elif kwargs['member'] == "SearchName":
-            self.search_name(args[1],args[2])
+            self.search_name(args[0],args[1])
         elif kwargs['member'] == "SearchDetails":
-            self.search_details(args[1],args[2])
+            self.search_details(args[0],args[1])
         elif kwargs['member'] == "SearchGroup":
-            self.search_group(args[1],args[2])
+            self.search_group(args[0],args[1])
         elif kwargs['member'] == "SearchFile":
-            self.search_file(args[1],args[2])
+            self.search_file(args[0],args[1])
         elif kwargs['member'] == "GetUpdateDetail":
-            self.get_update_detail(args[1])
+            self.get_update_detail(args[0])
         elif kwargs['member'] == "GetDepends":
-            self.get_depends(args[1],args[2])
+            self.get_depends(args[0],args[1])
         elif kwargs['member'] == "GetRequires":
-            self.get_requires(args[1],args[2])
+            self.get_requires(args[0],args[1])
         elif kwargs['member'] == "UpdateSystem":
             self.update_system()
         elif kwargs['member'] == "RefreshCache":
             self.refresh_cache()
         elif kwargs['member'] == "RemovePackage":
-            self.remove_package(args[1],args[2])
+            self.remove_package(args[0],args[1])
         elif kwargs['member'] == "Install":
-            self.install(args[1])
+            self.install(args[0])
         elif kwargs['member'] == "InstallFile":
-            self.install_file(args[1])
+            self.install_file(args[0])
         elif kwargs['member'] == "Resolve":
-            self.resolve(args[1],args[2])
+            self.resolve(args[0],args[1])
         elif kwargs['member'] == "Remove":
-            self.remove(args[1],args[2])
+            self.remove(args[0],args[1])
         elif kwargs['member'] == "Update":
-            self.update(args[1])
+            self.update(args[0])
         elif kwargs['member'] == "GetDescription":
-            self.get_description(args[1])
+            self.get_description(args[0])
         elif kwargs['member'] == "GetFiles":
-            self.get_files(args[1])
+            self.get_files(args[0])
         elif kwargs['member'] == "GetUpdates":
             self.get_updates()
         elif kwargs['member'] == "RepoEnable":
-            self.repo_enable(args[1],args[2])
+            self.repo_enable(args[0],args[1])
         elif kwargs['member'] == "RepoSetData":
-            self.repo_set_data(args[1],args[2],args[3])
+            self.repo_set_data(args[0],args[1],args[2])
         elif kwargs['member'] == "GetRepoList":
             self.get_repo_list()
         elif kwargs['member'] == "Rollback":
