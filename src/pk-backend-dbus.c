@@ -300,6 +300,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 	}
 
 	/* grab this */
+	pk_debug ("trying to activate %s", service);
 	proxy = dbus_g_proxy_new_for_name (backend_dbus->priv->connection,
 					   service, path, interface);
 
