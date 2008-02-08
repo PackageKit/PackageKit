@@ -69,16 +69,16 @@ opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 	if (level == OPKG_ERROR)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, msg);
 
-	if (level != 1)
-		return 0;
-
 	/* print messages only if in verbose mode */
-	if (pk_debug_enabled ())
+	if (level <= OPKG_NOTICE && pk_debug_enabled ())
 		printf ("OPKG: %s", msg);
 
 	/* free the last error message and store the new one */
-	g_free (last_error);
-	last_error = g_strdup (msg);
+	if (level == OPKG_ERROR)
+	{
+		g_free (last_error);
+		last_error = g_strdup (msg);
+	}
 	return 0;
 }
 
