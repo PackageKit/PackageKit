@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <libintl.h>
+#include <locale.h>
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 
