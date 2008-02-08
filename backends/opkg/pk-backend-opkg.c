@@ -58,6 +58,10 @@ static gchar *last_error;
 /* Opkg progress callback function */
 extern opkg_download_progress_callback opkg_cb_download_progress;
 
+/* Opkg state changed callback function */
+extern opkg_state_changed_callback opkg_cb_state_changed;
+
+
 int
 opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 {
@@ -80,6 +84,32 @@ opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 		last_error = g_strdup (msg);
 	}
 	return 0;
+}
+
+
+
+void
+pk_opkg_state_changed (opkg_state_t state, const char *data)
+{
+	PkBackend *backend;
+	backend = pk_backend_thread_get_backend (thread);
+
+	/* data is conveniently in pkgid format :-) */
+	switch (state) {
+	case OPKG_STATE_DOWNLOADING_PKG:
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, data, NULL);
+		break;
+	case OPKG_STATE_INSTALLING_PKG:
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, data, NULL);
+		break;
+	case OPKG_STATE_REMOVING_PKG:
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, data, NULL);
+		break;
+	case OPKG_STATE_UPGRADING_PKG:
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, data, NULL);
+		break;
+	default: return;
+	}
 }
 
 static void
@@ -233,6 +263,8 @@ backend_initalize (PkBackend *backend)
 
 	last_error = NULL;
 	opkg_cb_message = opkg_debug;
+
+	opkg_cb_state_changed = pk_opkg_state_changed;
 
 	memset(&global_conf, 0 ,sizeof(global_conf));
 	memset(&args, 0 ,sizeof(args));
