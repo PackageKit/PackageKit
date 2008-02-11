@@ -36,6 +36,10 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
+
+import dbus
+import dbus.service
+
 import rpmUtils
 import exceptions
 import types
@@ -214,6 +218,11 @@ def sigquit(signum, frame):
         yumbase.doUnlock(YUM_PID_FILE)
     sys.exit(1)
 
+PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitYumBackend'
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYumBackend'
+PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitYumBackend'
+
+
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -221,16 +230,60 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
-    def __init__(self,lock=True):
+    def __init__(self, bus_name=None, dbus_path=None):
         signal.signal(signal.SIGQUIT, sigquit)
-        PackageKitBaseBackend.__init__(self,backend = 'YumBackend')
-        self.yumbase = PackageKitYumBase()
-        yumbase = self.yumbase
-        self._setup_yum()
-        if lock:
-            self.doLock()
 
-    def description(self,id,license,group,desc,url,bytes):
+        PackageKitBaseBackend.__init__(self,
+                                       bus_name=bus_name,
+                                       dbus_path=dbus_path)
+        print "__init__"
+
+#
+# Signals ( backend -> engine -> client )
+#
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='u')
+    def Finished(self, exit):
+        print "Finished (%d)" % (exit)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ssb')
+    def RepoDetail(self, repo_id, description, enabled):
+        print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='b')
+    def AllowCancel(self, allow_cancel):
+        print "AllowCancel (%i)" % (allow_cancel)
+
+    #FIXME: _show_description and _show_package wrap Description and 
+    #       Package so that the encoding can be fixed. This is ugly.
+    #       we could probably use a decorator to do it instead.
+    
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='uss')
+    def Package(self, status, package_id, summary):
+        print "Package (%s, %s)" % (package_id, summary)
+
+    def _show_package(self,pkg,status):
+        '''
+        send 'package' signal
+        @param info: the enumerated INFO_* string
+        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param summary: The package Summary
+        convert the summary to UTF before sending
+        '''
+        id = self._pkg_to_id(pkg)
+        summary = self._toUTF(pkg.summary)
+        self.Package(id,status,summary)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ssussu')
+    def Description(self, package_id, licence, group, detail, url, size):
+        print "Description (%s, %s, %u, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
+
+    def _show_description(self,id,license,group,desc,url,bytes):
         '''
         Send 'description' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -242,18 +295,54 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
-        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
+        self.Description(id,license,group,desc,url,bytes)
 
-    def package(self,id,status,summary):
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ss')
+    def Files(self, package_id, file_list):
+        print "Files (%s, %s)" % (package_id, file_list)
+        
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='u')
+    def StatusChanged(self, status):
+        print "StatusChanged (%i)" % (status)
+    
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='')
+    def NoPercentageUpdates(self):
+        print "NoPercentageUpdates"                         
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='u')
+    def PercentageChanged(self, percentage):
+        print "PercentageChanged (%i)" % (percentage)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='u')
+    def SubPercentageChanged(self, percentage):
+        print "SubPercentageChanged (%i)" % (percentage)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ssssssus')
+    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
+        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %u, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='us')
+    def ErrorCode(self, code, description):
         '''
-        send 'package' signal
-        @param info: the enumerated INFO_* string
-        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param summary: The package Summary
-        convert the summary to UTF before sending
+        send 'error'
+        @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
+        @param description: Error description
+        @param exit: exit application with rc=1, if true
         '''
-        summary = self._toUTF(summary)
-        PackageKitBaseBackend.package(self,id,status,summary)
+        print "ErrorCode (%i, %s)" % (code, description)
+
+            
+        
+#
+# Utility methods for Signals
+#
 
     def _toUTF( self, txt ):
         rc=""
@@ -265,6 +354,36 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except UnicodeDecodeError, e:
                 rc = unicode( txt, 'iso-8859-1' )
             return rc
+
+    def _pkg_to_id(self,pkg):
+        pkgver = self._get_package_ver(pkg)
+        id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        return id
+
+#
+# Methods ( client -> engine -> backend )
+#
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Init(self):
+        self.yumbase = PackageKitYumBase()
+        yumbase = self.yumbase
+        self._setup_yum()
+        self.doLock()
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Exit(self):
+        if self.isLocked():
+            self.doUnlock()
+
+        self.loop.quit()
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Lock(self):
+        self.doLock()
 
     def doLock(self):
         ''' Lock Yum'''
@@ -279,22 +398,533 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
-                    self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
+                    self.ErrorCode(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
+                    self.Exit()
 
-    def unLock(self):
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Unlock(self):
+        self.doUnlock()
+        
+    def doUnlock(self):
         ''' Unlock Yum'''
         if self.isLocked():
-            PackageKitBaseBackend.unLock(self)
+            PackageKitBaseBackend.doUnlock(self)
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
 
-    def _get_package_ver(self,po):
-        ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
-        if po.epoch != '0':
-            ver = "%s:%s-%s" % (po.epoch,po.version,po.release)
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchName(self, filterx, search):
+        '''
+        Implement the {backend}-search-name functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+
+        searchlist = ['name']
+        self.StatusChanged(STATUS_QUERY)
+
+        self._do_search(searchlist, filters, key)
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchDetails(self,filters,key):
+        '''
+        Implement the {backend}-search-details functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+
+        searchlist = ['name', 'summary', 'description', 'group']
+        self.StatusChanged(STATUS_QUERY)
+        self._do_search(searchlist, filters, key)
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchGroup(self,filters,key):
+        '''
+        Implement the {backend}-search-group functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.StatusChanged(STATUS_QUERY)
+
+        try:
+            pkgGroupDict = self._buildGroupDict()
+            self.yumbase.conf.cache = 1 # Only look in cache.
+            fltlist = filters.split(';')
+            found = {}
+
+            if not FILTER_NOT_INSTALLED in fltlist:
+                # Check installed for group
+                for pkg in self.yumbase.rpmdb:
+                    group = GROUP_OTHER                    # Default Group
+                    if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
+                        cg = pkgGroupDict[pkg.name]
+                        if groupMap.has_key(cg):
+                            group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
+                    if group == key:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+            if not FILTER_INSTALLED in fltlist:
+                # Check available for group
+                for pkg in self.yumbase.pkgSack:
+                    group = GROUP_OTHER
+                    if pkgGroupDict.has_key(pkg.name):
+                        cg = pkgGroupDict[pkg.name]
+                        if groupMap.has_key(cg):
+                            group = groupMap[cg]
+                    if group == key:
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_AVAILABLE)
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
+
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchFile(self,filters,key):
+        '''
+        Implement the {backend}-search-file functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates(None)
+        self.StatusChanged(STATUS_QUERY)
+
+        #self.yumbase.conf.cache = 1 # Only look in cache.
+        fltlist = filters.split(';')
+        found = {}
+        if not FILTER_NOT_INSTALLED in fltlist:
+            # Check installed for file
+            matches = self.yumbase.rpmdb.searchFiles(key)
+            for pkg in matches:
+                if not found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+                        found[str(pkg)] = 1
+        if not FILTER_INSTALLED in fltlist:
+            # Check available for file
+            self.yumbase.repos.populateSack(mdtype='filelists')
+            matches = self.yumbase.pkgSack.searchFiles(key)
+            for pkg in matches:
+                if found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+                        found[str(pkg)] = 1
+
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def GetRequires(self,package,recursive):
+        '''
+        Print a list of requires for a given package
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        pkg,inst = self._findPackage(package)
+        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
+        for pkg in pkgs:
+            if inst:
+                self._show_package(pkg,INFO_INSTALLED)
+            else:
+                self._show_package(pkg,INFO_AVAILABLE)
+
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def GetDepends(self,package,recursive):
+        '''
+        Print a list of depends for a given package
+        '''
+        self.AllowCancel(True)
+        self.PercentageChanged(0)
+        self.StatusChanged(STATUS_INFO)
+
+        name = package.split(';')[0]
+        pkg,inst = self._findPackage(package)
+        results = {}
+        if pkg:
+            deps = self._get_best_dependencies(pkg)
         else:
-            ver = "%s-%s" % (po.version,po.release)
-        return ver
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.Exit()
+        for pkg in deps:
+            if pkg.name != name:
+                pkgver = self._get_package_ver(pkg)
+                id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
+
+                if self._is_inst(pkg):
+                    self._show_package(pkg, INFO_INSTALLED)
+                else:
+                    if self._installable(pkg):
+                        self._show_package(pkg, INFO_AVAILABLE)
+
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def UpdateSystem(self):
+        '''
+        Implement the {backend}-update-system functionality
+        '''
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+
+        txmbr = self.yumbase.update() # Add all updates to Transaction
+        if txmbr:
+            self._runYumTransaction()
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def RefreshCache(self):
+        '''
+        Implement the {backend}-refresh_cache functionality
+        '''
+        self.AllowCancel(True);
+        self.PercentageChanged(0)
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+
+        pct = 0
+        try:
+            if len(self.yumbase.repos.listEnabled()) == 0:
+                self.PercentageChanged(100)
+                self.Finished(0)
+                return
+
+            #work out the slice for each one
+            bump = (95/len(self.yumbase.repos.listEnabled()))/2
+
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 0
+                self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
+                pct+=bump
+                self.PercentageChanged(pct)
+                self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
+                pct+=bump
+                self.PercentageChanged(pct)
+
+            self.PercentageChanged(95)
+            # Setup categories/groups
+            self.yumbase.doGroupSetup()
+            #we might have a rounding error
+            self.PercentageChanged(100)
+
+        except yum.Errors.YumBaseError, e:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def Resolve(self, filters, name):
+        '''
+        Implement the {backend}-resolve functionality
+        '''
+        self.AllowCancel(True);
+        self.NoPercentageUpdates()
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.StatusChanged(STATUS_QUERY)
+
+        fltlist = filters.split(';')
+        try:
+            # Get installed packages
+            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+            if FILTER_NOT_INSTALLED not in fltlist:
+                for pkg in installedByKey:
+                    self._show_package(pkg,INFO_INSTALLED)
+            # Get available packages
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if pkg.name == name:
+                        show = True
+                        for instpo in installedByKey:
+                            # Check if package have a smaller & equal EVR to a inst pkg
+                            if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                                show = False
+                        if show:
+                            self._show_package(pkg,INFO_AVAILABLE)
+                            break
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
+            
+        self.Finished(0)
+            
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallPackage(self, package):
+        '''
+        Implement the {backend}-install functionality
+        This will only work with yum 3.2.4 or higher
+        '''
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            if inst:
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
+                self.Exit()
+            try:
+                txmbr = self.yumbase.install(name=pkg.name)
+                self._runYumTransaction()
+            except yum.Errors.InstallError,e:
+                msgs = ';'.join(e)
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+                self.Exit()
+        else:
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            self.Exit()
+
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallFile (self, inst_file):
+        '''
+        Implement the {backend}-install_file functionality
+        Install the package containing the inst_file file
+        Needed to be implemented in a sub class
+        '''
+        self.AllowCancel(False);
+        self.PercentageChanged(0)
+
+        pkgs_to_inst = []
+        self.yumbase.conf.gpgcheck=0
+        self._localInstall(inst_file)
+        try:
+            # Added the package to the transaction set
+            if len(self.yumbase.tsInfo) > 0:
+                self._runYumTransaction()
+        except yum.Errors.InstallError,e:
+            msgs = ';'.join(e)
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def UpdatePackage(self, package):
+        '''
+        Implement the {backend}-update functionality
+        This will only work with yum 3.2.4 or higher
+        '''
+        self.AllowCancel(False);
+        self.PercentageChanged(0)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            txmbr = self.yumbase.update(name=pkg.name)
+            if txmbr:
+                self._runYumTransaction()
+            else:
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+                self.Exit()
+        else:
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RemovePackage(self, package, allowdep):
+        '''
+        Implement the {backend}-remove functionality
+        '''
+        self.AllowCancel(False);
+        self.PercentageChanged(0)
+
+        pkg,inst = self._findPackage( package)
+        if pkg and inst:
+            txmbr = self.yumbase.remove(name=pkg.name)
+            if txmbr:
+                if allowdep:
+                    self._runYumTransaction(removedeps=True)
+                else:
+                    self._runYumTransaction(removedeps=False)
+            else:
+                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                self.Exit()
+        else:
+            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+            self.Exit()
+            
+        self.Finished(0)    
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetDescription(self, package):
+        '''
+        Print a detailed description for a given package
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            pkgver = self._get_package_ver(pkg)
+            id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+            desc = pkg.description
+            desc = desc.replace('\n\n',';')
+            desc = desc.replace('\n',' ')
+
+            self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+                             pkg.size)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetFiles(self, package):
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            files = pkg.returnFileEntries('dir')
+            files.extend(pkg.returnFileEntries()) # regular files
+
+            file_list = ";".join(files)
+
+            self.Files(package, file_list)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def GetUpdates(self):
+        '''
+        Implement the {backend}-get-updates functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        try:
+            ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+            md = self.updateMetadata
+            for pkg in ygl.updates:
+                # Get info about package in updates info
+                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+                if notice:
+                    status = self._get_status(notice)
+                    self._show_package(pkg,status)
+                else:
+                    self._show_package(pkg,INFO_NORMAL)
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
+            
+        self.Finished(0)
+                
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RepoEnable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        '''
+        try:
+            repo = self.yumbase.repos.getRepo(repoid)
+            if enable:
+                if not repo.isEnabled():
+                    repo.enablePersistent()
+            else:
+                if repo.isEnabled():
+                    repo.disablePersistent()
+
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
+            self.Exit()
+            
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def GetRepoList(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        self.status(STATUS_INFO)
+        for repo in self.yumbase.repos.repos.values():
+            if repo.isEnabled():
+                self.RepoDetail(repo.id,repo.name,True)
+            else:
+                self.RepoDetail(repo.id,repo.name,False)
+                
+        self.Finished(0)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetUpdateDetail(self,package):
+        '''
+        Implement the {backend}-get-update_detail functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        pkg,inst = self._findPackage(package)
+        update = self._get_updated(pkg)
+        obsolete = self._get_obsoleted(pkg.name)
+        desc,urls,reboot = self._get_update_extras(pkg)
+        cve_url = self._format_list(urls['cve'])
+        bz_url = self._format_list(urls['bugzilla'])
+        vendor_url = self._format_list(urls['vendor'])
+        
+        self.UpdateDetail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+        
+        self.Finished(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sss', out_signature='')
+    def RepoSetData(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        '''
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
+        # Get the repo
+        repo = self.yumbase.repos.getRepo(repoid)
+        if repo:
+            repo.cfg.set(repoid, parameter, value)
+            try:
+                repo.cfg.write(file(repo.repofile, 'w'))
+            except IOError, e:
+                self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+                self.Exit()
+        else:
+            self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
+            self.Exit()
+            
+        self.Finished(0)
+
+#
+# Utility methods for Methods
+#
 
     def _do_search(self,searchlist,filters,key):
         '''
@@ -323,7 +953,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     available.append(pkg)
             
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
 
         # Now show available packages.
         if FILTER_INSTALLED not in fltlist:
@@ -365,7 +996,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     return True
             return False
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
@@ -389,28 +1021,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return isFree == wantFree
 
-    def search_name(self,filters,key):
-        '''
-        Implement the {backend}-search-name functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-
-        searchlist = ['name']
-        self.status(STATUS_QUERY)
-        self._do_search(searchlist, filters, key)
-
-    def search_details(self,filters,key):
-        '''
-        Implement the {backend}-search-details functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-
-        searchlist = ['name', 'summary', 'description', 'group']
-        self.status(STATUS_QUERY)
-        self._do_search(searchlist, filters, key)
-
     def _buildGroupDict(self):
         pkgGroups= {}
         cats = self.yumbase.comps.categories
@@ -428,75 +1038,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in group.conditional_packages.keys():
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
-
-    def search_group(self,filters,key):
-        '''
-        Implement the {backend}-search-group functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.yumbase.conf.cache = 1 # Only look in cache.
-        self.status(STATUS_QUERY)
-
-        try:
-            pkgGroupDict = self._buildGroupDict()
-            self.yumbase.conf.cache = 1 # Only look in cache.
-            fltlist = filters.split(';')
-            found = {}
-
-            if not FILTER_NOT_INSTALLED in fltlist:
-                # Check installed for group
-                for pkg in self.yumbase.rpmdb:
-                    group = GROUP_OTHER                    # Default Group
-                    if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
-                        cg = pkgGroupDict[pkg.name]
-                        if groupMap.has_key(cg):
-                            group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
-                    if group == key:
-                        if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_INSTALLED)
-            if not FILTER_INSTALLED in fltlist:
-                # Check available for group
-                for pkg in self.yumbase.pkgSack:
-                    group = GROUP_OTHER
-                    if pkgGroupDict.has_key(pkg.name):
-                        cg = pkgGroupDict[pkg.name]
-                        if groupMap.has_key(cg):
-                            group = groupMap[cg]
-                    if group == key:
-                        if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_AVAILABLE)
-        except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
-
-    def search_file(self,filters,key):
-        '''
-        Implement the {backend}-search-file functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_QUERY)
-
-        #self.yumbase.conf.cache = 1 # Only look in cache.
-        fltlist = filters.split(';')
-        found = {}
-        if not FILTER_NOT_INSTALLED in fltlist:
-            # Check installed for file
-            matches = self.yumbase.rpmdb.searchFiles(key)
-            for pkg in matches:
-                if not found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
-                        found[str(pkg)] = 1
-        if not FILTER_INSTALLED in fltlist:
-            # Check available for file
-            self.yumbase.repos.populateSack(mdtype='filelists')
-            matches = self.yumbase.pkgSack.searchFiles(key)
-            for pkg in matches:
-                if found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
-                        found[str(pkg)] = 1
 
     def _getEVR(self,idver):
         '''
@@ -531,21 +1072,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return pkgs[0],False
         else:
             return None,False
-
-    def get_requires(self,package,recursive):
-        '''
-        Print a list of requires for a given package
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-        pkg,inst = self._findPackage(package)
-        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
-        for pkg in pkgs:
-            if inst:
-                self._show_package(pkg,INFO_INSTALLED)
-            else:
-                self._show_package(pkg,INFO_AVAILABLE)
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
@@ -610,7 +1136,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         for req in results[pkg].keys():
             reqlist = results[pkg][req]
             if not reqlist: #  Unsatisfied dependency
-                self.error(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req),exit=False)
+                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req))
                 continue
             best = None
             for po in reqlist:
@@ -621,132 +1147,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     best= po
             bestdeps.append(best)
         return unique(bestdeps)
-
-    def get_depends(self,package,recursive):
-        '''
-        Print a list of depends for a given package
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-
-        name = package.split(';')[0]
-        pkg,inst = self._findPackage(package)
-        results = {}
-        if pkg:
-            deps = self._get_best_dependencies(pkg)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
-        for pkg in deps:
-            if pkg.name != name:
-                pkgver = self._get_package_ver(pkg)
-                id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
-
-                if self._is_inst(pkg):
-                    self.package(id, INFO_INSTALLED, pkg.summary)
-                else:
-                    if self._installable(pkg):
-                        self.package(id, INFO_AVAILABLE, pkg.summary)
-
-    def update_system(self):
-        '''
-        Implement the {backend}-update-system functionality
-        '''
-        self.allow_cancel(False)
-        self.percentage(0)
-
-        txmbr = self.yumbase.update() # Add all updates to Transaction
-        if txmbr:
-            self._runYumTransaction()
-        else:
-            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
-
-    def refresh_cache(self):
-        '''
-        Implement the {backend}-refresh_cache functionality
-        '''
-        self.allow_cancel(True);
-        self.percentage(0)
-        self.status(STATUS_REFRESH_CACHE)
-
-        pct = 0
-        try:
-            if len(self.yumbase.repos.listEnabled()) == 0:
-                self.percentage(100)
-                return
-
-            #work out the slice for each one
-            bump = (95/len(self.yumbase.repos.listEnabled()))/2
-
-            for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = 0
-                self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
-                pct+=bump
-                self.percentage(pct)
-                self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
-                pct+=bump
-                self.percentage(pct)
-
-            self.percentage(95)
-            # Setup categories/groups
-            self.yumbase.doGroupSetup()
-            #we might have a rounding error
-            self.percentage(100)
-
-        except yum.Errors.YumBaseError, e:
-            self.error(ERROR_INTERNAL_ERROR,str(e))
-
-    def resolve(self, filters, name):
-        '''
-        Implement the {backend}-resolve functionality
-        '''
-        self.allow_cancel(True);
-        self.percentage(None)
-        self.yumbase.conf.cache = 1 # Only look in cache.
-        self.status(STATUS_QUERY)
-
-        fltlist = filters.split(';')
-        try:
-            # Get installed packages
-            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-            if FILTER_NOT_INSTALLED not in fltlist:
-                for pkg in installedByKey:
-                    self._show_package(pkg,INFO_INSTALLED)
-            # Get available packages
-            if FILTER_INSTALLED not in fltlist:
-                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                    if pkg.name == name:
-                        show = True
-                        for instpo in installedByKey:
-                            # Check if package have a smaller & equal EVR to a inst pkg
-                            if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
-                                show = False
-                        if show:
-                            self._show_package(pkg,INFO_AVAILABLE)
-                            break
-        except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
-            
-    def install(self, package):
-        '''
-        Implement the {backend}-install functionality
-        This will only work with yum 3.2.4 or higher
-        '''
-        self.allow_cancel(False)
-        self.percentage(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
-            try:
-                txmbr = self.yumbase.install(name=pkg.name)
-                self._runYumTransaction()
-            except yum.Errors.InstallError,e:
-                msgs = ';'.join(e)
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
 
     def _localInstall(self, inst_file):
         """handles installs/updates of rpms provided on the filesystem in a
@@ -768,7 +1168,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
-            self.error(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+            self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+            self.Exit()
 
         # everything installed that matches the name
         installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
@@ -820,44 +1221,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.localPackages.append(po)
             self.yumbase.tsInfo.addUpdate(po, oldpo)
 
-    def install_file (self, inst_file):
-        '''
-        Implement the {backend}-install_file functionality
-        Install the package containing the inst_file file
-        Needed to be implemented in a sub class
-        '''
-        self.allow_cancel(False);
-        self.percentage(0)
-
-        pkgs_to_inst = []
-        self.yumbase.conf.gpgcheck=0
-        self._localInstall(inst_file)
-        try:
-            # Added the package to the transaction set
-            if len(self.yumbase.tsInfo) > 0:
-                self._runYumTransaction()
-        except yum.Errors.InstallError,e:
-            msgs = ';'.join(e)
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
-
-    def update(self, package):
-        '''
-        Implement the {backend}-install functionality
-        This will only work with yum 3.2.4 or higher
-        '''
-        self.allow_cancel(False);
-        self.percentage(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            txmbr = self.yumbase.update(name=pkg.name)
-            if txmbr:
-                self._runYumTransaction()
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-
     def _check_for_reboot(self):
         md = self.updateMetadata
         for txmbr in self.yumbase.tsInfo:
@@ -879,14 +1242,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
             retmsg = "Error in Dependency Resolution;" +";".join(msgs)
-            self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.Exit()
         else:
             self._check_for_reboot()
             if removedeps == False:
                 if len(self.yumbase.tsInfo) > 1:
                     retmsg = 'package could not be remove, because something depends on it'
-                    self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
-                    return
+                    self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+                    self.Exit()
 
             try:
                 rpmDisplay = PackageKitCallback(self)
@@ -895,20 +1259,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                       rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, ye:
                 retmsg = "Error in Download;" +";".join(ye.value)
-                self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+                self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+                self.Exit()
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures;" +";".join(ye.value)
-                self.error(ERROR_INTERNAL_ERROR,retmsg)
+                self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
+                self.Exit()
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
                 if not keyData:
-                    self.error(ERROR_INTERNAL_ERROR,
+                    self.ErrorCode(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
-
-# We need a yum with this change:
-# http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
-# to have fingerprint and timestamp available here
-# the above change is now in the latest yum for Fedor arawhide (yum-3.2.6-5.fc8)
+                    self.Exit()
                 self.repo_signature_required(keyData['po'].repoid,
                                              keyData['keyurl'],
                                              keyData['userid'],
@@ -916,78 +1278,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['fingerprint'],
                                              keyData['timestamp'],
                                              'GPG')
-                self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
+                self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
+                self.Exit()
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing;" +";".join(ye.value)
-                self.error(ERROR_TRANSACTION_ERROR,retmsg)
-
-    def remove(self, allowdep, package):
-        '''
-        Implement the {backend}-remove functionality
-        Needed to be implemented in a sub class
-        '''
-        self.allow_cancel(False);
-        self.percentage(0)
-
-        pkg,inst = self._findPackage( package)
-        if pkg and inst:
-            txmbr = self.yumbase.remove(name=pkg.name)
-            if txmbr:
-                if allowdep != 'yes':
-                    self._runYumTransaction(removedeps=False)
-                else:
-                    self._runYumTransaction(removedeps=True)
-            else:
-                self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-
-    def get_description(self, package):
-        '''
-        Print a detailed description for a given package
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            pkgver = self._get_package_ver(pkg)
-            id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-            desc = pkg.description
-            desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')
-
-            self.description(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size)
-        else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-
-    def get_files(self, package):
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            files = pkg.returnFileEntries('dir')
-            files.extend(pkg.returnFileEntries()) # regular files
-
-            file_list = ";".join(files)
-
-            self.files(package, file_list)
-        else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
-
-    def _pkg_to_id(self,pkg):
-        pkgver = self._get_package_ver(pkg)
-        id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-        return id
-
-    def _show_package(self,pkg,status):
-        '''  Show info about package'''
-        id = self._pkg_to_id(pkg)
-        self.package(id,status, pkg.summary)
+                self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+                self.Exit()
 
     def _get_status(self,notice):
         ut = notice['type']
@@ -999,55 +1295,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return INFO_ENHANCEMENT
         else:
             return INFO_UNKNOWN
-
-    def get_updates(self):
-        '''
-        Implement the {backend}-get-updates functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-        try:
-            ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
-            md = self.updateMetadata
-            for pkg in ygl.updates:
-                # Get info about package in updates info
-                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-                if notice:
-                    status = self._get_status(notice)
-                    self._show_package(pkg,status)
-                else:
-                    self._show_package(pkg,INFO_NORMAL)
-        except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
-                
-
-    def repo_enable(self, repoid, enable):
-        '''
-        Implement the {backend}-repo-enable functionality
-        '''
-        try:
-            repo = self.yumbase.repos.getRepo(repoid)
-            if enable == 'false':
-                if repo.isEnabled():
-                    repo.disablePersistent()
-            else:
-                if not repo.isEnabled():
-                    repo.enablePersistent()
-
-        except yum.Errors.RepoError,e:
-            self.error(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
-
-    def get_repo_list(self):
-        '''
-        Implement the {backend}-get-repo-list functionality
-        '''
-        self.status(STATUS_INFO)
-        for repo in self.yumbase.repos.repos.values():
-            if repo.isEnabled():
-                self.repo_detail(repo.id,repo.name,'true')
-            else:
-                self.repo_detail(repo.id,repo.name,'false')
 
     def _get_obsoleted(self,name):
         obsoletes = self.yumbase.up.getObsoletesTuples( newest=1 )
@@ -1127,37 +1374,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return "",urls,"none"
 
-    def get_update_detail(self,package):
-        '''
-        Implement the {backend}-get-update_detail functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-        pkg,inst = self._findPackage(package)
-        update = self._get_updated(pkg)
-        obsolete = self._get_obsoleted(pkg.name)
-        desc,urls,reboot = self._get_update_extras(pkg)
-        cve_url = self._format_list(urls['cve'])
-        bz_url = self._format_list(urls['bugzilla'])
-        vendor_url = self._format_list(urls['vendor'])
-        self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+#
+# Other utility methods
+#
 
-    def repo_set_data(self, repoid, parameter, value):
-        '''
-        Implement the {backend}-repo-set-data functionality
-        '''
-        # Get the repo
-        repo = self.yumbase.repos.getRepo(repoid)
-        if repo:
-            repo.cfg.set(repoid, parameter, value)
-            try:
-                repo.cfg.write(file(repo.repofile, 'w'))
-            except IOError, e:
-                self.error(ERROR_INTERNAL_ERROR,str(e))
+    def _get_package_ver(self,po):
+        ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
+        if po.epoch != '0':
+            ver = "%s:%s-%s" % (po.epoch,po.version,po.release)
         else:
-            self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
+            ver = "%s-%s" % (po.version,po.release)
+        return ver
 
+ 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
@@ -1244,12 +1473,12 @@ class DownloadCallback( BaseMeter ):
         pct = int( frac*100 )
         if name != self.oldName: # If this a new package
             if self.oldName:
-                self.base.sub_percentage(100)
+                self.base.SubPercentageChanged(100)
             self.oldName = name
             if self.bump > 0.0: # Bump the total download percentage
                 self.totalPct += self.bump
                 self.lastPct = 0
-                self.base.percentage(int(self.totalPct))
+                self.base.PercentageChanged(int(self.totalPct))
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
@@ -1260,12 +1489,12 @@ class DownloadCallback( BaseMeter ):
                     else:
                         typ = 'unknown'
                     self.base.metadata(typ,name)
-            self.base.sub_percentage(0)        
+            self.base.SubPercentageChanged(0)        
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
 	            self.lastPct = pct
 	            # bump the sub persentage for this package
-	            self.base.sub_percentage(pct)
+	            self.base.SubPercentageChanged(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -1300,23 +1529,23 @@ class PackageKitCallback(RPMBaseCallback):
 
     def _showName(self,status):
         if type(self.curpkg) in types.StringTypes:
-            id = self.base.get_package_id(self.curpkg,'','','')
+            id = self.base._get_package_id(self.curpkg,'','','')
         else:
             pkgver = self.base._get_package_ver(self.curpkg)
-            id = self.base.get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
-        self.base.package(id,status, "")
+            id = self.base._get_package_id(self.curpkg.name, pkgver, self.curpkg.arch, self.curpkg.repo)
+        self.base.Package(status, id, "")
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            self.base.status(self.state_actions[action])
+            self.base.StatusChanged(self.state_actions[action])
             self._showName(self.info_actions[action])
             pct = self._calcTotalPct(ts_current, ts_total)
-            self.base.percentage(pct)
+            self.base.PercentageChanged(pct)
         val = (ts_current*100L)/ts_total
         if val != self.pct:
             self.pct = val
-            self.base.sub_percentage(val)
+            self.base.SubPercentageChanged(val)
 
     def errorlog(self, msg):
         # grrrrrrrr
@@ -1328,21 +1557,21 @@ class ProcessTransPackageKitCallback:
 
     def event(self,state,data=None):
         if state == PT_DOWNLOAD:        # Start Downloading
-            self.base.allow_cancel(True)
-            self.base.percentage(10)
-            self.base.status(STATUS_DOWNLOAD)
+            self.base.AllowCancel(True)
+            self.base.PercentageChanged(10)
+            self.base.StatusChanged(STATUS_DOWNLOAD)
         if state == PT_DOWNLOAD_PKGS:   # Packages to download
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
-            self.base.percentage(40)
+            self.base.PercentageChanged(40)
             pass
         elif state == PT_TEST_TRANS:
-            self.base.allow_cancel(False)
-            self.base.percentage(45)
+            self.base.AllowCancel(False)
+            self.base.PercentageChanged(45)
             pass
         elif state == PT_TRANSACTION:
-            self.base.allow_cancel(False)
-            self.base.percentage(50)
+            self.base.AllowCancel(False)
+            self.base.PercentageChanged(50)
             pass
 
 class PackageKitYumBase(yum.YumBase):
@@ -1384,4 +1613,7 @@ class PackageKitYumBase(yum.YumBase):
         return False
 
 if __name__ == '__main__':
-    backend = PackageKitYumBackend()
+    bus = dbus.SystemBus()
+    bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
+    manager = PackageKitYumBackendService(bus_name, PACKAGEKIT_DBUS_PATH)
+
