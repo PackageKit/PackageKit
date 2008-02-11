@@ -252,6 +252,12 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		return FALSE;
 	}
 
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_debug ("invalid number %i", percentage);
+		return FALSE;
+	}
+
 	/* save in case we need this from coldplug */
 	backend->priv->last_percentage = percentage;
 
@@ -294,6 +300,12 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 	/* set the same twice? */
 	if (backend->priv->last_subpercentage == percentage) {
 		pk_debug ("duplicate set of %i", percentage);
+		return FALSE;
+	}
+
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_debug ("invalid number %i", percentage);
 		return FALSE;
 	}
 
