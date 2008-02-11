@@ -86,7 +86,7 @@ class PackageKitTestBackendService(dbus.service.Object):
         print "Package (%s, %s)" % (package_id, summary)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssussu')
+                         signature='ssusst')
     def Description(self, package_id, licence, group, detail, url, size):
         print "Description (%s, %s, %u, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
 
