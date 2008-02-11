@@ -1615,5 +1615,5 @@ class PackageKitYumBase(yum.YumBase):
 if __name__ == '__main__':
     bus = dbus.SystemBus()
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
-    manager = PackageKitBaseBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+    manager = PackageKitYumBackend(bus_name, PACKAGEKIT_DBUS_PATH)
 
