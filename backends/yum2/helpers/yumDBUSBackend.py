@@ -39,6 +39,7 @@ from yum.misc import prco_tuple_to_string, unique
 
 import dbus
 import dbus.service
+import dbus.mainloop.glib
 
 import rpmUtils
 import exceptions
@@ -1613,7 +1614,8 @@ class PackageKitYumBase(yum.YumBase):
         return False
 
 if __name__ == '__main__':
-    bus = dbus.SystemBus()
+    loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitYumBackend(bus_name, PACKAGEKIT_DBUS_PATH)
 
