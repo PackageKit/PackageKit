@@ -323,7 +323,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_UINT64, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "AllowCancel",
