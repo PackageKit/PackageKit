@@ -395,7 +395,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 PackageKitBaseBackend.doLock(self)
             except:
                 if retries == 0:
-                    self.status(STATUS_WAIT)
+                    self.StatusChanged(STATUS_WAIT)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
@@ -416,7 +416,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
-    def SearchName(self, filterx, search):
+    def SearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
         '''
@@ -426,7 +426,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         searchlist = ['name']
         self.StatusChanged(STATUS_QUERY)
 
-        self._do_search(searchlist, filters, key)
+        self._do_search(searchlist, filters, search)
         self.Finished(0)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -869,7 +869,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
-        self.status(STATUS_INFO)
+        self.StatusChanged(STATUS_INFO)
         for repo in self.yumbase.repos.repos.values():
             if repo.isEnabled():
                 self.RepoDetail(repo.id,repo.name,True)
