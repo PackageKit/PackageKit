@@ -1143,9 +1143,9 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 					   G_TYPE_NONE, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Description */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
+					   G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 					   G_TYPE_INVALID);
 
 	/* Files */
