@@ -20,10 +20,10 @@
  */
 
 /**
- * SECTION:pk-package-id
- * @short_description: Functionality to modify a PackageID
+ * SECTION:pk-extra-obj
+ * @short_description: Client object access to extra metadata about a package
  *
- * ExtraObject's are difficult to read and create.
+ * Extra metadata such as icon name and localised summary may be stored here
  */
 
 #include "config.h"

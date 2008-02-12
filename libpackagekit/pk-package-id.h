@@ -26,6 +26,11 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PkPackageId:
+ *
+ * Cached object to represent a package ID.
+ **/
 typedef struct {
 	gchar	*name;
 	gchar	*version;

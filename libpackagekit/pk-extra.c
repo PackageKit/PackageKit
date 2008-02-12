@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-extra
+ * @short_description: Client singleton access to extra metadata about a package
+ *
+ * Extra metadata such as icon name and localised summary may be stored here
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
