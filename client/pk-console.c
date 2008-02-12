@@ -72,11 +72,16 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	/* pass this out */
 	info_text = pk_strpad (pk_info_enum_to_text (info), 12);
 
-	spacing = pk_package_id_new ();
+	/* split */
 	ident = pk_package_id_new_from_string (package_id);
+	if (ident == NULL) {
+		pk_warning ("could not get valid ident from %s", package_id);
+		return;
+	}
 
 	/* these numbers are guesses */
 	extra = 0;
+	spacing = pk_package_id_new ();
 	spacing->name = pk_strpad_extra (ident->name, 20, &extra);
 	spacing->arch = pk_strpad_extra (ident->arch, 7, &extra);
 	spacing->version = pk_strpad_extra (ident->version, 15, &extra);
