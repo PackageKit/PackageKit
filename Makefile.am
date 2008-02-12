@@ -87,5 +87,5 @@ MAINTAINERCLEANFILES =					\
 	aclocal.m4					\
 	$(NULL)
 
-DISTCHECK_CONFIGURE_FLAGS = --disable-tests --disable-gcov
+DISTCHECK_CONFIGURE_FLAGS = --disable-gcov --enable-gtk-doc
 
