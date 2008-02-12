@@ -230,12 +230,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
-    def __init__(self, bus_name=None, dbus_path=None):
+    def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
+        
 
         PackageKitBaseBackend.__init__(self,
-                                       bus_name=bus_name,
-                                       dbus_path=dbus_path)
+                                       bus_name,
+                                       dbus_path)
         print "__init__"
 
 #
@@ -1615,5 +1616,5 @@ class PackageKitYumBase(yum.YumBase):
 if __name__ == '__main__':
     bus = dbus.SystemBus()
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
-    manager = PackageKitYumBackendService(bus_name, PACKAGEKIT_DBUS_PATH)
+    manager = PackageKitYumBackend(bus_name, PACKAGEKIT_DBUS_PATH)
 

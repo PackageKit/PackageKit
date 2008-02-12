@@ -35,7 +35,7 @@ import dbus.service
 
 class PackageKitBaseBackend(dbus.service.Object):
 
-    def __init__(self, bus_name=None, dbus_path=None, daemon=True):
+    def __init__(self, bus_name, dbus_path, daemon=False):
         if daemon:
             self.daemonize()
 
@@ -50,8 +50,10 @@ class PackageKitBaseBackend(dbus.service.Object):
         """
         forking code stolen from yum-updatesd
         """
+        print "daemonize"
         pid = os.fork()
         if pid:
+            print "pid = %s" % pid
             sys.exit()
         os.chdir("/")
         fd = os.open("/dev/null", os.O_RDWR)
