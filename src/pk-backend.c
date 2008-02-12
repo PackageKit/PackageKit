@@ -246,15 +246,30 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* set the same twice? */
+	if (backend->priv->last_percentage == percentage) {
+		pk_debug ("duplicate set of %i", percentage);
+		return FALSE;
+	}
+
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_debug ("invalid number %i", percentage);
+		return FALSE;
+	}
+
 	/* save in case we need this from coldplug */
 	backend->priv->last_percentage = percentage;
 
-	/* needed for time remaining calculation */
-	pk_time_add_data (backend->priv->time, percentage);
+	/* only compute time if we have data */
+	if (percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		/* needed for time remaining calculation */
+		pk_time_add_data (backend->priv->time, percentage);
 
-	/* TODO: lets try this */
-	backend->priv->last_remaining = pk_time_get_remaining (backend->priv->time);
-	pk_debug ("this will now take ~%i seconds", backend->priv->last_remaining);
+		/* lets try this and print as debug */
+		backend->priv->last_remaining = pk_time_get_remaining (backend->priv->time);
+		pk_debug ("this will now take ~%i seconds", backend->priv->last_remaining);
+	}
 
 	/* emit the progress changed signal */
 	pk_backend_emit_progress_changed (backend);
@@ -281,6 +296,18 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* set the same twice? */
+	if (backend->priv->last_subpercentage == percentage) {
+		pk_debug ("duplicate set of %i", percentage);
+		return FALSE;
+	}
+
+	/* invalid number? */
+	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_debug ("invalid number %i", percentage);
+		return FALSE;
+	}
 
 	/* save in case we need this from coldplug */
 	backend->priv->last_subpercentage = percentage;

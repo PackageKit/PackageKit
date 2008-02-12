@@ -82,23 +82,23 @@ class PackageKitTestBackendService(dbus.service.Object):
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='uss')
-    def Package(self, percentage, package_id, summary):
+    def Package(self, status, package_id, summary):
         print "Package (%s, %s)" % (package_id, summary)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssussu')
+                         signature='ssusst')
     def Description(self, package_id, licence, group, detail, url, size):
         print "Description (%s, %s, %u, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssussu')
+                         signature='ss')
     def Files(self, package_id, file_list):
         print "Files (%s, %s)" % (package_id, file_list)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sssssssu')
-    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %u)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text)
+                         signature='ssssssus')
+    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
+        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %u, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
