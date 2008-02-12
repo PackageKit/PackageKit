@@ -891,13 +891,31 @@ backend_get_updates (PkBackend *backend)
 		NULL);
 }
 
+/**
+ * backend_get_groups:
+ */
+static void
+backend_get_groups (PkBackend *backend, PkEnumList *elist)
+{
+	g_return_if_fail (backend != NULL);
+	pk_enum_list_append_multiple (elist,
+				      PK_GROUP_ENUM_COMMUNICATION,
+				      PK_GROUP_ENUM_PROGRAMMING,
+				      PK_GROUP_ENUM_GAMES,
+				      PK_GROUP_ENUM_OTHER,
+				      PK_GROUP_ENUM_INTERNET,
+				      PK_GROUP_ENUM_REPOS,
+				      PK_GROUP_ENUM_MAPS,
+				      -1
+			);
+}
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */
-	NULL,					/* get_groups */
+	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
