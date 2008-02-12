@@ -37,9 +37,9 @@ def ExceptionHandler(func):
             self.error(ERROR_DEP_RESOLUTION_FAILED, display(e), exit=True)
         except conaryclient.UpdateError, e:
             # FIXME: Need a enum for UpdateError
-            self.error(ERROR_UNKNOWN, display(e), exit=True)
+            self.error(ERROR_INTERNAL_ERROR, display(e), exit=True)
         except Exception, e:
-            self.error(ERROR_UNKNOWN, display(e), exit=True)
+            self.error(ERROR_INTERNAL_ERROR, display(e), exit=True)
     return wrapper
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
