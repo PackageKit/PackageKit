@@ -16,6 +16,7 @@ import dbus
 import dbus.glib
 import dbus.service
 import gobject
+from packagekit.enums import *
 
 PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitTestBackend'
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitTestBackend'
@@ -46,14 +47,16 @@ class PackageKitTestBackendService(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
-    def SearchName(self, filterx, search):
-        print 'filter'
-        self.Finished(0)
+    def SearchName(self, filters, search):
+        print "SearchName (%s, %s)" % (filters, search)
+        self.StatusChanged(STATUS_QUERY)
+        self.Package(INFO_AVAILABLE, "foo-devel;0.0.1;i398;fedora", "Foo build files")
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
+                         signature='s')
     def Finished(self, exit):
-        print "Finished (%d)" % (exit)
+        print "Finished (%s)" % (exit)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssb')
@@ -61,9 +64,9 @@ class PackageKitTestBackendService(dbus.service.Object):
         print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
+                         signature='s')
     def StatusChanged(self, status):
-        print "StatusChanged (%i)" % (status)
+        print "StatusChanged (%s)" % (status)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
@@ -81,14 +84,14 @@ class PackageKitTestBackendService(dbus.service.Object):
         print "NoPercentageChanged"
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='uss')
+                         signature='sss')
     def Package(self, status, package_id, summary):
-        print "Package (%s, %s)" % (package_id, summary)
+        print "Package (%s, %s, %s)" % (status, package_id, summary)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssusst')
+                         signature='ssssst')
     def Description(self, package_id, licence, group, detail, url, size):
-        print "Description (%s, %s, %u, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
+        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
@@ -96,9 +99,9 @@ class PackageKitTestBackendService(dbus.service.Object):
         print "Files (%s, %s)" % (package_id, file_list)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssus')
+                         signature='ssssssss')
     def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %u, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
+        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
@@ -106,24 +109,24 @@ class PackageKitTestBackendService(dbus.service.Object):
         print "AllowCancel (%i)" % (allow_cancel)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='us')
+                         signature='ss')
     def ErrorCode(self, code, description):
-        print "ErrorCode (%i, %s)" % (code, description)
+        print "ErrorCode (%s, %s)" % (code, description)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='us')
+                         signature='ss')
     def RequireRestart(self, restart, description):
-        print "RequireRestart (%i, %s)" % (restart, description)
+        print "RequireRestart (%s, %s)" % (restart, description)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='us')
+                         signature='ss')
     def Message(self, message, description):
-        print "Message (%i, %s)" % (message, description)
+        print "Message (%s, %s)" % (message, description)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssu')
+                         signature='sssssss')
     def RepoSignatureRequired(self, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type):
-        print "RepoSignatureRequired (%s, %s, %s, %s, %s, %s, %i)" % (repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type)
+        print "RepoSignatureRequired (%s, %s, %s, %s, %s, %s, %s)" % (repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type)
 
 bus = dbus.SystemBus()
 bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)

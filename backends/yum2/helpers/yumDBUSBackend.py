@@ -233,7 +233,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
-        
+
 
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
@@ -245,9 +245,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 #
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
+                         signature='s')
     def Finished(self, exit):
-        print "Finished (%d)" % (exit)
+        print "Finished (%s)" % (exit)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssb')
@@ -259,14 +259,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def AllowCancel(self, allow_cancel):
         print "AllowCancel (%i)" % (allow_cancel)
 
-    #FIXME: _show_description and _show_package wrap Description and 
+    #FIXME: _show_description and _show_package wrap Description and
     #       Package so that the encoding can be fixed. This is ugly.
     #       we could probably use a decorator to do it instead.
-    
+
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='uss')
+                         signature='sss')
     def Package(self, status, package_id, summary):
-        print "Package (%s, %s)" % (package_id, summary)
+        print "Package (%s, %s, %s)" % (status, package_id, summary)
 
     def _show_package(self,pkg,status):
         '''
@@ -278,12 +278,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         id = self._pkg_to_id(pkg)
         summary = self._toUTF(pkg.summary)
-        self.Package(id,status,summary)
+        self.Package(status,id,summary)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssussu')
+                         signature='sssssu')
     def Description(self, package_id, licence, group, detail, url, size):
-        print "Description (%s, %s, %u, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
+        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
 
     def _show_description(self,id,license,group,desc,url,bytes):
         '''
@@ -303,16 +303,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                          signature='ss')
     def Files(self, package_id, file_list):
         print "Files (%s, %s)" % (package_id, file_list)
-        
+
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
+                         signature='s')
     def StatusChanged(self, status):
-        print "StatusChanged (%i)" % (status)
-    
+        print "StatusChanged (%s)" % (status)
+
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
     def NoPercentageUpdates(self):
-        print "NoPercentageUpdates"                         
+        print "NoPercentageUpdates"
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
@@ -325,23 +325,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         print "SubPercentageChanged (%i)" % (percentage)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssus')
+                         signature='ssssssss')
     def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %u, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
+        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='us')
+                         signature='ss')
     def ErrorCode(self, code, description):
         '''
         send 'error'
         @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
         @param description: Error description
-        @param exit: exit application with rc=1, if true
         '''
-        print "ErrorCode (%i, %s)" % (code, description)
+        print "ErrorCode (%s, %s)" % (code, description)
 
-            
-        
+
+
 #
 # Utility methods for Signals
 #
@@ -407,7 +406,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                          in_signature='', out_signature='')
     def Unlock(self):
         self.doUnlock()
-        
+
     def doUnlock(self):
         ''' Unlock Yum'''
         if self.isLocked():
@@ -428,7 +427,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_QUERY)
 
         self._do_search(searchlist, filters, search)
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -442,7 +441,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         searchlist = ['name', 'summary', 'description', 'group']
         self.StatusChanged(STATUS_QUERY)
         self._do_search(searchlist, filters, key)
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -487,7 +486,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self.Exit()
 
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -496,7 +495,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-file functionality
         '''
         self.AllowCancel(True)
-        self.NoPercentageUpdates(None)
+        self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
         #self.yumbase.conf.cache = 1 # Only look in cache.
@@ -520,7 +519,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
 
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -539,7 +538,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 self._show_package(pkg,INFO_AVAILABLE)
 
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -570,7 +569,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if self._installable(pkg):
                         self._show_package(pkg, INFO_AVAILABLE)
 
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -587,8 +586,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -604,7 +603,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
                 self.PercentageChanged(100)
-                self.Finished(0)
+                self.Finished(EXIT_SUCCESS)
                 return
 
             #work out the slice for each one
@@ -628,8 +627,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.YumBaseError, e:
             self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -664,9 +663,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self.Exit()
-            
-        self.Finished(0)
-            
+
+        self.Finished(EXIT_SUCCESS)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def InstallPackage(self, package):
@@ -693,7 +692,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
             self.Exit()
 
-        self.Finished(0)
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -717,8 +716,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             msgs = ';'.join(e)
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -741,8 +740,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -767,8 +766,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
             self.Exit()
-            
-        self.Finished(0)    
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -793,8 +792,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -814,8 +813,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -840,9 +839,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self.Exit()
-            
-        self.Finished(0)
-                
+
+        self.Finished(EXIT_SUCCESS)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
     def RepoEnable(self, repoid, enable):
@@ -861,8 +860,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -876,8 +875,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.RepoDetail(repo.id,repo.name,True)
             else:
                 self.RepoDetail(repo.id,repo.name,False)
-                
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -896,10 +895,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         cve_url = self._format_list(urls['cve'])
         bz_url = self._format_list(urls['bugzilla'])
         vendor_url = self._format_list(urls['vendor'])
-        
+
         self.UpdateDetail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
-        
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -921,8 +920,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
             self.Exit()
-            
-        self.Finished(0)
+
+        self.Finished(EXIT_SUCCESS)
 
 #
 # Utility methods for Methods
@@ -953,7 +952,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg, INFO_INSTALLED)
                 else:
                     available.append(pkg)
-            
+
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self.Exit()
@@ -1326,7 +1325,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     _updateMetadata = None
     updateMetadata = property(fget=_get_update_metadata)
-    
+
     def _format_str(self,str):
         """
         Convert a multi line string to a list separated by ';'
@@ -1366,7 +1365,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         urls[typ].append("%s;%s" % (href,title))
                     else:
                         urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
-                        
+
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
 				reboot = 'system'
@@ -1388,7 +1387,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             ver = "%s-%s" % (po.version,po.release)
         return ver
 
- 
+
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
         self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
@@ -1414,7 +1413,7 @@ class DownloadCallback( BaseMeter ):
         self.numPkgs = float(len(self.pkgs))
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
-        
+
     def _getPackage(self,name):
         if self.pkgs:
             for pkg in self.pkgs:
@@ -1491,7 +1490,7 @@ class DownloadCallback( BaseMeter ):
                     else:
                         typ = 'unknown'
                     self.base.metadata(typ,name)
-            self.base.SubPercentageChanged(0)        
+            self.base.SubPercentageChanged(0)
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
 	            self.lastPct = pct
