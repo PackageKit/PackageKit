@@ -71,7 +71,7 @@ gchar		*pk_strbuild_va				(const gchar	*first_element,
 gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 const gchar	*id2,
 							 guint		 parts,
-							 guint		 match);
+							 guint		 compare);
 gboolean	 pk_filter_check			(const gchar	*filter);
 gchar		*pk_iso8601_present			(void);
 guint		 pk_iso8601_difference			(const gchar	*isodate);

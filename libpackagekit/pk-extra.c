@@ -65,7 +65,7 @@ static gpointer pk_extra_object = NULL;
 /**
  * pk_extra_set_locale:
  * @extra: a valid #PkExtra instance
- * @tid: a transaction id
+ * @locale: a correct locale
  *
  * Return value: %TRUE if set correctly
  **/
@@ -356,7 +356,7 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 /**
  * pk_extra_set_database:
  * @extra: a valid #PkExtra instance
- * @tid: a transaction id
+ * @filename: a valid database
  *
  * Return value: %TRUE if set correctly
  **/
