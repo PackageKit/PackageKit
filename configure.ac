@@ -500,7 +500,6 @@ docs/html/Makefile
 docs/html/img/Makefile
 docs/spec/Makefile
 docs/api/Makefile
-docs/backends/Makefile
 contrib/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile

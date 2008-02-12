@@ -35,33 +35,14 @@ import dbus.service
 
 class PackageKitBaseBackend(dbus.service.Object):
 
-    def __init__(self, bus_name, dbus_path, daemon=False):
-        if daemon:
-            self.daemonize()
-
+    def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
 
         self._locked = False
 
         self.loop = gobject.MainLoop()
         self.loop.run()
-       
-    def daemonize(self):
-        """
-        forking code stolen from yum-updatesd
-        """
-        print "daemonize"
-        pid = os.fork()
-        if pid:
-            print "pid = %s" % pid
-            sys.exit()
-        os.chdir("/")
-        fd = os.open("/dev/null", os.O_RDWR)
-        os.dup2(fd, 0)
-        os.dup2(fd, 1)
-        os.dup2(fd, 2)
-        os.close(fd)
-     
+
     def doLock(self):
         ''' Generic locking, overide and extend in child class'''
         self._locked = True
