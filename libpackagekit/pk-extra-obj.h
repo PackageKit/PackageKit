@@ -27,6 +27,11 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PkExtraObj:
+ *
+ * The cached structure for the extra fields from the metadata store
+ */
 typedef struct {
 	PkPackageId	*id;
 	gchar		*icon;

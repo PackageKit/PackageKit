@@ -417,6 +417,11 @@ pk_enum_find_string (PkEnumMatch *table, guint value)
 
 /**
  * pk_sig_type_enum_from_text:
+ * @sig_type: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkSigTypeEnum
 pk_sig_type_enum_from_text (const gchar *sig_type)
@@ -426,6 +431,11 @@ pk_sig_type_enum_from_text (const gchar *sig_type)
 
 /**
  * pk_sig_type_enum_to_text:
+ * @sig_type: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
@@ -435,6 +445,11 @@ pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 
 /**
  * pk_info_enum_from_text:
+ * @info: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkInfoEnum
 pk_info_enum_from_text (const gchar *info)
@@ -444,6 +459,11 @@ pk_info_enum_from_text (const gchar *info)
 
 /**
  * pk_info_enum_to_text:
+ * @info: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_info_enum_to_text (PkInfoEnum info)
@@ -453,6 +473,11 @@ pk_info_enum_to_text (PkInfoEnum info)
 
 /**
  * pk_exit_enum_from_text:
+ * @exit: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  */
 PkExitEnum
 pk_exit_enum_from_text (const gchar *exit)
@@ -462,6 +487,11 @@ pk_exit_enum_from_text (const gchar *exit)
 
 /**
  * pk_exit_enum_to_text:
+ * @exit: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_exit_enum_to_text (PkExitEnum exit)
@@ -471,6 +501,11 @@ pk_exit_enum_to_text (PkExitEnum exit)
 
 /**
  * pk_status_enum_from_text:
+ * @status: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkStatusEnum
 pk_status_enum_from_text (const gchar *status)
@@ -480,6 +515,11 @@ pk_status_enum_from_text (const gchar *status)
 
 /**
  * pk_status_enum_to_text:
+ * @status: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_status_enum_to_text (PkStatusEnum status)
@@ -489,6 +529,11 @@ pk_status_enum_to_text (PkStatusEnum status)
 
 /**
  * pk_role_enum_from_text:
+ * @role: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkRoleEnum
 pk_role_enum_from_text (const gchar *role)
@@ -498,6 +543,11 @@ pk_role_enum_from_text (const gchar *role)
 
 /**
  * pk_role_enum_to_text:
+ * @role: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_role_enum_to_text (PkRoleEnum role)
@@ -507,6 +557,11 @@ pk_role_enum_to_text (PkRoleEnum role)
 
 /**
  * pk_error_enum_from_text:
+ * @code: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkErrorCodeEnum
 pk_error_enum_from_text (const gchar *code)
@@ -516,6 +571,11 @@ pk_error_enum_from_text (const gchar *code)
 
 /**
  * pk_error_enum_to_text:
+ * @code: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_error_enum_to_text (PkErrorCodeEnum code)
@@ -525,6 +585,11 @@ pk_error_enum_to_text (PkErrorCodeEnum code)
 
 /**
  * pk_restart_enum_from_text:
+ * @restart: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkRestartEnum
 pk_restart_enum_from_text (const gchar *restart)
@@ -534,6 +599,11 @@ pk_restart_enum_from_text (const gchar *restart)
 
 /**
  * pk_restart_enum_to_text:
+ * @restart: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_restart_enum_to_text (PkRestartEnum restart)
@@ -543,6 +613,11 @@ pk_restart_enum_to_text (PkRestartEnum restart)
 
 /**
  * pk_message_enum_from_text:
+ * @message: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkMessageEnum
 pk_message_enum_from_text (const gchar *message)
@@ -552,6 +627,11 @@ pk_message_enum_from_text (const gchar *message)
 
 /**
  * pk_message_enum_to_text:
+ * @message: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_message_enum_to_text (PkMessageEnum message)
@@ -561,6 +641,11 @@ pk_message_enum_to_text (PkMessageEnum message)
 
 /**
  * pk_group_enum_from_text:
+ * @group: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkGroupEnum
 pk_group_enum_from_text (const gchar *group)
@@ -570,6 +655,11 @@ pk_group_enum_from_text (const gchar *group)
 
 /**
  * pk_group_enum_to_text:
+ * @group: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_group_enum_to_text (PkGroupEnum group)
@@ -579,6 +669,11 @@ pk_group_enum_to_text (PkGroupEnum group)
 
 /**
  * pk_freq_enum_from_text:
+ * @freq: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkFreqEnum
 pk_freq_enum_from_text (const gchar *freq)
@@ -588,6 +683,11 @@ pk_freq_enum_from_text (const gchar *freq)
 
 /**
  * pk_freq_enum_to_text:
+ * @freq: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_freq_enum_to_text (PkFreqEnum freq)
@@ -597,6 +697,11 @@ pk_freq_enum_to_text (PkFreqEnum freq)
 
 /**
  * pk_update_enum_from_text:
+ * @update: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkUpdateEnum
 pk_update_enum_from_text (const gchar *update)
@@ -606,6 +711,11 @@ pk_update_enum_from_text (const gchar *update)
 
 /**
  * pk_update_enum_to_text:
+ * @update: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_update_enum_to_text (PkUpdateEnum update)
@@ -615,6 +725,11 @@ pk_update_enum_to_text (PkUpdateEnum update)
 
 /**
  * pk_filter_enum_from_text:
+ * @filter: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkFilterEnum
 pk_filter_enum_from_text (const gchar *filter)
@@ -624,6 +739,11 @@ pk_filter_enum_from_text (const gchar *filter)
 
 /**
  * pk_filter_enum_to_text:
+ * @filter: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_filter_enum_to_text (PkFilterEnum filter)
@@ -633,6 +753,11 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 
 /**
  * pk_license_enum_from_text:
+ * @licence: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
  **/
 PkLicenseEnum
 pk_license_enum_from_text (const gchar *license)
@@ -642,6 +767,11 @@ pk_license_enum_from_text (const gchar *license)
 
 /**
  * pk_license_enum_to_text:
+ * @license: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
  **/
 const gchar *
 pk_license_enum_to_text (PkLicenseEnum license)
