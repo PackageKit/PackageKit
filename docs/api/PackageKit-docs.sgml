@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>PackageKit Reference Manual</title>
+    <releaseinfo>
+      for PackageKit &version;
+      <!--
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://[SERVER]/PackageKit/index.html">http://[SERVER]/PackageKit/</ulink>.
+      -->
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter>
+    <title>libpackagekit</title>
+    <xi:include href="xml/pk-connection.xml"/>
+    <xi:include href="xml/pk-enum-list.xml"/>
+    <xi:include href="xml/pk-polkit-client.xml"/>
+    <xi:include href="xml/pk-extra.xml"/>
+    <xi:include href="xml/pk-client.xml"/>
+    <xi:include href="xml/pk-network.xml"/>
+    <xi:include href="xml/pk-package-list.xml"/>
+    <xi:include href="xml/pk-job-list.xml"/>
+    <xi:include href="xml/pk-task-list.xml"/>
+    <xi:include href="xml/pk-debug.xml"/>
+    <xi:include href="xml/pk-extra-obj.xml"/>
+    <xi:include href="xml/pk-common.xml"/>
+    <xi:include href="xml/pk-enum.xml"/>
+    <xi:include href="xml/pk-package-id.xml"/>
+  </chapter>
+</book>

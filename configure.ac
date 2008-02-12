@@ -25,7 +25,11 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
-GTK_DOC_CHECK([1.3])
+
+# set up gtk-doc
+AC_CONFIG_MACRO_DIR(m4)
+GTK_DOC_CHECK(1.9)
+
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
@@ -500,6 +504,7 @@ docs/html/Makefile
 docs/html/img/Makefile
 docs/spec/Makefile
 docs/api/Makefile
+docs/api/version.xml
 contrib/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
