@@ -291,6 +291,8 @@ if test x$with_security_framework = xpolkit; then
 	AC_DEFINE(USE_SECURITY_POLKIT, 1, [if we should use PolicyKit])
 elif test x$with_security_framework = xdummy; then
 	AC_DEFINE(USE_SECURITY_DUMMY, 1, [if we should use a dummy security framework])
+else
+	AC_MSG_ERROR([No valid security framework specified])
 fi
 
 AM_CONDITIONAL(SECURITY_TYPE_DUMMY, [test x$with_security_framework = xdummy], [using dummy security framework])
