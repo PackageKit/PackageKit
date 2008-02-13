@@ -321,7 +321,7 @@ if test x$with_default_backend = x; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
-	elif test -f /usr/bin/zypp ; then
+	elif test -f /usr/bin/zypper ; then
 		with_default_backend=zypp
 	else
 		with_default_backend=dummy
