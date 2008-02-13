@@ -189,6 +189,7 @@ pk_backend_unlock (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	if (backend->priv->locked == FALSE) {
 		pk_warning ("already unlocked");
@@ -628,6 +629,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	/* remove or add the hal inhibit */
 	if (allow_cancel == TRUE) {
@@ -797,6 +799,7 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	if (name != NULL && backend->desc->description != NULL) {
 		*name = g_strdup (backend->desc->description);
