@@ -241,7 +241,7 @@ pk_inhibit_class_init (PkInhibitClass *klass)
 /**
  * pk_inhibit_init:
  *
- * initialises the inhibit class. NOTE: We expect inhibit objects
+ * initializes the inhibit class. NOTE: We expect inhibit objects
  * to *NOT* be removed or added during the session.
  * We only control the first inhibit object if there are more than one.
  **/

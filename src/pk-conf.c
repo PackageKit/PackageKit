@@ -111,7 +111,7 @@ pk_conf_class_init (PkConfClass *klass)
 /**
  * pk_conf_init:
  *
- * initialises the conf class. NOTE: We expect conf objects
+ * initializes the conf class. NOTE: We expect conf objects
  * to *NOT* be removed or added during the session.
  * We only control the first conf object if there are more than one.
  **/

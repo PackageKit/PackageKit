@@ -452,7 +452,7 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 		return FALSE;
 	}
 	if (compare == parts) {
-		pk_debug ("optimise to strcmp");
+		pk_debug ("optimize to strcmp");
 		return pk_strequal (id1, id2);
 	}
 

@@ -86,7 +86,7 @@ pk_security_class_init (PkSecurityClass *klass)
 /**
  * pk_security_init:
  *
- * initialises the security class. NOTE: We expect security objects
+ * initializes the security class. NOTE: We expect security objects
  * to *NOT* be removed or added during the session.
  * We only control the first security object if there are more than one.
  **/
