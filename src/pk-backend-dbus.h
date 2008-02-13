@@ -35,6 +35,9 @@ G_BEGIN_DECLS
 #define PK_IS_BACKEND_DBUS_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_BACKEND_DBUS))
 #define PK_BACKEND_DBUS_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_BACKEND_DBUS, PkBackendDbusClass))
 
+#define PK_DBUS_BACKEND_INTERFACE	"org.freedesktop.PackageKitBackend"
+#define PK_DBUS_BACKEND_PATH		"/org/freedesktop/PackageKitBackend"
+
 typedef struct PkBackendDbusPrivate PkBackendDbusPrivate;
 
 typedef struct
@@ -104,9 +107,7 @@ gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_cancel			(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_set_name		(PkBackendDbus	*backend_dbus,
-							 const gchar	*service,
-							 const gchar	*interface,
-							 const gchar	*path);
+							 const gchar	*service);
 
 
 G_END_DECLS

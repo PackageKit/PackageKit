@@ -219,10 +219,12 @@ def sigquit(signum, frame):
         yumbase.doUnlock(YUM_PID_FILE)
     sys.exit(1)
 
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitYumBackend'
+# This is specific to this backend
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYumBackend'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitYumBackend'
 
+# This is common between backends
+PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
+PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
 class PackageKitYumBackend(PackageKitBaseBackend):
 

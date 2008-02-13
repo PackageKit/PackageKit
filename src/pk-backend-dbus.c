@@ -64,8 +64,6 @@ struct PkBackendDbusPrivate
 	DBusGProxy		*proxy;
 	PkBackend		*backend;
 	gchar			*service;
-	gchar			*interface;
-	gchar			*path;
 	gulong			 signal_finished;
 };
 
@@ -303,8 +301,7 @@ pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *repo
  * pk_backend_dbus_set_name:
  **/
 gboolean
-pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
-			  const gchar *interface, const gchar *path)
+pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 {
 	DBusGProxy *proxy;
 	DBusGProxyCall *call;
@@ -319,7 +316,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 	/* grab this */
 	pk_debug ("trying to activate %s", service);
 	proxy = dbus_g_proxy_new_for_name (backend_dbus->priv->connection,
-					   service, path, interface);
+					   service, PK_DBUS_BACKEND_PATH, PK_DBUS_BACKEND_INTERFACE);
 
 	dbus_g_proxy_add_signal (proxy, "RepoDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
@@ -392,11 +389,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 
 	/* save for later */
 	g_free (backend_dbus->priv->service);
-	g_free (backend_dbus->priv->interface);
-	g_free (backend_dbus->priv->path);
 	backend_dbus->priv->service = g_strdup (service);
-	backend_dbus->priv->interface = g_strdup (interface);
-	backend_dbus->priv->path = g_strdup (path);
 
 	/* manually init the backend, which should get things spawned for us */
 	call = dbus_g_proxy_begin_call (backend_dbus->priv->proxy, "Init",
@@ -1030,8 +1023,6 @@ pk_backend_dbus_finalize (GObject *object)
 
 	backend_dbus = PK_BACKEND_DBUS (object);
 	g_free (backend_dbus->priv->service);
-	g_free (backend_dbus->priv->interface);
-	g_free (backend_dbus->priv->path);
 	g_object_unref (backend_dbus->priv->proxy);
 	g_object_unref (backend_dbus->priv->backend);
 
@@ -1060,8 +1051,6 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	backend_dbus->priv = PK_BACKEND_DBUS_GET_PRIVATE (backend_dbus);
 	backend_dbus->priv->proxy = NULL;
 	backend_dbus->priv->service = NULL;
-	backend_dbus->priv->interface = NULL;
-	backend_dbus->priv->path = NULL;
 	backend_dbus->priv->backend = pk_backend_new ();
 
 	/* get connection */
