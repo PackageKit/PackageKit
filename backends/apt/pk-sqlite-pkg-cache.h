@@ -29,6 +29,7 @@ typedef enum {
 } SearchDepth;
 
 #include <pk-backend.h>
+#include <pk-backend-thread.h>
 #include <sqlite3.h>
 
 void sqlite_init_cache(PkBackend *backend, const char* dbname, const char* compare_fname, void (*build_db)(PkBackend *, sqlite3 *db));

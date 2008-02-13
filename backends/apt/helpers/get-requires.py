@@ -16,5 +16,5 @@ package = sys.argv[1]
 recursive = sys.argv[2]
 
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.get_requires(package, recursive == "True")
+backend.get_requires(package, recursive)
 sys.exit(0)

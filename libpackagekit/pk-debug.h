@@ -28,9 +28,27 @@
 G_BEGIN_DECLS
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+/**
+ * pk_debug:
+ *
+ * Non critical debugging
+ */
 #define pk_debug(...) pk_debug_real (__func__, __FILE__, __LINE__, __VA_ARGS__)
+
+/**
+ * pk_warning:
+ *
+ * Important debugging
+ */
 #define pk_warning(...) pk_warning_real (__func__, __FILE__, __LINE__, __VA_ARGS__)
+
+/**
+ * pk_error:
+ *
+ * Critical debugging, with exit
+ */
 #define pk_error(...) pk_error_real (__func__, __FILE__, __LINE__, __VA_ARGS__)
+
 #elif defined(__GNUC__) && __GNUC__ >= 3
 #define pk_debug(...) pk_debug_real (__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 #define pk_warning(...) pk_warning_real (__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)

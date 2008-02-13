@@ -24,6 +24,7 @@
 #include "pk-sqlite-pkg-cache.h"
 
 static sqlite3 *db = NULL;
+static PkBackendThread *thread;
 static gboolean(*is_installed) (const PkPackageId *) = NULL;
 
 void sqlite_set_installed_check(gboolean(*func) (const PkPackageId *))
@@ -48,6 +49,8 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 	struct stat st;
 	time_t db_age;
 
+	thread = pk_backend_thread_new ();
+
 	ret = sqlite3_open (dbname, &db);
 	g_assert(ret == SQLITE_OK);
 	g_assert(db!=NULL);
@@ -62,6 +65,7 @@ sqlite_init_cache(PkBackend *backend, const char* dbname, const char *compare_fn
 		ret = sqlite3_exec(db, "select value from params where name = 'build_complete'", NULL, NULL, NULL);
 		if (ret != SQLITE_ERROR)
 			return;
+		pk_debug("ages are %lu for db, and %lu for comparism",db_age,st.st_mtime);
 	}
 	ret = sqlite3_exec(db,"drop table packages",NULL,NULL,NULL); // wipe it!
 	//g_assert(ret == SQLITE_OK);
@@ -84,12 +88,14 @@ void sqlite_finish_cache(PkBackend *backend)
 
 // sqlite_search_packages_thread
 static gboolean
-sqlite_search_packages_thread (PkBackend *backend, gpointer data)
+sqlite_search_packages_thread (PkBackendThread *thread, gpointer data)
 {
 	search_task *st = (search_task *) data;
 	int res;
 	gchar *sel;
+	PkBackend *backend;
 
+	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
@@ -167,7 +173,7 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->depth = which;
-		pk_backend_thread_create (backend, func, data);
+		pk_backend_thread_create (thread, func, data);
 	}
 }
 
@@ -190,11 +196,13 @@ sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search
 }
 
 // sqlite_get_description_thread
-static gboolean sqlite_get_description_thread (PkBackend *backend, gpointer data)
+static gboolean sqlite_get_description_thread (PkBackendThread *thread, gpointer data)
 {
 	desc_task *dt = (desc_task *) data;
 	int res;
+	PkBackend *backend;
 
+	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates(backend);
 
@@ -246,7 +254,7 @@ sqlite_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_thread_create (backend, sqlite_get_description_thread, data);
+	pk_backend_thread_create (thread, sqlite_get_description_thread, data);
 	return;
 }
 

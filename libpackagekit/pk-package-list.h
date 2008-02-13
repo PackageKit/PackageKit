@@ -47,6 +47,11 @@ typedef struct
 	GObjectClass	parent_class;
 } PkPackageListClass;
 
+/**
+ * PkPackageItem:
+ *
+ * A cached store for the complete Package object
+ */
 typedef struct
 {
 	PkInfoEnum		 info;

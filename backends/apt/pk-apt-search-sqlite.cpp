@@ -23,10 +23,13 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
+#include <pk-backend-spawn.h>
 #include "pk-sqlite-pkg-cache.h"
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/init.h>
 #include "pk-apt-build-db.h"
+
+static PkBackendSpawn *spawn;
 
 /**
  * backend_get_groups:
@@ -99,7 +102,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_spawn_helper (backend, "search-group.py", filter, search, NULL);
+	pk_backend_spawn_helper (spawn, "search-group.py", filter, search, NULL);
 }
 
 static gboolean inited = FALSE;
@@ -125,6 +128,10 @@ extern "C" void backend_init_search(PkBackend *backend)
 		//sqlite_set_installed_check(is_installed);
 		sqlite_init_cache(backend, APT_DB, apt_fname, apt_build_db);
 		g_free(apt_fname);
+
+		spawn = pk_backend_spawn_new ();
+		pk_backend_spawn_set_name (spawn, "apt-sqlite");
+
 		inited = TRUE;
 	}
 }

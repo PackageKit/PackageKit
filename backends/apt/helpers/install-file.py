@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -12,8 +13,8 @@
 import sys
 
 from aptBackend import PackageKitAptBackend
-package=sys.argv[1]
-recursive = sys.argv[2]
+
+file_to_inst = sys.argv[1]
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.get_depends(package, recursive)
+backend.install_file(file_to_inst)
 sys.exit(0)
