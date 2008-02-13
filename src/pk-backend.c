@@ -1052,7 +1052,7 @@ libst_backend (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "load an invalid backend");
-	ret = pk_backend_set_name (backend, "yum2");
+	ret = pk_backend_set_name (backend, "invalid");
 	if (ret == FALSE) {
 		libst_success (test, NULL);
 	} else {
