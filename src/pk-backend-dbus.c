@@ -404,8 +404,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service,
 					backend_dbus, NULL,
 					G_TYPE_INVALID, G_TYPE_INVALID);
 	return TRUE;
-
-	return TRUE;
 }
 
 /**
