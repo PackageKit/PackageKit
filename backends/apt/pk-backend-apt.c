@@ -29,7 +29,7 @@
 #include "pk-apt-search.h"
 #include "config.h"
 
-static PkBackendSpawn *spawn;
+PkBackendSpawn *spawn;
 static PkNetwork *network;
 
 /**
@@ -43,7 +43,7 @@ backend_initalize (PkBackend *backend)
 	pk_debug ("FILTER: initalize");
 	network = pk_network_new ();
 	spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_name (spawn, "yum");
+	pk_backend_spawn_set_name (spawn, "apt");
 	backend_init_search (backend);
 }
 
@@ -128,6 +128,17 @@ backend_get_updates (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-updates.py", NULL);
+}
+
+/**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (spawn != NULL);
+	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
 }
 
 /**
@@ -243,7 +254,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_description,		/* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
