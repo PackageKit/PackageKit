@@ -27,9 +27,7 @@ AM_PROG_CC_C_O
 AM_PROG_LIBTOOL
 
 # set up gtk-doc
-AC_CONFIG_MACRO_DIR(m4)
 GTK_DOC_CHECK(1.9)
-
 
 AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
