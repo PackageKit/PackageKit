@@ -22,6 +22,7 @@
 #include <gmodule.h>
 #include <glib.h>
 #include <pk-backend.h>
+#include <pk-backend-thread.h>
 #include <unistd.h>
 #include <pk-debug.h>
 #include <string>
@@ -102,20 +103,26 @@ typedef struct {
  */
 static std::map<PkBackend *, EventDirector *> _eventDirectors;
 
+static PkBackendThread *thread;
+
 /**
- * backend_initialize:
+ * backend_initalize:
+ * This should only be run once per backend load, i.e. not every transaction
  */
 static void
 backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-fprintf (stderr, "\n\n*** zypp_backend_initialize ***\n\n");
+	fprintf (stderr, "\n\n*** zypp_backend_initialize ***\n\n");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
+
+	thread = pk_backend_thread_new ();
 }
 
 /**
- * backend_destroy
+ * backend_destroy:
+ * This should only be run once per backend load, i.e. not every transaction
  */
 static void
 backend_destroy (PkBackend *backend)
@@ -127,6 +134,8 @@ fprintf (stderr, "\n\n*** zypp_backend_destroy ***\n\n");
 		delete (eventDirector);
 		_eventDirectors.erase (backend);
 	}
+
+	g_object_unref (thread);
 }
 
 /**
@@ -167,7 +176,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 }
 
 static gboolean
-backend_get_depends_thread (PkBackend *backend, gpointer data)
+backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 {
 	// Note: I talked with duncanmv in #zypp and he suggested the
 	// way we could suppor this method would be to mark the desired
@@ -179,6 +188,9 @@ backend_get_depends_thread (PkBackend *backend, gpointer data)
 08:56 < duncanmv> which are the packages marked by the solver
 08:56 < duncanmv> you can say that status toBeInstalled() and bySolver are requires
 */
+	PkBackend *backend;
+	backend = pk_backend_thread_get_backend (thread);
+
 	ThreadData *d = (ThreadData*) data;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -323,15 +335,17 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 
 	data->package_id = g_strdup (package_id);
 	data->type = DEPS_TYPE_DEPENDS;
-	pk_backend_thread_create (backend, backend_get_depends_thread, data);
+	pk_backend_thread_create (thread, backend_get_depends_thread, data);
 }
 
 static gboolean
-backend_get_description_thread (PkBackend *backend, gpointer data)
+backend_get_description_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
 	PkPackageId *pi;
 	ThreadData *d = (ThreadData*) data;
 
+	backend = pk_backend_thread_get_backend (thread);
 	pi = pk_package_id_new_from_string (d->package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
@@ -399,7 +413,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (backend, backend_get_description_thread, data);
+		pk_backend_thread_create (thread, backend_get_description_thread, data);
 	}
 }
 
@@ -451,8 +465,11 @@ findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem_Ref item)
 }
 
 static gboolean
-backend_get_updates_thread (PkBackend *backend, gpointer data)
+backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
+	
+	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
@@ -500,12 +517,15 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (backend, backend_get_updates_thread, NULL);
+	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
 }
 
 static gboolean
-backend_install_package_thread (PkBackend *backend, gpointer data)
+backend_install_package_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
+
+	backend = pk_backend_thread_get_backend (thread);
 	gchar *package_id = (gchar *)data;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -643,13 +663,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
-	pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
+	pk_backend_thread_create (thread, backend_install_package_thread, package_to_install);
 }
 
 static gboolean
-backend_refresh_cache_thread (PkBackend *backend, gpointer data)
+backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
 	RefreshData *d = (RefreshData*) data;
+
+	backend = pk_backend_thread_get_backend (thread);
 	gboolean force = d->force;
 	g_free (d);
 
@@ -724,9 +747,12 @@ fprintf (stderr, "\n\n *** Building cache ***\n\n");
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend, gpointer data)
+backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
 	RemovePackageData *d = (RemovePackageData *)data;
+
+	backend = pk_backend_thread_get_backend (thread);
 	PkPackageId *pi;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
@@ -836,7 +862,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	data->package_id = g_strdup (package_id);
 	data->deps_behavior = allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW;
 
-	pk_backend_thread_create (backend, backend_remove_package_thread, data);
+	pk_backend_thread_create (thread, backend_remove_package_thread, data);
 }
 
 /**
@@ -848,25 +874,30 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 
 	// check network state
-	if (pk_backend_network_is_online (backend) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+	/*
+	if (pk_network_is_online (backend) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache while offline");
 		pk_backend_finished (backend);
 		return;
 	}
+	*/
 	RefreshData *data = g_new(RefreshData, 1);
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_refresh_cache");
 		pk_backend_finished (backend);
 	} else {
 		data->force = force;
-		pk_backend_thread_create (backend, backend_refresh_cache_thread, data);
+		pk_backend_thread_create (thread, backend_refresh_cache_thread, data);
 	}
 }
 
 static gboolean
-backend_resolve_thread (PkBackend *backend, gpointer data)
+backend_resolve_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
 	gchar *package_id;
+
+	backend = pk_backend_thread_get_backend (thread);
 	ResolveData *rdata = (ResolveData*) data;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -926,7 +957,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	} else {
 		data->name = g_strdup (package_id);
 		data->filter = g_strdup (filter);
-		pk_backend_thread_create (backend, backend_resolve_thread, data);
+		pk_backend_thread_create (thread, backend_resolve_thread, data);
 	}
 }
 
@@ -1024,10 +1055,12 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 }
 
 static gboolean
-backend_find_packages_thread (PkBackend *backend, gpointer data)
+backend_find_packages_thread (PkBackendThread *thread, gpointer data)
 {
+	PkBackend *backend;
 	FindData *d = (FindData*) data;
 
+	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
 	find_packages_real (backend, d->search, d->filter, d->mode);
@@ -1054,7 +1087,7 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 		data->search = g_strdup(search);
 		data->filter = g_strdup(filter);
 		data->mode = mode;
-		pk_backend_thread_create (backend, backend_find_packages_thread, data);
+		pk_backend_thread_create (thread, backend_find_packages_thread, data);
 	}
 }
 
