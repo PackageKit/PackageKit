@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -77,6 +77,8 @@ pk_backend_dbus_proxy_async_callback (DBusGProxy *proxy, DBusGProxyCall *call, v
 {
 	GError *error = NULL;
 	PkBackendDbus *backend_dbus = user_data;
+
+	g_return_if_fail (backend_dbus != NULL);
 
 	/* we're done */
 	dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
@@ -307,6 +309,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (service != NULL, FALSE);
 
 	if (backend_dbus->priv->proxy != NULL) {
 		pk_warning ("need to unref old one -- is this logically allowed?");
@@ -397,8 +400,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 					backend_dbus, NULL,
 					G_TYPE_INVALID, G_TYPE_INVALID);
 	return TRUE;
-
-	return TRUE;
 }
 
 /**
@@ -487,7 +488,7 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_BOOLEAN, force,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -533,6 +534,7 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (rid != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -542,8 +544,8 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, rid,
-				 G_TYPE_STRING, enabled,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, enabled,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -557,11 +559,15 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
  * pk_backend_dbus_repo_set_data:
  **/
 gboolean
-pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid, const gchar *parameter, const gchar *value)
+pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
+			       const gchar *parameter, const gchar *value)
 {
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (rid != NULL, FALSE);
+	g_return_val_if_fail (parameter != NULL, FALSE);
+	g_return_val_if_fail (value != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -571,9 +577,9 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid, co
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, rid,
-				 G_TYPE_STRING, parameter,
-				 G_TYPE_STRING, value,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, parameter,
+					G_TYPE_STRING, value,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -592,6 +598,8 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -601,8 +609,8 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, filter,
-				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, package,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -621,6 +629,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (transaction_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -630,7 +639,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -649,6 +658,8 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -678,6 +689,8 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -687,8 +700,8 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, filter,
-				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, search,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -707,6 +720,8 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -716,8 +731,8 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, filter,
-				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, search,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -736,6 +751,8 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -745,8 +762,8 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, filter,
-				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_STRING, search,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -765,6 +782,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -774,8 +792,8 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_BOOLEAN, recursive,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_BOOLEAN, recursive,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -794,6 +812,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -803,8 +822,8 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_BOOLEAN, recursive,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_BOOLEAN, recursive,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -823,6 +842,7 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -832,7 +852,7 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -851,6 +871,7 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -860,7 +881,7 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -879,6 +900,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -888,7 +910,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -907,6 +929,7 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -916,8 +939,8 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_BOOLEAN, allow_deps,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_BOOLEAN, allow_deps,
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -936,6 +959,7 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -945,7 +969,7 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -964,6 +988,7 @@ pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *packag
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -973,7 +998,7 @@ pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *packag
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, package_id,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
@@ -992,6 +1017,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 	DBusGProxyCall *call;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (full_path != NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -1001,7 +1027,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 					pk_backend_dbus_proxy_async_callback,
 					backend_dbus, NULL,
 					G_TYPE_STRING, full_path,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
+					G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
 	if (call == NULL) {
