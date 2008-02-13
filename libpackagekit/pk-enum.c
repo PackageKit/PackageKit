@@ -753,7 +753,7 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 
 /**
  * pk_license_enum_from_text:
- * @licence: Text describing the enumerated type
+ * @license: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
  *
