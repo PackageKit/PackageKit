@@ -758,6 +758,9 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "did not validate correctly");
 	}
 
+	/* needed to avoid an error */
+	pk_backend_set_name (backend_spawn->priv->backend, "dummy");
+
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");
 	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-cancel\ttrue");
