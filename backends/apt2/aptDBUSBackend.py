@@ -373,7 +373,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
-        self._apt_cache.Upgrade(False)
+        self._apt_cache.upgrade(False)
         for pkg in self._apt_cache.getChanges():
             self._emit_package(Package(self, pkg))
         self.Finished(EXIT_SUCCESS)
