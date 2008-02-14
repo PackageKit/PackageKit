@@ -27,6 +27,10 @@
 import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
+
+# This is common between backends
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
+
 from packagekit.enums import *
 from packagekit.daemonBackend import PackagekitProgress
 import yum
@@ -222,10 +226,6 @@ def sigquit(signum, frame):
 # This is specific to this backend
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYumBackend'
 
-# This is common between backends
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
-
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -246,29 +246,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Signals ( backend -> engine -> client )
 #
 
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='s')
-    def Finished(self, exit):
-        print "Finished (%s)" % (exit)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssb')
-    def RepoDetail(self, repo_id, description, enabled):
-        print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='b')
-    def AllowCancel(self, allow_cancel):
-        print "AllowCancel (%i)" % (allow_cancel)
-
     #FIXME: _show_description and _show_package wrap Description and
     #       Package so that the encoding can be fixed. This is ugly.
     #       we could probably use a decorator to do it instead.
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sss')
-    def Package(self, status, package_id, summary):
-        print "Package (%s, %s, %s)" % (status, package_id, summary)
 
     def _show_package(self,pkg,status):
         '''
@@ -281,11 +261,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         id = self._pkg_to_id(pkg)
         summary = self._toUTF(pkg.summary)
         self.Package(status,id,summary)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sssssu')
-    def Description(self, package_id, license, group, detail, url, size):
-        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size)
 
     def _show_description(self,id,license,group,desc,url,bytes):
         '''
@@ -300,48 +275,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         desc = self._toUTF(desc)
         self.Description(id,license,group,desc,url,bytes)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
-    def Files(self, package_id, file_list):
-        print "Files (%s, %s)" % (package_id, file_list)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='s')
-    def StatusChanged(self, status):
-        print "StatusChanged (%s)" % (status)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='')
-    def NoPercentageUpdates(self):
-        print "NoPercentageUpdates"
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
-    def PercentageChanged(self, percentage):
-        print "PercentageChanged (%i)" % (percentage)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
-    def SubPercentageChanged(self, percentage):
-        print "SubPercentageChanged (%i)" % (percentage)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssss')
-    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
-    def ErrorCode(self, code, description):
-        '''
-        send 'error'
-        @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
-        @param description: Error description
-        '''
-        print "ErrorCode (%s, %s)" % (code, description)
-
-
 
 #
 # Utility methods for Signals
