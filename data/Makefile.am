@@ -42,7 +42,7 @@ $(servicetest_DATA): $(servicetest_in_files) Makefile
 
 serviceaptdir       = $(DBUS_SERVICES_DIR)
 serviceapt_in_files = org.freedesktop.PackageKitAptBackend.service.in
-serviceapt_DATA     = $(servicetest_in_files:.service.in=.service)
+serviceapt_DATA     = $(serviceapt_in_files:.service.in=.service)
 $(serviceapt_DATA): $(serviceapt_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
 
