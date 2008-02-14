@@ -329,7 +329,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          in_signature='', out_signature='')
     def Init(self):
         self._caches  = {}
-        self._apt_cache = apt.Cache(PackageKitProgress(self))
+        self._cache = apt.Cache(PackageKitProgress(self))
         default = apt_pkg.Config.Find("APT::Default-Release")
         #FIXME: 
         if default=="":
@@ -341,7 +341,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             else:
                 raise Exception,d.id
 
-        self._caches[default] = self._apt_cache
+        self._caches[default] = self._cache
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -376,8 +376,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
-        self._apt_cache.upgrade(False)
-        for pkg in self._apt_cache.getChanges():
+        self._cache.upgrade(False)
+        for pkg in self._cache.getChanges():
             self._show_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
@@ -445,7 +445,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_REFRESH_CACHE)
         try:
-            res = self._apt_cache.update(PackageKitProgress(self))
+            res = self._cache.update(PackageKitProgress(self))
         except Exception, error_message:
              self.error(ERROR_INTERNAL_ERROR,
                         "Failed to fetch the following items:\n%s" % error_message)
@@ -457,7 +457,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self, self._apt_cache[name])
+        pkg = Package(self, self._cache[name])
         description = re.sub('\s+', ' ', pkg.description).strip()
         self.description(package, 'unknown', pkg.group, description, '', pkg.packageSize, '')
 
@@ -467,7 +467,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_INFO)
         try:
-            pkg = Package(self,self._apt_cache[name])
+            pkg = Package(self,self._cache[name])
             self._emit_package(pkg)
         except KeyError:
             self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find a package called '%s'"%name)
@@ -484,7 +484,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if recursive:
             for n in newkeys:
                 try:
-                    deps = self._do_deps(Package(self,self._apt_cache[n],version=deps[n]),deps,recursive)
+                    deps = self._do_deps(Package(self,self._cache[n],version=deps[n]),deps,recursive)
                 except KeyError: # FIXME: we're assuming this is a virtual package, which we can't cope with yet
                     del deps[n]
                     continue
@@ -498,11 +498,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
+        pkg = Package(self,self._cache[name],version=[(version,"=")],data=data)
         pkg.setVersion(version)
         deps = self._do_deps(pkg, {}, recursive)
         for n in deps.keys():
-           self._emit_package(Package(self,self._apt_cache[n],version=deps[n]))
+           self._emit_package(Package(self,self._cache[n],version=deps[n]))
 
     def _do_reqs(self,inp,pkgs,recursive):
         extra = []
@@ -514,7 +514,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 #print "skip",r.TargetVer,r.CompType,r.ParentPkg.Name,r.ParentVer.VerStr
                 fails.append(v)
                 continue
-            p = Package(self,self._apt_cache[r.ParentPkg.Name],r.ParentVer.VerStr)
+            p = Package(self,self._cache[r.ParentPkg.Name],r.ParentVer.VerStr)
             if v not in pkgs:
                 extra.append(p)
                 #print "new pkg",p
@@ -533,7 +533,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._apt_cache[name], version=[(version,"=")], data=data)
+        pkg = Package(self,self._cache[name], version=[(version,"=")], data=data)
 
         pkgs = Set()
         self._do_reqs(pkg,pkgs, recursive)
@@ -625,10 +625,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     deps[pkg] = []
                 deps[pkg].append((ver,comp))
         for n in deps.keys():
-           p = Package(self,self._apt_cache[n],version=deps[n])
+           p = Package(self,self._cache[n],version=deps[n])
            if not p.isInstalled:
                p.markInstall()
-        assert self._apt_cache.getChanges()==[],"Don't handle install changes yet"
+        assert self._cache.getChanges()==[],"Don't handle install changes yet"
         # FIXME: nasty hack. Need a better way in
         ret = system("dpkg -i %s"%inst_file)
         if ret!=0:
@@ -637,9 +637,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     ### Helpers ###
     def _do_search(self, filters, condition):
         filters = filters.split(';')
-        size = len(self._apt_cache)
+        size = len(self._cache)
         percentage = 0
-        for i, pkg in enumerate(self._apt_cache):
+        for i, pkg in enumerate(self._cache):
             new_percentage = i / float(size) * 100
             if new_percentage - percentage >= 5:
                 percentage = new_percentage
