@@ -150,6 +150,7 @@ AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local ch
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
+AC_ARG_ENABLE(apt-dbus, AS_HELP_STRING([--enable-apt-dbus],[use the DBus based APT backend]),enable_apt_dbus=$enableval,enable_apt_dbus=no)
 AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
 AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
@@ -163,6 +164,7 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes], [using APT backend])
+AM_CONDITIONAL(BACKEND_TYPE_APT_DBUS, [test x$enable_apt_dbus = xyes], [using DBus based APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes], [using BOX backend])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY backend])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
@@ -302,7 +304,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,apt-dbus,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -455,6 +457,10 @@ else
 	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
 fi
 
+if test x$enable_apt_dbus = xyes; then
+	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
+fi
+
 if test x$enable_box = xyes; then
 	PKG_CHECK_MODULES(BOX, libbox >= 0.1.2 )
 	AC_SUBST(BOX_CFLAGS)
@@ -511,6 +517,7 @@ backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
 backends/apt/helpers/Makefile
+backends/apt-dbus/Makefile
 backends/box/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
@@ -562,6 +569,7 @@ echo "
         Backends:
         ALPM backend:              ${enable_alpm}
         APT backend:               ${enable_apt}
+        APT DBus backend:          ${enable_apt_dbus}
         BOX backend:               ${enable_box}
         CONARY backend:            ${enable_conary}
         dummy backend:             ${enable_dummy}
