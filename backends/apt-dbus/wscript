@@ -1,0 +1,29 @@
+import Params
+
+def build(bld):
+	obj = bld.create_obj('cc', 'plugin')
+	obj.target = 'pk_backend_apt'
+	obj.source = 'pk-backend-apt.c'
+	obj.uselib = 'APT'
+	obj.uselib_local = 'libpackagekit'
+	obj.includes = '../../src ../../libpackagekit'
+	obj.install_var = 'LIBDIR'
+	obj.install_subdir = 'packagekit-backend'
+
+	env = bld.env()
+
+def configure(conf):
+	if not conf.find_program('apt-get') and not conf.find_program('apt-rpm'):
+		return False
+
+	# This check assumes the same python version that executes
+	# waf will execute PackageKit.
+	try:
+		import apt_pkg
+	except:
+		Params.fatal('The "apt" backend needs "python-apt"')
+
+	if not conf.check_library2('apt-pkg', uselib='APT'):
+		return False
+	
+	return True
