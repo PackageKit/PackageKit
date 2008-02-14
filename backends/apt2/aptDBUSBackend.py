@@ -247,17 +247,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def Package(self, status, package_id, summary):
         print "Package (%s, %s, %s)" % (status, package_id, summary)
 
-    def _show_package(self,pkg,status):
+    def _show_package(self, pkg, installed=False):
         '''
         send 'package' signal
         @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
-        convert the summary to UTF before sending
         '''
-        id = self._pkg_to_id(pkg)
-        summary = self._toUTF(pkg.summary)
-        self.Package(status,id,summary)
+        id = self.get_package_id(pkg, installed)
+        if installed and pkg.isInstalled:
+            status = INFO_INSTALLED
+        else:
+            status = INFO_AVAILABLE
+        summary = pkg.summary
+        self.Package(status, id, summary)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sssssu')
@@ -375,9 +378,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
         self._apt_cache.upgrade(False)
         for pkg in self._apt_cache.getChanges():
-            self._emit_package(Package(self, pkg))
+            self._show_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Unlock(self):
+        #FIXME: not implemented yet
+        pass
+
+    #
+    # Helpers
+    #
+    def get_package_id(self, pkg, installed=False):
+        '''
+        Returns the id of the installation candidate of a core
+        apt package. If installed is set to True the id of the currently
+        installed package will be returned.
+        '''
+        if installed == False and pkg.isInstalled:
+            pkgver = pkg.installedVersion
+            origin = ""
+        else:
+            pkgver = pkg.candidateVersion
+            origin = pkg.candidateOrigin[0].label
+        id = PackageKitBaseBackend._get_package_id(self, pkg.name, pkgver,
+                                                   pkg.architecture, origin)
+        return id
 
     # FIXME: Needs to be ported
 
@@ -607,18 +635,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.error(ERROR_INTERNAL_ERROR,"Can't install package")
 
     ### Helpers ###
-    def _emit_package(self, package):
-        id = self.get_package_id(package.name,
-                package._version,
-                package.architecture,
-                package._data)
-        if package.isInstalled:
-            status = INFO_INSTALLED
-        else:
-            status = INFO_AVAILABLE
-        summary = package.summary
-        self.package(id, status, summary)
-
     def _do_search(self, filters, condition):
         filters = filters.split(';')
         size = len(self._apt_cache)
