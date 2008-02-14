@@ -267,20 +267,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def Description(self, package_id, licence, group, detail, url, size):
         print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
 
-    def _show_description(self,id,license,group,desc,url,bytes):
-        '''
-        Send 'description' signal
-        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param license: The license of the package
-        @param group: The enumerated group
-        @param desc: The multi line package description
-        @param url: The upstream project homepage
-        @param bytes: The size of the package, in bytes
-        convert the description to UTF before sending
-        '''
-        desc = self._toUTF(desc)
-        self.Description(id,license,group,desc,url,bytes)
-
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def Files(self, package_id, file_list):
@@ -359,11 +345,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         self.StatusChanged(STATUS_QUERY)
 
-        for package in self._do_search(filters,
-                lambda pkg: pkg.matchName(key)):
-            #self._emit_package(package)
-            print package
-        #self._search(searchlist, filters, search)
+        for pkg in self._cache:
+            if search in pkg.name:
+                self._show_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
 
@@ -381,12 +365,57 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._show_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetDescription(self, pkg_id):
+        '''
+        Implement the {backend}-get-description functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        name, version, arch, data = self.get_package_from_id(pkg_id)
+        #FIXME: error handling
+        pkg = self._cache[name]
+        #FIXME: should perhaps go to python-apt since we need this in 
+        #       several applications
+        desc = pkg.description
+        # Skip the first line - it's a duplicate of the summary
+        i = desc.find('\n')
+        desc = desc[i+1:]
+        # do some regular expression magic on the description
+        # Add a newline before each bullet
+        p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
+        desc = p.sub('\n*', desc)
+        # replace all newlines by spaces
+        p = re.compile(r'\n', re.MULTILINE)
+        desc = p.sub(" ", desc)
+        # replace all multiple spaces by newlines
+        p = re.compile(r'\s\s+', re.MULTILINE)
+        desc = p.sub('\n', desc)
+        # Get the homepage of the package
+        if pkg.candidateRecord.has_key('Homepage'):
+            homepage = pkg.candidateRecord['Homepage']
+        else:
+            homepage = ''
+        #FIXME: group and licence information missing
+        self.Description(pkg_id, 'unknown', 'unknown', desc,
+                         homepage, pkg.packageSize)
+        self.Finished(EXIT_SUCCESS)
+
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Unlock(self):
         #FIXME: not implemented yet
-        pass
+        PackageKitBaseBackend.doUnlock(self)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Lock(self):
+        #FIXME: not implemented yet
+        PackageKitBaseBackend.doLock(self)
 
     #
     # Helpers
@@ -450,16 +479,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
              self.error(ERROR_INTERNAL_ERROR,
                         "Failed to fetch the following items:\n%s" % error_message)
         return res
-
-    def get_description(self, package):
-        '''
-        Implement the {backend}-get-description functionality
-        '''
-        self.status(STATUS_INFO)
-        name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self, self._cache[name])
-        description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, '', pkg.packageSize, '')
 
     def resolve(self, name):
         '''

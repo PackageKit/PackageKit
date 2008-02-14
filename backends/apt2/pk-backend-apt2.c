@@ -228,6 +228,17 @@ backend_get_repo_list (PkBackend *backend)
 } */
 
 /**
+ * backend_get_description:
+ *  */
+static void
+backend_get_description (PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_get_description (dbus, package_id);
+}
+
+/**
  *  * pk_backend_search_name:
  *   */
 static void
@@ -247,7 +258,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	backend_get_description,	        /* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
