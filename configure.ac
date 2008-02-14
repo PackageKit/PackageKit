@@ -539,6 +539,7 @@ data/packagekit.pc
 data/org.freedesktop.PackageKit.conf
 data/org.freedesktop.PackageKitTestBackend.conf
 data/org.freedesktop.PackageKitYumBackend.conf
+data/org.freedesktop.PackageKitAptBackend.conf
 data/tests/Makefile
 libselftest/Makefile
 libgbus/Makefile
