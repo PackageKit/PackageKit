@@ -27,9 +27,7 @@
 static PkBackendDbus *dbus;
 static PkNetwork *network;
 
-#define PK_DBUS_APT_INTERFACE           "org.freedesktop.PackageKitAptBackend"
-#define PK_DBUS_APT_SERVICE             "org.freedesktop.PackageKitAptBackend"
-#define PK_DBUS_APT_PATH                "/org/freedesktop/PackageKitAptBackend"
+#define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
 /**
  * backend_initalize:
@@ -42,8 +40,7 @@ backend_initalize (PkBackend *backend)
 	pk_debug ("FILTER: initalize");
 	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
-        pk_backend_dbus_set_name (dbus, PK_DBUS_APT_SERVICE, PK_DBUS_APT_INTERFACE, PK_DBUS_APT_PATH);
-
+	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
 
 /**

@@ -39,9 +39,9 @@ import dbus.mainloop.glib
 from packagekit.daemonBackend import PackageKitBaseBackend, PackagekitProgress
 from packagekit.enums import *
 
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitAptBackend'
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitAptBackend'
+PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
+PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
 class Package(apt.Package):
     def __str__(self):

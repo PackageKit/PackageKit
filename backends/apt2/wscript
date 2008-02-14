@@ -2,8 +2,8 @@ import Params
 
 def build(bld):
 	obj = bld.create_obj('cc', 'plugin')
-	obj.target = 'pk_backend_apt'
-	obj.source = 'pk-backend-apt.c'
+	obj.target = 'pk_backend_apt2'
+	obj.source = 'pk-backend-apt2.c'
 	obj.uselib = 'APT'
 	obj.uselib_local = 'libpackagekit'
 	obj.includes = '../../src ../../libpackagekit'
