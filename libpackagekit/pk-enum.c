@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -753,7 +753,7 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 
 /**
  * pk_license_enum_from_text:
- * @licence: Text describing the enumerated type
+ * @license: Text describing the enumerated type
  *
  * Converts a text enumerated type to its unsigned integer representation
  *

@@ -5,21 +5,21 @@
   <policy user="@PACKAGEKIT_USER@">
     <allow own="org.freedesktop.PackageKitYumBackend"/>
     <allow send_destination="org.freedesktop.PackageKitYumBackend"/>
-    <allow send_interface="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
   <policy user="root">
     <allow own="org.freedesktop.PackageKitYumBackend"/>
     <allow send_destination="org.freedesktop.PackageKitYumBackend"/>
-    <allow send_interface="org.freedesktop.PackageKitYumBackend"/>
+    <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
   <policy at_console="true">
     <deny send_destination="org.freedesktop.PackageKitYumBackend"/>
-    <deny send_interface="org.freedesktop.PackageKitYumBackend"/>
+    <deny send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
   <policy context="default">
     <deny own="org.freedesktop.PackageKitYumBackend"/>
     <deny send_destination="org.freedesktop.PackageKitYumBackend"/>
-    <deny send_interface="org.freedesktop.PackageKitYumBackend"/>
+    <deny send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
 </busconfig>
 

@@ -90,8 +90,8 @@ class PackageKitTestBackendService(dbus.service.Object):
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssst')
-    def Description(self, package_id, licence, group, detail, url, size):
-        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
+    def Description(self, package_id, license, group, detail, url, size):
+        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size)
 
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')

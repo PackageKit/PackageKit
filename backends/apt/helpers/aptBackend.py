@@ -426,6 +426,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except IOError,e:
             self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
 
+    def get_updates(self):
+        self._apt_cache.upgrade(False)
+        for pkg in self._apt_cache.getChanges():
+            self._emit_package(Package(self, pkg))
+
+    def get_update_detail(self, package):
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+        name, version, arch, data = self.get_package_from_id(package)
+        update = ""
+        obsolete = ""
+        cve_url = ""
+        bz_url = ""
+        vendor_url = ""
+        reboot = "none"
+        desc = self._apt_cache[name].description
+        self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+
+
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -757,6 +757,9 @@ libst_backend_spawn (LibSelfTest *test)
 	} else {
 		libst_failed (test, "did not validate correctly");
 	}
+
+	/* needed to avoid an error */
+	pk_backend_set_name (backend_spawn->priv->backend, "dummy");
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");

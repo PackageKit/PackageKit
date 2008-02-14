@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -452,7 +452,7 @@ pk_strcmp_sections (const gchar *id1, const gchar *id2, guint parts, guint compa
 		return FALSE;
 	}
 	if (compare == parts) {
-		pk_debug ("optimise to strcmp");
+		pk_debug ("optimize to strcmp");
 		return pk_strequal (id1, id2);
 	}
 

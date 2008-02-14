@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -26,9 +26,7 @@
 static PkBackendDbus *dbus;
 static PkNetwork *network;
 
-#define PK_DBUS_YUM_INTERFACE		"org.freedesktop.PackageKitYumBackend"
-#define PK_DBUS_YUM_SERVICE		"org.freedesktop.PackageKitYumBackend"
-#define PK_DBUS_YUM_PATH		"/org/freedesktop/PackageKitYumBackend"
+#define PK_DBUS_BACKEND_SERVICE_YUM	"org.freedesktop.PackageKitYumBackend"
 
 /**
  * backend_initalize:
@@ -41,7 +39,7 @@ backend_initalize (PkBackend *backend)
 	pk_debug ("FILTER: initalize");
 	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
-	pk_backend_dbus_set_name (dbus, PK_DBUS_YUM_SERVICE, PK_DBUS_YUM_INTERFACE, PK_DBUS_YUM_PATH);
+	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_YUM);
 }
 
 /**
