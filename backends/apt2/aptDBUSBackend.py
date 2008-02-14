@@ -5,7 +5,7 @@ Provides an apt backend to PackageKit
 
 Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
 Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
-Copyright (C) 2007 Sebastian Heinlein <glatzor@ubuntu.com>
+Copyright (C) 2008 Sebastian Heinlein <glatzor@ubuntu.com>
 
 Licensed under the GNU General Public License Version 2
 
@@ -426,12 +426,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         apt package. If installed is set to True the id of the currently
         installed package will be returned.
         '''
+        origin = ''
         if installed == False and pkg.isInstalled:
             pkgver = pkg.installedVersion
-            origin = ""
         else:
             pkgver = pkg.candidateVersion
-            origin = pkg.candidateOrigin[0].label
+            if pkg.candidateOrigin:
+                origin = pkg.candidateOrigin[0].label
         id = PackageKitBaseBackend._get_package_id(self, pkg.name, pkgver,
                                                    pkg.architecture, origin)
         return id
