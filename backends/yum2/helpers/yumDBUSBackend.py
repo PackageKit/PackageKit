@@ -716,14 +716,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkg,inst = self._findPackage(package)
         if pkg:
-            pkgver = self._get_package_ver(pkg)
-            id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-            desc = pkg.description
-            desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')
-
-            self._show_description(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size)
+            self._show_package_description(pkg)            
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
             self.Exit()
@@ -776,6 +769,51 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
+        
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def GetPackages(self,filters,showdesc='no'):
+        '''
+        Search for yum packages
+        @param searchlist: The yum package fields to search in
+        @param filters: package types to search (all,installed,available)
+        @param key: key to seach for
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        self.StatusChanged(STATUS_QUERY)
+
+        showDesc = (showdesc == 'yes' or showdesc == 'only' )
+        showPkg = (showdesc != 'only')
+        print showDesc,showPkg
+        try:
+            fltlist = filters.split(';')
+            available = []
+            count = 1
+            if FILTER_NOT_INSTALLED not in fltlist:
+                for pkg in self.yumbase.rpmdb:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        if showPkg:
+                            self._show_package(pkg, INFO_INSTALLED)
+                        if showDesc:
+                            self._show_package_description(pkg)
+                        
+
+        # Now show available packages.
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if self._do_extra_filtering(pkg,fltlist):
+                        if showPkg:
+                            self._show_package(pkg, INFO_AVAILABLE)
+                        if showDesc:
+                            self._show_package_description(pkg)
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
+
+        self.Finished(EXIT_SUCCESS)
+        
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -974,6 +1012,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in group.conditional_packages.keys():
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
+
+    def _show_package_description(self,pkg):        
+        pkgver = self._get_package_ver(pkg)
+        id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        desc = pkg.description
+        desc = desc.replace('\n\n',';')
+        desc = desc.replace('\n',' ')
+
+        self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+                             pkg.size)
 
     def _getEVR(self,idver):
         '''
