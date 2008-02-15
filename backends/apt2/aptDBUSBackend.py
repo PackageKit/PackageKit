@@ -216,28 +216,14 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, bus_name, dbus_path):
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
+        self._cache = None
 
-    #
     # Methods ( client -> engine -> backend )
-    #
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
-        self._caches  = {}
         self._cache = apt.Cache(PackageKitProgress(self))
-        default = apt_pkg.Config.Find("APT::Default-Release")
-        #FIXME: 
-        if default=="":
-            d = get_distro()
-            if d.id == "Debian":
-                default = "stable"
-            elif d.id == "Ubuntu":
-                default = "main"
-            else:
-                raise Exception,d.id
-
-        self._caches[default] = self._cache
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -304,6 +290,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         p = re.compile(r'\s\s+', re.MULTILINE)
         desc = p.sub('\n', desc)
         # Get the homepage of the package
+        # FIXME: switch to the new unreleased API
         if pkg.candidateRecord.has_key('Homepage'):
             homepage = pkg.candidateRecord['Homepage']
         else:
@@ -335,7 +322,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     #
     # Helpers
     #
-    def get_package_id(self, pkg, installed=False):
+    def get_id_from_package(self, pkg, installed=False):
         '''
         Returns the id of the installation candidate of a core
         apt package. If installed is set to True the id of the currently
@@ -348,15 +335,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             pkgver = pkg.candidateVersion
             if pkg.candidateOrigin:
                 origin = pkg.candidateOrigin[0].label
-        id = PackageKitBaseBackend._get_package_id(self, pkg.name, pkgver,
-                                                   pkg.architecture, origin)
+        id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
         return id
 
     def _emit_package(self, pkg, installed=False):
         '''
         Send the Package signal for a given apt package
         '''
-        id = self.get_package_id(pkg, installed)
+        id = self.get_id_from_package(pkg, installed)
         if installed and pkg.isInstalled:
             status = INFO_INSTALLED
         else:
