@@ -36,12 +36,10 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 
-from packagekit.daemonBackend import PackageKitBaseBackend, PackagekitProgress
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
 from packagekit.enums import *
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
 class Package(apt.Package):
     def __str__(self):
@@ -220,94 +218,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     #
-    # Signals ( backend -> engine -> client )
-    #
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='s')
-    def Finished(self, exit):
-        print "Finished (%s)" % (exit)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssb')
-    def RepoDetail(self, repo_id, description, enabled):
-        print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='b')
-    def AllowCancel(self, allow_cancel):
-        print "AllowCancel (%i)" % (allow_cancel)
-
-    #FIXME: _show_description and _show_package wrap Description and
-    #       Package so that the encoding can be fixed. This is ugly.
-    #       we could probably use a decorator to do it instead.
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sss')
-    def Package(self, status, package_id, summary):
-        print "Package (%s, %s, %s)" % (status, package_id, summary)
-
-    def _show_package(self, pkg, installed=False):
-        '''
-        send 'package' signal
-        @param info: the enumerated INFO_* string
-        @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
-        @param summary: The package Summary
-        '''
-        id = self.get_package_id(pkg, installed)
-        if installed and pkg.isInstalled:
-            status = INFO_INSTALLED
-        else:
-            status = INFO_AVAILABLE
-        summary = pkg.summary
-        self.Package(status, id, summary)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sssssu')
-    def Description(self, package_id, licence, group, detail, url, size):
-        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, licence, group, detail, url, size)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
-    def Files(self, package_id, file_list):
-        print "Files (%s, %s)" % (package_id, file_list)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='s')
-    def StatusChanged(self, status):
-        print "StatusChanged (%s)" % (status)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='')
-    def NoPercentageUpdates(self):
-        print "NoPercentageUpdates"
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
-    def PercentageChanged(self, percentage):
-        print "PercentageChanged (%i)" % (percentage)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='u')
-    def SubPercentageChanged(self, percentage):
-        print "SubPercentageChanged (%i)" % (percentage)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssssssss')
-    def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
-
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
-    def ErrorCode(self, code, description):
-        '''
-        send 'error'
-        @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
-        @param description: Error description
-        '''
-        print "ErrorCode (%s, %s)" % (code, description)
-
-    #
     # Methods ( client -> engine -> backend )
     #
 
@@ -347,7 +257,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         for pkg in self._cache:
             if search in pkg.name:
-                self._show_package(pkg)
+                self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
 
@@ -362,7 +272,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
-            self._show_package(pkg)
+            self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -407,15 +317,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Unlock(self):
-        #FIXME: not implemented yet
-        PackageKitBaseBackend.doUnlock(self)
+        self.doUnlock()
+
+    def doUnlock(self):
+        if self.isLocked():
+            PackageKitBaseBackend.doUnlock(self)
 
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Lock(self):
-        #FIXME: not implemented yet
-        PackageKitBaseBackend.doLock(self)
+        self.doLock()
+
+    def doLock(self):
+        pass
 
     #
     # Helpers
@@ -436,6 +351,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         id = PackageKitBaseBackend._get_package_id(self, pkg.name, pkgver,
                                                    pkg.architecture, origin)
         return id
+
+    def _emit_package(self, pkg, installed=False):
+        '''
+        Send the Package signal for a given apt package
+        '''
+        id = self.get_package_id(pkg, installed)
+        if installed and pkg.isInstalled:
+            status = INFO_INSTALLED
+        else:
+            status = INFO_AVAILABLE
+        summary = pkg.summary
+        self.Package(status, id, summary)
+
 
     # FIXME: Needs to be ported
 
