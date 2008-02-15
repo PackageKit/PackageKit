@@ -241,7 +241,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._toUTF(desc)
-        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
+        try:
+            PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)            
+        except UnicodeDecodeError,e:
+            summary = repr(desc)[1:-1]
+            PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
 
     def package(self,id,status,summary):
         '''
@@ -252,7 +256,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the summary to UTF before sending
         '''
         summary = self._toUTF(summary)
-        PackageKitBaseBackend.package(self,id,status,summary)
+        try:
+            PackageKitBaseBackend.package(self,id,status,summary)
+        except UnicodeDecodeError,e:
+            summary = repr(summary)[1:-1]
+            PackageKitBaseBackend.package(self,id,status,summary)
 
     def _toUTF( self, txt ):
         rc=""
@@ -469,6 +477,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
+    def get_packages(self,filters):
+        '''
+        Search for yum packages
+        @param searchlist: The yum package fields to search in
+        @param filters: package types to search (all,installed,available)
+        @param key: key to seach for
+        '''
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
+        self.yumbase.conf.cache = 1 # Only look in cache.
+        try:
+            fltlist = filters.split(';')
+            available = []
+            count = 1
+            if FILTER_NOT_INSTALLED not in fltlist:
+                for pkg in self.yumbase.rpmdb:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+
+        # Now show available packages.
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+
+    
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
