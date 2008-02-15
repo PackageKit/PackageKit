@@ -363,7 +363,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         searchlist = ['name']
         self.StatusChanged(STATUS_QUERY)
 
-        self._do_search(searchlist, filters, search)
+        successful = self._do_search(searchlist, filters, search)
+        if not successful:
+            self.Finished(EXIT_FAILED)
+            return
+            
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -378,7 +382,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         searchlist = ['name', 'summary', 'description', 'group']
         self.StatusChanged(STATUS_QUERY)
-        self._do_search(searchlist, filters, key)
+
+        successful = self._do_search(searchlist, filters, key)
+        if not successful:
+            self.Finished(EXIT_FAILED)
+            return
+
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -424,7 +433,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
-            self.Exit()
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -858,7 +867,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)           
-            self.Exit()
+            return
 
         self.Finished(EXIT_SUCCESS)
         
@@ -980,17 +989,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     available.append(pkg)
 
+            # Now show available packages.
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in available:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
             self._refresh_yum_cache()
-            self.Finished(EXIT_FAILED)
-            self.Exit()
-
-        # Now show available packages.
-        if FILTER_INSTALLED not in fltlist:
-            for pkg in available:
-                if self._do_extra_filtering(pkg,fltlist):
-                    self._show_package(pkg, INFO_AVAILABLE)
+            return False
+       
+        return True
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -1019,17 +1029,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _check_for_gui(self,pkg):
         '''  Check if the GUI_KEYS regex matches any package requirements'''
-        try:
-            for req in pkg.requires:
-                reqname = req[0]
-                if GUI_KEYS.search(reqname):
-                    return True
-            return False
-        except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
-            self._refresh_yum_cache()
-            self.Finished(EXIT_FAILED)
-            self.Exit()
+        for req in pkg.requires:
+            reqname = req[0]
+            if GUI_KEYS.search(reqname):
+                return True
+        return False
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
