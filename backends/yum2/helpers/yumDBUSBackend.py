@@ -422,6 +422,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg, INFO_AVAILABLE)
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -611,6 +612,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             break
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -808,6 +810,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -853,6 +856,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package_description(pkg)
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.Finished(EXIT_FAILED)           
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
@@ -977,6 +982,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1021,6 +1027,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1441,6 +1448,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             ver = "%s-%s" % (po.version,po.release)
         return ver
 
+    def _refresh_yum_cache(self):
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+        self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
+        self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
+        self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
