@@ -356,6 +356,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -371,6 +372,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -385,9 +387,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
-        self.yumbase.conf.cache = 1 # Only look in cache.
         self.StatusChanged(STATUS_QUERY)
 
         try:
@@ -431,6 +433,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-file functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -464,6 +467,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -483,6 +487,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of depends for a given package
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_INFO)
@@ -515,6 +520,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
+        self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -536,6 +542,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        self._check_init()
         self.AllowCancel(True);
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
@@ -578,9 +585,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True);
         self.NoPercentageUpdates()
-        self.yumbase.conf.cache = 1 # Only look in cache.
         self.StatusChanged(STATUS_QUERY)
 
         fltlist = filters.split(';')
@@ -616,6 +623,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
+        self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -650,6 +658,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
+        self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
 
@@ -677,6 +686,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update functionality
         This will only work with yum 3.2.4 or higher
         '''
+        self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
 
@@ -704,6 +714,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
+        self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
 
@@ -736,20 +747,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
 
         pkg,inst = self._findPackage(package)
         if pkg:
-            pkgver = self._get_package_ver(pkg)
-            id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-            desc = pkg.description
-            desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')
-
-            self._show_description(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size)
+            self._show_package_description(pkg)            
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
@@ -760,6 +765,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def GetFiles(self, package):
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -785,6 +791,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-updates functionality
         '''
+        self._check_init(cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -805,6 +812,51 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
+        
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def GetPackages(self,filters,showdesc='no'):
+        '''
+        Search for yum packages
+        @param searchlist: The yum package fields to search in
+        @param filters: package types to search (all,installed,available)
+        @param key: key to seach for
+        '''
+        self._check_init(cache=True)
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_QUERY)
+
+        showDesc = (showdesc == 'yes' or showdesc == 'only' )
+        showPkg = (showdesc != 'only')
+        print showDesc,showPkg
+        try:
+            fltlist = filters.split(';')
+            available = []
+            count = 1
+            if FILTER_NOT_INSTALLED not in fltlist:
+                for pkg in self.yumbase.rpmdb:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        if showPkg:
+                            self._show_package(pkg, INFO_INSTALLED)
+                        if showDesc:
+                            self._show_package_description(pkg)
+                        
+
+        # Now show available packages.
+            if FILTER_INSTALLED not in fltlist:
+                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if self._do_extra_filtering(pkg,fltlist):
+                        if showPkg:
+                            self._show_package(pkg, INFO_AVAILABLE)
+                        if showDesc:
+                            self._show_package_description(pkg)
+        except yum.Errors.RepoError,e:
+            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Exit()
+
+        self.Finished(EXIT_SUCCESS)
+        
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -812,6 +864,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-repo-enable functionality
         '''
+        self._check_init()
         try:
             repo = self.yumbase.repos.getRepo(repoid)
             if enable:
@@ -834,6 +887,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
+        self._check_init()
         self.StatusChanged(STATUS_INFO)
         for repo in self.yumbase.repos.repos.values():
             if repo.isEnabled():
@@ -850,6 +904,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
+        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -871,6 +926,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-repo-set-data functionality
         '''
+        self._check_init()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
         # Get the repo
@@ -901,7 +957,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
-        self.yumbase.conf.cache = 1 # Only look in cache.
         try:
             res = self.yumbase.searchGenerator(searchlist, [key])
             fltlist = filters.split(';')
@@ -1008,6 +1063,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in group.conditional_packages.keys():
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
+
+    def _show_package_description(self,pkg):        
+        pkgver = self._get_package_ver(pkg)
+        id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        desc = pkg.description
+        desc = desc.replace('\n\n',';')
+        desc = desc.replace('\n',' ')
+
+        self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+                             pkg.size)
 
     def _getEVR(self,idver):
         '''
@@ -1357,6 +1422,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Other utility methods
 #
 
+    def _check_init(self,cache=False):
+        ''' Check if yum has setup, else call init '''
+        if hasattr(self,'yumbase'):
+            pass
+        else:
+            self.Init()
+        if cache:
+            self.yumbase.conf.cache = 1
+        else:
+            self.yumbase.conf.cache = 0
+
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
         if po.epoch != '0':
@@ -1467,7 +1543,7 @@ class DownloadCallback( BaseMeter ):
                         typ = MetaDataMap[name]
                     else:
                         typ = 'unknown'
-                    self.base.metadata(typ,name)
+                    self.base.MetaData(typ,name)
             self.base.SubPercentageChanged(0)
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:

@@ -1,3 +1,64 @@
+Version 0.1.7
+~~~~~~~~~~~~~
+Released: 2008-02-14
+
+* Backends:
+ - apt: update to latest API (Tom Parker)
+ - apt: add get_updates and get_update_detail (Michael Vogt)
+ - apt: cleanup of Package class, by making it a subclass of apt.Package (Tom Parker)
+ - apt: make sure ordering of versions is installed one first (Tom Parker)
+ - apt: add initial hacky install-file support (Tom Parker)
+ - apt: add recursion to get-depends (Tom Parker)
+ - apt: add repo enable (Tom Parker)
+ - box: ported to the new API (Grzegorz Dabrowski)
+ - ipkg: remove ipkg backend as it has been superseded by opkg (Thomas Wood)
+ - opkg: forward opkg messages through PackageKit (Thomas Wood)
+ - opkg: compare the current and previous urls properly during cache refresh
+ -      download progress callback
+ - opkg: hook into download progress when updating package lists (Thomas Wood)
+ - opkg: hook into download progress callback when installing packages (Thomas Wood)
+ - opkg: implement get_groups function (Thomas Wood)
+ - conary: implement update_detail (Ken VanDine)
+ - conary: provide summary data (Ken VanDine)
+ - conary: query the correct troveSource when getting the files list (Elliot Peele)
+ - conary: Added get-update-detail (Ken VanDine)
+ - yum: several utf-8 encoding fixes (Tim Lauridsen)
+ - yum: fix search-file to be much faster (Tim Lauridsen)
+ - yum: fixed ERROR_SIGNATURE_NOT_IMPORTED traceback (Tim Lauridsen)
+ - yum: added get-packages and make the yum backend more resistant to UTF-8 decoding (Tim Lauridsen)
+ - yum2: merge in a new backend that uses the dbus service activation.
+   It does not work yet... (Tim Lauridsen, Robin Norwood, Richard Hughes)
+ - zypp: move to PkBackendThread (Scott Reeves)
+
+* New features:
+ - Use a single instance backend. This allows us to keep processes open over
+   transactions, and should allow us to speed things up an order of magnitude
+   in the future (Richard Hughes)
+ - Add PkExtra and PkExtraObj gobjects to retrieve extra metadata from a
+   system store (Richard Hughes)
+ - Add client side filtering support so we can trivially strip out the correct
+   package when we have it installed and available in many repos (Richard Hughes)
+ - Add a cancelling state, as cancelling will take some time (Richard Hughes)
+ - Add a specspo import utility to get translations from specspo (Richard Hughes)
+ - Add a .desktop import utility for icons and translated summaries (Richard Hughes)
+
+* Bugfixes:
+ - Rationalise the AllowCancel nomenclature and make it standard throughout -
+   this should fix lots of bugs where the cancel button was the wrong state in
+   client applications (Richard Hughes)
+ - Rename ENUM_PROCESS_QUIT to ENUM_TRANSACTION_CANCELLED (Richard Hughes)
+ - Allow building more than one backend for a system (Richard Hughes)
+ - Add a new method that lets us search for items in an enumerated list
+   with a priority (Richard Hughes)
+ - Raise an exception if an action is attempted on an unlocked python
+   daemon backend (Robin Norwood)
+ - More en_UK to en_US fixes in comments (Richard Hughes)
+ - The dbus interface and path should be common between backends (Richard Hughes)
+ - Make the experimental dbus backend asyncronous (Richard Hughes)
+ - Warn the user the security framework name is invalid (Richard Hughes)
+ - Improve gtk-doc support (Thomas Wood)
+ - Check (and warn) for percentages bigger than 100% (Richard Hughes)
+
 Version 0.1.6
 ~~~~~~~~~~~~~
 Released: 2008-01-18
