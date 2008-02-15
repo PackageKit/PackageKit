@@ -335,7 +335,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 retries += 1
                 if retries > 100:
                     self.ErrorCode(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
-                    self.Exit()
+                    self.Finished(EXIT_FAILED)
+                    return
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -419,6 +420,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg, INFO_AVAILABLE)
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
@@ -492,7 +494,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             deps = self._get_best_dependencies(pkg)
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
         for pkg in deps:
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)
@@ -517,10 +520,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
-            self._runYumTransaction()
+            successful = self._runYumTransaction()
+            if not successful:
+                return
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -561,6 +567,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.YumBaseError, e:
             self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
@@ -597,6 +604,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             break
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
@@ -615,18 +623,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             if inst:
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return
             try:
                 txmbr = self.yumbase.install(name=pkg.name)
-                self._runYumTransaction()
+                successful = self._runYumTransaction()
+                if not successful:
+                    return
             except yum.Errors.InstallError,e:
                 msgs = ';'.join(e)
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return
         else:
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
-            self.Exit()
-
+            self.Finished(EXIT_FAILED)
+            return
+            
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -646,11 +659,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             # Added the package to the transaction set
             if len(self.yumbase.tsInfo) > 0:
-                self._runYumTransaction()
+                successful = self._runYumTransaction()
+                if not successful:
+                    return
         except yum.Errors.InstallError,e:
             msgs = ';'.join(e)
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -668,14 +684,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             txmbr = self.yumbase.update(name=pkg.name)
             if txmbr:
-                self._runYumTransaction()
+                successful = self._runYumTransaction()
+                if not successful:
+                    return
             else:
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return
         else:
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-            self.Exit()
-
+            self.Finished(EXIT_FAILED)
+            return
+            
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -692,18 +712,24 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             txmbr = self.yumbase.remove(name=pkg.name)
             if txmbr:
                 if allowdep:
-                    self._runYumTransaction(removedeps=True)
+                    successful = self._runYumTransaction(removedeps=True)
+                    if not successful:
+                        return
                 else:
-                    self._runYumTransaction(removedeps=False)
+                    successful = self._runYumTransaction(removedeps=False)
+                    if not successful:
+                        return
             else:
                 self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return
+
+            self.Finished(EXIT_SUCCESS)
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-            self.Exit()
-
-        self.Finished(EXIT_SUCCESS)
-
+            self.Finished(EXIT_FAILED)
+            return
+            
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def GetDescription(self, package):
@@ -725,9 +751,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._show_description(id, pkg.license, "unknown", desc, pkg.url,
                              pkg.size)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
-            self.Exit()
-
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.Finished(EXIT_FAILED)
+            return
+            
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -746,8 +773,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             self.Files(package, file_list)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,'Package was not found')
-            self.Exit()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.Finished(EXIT_FAILED)
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -773,6 +801,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         self.Finished(EXIT_SUCCESS)
@@ -794,7 +823,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -851,10 +881,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return
         else:
             self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -890,6 +922,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         # Now show available packages.
@@ -933,6 +966,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
     def _do_devel_filtering(self,flt,pkg):
@@ -1105,6 +1139,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
             self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+            self.Finished(EXIT_FAILED)
             self.Exit()
 
         # everything installed that matches the name
@@ -1174,20 +1209,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Run the yum Transaction
         This will only work with yum 3.2.4 or higher
+        Returns True on success, False on failure
         '''
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
             retmsg = "Error in Dependency Resolution;" +";".join(msgs)
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
-            self.Exit()
+            self.Finished(EXIT_FAILED)
+            return
         else:
             self._check_for_reboot()
             if removedeps == False:
                 if len(self.yumbase.tsInfo) > 1:
                     retmsg = 'package could not be remove, because something depends on it'
                     self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
-                    self.Exit()
-
+                    self.Finished(EXIT_FAILED)
+                    return False
             try:
                 rpmDisplay = PackageKitCallback(self)
                 callback = ProcessTransPackageKitCallback(self)
@@ -1196,17 +1233,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.YumDownloadError, ye:
                 retmsg = "Error in Download;" +";".join(ye.value)
                 self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return False
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures;" +";".join(ye.value)
                 self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return False
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
                 if not keyData:
                     self.ErrorCode(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
-                    self.Exit()
+                    self.Finished(EXIT_FAILED)
+                    return False
                 self.repo_signature_required(keyData['po'].repoid,
                                              keyData['keyurl'],
                                              keyData['userid'],
@@ -1215,11 +1255,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['timestamp'],
                                              'GPG')
                 self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return False
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing;" +";".join(ye.value)
                 self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
-                self.Exit()
+                self.Finished(EXIT_FAILED)
+                return False
+        return True
 
     def _get_status(self,notice):
         ut = notice['type']
