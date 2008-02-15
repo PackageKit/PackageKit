@@ -333,7 +333,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.StatusChanged(STATUS_WAIT)
                 time.sleep(2)
                 retries += 1
-                if retries > 100:
+                if retries > 20:
                     self.ErrorCode(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
                     self.Finished(EXIT_FAILED)
                     return
