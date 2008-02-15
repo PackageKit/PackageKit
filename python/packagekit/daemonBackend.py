@@ -127,228 +127,236 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print "ErrorCode (%s, %s)" % (code, description)
 
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ss')
+    def MetaData(self,typ,fname):
+        '''
+        send 'metadata' signal:
+        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
+        @param fname:  The filename being downloaded
+        '''
+        print  "MetaData (%s, %s)" % (typ,fname)
 
 
 #
 # Methods ( client -> engine -> backend )
 #
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Init(self):
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Exit(self):
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Lock(self):
-        self.doLock()
-
-    def doLock(self):
-        ''' Lock Yum'''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Unlock(self):
-        self.doUnlock()
-
-    def doUnlock(self):
-        ''' Unlock Yum'''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchName(self, filters, search):
-        '''
-        Implement the {backend}-search-name functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchDetails(self,filters,key):
-        '''
-        Implement the {backend}-search-details functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchGroup(self,filters,key):
-        '''
-        Implement the {backend}-search-group functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchFile(self,filters,key):
-        '''
-        Implement the {backend}-search-file functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def GetRequires(self,package,recursive):
-        '''
-        Print a list of requires for a given package
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def GetDepends(self,package,recursive):
-        '''
-        Print a list of depends for a given package
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def UpdateSystem(self):
-        '''
-        Implement the {backend}-update-system functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def RefreshCache(self):
-        '''
-        Implement the {backend}-refresh_cache functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def Resolve(self, filters, name):
-        '''
-        Implement the {backend}-resolve functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallPackage(self, package):
-        '''
-        Implement the {backend}-install functionality
-        This will only work with yum 3.2.4 or higher
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallFile (self, inst_file):
-        '''
-        Implement the {backend}-install_file functionality
-        Install the package containing the inst_file file
-        Needed to be implemented in a sub class
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def UpdatePackage(self, package):
-        '''
-        Implement the {backend}-update functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RemovePackage(self, package, allowdep):
-        '''
-        Implement the {backend}-remove functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetDescription(self, package):
-        '''
-        Print a detailed description for a given package
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetFiles(self, package):
-        '''
-        Implement the get-files method
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def GetUpdates(self):
-        '''
-        Implement the {backend}-get-updates functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RepoEnable(self, repoid, enable):
-        '''
-        Implement the {backend}-repo-enable functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def GetRepoList(self):
-        '''
-        Implement the {backend}-get-repo-list functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetUpdateDetail(self,package):
-        '''
-        Implement the {backend}-get-update_detail functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sss', out_signature='')
-    def RepoSetData(self, repoid, parameter, value):
-        '''
-        Implement the {backend}-repo-set-data functionality
-        '''
-        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-        self.Exit()
-
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def Init(self):
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def Exit(self):
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def Lock(self):
+#        self.doLock()
+#
+#    def doLock(self):
+#        ''' Lock Yum'''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def Unlock(self):
+#        self.doUnlock()
+#
+#    def doUnlock(self):
+#        ''' Unlock Yum'''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='ss', out_signature='')
+#    def SearchName(self, filters, search):
+#        '''
+#        Implement the {backend}-search-name functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='ss', out_signature='')
+#    def SearchDetails(self,filters,key):
+#        '''
+#        Implement the {backend}-search-details functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='ss', out_signature='')
+#    def SearchGroup(self,filters,key):
+#        '''
+#        Implement the {backend}-search-group functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='ss', out_signature='')
+#    def SearchFile(self,filters,key):
+#        '''
+#        Implement the {backend}-search-file functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='sb', out_signature='')
+#    def GetRequires(self,package,recursive):
+#        '''
+#        Print a list of requires for a given package
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='sb', out_signature='')
+#    def GetDepends(self,package,recursive):
+#        '''
+#        Print a list of depends for a given package
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def UpdateSystem(self):
+#        '''
+#        Implement the {backend}-update-system functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def RefreshCache(self):
+#        '''
+#        Implement the {backend}-refresh_cache functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='ss', out_signature='')
+#    def Resolve(self, filters, name):
+#        '''
+#        Implement the {backend}-resolve functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def InstallPackage(self, package):
+#        '''
+#        Implement the {backend}-install functionality
+#        This will only work with yum 3.2.4 or higher
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def InstallFile (self, inst_file):
+#        '''
+#        Implement the {backend}-install_file functionality
+#        Install the package containing the inst_file file
+#        Needed to be implemented in a sub class
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def UpdatePackage(self, package):
+#        '''
+#        Implement the {backend}-update functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='sb', out_signature='')
+#    def RemovePackage(self, package, allowdep):
+#        '''
+#        Implement the {backend}-remove functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def GetDescription(self, package):
+#        '''
+#        Print a detailed description for a given package
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def GetFiles(self, package):
+#        '''
+#        Implement the get-files method
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def GetUpdates(self):
+#        '''
+#        Implement the {backend}-get-updates functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='sb', out_signature='')
+#    def RepoEnable(self, repoid, enable):
+#        '''
+#        Implement the {backend}-repo-enable functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='', out_signature='')
+#    def GetRepoList(self):
+#        '''
+#        Implement the {backend}-get-repo-list functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
+#    def GetUpdateDetail(self,package):
+#        '''
+#        Implement the {backend}-get-update_detail functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='sss', out_signature='')
+#    def RepoSetData(self, repoid, parameter, value):
+#        '''
+#        Implement the {backend}-repo-set-data functionality
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
 #
 # Utility methods
 #
