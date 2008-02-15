@@ -244,7 +244,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)            
         except UnicodeDecodeError,e:
-            summary = repr(desc)[1:-1]
+            desc = repr(desc)[1:-1]
             PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
 
     def package(self,id,status,summary):
@@ -477,7 +477,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
-    def get_packages(self,filters):
+    def get_packages(self,filters,showdesc='no'):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
@@ -486,6 +486,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
+        showDesc = (showdesc == 'yes' or showdesc == 'only' )
+        showPkg = (showdesc != 'only')
+        print showDesc,showPkg
         try:
             fltlist = filters.split(';')
             available = []
@@ -493,13 +496,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in self.yumbase.rpmdb:
                     if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
+                        if showPkg:
+                            self._show_package(pkg, INFO_INSTALLED)
+                        if showDesc:
+                            self._show_description(pkg)
+                        
 
         # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
                     if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+                        if showPkg:
+                            self._show_package(pkg, INFO_AVAILABLE)
+                        if showDesc:
+                            self._show_description(pkg)
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
@@ -988,16 +998,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkg,inst = self._findPackage(package)
         if pkg:
-            pkgver = self._get_package_ver(pkg)
-            id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-            desc = pkg.description
-            desc = desc.replace('\n\n',';')
-            desc = desc.replace('\n',' ')
-
-            self.description(id, pkg.license, "unknown", desc, pkg.url,
-                             pkg.size)
+            self._show_description(pkg)
         else:
             self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+
+    def _show_description(self,pkg):        
+        pkgver = self._get_package_ver(pkg)
+        id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
+        desc = pkg.description
+        desc = desc.replace('\n\n',';')
+        desc = desc.replace('\n',' ')
+
+        self.description(id, pkg.license, "unknown", desc, pkg.url,
+                         pkg.size)
 
     def get_files(self, package):
         self.allow_cancel(True)
