@@ -39,12 +39,10 @@ class Package(apt.Package):
                 return False
         return True
 
-    def __setParent(self,pkg):
-        for x in ["_pkg","_depcache","_records"]:
-            setattr(self,x,getattr(pkg,x))
-
     def __init__(self, backend, pkg, data="",version=[]):
-        self.__setParent(pkg)
+        apt.package.Package.__init__(self, pkg._cache, pkg._depcache, 
+                                     pkg._records, pkg._list, pkg._pcache, 
+                                     pkg._pkg)
         self._version = version
         self._data = data
         self._backend = backend
@@ -280,7 +278,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self, self._apt_cache[name])
         description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, '', pkg.packageSize, '')
+        self.description(package, 'unknown', pkg.group, description, 
+                         pkg.architecture, pkg.packageSize)
 
     def resolve(self, name):
         '''

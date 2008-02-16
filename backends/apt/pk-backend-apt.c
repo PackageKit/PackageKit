@@ -181,14 +181,14 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 /**
  * pk_backend_remove_package:
- */
+ * 
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
-}
+} */
 
 /**
  * pk_backend_update_package:
@@ -259,7 +259,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	NULL,					/* remove_package */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
