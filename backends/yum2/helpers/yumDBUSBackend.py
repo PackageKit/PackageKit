@@ -482,6 +482,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         pkg,inst = self._findPackage(package)
+        
+        if not pkg:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.Finished(EXIT_FAILED)
+            return
+
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
             if inst:
@@ -505,12 +511,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         results = {}
-        if pkg:
-            deps = self._get_best_dependencies(pkg)
-        else:
+
+        if not pkg:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
+
+        deps = self._get_best_dependencies(pkg)
+
         for pkg in deps:
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)
