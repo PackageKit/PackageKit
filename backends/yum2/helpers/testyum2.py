@@ -72,6 +72,8 @@ try:
     #iface.
     print "Testing RefreshCache()"
     iface.RefreshCache()
+    print "Testing Exit()"
+    iface.Exit()
     
 except dbus.DBusException, e:
     print "Unable to send message on dbus"
