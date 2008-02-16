@@ -533,6 +533,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        old_throttle = self.yumbase.conf.throttle
+        self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
+                                           # to avoid taking all the system's bandwidth.
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
@@ -544,6 +547,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
+        self.yumbase.conf.throttle = old_throttle
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -1460,7 +1464,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
-        self.yumbase.conf.throttle = "40%"                        # Set bandwidth throttle to 40%
+        self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 90%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
 
