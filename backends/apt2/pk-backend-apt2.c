@@ -20,17 +20,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <gmodule.h>
-#include <glib.h>
-#include <string.h>
 #include <pk-network.h>
 #include <pk-backend.h>
-#include <pk-backend-spawn.h>
-#include "pk-apt-search.h"
-#include "config.h"
+#include <pk-backend-dbus.h>
 
-PkBackendSpawn *spawn;
+static PkBackendDbus *dbus;
 static PkNetwork *network;
+
+#define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
 /**
  * backend_initalize:
@@ -42,9 +39,8 @@ backend_initalize (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initalize");
 	network = pk_network_new ();
-	spawn = pk_backend_spawn_new ();
-	pk_backend_spawn_set_name (spawn, "apt");
-	backend_init_search (backend);
+	dbus = pk_backend_dbus_new ();
+	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
 
 /**
@@ -55,11 +51,11 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
+	g_return_if_fail (dbus != NULL);
 	pk_debug ("FILTER: destroy");
-	backend_finish_search (backend);
 	g_object_unref (network);
-	g_object_unref (spawn);
+	pk_backend_dbus_kill (dbus);
+	g_object_unref (dbus);
 }
 
 /**
@@ -98,7 +94,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 
 /**
  * pk_backend_bool_to_text:
- */
+ *
 static const gchar *
 pk_backend_bool_to_text (gboolean value)
 {
@@ -106,18 +102,18 @@ pk_backend_bool_to_text (gboolean value)
 		return "yes";
 	}
 	return "no";
-}
+} */
 
 /**
  * backend_get_depends:
- */
+ *
 static void
 backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
-}
+} */
 
 /**
  * backend_get_updates:
@@ -126,31 +122,20 @@ static void
 backend_get_updates (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-updates.py", NULL);
-}
-
-/**
- * backend_get_update_detail:
- */
-static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-update-detail.py", package_id, NULL);
-}
+	g_return_if_fail (dbus != NULL);
+	pk_backend_dbus_get_updates (dbus);
+} 
 
 /**
  * backend_install_package:
- */
+ *
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 
-	/* check network state */
+	// check network state 
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
@@ -158,18 +143,18 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	}
 
 	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
-}
+} */
 
 /**
  * backend_refresh_cache:
- */
+ *
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 
-	/* check network state */
+	// check network state
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
@@ -177,11 +162,11 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	}
 
 	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
-}
+} */
 
 /**
  * pk_backend_remove_package:
- * 
+ *
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
 {
@@ -192,14 +177,14 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 /**
  * pk_backend_update_package:
- */
+ *
 static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 
-	/* check network state */
+	// check network state
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
@@ -207,68 +192,90 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 	}
 
 	pk_backend_spawn_helper (spawn, "update.py", package_id, NULL);
-}
+} */
 
 /**
  * pk_backend_update_system:
- */
+ *
 static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
-}
+} */
 
 /**
  * pk_backend_resolve:
- */
+ *
 static void
 backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "resolve.py", filter, package_id, NULL);
-}
+} */
 
 /**
  * pk_backend_get_repo_list:
- */
+ *
 static void
 backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-repo-list.py", NULL);
+} */
+
+/**
+ * backend_get_description:
+ *  */
+static void
+backend_get_description (PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_get_description (dbus, package_id);
+}
+
+/**
+ *  * pk_backend_search_name:
+ *   */
+static void
+backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_search_name (dbus, filter, search);
 }
 
 PK_BACKEND_OPTIONS (
-	"Apt (with " APT_SEARCH " searching)",				/* description */
-	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>",	/* author */
+	"Apt",					/* description */
+	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>; Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
 	backend_initalize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
-	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	NULL,					/* get_depends */
+	backend_get_description,	        /* get_description */
 	NULL,					/* get_files */
 	NULL,					/* get_requires */
-	backend_get_update_detail,		/* get_update_detail */
+	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_package */
 	NULL,					/* install_file */
-	backend_refresh_cache,			/* refresh_cache */
+	NULL,					/* refresh_cache */
 	NULL,					/* remove_package */
-	backend_resolve,			/* resolve */
+	NULL,					/* resolve */
 	NULL,					/* rollback */
-	backend_search_details,			/* search_details */
+	NULL,					/* search_details */
 	NULL,					/* search_file */
-	backend_search_group,			/* search_group */
+	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
-	backend_update_system,			/* update_system */
-	backend_get_repo_list,			/* get_repo_list */
+	NULL,					/* update_package */
+	NULL,					/* update_system */
+	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL					/* repo_set_data */
 );

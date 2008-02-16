@@ -1,33 +1,45 @@
-#
-# vim: ts=4 et sts=4
-#
-# Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
-# Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
-#
-# Licensed under the GNU General Public License Version 2
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Provides an apt backend to PackageKit
 
+Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
+Copyright (C) 2007 Tom Parker <palfrey@tevp.net>
+Copyright (C) 2008 Sebastian Heinlein <glatzor@ubuntu.com>
+
+Licensed under the GNU General Public License Version 2
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+"""
+
+from sets import Set
 import sys
 import os
+from os.path import join,exists
+from os import system
 import re
-
-from packagekit.backend import *
-import apt_pkg,apt_inst
-
+from urlparse import urlparse
 import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
+
 import apt
+from apt.debfile import DebPackage
+import apt_inst
+import apt_pkg
 from aptsources.distro import get_distro
 from aptsources.sourceslist import SourcesList
-from sets import Set
-from os.path import join,exists
-from urlparse import urlparse
-from apt.debfile import DebPackage
-from os import system
+
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
+from packagekit.enums import *
+
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
 class Package(apt.Package):
     def __str__(self):
@@ -39,10 +51,12 @@ class Package(apt.Package):
                 return False
         return True
 
+    def __setParent(self,pkg):
+        for x in ["_pkg","_depcache","_records"]:
+            setattr(self,x,getattr(pkg,x))
+
     def __init__(self, backend, pkg, data="",version=[]):
-        apt.package.Package.__init__(self, pkg._cache, pkg._depcache, 
-                                     pkg._records, pkg._list, pkg._pcache, 
-                                     pkg._pkg)
+        self.__setParent(pkg)
         self._version = version
         self._data = data
         self._backend = backend
@@ -200,33 +214,144 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
                 "Medium change needed")
 
 class PackageKitAptBackend(PackageKitBaseBackend):
-    def __init__(self, args):
-        PackageKitBaseBackend.__init__(self, args)
-        self.status(STATUS_SETUP)
-        self._caches  = {}
-        self._apt_cache = apt.Cache(PackageKitProgress(self))
-        default = apt_pkg.Config.Find("APT::Default-Release")
-        if default=="":
-            d = get_distro()
-            if d.id == "Debian":
-                default = "stable"
-            elif d.id == "Ubuntu":
-                default = "main"
-            else:
-                raise Exception,d.id
+    def __init__(self, bus_name, dbus_path):
+        PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
+        self._cache = None
 
-        self._caches[default] = self._apt_cache
-            
+    # Methods ( client -> engine -> backend )
 
-    def search_name(self, filters, key):
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Init(self):
+        self._cache = apt.Cache(PackageKitProgress(self))
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Exit(self):
+        self.loop.quit()
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
         '''
-        self.status(STATUS_INFO)
-        self.allow_cancel(True)
-        for package in self._do_search(filters,
-                lambda pkg: pkg.matchName(key)):
-            self._emit_package(package)
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+
+        self.StatusChanged(STATUS_QUERY)
+
+        for pkg in self._cache:
+            if search in pkg.name:
+                self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def GetUpdates(self):
+        '''
+        Implement the {backend}-get-update functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        self._cache.upgrade(False)
+        for pkg in self._cache.getChanges():
+            self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetDescription(self, pkg_id):
+        '''
+        Implement the {backend}-get-description functionality
+        '''
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        name, version, arch, data = self.get_package_from_id(pkg_id)
+        #FIXME: error handling
+        pkg = self._cache[name]
+        #FIXME: should perhaps go to python-apt since we need this in 
+        #       several applications
+        desc = pkg.description
+        # Skip the first line - it's a duplicate of the summary
+        i = desc.find('\n')
+        desc = desc[i+1:]
+        # do some regular expression magic on the description
+        # Add a newline before each bullet
+        p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
+        desc = p.sub('\n*', desc)
+        # replace all newlines by spaces
+        p = re.compile(r'\n', re.MULTILINE)
+        desc = p.sub(" ", desc)
+        # replace all multiple spaces by newlines
+        p = re.compile(r'\s\s+', re.MULTILINE)
+        desc = p.sub('\n', desc)
+        # Get the homepage of the package
+        # FIXME: switch to the new unreleased API
+        if pkg.candidateRecord.has_key('Homepage'):
+            homepage = pkg.candidateRecord['Homepage']
+        else:
+            homepage = ''
+        #FIXME: group and licence information missing
+        self.Description(pkg_id, 'unknown', 'unknown', desc,
+                         homepage, pkg.packageSize)
+        self.Finished(EXIT_SUCCESS)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Unlock(self):
+        self.doUnlock()
+
+    def doUnlock(self):
+        if self.isLocked():
+            PackageKitBaseBackend.doUnlock(self)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Lock(self):
+        self.doLock()
+
+    def doLock(self):
+        pass
+
+    #
+    # Helpers
+    #
+    def get_id_from_package(self, pkg, installed=False):
+        '''
+        Returns the id of the installation candidate of a core
+        apt package. If installed is set to True the id of the currently
+        installed package will be returned.
+        '''
+        origin = ''
+        if installed == False and pkg.isInstalled:
+            pkgver = pkg.installedVersion
+        else:
+            pkgver = pkg.candidateVersion
+            if pkg.candidateOrigin:
+                origin = pkg.candidateOrigin[0].label
+        id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
+        return id
+
+    def _emit_package(self, pkg, installed=False):
+        '''
+        Send the Package signal for a given apt package
+        '''
+        id = self.get_id_from_package(pkg, installed)
+        if installed and pkg.isInstalled:
+            status = INFO_INSTALLED
+        else:
+            status = INFO_AVAILABLE
+        summary = pkg.summary
+        self.Package(status, id, summary)
+
+
+    # FIXME: Needs to be ported
 
     def search_details(self, filters, key):
         '''
@@ -264,22 +389,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_REFRESH_CACHE)
         try:
-            res = self._apt_cache.update(PackageKitProgress(self))
+            res = self._cache.update(PackageKitProgress(self))
         except Exception, error_message:
              self.error(ERROR_INTERNAL_ERROR,
                         "Failed to fetch the following items:\n%s" % error_message)
         return res
-
-    def get_description(self, package):
-        '''
-        Implement the {backend}-get-description functionality
-        '''
-        self.status(STATUS_INFO)
-        name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self, self._apt_cache[name])
-        description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, 
-                         pkg.architecture, pkg.packageSize)
 
     def resolve(self, name):
         '''
@@ -287,7 +401,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         self.status(STATUS_INFO)
         try:
-            pkg = Package(self,self._apt_cache[name])
+            pkg = Package(self,self._cache[name])
             self._emit_package(pkg)
         except KeyError:
             self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find a package called '%s'"%name)
@@ -304,7 +418,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if recursive:
             for n in newkeys:
                 try:
-                    deps = self._do_deps(Package(self,self._apt_cache[n],version=deps[n]),deps,recursive)
+                    deps = self._do_deps(Package(self,self._cache[n],version=deps[n]),deps,recursive)
                 except KeyError: # FIXME: we're assuming this is a virtual package, which we can't cope with yet
                     del deps[n]
                     continue
@@ -318,11 +432,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._apt_cache[name],version=[(version,"=")],data=data)
+        pkg = Package(self,self._cache[name],version=[(version,"=")],data=data)
         pkg.setVersion(version)
         deps = self._do_deps(pkg, {}, recursive)
         for n in deps.keys():
-           self._emit_package(Package(self,self._apt_cache[n],version=deps[n]))
+           self._emit_package(Package(self,self._cache[n],version=deps[n]))
 
     def _do_reqs(self,inp,pkgs,recursive):
         extra = []
@@ -334,7 +448,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 #print "skip",r.TargetVer,r.CompType,r.ParentPkg.Name,r.ParentVer.VerStr
                 fails.append(v)
                 continue
-            p = Package(self,self._apt_cache[r.ParentPkg.Name],r.ParentVer.VerStr)
+            p = Package(self,self._cache[r.ParentPkg.Name],r.ParentVer.VerStr)
             if v not in pkgs:
                 extra.append(p)
                 #print "new pkg",p
@@ -353,7 +467,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.status(STATUS_INFO)
         recursive = (recursive == "True")
         name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._apt_cache[name], version=[(version,"=")], data=data)
+        pkg = Package(self,self._cache[name], version=[(version,"=")], data=data)
 
         pkgs = Set()
         self._do_reqs(pkg,pkgs, recursive)
@@ -425,26 +539,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except IOError,e:
             self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
 
-    def get_updates(self):
-        self._apt_cache.upgrade(False)
-        for pkg in self._apt_cache.getChanges():
-            self._emit_package(Package(self, pkg))
-
-    def get_update_detail(self, package):
-        self.allow_cancel(True)
-        self.percentage(None)
-        self.status(STATUS_INFO)
-        name, version, arch, data = self.get_package_from_id(package)
-        update = ""
-        obsolete = ""
-        cve_url = ""
-        bz_url = ""
-        vendor_url = ""
-        reboot = "none"
-        desc = self._apt_cache[name].description
-        self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
-
-
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -465,33 +559,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     deps[pkg] = []
                 deps[pkg].append((ver,comp))
         for n in deps.keys():
-           p = Package(self,self._apt_cache[n],version=deps[n])
+           p = Package(self,self._cache[n],version=deps[n])
            if not p.isInstalled:
                p.markInstall()
-        assert self._apt_cache.getChanges()==[],"Don't handle install changes yet"
+        assert self._cache.getChanges()==[],"Don't handle install changes yet"
         # FIXME: nasty hack. Need a better way in
         ret = system("dpkg -i %s"%inst_file)
         if ret!=0:
             self.error(ERROR_INTERNAL_ERROR,"Can't install package")
 
     ### Helpers ###
-    def _emit_package(self, package):
-        id = self.get_package_id(package.name,
-                package._version,
-                package.architecture,
-                package._data)
-        if package.isInstalled:
-            status = INFO_INSTALLED
-        else:
-            status = INFO_AVAILABLE
-        summary = package.summary
-        self.package(id, status, summary)
-
     def _do_search(self, filters, condition):
         filters = filters.split(';')
-        size = len(self._apt_cache)
+        size = len(self._cache)
         percentage = 0
-        for i, pkg in enumerate(self._apt_cache):
+        for i, pkg in enumerate(self._cache):
             new_percentage = i / float(size) * 100
             if new_percentage - percentage >= 5:
                 percentage = new_percentage
@@ -533,3 +615,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return False
         return True
 
+if __name__ == '__main__':
+    loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    bus = dbus.SystemBus(mainloop=loop)
+    bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
+    manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+
+# vim: ts=4 et sts=4

@@ -18,6 +18,7 @@ dist_dbus_DATA = 					\
 	org.freedesktop.PackageKit.conf			\
 	org.freedesktop.PackageKitTestBackend.conf	\
 	org.freedesktop.PackageKitYumBackend.conf	\
+	org.freedesktop.PackageKitAptBackend.conf	\
 	$(NULL)
 
 servicemaindir       = $(DBUS_SERVICES_DIR)
@@ -39,6 +40,12 @@ servicetest_DATA     = $(servicetest_in_files:.service.in=.service)
 $(servicetest_DATA): $(servicetest_in_files) Makefile
 	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
 
+serviceaptdir       = $(DBUS_SERVICES_DIR)
+serviceapt_in_files = org.freedesktop.PackageKitAptBackend.service.in
+serviceapt_DATA     = $(serviceapt_in_files:.service.in=.service)
+$(serviceapt_DATA): $(serviceapt_in_files) Makefile
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
+
 localcachedir = $(localstatedir)/run/PackageKit
 localcache_DATA =					\
 	job_count.dat					\
@@ -54,10 +61,12 @@ EXTRA_DIST =						\
 	org.freedesktop.PackageKit.conf.in		\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitYumBackend.conf.in	\
+	org.freedesktop.PackageKitAptBackend.conf.in	\
 	packagekit.pc.in				\
 	$(servicemain_in_files)				\
 	$(serviceyum_in_files)				\
 	$(servicetest_in_files)				\
+	$(serviceapt_in_files)				\
 	$(localcache_DATA)				\
 	$(database_DATA)				\
 	$(NULL)
@@ -69,6 +78,7 @@ DISTCLEANFILES =					\
 	org.freedesktop.PackageKit.service		\
 	org.freedesktop.PackageKitTestBackend.service	\
 	org.freedesktop.PackageKitYumBackend.service	\
+	org.freedesktop.PackageKitAptBackend.service	\
 	$(NULL)
 
 MAINTAINERCLEANFILES =					\
