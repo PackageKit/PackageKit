@@ -935,6 +935,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         pkg,inst = self._findPackage(package)
+        
+        if not pkg:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self.Finished(EXIT_FAILED)
+            return
+
         update = self._get_updated(pkg)
         obsolete = self._get_obsoleted(pkg.name)
         desc,urls,reboot = self._get_update_extras(pkg)
