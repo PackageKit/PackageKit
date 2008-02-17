@@ -1049,7 +1049,11 @@ pk_backend_dbus_finalize (GObject *object)
 
 	backend_dbus = PK_BACKEND_DBUS (object);
 	g_free (backend_dbus->priv->service);
-	g_object_unref (backend_dbus->priv->proxy);
+
+	/* we might not have actually set a name yet */
+	if (backend_dbus->priv->proxy != NULL) {
+		g_object_unref (backend_dbus->priv->proxy);
+	}
 	g_object_unref (backend_dbus->priv->backend);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
