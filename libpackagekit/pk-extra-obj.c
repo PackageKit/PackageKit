@@ -212,6 +212,7 @@ libst_extra_obj (LibSelfTest *test)
 	} else {
 		libst_failed (test, "got %s", eobj->summary);
 	}
+	pk_extra_obj_free (eobj);
 
 	/************************************************************/
 	libst_title (test, "get an wrong object");
@@ -229,7 +230,6 @@ libst_extra_obj (LibSelfTest *test)
 	} else {
 		libst_failed (test, "got %s", eobj->summary);
 	}
-
 	pk_extra_obj_free (eobj);
 
 	libst_end (test);

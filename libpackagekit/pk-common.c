@@ -1144,9 +1144,9 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
 	}
+	g_free (text_safe);
 
 	/************************************************************/
-	g_free (text_safe);
 	libst_title (test, "pad smaller, 1 extra");
 	length = 1;
 	text_safe = pk_strpad_extra ("richard", 10, &length);
@@ -1166,6 +1166,7 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
 	}
+	g_free (text_safe);
 
 	/************************************************************
 	 ****************       REPLACE CHARS      ******************
