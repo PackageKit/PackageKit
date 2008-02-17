@@ -12,8 +12,8 @@
 echo "no-percentage-updates" > /dev/stderr
 echo "status	query" > /dev/stderr
 sleep 1
-echo "package	1	glib2;2.14.0;i386;fedora	The GLib library"
+echo "package	available	glib2;2.14.0;i386;fedora	The GLib library"
 sleep 1
-echo "package	1	gtk2;gtk2-2.11.6-6.fc8;i386;fedora	GTK+ Libraries for GIMP"
+echo "package	installed	gtk2;gtk2-2.11.6-6.fc8;i386;fedora	GTK+ Libraries for GIMP"
 exit 0
 
