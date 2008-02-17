@@ -186,7 +186,6 @@
             </row>
             <row>
               <entry><literal>free</literal> or <literal>~free</literal></entry>
-
               <entry>
                 Free software.  The package contains only software and
                 other content that is available under a free license.
@@ -202,6 +201,12 @@
               <entry>
                 Repositories may want to specify if a package should be visible
                 in an application chooser.
+              </entry>
+            </row>
+            <row>
+              <entry><literal>supported</literal> or <literal>~supported</literal></entry>
+              <entry>
+                If the package is supported or is a third party addon.
               </entry>
             </row>
           </tbody>
