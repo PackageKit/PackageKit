@@ -30,14 +30,14 @@ static PkNetwork *network;
 #define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
 /**
- * backend_initalize:
+ * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initalize");
+	pk_debug ("FILTER: initialize");
 	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
@@ -252,7 +252,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
 	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>; Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

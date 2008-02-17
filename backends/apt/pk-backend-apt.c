@@ -33,14 +33,14 @@ PkBackendSpawn *spawn;
 static PkNetwork *network;
 
 /**
- * backend_initalize:
+ * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initalize");
+	pk_debug ("FILTER: initialize");
 	network = pk_network_new ();
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "apt");
@@ -245,7 +245,7 @@ backend_get_repo_list (PkBackend *backend)
 PK_BACKEND_OPTIONS (
 	"Apt (with " APT_SEARCH " searching)",				/* description */
 	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

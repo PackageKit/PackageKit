@@ -25,10 +25,10 @@
 #include <pk-backend.h>
 
 /**
- * backend_initalize:
+ * backend_initialize:
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 }
@@ -308,7 +308,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 PK_BACKEND_OPTIONS (
 	"Test Succeed",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

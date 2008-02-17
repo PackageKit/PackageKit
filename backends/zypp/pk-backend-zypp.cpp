@@ -106,7 +106,7 @@ static std::map<PkBackend *, EventDirector *> _eventDirectors;
 static PkBackendThread *thread;
 
 /**
- * backend_initalize:
+ * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
@@ -1167,7 +1167,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>",	/* author */
-	backend_initialize,			/* initalize */
+	backend_initialize,			/* initialize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

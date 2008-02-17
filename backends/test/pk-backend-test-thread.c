@@ -28,14 +28,14 @@
 static PkBackendThread *thread;
 
 /**
- * backend_initalize:
+ * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initalize");
+	pk_debug ("FILTER: initialize");
 
 	/* we use the thread helper */
 	thread = pk_backend_thread_new ();
@@ -134,7 +134,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 PK_BACKEND_OPTIONS (
 	"Test Thread",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */

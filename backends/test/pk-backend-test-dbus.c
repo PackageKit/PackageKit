@@ -42,14 +42,14 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_initalize:
+ * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	pk_debug ("FILTER: initalize");
+	pk_debug ("FILTER: initialize");
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_TEST);
 }
@@ -70,7 +70,7 @@ backend_destroy (PkBackend *backend)
 PK_BACKEND_OPTIONS (
 	"Test Dbus",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */

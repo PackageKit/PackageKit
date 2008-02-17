@@ -27,7 +27,7 @@
 PK_BACKEND_OPTIONS (
 	"SMART",					/* description */
 	"James Bowes <jbowes@dangerouslyinc.com>",	/* author */
-	NULL,						/* initalize */
+	NULL,						/* initialize */
 	NULL,						/* destroy */
 	NULL,						/* get_groups */
 	NULL,						/* get_filters */

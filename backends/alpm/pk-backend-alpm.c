@@ -348,7 +348,7 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
- * backend_initalize:
+ * backend_initialize:
  */
 static void
 backend_initialize (PkBackend *backend)
@@ -780,7 +780,7 @@ backend_get_repo_list (PkBackend *backend)
 PK_BACKEND_OPTIONS (
 	"alpm",						/* description */
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
-	backend_initialize,				/* initalize */
+	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
 	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */

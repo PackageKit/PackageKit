@@ -240,10 +240,10 @@ parse_filter (const gchar *filter)
 
 
 /**
- * backend_initalize:
+ * backend_initialize:
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	int err;
 	g_return_if_fail (backend != NULL);
@@ -913,7 +913,7 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */

@@ -26,7 +26,7 @@
 PK_BACKEND_OPTIONS (
 	"Test NOP",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	NULL,					/* initalize */
+	NULL,					/* initialize */
 	NULL,					/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */

@@ -546,10 +546,10 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 /* ===================================================================== */
 
 /**
- * backend_initalize:
+ * backend_initialize:
  */
 static void
-backend_initalize (PkBackend *backend)
+backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
@@ -889,7 +889,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
 	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
-	backend_initalize,			/* initalize */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	backend_get_filters,			/* get_filters */

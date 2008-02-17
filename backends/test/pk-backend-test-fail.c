@@ -25,7 +25,7 @@
 #include <pk-backend.h>
 
 /**
- * backend_initalize:
+ * backend_initialize:
  */
 static void
 backend_initialize (PkBackend *backend)
@@ -273,7 +273,7 @@ backend_update_system (PkBackend *backend)
 PK_BACKEND_OPTIONS (
 	"Test Fail",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
-	backend_initialize,			/* initalize */
+	backend_initialize,			/* initialize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
