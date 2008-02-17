@@ -121,6 +121,7 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			goto out;
 		}
 		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
+pk_error ("moo");
 	} else if (pk_strequal (command, "description") == TRUE) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
@@ -774,6 +775,18 @@ libst_backend_spawn (LibSelfTest *test)
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate2");
 	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-cancel\tbrian");
 	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************
+	 **********        Check parsing common out       ***********
+	 ************************************************************/
+	libst_title (test, "test pk_backend_spawn_parse_common_out Package");
+	ret = pk_backend_spawn_parse_common_output (backend_spawn,
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
+	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not validate correctly");
