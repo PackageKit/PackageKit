@@ -198,6 +198,7 @@ libst_conf (LibSelfTest *test)
 	} else {
 		libst_failed (test, "got NULL!");
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "get a string that doesn't exist");
@@ -207,6 +208,7 @@ libst_conf (LibSelfTest *test)
 	} else {
 		libst_failed (test, "got return value '%s'", text);
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "get the shutdown timeout");
