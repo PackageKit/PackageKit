@@ -17,10 +17,10 @@ echo -e "percentage\t30" > /dev/stderr
 sleep ${time}
 echo -e "percentage\t40" > /dev/stderr
 sleep ${time}
-echo -e "package:1\tpolkit\tPolicyKit daemon"
-echo -e "package:0\tpolkit-gnome\tPolicyKit helper for GNOME"
+echo -e "package\tavailable\tpolkit;0.0.1;i386;data\tPolicyKit daemon"
+echo -e "package\tinstalled\tpolkit-gnome;0.0.1;i386;data\tPolicyKit helper for GNOME"
 sleep ${time}
-echo -e -n "package:0\tConsoleKit"
+echo -e -n "package\tavailable\tConsoleKit"
 sleep ${time}
 echo -e "\tSystem console checker"
 echo -e "percentage\t50" > /dev/stderr
@@ -32,7 +32,7 @@ sleep ${time}
 echo -e "percentage\t80" > /dev/stderr
 sleep ${time}
 echo -e "percentage\t90" > /dev/stderr
-echo -e "package:0\tgnome-power-manager\tMore useless software"
+echo -e "package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software"
 sleep ${time}
 echo -e "percentage\t100" > /dev/stderr
 
