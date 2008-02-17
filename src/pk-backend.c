@@ -189,13 +189,16 @@ pk_backend_unlock (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	if (backend->priv->locked == FALSE) {
 		pk_warning ("already unlocked");
 		return FALSE;
 	}
-	if (backend->desc->destroy) {
+	if (backend->desc == NULL) {
+		pk_warning ("not yet loaded backend, try pk_backend_lock()");
+		return FALSE;
+	}
+	if (backend->desc->destroy != NULL) {
 		backend->desc->destroy (backend);
 	}
 	backend->priv->locked = FALSE;
@@ -246,6 +249,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* set the same twice? */
 	if (backend->priv->last_percentage == percentage) {
@@ -286,6 +290,7 @@ guint
 pk_backend_get_runtime (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, 0);
+	g_return_val_if_fail (backend->priv->locked != FALSE, 0);
 	return pk_time_get_elapsed (backend->priv->time);
 }
 
@@ -297,6 +302,7 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* set the same twice? */
 	if (backend->priv->last_subpercentage == percentage) {
@@ -326,6 +332,7 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* invalidate previous percentage */
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
@@ -343,6 +350,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* already this? */
 	if (backend->priv->status == status) {
@@ -364,6 +372,7 @@ pk_backend_get_status (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->status;
 }
 
@@ -377,6 +386,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* we automatically set the transaction status for some infos */
 	if (info == PK_INFO_ENUM_DOWNLOADING) {
@@ -416,6 +426,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
@@ -438,6 +449,7 @@ pk_backend_get_progress (PkBackend *backend,
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	*percentage = backend->priv->last_percentage;
 	*subpercentage = backend->priv->last_subpercentage;
@@ -454,6 +466,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit require-restart %i, %s", restart, details);
 	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
@@ -472,6 +485,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
@@ -492,6 +506,7 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit change-transaction-data %s", data);
 	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
@@ -510,6 +525,7 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	gchar *description_safe;
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
@@ -533,6 +549,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id,
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit files %s, %s", package_id, filelist);
 	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
@@ -549,6 +566,7 @@ pk_backend_updates_changed (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit updates-changed");
 	g_signal_emit (backend, signals [PK_BACKEND_UPDATES_CHANGED], 0);
@@ -565,6 +583,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %i",
 		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
@@ -582,6 +601,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
@@ -599,6 +619,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	va_start (args, format);
 	g_vsnprintf (buffer, 1024, format, args);
@@ -630,6 +651,7 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* remove or add the hal inhibit */
 	if (allow_cancel == TRUE) {
@@ -655,6 +677,7 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->allow_cancel;
 }
 
@@ -666,6 +689,7 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* Should only be called once... */
 	if (backend->priv->role != PK_ROLE_ENUM_UNKNOWN) {
@@ -691,6 +715,7 @@ pk_backend_get_role (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->role;
 }
 
@@ -718,6 +743,7 @@ pk_backend_finished (PkBackend *backend)
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* find out what we just did */
 	role_text = pk_role_enum_to_text (backend->priv->role);
@@ -778,6 +804,7 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* this function is only valid when we have a running transaction */
 	if (backend->priv->c_tid != NULL) {
@@ -800,6 +827,7 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	if (name != NULL && backend->desc->description != NULL) {
 		*name = g_strdup (backend->desc->description);
@@ -818,6 +846,7 @@ pk_backend_get_current_tid (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->c_tid;
 }
 
@@ -829,6 +858,7 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 {
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	pk_debug ("setting backend tid as %s", tid);
 	g_free (backend->priv->c_tid);
@@ -856,11 +886,8 @@ pk_backend_finalize (GObject *object)
 		pk_backend_finished_delay (backend);
 	}
 
-	if (backend->desc != NULL) {
-		if (backend->desc->destroy != NULL) {
-			backend->desc->destroy (backend);
-		}
-	}
+	/* unlock the backend to call destroy */
+	pk_backend_unlock (backend);
 
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);

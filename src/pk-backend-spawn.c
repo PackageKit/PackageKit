@@ -682,6 +682,10 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "invalid name %s", text);
 	}
 
+	/* needed to avoid an error */
+	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+	pk_backend_lock (backend_spawn->priv->backend);
+
 	/************************************************************
 	 **********       Check parsing common error      ***********
 	 ************************************************************/
@@ -823,6 +827,7 @@ libst_backend_spawn (LibSelfTest *test)
 	/* needed to avoid an error */
 	pk_backend_spawn_set_name (backend_spawn, "test_spawn");
 	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+	pk_backend_lock (backend_spawn->priv->backend);
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_spawn->priv->backend, "finished",
