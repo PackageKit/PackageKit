@@ -121,7 +121,6 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			goto out;
 		}
 		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
-pk_error ("moo");
 	} else if (pk_strequal (command, "description") == TRUE) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
@@ -537,6 +536,7 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *script, con
 	gchar *arguments;
 
 	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
 
 	/* get the argument list */
 	va_start (args, first_element);
@@ -608,6 +608,29 @@ pk_backend_spawn_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+static GMainLoop *loop;
+static guint number_packages = 0;
+
+/**
+ * pk_backend_spawn_test_finished_cb:
+ **/
+static void
+pk_backend_spawn_test_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendSpawn *backend_spawn)
+{
+	g_main_loop_quit (loop);
+}
+
+/**
+ * pk_backend_spawn_test_package_cb:
+ **/
+static void
+pk_backend_spawn_test_package_cb (PkBackend *backend, PkInfoEnum info,
+				  const gchar *package_id, const gchar *summary,
+				  PkBackendSpawn *backend_spawn)
+{
+	number_packages++;
+}
+
 void
 libst_backend_spawn (LibSelfTest *test)
 {
@@ -617,6 +640,7 @@ libst_backend_spawn (LibSelfTest *test)
 	GTimer *timer;
 
 	timer = g_timer_new ();
+	loop = g_main_loop_new (NULL, FALSE);
 
 	if (libst_start (test, "PkBackendSpawn", CLASS_AUTO) == FALSE) {
 		return;
@@ -642,7 +666,7 @@ libst_backend_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "set backend name");
-	ret = pk_backend_spawn_set_name (backend_spawn, "dummy");
+	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -652,7 +676,7 @@ libst_backend_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_spawn_get_name (backend_spawn);
-	if (pk_strequal(text, "dummy") == TRUE) {
+	if (pk_strequal(text, "test_spawn") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid name %s", text);
@@ -760,7 +784,7 @@ libst_backend_spawn (LibSelfTest *test)
 	}
 
 	/* needed to avoid an error */
-	pk_backend_set_name (backend_spawn->priv->backend, "dummy");
+	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");
@@ -792,8 +816,47 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "did not validate correctly");
 	}
 
+	/* reset */
+	g_object_unref (backend_spawn);
+	backend_spawn = pk_backend_spawn_new ();
+
+	/* needed to avoid an error */
+	pk_backend_spawn_set_name (backend_spawn, "test_spawn");
+	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+
+	/* so we can spin until we finish */
+	g_signal_connect (backend_spawn->priv->backend, "finished",
+			  G_CALLBACK (pk_backend_spawn_test_finished_cb), backend_spawn);
+	/* so we can count the returned packages */
+	g_signal_connect (backend_spawn->priv->backend, "package",
+			  G_CALLBACK (pk_backend_spawn_test_package_cb), backend_spawn);
+
+	/************************************************************
+	 **********          Use a spawned helper         ***********
+	 ************************************************************/
+	libst_title (test, "test search-name.sh running");
+	ret = pk_backend_spawn_helper (backend_spawn, "search-name.sh", "none", "bar", NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "cannot spawn search-name.sh");
+	}
+
+	/* wait for finished */
+	g_main_loop_run (loop);
+
+	/************************************************************/
+	libst_title (test, "test number of packages");
+	if (number_packages == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %s", number_packages);
+	}
+
+	/* done */
 	g_timer_destroy (timer);
 	g_object_unref (backend_spawn);
+	g_main_loop_unref (loop);
 
 	libst_end (test);
 }
