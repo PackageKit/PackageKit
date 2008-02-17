@@ -1472,9 +1472,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _refresh_yum_cache(self):
         self.StatusChanged(STATUS_REFRESH_CACHE)
+        old_cache_setting = self.yumbase.conf.cache
+        self.yumbase.conf.cache = 0
         self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
         self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
         self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
+        self.yumbase.conf.cache = old_cache_setting
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
