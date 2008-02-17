@@ -527,6 +527,7 @@ libst_spawn (LibSelfTest *test)
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
+	loop = g_main_loop_new (NULL, FALSE);
 
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
@@ -558,7 +559,6 @@ libst_spawn (LibSelfTest *test)
 	}
 
 	/* spin for a bit, todo add timer to break out if we fail */
-	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
 
 	/************************************************************/
@@ -608,7 +608,6 @@ libst_spawn (LibSelfTest *test)
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* spin for a bit, todo add timer to break out if we fail */
-	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
 
 	/************************************************************/
@@ -636,7 +635,6 @@ libst_spawn (LibSelfTest *test)
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* spin for a bit, todo add timer to break out if we fail */
-	loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (loop);
 
 	/************************************************************/
@@ -661,6 +659,7 @@ libst_spawn (LibSelfTest *test)
 
 	g_object_unref (spawn);
 	g_free (path);
+	g_main_loop_unref (loop);
 
 	libst_end (test);
 }
