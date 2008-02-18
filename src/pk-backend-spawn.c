@@ -273,6 +273,12 @@ pk_backend_spawn_parse_common_error (PkBackendSpawn *backend_spawn, const gchar 
 			goto out;
 		}
 		restart_enum = pk_restart_enum_from_text (sections[1]);
+		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
 		pk_backend_require_restart (backend_spawn->priv->backend, restart_enum, sections[2]);
 	} else if (pk_strequal (command, "message") == TRUE) {
 		if (size != 3) {
@@ -752,15 +758,6 @@ libst_backend_spawn (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "test pk_backend_spawn_parse_common_error Error1");
-	ret = pk_backend_spawn_parse_common_error (backend_spawn, "error\ttransaction-error\tdescription text");
-	if (ret == TRUE) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "did not validate correctly");
-	}
-
-	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error failure");
 	ret = pk_backend_spawn_parse_common_error (backend_spawn, "error\tnot-present-woohoo\tdescription text");
 	if (ret == FALSE) {
@@ -785,6 +782,15 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not validate correctly");
+	}
+
+	/************************************************************/
+	libst_title (test, "test pk_backend_spawn_parse_common_error RequireRestart");
+	ret = pk_backend_spawn_parse_common_error (backend_spawn, "requirerestart\tmooville\tdetails about the restart");
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not detect incorrect enum");
 	}
 
 	/* needed to avoid an error */
@@ -855,7 +861,7 @@ libst_backend_spawn (LibSelfTest *test)
 	if (number_packages == 2) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "wrong number of packages %s", number_packages);
+		libst_failed (test, "wrong number of packages %i", number_packages);
 	}
 
 	/* done */
