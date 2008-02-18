@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+NULL =
+
 # We require automake 1.6 at least.
 AUTOMAKE_OPTIONS = 1.6
 
@@ -34,9 +36,10 @@ HFILE_GLOB=$(top_srcdir)/libpackagekit/*.h
 CFILE_GLOB=$(top_srcdir)/libpackagekit/*.c
 
 # Header files to ignore when scanning.
-IGNORE_HFILES = \
-        config.h \
-        pk-marshal.h
+IGNORE_HFILES =						\
+	config.h					\
+	pk-marshal.h					\
+	$(NULL)
 
 # Images to copy into HTML directory.
 HTML_IMAGES=
@@ -51,25 +54,25 @@ expand_content_files=
 # CFLAGS and LDFLAGS for compiling gtkdoc-scangobj with your library.
 # Only needed if you are using gtkdoc-scangobj to dynamically query widget
 # signals and properties.
-INCLUDES = \
-       $(POLKIT_CFLAGS)                \
-       $(DBUS_CFLAGS)                  \
-       $(GLIB_CFLAGS)                  \
-       -I$(top_builddir)/libpackagekit \
-       -I$(top_srcdir)/libpackagekit   \
-       -I$(top_srcdir)/libselftest     \
-       -I$(top_srcdir)/libgbus
+INCLUDES =						\
+	$(POLKIT_CFLAGS)				\
+	$(DBUS_CFLAGS)					\
+	$(GLIB_CFLAGS)					\
+	-I$(top_builddir)/libpackagekit			\
+	-I$(top_srcdir)/libpackagekit			\
+	-I$(top_srcdir)/libselftest			\
+	-I$(top_srcdir)/libgbus				\
+	$(NULL)
 
-PK_LIBS = \
-       $(top_builddir)/libpackagekit/libpackagekit.la
+PK_LIBS = $(top_builddir)/libpackagekit/libpackagekit.la
 
-GTKDOC_LIBS = \
-       $(GLIB_LIBS)    \
-       $(DBUS_LIBS)    \
-       $(SQLITE_LIBS)  \
-       $(PK_LIBS)      \
-       $(POLKIT_LIBS)
-
+GTKDOC_LIBS =						\
+	$(GLIB_LIBS)					\
+	$(DBUS_LIBS)					\
+	$(SQLITE_LIBS)					\
+	$(PK_LIBS)					\
+	$(POLKIT_LIBS)					\
+	$(NULL)
 
 # This includes the standard gtk-doc make rules, copied by gtkdocize.
 include $(top_srcdir)/gtk-doc.make
