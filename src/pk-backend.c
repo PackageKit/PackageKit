@@ -41,7 +41,8 @@
 #include "pk-inhibit.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
-#define PK_BACKEND_PERCENTAGE_INVALID	101
+#define PK_BACKEND_PERCENTAGE_INVALID		101
+#define PK_BACKEND_ERROR_FINISHED_TIMEOUT	500 /* ms */
 
 struct _PkBackendPrivate
 {
@@ -62,6 +63,7 @@ struct _PkBackendPrivate
 	guint			 last_subpercentage;
 	guint			 last_remaining;
 	guint			 signal_finished;
+	guint			 signal_error_timeout;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -609,6 +611,29 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 }
 
 /**
+ * pk_backend_finished_delay:
+ *
+ * We have to call Finished() within PK_BACKEND_ERROR_FINISHED_TIMEOUT of ErrorCode(), enforce this.
+ **/
+static gboolean
+pk_backend_error_timeout_delay_cb (gpointer data)
+{
+	PkBackend *backend = PK_BACKEND (data);
+
+	/* check we have not already finished */
+	if (backend->priv->finished == TRUE) {
+		pk_warning ("consistency error");
+		return FALSE;
+	}
+
+	/* warn the developer */
+	pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+			    "ErrorCode() has to be followed with Finished()!");
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
+/**
  * pk_backend_error_code:
  **/
 gboolean
@@ -632,6 +657,10 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 		return FALSE;
 	}
 	backend->priv->set_error = TRUE;
+
+	/* we only allow a short time to send finished after error_code */
+	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_ERROR_FINISHED_TIMEOUT,
+							     pk_backend_error_timeout_delay_cb, backend);
 
 	/* we mark any transaction with errors as failed */
 	backend->priv->exit = PK_EXIT_ENUM_FAILED;
@@ -763,6 +792,12 @@ pk_backend_finished (PkBackend *backend)
 		return FALSE;
 	}
 
+	/* if we set an error code notifier, clear */
+	if (backend->priv->signal_error_timeout != 0) {
+		g_source_remove (backend->priv->signal_error_timeout);
+		backend->priv->signal_error_timeout = 0;
+	}
+
 	/* check we sent at least one status calls */
 	if (backend->priv->set_error == FALSE &&
 	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
@@ -884,6 +919,11 @@ pk_backend_finalize (GObject *object)
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
 		pk_backend_finished_delay (backend);
+	}
+
+	/* if we set an error code notifier, clear */
+	if (backend->priv->signal_error_timeout != 0) {
+		g_source_remove (backend->priv->signal_error_timeout);
 	}
 
 	/* unlock the backend to call destroy */
@@ -1023,6 +1063,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->c_tid = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
+	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
@@ -1051,12 +1092,36 @@ pk_backend_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+static guint number_messages = 0;
+static GMainLoop *loop;
+
+/**
+ * pk_backend_test_message_cb:
+ **/
+static void
+pk_backend_test_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *details, gpointer data)
+{
+	pk_debug ("details=%s", details);
+	number_messages++;
+}
+
+/**
+ * pk_backend_test_finished_cb:
+ **/
+static void
+pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, gpointer data)
+{
+	g_main_loop_quit (loop);
+}
+
 void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
 	const gchar *text;
 	gboolean ret;
+
+	loop = g_main_loop_new (NULL, FALSE);
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1070,6 +1135,9 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
+	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), NULL);
 
 	/************************************************************/
 	libst_title (test, "get backend name");
@@ -1166,6 +1234,39 @@ libst_backend (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "we did not clear finish!");
+	}
+
+	pk_backend_lock (backend);
+
+	/************************************************************/
+	libst_title (test, "check we enforce finished after error_code");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
+
+	/* wait for finished */
+	g_main_loop_run (loop);
+
+	if (number_messages == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "we messaged %i times!", number_messages);
+	}
+
+	/* reset */
+	pk_backend_reset (backend);
+	number_messages = 0;
+
+	/************************************************************/
+	libst_title (test, "check we enforce finished after two error_codes");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error1");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
+
+	/* wait for finished */
+	g_main_loop_run (loop);
+
+	if (number_messages == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "we messaged %i times!", number_messages);
 	}
 
 	g_object_unref (backend);
