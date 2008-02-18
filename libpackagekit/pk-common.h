@@ -75,6 +75,7 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 gboolean	 pk_filter_check			(const gchar	*filter);
 gchar		*pk_iso8601_present			(void);
 guint		 pk_iso8601_difference			(const gchar	*isodate);
+gboolean	 pk_delay_yield				(gfloat		 delay);
 
 G_END_DECLS
 

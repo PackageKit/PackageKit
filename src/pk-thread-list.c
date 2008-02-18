@@ -36,6 +36,7 @@
 
 #include <glib/gi18n.h>
 #include "pk-debug.h"
+#include "pk-common.h"
 #include "pk-thread-list.h"
 
 static void     pk_thread_list_class_init	(PkThreadListClass *klass);
@@ -220,22 +221,12 @@ gboolean done_func2 = FALSE;
 static gboolean
 test_func1 (PkThreadList *tlist, gpointer data)
 {
-	GTimer *timer;
-	gdouble elapsed;
-
 	if (tlist != GINT_TO_POINTER(0x01) || data != GINT_TO_POINTER(0x02)) {
 		pk_debug ("WRONG PARAMS (%p, %p)", tlist, data);
 		return FALSE;
 	}
 	pk_debug ("started task (%p,%p)", tlist, data);
-	timer = g_timer_new ();
-	do {
-		g_usleep (1000*100);
-		g_thread_yield ();
-		elapsed = g_timer_elapsed (timer, NULL);
-		pk_debug ("elapsed task (%p,%p) = %f", tlist, data, elapsed);
-	} while (elapsed < 2.0);
-	g_timer_destroy (timer);
+	pk_delay_yield (2.0);
 	pk_debug ("exited task (%p,%p)", tlist, data);
 	done_func1 = TRUE;
 	return TRUE;
@@ -244,21 +235,12 @@ test_func1 (PkThreadList *tlist, gpointer data)
 static gboolean
 test_func2 (PkThreadList *tlist, gpointer data)
 {
-	GTimer *timer;
-	gdouble elapsed;
-
 	if (tlist != GINT_TO_POINTER(0x02) || data != GINT_TO_POINTER(0x03)) {
 		pk_debug ("WRONG PARAMS (%p, %p)", tlist, data);
 		return FALSE;
 	}
 	pk_debug ("started task (%p,%p)", tlist, data);
-	timer = g_timer_new ();
-	do {
-		g_usleep (1000*100);
-		elapsed = g_timer_elapsed (timer, NULL);
-		pk_debug ("elapsed task (%p,%p) = %f", tlist, data, elapsed);
-	} while (elapsed < 1.0);
-	g_timer_destroy (timer);
+	pk_delay_yield (1.0);
 	pk_debug ("exited task (%p,%p)", tlist, data);
 	done_func2 = TRUE;
 	return TRUE;

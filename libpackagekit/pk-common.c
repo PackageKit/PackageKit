@@ -557,6 +557,33 @@ pk_strpad_extra (const gchar *data, guint length, guint *extra)
 }
 
 /**
+ * pk_delay_yield:
+ * @delay: the desired delay in seconds
+ *
+ * Return value: success
+ **/
+gboolean
+pk_delay_yield (gfloat delay)
+{
+	GTimer *timer;
+	gdouble elapsed;
+	guint count = 0;
+
+	pk_debug ("started task");
+	timer = g_timer_new ();
+	do {
+		g_usleep (10);
+		g_thread_yield ();
+		elapsed = g_timer_elapsed (timer, NULL);
+		if (++count % 10000 == 0) {
+			pk_debug ("elapsed %.2f", elapsed);
+		}
+	} while (elapsed < delay);
+	g_timer_destroy (timer);
+	return TRUE;
+}
+
+/**
  * pk_strbuild_va:
  * @first_element: The first string item, or NULL
  * @args: the va_list
@@ -639,6 +666,8 @@ libst_common (LibSelfTest *test)
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	pk_delay_yield (2.0);
 
 	/************************************************************
 	 ****************        build var args        **************
