@@ -93,7 +93,7 @@ static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0, };
 /**
  * pk_backend_build_library_path:
  **/
-gchar *
+static gchar *
 pk_backend_build_library_path (PkBackend *backend)
 {
 	gchar *path;
