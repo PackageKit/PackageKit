@@ -360,6 +360,10 @@ pk_client_reset (PkClient *client)
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
+
+	/* clear hash */
+	g_hash_table_remove_all (client->priv->hash);
+
 	pk_package_list_clear (client->priv->package_list);
 	return TRUE;
 }
