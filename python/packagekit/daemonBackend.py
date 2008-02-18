@@ -137,6 +137,34 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print  "MetaData (%s, %s)" % (typ,fname)
 
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ss')
+    def RequireRestart(self,type,details):
+        '''
+        send 'require-restart' signal:
+        @param type:   The level of restart required (system,application,session)
+        @param details:  Optional details about the restart
+        '''
+        print  "RestartRequired (%s, %s)" % (type,details)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ss')
+    def Message(self,type,details):
+        '''
+        send 'message' signal:
+        @param type:   The type of message (warning,notice,daemon)
+        @param details:  Required details about the message
+        '''
+        print  "Message (%s, %s)" % (type,details)
+
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='')
+    def UpdatesChanged(self,typ,fname):
+        '''
+        send 'updates-changed' signal:
+        '''
+        print  "UpdatesChanged ()"
+
 
 #
 # Methods ( client -> engine -> backend )
