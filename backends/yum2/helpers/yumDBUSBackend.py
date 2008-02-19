@@ -236,7 +236,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
 
-
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
@@ -289,7 +288,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 rc = unicode( txt, 'utf-8' )
             except UnicodeDecodeError, e:
                 rc = unicode( txt, 'iso-8859-1' )
-            return rc
+            return rc.encode('utf-8')
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)

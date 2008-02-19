@@ -19,6 +19,7 @@
 #    Seth Vidal <skvidal@fedoraproject.org>
 #    Luke Macken <lmacken@redhat.com>
 #    James Bowes <jbowes@dangerouslyinc.com>
+#    Robin Norwood <rnorwood@redhat.com>
 
 # imports
 
