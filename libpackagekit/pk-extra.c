@@ -60,6 +60,7 @@ struct PkExtraPrivate
 {
 	gchar			*database;
 	gchar			*locale;
+	gchar			*locale_base;
 	gchar			*icon;
 	gchar			*exec;
 	gchar			*summary;
@@ -79,8 +80,25 @@ static gpointer pk_extra_object = NULL;
 gboolean
 pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 {
+	guint i;
 	g_free (extra->priv->locale);
 	extra->priv->locale = g_strdup (locale);
+	extra->priv->locale_base = g_strdup (locale);
+
+	/* we only want the first section to compare */
+	for (i=0; i<10; i++) {
+		if (extra->priv->locale_base[i] == '_') {
+			extra->priv->locale_base[i] = '\0';
+			pk_debug ("locale_base is '%s'", extra->priv->locale_base);
+			break;
+		}
+	}
+
+	/* no point doing it twice if they are the same */
+	if (pk_strequal (extra->priv->locale_base, extra->priv->locale) == TRUE) {
+		g_free (extra->priv->locale_base);
+		extra->priv->locale_base = NULL;
+	}
 	return TRUE;
 }
 
@@ -127,6 +145,32 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 }
 
 /**
+ * pk_extra_get_localised_detail_try:
+ * @extra: a valid #PkExtra instance
+ *
+ * Return value: the current locale
+ **/
+static gboolean
+pk_extra_get_localised_detail_try (PkExtra *extra, const gchar *package, const gchar *locale)
+{
+	gchar *statement;
+	gchar *error_msg = NULL;
+	gint rc;
+
+	statement = g_strdup_printf ("SELECT package, summary, locale FROM localised "
+				     "WHERE package = '%s' AND locale = '%s'",
+				     package, locale);
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_localised_callback, extra, &error_msg);
+	g_free (statement);
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_extra_get_localised_detail:
  * @extra: a valid #PkExtra instance
  *
@@ -135,10 +179,6 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 gboolean
 pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **summary)
 {
-	gchar *statement;
-	gchar *error_msg = NULL;
-	gint rc;
-
 	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
@@ -150,15 +190,12 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **sum
 		return FALSE;
 	}
 
-	statement = g_strdup_printf ("SELECT package, summary, locale FROM localised "
-				     "WHERE package = '%s' AND locale = '%s'",
-				     package, extra->priv->locale);
-	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_localised_callback, extra, &error_msg);
-	g_free (statement);
-	if (rc != SQLITE_OK) {
-		pk_warning ("SQL error: %s\n", error_msg);
-		sqlite3_free (error_msg);
-		return FALSE;
+	/* try with default locale */
+	pk_extra_get_localised_detail_try (extra, package, extra->priv->locale);
+
+	/* try harder with a base locale */
+	if (extra->priv->summary == NULL && extra->priv->locale_base != NULL) {
+		pk_extra_get_localised_detail_try (extra, package, extra->priv->locale_base);
 	}
 
 	if (summary != NULL) {
@@ -448,6 +485,7 @@ pk_extra_init (PkExtra *extra)
 	extra->priv = PK_EXTRA_GET_PRIVATE (extra);
 	extra->priv->database = NULL;
 	extra->priv->locale = NULL;
+	extra->priv->locale_base = NULL;
 	extra->priv->icon = NULL;
 	extra->priv->exec = NULL;
 	extra->priv->summary = NULL;
@@ -469,6 +507,7 @@ pk_extra_finalize (GObject *object)
 	g_free (extra->priv->exec);
 	g_free (extra->priv->summary);
 	g_free (extra->priv->locale);
+	g_free (extra->priv->locale_base);
 	sqlite3_close (extra->priv->db);
 
 	G_OBJECT_CLASS (pk_extra_parent_class)->finalize (object);
@@ -537,8 +576,8 @@ libst_extra (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "set locale");
-	ret = pk_extra_set_locale (extra, "en_GB");
+	libst_title (test, "set locale explicit en");
+	ret = pk_extra_set_locale (extra, "en");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -548,7 +587,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (pk_strequal (text, "en_GB") == TRUE) {
+	if (pk_strequal (text, "en") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "locale was %s", text);
@@ -571,7 +610,25 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve localised data");
 	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
+	if (ret == TRUE && summary != NULL) {
+		libst_success (test, "%s", summary);
+	} else {
+		libst_failed (test, "failed!");
+	}
+
+	/************************************************************/
+	libst_title (test, "set locale implicit en_GB");
+	ret = pk_extra_set_locale (extra, "en_GB");
 	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "retrieve localised data");
+	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
+	if (ret == TRUE && summary != NULL) {
 		libst_success (test, "%s", summary);
 	} else {
 		libst_failed (test, "failed!");
