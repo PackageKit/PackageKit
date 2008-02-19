@@ -266,8 +266,8 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.Exit()
 #
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def RefreshCache(self):
+#                         in_signature='b', out_signature='')
+#    def RefreshCache(self, force):
 #        '''
 #        Implement the {backend}-refresh_cache functionality
 #        '''

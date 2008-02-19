@@ -383,7 +383,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.error(ERROR_NOT_SUPPORTED,
                 "This function is not implemented in this backend")
 
-    def refresh_cache(self):
+    def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
