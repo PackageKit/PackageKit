@@ -429,9 +429,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_AVAILABLE)
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
+
             return
 
         self.Finished(EXIT_SUCCESS)
@@ -568,6 +569,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
 
+        old_cache_setting = self.yumbase.conf.cache
+        self.yumbase.conf.cache = 0
+        self.yumbase.repos.setCache(0)
+
         pct = 0
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
@@ -586,6 +591,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
                 pct+=bump
                 self.PercentageChanged(pct)
+                self.yumbase.repos.populateSack(which=[repo.id], mdtype='otherdata', cacheonly=1)
+                pct+=bump
+                self.PercentageChanged(pct)
 
             self.PercentageChanged(95)
             # Setup categories/groups
@@ -597,6 +605,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
             self.Finished(EXIT_FAILED)
             self.Exit()
+
+        self.yumbase.conf.cache = old_cache_setting
+        self.yumbase.repos.setCache(old_cache_setting)
 
         self.Finished(EXIT_SUCCESS)
 
@@ -631,10 +642,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg,INFO_AVAILABLE)
                             break
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
-            self.Exit()
+
+            return
 
         self.Finished(EXIT_SUCCESS)
 
@@ -829,10 +841,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
             self.Finished(EXIT_FAILED)
-            self.Exit()
+
+            return
 
         self.Finished(EXIT_SUCCESS)
         
@@ -875,9 +888,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showDesc:
                             self._show_package_description(pkg)
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
-            self.Finished(EXIT_FAILED)           
+            self.Finished(EXIT_FAILED)
+
             return
 
         self.Finished(EXIT_SUCCESS)
@@ -1013,8 +1027,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
 
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_NO_CACHE,"Yum cache is invalid")
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+
             return False
        
         return True
@@ -1473,10 +1488,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_REFRESH_CACHE)
         old_cache_setting = self.yumbase.conf.cache
         self.yumbase.conf.cache = 0
+        self.yumbase.repos.setCache(0)
+
         self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
         self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
         self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
+
         self.yumbase.conf.cache = old_cache_setting
+        self.yumbase.repos.setCache(old_cache_setting)
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
