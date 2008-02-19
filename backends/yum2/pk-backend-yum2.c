@@ -360,7 +360,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 }
 
 PK_BACKEND_OPTIONS (
-	"YUM",					/* description */
+	"YUM-DBUS",				/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
