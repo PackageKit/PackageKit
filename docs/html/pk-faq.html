@@ -24,40 +24,43 @@
 <pre>
                   | conary | yum | apt | box | alpm | smart | pisi | zypp |
 ---------------------------------------------------------------------------
-resolve           |   X    |  X  |     |  X  |      |   X   |   X  |   X  |
-refresh-cache     |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
-  \--force        |        |     |     |     |      |       |      |      |
-get-updates       |   X    |  X  |     |  X  |      |   X   |   X  |      |
-update-system     |   X    |  X  |     |  X  |      |   X   |   X  |      |
-search-name       |   X    |  X  |  X  |  X  |  X   |   X   |   X  |   X  |
-search-details    |        |  X  |  X  |  X  |      |   X   |   X  |      |
-search-file       |        |  X  |     |  X  |      |       |   X  |      |
-search-group      |        |  X  |     |     |      |       |   X  |      |
-install-package   |   X    |  X  |     |  X  |  X   |   X   |   X  |   X  |
-install-file      |        |  X  |     |  X  |      |   X   |   X  |      |
-remove-package    |   X    |  X  |     |  X  |  X   |   X   |   X  |      |
-update-package    |   X    |  X  |     |  X  |      |   X   |   X  |      |
-get-depends       |        |  X  |     |  X  |      |   X   |   X  |      |
-  \--recursive    |        |     |     |     |      |       |      |      |
-get-requires      |   X    |  X  |     |  X  |      |       |   X  |      |
-  \--recursive    |        |     |     |     |      |       |      |      |
-get-description   |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
-get-files         |   X    |  X  |     |  X  |      |   X   |   X  |      |
-get-update-detail |        |  X  |     |     |      |       |      |      |
-get-repo-list     |        |  X  |     |  X  |  X   |   X   |   X  |   X  |
-repo-enable       |        |  X  |     |  X  |      |   X   |      |   X  |
-repo-set-data     |        |  X  |     |  X  |      |       |   X  |      |
-cancel-transaction|   X    |  X  |     |     |      |       |   X  |      |
+Resolve           |   X    |  X  |     |  X  |      |   X   |   X  |   X  |
+RefreshCache      |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
+ \Force           |        |     |     |     |      |       |      |      |
+GetUpdates        |   X    |  X  |     |  X  |      |   X   |   X  |      |
+UpdateSystem      |   X    |  X  |     |  X  |      |   X   |   X  |      |
+SearchName        |   X    |  X  |  X  |  X  |  X   |   X   |   X  |   X  |
+SearchDetails     |        |  X  |  X  |  X  |      |   X   |   X  |      |
+SearchFile        |        |  X  |     |  X  |      |       |   X  |      |
+SearchGroup       |        |  X  |     |     |      |       |   X  |      |
+InstallPackage    |   X    |  X  |     |  X  |  X   |   X   |   X  |   X  |
+InstallFile       |        |  X  |     |  X  |      |   X   |   X  |      |
+RemovePackage     |   X    |  X  |     |  X  |  X   |   X   |   X  |      |
+UpdatePackage     |   X    |  X  |     |  X  |      |   X   |   X  |      |
+GetDepends        |        |  X  |     |  X  |      |   X   |   X  |      |
+ \Recursive       |        |     |     |     |      |       |      |      |
+GetRequires       |   X    |  X  |     |  X  |      |       |   X  |      |
+ \Recursive       |        |     |     |     |      |       |      |      |
+GetDescription    |   X    |  X  |  X  |  X  |      |   X   |   X  |      |
+GetFiles          |   X    |  X  |     |  X  |      |   X   |   X  |      |
+GetUpdateDetail   |        |  X  |     |     |      |       |      |      |
+GetRepoList       |        |  X  |     |  X  |  X   |   X   |   X  |   X  |
+RepoEnable        |        |  X  |     |  X  |      |   X   |      |   X  |
+RepoSetData       |        |  X  |     |  X  |      |       |   X  |      |
+Cancel            |   X    |  X  |     |     |      |       |   X  |      |
+ServicePack       |        |     |     |     |      |       |      |      |
 </pre>
 
 <h4>Filters</h4>
 <pre>
                   | conary | yum | apt | box | alpm | smart | pisi | zypp |
 ---------------------------------------------------------------------------
-installed         |   X    |  X  |  X  |  X  |  X   |   X   |   X  |      |
-development       |        |  X  |  X  |  X  |      |       |      |      |
-gui               |        |  X  |  X  |  X  |      |       |   X  |      |
-free              |        |     |     |     |      |       |      |      |
+Installed         |   X    |  X  |  X  |  X  |  X   |   X   |   X  |      |
+Development       |        |  X  |  X  |  X  |      |       |      |      |
+GUI               |        |  X  |  X  |  X  |      |       |   X  |      |
+Free              |        |     |     |     |      |       |      |      |
+Visible           |        |     |     |     |      |       |      |      |
+Supported         |        |     |     |     |      |       |      |      |
 </pre>
 
 <h3>Why doesn't PackageKit work with SELinux?</h3>
