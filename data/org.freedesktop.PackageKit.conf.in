@@ -20,7 +20,7 @@
   </policy>
 
   <!-- This will not work if pam_console support is not enabled -->
-  <policy at_console="true">
+  <policy>
     <allow send_interface="org.freedesktop.PackageKit"/>
   </policy>
 

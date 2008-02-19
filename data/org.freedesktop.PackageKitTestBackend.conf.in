@@ -12,7 +12,7 @@
     <allow send_destination="org.freedesktop.PackageKitTestBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
-  <policy at_console="true">
+  <policy>
     <deny send_destination="org.freedesktop.PackageKitTestBackend"/>
     <deny send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
