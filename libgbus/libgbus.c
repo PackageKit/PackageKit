@@ -224,6 +224,7 @@ libgbus_finalize (GObject *object)
 	if (libgbus->priv->proxy != NULL) {
 		g_object_unref (libgbus->priv->proxy);
 	}
+	G_OBJECT_CLASS (libgbus_parent_class)->finalize (object);
 }
 
 /**
