@@ -99,7 +99,7 @@ enum {
 	PK_RUNNER_LAST_SIGNAL
 };
 
-static guint signals [PK_RUNNER_LAST_SIGNAL] = { 0, };
+static guint signals [PK_RUNNER_LAST_SIGNAL] = { 0 };
 
 /**
  * pk_runner_get_package_list:

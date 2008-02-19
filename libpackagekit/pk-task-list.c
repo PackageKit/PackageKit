@@ -70,7 +70,7 @@ typedef enum {
 	PK_TASK_LIST_LAST_SIGNAL
 } PkSignals;
 
-static guint signals [PK_TASK_LIST_LAST_SIGNAL] = { 0, };
+static guint signals [PK_TASK_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTaskList, pk_task_list, G_TYPE_OBJECT)
 

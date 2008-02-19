@@ -56,7 +56,7 @@ enum {
 };
 
 static gpointer pk_inhibit_object = NULL;
-static guint signals [PK_INHIBIT_LAST_SIGNAL] = { 0, };
+static guint signals [PK_INHIBIT_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkInhibit, pk_inhibit, G_TYPE_OBJECT)
 

@@ -71,7 +71,7 @@ typedef enum {
 	PK_JOB_LIST_LAST_SIGNAL
 } PkSignals;
 
-static guint signals [PK_JOB_LIST_LAST_SIGNAL] = { 0, };
+static guint signals [PK_JOB_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkJobList, pk_job_list, G_TYPE_OBJECT)
 

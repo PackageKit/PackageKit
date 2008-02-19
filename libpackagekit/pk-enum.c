@@ -44,7 +44,7 @@ static PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_FAILED,			"failed"},
 	{PK_EXIT_ENUM_QUIT,			"quit"},
 	{PK_EXIT_ENUM_KILL,			"kill"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_status[] = {
@@ -66,7 +66,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_REQUEST,		"request"},
 	{PK_STATUS_ENUM_FINISHED,		"finished"},
 	{PK_STATUS_ENUM_CANCEL,			"cancel"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_role[] = {
@@ -94,7 +94,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_error[] = {
@@ -122,7 +122,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_FAILED_INITIALIZATION,	"failed-initialization"},
 	{PK_ERROR_ENUM_FAILED_FINALISE,		"failed-finalise"},
 	{PK_ERROR_ENUM_FAILED_CONFIG_PARSING,	"failed-config-parsing"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_restart[] = {
@@ -131,7 +131,7 @@ static PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
 	{PK_RESTART_ENUM_SESSION,		"session"},
 	{PK_RESTART_ENUM_APPLICATION,		"application"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_message[] = {
@@ -139,7 +139,7 @@ static PkEnumMatch enum_message[] = {
 	{PK_MESSAGE_ENUM_NOTICE,		"notice"},
 	{PK_MESSAGE_ENUM_WARNING,		"warning"},
 	{PK_MESSAGE_ENUM_DAEMON,		"daemon"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_filter[] = {
@@ -157,7 +157,7 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_FREE,		"~free"},
 	{PK_FILTER_ENUM_NOT_VISIBLE,		"~visible"},
 	{PK_FILTER_ENUM_NOT_SUPPORTED,		"~supported"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_group[] = {
@@ -190,7 +190,7 @@ static PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_NETWORK,			"network"},
 	{PK_GROUP_ENUM_MAPS,			"maps"},
 	{PK_GROUP_ENUM_REPOS,			"repos"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_freq[] = {
@@ -199,7 +199,7 @@ static PkEnumMatch enum_freq[] = {
 	{PK_FREQ_ENUM_DAILY,			"daily"},
 	{PK_FREQ_ENUM_WEEKLY,			"weekly"},
 	{PK_FREQ_ENUM_NEVER,			"never"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_update[] = {
@@ -207,7 +207,7 @@ static PkEnumMatch enum_update[] = {
 	{PK_UPDATE_ENUM_ALL,			"all"},
 	{PK_UPDATE_ENUM_SECURITY,		"security"},
 	{PK_UPDATE_ENUM_NONE,			"none"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_info[] = {
@@ -227,13 +227,13 @@ static PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_REMOVING,			"removing"},
 	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
 	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
-	{0, NULL},
+	{0, NULL}
 };
 
 static PkEnumMatch enum_free_licenses[] = {
@@ -353,7 +353,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_MPLUS,                "mplus"},
 	{PK_LICENSE_ENUM_STIX,                 "STIX"},
 	{PK_LICENSE_ENUM_XANO,                 "XANO"},
-	{0, NULL},
+	{0, NULL}
 };
 
 

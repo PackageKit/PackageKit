@@ -58,7 +58,7 @@ enum {
 	PK_TRANSACTION_LIST_LAST_SIGNAL
 };
 
-static guint signals [PK_TRANSACTION_LIST_LAST_SIGNAL] = { 0, };
+static guint signals [PK_TRANSACTION_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 

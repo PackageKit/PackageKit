@@ -76,7 +76,7 @@ enum {
 	PK_SPAWN_LAST_SIGNAL
 };
 
-static guint	     signals [PK_SPAWN_LAST_SIGNAL] = { 0, };
+static guint	     signals [PK_SPAWN_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkSpawn, pk_spawn, G_TYPE_OBJECT)
 

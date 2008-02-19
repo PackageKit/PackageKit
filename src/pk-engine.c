@@ -100,7 +100,7 @@ enum {
 	PK_ENGINE_LAST_SIGNAL
 };
 
-static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0, };
+static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
 

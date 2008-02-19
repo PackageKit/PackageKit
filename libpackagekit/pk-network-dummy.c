@@ -68,7 +68,7 @@ enum {
 	PK_NETWORK_LAST_SIGNAL
 };
 
-static guint signals [PK_NETWORK_LAST_SIGNAL] = { 0, };
+static guint signals [PK_NETWORK_LAST_SIGNAL] = { 0 };
 static gpointer pk_network_object = NULL;
 
 G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)

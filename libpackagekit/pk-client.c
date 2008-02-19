@@ -109,7 +109,7 @@ typedef enum {
 	PK_CLIENT_LAST_SIGNAL
 } PkSignals;
 
-static guint signals [PK_CLIENT_LAST_SIGNAL] = { 0, };
+static guint signals [PK_CLIENT_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
