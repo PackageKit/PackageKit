@@ -23,7 +23,7 @@ typedef zypp::Pattern::constPtr		ZyppPattern;
 typedef zypp::Language::constPtr	ZyppLanguage;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
-typedef std::set<zypp::PoolItem_Ref> Candidates;
+typedef std::set<zypp::PoolItem> Candidates;
 
 zypp::ZYpp::Ptr get_zypp ();
 

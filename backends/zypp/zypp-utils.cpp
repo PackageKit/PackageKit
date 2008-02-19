@@ -17,6 +17,7 @@
 #include <zypp/Pathname.h>
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
+#include <zypp/sat/Pool.h>
 
 #include <pk-backend.h>
 
@@ -66,9 +67,13 @@ zypp_build_pool (gboolean include_local)
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 
 	if (include_local == TRUE) {
-		// Add local resolvables
-		zypp::Target_Ptr target = zypp->target ();
-		zypp->addResolvables (target->resolvables (), TRUE);
+                //FIXME have to wait for fix in zypp (repeated loading of target)
+                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::sat::Repo::norepo)
+                {
+		        // Add local resolvables
+		        zypp::Target_Ptr target = zypp->target ();
+		        target->load ();
+                }
 	}
 
 	// Add resolvables from enabled repos
@@ -82,12 +87,13 @@ zypp_build_pool (gboolean include_local)
 			// skip disabled repos
 			if (repo.enabled () == false)
 				continue;
-
-			zypp::Repository repository = manager.createFromCache (repo);
-			zypp->addResolvables (repository.resolvables ());
+                        
+                        //FIXME see above, skip already cached repos
+                        if (zypp::sat::Pool::instance().reposFind( repo.alias ()) == zypp::sat::Repo::norepo)
+                                manager.loadFromCache (repo);
 		}
-//	} catch (const zypp::repo::RepoNoAliasException &ex) {
-//	} catch (const zypp::repo::RepoNotCachedException &ex) {
+	} catch (const zypp::repo::RepoNoAliasException &ex) {
+                fprintf (stderr, "Can't figure an alias to look in cache\n");
 	} catch (const zypp::Exception &ex) {
 fprintf (stderr, "TODO: Handle exceptions: %s\n", ex.asUserString ().c_str ());
 	}
@@ -103,8 +109,8 @@ zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 	zypp::ResPool pool = zypp_build_pool (include_local);
 
 	std::string name (package_name);
-	for (zypp::ResPool::byName_iterator it = pool.byNameBegin (name);
-			it != pool.byNameEnd (name); it++) {
+	for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, name);
+			it != pool.byIdentEnd (zypp::ResKind::package, name); it++) {
 		zypp::PoolItem item = (*it);
 		v->push_back (item);
 	}

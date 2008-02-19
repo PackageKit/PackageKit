@@ -47,7 +47,12 @@
 #include <zypp/RelCompare.h>
 #include <zypp/ResFilters.h>
 #include <zypp/base/Algorithm.h>
-#include <sqlite3.h>
+#include <zypp/target/rpm/RpmDb.h>
+#include <zypp/target/rpm/RpmHeader.h>
+#include <zypp/target/rpm/RpmException.h>
+
+#include <zypp/sat/Solvable.h>
+#include <zypp/sat/Capabilities.h>
 
 #include <map>
 #include <list>
@@ -178,16 +183,6 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 static gboolean
 backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 {
-	// Note: I talked with duncanmv in #zypp and he suggested the
-	// way we could suppor this method would be to mark the desired
-	// package to be installed, run the dependency solver, and then
-	// check the other packages that got marked to install:
-/*
-08:55 < duncanmv> run the solver
-08:56 < duncanmv> and then iterate the poll and look packages which status isBySolver() true
-08:56 < duncanmv> which are the packages marked by the solver
-08:56 < duncanmv> you can say that status toBeInstalled() and bySolver are requires
-*/
 	PkBackend *backend;
 	backend = pk_backend_thread_get_backend (thread);
 
@@ -208,42 +203,27 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
 
-	// Load resolvables from all the enabled repositories
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		// TODO: Split the code up so it's not all just in one bit try/catch
+                pk_backend_set_percentage (backend, 20);
+	        // Load resolvables from all the enabled repositories
+                zypp::ResPool pool = zypp_build_pool(true);
 
-		repos = manager.knownRepositories();
-		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
-			zypp::RepoInfo repo (*it);
-
-			// skip disabled repos
-			if (repo.enabled () == false)
-				continue;
-
-			zypp::Repository repository = manager.createFromCache (*it);
-			zypp->addResolvables (repository.resolvables ());
-		}
-
-		zypp::PoolItem_Ref pool_item;
+		zypp::PoolItem pool_item;
 		gboolean pool_item_found = FALSE;
 		// Iterate over the resolvables and mark the one we want to check its dependencies
-		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
-				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-			zypp::ui::Selectable::Ptr selectable = *it;
+		for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+				it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+			zypp::PoolItem selectable = *it;
 			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
-				// This package matches the name we're looking for and
-				// is available for update/install.
-				zypp::ResObject::constPtr installable = selectable->candidateObj();
-				const char *edition_str = installable->edition().asString().c_str();
+				// This package matches the name we're looking
+				const char *edition_str = selectable->edition ().asString ().c_str();
+		                pk_backend_set_percentage (backend, 20);
 
 				if (strcmp (edition_str, pi->version) == 0) {
 					// this is the one, mark it to be installed
-					selectable->set_status (zypp::ui::S_Install);
-fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
-					pool_item = selectable->candidatePoolItem ();
+                                        fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
+					pool_item = selectable;
 					pool_item_found = TRUE;
 					break; // Found it, get out of the for loop
 				}
@@ -260,39 +240,68 @@ fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
         	        return FALSE;
 		}
 
-//printf ("Resolving dependencies...\n");
 		// Gather up any dependencies
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-		if (zypp->resolver ()->resolvePool () == FALSE) {
-			// Manual intervention required to resolve dependencies
-			// TODO: Figure out what we need to do with PackageKit
-			// to pull off interactive problem solving.
-			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
-			g_free (d->package_id);
-			g_free (d);
-			pk_package_id_free (pi);
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
+	        
 		pk_backend_set_percentage (backend, 60);
 
-		zypp::solver::detail::ItemCapKindList installList = zypp->resolver ()->installs (pool_item);
-		for (zypp::solver::detail::ItemCapKindList::const_iterator it = installList.begin ();
-				it != installList.end ();
-				++it) {
-			gchar *package_id;
-			package_id = pk_package_id_build (it->item->name ().c_str (),
-							  it->item->edition ().asString ().c_str (),
-							  it->item->arch ().asString ().c_str (),
-							  "opensuse");
-			pk_backend_package (backend,
-				PK_INFO_ENUM_AVAILABLE, // TODO: Figure out how to determine whether a package is installed or not
-				package_id,
-				"TODO: Figure out how to get a package description here.");
-			g_free (package_id);
-		}
+                // get dependencies
 
+                zypp::sat::Solvable solvable = pool_item.satSolvable ();
+                zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
+                
+                std::map<std::string, zypp::sat::Solvable> caps;
+
+		for (zypp::Capabilities::const_iterator it = req.begin ();
+				it != req.end ();
+				++it) {
+                        zypp::sat::WhatProvides provider (*it);
+                        for (zypp::sat::WhatProvides::const_iterator it2 = provider.begin ();
+                            it2 != provider.end ();
+                            it2++) {
+
+                                // Adding Packages only one time
+                                std::map<std::string, zypp::sat::Solvable>::iterator mIt;
+                                mIt = caps.find(it2->name ());
+                                if( mIt != caps.end()){
+                                        if(it2->isSystem ()){
+                                                caps.erase (mIt);
+                                                caps[it2->name ()] = *it2;
+                                        }                       
+                                }else{
+                                        caps[it2->name ()] = *it2;
+                                }  
+                              
+                        }
+                }
+                // print dependencies
+                
+                for (std::map<std::string, zypp::sat::Solvable>::iterator it = caps.begin ();
+                    it != caps.end();
+                    it++) {
+
+                        gchar *package_id;
+                        package_id = pk_package_id_build ( it->second.name ().c_str(),
+                                                           it->second.edition ().asString ().c_str(),
+                                                           it->second.arch ().c_str(),
+                                                           "opensuse");
+                        
+                        zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
+
+                        if (it->second.isSystem ()) {
+                                pk_backend_package (backend,
+                                                    PK_INFO_ENUM_INSTALLED,
+                                                    package_id,
+                                                    item->description ().c_str());
+                        }else{
+                                pk_backend_package (backend,
+                                                    PK_INFO_ENUM_AVAILABLE,
+                                                    package_id,
+                                                    "");
+                        }
+                        g_free (package_id);
+                }
+                  
 		pk_backend_set_percentage (backend, 100);
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
@@ -424,9 +433,9 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
 {
 	public:
-		zypp::PoolItem_Ref best;
+		zypp::PoolItem best;
 
-	bool operator() (zypp::PoolItem_Ref provider)
+	bool operator() (zypp::PoolItem provider)
 	{
 		if ((provider.status ().isLocked () == FALSE) && (!best || best->edition ().compare (provider->edition ()) < 0)) {
 			best = provider;
@@ -444,13 +453,13 @@ class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
  * Similar to zypp::solver::detail::Helper::findUpdateItem
  * but that allows changing the arch (#222140).
  */
-static zypp::PoolItem_Ref
-findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem_Ref item)
+static zypp::PoolItem
+findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem item)
 {
 	LookForArchUpdate info;
 
-	invokeOnEach (pool.byNameBegin (item->name ()),
-			pool.byNameEnd (item->name ()),
+	invokeOnEach (pool.byIdentBegin (item),
+			pool.byIdentEnd (item),
 			// get uninstalled, equal kind and arch, better edition
 			zypp::functor::chain (
 				zypp::functor::chain (
@@ -483,7 +492,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	for (; it != e; ++it) {
 		if (it->status ().isUninstalled ())
 			continue;
-		zypp::PoolItem_Ref candidate = findArchUpdateItem (pool, *it);
+		zypp::PoolItem candidate = findArchUpdateItem (pool, *it);
 		if (!candidate.resolvable ())
 			continue;
 
@@ -540,35 +549,14 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
                 return FALSE;
         }
 
-	zypp::Target_Ptr target;
-
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
 
-	target = zypp->target ();
-
-	// Load all the local system "resolvables" (packages)
-	zypp->addResolvables (target->resolvables(), TRUE);
-	pk_backend_set_percentage (backend, 10);
-
-	// Load resolvables from all the enabled repositories
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
 	try
 	{
-		// TODO: Split the code up so it's not all just in one bit try/catch
 
-		repos = manager.knownRepositories();
-		for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++) {
-			zypp::RepoInfo repo (*it);
-
-			// skip disabled repos
-			if (repo.enabled () == false)
-				continue;
-
-			zypp::Repository repository = manager.createFromCache (*it);
-			zypp->addResolvables (repository.resolvables ());
-		}
+                zypp::ResPool pool = zypp_build_pool (TRUE);
+	        pk_backend_set_percentage (backend, 10);
 
 		// Iterate over the resolvables and mark the ones we want to install
 		//zypp->start ();
@@ -775,11 +763,9 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 	target = zypp->target ();
 
 	// Load all the local system "resolvables" (packages)
-	zypp->addResolvables (target->resolvables(), TRUE);
+        target->load ();
 	pk_backend_set_percentage (backend, 10);
 
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
 	try
 	{
 		// Iterate over the resolvables and mark the ones we want to remove
@@ -1164,17 +1150,122 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 	pk_backend_finished (backend);
 }
 
+static gboolean
+backend_get_files_thread (PkBackendThread *thread, gpointer data) {
+        
+        PkPackageId *pi;
+        PkBackend *backend;
+        
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	ThreadData *d = (ThreadData*) data;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	std::vector<zypp::PoolItem> *v;
+	v = zypp_get_packages_by_name ((const gchar *)pi->name, TRUE);
+
+	zypp::ResObject::constPtr package;
+	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+			it != v->end (); it++) {
+		zypp::ResObject::constPtr pkg = (*it);
+		const char *version = pkg->edition ().asString ().c_str ();
+		if (strcmp (pi->version, version) == 0) {
+			package = pkg;
+			break;
+		}
+	}
+
+	delete (v);
+
+	if (package == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+        std::string temp;
+        if (package->isSystem ()){
+                zypp::Target_Ptr target;
+
+               	zypp::ZYpp::Ptr zypp;
+              	zypp = get_zypp ();
+
+               	target = zypp->target ();
+                try {
+                        zypp::target::rpm::RpmDb &rpm = target->rpmDb (); 
+                        rpm.initDatabase();
+                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+                        rpm.getData (package-> name (), package->edition (), rpmHeader);
+                        std::list<std::string> files = rpmHeader->tag_filenames ();
+
+                        for (std::list<std::string>::iterator it = files.begin (); it != files.end (); it++) {
+                                temp.append (*it);
+                                temp.append (";");
+                        }
+                        rpm.closeDatabase();
+                } catch (const zypp::target::rpm::RpmException &ex) {
+		        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+                        pk_backend_finished (backend);
+		        return FALSE;
+                }
+        }else{
+                temp = "Only available for installed packages";
+        }
+
+	pk_backend_files (backend,
+	        	d->package_id,		// package_id
+			temp.c_str ());		// file_list
+
+        pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+	pk_backend_finished (backend);
+
+        return TRUE;
+}
+
+/**
+  * backend_get_files:
+  */
+static void
+backend_get_files(PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+
+        ThreadData *data = g_new0(ThreadData, 1);
+        if (data == NULL) {
+                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_files");
+                pk_backend_finished (backend);
+        } else {
+                data->package_id = g_strdup(package_id);
+                pk_backend_thread_create (thread, backend_get_files_thread, data);
+        }
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
-	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>",	/* author */
-	backend_initialize,			/* initialize */
+	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>, Stefan Haas <shaas@suse.de>",	/* author */
+	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
-	NULL,					/* get_files */
+	backend_get_files,			/* get_files */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
@@ -1192,5 +1283,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
-	NULL					/* repo_set_data */
+	NULL,					/* repo_set_data */
+        NULL                                    /* service_pack */
 );
