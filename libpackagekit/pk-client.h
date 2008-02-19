@@ -128,6 +128,8 @@ gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id);
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*full_path);
+gboolean	 pk_client_service_pack			(PkClient	*client,
+							 const gchar	*location);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*package);

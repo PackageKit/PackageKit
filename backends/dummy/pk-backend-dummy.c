@@ -550,6 +550,17 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_service_pack:
+ */
+static void
+backend_service_pack (PkBackend *backend, const gchar *location)
+{
+	g_return_if_fail (backend != NULL);
+	pk_warning ("service pack on %s device", location);
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -578,6 +589,7 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data			/* repo_set_data */
+	backend_repo_set_data,			/* repo_set_data */
+	backend_service_pack			/* service_pack */
 );
 

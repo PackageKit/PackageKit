@@ -27,6 +27,15 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.service-pack">
+    <description>Update from service pack</description>
+    <message>System policy prevents updating from service pack</message>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.update-package">
     <description>Update package</description>
     <message>System policy prevents updating package</message>

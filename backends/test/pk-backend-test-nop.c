@@ -51,6 +51,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
-	NULL					/* repo_set_data */
+	NULL,					/* repo_set_data */
+	NULL					/* service_pack */
 );
 

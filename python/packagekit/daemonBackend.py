@@ -307,6 +307,17 @@ class PackageKitBaseBackend(dbus.service.Object):
 #
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
+#    def ServicePack (self, location):
+#        '''
+#        Implement the {backend}-service-pack functionality
+#        Install the package containing the inst_file file
+#        Needed to be implemented in a sub class
+#        '''
+#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
+#        self.Exit()
+#
+#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+#                         in_signature='s', out_signature='')
 #    def UpdatePackage(self, package):
 #        '''
 #        Implement the {backend}-update functionality

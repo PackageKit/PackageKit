@@ -1038,6 +1038,35 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 }
 
 /**
+ * pk_backend_dbus_service_pack:
+ **/
+gboolean
+pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location)
+{
+	DBusGProxyCall *call;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (location != NULL, FALSE);
+
+	/* lock the backend */
+	pk_backend_dbus_lock (backend_dbus);
+
+	/* do the action */
+	call = dbus_g_proxy_begin_call (backend_dbus->priv->proxy, "ServicePack",
+					pk_backend_dbus_proxy_async_callback,
+					backend_dbus, NULL,
+					G_TYPE_STRING, location,
+					G_TYPE_INVALID, G_TYPE_INVALID);
+
+	/* unlock the backend if we failed */
+	if (call == NULL) {
+		pk_backend_dbus_unlock (backend_dbus);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_dbus_finalize:
  **/
 static void

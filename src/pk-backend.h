@@ -146,7 +146,8 @@ typedef struct {
 	void		(*get_repo_list)	(PkBackend *backend);
 	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
 	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
-	gpointer	padding[12];
+	void		(*service_pack)		(PkBackend *backend, const gchar *location);
+	gpointer	padding[11];
 } PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy,						\
@@ -154,7 +155,7 @@ typedef struct {
 			   get_requires, get_update_detail, get_updates, install_package, install_file,		\
 			   refresh_cache, remove_package, resolve, rollback, search_details,			\
 			   search_file, search_group, search_name, update_package, update_system,		\
-			   get_repo_list, repo_enable, repo_set_data) 						\
+			   get_repo_list, repo_enable, repo_set_data, service_pack)				\
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 						\
 		description,		\
 		author,			\
@@ -184,6 +185,7 @@ typedef struct {
 		get_repo_list,		\
 		repo_enable,		\
 		repo_set_data,		\
+		service_pack,		\
 		{0} 			\
 	}
 

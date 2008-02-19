@@ -310,6 +310,15 @@ class PackageKit(PackageKitDbusInterface):
 		"""
 		return self.pk_iface.InstallFile(self.tid(),full_path)
 
+	@dbusException
+	@job_id
+	def ServicePack(self,location):
+		"""
+		Updates a service pack from a location
+		Asynchronous
+		"""
+		return self.pk_iface.ServicePack(self.tid(),location)
+
 ## Do things or query transactions
 	@dbusException
 	@job_id

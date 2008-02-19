@@ -378,6 +378,7 @@ PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* repo_enable */
-	backend_repo_set_data			/* repo_set_data */
+	backend_repo_set_data,			/* repo_set_data */
+	NULL					/* service_pack */
 );
 

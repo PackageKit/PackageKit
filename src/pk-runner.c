@@ -310,6 +310,9 @@ pk_runner_set_running (PkRunner *runner)
 	} else if (runner->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		desc->install_file (runner->priv->backend,
 					     runner->priv->cached_full_path);
+	} else if (runner->priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+		desc->service_pack (runner->priv->backend,
+				    runner->priv->cached_full_path);
 	} else if (runner->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		desc->refresh_cache (runner->priv->backend,
 					      runner->priv->cached_force);
@@ -490,6 +493,23 @@ pk_runner_install_file (PkRunner *runner, const gchar *full_path)
 	runner->priv->cached_full_path = g_strdup (full_path);
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_INSTALL_FILE);
+	return TRUE;
+}
+
+/**
+ * pk_runner_service_pack:
+ */
+gboolean
+pk_runner_service_pack (PkRunner *runner, const gchar *location)
+{
+	g_return_val_if_fail (runner != NULL, FALSE);
+	if (runner->priv->backend->desc->service_pack == NULL) {
+		pk_debug ("Not implemented yet: ServicePack");
+		return FALSE;
+	}
+	runner->priv->cached_full_path = g_strdup (location);
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_runner_set_role (runner, PK_ROLE_ENUM_SERVICE_PACK);
 	return TRUE;
 }
 

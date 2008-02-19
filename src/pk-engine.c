@@ -1880,6 +1880,59 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 }
 
 /**
+ * pk_engine_service_pack:
+ **/
+void
+pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *location,
+			DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	GError *error;
+	gchar *sender;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("ServicePack method called: %s, %s", tid, location);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_SERVICE_PACK, &error);
+	g_free (sender);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
+
+	ret = pk_runner_service_pack (item->runner, location);
+	if (ret == FALSE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	pk_engine_item_commit (engine, item);
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_engine_rollback:
  **/
 void

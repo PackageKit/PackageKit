@@ -2163,6 +2163,82 @@ pk_client_install_file (PkClient *client, const gchar *file)
 	return ret;
 }
 
+
+/**
+ * pk_client_service_pack_action:
+ **/
+gboolean
+pk_client_service_pack_action (PkClient *client, const gchar *location, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	*error = NULL;
+	ret = dbus_g_proxy_call (client->priv->proxy, "ServicePack", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, location,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (ret == FALSE) {
+		/* abort as the DBUS method failed */
+		pk_warning ("ServicePack failed!");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_client_service_pack:
+ **/
+gboolean
+pk_client_service_pack (PkClient *client, const gchar *location)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client);
+	if (ret == FALSE) {
+		pk_warning ("Failed to get transaction ID");
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_SERVICE_PACK;
+	client->priv->xcached_full_path = g_strdup (location);
+
+	/* hopefully do the operation first time */
+	ret = pk_client_service_pack_action (client, location, &error);
+
+	/* we were refused by policy then try to get auth */
+	if (ret == FALSE) {
+		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
+			/* retry the action if we succeeded */
+			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
+				pk_debug ("gained priv");
+				g_error_free (error);
+				/* do it all over again */
+				ret = pk_client_service_pack_action (client, location, &error);
+			}
+		}
+		if (error != NULL) {
+			pk_debug ("ERROR: %s", error->message);
+			g_error_free (error);
+		}
+	}
+
+	/* spin until finished */
+	if (ret == TRUE && client->priv->synchronous == TRUE) {
+		g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
 /**
  * pk_client_get_repo_list:
  */
@@ -2679,6 +2755,8 @@ pk_client_requeue (PkClient *client)
 		pk_client_install_package (client, client->priv->xcached_package_id);
 	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		pk_client_install_file (client, client->priv->xcached_full_path);
+	} else if (client->priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+		pk_client_service_pack (client, client->priv->xcached_full_path);
 	} else if (client->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		pk_client_refresh_cache (client, client->priv->xcached_force);
 	} else if (client->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
