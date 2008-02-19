@@ -324,8 +324,8 @@ pk_client_package_buffer_get_size (PkClient *client)
 PkPackageItem *
 pk_client_package_buffer_get_item (PkClient *client, guint item)
 {
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client != NULL, NULL);
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (client->priv->use_buffer == FALSE) {
 		return NULL;
 	}
@@ -2460,8 +2460,8 @@ pk_client_get_actions (PkClient *client)
 	gchar *actions;
 	PkEnumList *elist;
 
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client != NULL, NULL);
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
@@ -2593,8 +2593,8 @@ pk_client_get_groups (PkClient *client)
 	gchar *groups;
 	PkEnumList *elist;
 
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client != NULL, NULL);
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
@@ -2662,8 +2662,8 @@ pk_client_get_filters (PkClient *client)
 	gchar *filters;
 	PkEnumList *elist;
 
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (client != NULL, NULL);
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);

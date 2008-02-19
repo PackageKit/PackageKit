@@ -498,7 +498,7 @@ pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *sc
 const gchar *
 pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (backend_spawn != NULL, NULL);
 	return backend_spawn->priv->name;
 }
 

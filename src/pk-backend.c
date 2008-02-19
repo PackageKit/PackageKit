@@ -100,7 +100,7 @@ pk_backend_build_library_path (PkBackend *backend)
 	gchar *filename;
 
 	g_return_val_if_fail (backend != NULL, NULL);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
 #if PK_BUILD_LOCAL
@@ -881,7 +881,7 @@ pk_backend_get_current_tid (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return backend->priv->c_tid;
 }
 

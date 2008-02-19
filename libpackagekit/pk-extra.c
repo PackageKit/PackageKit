@@ -108,7 +108,7 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 	gchar *value;
 
 	g_return_val_if_fail (extra != NULL, 0);
-	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
 
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
@@ -182,7 +182,7 @@ pk_extra_detail_package_callback (void *data, gint argc, gchar **argv, gchar **c
 	gchar *value;
 
 	g_return_val_if_fail (extra != NULL, 0);
-	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
 
 	for (i=0; i<argc; i++) {
 		col = col_name[i];

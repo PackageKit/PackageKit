@@ -144,8 +144,8 @@ pk_job_list_refresh (PkJobList *jlist)
 const gchar **
 pk_job_list_get_latest (PkJobList *jlist)
 {
-	g_return_val_if_fail (jlist != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
+	g_return_val_if_fail (jlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), NULL);
 	return (const gchar **) jlist->priv->array;
 }
 
