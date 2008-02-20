@@ -23,6 +23,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -37,6 +38,8 @@
 #include "pk-interface.h"
 
 static guint exit_idle_time;
+static PkEngine *engine = NULL;
+static PkBackend *backend = NULL;
 
 /**
  * pk_object_register:
@@ -132,6 +135,32 @@ pk_main_timeout_check_cb (PkEngine *engine)
 }
 
 /**
+ * pk_main_sigint_handler:
+ **/
+static void
+pk_main_sigint_handler (int sig)
+{
+	pk_debug ("Handling SIGINT");
+
+	/* restore default ASAP, as the finalisers might hang */
+	signal (SIGINT, SIG_DFL);
+
+	/* unlock the backend to call destroy - TODO: we shouldn't have to do this! */
+	pk_backend_unlock (backend);
+
+	/* cleanup */
+	g_object_unref (backend);
+	g_object_unref (engine);
+
+	/* give the backend a sporting chance */
+	g_usleep (500*1000);
+
+	/* kill ourselves */
+	pk_debug ("Retrying SIGINT");
+	kill (getpid (), SIGINT);
+}
+
+/**
  * main:
  **/
 int
@@ -148,8 +177,6 @@ main (int argc, char *argv[])
 	gboolean immediate_exit = FALSE;
 	gchar *backend_name = NULL;
 	PkConf *conf = NULL;
-	PkBackend *backend;
-	PkEngine *engine = NULL;
 	GError *error = NULL;
 	GOptionContext *context;
 
@@ -191,6 +218,9 @@ main (int argc, char *argv[])
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 	dbus_g_thread_init ();
+
+	/* do stuff on ctrl-c */
+	signal (SIGINT, pk_main_sigint_handler);
 
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon == TRUE && daemon (0, 0)) {
