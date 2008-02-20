@@ -440,7 +440,7 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	/* only this instance is finished, and do it before the signal so we can reset */
 	client->priv->is_finished = TRUE;
 
-	g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 
 	/* exit our private loop */
 	if (client->priv->synchronous == TRUE) {
