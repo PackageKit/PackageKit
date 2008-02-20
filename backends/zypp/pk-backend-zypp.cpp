@@ -251,6 +251,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                 zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
                 
                 std::map<std::string, zypp::sat::Solvable> caps;
+                std::vector<std::string> temp;
 
 		for (zypp::Capabilities::const_iterator it = req.begin ();
 				it != req.end ();
@@ -262,15 +263,18 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
                                 // Adding Packages only one time
                                 std::map<std::string, zypp::sat::Solvable>::iterator mIt;
-                                mIt = caps.find(it2->name ());
-                                if( mIt != caps.end()){
-                                        if(it2->isSystem ()){
-                                                caps.erase (mIt);
-                                                caps[it2->name ()] = *it2;
-                                        }                       
-                                }else{
-                                        caps[it2->name ()] = *it2;
-                                }  
+                                mIt = caps.find(it->asString ());
+                                if ( std::find (temp.begin (), temp.end(), it2->name ()) == temp.end()){
+                                        if( mIt != caps.end()){
+                                                if(it2->isSystem ()){
+                                                        caps.erase (mIt);
+                                                        caps[it->asString ()] = *it2;
+                                                }                       
+                                        }else{
+                                                caps[it->asString ()] = *it2;
+                                        }
+                                        temp.push_back(it2->name ());
+                                }
                               
                         }
                 }
