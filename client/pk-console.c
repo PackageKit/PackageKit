@@ -479,6 +479,48 @@ pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean forc
 }
 
 /**
+ * pk_console_get_prompt:
+ **/
+gboolean
+pk_console_get_prompt (const gchar *question, gboolean defaultyes)
+{
+	gchar answer;
+
+	/* pretty print */
+	g_print ("%s", question);
+	if (defaultyes == TRUE) {
+		g_print (" [Y/n] ");
+	} else {
+		g_print (" [N/y] ");
+	}
+
+	do {
+		/* get one char */
+		scanf("%c", &answer);
+
+		/* positive */
+		if (answer == 'y' || answer == 'Y') {
+			return TRUE;
+		}
+		/* negative */
+		if (answer == 'n' || answer == 'N') {
+			return FALSE;
+		}
+
+		/* default choice */
+		if (answer == '\n' && defaultyes == TRUE) {
+			return TRUE;
+		}
+		if (answer == '\n' && defaultyes == FALSE) {
+			return FALSE;
+		}
+	} while (TRUE);
+
+	/* keep GCC happy */
+	return FALSE;
+}
+
+/**
  * pk_console_remove_package:
  **/
 static gboolean
@@ -533,19 +575,17 @@ pk_console_remove_package (PkClient *client, const gchar *package)
 		pk_package_id_free (ident);
 	}
 
-	/* check for user input */
-	g_print ("Okay to remove additional packages? [N/y]\n");
+	/* get user input */
+	remove = pk_console_get_prompt ("Okay to remove additional packages?", FALSE);
 
-	/* TODO: prompt the user */
-	remove = FALSE;
-
+	/* we chickened out */
 	if (remove == FALSE) {
 		g_print ("Cancelled!\n");
 		g_free (package_id);
 		return FALSE;
 	}
 
-	pk_debug ("You agreed, remove with deps");
+	/* remove all the stuff */
 	pk_console_remove_only (client, package_id, TRUE);
 	g_free (package_id);
 
