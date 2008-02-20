@@ -54,8 +54,8 @@ try:
     iface.GetRequires(PKG_ID,False)
     print "Testing GetDepends(PKG_ID,False)"
     iface.GetDepends(PKG_ID,False)
-    print "Testing RefreshCache()"
-    iface.RefreshCache()
+    print "Testing RefreshCache(True)"
+    iface.RefreshCache(True)
     print "Testing Resolve(FILTER_NONE,'yum')"
     iface.Resolve(FILTER_NONE,'yum')
     print "Testing GetDescription(PKG_ID)"
@@ -70,8 +70,8 @@ try:
     iface.GetUpdateDetail(PKG_ID)
     #print "Testing "
     #iface.
-    print "Testing RefreshCache()"
-    iface.RefreshCache()
+    print "Testing RefreshCache(False)"
+    iface.RefreshCache(False)
     print "Testing Exit()"
     iface.Exit()
     
