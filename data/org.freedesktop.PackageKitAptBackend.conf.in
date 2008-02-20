@@ -12,10 +12,6 @@
     <allow send_destination="org.freedesktop.PackageKitAptBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
-  <policy at_console="true">
-    <deny send_destination="org.freedesktop.PackageKitAptBackend"/>
-    <deny send_interface="org.freedesktop.PackageKitBackend"/>
-  </policy>
   <policy context="default">
     <deny own="org.freedesktop.PackageKitAptBackend"/>
     <deny send_destination="org.freedesktop.PackageKitAptBackend"/>
