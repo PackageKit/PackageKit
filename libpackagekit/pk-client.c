@@ -3189,6 +3189,16 @@ pk_client_new (void)
 #include <libselftest.h>
 #include <glib/gstdio.h>
 
+static gboolean finished = FALSE;
+
+static void
+libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+{
+	finished = TRUE;
+	/* this is actually quite common */
+	g_object_unref (client);
+}
+
 void
 libst_client (LibSelfTest *test)
 {
@@ -3207,7 +3217,24 @@ libst_client (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
-	g_object_unref (client);
+	/* check use after finalise */
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (libst_client_finished_cb), NULL);
+
+	/************************************************************/
+	libst_title (test, "do any method");
+	/* we don't care if this fails */
+	pk_client_set_synchronous (client, TRUE);
+	pk_client_search_name (client, "none", "moooo");
+	libst_success (test, "did something");
+
+	/************************************************************/
+	libst_title (test, "we finished?");
+	if (finished == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	libst_end (test);
 }
