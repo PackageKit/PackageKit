@@ -3182,3 +3182,34 @@ pk_client_new (void)
 	return PK_CLIENT (client);
 }
 
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+#include <glib/gstdio.h>
+
+void
+libst_client (LibSelfTest *test)
+{
+	PkClient *client;
+
+	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get client");
+	client = pk_client_new ();
+	if (client != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	g_object_unref (client);
+
+	libst_end (test);
+}
+#endif
+
