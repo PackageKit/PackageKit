@@ -1004,8 +1004,10 @@ static void
 pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointer data)
 {
 	/* if the daemon crashed, don't hang around */
-	g_print ("The daemon crashed mid transaction. This is bad\n");
-	exit (2);
+	if (connected == FALSE) {
+		g_print ("The daemon crashed mid transaction. This is bad\n");
+		exit (2);
+	}
 }
 
 /**
