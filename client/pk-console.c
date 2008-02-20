@@ -484,7 +484,7 @@ pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean forc
 gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
-	gchar answer;
+	gchar answer = '\0';
 	gint retval;
 
 	/* pretty print */
