@@ -442,6 +442,12 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 
 	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 
+	/* check we are still valid */
+	if (PK_IS_CLIENT (client) == FALSE) {
+		pk_debug ("client was g_object_unref'd in finalise, object no longer valid");
+		return;
+	}
+
 	/* exit our private loop */
 	if (client->priv->synchronous == TRUE) {
 		g_main_loop_quit (client->priv->loop);
@@ -3125,6 +3131,9 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->tid);
 
 	/* clear the loop, if we were using it */
+	if (client->priv->synchronous == TRUE) {
+		g_main_loop_quit (client->priv->loop);
+	}
 	g_main_loop_unref (client->priv->loop);
 
 	/* free the hash table */
