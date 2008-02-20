@@ -13,7 +13,7 @@ libgbus_la_SOURCES =						\
 	libgbus-marshal.c					\
 	libgbus.c						\
 	libgbus.h
-libgbus_la_LIBADD = @DBUS_LIBS@ $(INTLLIBS) $(GLIB_LIBS)
+libgbus_la_LIBADD = $(DBUS_LIBS) $(INTLLIBS) $(GLIB_LIBS)
 
 EXTRA_DIST =							\
 	libgbus-marshal.list
