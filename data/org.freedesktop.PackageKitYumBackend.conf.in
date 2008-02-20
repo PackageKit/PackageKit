@@ -12,7 +12,7 @@
     <allow send_destination="org.freedesktop.PackageKitYumBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
-  <policy>
+  <policy at_console="true">
     <deny send_destination="org.freedesktop.PackageKitYumBackend"/>
     <deny send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
