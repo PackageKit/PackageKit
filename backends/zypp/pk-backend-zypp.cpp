@@ -378,7 +378,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 			it != v->end (); it++) {
 		zypp::ResObject::constPtr pkg = (*it);
 		const char *version = pkg->edition ().asString ().c_str ();
-fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
+                fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
 		if (strcmp (pi->version, version) == 0) {
 			package = pkg;
 			break;
@@ -395,14 +395,55 @@ fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, versio
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+        
+        try {
+                // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
+                if (package->isSystem ()){
+                       zypp::Target_Ptr target;
 
-	pk_backend_description (backend,
-				d->package_id,		// package_id
-				"unknown",		// const gchar *license
-				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
-				package->description ().c_str (),	// const gchar *description
-				"TODO: add package URL here",			// const gchar *url
-				(gulong)package->size());			// gulong size
+                        zypp::ZYpp::Ptr zypp;
+                        zypp = get_zypp ();
+
+                        target = zypp->target ();
+  
+                        zypp::target::rpm::RpmDb &rpm = target->rpmDb (); 
+                        rpm.initDatabase();
+                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+                        rpm.getData (package-> name (), package->edition (), rpmHeader);
+
+	                pk_backend_description (backend,
+			                	d->package_id,                  		// package_id
+				                rpmHeader->tag_license ().c_str (),		// const gchar *license
+				                PK_GROUP_ENUM_OTHER,                    	// PkGroupEnum group
+				                rpmHeader->tag_description ().c_str (),   	// const gchar *description
+				                rpmHeader->tag_url (). c_str (),	  	// const gchar *url
+				                (gulong)rpmHeader->tag_size ());		// gulong size
+
+                        rpm.closeDatabase();
+                }else{
+                        zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(package);
+                        pk_backend_description (backend,
+                                                d->package_id,
+                                                pkg->license ().c_str (),
+                                                PK_GROUP_ENUM_OTHER,
+                                                pkg->description ().c_str (),
+                                                pkg->url ().c_str (),
+                                                (gulong)pkg->size ());
+                }
+
+        } catch (const zypp::target::rpm::RpmException &ex) {
+	        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+                pk_backend_finished (backend);
+		g_free (d->package_id);
+                g_free (d);
+                return FALSE;
+        } catch (const zypp::Exception &ex) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+                pk_backend_finished (backend);
+                g_free (d->package_id);
+                g_free (d);
+                return FALSE;
+        }
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);
