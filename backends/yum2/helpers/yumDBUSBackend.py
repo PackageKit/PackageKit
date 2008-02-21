@@ -51,6 +51,8 @@ import types
 import signal
 import time
 import os.path
+import operator
+
 
 # Global vars
 yumbase = None
@@ -1693,6 +1695,87 @@ class PackageKitYumBase(yum.YumBase):
     def __init__(self):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
+
+    # Modified searchGenerator to make sure that
+    # non unicode strings read from rpmdb is converted to unicode
+    # FIXME: Remove this when fixed and released in upstream
+    def searchGenerator(self, fields, criteria, showdups=True):
+        """Generator method to lighten memory load for some searches.
+           This is the preferred search function to use."""
+        sql_fields = []
+        for f in fields:
+            if RPM_TO_SQLITE.has_key(f):
+                sql_fields.append(RPM_TO_SQLITE[f])
+            else:
+                sql_fields.append(f)
+
+        matched_values = {}
+
+        # yield the results in order of most terms matched first
+        sorted_lists = {}
+        tmpres = []
+        real_crit = []
+        for s in criteria:
+            if s.find('%') == -1:
+                real_crit.append(s)
+        real_crit_lower = [] # Take the s.lower()'s out of the loop
+        for s in criteria:
+            if s.find('%') == -1:
+                real_crit_lower.append(s.lower())
+
+        for sack in self.pkgSack.sacks.values():
+            tmpres.extend(sack.searchPrimaryFieldsMultipleStrings(sql_fields, real_crit))
+
+        for (po, count) in tmpres:
+            # check the pkg for sanity
+            # pop it into the sorted lists
+            tmpvalues = []
+            if count not in sorted_lists: sorted_lists[count] = []
+            for s in real_crit_lower:
+                for field in fields:
+                    value = getattr(po, field)
+                    if value and value.lower().find(s) != -1:
+                        tmpvalues.append(value)
+
+            if len(tmpvalues) > 0:
+                sorted_lists[count].append((po, tmpvalues))
+
+            
+        
+        for po in self.rpmdb:
+            tmpvalues = []
+            criteria_matched = 0
+            for s in real_crit_lower:
+                matched_s = False
+                for field in fields:
+                    value = getattr(po, field)
+                    # make sure that string are in unicode
+                    if isinstance(value, str):
+                        value = unicode(value,'unicode-escape')
+                    if value and value.lower().find(s) != -1:
+                        if not matched_s:
+                            criteria_matched += 1
+                            matched_s = True
+                        
+                        tmpvalues.append(value)
+
+
+            if len(tmpvalues) > 0:
+                if criteria_matched not in sorted_lists: sorted_lists[criteria_matched] = []
+                sorted_lists[criteria_matched].append((po, tmpvalues))
+                
+
+        # close our rpmdb connection so we can ctrl-c, kthxbai                    
+        self.closeRpmDB()
+        
+        yielded = {}
+        for val in reversed(sorted(sorted_lists)):
+            for (po, matched) in sorted(sorted_lists[val], key=operator.itemgetter(0)):
+                if (po.name, po.arch) not in yielded:
+                    yield (po, matched)
+                    if not showdups:
+                        yielded[(po.name, po.arch)] = 1
+
 
     def _checkSignatures(self,pkgs,callback):
         ''' The the signatures of the downloaded packages '''
