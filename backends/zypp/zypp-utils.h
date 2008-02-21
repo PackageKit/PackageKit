@@ -36,6 +36,11 @@ gboolean zypp_is_changeable_media (const zypp::Url &url);
 zypp::ResPool zypp_build_pool (gboolean include_local);
 
 /**
+ * Build and return a ResPool that contains only the local resolvables.
+ */
+zypp::ResPool zypp_build_local_pool ();
+
+/**
  * Returns a list of packages that match the specified package_name.
  */
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
@@ -44,6 +49,11 @@ std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_na
  * Returns a list of packages that match the specified term in its name or description.
  */
 std::vector<zypp::PoolItem> * zypp_get_packages_by_details (const gchar *search_term, gboolean include_local);
+
+/**
+ * Returns a list of packages that owns the specified file.
+ */
+std::vector<zypp::PoolItem> * zypp_get_packages_by_file (const gchar *search_file);
 
 /**
  * Returns the Resolvable for the specified package_id.

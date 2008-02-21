@@ -1056,6 +1056,9 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
                 case SEARCH_TYPE_DETAILS:
                         v = zypp_get_packages_by_details (search, TRUE);
                         break;      
+                case SEARCH_TYPE_FILE:
+                        v = zypp_get_packages_by_file (search);
+                        break;
         };
         
 	zypp_emit_packages_in_list (backend, v);
@@ -1146,6 +1149,16 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 {
 	g_return_if_fail (backend != NULL);
 	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
+}
+
+/**
+ * backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_FILE);
 }
 
 /**
@@ -1341,24 +1354,12 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
         
-        //cleaning the pool
-        zypp::sat::Pool pool = zypp::sat::Pool::instance ();
+        zypp::ResPool pool = zypp_build_local_pool();        
 
-        for (zypp::sat::Pool::RepoIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
-              if (! pool.reposEmpty ())
-                      pool.reposErase(it->name ());
-        }
-        
-	pk_backend_set_percentage (backend, 20);
-
-        //Add local resolvables
-        zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp->target ()->load ();
-        
         zypp::PoolItem package;
         gboolean found = FALSE;
-        for (zypp::ResPool::byIdent_iterator it = zypp->pool ().byIdentBegin (zypp::ResKind::package, pi->name);
-                        it != zypp->pool ().byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
                 package = (*it);
                 found = TRUE;
         }
@@ -1378,7 +1379,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 	pk_backend_set_percentage (backend, 40);
 
         // solver run
-        zypp::Resolver solver(zypp->pool ());
+        zypp::Resolver solver(pool);
         
         // DEBUG https://bugzilla.novell.com/show_bug.cgi?id=363545
         if (solver.forceResolve () == FALSE) {
@@ -1399,8 +1400,8 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 	pk_backend_set_percentage (backend, 60);
 
         // look for packages which would be uninstalled
-        for (zypp::ResPool::byIdent_iterator it = zypp->pool ().byIdentBegin (zypp::ResKind::package, pi->name);
-                        it != zypp->pool ().byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
                 if (it->status () == zypp::ResStatus::toBeUninstalled || it->status () == zypp::ResStatus::toBeUninstalledSoft) {
                         gchar *package_id;
                         package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
@@ -1461,7 +1462,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	NULL,					/* search_file */
+	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
