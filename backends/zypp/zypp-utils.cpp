@@ -118,6 +118,23 @@ zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 	return v;
 }
 
+std::vector<zypp::PoolItem> *
+zypp_get_packages_by_details (const gchar *search_term, gboolean include_local)
+{
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+
+        zypp::ResPool pool = zypp_build_pool (include_local);
+
+        std::string term (search_term);
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                if ((*it)->name ().find (term) != std::string::npos || (*it)->description ().find (term) != std::string::npos )
+                    v->push_back (*it);
+        }
+
+        return v;
+}
+
 zypp::Resolvable::constPtr
 zypp_get_package_by_id (const gchar *package_id)
 {

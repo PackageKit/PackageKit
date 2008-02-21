@@ -41,6 +41,11 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
 
 /**
+ * Returns a list of packages that match the specified term in its name or description.
+ */
+std::vector<zypp::PoolItem> * zypp_get_packages_by_details (const gchar *search_term, gboolean include_local);
+
+/**
  * Returns the Resolvable for the specified package_id.
  */
 zypp::Resolvable::constPtr zypp_get_package_by_id (const gchar *package_id);

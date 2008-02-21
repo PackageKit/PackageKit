@@ -1046,14 +1046,20 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	pk_backend_no_percentage_updates (backend);
 
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem>;
+
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
-			std::vector<zypp::PoolItem> *v = zypp_get_packages_by_name (search, TRUE);
-			zypp_emit_packages_in_list (backend, v);
-			delete (v);
+			v = zypp_get_packages_by_name (search, TRUE);
 			break;
-	};
-
+	
+                case SEARCH_TYPE_DETAILS:
+                        v = zypp_get_packages_by_details (search, TRUE);
+                        break;      
+        };
+        
+	zypp_emit_packages_in_list (backend, v);
+	delete (v);
 /*
 	if (mode == SEARCH_TYPE_FILE) {
 		if (installed == FALSE && available == FALSE) {
@@ -1130,6 +1136,16 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
+}
+
+/**
+ * backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
 }
 
 /**
@@ -1444,7 +1460,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
+	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
