@@ -31,13 +31,41 @@ import os
 from pkexceptions import *
 import dbus.service
 
+import time
+
 # Classes
 
 # This is common between backends
 PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
 PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
+INACTIVITY_CHECK_TIMEOUT = 1000 * 60 * 5 # Check every 5 minutes.
+
 class PackageKitBaseBackend(dbus.service.Object):
+
+    def PKSignalHouseKeeper(func):
+        print "wrapping..."
+        def wrapper(*args,**kwargs):
+            self = args[0]
+            self.last_action_time = time.time()
+
+            return func(*args,**kwargs)
+
+        return wrapper
+
+# I tried to do the same thing with methods as we do with signals, but
+# dbus-python's method decorator uses inspect.getargspec...since the
+# signature of the wrapper function is different.  So now each method
+# has to call self.last_action_time = time.time()
+#
+#    def PKMethodHouseKeeper(func):
+#        def wrapper(*args,**kwargs):
+#            self = args[0]
+#            self.last_action_time = time.time()
+#
+#            return func(*args, **kwargs)
+#
+#        return wrapper
 
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
@@ -45,6 +73,10 @@ class PackageKitBaseBackend(dbus.service.Object):
         self._locked = False
 
         self.loop = gobject.MainLoop()
+
+        gobject.timeout_add(INACTIVITY_CHECK_TIMEOUT, self.check_for_inactivity)
+        self.last_action_time = time.time()
+
         self.loop.run()
 
     def doLock(self):
@@ -58,65 +90,84 @@ class PackageKitBaseBackend(dbus.service.Object):
     def isLocked(self):
         return self._locked
 
+    def check_for_inactivity(self):
+        if time.time() - self.last_action_time > 30:
+            print "Exiting due to timeout."
+            self.Exit()
+
+        return True
+
 #
 # Signals ( backend -> engine -> client )
 #
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
     def Finished(self, exit):
         print "Finished (%s)" % (exit)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssb')
     def RepoDetail(self, repo_id, description, enabled):
         print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
     def AllowCancel(self, allow_cancel):
         print "AllowCancel (%i)" % (allow_cancel)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sss')
     def Package(self, status, package_id, summary):
         print "Package (%s, %s, %s)" % (status, package_id, summary)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sssssu')
     def Description(self, package_id, license, group, detail, url, size):
         print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def Files(self, package_id, file_list):
         print "Files (%s, %s)" % (package_id, file_list)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
     def StatusChanged(self, status):
         print "StatusChanged (%s)" % (status)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
     def NoPercentageUpdates(self):
         print "NoPercentageUpdates"
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def PercentageChanged(self, percentage):
         print "PercentageChanged (%i)" % (percentage)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def SubPercentageChanged(self, percentage):
         print "SubPercentageChanged (%i)" % (percentage)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssssss')
     def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
         print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def ErrorCode(self, code, description):
@@ -127,6 +178,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print "ErrorCode (%s, %s)" % (code, description)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def MetaData(self,typ,fname):
@@ -137,6 +189,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print  "MetaData (%s, %s)" % (typ,fname)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def RequireRestart(self,type,details):
@@ -147,6 +200,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print  "RestartRequired (%s, %s)" % (type,details)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def Message(self,type,details):
@@ -157,6 +211,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         print  "Message (%s, %s)" % (type,details)
 
+    @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
     def UpdatesChanged(self,typ,fname):
@@ -169,6 +224,10 @@ class PackageKitBaseBackend(dbus.service.Object):
 #
 # Methods ( client -> engine -> backend )
 #
+# Python inheritence with decorators makes implementing these in the
+# base class and overriding them in child classes very ugly.  So
+# they're commented out here.  Just implement the ones you need in
+# your class, and don't forget the decorators.
 #
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='', out_signature='')
@@ -202,6 +261,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='ss', out_signature='')
 #    def SearchName(self, filters, search):
@@ -211,6 +271,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='ss', out_signature='')
 #    def SearchDetails(self,filters,key):
@@ -220,6 +281,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='ss', out_signature='')
 #    def SearchGroup(self,filters,key):
@@ -229,6 +291,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='ss', out_signature='')
 #    def SearchFile(self,filters,key):
@@ -238,6 +301,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='sb', out_signature='')
 #    def GetRequires(self,package,recursive):
@@ -247,6 +311,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='sb', out_signature='')
 #    def GetDepends(self,package,recursive):
@@ -256,6 +321,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='', out_signature='')
 #    def UpdateSystem(self):
@@ -265,6 +331,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='b', out_signature='')
 #    def RefreshCache(self, force):
@@ -274,7 +341,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
-#
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='ss', out_signature='')
 #    def Resolve(self, filters, name):
@@ -284,6 +351,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def InstallPackage(self, package):
@@ -294,6 +362,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def InstallFile (self, inst_file):
@@ -305,6 +374,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def ServicePack (self, location):
@@ -316,6 +386,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def UpdatePackage(self, package):
@@ -325,6 +396,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='sb', out_signature='')
 #    def RemovePackage(self, package, allowdep):
@@ -334,6 +406,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def GetDescription(self, package):
@@ -343,6 +416,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def GetFiles(self, package):
@@ -352,6 +426,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='', out_signature='')
 #    def GetUpdates(self):
@@ -361,6 +436,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='sb', out_signature='')
 #    def RepoEnable(self, repoid, enable):
@@ -370,6 +446,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='', out_signature='')
 #    def GetRepoList(self):
@@ -379,6 +456,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='s', out_signature='')
 #    def GetUpdateDetail(self,package):
@@ -388,6 +466,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
 #
+#    @PKMethodHouseKeeper
 #    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
 #                         in_signature='sss', out_signature='')
 #    def RepoSetData(self, repoid, parameter, value):
@@ -396,6 +475,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 #        '''
 #        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
 #        self.Exit()
+
 #
 # Utility methods
 #
