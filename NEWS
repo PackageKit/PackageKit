@@ -1,3 +1,46 @@
+Version 0.1.8
+~~~~~~~~~~~~~
+Released: 2008-02-21
+
+* Backends:
+ - apt: some random fixes to get it work again (Sebastian Heinlein)
+ - apt2: initial work on a dbus based backend introduced as apt2 (Sebastian Heinlein)
+ - apt2: implement GetDescription (Sebastian Heinlein)
+ - apt2: fix SearchName (Sebastian Heinlein)
+ - apt2: fix a typo in GetUpdates (Sebastian Heinlein)
+ - yum: check for missing package in GetUpdateDetail call (Robin Norwood)
+ - yum: change throttling policy: at init, change to 90%, throttle to 60% for UpdateSystem call (Robin Norwood)
+ - yum: Refresh the yum cache when it is determined to be invalid (Robin Norwood)
+ - yum: Make _refresh_yum_cache and RefreshCache work similarly (Robin Norwood)
+ - yum2: Added test script to call most of the YumBackend methods (Tim Lauridsen)
+ - yum2: Fixed unicode decode error in SearchDetails (Tim Lauridsen)
+ - yum2: add call to _check_init there check if Init() has been called (Tim Lauridsen)
+ - yum2: added GetPackages(filters) DBus method (Tim Lauridsen)
+ - zypp: libzypp >= 4.2.3 is now needed (Stefan Haas)
+ - zypp: Added SearchFiles (Stefan Haas)
+ - zypp: Added SearchDetails (Stefan Haas)
+ - zypp: Added GetRequires (Stefan Haas)
+ - zypp: added missing stuff of GetDescription (Stefan Haas)
+
+* New features:
+ - Allow pkcon to actually remove dependancies on user prompt (Richard Hughes)
+ - Add some FAQ text on user interaction during the transaction (Richard Hughes)
+ - Add the ServicePack functionality - no backends support it yet (Richard Hughes)
+ - Enforce that finished is sent 500ms after error_code (Richard Hughes)
+ - Add some more self checks to PkBackend (Richard Hughes)
+ - Add the supported filter to search for supported packages (Richard Hughes)
+
+* Bugfixes:
+ - Unload nicely on ctrl-c - including closing down the backends (Richard Hughes)
+ - Fix a tricky crash (use after unref) in pk_client_finished_cb (Richard Hughes)
+ - Use pk_client_set_synchronous() in pkcon to remove loads of code (Richard Hughes)
+ - Use $VAR$ syntax in makefiles, not @VAR@ (Stepan Kasal)
+ - Do not list check_PROGRAMS again in noinst_PROGRAMS (Stepan Kasal)
+ - Remove the dbus at_console rule for the backends (Richard Hughes)
+ - Try harder to get a translation when we have stored a base locale (Richard Hughes)
+ - Add finalizer for libgbus to free some memory on unload (Richard Hughes)
+ - Clear the hash when we reset PkClient, else we fail to show repeat search results (Richard Hughes)
+
 Version 0.1.7
 ~~~~~~~~~~~~~
 Released: 2008-02-14

@@ -912,6 +912,8 @@ pk_backend_finalize (GObject *object)
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
 
+	pk_debug ("backend finalise");
+
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
 
@@ -935,7 +937,7 @@ pk_backend_finalize (GObject *object)
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
 	}
-
+	pk_debug ("parent_class->finalize");
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
 

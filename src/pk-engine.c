@@ -2843,6 +2843,7 @@ pk_engine_finalize (GObject *object)
 	engine = PK_ENGINE (object);
 
 	g_return_if_fail (engine->priv != NULL);
+	pk_debug ("engine finalise");
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
