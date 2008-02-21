@@ -39,12 +39,12 @@ import time
 PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
 PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
-INACTIVITY_CHECK_TIMEOUT = 1000 * 60 * 5 # Check every 5 minutes.
+INACTIVE_CHECK_TIMEOUT = 1000 * 60 * 5 # Check every 5 minutes.
+INACTIVE_TIMEOUT = 1000 * 60 * 30 # timeout after 30 minutes of inactivity.
 
 class PackageKitBaseBackend(dbus.service.Object):
 
     def PKSignalHouseKeeper(func):
-        print "wrapping..."
         def wrapper(*args,**kwargs):
             self = args[0]
             self.last_action_time = time.time()
@@ -74,7 +74,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         self.loop = gobject.MainLoop()
 
-        gobject.timeout_add(INACTIVITY_CHECK_TIMEOUT, self.check_for_inactivity)
+        gobject.timeout_add(INACTIVE_CHECK_TIMEOUT, self.check_for_inactivity)
         self.last_action_time = time.time()
 
         self.loop.run()
@@ -91,7 +91,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         return self._locked
 
     def check_for_inactivity(self):
-        if time.time() - self.last_action_time > 30:
+        if time.time() - self.last_action_time > INACTIVE_TIMEOUT:
             print "Exiting due to timeout."
             self.Exit()
 
