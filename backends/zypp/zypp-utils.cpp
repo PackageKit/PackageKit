@@ -121,6 +121,79 @@ zypp_build_local_pool ()
 
 }
 
+PkGroupEnum
+zypp_get_group (zypp::ResObject::constPtr item)
+{
+        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
+        std::string group;
+
+        if (item->isSystem ()) {
+                zypp::ZYpp::Ptr zypp = get_zypp ();
+                zypp::Target_Ptr target = zypp->target ();
+
+                zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
+                rpm.initDatabase ();
+
+                zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+                rpm.getData (item->name (), item->edition (), rpmHeader);
+                group = rpmHeader->tag_group ();
+
+                rpm.closeDatabase ();
+       
+        }else{
+                zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(item);
+                group = pkg->group ();
+        }
+
+        // TODO Look for a faster and nice way to do this conversion
+
+        if (group.find ("Amusements") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_GAMES;
+        } else if (group.find ("Development") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_PROGRAMMING;
+        } else if (group.find ("Hardware") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SYSTEM;
+        } else if (group.find ("Archiving") != std::string::npos 
+                  || group.find("Clustering") != std::string::npos
+                  || group.find("System/Monitoring") != std::string::npos
+                  || group.find("Databases") != std::string::npos
+                  || group.find("System/Management") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_ADMIN_TOOLS;
+        } else if (group.find ("Graphics") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_GRAPHICS;
+        } else if (group.find ("Mulitmedia") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_MULTIMEDIA;
+        } else if (group.find ("") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_NETWORK;
+        } else if (group.find ("Office") != std::string::npos 
+                  || group.find("Text") != std::string::npos
+                  || group.find("Editors") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_OFFICE;
+        } else if (group.find ("Publishing") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_PUBLISHING;
+        } else if (group.find ("Security") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SECURITY;
+        } else if (group.find ("Telephony") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_COMMUNICATION;
+        } else if (group.find ("GNOME") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_GNOME;
+        } else if (group.find ("KDE") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_KDE;
+        } else if (group.find ("XFCE") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_XFCE;
+        } else if (group.find ("GUI/Other") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_OTHER;
+        } else if (group.find ("Localization") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_LOCALIZATION;
+        } else if (group.find ("System") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SYSTEM;
+        } else if (group.find ("Scientific") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_EDUCATION;
+        }
+
+        return pkGroup;
+}
+
 std::vector<zypp::PoolItem> *
 zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 {

@@ -41,6 +41,11 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 zypp::ResPool zypp_build_local_pool ();
 
 /**
+  * Return the PkGroupEnum of the given PoolItem.
+  */
+PkGroupEnum zypp_get_group (zypp::ResObject::constPtr item);
+
+/**
  * Returns a list of packages that match the specified package_name.
  */
 std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);

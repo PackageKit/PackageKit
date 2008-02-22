@@ -151,20 +151,24 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_GRAPHICS,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_OFFICE,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_MULTIMEDIA,
-				      PK_GROUP_ENUM_SYSTEM,
-				      PK_GROUP_ENUM_PUBLISHING,
-				      PK_GROUP_ENUM_SERVERS,
-				      PK_GROUP_ENUM_FONTS,
-				      PK_GROUP_ENUM_ADMIN_TOOLS,
-				      PK_GROUP_ENUM_LOCALIZATION,
-				      PK_GROUP_ENUM_SECURITY,
+                                      PK_GROUP_ENUM_GAMES,
+                                      PK_GROUP_ENUM_GRAPHICS,
+                                      PK_GROUP_ENUM_OFFICE,
+                                      PK_GROUP_ENUM_PROGRAMMING,
+                                      PK_GROUP_ENUM_MULTIMEDIA,
+                                      PK_GROUP_ENUM_SYSTEM,
+                                      PK_GROUP_ENUM_DESKTOP_GNOME,
+                                      PK_GROUP_ENUM_DESKTOP_KDE,
+                                      PK_GROUP_ENUM_DESKTOP_XFCE,
+                                      PK_GROUP_ENUM_DESKTOP_OTHER,
+                                      PK_GROUP_ENUM_PUBLISHING,
+                                      PK_GROUP_ENUM_ADMIN_TOOLS,
+                                      PK_GROUP_ENUM_LOCALIZATION,
+                                      PK_GROUP_ENUM_SECURITY,
+                                      PK_GROUP_ENUM_EDUCATION,
+                                      PK_GROUP_ENUM_COMMUNICATION,
+                                      PK_GROUP_ENUM_NETWORK,
+                                      PK_GROUP_ENUM_UNKNOWN,
 				      -1);
 }
 
@@ -397,9 +401,11 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
         
         try {
+                PkGroupEnum group = zypp_get_group (package);
+
                 // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
                 if (package->isSystem ()){
-                       zypp::Target_Ptr target;
+                        zypp::Target_Ptr target;
 
                         zypp::ZYpp::Ptr zypp;
                         zypp = get_zypp ();
@@ -414,7 +420,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	                pk_backend_description (backend,
 			                	d->package_id,                  		// package_id
 				                rpmHeader->tag_license ().c_str (),		// const gchar *license
-				                PK_GROUP_ENUM_OTHER,                    	// PkGroupEnum group
+				                group,                                  	// PkGroupEnum group
 				                rpmHeader->tag_description ().c_str (),   	// const gchar *description
 				                rpmHeader->tag_url (). c_str (),	  	// const gchar *url
 				                (gulong)rpmHeader->tag_size ());		// gulong size
@@ -425,7 +431,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
                         pk_backend_description (backend,
                                                 d->package_id,
                                                 pkg->license ().c_str (),
-                                                PK_GROUP_ENUM_OTHER,
+                                                group,
                                                 pkg->description ().c_str (),
                                                 pkg->url ().c_str (),
                                                 (gulong)pkg->size ());
