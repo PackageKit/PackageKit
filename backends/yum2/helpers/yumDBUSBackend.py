@@ -694,7 +694,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return
         else:
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
             self.Finished(EXIT_FAILED)
             return
             
