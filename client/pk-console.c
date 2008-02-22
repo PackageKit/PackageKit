@@ -1108,8 +1108,6 @@ main (int argc, char *argv[])
 	client_task = pk_client_new ();
 	pk_client_set_use_buffer (client_task, TRUE);
 	pk_client_set_synchronous (client_task, TRUE);
-	g_signal_connect (client, "finished",
-			  G_CALLBACK (pk_console_finished_cb), NULL);
 
 	role_list = pk_client_get_actions (client);
 	pk_debug ("actions=%s", pk_enum_list_to_string (role_list));
