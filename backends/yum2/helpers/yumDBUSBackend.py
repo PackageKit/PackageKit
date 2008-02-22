@@ -1498,8 +1498,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Init()
         if cache:
             self.yumbase.conf.cache = 1
+            self.yumbase.repos.setCache(1)
         else:
             self.yumbase.conf.cache = 0
+            self.yumbase.repos.setCache(0)
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
