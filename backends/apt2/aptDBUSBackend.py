@@ -187,19 +187,22 @@ class Package(apt.Package):
             return True
         return False
 
-class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
+class PackageKitOpProgress(apt.progress.OpProgress):
     def __init__(self, backend):
         self._backend = backend
         apt.progress.OpProgress.__init__(self)
-        apt.progress.FetchProgress.__init__(self)
 
     # OpProgress callbacks
     def update(self, percent):
-        pass
+        self._backend.PercentageChanged(int(percent))
 
     def done(self):
-        pass
+        self._backend.PercentageChanged(100)
 
+class PackageKitFetchProgress(apt.progress.FetchProgress):
+    def __init__(self, backend):
+        self._backend = backend
+        apt.progress.FetchProgress.__init__(self)
     # FetchProgress callbacks
     def pulse(self):
         apt.progress.FetchProgress.pulse(self)
@@ -210,8 +213,13 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
         self._backend.percentage(100)
 
     def mediaChange(self, medium, drive):
+        #FIXME: use the Message method to notify the user
         self._backend.error(ERROR_INTERNAL_ERROR,
                 "Medium change needed")
+
+class PackageKitInstallProgress(apt.progress.InstallProgress):
+    def __init__(self, backend):
+        apt.progress.InstallProgress.__init__(self)
 
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, bus_name, dbus_path):
