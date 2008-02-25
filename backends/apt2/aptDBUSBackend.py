@@ -19,12 +19,15 @@ __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 __state__   = "experimental"
 
 import logging
+import os
+import re
 import warnings
 
 import apt
 import dbus
 import dbus.service
 import dbus.mainloop.glib
+import xapian
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
 from packagekit.enums import *
@@ -36,6 +39,14 @@ log.setLevel(logging.DEBUG)
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
+
+XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
+XAPIANDB = XAPIANDBPATH + "/index"
+XAPIANDBVALUES = XAPIANDBPATH + "/values"
+DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
+                        xapian.QueryParser.FLAG_PHRASE |
+                        xapian.QueryParser.FLAG_LOVEHATE |
+                        xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     def __init__(self, backend):
@@ -76,6 +87,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         log.info("Initializing backend")
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
+        self._xapian = None
 
     # Methods ( client -> engine -> backend )
 
@@ -83,7 +95,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          in_signature='', out_signature='')
     def Init(self):
         log.info("Initializing cache")
-        self._cache = apt.Cache(PackageKitProgress(self))
+        self._cache = apt.Cache(PackageKitOpProgress(self))
+        self._xapian = xapian.Database(XAPIANDB)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -94,7 +107,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          in_signature='ss', out_signature='')
     def SearchName(self, filters, search):
         '''
-        Implement the {backend}-search-name functionality
+        Implement the apt2-search-name functionality
         '''
         log.info("Searching for package name: %s" % search)
         self.AllowCancel(True)
@@ -105,6 +118,32 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for pkg in self._cache:
             if search in pkg.name:
                 self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchDetails(self, filters, search):
+        '''
+        Implement the apt2-search-details functionality
+        '''
+        log.info("Searching for package name: %s" % search)
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_QUERY)
+
+        self._xapian.reopen()
+        parser = xapian.QueryParser()
+        query = parser.parse_query(unicode(search),
+                                   DEFAULT_SEARCH_FLAGS)
+        enquire = xapian.Enquire(self._xapian)
+        enquire.set_query(query)
+        matches = enquire.get_mset(0, 1000)
+        for m in matches:
+            name = m[xapian.MSET_DOCUMENT].get_data()
+            if self._cache.has_key(name):
+                self._emit_package(self._cache[name])
+
         self.Finished(EXIT_SUCCESS)
 
 

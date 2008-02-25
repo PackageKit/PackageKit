@@ -239,6 +239,17 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ *  * pk_backend_search_details:
+ *   */
+static void
+backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_search_details (dbus, filter, search);
+}
+
+/**
  *  * pk_backend_search_name:
  *   */
 static void
@@ -269,7 +280,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
+	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
