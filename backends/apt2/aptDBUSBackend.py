@@ -15,17 +15,25 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 """
 
+__author__  = "Sebastian Heinlein <devel@glatzor.de>"
+__state__   = "experimental"
+
+import logging
 import warnings
-warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 import apt
-
 import dbus
 import dbus.service
 import dbus.mainloop.glib
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
 from packagekit.enums import *
+
+logging.basicConfig()
+log = logging.getLogger("aptDBUSBackend")
+log.setLevel(logging.DEBUG)
+
+warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
@@ -65,6 +73,7 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
 class PackageKitAptBackend(PackageKitBaseBackend):
     def __init__(self, bus_name, dbus_path):
+        log.info("Initializing backend")
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
 
@@ -73,6 +82,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
+        log.info("Initializing cache")
         self._cache = apt.Cache(PackageKitProgress(self))
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -86,6 +96,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
+        log.info("Searching for package name: %s" % search)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
