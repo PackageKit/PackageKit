@@ -116,7 +116,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_QUERY)
 
         for pkg in self._cache:
-            if search in pkg.name:
+            if search in pkg.name and self._package_is_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
@@ -142,7 +142,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for m in matches:
             name = m[xapian.MSET_DOCUMENT].get_data()
             if self._cache.has_key(name):
-                self._emit_package(self._cache[name])
+                pkg = self._cache[name]
+                if self._package_is_visible(pkg) == True:
+                    self._emit_package(pkg)
 
         self.Finished(EXIT_SUCCESS)
 
@@ -249,6 +251,39 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             status = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(status, id, summary)
+
+    def _package_is_visible(self, pkg, filters):
+        '''
+        Return True if the package should be shown in the user interface
+        '''
+        #FIXME: Needs to be optmized
+        if filters == 'none':
+            return True
+        if FILTER_INSTALLED in filters and not pkg.isInstalled:
+            return False
+        if FILTER_NOT_INSTALLED in filters and pkg.isInstalled:
+            return False
+        if FILTER_GUI in filters and not self._package_has_gui(pkg):
+            return False
+        if FILTER_NOT_GUI in filters and self._package_has_gui(pkg):
+            return False
+        if FILTER_DEVELOPMENT in filters and not self._package_is_devel(pkg):
+            return False
+        if FILTER_NOT_DEVELOPMENT in filters and self._package_is_devel(pkg):
+            return False
+        return True
+
+    def _package_has_gui(self, pkg):
+        #FIXME: should go to a modified Package class
+        #FIXME: take application data into account. perhaps checking for 
+        #       property in the xapian database
+        return pkg.section.split('/')[-1].lower() in ['x11', 'gnome', 'kde']
+
+    def _package_is_devel(self, pkg):
+        #FIXME: should go to a modified Package class
+        return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
+               pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
+
 
 if __name__ == '__main__':
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
