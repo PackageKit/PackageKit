@@ -15,215 +15,147 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 """
 
-from sets import Set
-import sys
+__author__  = "Sebastian Heinlein <devel@glatzor.de>"
+__state__   = "experimental"
+
+import logging
 import os
-from os.path import join,exists
-from os import system
+import pty
 import re
-from urlparse import urlparse
+import time
 import warnings
-warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 import apt
-from apt.debfile import DebPackage
-import apt_inst
-import apt_pkg
-from aptsources.distro import get_distro
-from aptsources.sourceslist import SourcesList
-
 import dbus
 import dbus.service
 import dbus.mainloop.glib
+import xapian
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
 from packagekit.enums import *
 
+logging.basicConfig()
+log = logging.getLogger("aptDBUSBackend")
+log.setLevel(logging.DEBUG)
+
+warnings.filterwarnings(action='ignore', category=FutureWarning)
+
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 
-class Package(apt.Package):
-    def __str__(self):
-        return "Package %s, version %s"%(self.name,self._version)
+XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
+XAPIANDB = XAPIANDBPATH + "/index"
+XAPIANDBVALUES = XAPIANDBPATH + "/values"
+DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
+                        xapian.QueryParser.FLAG_PHRASE |
+                        xapian.QueryParser.FLAG_LOVEHATE |
+                        xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
-    def _cmp_deps(self,deps, version):
-        for (v,c) in deps:
-            if not apt_pkg.CheckDep(version,c,v):
-                return False
-        return True
-
-    def __setParent(self,pkg):
-        for x in ["_pkg","_depcache","_records"]:
-            setattr(self,x,getattr(pkg,x))
-
-    def __init__(self, backend, pkg, data="",version=[]):
-        self.__setParent(pkg)
-        self._version = version
-        self._data = data
-        self._backend = backend
-        wanted_ver = None
-        if self.installedVersion!=None and self._cmp_deps(version,self.installedVersion):
-            wanted_ver = self.installedVersion
-        elif self.installedVersion == None and version == []:
-            #self.markInstall(False,False)
-            wanted_ver = self.candidateVersion
-
-        for ver in pkg._pkg.VersionList:
-            #print "vers",dir(ver),version,ver
-            #print data
-            if (wanted_ver == None or wanted_ver == ver.VerStr) and self._cmp_deps(version,ver.VerStr):
-                f, index = ver.FileList.pop(0)
-                if self._data == "":
-                    if f.Origin=="" and f.Archive=="now":
-                        self._data = "local_install"
-                    elif f.Origin!="" or f.Archive!="":
-                        self._data = "%s/%s"%(f.Origin.replace("/","_"),f.Archive.replace("/","_"))
-                    else:
-                        self._data = "%s/unknown"%f.Site
-                self._version = ver.VerStr
-                break
-        else:
-            print "wanted",wanted_ver
-            for ver in pkg._pkg.VersionList:
-                print "vers",version,ver.VerStr
-            backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
-    
-    def setVersion(self,version,compare="="):
-        if version!=None and (self.installedVersion == None or not apt_pkg.CheckDep(version,compare,self.installedVersion)):
-            self.markInstall(False,False)
-            if self.candidateVersion != version:
-                if self._data == "":
-                    for ver in pkg._pkg.VersionList:
-                        f, index = ver.FileList.pop(0)
-                        self._data = "%s/%s"%(f.Origin,f.Archive)
-                        if ver.VerStr == version:
-                            break
-
-                # FIXME: this is a nasty hack, assuming that the best way to resolve
-                # deps for non-default repos is by switching the default release.
-                # We really need a better resolver (but that's hard)
-                assert self._data!=""
-                origin = self._data[self._data.find("/")+1:]
-                print "origin",origin
-                name = self.name
-                apt_pkg.Config.Set("APT::Default-Release",origin)
-                if not self._backend._caches.has_key(origin):
-                    self._backend._caches[origin] = apt.Cache(PackageKitProgress(self))
-                    print "new cache for %s"%origin
-                self.__setParent(self._backend._caches[origin][name])
-                self.markInstall(False,False)
-                if not apt_pkg.CheckDep(self.candidateVersion,compare,version):
-                    self._backend.error(ERROR_INTERNAL_ERROR,
-                            "Unable to locate package version %s (only got %s) for %s"%(version,self.candidateVersion,name))
-                    return
-                self.markKeep()
-
-    @property
-    def group(self):
-        section = self.section.split('/')[-1].lower()
-        #if section in ():
-        #    return GROUP_ACCESSIBILITY
-        if section in ('utils',):
-            return "accessories"
-        #if section in ():
-        #    return GROUP_EDUCATION
-        if section in ('games',):
-            return "games"
-        if section in ('graphics',):
-            return "graphics"
-        if section in ('net', 'news', 'web', 'comm'):
-            return "internet"
-        if section in ('editors', 'tex'):
-            return "office"
-        if section in ('misc',):
-            return "other"
-        if section in ('devel', 'libdevel', 'interpreters', 'perl', 'python'):
-            return "programming"
-        if section in ('sound',):
-            return "multimedia"
-        if section in ('base', 'admin'):
-            return "system"
-        return "unknown"
-
-    @property
-    def isInstalled(self):
-        return super(self.__class__,self).isInstalled and self.installedVersion == self._version
-
-    @property
-    def isDevelopment(self):
-        name = self.name.lower()
-        section = self.section.split('/')[-1].lower()
-        return name.endswith('-dev') or name.endswith('-dbg') or \
-                section in ('devel', 'libdevel')
-
-    @property
-    def isGui(self):
-        section = self.section.split('/')[-1].lower()
-        return section in ('x11', 'gnome', 'kde')
-
-    _HYPHEN_PATTERN = re.compile(r'(\s|_)+')
-
-    def matchName(self, name):
-        needle = name.strip().lower()
-        haystack = self.name.lower()
-        needle = Package._HYPHEN_PATTERN.sub('-', needle)
-        haystack = Package._HYPHEN_PATTERN.sub('-', haystack)
-        if haystack.find(needle) >= 0:
-            return True
-        return False
-
-    def matchDetails(self, details):
-        if self.matchName(details):
-            return True
-        needle = details.strip().lower()
-        haystack = self.description.lower()
-        if haystack.find(needle) >= 0:
-            return True
-        return False
-
-    def matchGroup(self, name):
-        needle = name.strip().lower()
-        haystack = self.group
-        if haystack.startswith(needle):
-            return True
-        return False
-
-class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
+class PackageKitOpProgress(apt.progress.OpProgress):
+    '''
+    Handle the cache opening process
+    '''
     def __init__(self, backend):
         self._backend = backend
         apt.progress.OpProgress.__init__(self)
-        apt.progress.FetchProgress.__init__(self)
 
     # OpProgress callbacks
     def update(self, percent):
-        pass
+        self._backend.PercentageChanged(int(percent))
 
     def done(self):
-        pass
+        self._backend.PercentageChanged(100)
 
+class PackageKitFetchProgress(apt.progress.FetchProgress):
+    '''
+    Handle the package download process
+    '''
+    def __init__(self, backend):
+        self._backend = backend
+        apt.progress.FetchProgress.__init__(self)
     # FetchProgress callbacks
     def pulse(self):
+        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
+        self._backend.PercentageChanged(int(percent))
         apt.progress.FetchProgress.pulse(self)
-        self._backend.percentage(self.percent)
         return True
 
     def stop(self):
-        self._backend.percentage(100)
+        self._backend.PercentageChanged(100)
 
     def mediaChange(self, medium, drive):
+        #FIXME: use the Message method to notify the user
         self._backend.error(ERROR_INTERNAL_ERROR,
-                "Medium change needed")
+                            "Medium change needed")
+
+class PackageKitInstallProgress(apt.progress.InstallProgress):
+    '''
+    Handle the installation and removal process. Bits taken from
+    DistUpgradeViewNonInteractive.
+    '''
+    def __init__(self, backend):
+        apt.progress.InstallProgress.__init__(self)
+        self._backend = backend
+        self.timeout = 900
+
+    def statusChange(self, pkg, percent, status):
+        self._backend.PercentageChanged(int(percent))
+        #FIXME: should represent the status better (install, remove, preparing)
+        self._backend.StatusChanged(STATUS_INSTALL)
+        if (self.last_activity + self.timeout) < time.time():
+            logging.critical("Sending Crtl+C. Inactivity of %s "
+                             "seconds (%s)" % (self.timeout, self.status))
+            os.write(self.master_fd,chr(3))
+
+    def startUpdate(self):
+        self.last_activity = time.time()
+
+    def updateInterface(self):
+        apt.progress.InstallProgress.updateInterface(self)
+        #FIXME: what is the best timeout?
+
+    def fork(self):
+        logging.debug("doing a pty.fork()")
+        (self.pid, self.master_fd) = pty.fork()
+        if self.pid != 0:
+            logging.debug("pid is: %s" % self.pid)
+        return self.pid
+
+    def conffile(self, current, new):
+        logging.warning("Config file prompt: '%s'" % current)
+        # looks like we have a race here *sometimes*
+        time.sleep(5)
+        try:
+            # don't overwrite
+            os.write(self.master_fd,"n\n")
+        except Exception, e:
+            logging.error(e)
+
 
 class PackageKitAptBackend(PackageKitBaseBackend):
+    '''
+    PackageKit backend for apt
+    '''
     def __init__(self, bus_name, dbus_path):
+        log.info("Initializing backend")
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
+        self._xapian = None
+        # Avoid questions from the maintainer scripts as far as possible
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+        os.environ["APT_LISTCHANGES_FRONTEND"] = "none"
+
 
     # Methods ( client -> engine -> backend )
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
-        self._cache = apt.Cache(PackageKitProgress(self))
+        self.last_action_time = time.time()
+        log.info("Initializing cache")
+        self.StatusChanged(STATUS_SETUP)
+        self._open_cache()
+        self._xapian = xapian.Database(XAPIANDB)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -234,16 +166,47 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          in_signature='ss', out_signature='')
     def SearchName(self, filters, search):
         '''
-        Implement the {backend}-search-name functionality
+        Implement the apt2-search-name functionality
         '''
+        log.info("Searching for package name: %s" % search)
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
         self.StatusChanged(STATUS_QUERY)
 
         for pkg in self._cache:
-            if search in pkg.name:
+            if search in pkg.name and self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchDetails(self, filters, search):
+        '''
+        Implement the apt2-search-details functionality
+        '''
+        log.info("Searching for package name: %s" % search)
+        self.last_action_time = time.time()
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_QUERY)
+
+        self._xapian.reopen()
+        parser = xapian.QueryParser()
+        query = parser.parse_query(unicode(search),
+                                   DEFAULT_SEARCH_FLAGS)
+        enquire = xapian.Enquire(self._xapian)
+        enquire.set_query(query)
+        matches = enquire.get_mset(0, 1000)
+        for m in matches:
+            name = m[xapian.MSET_DOCUMENT].get_data()
+            if self._cache.has_key(name):
+                pkg = self._cache[name]
+                if self._is_package_visible(pkg, filters) == True:
+                    self._emit_package(pkg)
+
         self.Finished(EXIT_SUCCESS)
 
 
@@ -253,6 +216,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update functionality
         '''
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -267,6 +231,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-description functionality
         '''
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -304,27 +269,156 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Unlock(self):
+        self.last_action_time = time.time()
         self.doUnlock()
 
     def doUnlock(self):
         if self.isLocked():
-            PackageKitBaseBackend.doUnlock(self)
-
+            self._locked = False
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Lock(self):
+        self.last_action_time = time.time()
         self.doLock()
 
     def doLock(self):
-        pass
+        self._locked = True
 
-    #
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def UpdateSystem(self):
+        '''
+        Implement the {backend}-update-system functionality
+        '''
+        #FIXME: Better exception and error handling
+        #FIXME: Distupgrade or Upgrade?
+        #FIXME: Handle progress in a more sane way
+        log.info("Upgrading system")
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_UPDATE)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        try:
+            self._cache.upgrade(distUpgrade=True)
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Upgrade failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        self._open_cache()
+        self.Finished(EXIT_SUCCESS)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RemovePackage(self, id, deps=True):
+        '''
+        Implement the {backend}-remove functionality
+        '''
+        #FIXME: Better exception and error handling
+        #FIXME: Handle progress in a more sane way
+        log.info("Removing package with id %s" % id)
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_REMOVE)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        pkg = self._find_package_by_id(id)
+        name = pkg.name[:]
+        try:
+            pkg.markDelete()
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        # FIXME: handle error
+        self._open_cache()
+        if not self._cache.has_key(name) or not self._cache[name].isInstalled:
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallPackage(self, id):
+        '''
+        Implement the {backend}-install functionality
+        '''
+        #FIXME: Exception and error handling
+        #FIXME: Handle progress in a more sane way
+        log.info("Installing package with id %s" % id)
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_INSTALL)
+        self.PercentageChanged(0)
+        self.AllowCancel(False)
+        pkg = self._find_package_by_id(id)
+        name = pkg.name[:]
+        try:
+            pkg.markInstall()
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        self._open_cache()
+        if self._cache.has_key(name) and self._cache[name].isInstalled:
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='b', out_signature='')
+    def RefreshCache(self, force):
+        '''
+        Implement the {backend}-refresh_cache functionality
+        '''
+        self.last_action_time = time.time()
+        self.AllowCancel(True);
+        self.PercentageChanged(0)
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+        try:
+            self._cache.update(PackageKitFetchProgress(self))
+        except:
+            self._open_cache()
+            self.ErrorCode(ERROR_NO_CACHE,
+                           "Package cache could not be opened")
+            self.Finished(EXIT_FAILED)
+            return
+        self._open_cache()
+        self.Finished(EXIT_SUCCESS)
+
     # Helpers
-    #
+
+    def _open_cache(self):
+        '''
+        (Re)Open the APT cache
+        '''
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+        self.doLock()
+        try:
+            self._cache = apt.Cache(PackageKitOpProgress(self))
+        except:
+            self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
+            self.Finished(EXIT_FAILED)
+            return
+        self.doUnlock()
+        if self._cache._depcache.BrokenCount > 0:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,
+                           "Not all dependecies can be satisfied")
+            self.Finished(EXIT_FAILED)
+            return
+
     def get_id_from_package(self, pkg, installed=False):
         '''
-        Returns the id of the installation candidate of a core
+        Return the id of the installation candidate of a core
         apt package. If installed is set to True the id of the currently
         installed package will be returned.
         '''
@@ -338,282 +432,61 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
         return id
 
-    def _emit_package(self, pkg, installed=False):
+    def _emit_package(self, pkg):
         '''
         Send the Package signal for a given apt package
         '''
-        id = self.get_id_from_package(pkg, installed)
-        if installed and pkg.isInstalled:
+        id = self.get_id_from_package(pkg)
+        if pkg.isInstalled:
             status = INFO_INSTALLED
         else:
             status = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(status, id, summary)
 
-
-    # FIXME: Needs to be ported
-
-    def search_details(self, filters, key):
+    def _is_package_visible(self, pkg, filters):
         '''
-        Implement the {backend}-search-details functionality
+        Return True if the package should be shown in the user interface
         '''
-        self.status(STATUS_INFO)
-        self.allow_cancel(True)
-        for package in self._do_search(filters,
-                lambda pkg: pkg.matchDetails(key)):
-            self._emit_package(package)
-
-    def search_group(self, filters, key):
-        '''
-        Implement the {backend}-search-group functionality
-        '''
-        self.status(STATUS_INFO)
-        self.allow_cancel(True)
-        for package in self._do_search(filters,
-                lambda pkg: pkg.matchGroup(key)):
-            self._emit_package(package)
-
-    def search_file(self, filters, key):
-        '''
-        Implement the {backend}-search-file functionality
-        '''
-        self.allow_cancel(True)
-        self.percentage(None)
-
-        self.error(ERROR_NOT_SUPPORTED,
-                "This function is not implemented in this backend")
-
-    def refresh_cache(self, force):
-        '''
-        Implement the {backend}-refresh_cache functionality
-        '''
-        self.status(STATUS_REFRESH_CACHE)
-        try:
-            res = self._cache.update(PackageKitProgress(self))
-        except Exception, error_message:
-             self.error(ERROR_INTERNAL_ERROR,
-                        "Failed to fetch the following items:\n%s" % error_message)
-        return res
-
-    def resolve(self, name):
-        '''
-        Implement the {backend}-resolve functionality
-        '''
-        self.status(STATUS_INFO)
-        try:
-            pkg = Package(self,self._cache[name])
-            self._emit_package(pkg)
-        except KeyError:
-            self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find a package called '%s'"%name)
-
-    def _do_deps(self,inp,deps,recursive):
-        inp.markInstall()
-        newkeys = []
-        for x in inp.candidateDependencies:
-            n = x.or_dependencies[0].name
-            if not deps.has_key(n):
-                deps[n] = []
-                newkeys.append(n)
-            deps[n].append((x.or_dependencies[0].version,x.or_dependencies[0].relation))
-        if recursive:
-            for n in newkeys:
-                try:
-                    deps = self._do_deps(Package(self,self._cache[n],version=deps[n]),deps,recursive)
-                except KeyError: # FIXME: we're assuming this is a virtual package, which we can't cope with yet
-                    del deps[n]
-                    continue
-        return deps
-
-    def get_depends(self,package, recursive):
-        '''
-        Implement the {backend}-get-depends functionality
-        '''
-        self.allow_cancel(True)
-        self.status(STATUS_INFO)
-        recursive = (recursive == "True")
-        name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._cache[name],version=[(version,"=")],data=data)
-        pkg.setVersion(version)
-        deps = self._do_deps(pkg, {}, recursive)
-        for n in deps.keys():
-           self._emit_package(Package(self,self._cache[n],version=deps[n]))
-
-    def _do_reqs(self,inp,pkgs,recursive):
-        extra = []
-        fails = []
-        for r in inp._pkg.RevDependsList:
-            ch = apt_pkg.CheckDep(inp._version,r.CompType,r.TargetVer)
-            v = (r.ParentPkg.Name,r.ParentVer.VerStr)
-            if not ch or v in fails:
-                #print "skip",r.TargetVer,r.CompType,r.ParentPkg.Name,r.ParentVer.VerStr
-                fails.append(v)
-                continue
-            p = Package(self,self._cache[r.ParentPkg.Name],r.ParentVer.VerStr)
-            if v not in pkgs:
-                extra.append(p)
-                #print "new pkg",p
-                self._emit_package(p)
-            pkgs.add(v)
-        if recursive:
-            for e in extra:
-                pkgs = self._do_reqs(p, pkgs,recursive)
-        return pkgs
-
-    def get_requires(self,package,recursive):
-        '''
-        Implement the {backend}-get-requires functionality
-        '''
-        self.allow_cancel(True)
-        self.status(STATUS_INFO)
-        recursive = (recursive == "True")
-        name, version, arch, data = self.get_package_from_id(package)
-        pkg = Package(self,self._cache[name], version=[(version,"=")], data=data)
-
-        pkgs = Set()
-        self._do_reqs(pkg,pkgs, recursive)
-
-    def _build_repo_list(self):
-        repo = {}
-
-        sources = SourcesList()
-        repo["__sources"] = sources
-
-        root = apt_pkg.Config.FindDir("Dir::State::Lists")
-        #print root
-        for entry in sources:
-            if entry.type!="":
-                url = entry.uri
-                #if entry.template!=None:
-                url +="/dists/"
-                url += entry.dist
-                url = url.replace("//dists","/dists")
-                #print url
-                path = join(root,"%s_Release"%(apt_pkg.URItoFileName(url)))
-                if not exists(path):
-                    #print path
-                    name = "%s/unknown"%urlparse(entry.uri)[1]
-                else:
-                    lines = file(path).readlines()
-                    origin = ""
-                    suite = ""
-                    for l in lines:
-                        if l.find("Origin: ")==0:
-                            origin = l.split(" ",1)[1].strip()
-                        elif l.find("Suite: ")==0:
-                            suite = l.split(" ",1)[1].strip()
-                    assert origin!="" and suite!=""
-                    name = "%s/%s"%(origin,suite)
-                if entry.type == "deb-src":
-                    name += "-src"
-                    
-                repo[name] = {"entry":entry}
-        return repo
-
-    def get_repo_list(self):
-        '''
-        Implement the {backend}-get-repo-list functionality
-        '''
-        self.allow_interrupt(True)
-        self.status(STATUS_INFO)
-        repo = self._build_repo_list()
-        for e in repo.keys():
-            if e == "__sources":
-                continue
-            self.repo_detail(repo[e]["entry"].line.strip(),e,not repo[e]["entry"].disabled)
-        
-    def repo_enable(self, repoid, enable):
-        '''
-        Implement the {backend}-repo-enable functionality
-        '''
-        enable = (enable == "True")
-        repo = self._build_repo_list()
-        if not repo.has_key(repoid):
-            self.error(ERROR_REPO_NOT_FOUND,"Couldn't find repo '%s'"%repoid)
-            return
-        r = repo[repoid]
-        if not r["entry"].disabled == enable: # already there
-            return
-        r["entry"].set_enabled(enable)
-        try:
-            repo["__sources"].save()
-        except IOError,e:
-            self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
-
-    def install_file (self, inst_file):
-        '''
-        Implement the {backend}-install_file functionality
-        Install the package containing the inst_file file
-        '''
-        if not exists(inst_file):
-            self.error(ERROR_PACKAGE_NOT_FOUND,"Can't find %s"%inst_file)
-            return
-        deb = DebPackage(inst_file)
-        deps = {}
-        for k in ["Depends","Recommends"]:
-            if not deb._sections.has_key(k):
-                continue
-            for items in apt_pkg.ParseDepends(deb[k]):
-                assert len(items) == 1,"Can't handle or deps properly yet"
-                (pkg,ver,comp) = items[0]
-                if not deps.has_key(pkg):
-                    deps[pkg] = []
-                deps[pkg].append((ver,comp))
-        for n in deps.keys():
-           p = Package(self,self._cache[n],version=deps[n])
-           if not p.isInstalled:
-               p.markInstall()
-        assert self._cache.getChanges()==[],"Don't handle install changes yet"
-        # FIXME: nasty hack. Need a better way in
-        ret = system("dpkg -i %s"%inst_file)
-        if ret!=0:
-            self.error(ERROR_INTERNAL_ERROR,"Can't install package")
-
-    ### Helpers ###
-    def _do_search(self, filters, condition):
-        filters = filters.split(';')
-        size = len(self._cache)
-        percentage = 0
-        for i, pkg in enumerate(self._cache):
-            new_percentage = i / float(size) * 100
-            if new_percentage - percentage >= 5:
-                percentage = new_percentage
-                self.percentage(percentage)
-            package = Package(self, pkg)
-            if package.installedVersion is None and \
-                    package.candidateVersion is None:
-                continue
-            if not condition(package):
-                continue
-                continue
-            vers = [x.VerStr for x in package._pkg.VersionList]
-            if package.installedVersion!=None:
-                i = package.installedVersion
-                if i in vers and vers[0]!=i:
-                    del vers[vers.index(i)]
-                    vers.insert(0,i)
-
-            for ver in vers:
-                p = Package(self, package, version=[[ver,"="]])
-                if self._do_filtering(p, filters):
-                    yield p
-        self.percentage(100)
-
-    def _do_filtering(self, package, filters):
-        if len(filters) == 0 or filters == ['none']:
+        #FIXME: Needs to be optmized
+        if filters == 'none':
             return True
-        if (FILTER_INSTALLED in filters) and (not package.isInstalled):
+        if FILTER_INSTALLED in filters and not pkg.isInstalled:
             return False
-        if (FILTER_NOT_INSTALLED in filters) and package.isInstalled:
+        if FILTER_NOT_INSTALLED in filters and pkg.isInstalled:
             return False
-        if (FILTER_GUI in filters) and (not package.isGui):
+        if FILTER_GUI in filters and not self._package_has_gui(pkg):
             return False
-        if (FILTER_NOT_GUI in filters) and package.isGui:
+        if FILTER_NOT_GUI in filters and self._package_has_gui(pkg):
             return False
-        if (FILTER_DEVELOPMENT in filters) and (not package.isDevelopment):
+        if FILTER_DEVELOPMENT in filters and not self._package_is_devel(pkg):
             return False
-        if (FILTER_NOT_DEVELOPMENT in filters) and package.isDevelopment:
+        if FILTER_NOT_DEVELOPMENT in filters and self._package_is_devel(pkg):
             return False
         return True
+
+    def _package_has_gui(self, pkg):
+        #FIXME: should go to a modified Package class
+        #FIXME: take application data into account. perhaps checking for 
+        #       property in the xapian database
+        return pkg.section.split('/')[-1].lower() in ['x11', 'gnome', 'kde']
+
+    def _package_is_devel(self, pkg):
+        #FIXME: should go to a modified Package class
+        return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
+               pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
+
+    def _find_package_by_id(self, id):
+        '''
+        Return a package matching to the given package id
+        '''
+        # FIXME: Perform more checks
+        name, version, arch, data = self.get_package_from_id(id)
+        if self._cache.has_key(name):
+            return self._cache[name]
+        else:
+            return None
+
 
 if __name__ == '__main__':
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
