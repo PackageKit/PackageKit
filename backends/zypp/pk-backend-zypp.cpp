@@ -33,10 +33,8 @@
 #include <zypp/ResPoolProxy.h>
 #include <zypp/ui/Selectable.h>
 #include <zypp/Patch.h>
-#include <zypp/Selection.h>
 #include <zypp/Package.h>
 #include <zypp/Pattern.h>
-#include <zypp/Language.h>
 #include <zypp/Product.h>
 #include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
@@ -52,7 +50,6 @@
 #include <zypp/target/rpm/RpmException.h>
 
 #include <zypp/sat/Solvable.h>
-#include <zypp/sat/Capabilities.h>
 
 #include <map>
 #include <list>

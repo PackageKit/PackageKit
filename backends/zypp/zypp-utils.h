@@ -20,7 +20,6 @@ typedef zypp::ResObject::constPtr	ZyppObject;
 typedef zypp::Package::constPtr		ZyppPackage;
 typedef zypp::Patch::constPtr		ZyppPatch;
 typedef zypp::Pattern::constPtr		ZyppPattern;
-typedef zypp::Language::constPtr	ZyppLanguage;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
 typedef std::set<zypp::PoolItem> Candidates;
