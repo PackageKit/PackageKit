@@ -14,22 +14,19 @@
     <allow own="org.freedesktop.PackageKit"/>
   </policy>
 
-  <!-- Forbid anyone to invoke methods on the Manager and Device interfaces -->
+  <!-- Allow anyone to invoke methods on the Manager and Device interfaces -->
   <policy context="default">
     <deny send_interface="org.freedesktop.PackageKit"/>
-    <deny send_destination="org.freedesktop.PackageKit"/>
   </policy>
 
   <!-- This will not work if pam_console support is not enabled -->
   <policy at_console="true">
     <allow send_interface="org.freedesktop.PackageKit"/>
-    <allow send_destination="org.freedesktop.PackageKit"/>
   </policy>
 
   <!-- You can change this to a more suitable user, or make per-group -->
-  <policy group="packagekit">
+  <policy user="0">
     <allow send_interface="org.freedesktop.PackageKit"/>
-    <allow send_destination="org.freedesktop.PackageKit"/>
   </policy>
 
 </busconfig>
