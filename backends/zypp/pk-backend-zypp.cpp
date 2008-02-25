@@ -151,20 +151,24 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 {
 	g_return_if_fail (backend != NULL);
 	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_GRAPHICS,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_OFFICE,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_MULTIMEDIA,
-				      PK_GROUP_ENUM_SYSTEM,
-				      PK_GROUP_ENUM_PUBLISHING,
-				      PK_GROUP_ENUM_SERVERS,
-				      PK_GROUP_ENUM_FONTS,
-				      PK_GROUP_ENUM_ADMIN_TOOLS,
-				      PK_GROUP_ENUM_LOCALIZATION,
-				      PK_GROUP_ENUM_SECURITY,
+                                      PK_GROUP_ENUM_GAMES,
+                                      PK_GROUP_ENUM_GRAPHICS,
+                                      PK_GROUP_ENUM_OFFICE,
+                                      PK_GROUP_ENUM_PROGRAMMING,
+                                      PK_GROUP_ENUM_MULTIMEDIA,
+                                      PK_GROUP_ENUM_SYSTEM,
+                                      PK_GROUP_ENUM_DESKTOP_GNOME,
+                                      PK_GROUP_ENUM_DESKTOP_KDE,
+                                      PK_GROUP_ENUM_DESKTOP_XFCE,
+                                      PK_GROUP_ENUM_DESKTOP_OTHER,
+                                      PK_GROUP_ENUM_PUBLISHING,
+                                      PK_GROUP_ENUM_ADMIN_TOOLS,
+                                      PK_GROUP_ENUM_LOCALIZATION,
+                                      PK_GROUP_ENUM_SECURITY,
+                                      PK_GROUP_ENUM_EDUCATION,
+                                      PK_GROUP_ENUM_COMMUNICATION,
+                                      PK_GROUP_ENUM_NETWORK,
+                                      PK_GROUP_ENUM_UNKNOWN,
 				      -1);
 }
 
@@ -251,6 +255,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                 zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
                 
                 std::map<std::string, zypp::sat::Solvable> caps;
+                std::vector<std::string> temp;
 
 		for (zypp::Capabilities::const_iterator it = req.begin ();
 				it != req.end ();
@@ -262,15 +267,18 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
                                 // Adding Packages only one time
                                 std::map<std::string, zypp::sat::Solvable>::iterator mIt;
-                                mIt = caps.find(it2->name ());
-                                if( mIt != caps.end()){
-                                        if(it2->isSystem ()){
-                                                caps.erase (mIt);
-                                                caps[it2->name ()] = *it2;
-                                        }                       
-                                }else{
-                                        caps[it2->name ()] = *it2;
-                                }  
+                                mIt = caps.find(it->asString ());
+                                if ( std::find (temp.begin (), temp.end(), it2->name ()) == temp.end()){
+                                        if( mIt != caps.end()){
+                                                if(it2->isSystem ()){
+                                                        caps.erase (mIt);
+                                                        caps[it->asString ()] = *it2;
+                                                }                       
+                                        }else{
+                                                caps[it->asString ()] = *it2;
+                                        }
+                                        temp.push_back(it2->name ());
+                                }
                               
                         }
                 }
@@ -374,7 +382,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 			it != v->end (); it++) {
 		zypp::ResObject::constPtr pkg = (*it);
 		const char *version = pkg->edition ().asString ().c_str ();
-fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
+                fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
 		if (strcmp (pi->version, version) == 0) {
 			package = pkg;
 			break;
@@ -391,14 +399,57 @@ fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, versio
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+        
+        try {
+                PkGroupEnum group = zypp_get_group (package);
 
-	pk_backend_description (backend,
-				d->package_id,		// package_id
-				"unknown",		// const gchar *license
-				PK_GROUP_ENUM_OTHER,	// PkGroupEnum group
-				package->description ().c_str (),	// const gchar *description
-				"TODO: add package URL here",			// const gchar *url
-				(gulong)package->size());			// gulong size
+                // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
+                if (package->isSystem ()){
+                        zypp::Target_Ptr target;
+
+                        zypp::ZYpp::Ptr zypp;
+                        zypp = get_zypp ();
+
+                        target = zypp->target ();
+  
+                        zypp::target::rpm::RpmDb &rpm = target->rpmDb (); 
+                        rpm.initDatabase();
+                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+                        rpm.getData (package-> name (), package->edition (), rpmHeader);
+
+	                pk_backend_description (backend,
+			                	d->package_id,                  		// package_id
+				                rpmHeader->tag_license ().c_str (),		// const gchar *license
+				                group,                                  	// PkGroupEnum group
+				                rpmHeader->tag_description ().c_str (),   	// const gchar *description
+				                rpmHeader->tag_url (). c_str (),	  	// const gchar *url
+				                (gulong)rpmHeader->tag_size ());		// gulong size
+
+                        rpm.closeDatabase();
+                }else{
+                        zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(package);
+                        pk_backend_description (backend,
+                                                d->package_id,
+                                                pkg->license ().c_str (),
+                                                group,
+                                                pkg->description ().c_str (),
+                                                pkg->url ().c_str (),
+                                                (gulong)pkg->size ());
+                }
+
+        } catch (const zypp::target::rpm::RpmException &ex) {
+	        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+                pk_backend_finished (backend);
+		g_free (d->package_id);
+                g_free (d);
+                return FALSE;
+        } catch (const zypp::Exception &ex) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+                pk_backend_finished (backend);
+                g_free (d->package_id);
+                g_free (d);
+                return FALSE;
+        }
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);
@@ -1001,14 +1052,23 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	pk_backend_no_percentage_updates (backend);
 
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem>;
+
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
-			std::vector<zypp::PoolItem> *v = zypp_get_packages_by_name (search, TRUE);
-			zypp_emit_packages_in_list (backend, v);
-			delete (v);
+			v = zypp_get_packages_by_name (search, TRUE);
 			break;
-	};
-
+	
+                case SEARCH_TYPE_DETAILS:
+                        v = zypp_get_packages_by_details (search, TRUE);
+                        break;      
+                case SEARCH_TYPE_FILE:
+                        v = zypp_get_packages_by_file (search);
+                        break;
+        };
+        
+	zypp_emit_packages_in_list (backend, v);
+	delete (v);
 /*
 	if (mode == SEARCH_TYPE_FILE) {
 		if (installed == FALSE && available == FALSE) {
@@ -1085,6 +1145,26 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
+}
+
+/**
+ * backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
+}
+
+/**
+ * backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	find_packages (backend, search, filter, SEARCH_TYPE_FILE);
 }
 
 /**
@@ -1255,6 +1335,118 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
         }
 }
 
+/**
+  * backend_get_requires_thread:
+  */
+static gboolean
+backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
+        
+        PkPackageId *pi;
+        PkBackend *backend;
+        
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	ThreadData *d = (ThreadData*) data;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+        
+        zypp::ResPool pool = zypp_build_local_pool();        
+
+        zypp::PoolItem package;
+        gboolean found = FALSE;
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+                package = (*it);
+                found = TRUE;
+        }
+
+	if (found == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Package is not installed");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+        // set Package as to be installed
+        package.status ().setToBeUninstalled (zypp::ResStatus::USER);
+
+	pk_backend_set_percentage (backend, 40);
+
+        // solver run
+        zypp::Resolver solver(pool);
+        
+        // DEBUG https://bugzilla.novell.com/show_bug.cgi?id=363545
+        if (solver.forceResolve () == FALSE) {
+                std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
+                if(problems.begin() == problems.end())
+                        fprintf(stderr,"\n_____________NO ERRORS AVAILABLE !?!?!_____________________\n");
+                for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
+                    fprintf(stderr,"\n__ERROR: %s_______________________\n", (*it)->description ().c_str ());
+                }
+		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	pk_backend_set_percentage (backend, 60);
+
+        // look for packages which would be uninstalled
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+                if (it->status () == zypp::ResStatus::toBeUninstalled || it->status () == zypp::ResStatus::toBeUninstalledSoft) {
+                        gchar *package_id;
+                        package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
+                                                           it->resolvable ()->edition ().asString ().c_str(),
+                                                           it->resolvable ()->arch ().c_str(),
+                                                           "opensuse");
+                        pk_backend_package (backend,
+			                    PK_INFO_ENUM_INSTALLED,
+			                    package_id,
+			                    it->resolvable ()->description ().c_str ());
+                        g_free (package_id);
+                }
+        }
+
+        pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+	pk_backend_finished (backend);
+
+        return TRUE;
+}
+
+/**
+  * backend_get_requires:
+  */
+static void
+backend_get_requires(PkBackend *backend, const gchar *package_id, gboolean recursive) {
+        g_return_if_fail (backend != NULL);
+
+        ThreadData *data = g_new0(ThreadData, 1);
+        if (data == NULL) {
+                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_requires");
+                pk_backend_finished (backend);
+        } else {
+                data->package_id = g_strdup(package_id);
+                pk_backend_thread_create (thread, backend_get_requires_thread, data);
+        }
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>, Stefan Haas <shaas@suse.de>",	/* author */
@@ -1266,7 +1458,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
-	NULL,					/* get_requires */
+	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
@@ -1275,8 +1467,8 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
-	NULL,					/* search_file */
+	backend_search_details,			/* search_details */
+	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */

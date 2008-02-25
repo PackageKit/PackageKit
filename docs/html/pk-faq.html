@@ -114,10 +114,60 @@ and we can add it to the supported list.
 Upgrading, installing or removing packages <b>has to be 100% silent</b>.
 </p>
 <p>
-The user cannot be prompted for questions "set applet setuid?" as these will
-not be handled in PackageKit.
-The backend should do the right thing, as these messages mean very little to
-the average user and cannot be translated.
+The user cannot be prompted mid-transaction for questions as these will not be
+handled in PackageKit.
+The backend should do the right thing, as these questions mean very
+little to the average user.
+</p>
+<p>
+The reasons for this are as follows:
+</p>
+<ul>
+ <li>
+  The messages cannot be translated as the daemon is running in the C locale,
+  and there may be multiple running session clients in different locales.
+ </li>
+ <li>
+  Stopping the transaction and waiting for input would also mean the methods
+  are no longer "fire and forget".
+ </li>
+ <li>
+  Security updates can now be performed automatically, i.e.
+  when the user is idle.
+  There's no user at the console in this case to answer questions.
+ </li>
+ <li>
+  Due to the client/server split of PackageKit, a non-root user would be able
+  to change the answer of debconf scripts, and another PolicyKit role would have
+  to be defined.
+  In this case a situation could arise where a user is able to update software,
+  but not agree to EULAs, thus making the transaction invalid and impossible.
+ </li>
+</ul>
+</p>
+<p>
+EULAs or other agreements will have to be agreed to <b>before</b> the
+transaction is processed.
+EULAs are legally questionable (because the files are already installed) and
+only the user that installing the software is ever shown them.
+If EULAs are required, they should be shown per-user - i.e. the first time an
+application is run.
+</p>
+<p>
+PackageKit will not install packages with broken maintainer scripts that
+require a stdin.
+If this is attempted the backend should detect this and error out of the
+transaction with <code>PK_ERROR_ENUM_BROKEN_PACKAGE</code>.
+<b>We cannot and will not ask the user for random standard input.</b>
+</p>
+<p>
+See the <a href="http://wiki.debian.org/PackageKit">Debian PackageKit wiki</a>
+for more details and further discussion.
+</p>
+<p>
+If the transaction needs to tell the user something, the <code>Message()</code>
+method can be used that will localise the message up the stack, and also give the user a way
+of ignoring duplicate messages of this type.
 </p>
 
 <h3>Does PackageKit replace up2date?</h3>

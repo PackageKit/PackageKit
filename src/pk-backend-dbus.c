@@ -197,7 +197,7 @@ static void
 pk_backend_dbus_description_cb (DBusGProxy *proxy, const gchar *package_id,
 				const gchar *license, const gchar *group_text,
 				const gchar *detail, const gchar *url,
-				guint32 size, PkBackendDbus *backend_dbus)
+				guint64 size, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
 	pk_backend_description (backend_dbus->priv->backend, package_id,

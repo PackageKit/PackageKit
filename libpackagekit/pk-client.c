@@ -440,7 +440,13 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	/* only this instance is finished, and do it before the signal so we can reset */
 	client->priv->is_finished = TRUE;
 
-	g_signal_emit (client , signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
+
+	/* check we are still valid */
+	if (PK_IS_CLIENT (client) == FALSE) {
+		pk_debug ("client was g_object_unref'd in finalise, object no longer valid");
+		return;
+	}
 
 	/* exit our private loop */
 	if (client->priv->synchronous == TRUE) {
@@ -3125,6 +3131,9 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->tid);
 
 	/* clear the loop, if we were using it */
+	if (client->priv->synchronous == TRUE) {
+		g_main_loop_quit (client->priv->loop);
+	}
 	g_main_loop_unref (client->priv->loop);
 
 	/* free the hash table */
@@ -3181,4 +3190,62 @@ pk_client_new (void)
 	client = g_object_new (PK_TYPE_CLIENT, NULL);
 	return PK_CLIENT (client);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+#include <glib/gstdio.h>
+
+static gboolean finished = FALSE;
+
+static void
+libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+{
+	finished = TRUE;
+	/* this is actually quite common */
+	g_object_unref (client);
+}
+
+void
+libst_client (LibSelfTest *test)
+{
+	PkClient *client;
+
+	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get client");
+	client = pk_client_new ();
+	if (client != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* check use after finalise */
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (libst_client_finished_cb), NULL);
+
+	/************************************************************/
+	libst_title (test, "do any method");
+	/* we don't care if this fails */
+	pk_client_set_synchronous (client, TRUE);
+	pk_client_search_name (client, "none", "moooo");
+	libst_success (test, "did something");
+
+	/************************************************************/
+	libst_title (test, "we finished?");
+	if (finished == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	libst_end (test);
+}
+#endif
 

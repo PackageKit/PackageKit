@@ -11,7 +11,7 @@ noinst_LTLIBRARIES =						\
 libselftest_la_SOURCES =					\
 	libselftest.c						\
 	libselftest.h
-libselftest_la_LIBADD = @DBUS_LIBS@ $(INTLLIBS) $(GLIB_LIBS)
+libselftest_la_LIBADD = $(DBUS_LIBS) $(INTLLIBS) $(GLIB_LIBS)
 
 clean-local:
 	rm -f *~

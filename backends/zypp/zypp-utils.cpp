@@ -18,6 +18,8 @@
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
 #include <zypp/sat/Pool.h>
+#include <zypp/target/rpm/RpmDb.h>
+#include <zypp/target/rpm/RpmHeader.h>
 
 #include <pk-backend.h>
 
@@ -101,6 +103,97 @@ fprintf (stderr, "TODO: Handle exceptions: %s\n", ex.asUserString ().c_str ());
 	return zypp->pool ();
 }
 
+zypp::ResPool
+zypp_build_local_pool ()
+{
+        zypp::sat::Pool pool = zypp::sat::Pool::instance ();
+
+        for (zypp::sat::Pool::RepoIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
+                if (! pool.reposEmpty ())
+                        pool.reposErase(it->name ());
+        }
+
+        //Add local resolvables
+        zypp::ZYpp::Ptr zypp = get_zypp ();
+        zypp->target ()->load ();
+
+        return zypp->pool ();
+
+}
+
+PkGroupEnum
+zypp_get_group (zypp::ResObject::constPtr item)
+{
+        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
+        std::string group;
+
+        if (item->isSystem ()) {
+                zypp::ZYpp::Ptr zypp = get_zypp ();
+                zypp::Target_Ptr target = zypp->target ();
+
+                zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
+                rpm.initDatabase ();
+
+                zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+                rpm.getData (item->name (), item->edition (), rpmHeader);
+                group = rpmHeader->tag_group ();
+
+                rpm.closeDatabase ();
+       
+        }else{
+                zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(item);
+                group = pkg->group ();
+        }
+
+        // TODO Look for a faster and nice way to do this conversion
+
+        if (group.find ("Amusements") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_GAMES;
+        } else if (group.find ("Development") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_PROGRAMMING;
+        } else if (group.find ("Hardware") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SYSTEM;
+        } else if (group.find ("Archiving") != std::string::npos 
+                  || group.find("Clustering") != std::string::npos
+                  || group.find("System/Monitoring") != std::string::npos
+                  || group.find("Databases") != std::string::npos
+                  || group.find("System/Management") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_ADMIN_TOOLS;
+        } else if (group.find ("Graphics") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_GRAPHICS;
+        } else if (group.find ("Mulitmedia") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_MULTIMEDIA;
+        } else if (group.find ("") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_NETWORK;
+        } else if (group.find ("Office") != std::string::npos 
+                  || group.find("Text") != std::string::npos
+                  || group.find("Editors") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_OFFICE;
+        } else if (group.find ("Publishing") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_PUBLISHING;
+        } else if (group.find ("Security") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SECURITY;
+        } else if (group.find ("Telephony") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_COMMUNICATION;
+        } else if (group.find ("GNOME") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_GNOME;
+        } else if (group.find ("KDE") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_KDE;
+        } else if (group.find ("XFCE") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_XFCE;
+        } else if (group.find ("GUI/Other") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_DESKTOP_OTHER;
+        } else if (group.find ("Localization") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_LOCALIZATION;
+        } else if (group.find ("System") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_SYSTEM;
+        } else if (group.find ("Scientific") != std::string::npos) {
+                pkGroup = PK_GROUP_ENUM_EDUCATION;
+        }
+
+        return pkGroup;
+}
+
 std::vector<zypp::PoolItem> *
 zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 {
@@ -116,6 +209,54 @@ zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 	}
 
 	return v;
+}
+
+std::vector<zypp::PoolItem> *
+zypp_get_packages_by_details (const gchar *search_term, gboolean include_local)
+{
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+
+        zypp::ResPool pool = zypp_build_pool (include_local);
+
+        std::string term (search_term);
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                if ((*it)->name ().find (term) != std::string::npos || (*it)->description ().find (term) != std::string::npos )
+                    v->push_back (*it);
+        }
+
+        return v;
+}
+
+std::vector<zypp::PoolItem> * 
+zypp_get_packages_by_file (const gchar *search_file)
+{
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+
+        zypp::ResPool pool = zypp_build_local_pool ();
+
+        std::string file (search_file);
+
+        zypp::ZYpp::Ptr zypp = get_zypp ();
+        zypp::Target_Ptr target = zypp->target ();
+
+        zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
+        rpm.initDatabase ();
+        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                rpm.getData ((*it)->name (), (*it)->edition (), rpmHeader);
+                std::list<std::string> files = rpmHeader->tag_filenames ();
+
+                if (std::find(files.begin(), files.end(), file) != files.end()) {
+                        v->push_back (*it);
+                        break;
+                }
+
+        }
+
+        return v;
 }
 
 zypp::Resolvable::constPtr
