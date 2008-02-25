@@ -64,5 +64,7 @@ TODO:
     - translations 				=> localization
   The following could not be maped: science, documentation, electronics
   Are there any derivates with additional sections?
+
+ * Fix the dbus policy. Should we require at_console for searching?
  
 DONE:
