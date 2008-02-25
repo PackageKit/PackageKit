@@ -147,12 +147,12 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 /**
  * backend_refresh_cache:
- *
+ * */
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
+	g_return_if_fail (dbus != NULL);
 
 	// check network state
 	if (pk_network_is_online (network) == FALSE) {
@@ -161,8 +161,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "refresh-cache.py", NULL);
-} */
+	pk_backend_dbus_refresh_cache(dbus, force);
+} 
 
 /**
  * pk_backend_remove_package:
@@ -196,14 +196,14 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 
 /**
  * pk_backend_update_system:
- *
+ * */
 static void
 backend_update_system (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "update-system.py", NULL);
-} */
+	g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_update_system (dbus);
+}
 
 /**
  * pk_backend_resolve:
@@ -226,6 +226,28 @@ backend_get_repo_list (PkBackend *backend)
 	g_return_if_fail (spawn != NULL);
 	pk_backend_spawn_helper (spawn, "get-repo-list.py", NULL);
 } */
+
+/**
+ * backend_install_package
+ *  */
+static void
+backend_install_package (PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_install_package (dbus, package_id);
+}
+
+/**
+ * backend_remove_package
+ *  */
+static void
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_remove_package (dbus, package_id, allow_deps);
+}
 
 /**
  * backend_get_description:
@@ -274,10 +296,10 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_package */
+	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
-	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	backend_refresh_cache,			/* refresh_cache */
+	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
@@ -285,7 +307,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL,					/* update_system */
+	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */

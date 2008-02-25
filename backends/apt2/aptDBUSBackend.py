@@ -20,7 +20,9 @@ __state__   = "experimental"
 
 import logging
 import os
+import pty
 import re
+import time
 import warnings
 
 import apt
@@ -49,6 +51,9 @@ DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
                         xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
 class PackageKitOpProgress(apt.progress.OpProgress):
+    '''
+    Handle the cache opening process
+    '''
     def __init__(self, backend):
         self._backend = backend
         apt.progress.OpProgress.__init__(self)
@@ -61,41 +66,95 @@ class PackageKitOpProgress(apt.progress.OpProgress):
         self._backend.PercentageChanged(100)
 
 class PackageKitFetchProgress(apt.progress.FetchProgress):
+    '''
+    Handle the package download process
+    '''
     def __init__(self, backend):
         self._backend = backend
         apt.progress.FetchProgress.__init__(self)
     # FetchProgress callbacks
     def pulse(self):
+        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
+        self._backend.PercentageChanged(int(percent))
         apt.progress.FetchProgress.pulse(self)
-        self._backend.percentage(self.percent)
         return True
 
     def stop(self):
-        self._backend.percentage(100)
+        self._backend.PercentageChanged(100)
 
     def mediaChange(self, medium, drive):
         #FIXME: use the Message method to notify the user
         self._backend.error(ERROR_INTERNAL_ERROR,
-                "Medium change needed")
+                            "Medium change needed")
 
 class PackageKitInstallProgress(apt.progress.InstallProgress):
+    '''
+    Handle the installation and removal process. Bits taken from
+    DistUpgradeViewNonInteractive.
+    '''
     def __init__(self, backend):
         apt.progress.InstallProgress.__init__(self)
+        self._backend = backend
+        self.timeout = 900
+
+    def statusChange(self, pkg, percent, status):
+        self._backend.PercentageChanged(int(percent))
+        #FIXME: should represent the status better (install, remove, preparing)
+        self._backend.StatusChanged(STATUS_INSTALL)
+        if (self.last_activity + self.timeout) < time.time():
+            logging.critical("Sending Crtl+C. Inactivity of %s "
+                             "seconds (%s)" % (self.timeout, self.status))
+            os.write(self.master_fd,chr(3))
+
+    def startUpdate(self):
+        self.last_activity = time.time()
+
+    def updateInterface(self):
+        apt.progress.InstallProgress.updateInterface(self)
+        #FIXME: what is the best timeout?
+
+    def fork(self):
+        logging.debug("doing a pty.fork()")
+        (self.pid, self.master_fd) = pty.fork()
+        if self.pid != 0:
+            logging.debug("pid is: %s" % self.pid)
+        return self.pid
+
+    def conffile(self, current, new):
+        logging.warning("Config file prompt: '%s'" % current)
+        # looks like we have a race here *sometimes*
+        time.sleep(5)
+        try:
+            # don't overwrite
+            os.write(self.master_fd,"n\n")
+        except Exception, e:
+            logging.error(e)
+
 
 class PackageKitAptBackend(PackageKitBaseBackend):
+    '''
+    PackageKit backend for apt
+    '''
     def __init__(self, bus_name, dbus_path):
         log.info("Initializing backend")
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
         self._xapian = None
+        # Avoid questions from the maintainer scripts as far as possible
+        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
+        os.environ["APT_LISTCHANGES_FRONTEND"] = "none"
+
 
     # Methods ( client -> engine -> backend )
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
+        self.last_action_time = time.time()
         log.info("Initializing cache")
-        self._cache = apt.Cache(PackageKitOpProgress(self))
+        self.StatusChanged(STATUS_SETUP)
+        self._open_cache()
         self._xapian = xapian.Database(XAPIANDB)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -110,13 +169,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-search-name functionality
         '''
         log.info("Searching for package name: %s" % search)
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
         self.StatusChanged(STATUS_QUERY)
 
         for pkg in self._cache:
-            if search in pkg.name and self._package_is_visible(pkg, filters):
+            if search in pkg.name and self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
@@ -128,6 +188,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-search-details functionality
         '''
         log.info("Searching for package name: %s" % search)
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -143,7 +204,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             name = m[xapian.MSET_DOCUMENT].get_data()
             if self._cache.has_key(name):
                 pkg = self._cache[name]
-                if self._package_is_visible(pkg) == True:
+                if self._is_package_visible(pkg, filters) == True:
                     self._emit_package(pkg)
 
         self.Finished(EXIT_SUCCESS)
@@ -155,6 +216,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update functionality
         '''
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -169,6 +231,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-description functionality
         '''
+        self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -206,27 +269,156 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Unlock(self):
+        self.last_action_time = time.time()
         self.doUnlock()
 
     def doUnlock(self):
         if self.isLocked():
-            PackageKitBaseBackend.doUnlock(self)
-
+            self._locked = False
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Lock(self):
+        self.last_action_time = time.time()
         self.doLock()
 
     def doLock(self):
-        pass
+        self._locked = True
 
-    #
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def UpdateSystem(self):
+        '''
+        Implement the {backend}-update-system functionality
+        '''
+        #FIXME: Better exception and error handling
+        #FIXME: Distupgrade or Upgrade?
+        #FIXME: Handle progress in a more sane way
+        log.info("Upgrading system")
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_UPDATE)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        try:
+            self._cache.upgrade(distUpgrade=True)
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Upgrade failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        self._open_cache()
+        self.Finished(EXIT_SUCCESS)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RemovePackage(self, id, deps=True):
+        '''
+        Implement the {backend}-remove functionality
+        '''
+        #FIXME: Better exception and error handling
+        #FIXME: Handle progress in a more sane way
+        log.info("Removing package with id %s" % id)
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_REMOVE)
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+        pkg = self._find_package_by_id(id)
+        name = pkg.name[:]
+        try:
+            pkg.markDelete()
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        # FIXME: handle error
+        self._open_cache()
+        if not self._cache.has_key(name) or not self._cache[name].isInstalled:
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallPackage(self, id):
+        '''
+        Implement the {backend}-install functionality
+        '''
+        #FIXME: Exception and error handling
+        #FIXME: Handle progress in a more sane way
+        log.info("Installing package with id %s" % id)
+        self.last_action_time = time.time()
+        self.StatusChanged(STATUS_INSTALL)
+        self.PercentageChanged(0)
+        self.AllowCancel(False)
+        pkg = self._find_package_by_id(id)
+        name = pkg.name[:]
+        try:
+            pkg.markInstall()
+            self._cache.commit(PackageKitFetchProgress(self),
+                               PackageKitInstallProgress(self))
+        except:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.Finished(EXIT_FAILED)
+            self._open_cache()
+            return
+        self._open_cache()
+        if self._cache.has_key(name) and self._cache[name].isInstalled:
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='b', out_signature='')
+    def RefreshCache(self, force):
+        '''
+        Implement the {backend}-refresh_cache functionality
+        '''
+        self.last_action_time = time.time()
+        self.AllowCancel(True);
+        self.PercentageChanged(0)
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+        try:
+            self._cache.update(PackageKitFetchProgress(self))
+        except:
+            self._open_cache()
+            self.ErrorCode(ERROR_NO_CACHE,
+                           "Package cache could not be opened")
+            self.Finished(EXIT_FAILED)
+            return
+        self._open_cache()
+        self.Finished(EXIT_SUCCESS)
+
     # Helpers
-    #
+
+    def _open_cache(self):
+        '''
+        (Re)Open the APT cache
+        '''
+        self.StatusChanged(STATUS_REFRESH_CACHE)
+        self.doLock()
+        try:
+            self._cache = apt.Cache(PackageKitOpProgress(self))
+        except:
+            self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
+            self.Finished(EXIT_FAILED)
+            return
+        self.doUnlock()
+        if self._cache._depcache.BrokenCount > 0:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,
+                           "Not all dependecies can be satisfied")
+            self.Finished(EXIT_FAILED)
+            return
+
     def get_id_from_package(self, pkg, installed=False):
         '''
-        Returns the id of the installation candidate of a core
+        Return the id of the installation candidate of a core
         apt package. If installed is set to True the id of the currently
         installed package will be returned.
         '''
@@ -240,19 +432,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         id = self._get_package_id(pkg.name, pkgver, pkg.architecture, origin)
         return id
 
-    def _emit_package(self, pkg, installed=False):
+    def _emit_package(self, pkg):
         '''
         Send the Package signal for a given apt package
         '''
-        id = self.get_id_from_package(pkg, installed)
-        if installed and pkg.isInstalled:
+        id = self.get_id_from_package(pkg)
+        if pkg.isInstalled:
             status = INFO_INSTALLED
         else:
             status = INFO_AVAILABLE
         summary = pkg.summary
         self.Package(status, id, summary)
 
-    def _package_is_visible(self, pkg, filters):
+    def _is_package_visible(self, pkg, filters):
         '''
         Return True if the package should be shown in the user interface
         '''
@@ -283,6 +475,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: should go to a modified Package class
         return pkg.name.endswith("-dev") or pkg.name.endswith("-dbg") or \
                pkg.section.split('/')[-1].lower() in ['devel', 'libdevel']
+
+    def _find_package_by_id(self, id):
+        '''
+        Return a package matching to the given package id
+        '''
+        # FIXME: Perform more checks
+        name, version, arch, data = self.get_package_from_id(id)
+        if self._cache.has_key(name):
+            return self._cache[name]
+        else:
+            return None
 
 
 if __name__ == '__main__':
