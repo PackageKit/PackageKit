@@ -14,8 +14,8 @@
   <icon_name>package-x-generic</icon_name>
 
   <action id="org.freedesktop.packagekit.install">
-    <description>Install package</description>
-    <message>System policy prevents installing package</message>
+    <_description>Install package</_description>
+    <_message>System policy prevents installing package</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-package</vendor_url>
     <defaults>
@@ -25,8 +25,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.localinstall">
-    <description>Install local file</description>
-    <message>System policy prevents installing file</message>
+    <_description>Install local file</_description>
+    <_message>System policy prevents installing file</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-file</vendor_url>
     <defaults>
@@ -36,8 +36,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.service-pack">
-    <description>Update from service pack</description>
-    <message>System policy prevents updating from service pack</message>
+    <_description>Update from service pack</_description>
+    <_message>System policy prevents updating from service pack</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-service-pack</vendor_url>
     <defaults>
@@ -47,8 +47,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.update-package">
-    <description>Update package</description>
-    <message>System policy prevents updating package</message>
+    <_description>Update package</_description>
+    <_message>System policy prevents updating package</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-update</vendor_url>
     <defaults>
@@ -58,8 +58,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.remove">
-    <description>Remove package</description>
-    <message>System policy prevents removing package</message>
+    <_description>Remove package</_description>
+    <_message>System policy prevents removing package</_message>
     <icon_name>pk-package-delete</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-remove</vendor_url>
     <defaults>
@@ -69,8 +69,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.update-system">
-    <description>Update all packages on system</description>
-    <message>System policy prevents updating system</message>
+    <_description>Update all packages on system</_description>
+    <_message>System policy prevents updating system</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-update-system</vendor_url>
     <defaults>
@@ -80,8 +80,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.rollback">
-    <description>Rollback to a previous transaction</description>
-    <message>System policy prevents rollback</message>
+    <_description>Rollback to a previous transaction</_description>
+    <_message>System policy prevents rollback</_message>
     <icon_name>pk-rollback</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-rollback</vendor_url>
     <defaults>
@@ -91,8 +91,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.repo-change">
-    <description>Change repository parameters</description>
-    <message>System policy prevents changing repository parameters</message>
+    <_description>Change repository parameters</_description>
+    <_message>System policy prevents changing repository parameters</_message>
     <icon_name>pk-package-info</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-repo-enable</vendor_url>
     <defaults>
@@ -102,8 +102,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.refresh-cache">
-    <description>Refresh package cache</description>
-    <message>System policy prevents refresh package cache</message>
+    <_description>Refresh package cache</_description>
+    <_message>System policy prevents refresh package cache</_message>
     <icon_name>pk-refresh-cache</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-refresh-cache</vendor_url>
     <defaults>

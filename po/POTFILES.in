@@ -1,4 +1,8 @@
 [encoding: UTF-8]
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+policy/org.freedesktop.packagekit.policy.in
+client/pk-console.c
+client/pk-monitor.c
+src/pk-main.c
 
