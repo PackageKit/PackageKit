@@ -6,8 +6,12 @@
 
 <!--
 Policy definitions for PackageKit system actions.
-Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
+Copyright (c) 2007-2008 Richard Hughes <richard@hughsie.com>
 -->
+
+  <vendor>The PackageKit Project</vendor>
+  <vendor_url>http://www.packagekit.org/</vendor_url>
+  <icon_name>package-x-generic</icon_name>
 
   <action id="org.freedesktop.packagekit.install">
     <description>Install package</description>
