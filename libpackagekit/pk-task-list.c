@@ -208,9 +208,9 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item->monitor = pk_client_new ();
 			g_signal_connect (item->monitor, "status-changed",
 					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-			pk_client_set_tid (item->monitor, tid);
-			pk_client_get_role (item->monitor, &item->role, &item->package_id);
-			pk_client_get_status (item->monitor, &item->status);
+			pk_client_set_tid (item->monitor, tid, NULL);
+			pk_client_get_role (item->monitor, &item->role, &item->package_id, NULL);
+			pk_client_get_status (item->monitor, &item->status, NULL);
 
 			/* add to watched array */
 			g_ptr_array_add (tlist->priv->task_list, item);

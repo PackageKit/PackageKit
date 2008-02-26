@@ -3,7 +3,7 @@ NULL =
 
 polkitdir = $(datadir)/PolicyKit/policy
 polkit_DATA =					\
-	packagekit.policy			\
+	org.freedesktop.packagekit.policy	\
 	$(NULL)
 
 EXTRA_DIST =					\

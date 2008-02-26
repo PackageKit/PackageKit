@@ -4,14 +4,20 @@
  "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
 <policyconfig>
 
-<!--
-Policy definitions for PackageKit system actions.
-Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
--->
+  <!--
+    Policy definitions for PackageKit system actions.
+    Copyright (c) 2007-2008 Richard Hughes <richard@hughsie.com>
+  -->
+
+  <vendor>The PackageKit Project</vendor>
+  <vendor_url>http://www.packagekit.org/</vendor_url>
+  <icon_name>package-x-generic</icon_name>
 
   <action id="org.freedesktop.packagekit.install">
     <description>Install package</description>
     <message>System policy prevents installing package</message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-package</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -21,6 +27,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.localinstall">
     <description>Install local file</description>
     <message>System policy prevents installing file</message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-file</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
@@ -30,6 +38,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.service-pack">
     <description>Update from service pack</description>
     <message>System policy prevents updating from service pack</message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-service-pack</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin</allow_active>
@@ -39,6 +49,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.update-package">
     <description>Update package</description>
     <message>System policy prevents updating package</message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_self_keep_always</allow_active>
@@ -48,6 +60,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.remove">
     <description>Remove package</description>
     <message>System policy prevents removing package</message>
+    <icon_name>pk-package-delete</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-remove</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -57,6 +71,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.update-system">
     <description>Update all packages on system</description>
     <message>System policy prevents updating system</message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update-system</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -66,6 +82,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.rollback">
     <description>Rollback to a previous transaction</description>
     <message>System policy prevents rollback</message>
+    <icon_name>pk-rollback</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-rollback</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -75,6 +93,8 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.repo-change">
     <description>Change repository parameters</description>
     <message>System policy prevents changing repository parameters</message>
+    <icon_name>pk-package-info</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-repo-enable</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -84,9 +104,12 @@ Copyright (c) 2007 Richard Hughes <richard@hughsie.com>
   <action id="org.freedesktop.packagekit.refresh-cache">
     <description>Refresh package cache</description>
     <message>System policy prevents refresh package cache</message>
+    <icon_name>pk-refresh-cache</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-refresh-cache</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>
     </defaults>
   </action>
 </policyconfig>
+
