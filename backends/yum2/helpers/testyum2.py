@@ -64,8 +64,8 @@ try:
         print "Testing GetDepends(PKG_ID,False)"
         iface.GetDepends(PKG_ID,False)
     if cmd == 'refresh-cache' or cmd == 'all':
-        print "Testing RefreshCache()"
-        iface.RefreshCache()
+        print "Testing RefreshCache(False)"
+        iface.RefreshCache(False)
     if cmd == 'resolve' or cmd == 'all':
         print "Testing Resolve(FILTER_NONE,'yum')"
         iface.Resolve(FILTER_NONE,'yum')
