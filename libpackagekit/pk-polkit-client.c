@@ -103,7 +103,7 @@ pk_polkit_client_gain_privilege (PkPolkitClient *pclient, const gchar *pk_action
 		g_error_free (error);
 		return FALSE;
 	}
-	pk_debug ("gained privilege = %d", gained_privilege);
+	pk_debug ("gained %s privilege = %d", pk_action, gained_privilege);
 
 	return gained_privilege;
 }
@@ -159,6 +159,13 @@ pk_polkit_client_error_denied_by_policy (GError *error)
 
 	/* if not set */
 	if (error == NULL) {
+		pk_debug ("not an error, is this sane?");
+		return FALSE;
+	}
+
+	/* not a dbus error */
+	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
+		pk_warning ("not a remote exception, is this sane?");
 		return FALSE;
 	}
 

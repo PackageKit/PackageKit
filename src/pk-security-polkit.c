@@ -188,6 +188,49 @@ pk_security_class_init (PkSecurityClass *klass)
 }
 
 /**
+ * pk_security_io_watch_have_data:
+ **/
+static gboolean
+pk_security_io_watch_have_data (GIOChannel *channel, GIOCondition condition, gpointer user_data)
+{
+	int fd;
+	PolKitContext *pk_context = user_data;
+	fd = g_io_channel_unix_get_fd (channel);
+	polkit_context_io_func (pk_context, fd);
+	return TRUE;
+}
+
+/**
+ * pk_security_io_add_watch:
+ **/
+static int
+pk_security_io_add_watch (PolKitContext *pk_context, int fd)
+{
+	guint id = 0;
+	GIOChannel *channel;
+	channel = g_io_channel_unix_new (fd);
+	if (channel == NULL) {
+		return id;
+	}
+	id = g_io_add_watch (channel, G_IO_IN, pk_security_io_watch_have_data, pk_context);
+	if (id == 0) {
+		g_io_channel_unref (channel);
+		return id;
+	}
+	g_io_channel_unref (channel);
+	return id;
+}
+
+/**
+ * pk_security_io_remove_watch:
+ **/
+static void
+pk_security_io_remove_watch (PolKitContext *pk_context, int watch_id)
+{
+	g_source_remove (watch_id);
+}
+
+/**
  * pk_security_init:
  *
  * initializes the security class. NOTE: We expect security objects
@@ -217,6 +260,12 @@ pk_security_init (PkSecurity *security)
 
 	/* get PolicyKit context */
 	security->priv->pk_context = polkit_context_new ();
+
+	/* watch for changes */
+	polkit_context_set_io_watch_functions (security->priv->pk_context,
+					       pk_security_io_add_watch,
+					       pk_security_io_remove_watch);
+
 	pk_error = NULL;
 	retval = polkit_context_init (security->priv->pk_context, &pk_error);
 	if (retval == FALSE) {

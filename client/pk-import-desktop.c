@@ -47,12 +47,16 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	gchar *name;
 	PkPackageItem *item;
 	PkPackageId *pid;
+	gboolean ret;
 
 	/* use PK to find the correct package */
-	pk_client_reset (client);
-	pk_client_set_use_buffer (client, TRUE);
-	pk_client_set_synchronous (client, TRUE);
-	pk_client_search_file (client, "installed", filename);
+	pk_client_reset (client, NULL);
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, TRUE, NULL);
+	ret = pk_client_search_file (client, "installed", filename, NULL);
+	if (!ret) {
+		return NULL;
+	}
 
 	/* check that we only matched one package */
 	size = pk_client_package_buffer_get_size (client);

@@ -182,7 +182,7 @@ main (int argc, char *argv[])
 	pk_debug ("connected=%i", connected);
 
 	client = pk_client_new ();
-	pk_client_set_promiscuous (client, TRUE);
+	pk_client_set_promiscuous (client, TRUE, NULL);
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_monitor_finished_cb), NULL);
 	g_signal_connect (client, "error-code",
