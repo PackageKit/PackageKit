@@ -33,10 +33,8 @@
 #include <zypp/ResPoolProxy.h>
 #include <zypp/ui/Selectable.h>
 #include <zypp/Patch.h>
-#include <zypp/Selection.h>
 #include <zypp/Package.h>
 #include <zypp/Pattern.h>
-#include <zypp/Language.h>
 #include <zypp/Product.h>
 #include <zypp/Repository.h>
 #include <zypp/RepoManager.h>
@@ -52,7 +50,6 @@
 #include <zypp/target/rpm/RpmException.h>
 
 #include <zypp/sat/Solvable.h>
-#include <zypp/sat/Capabilities.h>
 
 #include <map>
 #include <list>
@@ -82,6 +79,11 @@ typedef struct {
 	gchar *filter;
 	gint mode;
 } FindData;
+
+typedef struct {
+	gchar *pkGroup;
+	gchar *filter;
+} GroupData;
 
 typedef struct {
 	gchar *name;
@@ -401,18 +403,12 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
         
         try {
-                PkGroupEnum group = zypp_get_group (package);
+                PkGroupEnum group = get_enum_group (package);
 
                 // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
                 if (package->isSystem ()){
-                        zypp::Target_Ptr target;
 
-                        zypp::ZYpp::Ptr zypp;
-                        zypp = get_zypp ();
-
-                        target = zypp->target ();
-  
-                        zypp::target::rpm::RpmDb &rpm = target->rpmDb (); 
+                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb (); 
                         rpm.initDatabase();
                         zypp::target::rpm::RpmHeader::constPtr rpmHeader;
                         rpm.getData (package-> name (), package->edition (), rpmHeader);
@@ -1157,6 +1153,77 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
 }
 
+static gboolean
+backend_search_group_thread (PkBackendThread *thread, gpointer data)
+{
+        GroupData *d = (GroupData*) data;
+        
+        PkBackend *backend;
+        backend = pk_backend_thread_get_backend (thread);
+
+	if (d->pkGroup == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
+		g_free (d->filter);
+                g_free (d->pkGroup);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+        
+	pk_backend_set_percentage (backend, 0);
+
+        zypp::ResPool pool = zypp_build_pool(true);
+
+	pk_backend_set_percentage (backend, 30);
+
+        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+
+        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();         
+        rpm.initDatabase ();                                      
+
+        fprintf(stderr,"\n__________________________%s___________________________\n",d->pkGroup);
+
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                  if (g_strrstr (zypp_get_group (*it, rpm), d->pkGroup))
+                          v->push_back(*it);
+        }
+
+        rpm.closeDatabase ();                                     
+	pk_backend_set_percentage (backend, 70);
+
+        zypp_emit_packages_in_list (backend ,v);
+
+        delete (v);
+        
+	pk_backend_set_percentage (backend, 100);
+
+        g_free (d->filter);
+        g_free (d->pkGroup);
+        g_free (d);
+	pk_backend_finished (backend);
+
+        return TRUE;
+} 
+
+/**
+ * backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *pkGroup)
+{
+        g_return_if_fail (backend != NULL);
+
+        GroupData *data = g_new0(GroupData, 1);
+        if (data == NULL) {
+                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_search_group");
+                pk_backend_finished (backend);
+        } else {
+                data->pkGroup = g_strdup(pkGroup);
+                data->filter = g_strdup(filter);
+                pk_backend_thread_create (thread, backend_search_group_thread, data);
+        }
+}
+
 /**
  * backend_search_file:
  */
@@ -1278,14 +1345,9 @@ backend_get_files_thread (PkBackendThread *thread, gpointer data) {
 
         std::string temp;
         if (package->isSystem ()){
-                zypp::Target_Ptr target;
 
-               	zypp::ZYpp::Ptr zypp;
-              	zypp = get_zypp ();
-
-               	target = zypp->target ();
                 try {
-                        zypp::target::rpm::RpmDb &rpm = target->rpmDb (); 
+                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb (); 
                         rpm.initDatabase();
                         zypp::target::rpm::RpmHeader::constPtr rpmHeader;
                         rpm.getData (package-> name (), package->edition (), rpmHeader);
@@ -1469,7 +1531,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,    		/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
 	NULL,					/* update_system */

@@ -121,73 +121,91 @@ zypp_build_local_pool ()
 
 }
 
-PkGroupEnum
-zypp_get_group (zypp::ResObject::constPtr item)
+zypp::target::rpm::RpmDb&
+zypp_get_rpmDb()
 {
-        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
+        zypp::ZYpp::Ptr zypp = get_zypp ();
+        zypp::Target_Ptr target = zypp->target ();
+
+        zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
+
+        return rpm;
+}
+
+gchar*
+zypp_get_group (zypp::ResObject::constPtr item, zypp::target::rpm::RpmDb &rpm)
+{
         std::string group;
 
         if (item->isSystem ()) {
-                zypp::ZYpp::Ptr zypp = get_zypp ();
-                zypp::Target_Ptr target = zypp->target ();
-
-                zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
-                rpm.initDatabase ();
 
                 zypp::target::rpm::RpmHeader::constPtr rpmHeader;
                 rpm.getData (item->name (), item->edition (), rpmHeader);
                 group = rpmHeader->tag_group ();
 
-                rpm.closeDatabase ();
-       
         }else{
                 zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(item);
                 group = pkg->group ();
         }
+        std::transform(group.begin(), group.end(), group.begin(), tolower);
+        return (gchar*)group.c_str ();
+}
 
+PkGroupEnum
+get_enum_group (zypp::ResObject::constPtr item)
+{
+        
+        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
+        rpm.initDatabase ();
+
+        std::string group (zypp_get_group (item, rpm));
+
+        rpm.closeDatabase ();
+
+        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
         // TODO Look for a faster and nice way to do this conversion
 
-        if (group.find ("Amusements") != std::string::npos) {
+        if (group.find ("amusements") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_GAMES;
-        } else if (group.find ("Development") != std::string::npos) {
+        } else if (group.find ("development") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_PROGRAMMING;
-        } else if (group.find ("Hardware") != std::string::npos) {
+        } else if (group.find ("hardware") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_SYSTEM;
-        } else if (group.find ("Archiving") != std::string::npos 
-                  || group.find("Clustering") != std::string::npos
-                  || group.find("System/Monitoring") != std::string::npos
-                  || group.find("Databases") != std::string::npos
-                  || group.find("System/Management") != std::string::npos) {
+        } else if (group.find ("archiving") != std::string::npos 
+                  || group.find("clustering") != std::string::npos
+                  || group.find("system/monitoring") != std::string::npos
+                  || group.find("databases") != std::string::npos
+                  || group.find("system/management") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_ADMIN_TOOLS;
-        } else if (group.find ("Graphics") != std::string::npos) {
+        } else if (group.find ("graphics") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_GRAPHICS;
-        } else if (group.find ("Mulitmedia") != std::string::npos) {
+        } else if (group.find ("mulitmedia") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_MULTIMEDIA;
-        } else if (group.find ("") != std::string::npos) {
+        } else if (group.find ("network") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_NETWORK;
-        } else if (group.find ("Office") != std::string::npos 
-                  || group.find("Text") != std::string::npos
-                  || group.find("Editors") != std::string::npos) {
+        } else if (group.find ("office") != std::string::npos 
+                  || group.find("text") != std::string::npos
+                  || group.find("editors") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_OFFICE;
-        } else if (group.find ("Publishing") != std::string::npos) {
+        } else if (group.find ("publishing") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_PUBLISHING;
-        } else if (group.find ("Security") != std::string::npos) {
+        } else if (group.find ("security") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_SECURITY;
-        } else if (group.find ("Telephony") != std::string::npos) {
+        } else if (group.find ("telephony") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_COMMUNICATION;
-        } else if (group.find ("GNOME") != std::string::npos) {
+        } else if (group.find ("gnome") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_DESKTOP_GNOME;
-        } else if (group.find ("KDE") != std::string::npos) {
+        } else if (group.find ("kde") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_DESKTOP_KDE;
-        } else if (group.find ("XFCE") != std::string::npos) {
+        } else if (group.find ("xfce") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_DESKTOP_XFCE;
-        } else if (group.find ("GUI/Other") != std::string::npos) {
+        } else if (group.find ("gui/other") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_DESKTOP_OTHER;
-        } else if (group.find ("Localization") != std::string::npos) {
+        } else if (group.find ("localization") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_LOCALIZATION;
-        } else if (group.find ("System") != std::string::npos) {
+        } else if (group.find ("system") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_SYSTEM;
-        } else if (group.find ("Scientific") != std::string::npos) {
+        } else if (group.find ("scientific") != std::string::npos) {
                 pkGroup = PK_GROUP_ENUM_EDUCATION;
         }
 

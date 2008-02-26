@@ -20,7 +20,6 @@ typedef zypp::ResObject::constPtr	ZyppObject;
 typedef zypp::Package::constPtr		ZyppPackage;
 typedef zypp::Patch::constPtr		ZyppPatch;
 typedef zypp::Pattern::constPtr		ZyppPattern;
-typedef zypp::Language::constPtr	ZyppLanguage;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
 typedef std::set<zypp::PoolItem> Candidates;
@@ -41,9 +40,19 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 zypp::ResPool zypp_build_local_pool ();
 
 /**
-  * Return the PkGroupEnum of the given PoolItem.
+  * Return the rpm-Database
   */
-PkGroupEnum zypp_get_group (zypp::ResObject::constPtr item);
+zypp::target::rpm::RpmDb& zypp_get_rpmDb();
+
+/**
+  * Return the gchar of the given PoolItem.
+  */
+gchar* zypp_get_group (zypp::ResObject::constPtr item, zypp::target::rpm::RpmDb &rpm);
+
+/**
+  * Return the PkEnumGroup of the given PoolItem.
+  */
+PkGroupEnum get_enum_group (zypp::ResObject::constPtr item);
 
 /**
  * Returns a list of packages that match the specified package_name.
