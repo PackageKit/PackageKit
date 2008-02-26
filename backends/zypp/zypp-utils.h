@@ -40,9 +40,19 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 zypp::ResPool zypp_build_local_pool ();
 
 /**
-  * Return the PkGroupEnum of the given PoolItem.
+  * Return the rpm-Database
   */
-PkGroupEnum zypp_get_group (zypp::ResObject::constPtr item);
+zypp::target::rpm::RpmDb& zypp_get_rpmDb();
+
+/**
+  * Return the gchar of the given PoolItem.
+  */
+gchar* zypp_get_group (zypp::ResObject::constPtr item, zypp::target::rpm::RpmDb &rpm);
+
+/**
+  * Return the PkEnumGroup of the given PoolItem.
+  */
+PkGroupEnum get_enum_group (zypp::ResObject::constPtr item);
 
 /**
  * Returns a list of packages that match the specified package_name.
