@@ -491,10 +491,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return None
 
 
-if __name__ == '__main__':
+def main():
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+
+if __name__ == '__main__':
+    main()
 
 # vim: ts=4 et sts=4
