@@ -1134,11 +1134,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _show_package_description(self,pkg):        
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
-        desc = pkg.description
-        desc = desc.replace('\n\n',';')
-        desc = desc.replace('\n',' ')
 
-        self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+        self._show_description(id, pkg.license, "unknown", pkg.description, pkg.url,
                              pkg.size)
 
     def _getEVR(self,idver):
