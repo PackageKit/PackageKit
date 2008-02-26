@@ -8,13 +8,13 @@
     <title>Overall Description</title>
 
     <para>
-      PackageKit is a small open source systems abstracts out common package
+      PackageKit is a small open source system that abstracts out common package
       management tasks such as:
     </para>
     <itemizedlist>
       <listitem>
         <para>
-          Checking for updates and installing in the background.
+          Checking for updates and installing them in the background.
         </para>
       </listitem>
       <listitem>
@@ -25,7 +25,7 @@
     </itemizedlist>
 
     <para>
-      PackageKit is a modular design with an asynchronous API for client programs,
+      PackageKit has a modular design with an asynchronous API for client programs,
       a flexible queuing module, and run-time selectable backends.
     </para>
 
@@ -47,11 +47,16 @@
         A backend is just a compiled <literal>.so</literal> object that is
         loaded at run-time and provides an interface to the underlying package
         commands.
-        A backend converts an async request into either a new thread which
-        in the same process, or using external "glue" files that can be written
-        in any language.
+        A backend converts an async request into either a new thread
+        in the same process, executes external "glue" files that
+        can be written in any language, or uses DBUS to signal a
+        daemon process to handle the request.
       </para>
       <para>
+	Backends do not have to support all of the commands supported
+        by PackageKit.  Each backend advertises the commands and
+        options it supports, and the frontend will only show UI
+        elements for those commands.
         Please see the <literal>html/pk-faq.html</literal> file for the current
         status of the existing backends.
         Backend maintainers, please keep this file updated.
@@ -61,12 +66,12 @@
     <sect2 id="introduction-backends-compiled-backends">
       <title>Compiled backends</title>
       <para>
-        If you have got a C or C++ binding for your package system then you can
-        use a compiled backend, which is more efficient than using helpers as
-        described below.
-        You can include the headers in the backend (with extra libraries) and
-        then just write the simple code to interface with the set methods of
-        PackageKit.
+        If you have a C or C++ binding for your package system then
+        you can use a compiled backend, which is more efficient than
+        using helpers as described below.
+        You can include the headers in the backend (with extra
+        libraries) and then just write the simple code to interface
+        with the methods of PackageKit.
         A C example can be found in <literal>backends/box</literal> and a
         C++ example in <literal>backends/apt</literal>.
       </para>
@@ -83,7 +88,7 @@
     <sect2 id="introduction-backends-helpers">
       <title>Backends with helpers</title>
       <para>
-        If you do not have a C or C++ language binding PackageKit executes
+        If you do not have a C or C++ language binding, PackageKit executes
         helper scripts written in pretty much any language.
         It then watches the standard out and standard error and parses the
         output into compiled backend commands.
@@ -113,6 +118,36 @@
         and paste in the compiled part of the backend.
       </para>
     </sect2>
+
+    <sect2 id="introduction-backends-dbus">
+      <title>DBUS-based backends</title>
+      <para>
+        Backend helpers communicating over standard out and standard
+        error are easy to write, but can have some performance
+        problems.  For instance, if your packages system has to do a
+        lot of work when it starts up and shuts down, performance in
+        the UI may suffer.  In these cases, you can use a persistant
+        backend daemon that communicates to the C backend over DBUS.
+      </para>
+      <para>
+        Your daemon will be started by DBUS, and should be responsible
+        for it's own thread management.  It should receive an Init
+        signal when the C backend starts, and an Exit signal before it
+        exits.  The C backend should also send Lock and signals before
+        a command is executed, and Unlock after it completes
+        successfully.  You should also consider adding a timeout value
+        to your daemon so that it will exit after a set time with no
+        activity from the C backend.  That way the daemon will still
+        exit even if the C backend crashes for some reason.
+      </para>
+      <para>
+        Again, like the helper backends described above, a compiled
+        backend stub is needed.  An example of a DBUS backend written
+        in python can be found in <literal>backends/yum2</literal>,
+        along with a compiled stub written in C.
+      </para>
+    </sect2>
+
   </sect1>
 
   <sect1 id="introduction-ideas">
