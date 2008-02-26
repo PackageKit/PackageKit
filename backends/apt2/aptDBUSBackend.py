@@ -408,12 +408,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except:
             self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
             self.Finished(EXIT_FAILED)
+            self.Exit()
             return
         self.doUnlock()
         if self._cache._depcache.BrokenCount > 0:
             self.ErrorCode(ERROR_INTERNAL_ERROR,
                            "Not all dependecies can be satisfied")
             self.Finished(EXIT_FAILED)
+            self.Exit()
             return
 
     def get_id_from_package(self, pkg, installed=False):
