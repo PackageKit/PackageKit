@@ -120,7 +120,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	fprintf (stderr, "\n\n*** zypp_backend_initialize ***\n\n");
+	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
 
@@ -135,7 +135,7 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-fprintf (stderr, "\n\n*** zypp_backend_destroy ***\n\n");
+        pk_debug ("zypp_backend_destroy");
 	EventDirector *eventDirector = _eventDirectors [backend];
 	if (eventDirector != NULL) {
 		delete (eventDirector);
@@ -228,7 +228,6 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
 				if (strcmp (edition_str, pi->version) == 0) {
 					// this is the one, mark it to be installed
-                                        fprintf (stderr, "\n\n *** marked a package!!! ***\n\n");
 					pool_item = selectable;
 					pool_item_found = TRUE;
 					break; // Found it, get out of the for loop
@@ -384,7 +383,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 			it != v->end (); it++) {
 		zypp::ResObject::constPtr pkg = (*it);
 		const char *version = pkg->edition ().asString ().c_str ();
-                fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
+                //fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
 		if (strcmp (pi->version, version) == 0) {
 			package = pkg;
 			break;
@@ -744,7 +743,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 			continue;
 
 		try {
-fprintf (stderr, "\n\n *** Refreshing metadata ***\n\n");
+                        // Refreshing metadata
 			manager.refreshMetadata (repo, force == TRUE ?
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
@@ -755,8 +754,8 @@ fprintf (stderr, "\n\n *** Refreshing metadata ***\n\n");
 		}
 
 		try {
-fprintf (stderr, "\n\n *** Building cache ***\n\n");
-			manager.buildCache (repo, force == TRUE ?
+                        // Building cache
+                        manager.buildCache (repo, force == TRUE ?
 				zypp::RepoManager::BuildForced :
 				zypp::RepoManager::BuildIfNeeded);
 		//} catch (const zypp::repo::RepoNoUrlException &ex) {
@@ -1181,8 +1180,6 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
         zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();         
         rpm.initDatabase ();                                      
 
-        fprintf(stderr,"\n__________________________%s___________________________\n",d->pkGroup);
-
         for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
                   if (g_strrstr (zypp_get_group (*it, rpm), d->pkGroup))
                           v->push_back(*it);
@@ -1452,10 +1449,8 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         // DEBUG https://bugzilla.novell.com/show_bug.cgi?id=363545
         if (solver.forceResolve () == FALSE) {
                 std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
-                if(problems.begin() == problems.end())
-                        fprintf(stderr,"\n_____________NO ERRORS AVAILABLE !?!?!_____________________\n");
                 for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-                    fprintf(stderr,"\n__ERROR: %s_______________________\n", (*it)->description ().c_str ());
+                   pk_warning("Solver problem: '%s'", (*it)->description ().c_str ());
                 }
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 		pk_package_id_free (pi);
