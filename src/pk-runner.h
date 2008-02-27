@@ -78,7 +78,8 @@ gboolean	 pk_runner_refresh_cache		(PkRunner	*runner,
 							 gboolean	 force);
 gboolean	 pk_runner_remove_package		(PkRunner	*runner,
 							 const gchar	*package_id,
-							 gboolean	 allow_deps);
+							 gboolean	 allow_deps,
+							 gboolean	 autoremoe);
 gboolean	 pk_runner_search_details		(PkRunner	*runner,
 							 const gchar	*filter,
 							 const gchar	*search);

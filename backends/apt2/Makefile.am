@@ -1,3 +1,5 @@
+NULL = 
+
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_apt2.la
 libpk_backend_apt2_la_SOURCES = pk-backend-apt2.c

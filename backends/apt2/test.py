@@ -22,10 +22,10 @@ import sys
 import dbus
 from packagekit.enums import *
 
-PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYumBackend'
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
 PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
-PKG_ID = 'supertux;0.3.0-3.fc8;x86_64;updates'
+PKG_ID = 'xterm;232-1;i386;Debian'
 
 try:
     bus = dbus.SystemBus()
@@ -64,8 +64,8 @@ try:
         print "Testing GetDepends(PKG_ID,False)"
         iface.GetDepends(PKG_ID,False)
     if cmd == 'refresh-cache' or cmd == 'all':
-        print "Testing RefreshCache(False)"
-        iface.RefreshCache(False)
+        print "Testing RefreshCache()"
+        iface.RefreshCache()
     if cmd == 'resolve' or cmd == 'all':
         print "Testing Resolve(FILTER_NONE,'yum')"
         iface.Resolve(FILTER_NONE,'yum')

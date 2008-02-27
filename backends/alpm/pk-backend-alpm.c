@@ -551,7 +551,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_remove_package:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_if_fail (backend != NULL);
 	PkPackageId *id = pk_package_id_new_from_string (package_id);

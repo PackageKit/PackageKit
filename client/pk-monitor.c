@@ -148,9 +148,9 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			"Show extra debugging information", NULL },
+			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
-			"Show the program version and exit", NULL},
+			_("Show the program version and exit"), NULL},
 		{ NULL}
 	};
 
@@ -182,7 +182,7 @@ main (int argc, char *argv[])
 	pk_debug ("connected=%i", connected);
 
 	client = pk_client_new ();
-	pk_client_set_promiscuous (client, TRUE);
+	pk_client_set_promiscuous (client, TRUE, NULL);
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (pk_monitor_finished_cb), NULL);
 	g_signal_connect (client, "error-code",

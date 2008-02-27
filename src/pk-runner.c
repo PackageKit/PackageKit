@@ -67,6 +67,7 @@ struct PkRunnerPrivate
 	gboolean		 allow_cancel;
 	gboolean		 cached_force;
 	gboolean		 cached_allow_deps;
+	gboolean		 cached_autoremove;
 	gboolean		 cached_enabled;
 	gchar			*cached_package_id;
 	gchar			*cached_transaction_id;
@@ -319,7 +320,8 @@ pk_runner_set_running (PkRunner *runner)
 	} else if (runner->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		desc->remove_package (runner->priv->backend,
 					       runner->priv->cached_package_id,
-					       runner->priv->cached_allow_deps);
+					       runner->priv->cached_allow_deps,
+					       runner->priv->cached_autoremove);
 	} else if (runner->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		desc->update_package (runner->priv->backend,
 					       runner->priv->cached_package_id);
@@ -534,7 +536,7 @@ pk_runner_refresh_cache (PkRunner *runner, gboolean force)
  * pk_runner_remove_package:
  */
 gboolean
-pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean allow_deps)
+pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->remove_package == NULL) {

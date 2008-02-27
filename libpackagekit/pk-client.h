@@ -35,6 +35,8 @@ G_BEGIN_DECLS
 #define PK_IS_CLIENT(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_CLIENT))
 #define PK_IS_CLIENT_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CLIENT))
 #define PK_CLIENT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CLIENT, PkClientClass))
+#define PK_CLIENT_ERROR	 	(pk_client_error_quark ())
+#define PK_CLIENT_TYPE_ERROR	(pk_client_error_get_type ())
 
 /**
  * PK_CLIENT_PERCENTAGE_INVALID:
@@ -42,6 +44,21 @@ G_BEGIN_DECLS
  * The unknown percentage value
  */
 #define PK_CLIENT_PERCENTAGE_INVALID	101
+
+/**
+ * PkClientError:
+ *
+ * Errors that can be thrown
+ */
+typedef enum
+{
+	PK_CLIENT_ERROR_FAILED,
+	PK_CLIENT_ERROR_NO_TID,
+	PK_CLIENT_ERROR_ALREADY_TID,
+	PK_CLIENT_ERROR_ROLE_UNKNOWN,
+	PK_CLIENT_ERROR_PROMISCUOUS,
+	PK_CLIENT_ERROR_LAST
+} PkClientError;
 
 typedef struct PkClientPrivate PkClientPrivate;
 
@@ -56,97 +73,138 @@ typedef struct
 	GObjectClass	parent_class;
 } PkClientClass;
 
+GQuark		 pk_client_error_quark			(void);
+GType		 pk_client_error_get_type		(void);
+gboolean	 pk_client_error_print			(GError		**error);
+
 GType		 pk_client_get_type			(void);
 PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,
-							 const gchar	*tid);
+							 const gchar	*tid,
+							 GError		**error);
 gboolean	 pk_client_set_promiscuous		(PkClient	*client,
-							 gboolean	 enabled);
+							 gboolean	 enabled,
+							 GError		**error);
 gchar		*pk_client_get_tid			(PkClient	*client);
 
 gboolean	 pk_client_set_use_buffer		(PkClient	*client,
-							 gboolean	 use_buffer);
+							 gboolean	 use_buffer,
+							 GError		**error);
 gboolean	 pk_client_set_synchronous		(PkClient	*client,
-							 gboolean	 synchronous);
+							 gboolean	 synchronous,
+							 GError		**error);
 gboolean	 pk_client_set_name_filter		(PkClient	*client,
-							 gboolean	 name_filter);
+							 gboolean	 name_filter,
+							 GError		**error);
 gboolean	 pk_client_get_use_buffer		(PkClient	*client);
-gboolean	 pk_client_get_allow_cancel		(PkClient	*client);
+gboolean	 pk_client_get_allow_cancel		(PkClient	*client,
+							 gboolean	*allow_cancel,
+							 GError		**error);
 
 /* general methods */
 gboolean	 pk_client_get_status			(PkClient	*client,
-							 PkStatusEnum	*status);
+							 PkStatusEnum	*status,
+							 GError		**error);
 gboolean	 pk_client_get_role			(PkClient	*client,
 							 PkRoleEnum	*role,
-							 gchar		**package_id);
+							 gchar		**package_id,
+							 GError		**error);
 gboolean	 pk_client_get_progress			(PkClient	*client,
 							 guint		*percentage,
 							 guint		*subpercentage,
 							 guint		*elapsed,
-							 guint		*remaining);
+							 guint		*remaining,
+							 GError		**error);
 gboolean	 pk_client_get_package			(PkClient	*client,
-							 gchar		**package_id);
-gboolean	 pk_client_cancel			(PkClient	*client);
+							 gchar		**package_id,
+							 GError		**error);
+gboolean	 pk_client_cancel			(PkClient	*client,
+							 GError		**error);
 
 
 
-gboolean	 pk_client_get_updates			(PkClient	*client);
-gboolean	 pk_client_update_system		(PkClient	*client);
+gboolean	 pk_client_get_updates			(PkClient	*client,
+							 GError		**error);
+gboolean	 pk_client_update_system		(PkClient	*client,
+							 GError		**error);
 gboolean	 pk_client_search_name			(PkClient	*client,
 							 const gchar	*filter,
-							 const gchar	*search);
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_search_details		(PkClient	*client,
 							 const gchar	*filter,
-							 const gchar	*search);
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_search_group			(PkClient	*client,
 							 const gchar	*filter,
-							 const gchar	*search);
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_search_file			(PkClient	*client,
 							 const gchar	*filter,
-							 const gchar	*search);
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_get_depends			(PkClient	*client,
 							 const gchar	*package_id,
-							 gboolean	 recursive);
+							 gboolean	 recursive,
+							 GError		**error);
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_client_get_requires			(PkClient	*client,
 							 const gchar	*package_id,
-							 gboolean	 recursive);
+							 gboolean	 recursive,
+							 GError		**error);
 gboolean	 pk_client_get_description		(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_client_remove_package		(PkClient	*client,
 							 const gchar	*package,
-							 gboolean	 allow_deps);
+							 gboolean	 allow_deps,
+							 gboolean	 autoremove,
+							 GError		**error);
 gboolean	 pk_client_refresh_cache		(PkClient	*client,
-							 gboolean	 force);
+							 gboolean	 force,
+							 GError		**error);
 gboolean	 pk_client_install_package		(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_client_update_package		(PkClient	*client,
-							 const gchar	*package_id);
+							 const gchar	*package_id,
+							 GError		**error);
 gboolean	 pk_client_install_file			(PkClient	*client,
-							 const gchar	*full_path);
+							 const gchar	*full_path,
+							 GError		**error);
 gboolean	 pk_client_service_pack			(PkClient	*client,
-							 const gchar	*location);
+							 const gchar	*location,
+							 GError		**error);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,
-							 const gchar	*package);
+							 const gchar	*package,
+							 GError		**error);
 gboolean	 pk_client_rollback			(PkClient	*client,
-							 const gchar	*transaction_id);
-gboolean	 pk_client_cancel			(PkClient	*client);
-gboolean	 pk_client_requeue			(PkClient	*client);
+							 const gchar	*transaction_id,
+							 GError		**error);
+gboolean	 pk_client_cancel			(PkClient	*client,
+							 GError		**error);
+gboolean	 pk_client_requeue			(PkClient	*client,
+							 GError		**error);
 
 /* repo stuff */
-gboolean	 pk_client_get_repo_list		(PkClient	*client);
+gboolean	 pk_client_get_repo_list		(PkClient	*client,
+							 GError		**error);
 gboolean	 pk_client_repo_enable			(PkClient	*client,
 							 const gchar	*repo_id,
-							 gboolean	 enabled);
+							 gboolean	 enabled,
+							 GError		**error);
 gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
-							 const gchar	*value);
+							 const gchar	*value,
+							 GError		**error);
 
 /* cached stuff */
 guint		 pk_client_package_buffer_get_size	(PkClient	*client);
@@ -158,17 +216,22 @@ PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 PkEnumList	*pk_client_get_actions			(PkClient	*client);
 PkEnumList	*pk_client_get_filters			(PkClient	*client);
 PkEnumList	*pk_client_get_groups			(PkClient	*client);
-gboolean	 pk_client_reset			(PkClient	*client);
+gboolean	 pk_client_reset			(PkClient	*client,
+							 GError		**error);
 gboolean	 pk_client_get_old_transactions		(PkClient	*client,
-							 guint		 number);
+							 guint		 number,
+							 GError		**error);
 gboolean	 pk_client_get_backend_detail		(PkClient	*client,
 							 gchar		**name,
-							 gchar		**author);
+							 gchar		**author,
+							 GError		**error);
 gboolean	 pk_client_get_time_since_action	(PkClient	*client,
 							 PkRoleEnum	 role,
-							 guint		*seconds);
+							 guint		*seconds,
+							 GError		**error);
 gboolean	 pk_client_is_caller_active		(PkClient	*client,
-							 gboolean	*is_active);
+							 gboolean	*is_active,
+							 GError		**error);
 
 G_END_DECLS
 

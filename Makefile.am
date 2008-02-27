@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 SUBDIRS = 						\
+	po						\
 	policy						\
 	etc						\
 	man						\
@@ -16,18 +17,6 @@ SUBDIRS = 						\
 	backends					\
 	python						\
 	docs						\
-	$(NULL)
-
-EXTRA_DIST =						\
-	COPYING						\
-	MAINTAINERS					\
-	AUTHORS						\
-	INSTALL						\
-	README						\
-	HACKING						\
-	NEWS						\
-	config.h					\
-	ChangeLog					\
 	$(NULL)
 
 clean-local :
@@ -85,6 +74,23 @@ MAINTAINERCLEANFILES =					\
 	Makefile.in					\
 	config.h.*					\
 	aclocal.m4					\
+	$(NULL)
+
+EXTRA_DIST =						\
+	COPYING						\
+	MAINTAINERS					\
+	AUTHORS						\
+	INSTALL						\
+	README						\
+	HACKING						\
+        TODO						\
+	NEWS						\
+        autogen.sh					\
+	config.h					\
+	ChangeLog					\
+        intltool-extract.in				\
+        intltool-merge.in				\
+        intltool-update.in				\
 	$(NULL)
 
 DISTCHECK_CONFIGURE_FLAGS = --disable-gcov --enable-gtk-doc --with-security-framework=dummy

@@ -81,6 +81,7 @@ struct PkClientPrivate
 	PkRoleEnum		 role;
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
+	gboolean		 xcached_autoremove;
 	gchar			*xcached_package_id;
 	gchar			*xcached_transaction_id;
 	gchar			*xcached_full_path;
@@ -113,9 +114,115 @@ static guint signals [PK_CLIENT_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
+/**
+ * pk_client_error_quark:
+ * Return value: Our personal error quark.
+ **/
+GQuark
+pk_client_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark) {
+		quark = g_quark_from_static_string ("pk_client_error");
+	}
+	return quark;
+}
+
+/**
+ * pk_client_error_get_type:
+ **/
+#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+GType
+pk_client_error_get_type (void)
+{
+	static GType etype = 0;
+
+	if (etype == 0) {
+		static const GEnumValue values[] =
+		{
+			ENUM_ENTRY (PK_CLIENT_ERROR_FAILED, "Failed"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_NO_TID, "NoTid"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_ALREADY_TID, "AlreadyTid"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnkown"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_PROMISCUOUS, "Promiscuous"),
+			{ 0, 0, 0 }
+		};
+		etype = g_enum_register_static ("PkClientError", values);
+	}
+	return etype;
+}
+
 /******************************************************************************
  *                    LOCAL FUNCTIONS
  ******************************************************************************/
+
+/**
+ * pk_client_error_set:
+ *
+ * Sets the correct error code (if allowed) and print to the screen
+ * as a warning.
+ **/
+static gboolean
+pk_client_error_set (GError **error, gint code, const gchar *text)
+{
+	/* dumb */
+	if (error == NULL) {
+		pk_warning ("%s", text);
+		return FALSE;
+	}
+
+	/* already set */
+	if (*error != NULL) {
+		pk_warning ("not NULL error!");
+		g_clear_error (error);
+	}
+
+	/* propogate */
+	g_set_error (error, PK_CLIENT_ERROR, code, text);
+	return TRUE;
+}
+
+/**
+ * pk_client_error_print:
+ **/
+gboolean
+pk_client_error_print (GError **error)
+{
+	const gchar *name;
+
+	if (error != NULL && *error != NULL) {
+		/* get some proper debugging */
+		if ((*error)->domain == DBUS_GERROR &&
+		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+			name = dbus_g_error_get_name (*error);
+		} else {
+			name = g_quark_to_string ((*error)->domain);
+		}
+		pk_warning ("ERROR: %s: %s", name, (*error)->message);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_client_error_fixup:
+ **/
+static gboolean
+pk_client_error_fixup (GError **error)
+{
+	if (error != NULL && *error != NULL) {
+		/* get some proper debugging */
+		if ((*error)->domain == DBUS_GERROR &&
+		    (*error)->code == DBUS_GERROR_REMOTE_EXCEPTION) {
+			/* use one of our local codes */
+			pk_debug ("fixing up code from %i", (*error)->code);
+			(*error)->code = PK_CLIENT_ERROR_FAILED;
+		}
+		pk_client_error_print (error);
+		return TRUE;
+	}
+	return FALSE;
+}
 
 /**
  * pk_client_set_tid:
@@ -129,14 +236,16 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
  * Return value: %TRUE if set correctly
  **/
 gboolean
-pk_client_set_tid (PkClient *client, const gchar *tid)
+pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 {
-	if (client->priv->promiscuous == TRUE) {
-		pk_warning ("you can't set the tid on a promiscuous client");
+	if (client->priv->promiscuous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_PROMISCUOUS,
+				     "cannot set the tid on a promiscuous client");
 		return FALSE;
 	}
 	if (client->priv->tid != NULL) {
-		pk_warning ("you can't set the tid on an already set client");
+		pk_client_error_set (error, PK_CLIENT_ERROR_ALREADY_TID,
+				     "cannot set the tid on an already set client");
 		return FALSE;
 	}
 	client->priv->tid = g_strdup (tid);
@@ -155,10 +264,11 @@ pk_client_set_tid (PkClient *client, const gchar *tid)
  * Return value: %TRUE if we set the mode okay.
  **/
 gboolean
-pk_client_set_promiscuous (PkClient *client, gboolean enabled)
+pk_client_set_promiscuous (PkClient *client, gboolean enabled, GError **error)
 {
 	if (client->priv->tid != NULL) {
-		pk_warning ("you can't set promiscuous on a tid client");
+		pk_client_error_set (error, PK_CLIENT_ERROR_PROMISCUOUS,
+				     "cannot set promiscuous on a tid client");
 		return FALSE;
 	}
 	client->priv->promiscuous = enabled;
@@ -216,7 +326,7 @@ pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
  * Return value: %TRUE if the package buffer was enabled
  **/
 gboolean
-pk_client_set_use_buffer (PkClient *client, gboolean use_buffer)
+pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -233,7 +343,7 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer)
  * Return value: %TRUE if the synchronous mode was enabled
  **/
 gboolean
-pk_client_set_synchronous (PkClient *client, gboolean synchronous)
+pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **error)
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -250,7 +360,7 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous)
  * Return value: %TRUE if the name_filter mode was enabled
  **/
 gboolean
-pk_client_set_name_filter (PkClient *client, gboolean name_filter)
+pk_client_set_name_filter (PkClient *client, gboolean name_filter, GError **error)
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -308,7 +418,7 @@ pk_client_package_buffer_get_size (PkClient *client)
 {
 	g_return_val_if_fail (client != NULL, 0);
 	g_return_val_if_fail (PK_IS_CLIENT (client), 0);
-	if (client->priv->use_buffer == FALSE) {
+	if (!client->priv->use_buffer) {
 		return 0;
 	}
 	return pk_package_list_get_size (client->priv->package_list);
@@ -326,7 +436,7 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 {
 	g_return_val_if_fail (client != NULL, NULL);
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-	if (client->priv->use_buffer == FALSE) {
+	if (!client->priv->use_buffer) {
 		return NULL;
 	}
 	return pk_package_list_get_item (client->priv->package_list, item);
@@ -343,7 +453,7 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
  * Return value: %TRUE if we reset the client
  **/
 gboolean
-pk_client_reset (PkClient *client)
+pk_client_reset (PkClient *client, GError **error)
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -368,22 +478,6 @@ pk_client_reset (PkClient *client)
 	return TRUE;
 }
 
-/**
- * pk_client_get_error_name:
- **/
-static const gchar *
-pk_client_get_error_name (GError *error)
-{
-	const gchar *name;
-	if (error->domain == DBUS_GERROR &&
-	    error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
-		name = dbus_g_error_get_name (error);
-	} else {
-		name = g_quark_to_string (error->domain);
-	}
-	return name;
-}
-
 /******************************************************************************
  *                    SIGNALS
  ******************************************************************************/
@@ -395,7 +489,7 @@ static gboolean
 pk_client_should_proxy (PkClient *client, const gchar *tid)
 {
 	/* are we promiscuous? */
-	if (client->priv->promiscuous == TRUE) {
+	if (client->priv->promiscuous) {
 		g_free (client->priv->tid);
 		client->priv->tid = g_strdup (tid);
 		return TRUE;
@@ -408,7 +502,7 @@ pk_client_should_proxy (PkClient *client, const gchar *tid)
 	}
 
 	/* are we the right on? */
-	if (pk_transaction_id_equal (tid, client->priv->tid) == TRUE) {
+	if (pk_transaction_id_equal (tid, client->priv->tid)) {
 		return TRUE;
 	}
 	return FALSE;
@@ -430,7 +524,7 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -443,13 +537,13 @@ pk_client_finished_cb (DBusGProxy  *proxy,
 	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 
 	/* check we are still valid */
-	if (PK_IS_CLIENT (client) == FALSE) {
+	if (!PK_IS_CLIENT (client)) {
 		pk_debug ("client was g_object_unref'd in finalise, object no longer valid");
 		return;
 	}
 
 	/* exit our private loop */
-	if (client->priv->synchronous == TRUE) {
+	if (client->priv->synchronous) {
 		g_main_loop_quit (client->priv->loop);
 	}
 }
@@ -466,7 +560,7 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -490,7 +584,7 @@ pk_client_status_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -521,12 +615,12 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
 	/* filter repeat names */
-	if (client->priv->name_filter == TRUE) {
+	if (client->priv->name_filter) {
 		/* get the package name */
 		pid = pk_package_id_new_from_string (package_id);
 		pk_debug ("searching hash for %s", pid->name);
@@ -551,7 +645,7 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
 
 	/* cache */
-	if (client->priv->use_buffer == TRUE || client->priv->synchronous == TRUE) {
+	if (client->priv->use_buffer || client->priv->synchronous) {
 		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
@@ -586,13 +680,15 @@ pk_client_transaction_cb (DBusGProxy *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
 	role = pk_role_enum_from_text (role_text);
-	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec, succeeded, role_text, duration, data);
-	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec, succeeded, role, duration, data);
+	pk_debug ("emitting transaction %s, %s, %i, %s, %i, %s", old_tid, timespec,
+		  succeeded, role_text, duration, data);
+	g_signal_emit (client, signals [PK_CLIENT_TRANSACTION], 0, old_tid, timespec,
+		       succeeded, role, duration, data);
 }
 
 /**
@@ -616,7 +712,7 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -646,7 +742,7 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -671,7 +767,7 @@ pk_client_files_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -685,7 +781,7 @@ pk_client_files_cb (DBusGProxy  *proxy,
  **/
 static void
 pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repository_name,
-				      const gchar *key_url, const gchar *key_userid, const gchar *key_id, 
+				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
 				      const gchar *key_fingerprint, const gchar *key_timestamp,
 				      const gchar *type_text, PkClient *client)
 {
@@ -693,7 +789,7 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -714,7 +810,7 @@ pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repo
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -737,7 +833,7 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -767,7 +863,7 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -779,10 +875,8 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
  * pk_client_get_allow_cancel:
  */
 gboolean
-pk_client_get_allow_cancel (PkClient *client)
+pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **error)
 {
-	GError *error = NULL;
-	gboolean value = FALSE;
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
@@ -791,23 +885,17 @@ pk_client_get_allow_cancel (PkClient *client)
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetAllowCancel", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
-				 G_TYPE_BOOLEAN, &value,
+				 G_TYPE_BOOLEAN, allow_cancel,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetAllowCancel failed :%s", error->message);
-		g_error_free (error);
-		return FALSE;
-	}
-
-	return value;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -823,7 +911,7 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -846,7 +934,7 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -871,7 +959,7 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *tid,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	/* not us, ignore */
-	if (pk_client_should_proxy (client, tid) == FALSE) {
+	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
 
@@ -888,11 +976,10 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *tid,
  * pk_client_get_status:
  **/
 gboolean
-pk_client_get_status (PkClient *client, PkStatusEnum *status)
+pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 {
 	gboolean ret;
 	gchar *status_text;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (status != NULL, FALSE);
@@ -901,38 +988,30 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status)
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetStatus", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetStatus", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &status_text,
 				 G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
-		g_error_free (error);
+	pk_client_error_fixup (error);
+	if (ret) {
+		*status = pk_status_enum_from_text (status_text);
+		g_free (status_text);
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetStatus failed!");
-		return FALSE;
-	}
-	*status = pk_status_enum_from_text (status_text);
-	g_free (status_text);
-	return TRUE;
+	return ret;
 }
 
 /**
  * pk_client_get_package:
  **/
 gboolean
-pk_client_get_package (PkClient *client, gchar **package)
+pk_client_get_package (PkClient *client, gchar **package, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
@@ -941,26 +1020,17 @@ pk_client_get_package (PkClient *client, gchar **package)
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackage", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackage", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetPackage failed!");
-		return FALSE;
-	}
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -968,10 +1038,9 @@ pk_client_get_package (PkClient *client, gchar **package)
  **/
 gboolean
 pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentage,
-			guint *elapsed, guint *remaining)
+			guint *elapsed, guint *remaining, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -979,12 +1048,11 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetProgress", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, percentage,
@@ -992,26 +1060,17 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 				 G_TYPE_UINT, elapsed,
 				 G_TYPE_UINT, remaining,
 				 G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_debug ("ERROR: %s", error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetProgress failed!");
-		return FALSE;
-	}
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_role:
  **/
 gboolean
-pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
+pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GError **error)
 {
 	gboolean ret;
-	GError *error;
 	gchar *role_text;
 	gchar *package_id_temp;
 
@@ -1022,67 +1081,56 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id)
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
 	/* we can avoid a trip to the daemon */
-	if (client->priv->promiscuous == FALSE && package_id == NULL) {
+	if (!client->priv->promiscuous && package_id == NULL) {
 		*role = client->priv->role;
 		return TRUE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRole", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &role_text,
 				 G_TYPE_STRING, &package_id_temp,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetRole failed :%s", error->message);
-		g_error_free (error);
-		return FALSE;
+	if (ret) {
+		*role = pk_role_enum_from_text (role_text);
+		g_free (role_text);
+		if (package_id != NULL) {
+			*package_id = package_id_temp;
+		} else {
+			g_free (package_id_temp);
+		}
 	}
-	*role = pk_role_enum_from_text (role_text);
-	g_free (role_text);
-	if (package_id != NULL) {
-		*package_id = package_id_temp;
-	} else {
-		g_free (package_id_temp);
-	}
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_cancel:
  **/
 gboolean
-pk_client_cancel (PkClient *client)
+pk_client_cancel (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we have an tid */
 	if (client->priv->tid == NULL) {
-		pk_warning ("Transaction ID not set");
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("Cancel failed :%s", error->message);
-		g_error_free (error);
-	}
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_client_error_fixup (error);
 	return ret;
 }
 
@@ -1094,86 +1142,60 @@ pk_client_cancel (PkClient *client)
  * pk_client_allocate_transaction_id:
  **/
 static gboolean
-pk_client_allocate_transaction_id (PkClient *client)
+pk_client_allocate_transaction_id (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
 	if (client->priv->tid != NULL) {
-		pk_warning ("Already has transaction ID");
+		pk_client_error_set (error, PK_CLIENT_ERROR_ALREADY_TID, "Already has transaction ID");
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetTid", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetTid", error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &client->priv->tid,
 				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("NewTid failed!");
-		return FALSE;
-	} else {
+	if (ret) {
 		pk_debug ("Got tid: '%s'", client->priv->tid);
 	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_updates:
  **/
 gboolean
-pk_client_get_updates (PkClient *client)
+pk_client_get_updates (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetUpdates failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -1187,62 +1209,52 @@ pk_client_update_system_action (PkClient *client, GError **error)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdateSystem", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("UpdateSystem failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_update_system:
  **/
 gboolean
-pk_client_update_system (PkClient *client)
+pk_client_update_system (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_update_system_action (client, &error);
+	ret = pk_client_update_system_action (client, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_update_system_action (client, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_update_system_action (client, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -1253,18 +1265,16 @@ pk_client_update_system (PkClient *client)
  * pk_client_search_name:
  **/
 gboolean
-pk_client_search_name (PkClient *client, const gchar *filter, const gchar *search)
+pk_client_search_name (PkClient *client, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1272,49 +1282,35 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_search = g_strdup (search);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("SearchName failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_search_details:
  **/
 gboolean
-pk_client_search_details (PkClient *client, const gchar *filter, const gchar *search)
+pk_client_search_details (PkClient *client, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1322,49 +1318,35 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_search = g_strdup (search);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("SearchDetails failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_search_group:
  **/
 gboolean
-pk_client_search_group (PkClient *client, const gchar *filter, const gchar *search)
+pk_client_search_group (PkClient *client, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1372,49 +1354,35 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_search = g_strdup (search);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("SearchGroup failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_search_file:
  **/
 gboolean
-pk_client_search_file (PkClient *client, const gchar *filter, const gchar *search)
+pk_client_search_file (PkClient *client, const gchar *filter, const gchar *search, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1422,49 +1390,35 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_search = g_strdup (search);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, search,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("SearchFile failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_depends:
  **/
 gboolean
-pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursive)
+pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursive, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1472,49 +1426,35 @@ pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursiv
 	client->priv->xcached_package_id = g_strdup (package);
 	client->priv->xcached_force = recursive;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
 				 G_TYPE_BOOLEAN, recursive,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetDepends failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_requires:
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursive)
+pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursive, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1522,145 +1462,103 @@ pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursi
 	client->priv->xcached_package_id = g_strdup (package);
 	client->priv->xcached_force = recursive;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
 				 G_TYPE_BOOLEAN, recursive,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetRequires failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_update_detail:
  **/
 gboolean
-pk_client_get_update_detail (PkClient *client, const gchar *package)
+pk_client_get_update_detail (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	client->priv->xcached_package_id = g_strdup (package);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetUpdateDetail failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_rollback:
  **/
 gboolean
-pk_client_rollback (PkClient *client, const gchar *transaction_id)
+pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->xcached_transaction_id = g_strdup (transaction_id);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, transaction_id,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("Rollback failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_resolve:
  **/
 gboolean
-pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package)
+pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1668,127 +1566,87 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package)
 	client->priv->xcached_filter = g_strdup (filter);
 	client->priv->xcached_package_id = g_strdup (package);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("Resolve failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_description:
  **/
 gboolean
-pk_client_get_description (PkClient *client, const gchar *package)
+pk_client_get_description (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
 	client->priv->xcached_package_id = g_strdup (package);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetDescription failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_get_files:
  **/
 gboolean
-pk_client_get_files (PkClient *client, const gchar *package)
+pk_client_get_files (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
 	client->priv->xcached_package_id = g_strdup (package);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetFiles failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -1796,73 +1654,67 @@ pk_client_get_files (PkClient *client, const gchar *package)
  **/
 gboolean
 pk_client_remove_package_action (PkClient *client, const gchar *package,
-				 gboolean allow_deps, GError **error)
+				 gboolean allow_deps, gboolean autoremove,
+				 GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackage", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
 				 G_TYPE_BOOLEAN, allow_deps,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RemovePackage failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_BOOLEAN, autoremove,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_remove_package:
  **/
 gboolean
-pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow_deps)
+pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow_deps, gboolean autoremove, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
 	client->priv->xcached_allow_deps = allow_deps;
+	client->priv->xcached_autoremove = autoremove;
 	client->priv->xcached_package_id = g_strdup (package);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_remove_package_action (client, package, allow_deps, &error);
+	ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_remove_package_action (client, package, allow_deps, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -1880,36 +1732,28 @@ pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RefreshCache", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_BOOLEAN, force,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RefreshCache failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_refresh_cache:
  **/
 gboolean
-pk_client_refresh_cache (PkClient *client, gboolean force)
+pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1917,27 +1761,26 @@ pk_client_refresh_cache (PkClient *client, gboolean force)
 	client->priv->xcached_force = force;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_refresh_cache_action (client, force, &error);
+	ret = pk_client_refresh_cache_action (client, force, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_refresh_cache_action (client, force, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_refresh_cache_action (client, force, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -1955,36 +1798,28 @@ pk_client_install_package_action (PkClient *client, const gchar *package, GError
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackage", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("InstallPackage failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_install_package:
  **/
 gboolean
-pk_client_install_package (PkClient *client, const gchar *package_id)
+pk_client_install_package (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -1992,27 +1827,26 @@ pk_client_install_package (PkClient *client, const gchar *package_id)
 	client->priv->xcached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_package_action (client, package_id, &error);
+	ret = pk_client_install_package_action (client, package_id, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_install_package_action (client, package_id, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_install_package_action (client, package_id, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2030,36 +1864,28 @@ pk_client_update_package_action (PkClient *client, const gchar *package, GError 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackage", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("UpdatePackage failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_update_package:
  **/
 gboolean
-pk_client_update_package (PkClient *client, const gchar *package_id)
+pk_client_update_package (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -2067,27 +1893,26 @@ pk_client_update_package (PkClient *client, const gchar *package_id)
 	client->priv->xcached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_update_package_action (client, package_id, &error);
+	ret = pk_client_update_package_action (client, package_id, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_update_package_action (client, package_id, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_update_package_action (client, package_id, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2105,36 +1930,28 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFile", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, file,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("InstallFile failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_install_file:
  **/
 gboolean
-pk_client_install_file (PkClient *client, const gchar *file)
+pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -2142,27 +1959,26 @@ pk_client_install_file (PkClient *client, const gchar *file)
 	client->priv->xcached_full_path = g_strdup (file);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_file_action (client, file, &error);
+	ret = pk_client_install_file_action (client, file, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_install_file_action (client, file, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_install_file_action (client, file, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2181,36 +1997,28 @@ pk_client_service_pack_action (PkClient *client, const gchar *location, GError *
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "ServicePack", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, location,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("ServicePack failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_service_pack:
  **/
 gboolean
-pk_client_service_pack (PkClient *client, const gchar *location)
+pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
@@ -2218,27 +2026,26 @@ pk_client_service_pack (PkClient *client, const gchar *location)
 	client->priv->xcached_full_path = g_strdup (location);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_service_pack_action (client, location, &error);
+	ret = pk_client_service_pack_action (client, location, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_service_pack_action (client, location, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_service_pack_action (client, location, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2249,46 +2056,26 @@ pk_client_service_pack (PkClient *client, const gchar *location)
  * pk_client_get_repo_list:
  */
 gboolean
-pk_client_get_repo_list (PkClient *client)
+pk_client_get_repo_list (PkClient *client, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (error != NULL) {
-		const gchar *error_name;
-		error_name = pk_client_get_error_name (error);
-		pk_debug ("ERROR: %s: %s", error_name, error->message);
-		g_error_free (error);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetRepoList failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -2302,43 +2089,29 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoEnable", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, repo_id,
 				 G_TYPE_BOOLEAN, enabled,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RepoEnable failed!");
-		return FALSE;
-	}
-
-	/* spin until finished */
-	if (client->priv->synchronous == TRUE) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_repo_enable:
  */
 gboolean
-pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled)
+pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 
@@ -2346,27 +2119,26 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled)
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error);
+	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_repo_enable_action (client, repo_id, enabled, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2385,38 +2157,31 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	*error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "RepoSetData", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, repo_id,
 				 G_TYPE_STRING, parameter,
 				 G_TYPE_STRING, value,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("RepoSetData failed!");
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
 }
 
 /**
  * pk_client_repo_set_data:
  */
 gboolean
-pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter, const gchar *value)
+pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter,
+			 const gchar *value, GError **error)
 {
 	gboolean ret;
-	GError *error;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 
@@ -2424,27 +2189,26 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
 
 	/* hopefully do the operation first time */
-	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error);
+	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
 
-	/* we were refused by policy then try to get auth */
-	if (ret == FALSE) {
-		if (pk_polkit_client_error_denied_by_policy (error) == TRUE) {
-			/* retry the action if we succeeded */
-			if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error->message) == TRUE) {
-				pk_debug ("gained priv");
-				g_error_free (error);
-				/* do it all over again */
-				ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error);
-			}
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
 		}
-		if (error != NULL) {
-			pk_debug ("ERROR: %s", error->message);
-			g_error_free (error);
-		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
 	}
 
 	/* spin until finished */
-	if (ret == TRUE && client->priv->synchronous == TRUE) {
+	if (ret && client->priv->synchronous) {
 		g_main_loop_run (client->priv->loop);
 	}
 
@@ -2472,12 +2236,11 @@ pk_client_get_actions (PkClient *client)
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
 
-	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetActions", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &actions,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
+	if (!ret) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetActions failed :%s", error->message);
 		g_error_free (error);
@@ -2494,27 +2257,22 @@ pk_client_get_actions (PkClient *client)
  * pk_client_get_backend_detail:
  **/
 gboolean
-pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
+pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, GError **error)
 {
 	gboolean ret;
-	GError *error;
 	gchar *tname;
 	gchar *tauthor;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetBackendDetail", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetBackendDetail", error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &tname,
 				 G_TYPE_STRING, &tauthor,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetBackendDetail failed :%s", error->message);
-		g_error_free (error);
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (!ret) {
+		pk_client_error_fixup (error);
 		return FALSE;
 	}
 
@@ -2530,61 +2288,48 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author)
 	} else {
 		g_free (tauthor);
 	}
-	return TRUE;
+	return ret;
 }
 
 /**
  * pk_client_get_time_since_action:
  **/
 gboolean
-pk_client_get_time_since_action (PkClient *client, PkRoleEnum role, guint *seconds)
+pk_client_get_time_since_action (PkClient *client, PkRoleEnum role, guint *seconds, GError **error)
 {
 	gboolean ret;
-	GError *error;
 	const gchar *role_text;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	error = NULL;
 	role_text = pk_role_enum_to_text (role);
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetTimeSinceAction", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetTimeSinceAction", error,
 				 G_TYPE_STRING, role_text,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, seconds,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetTimeSinceAction failed :%s", error->message);
-		g_error_free (error);
-		return FALSE;
-	}
-
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
  * pk_client_is_caller_active:
  **/
 gboolean
-pk_client_is_caller_active (PkClient *client, gboolean *is_active)
+pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "IsCallerActive", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID,
 				 G_TYPE_BOOLEAN, is_active,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		pk_warning ("IsCallerActive failed :%s", error->message);
-		g_error_free (error);
-	}
+	pk_client_error_fixup (error);
 	return ret;
 }
 
@@ -2595,7 +2340,7 @@ PkEnumList *
 pk_client_get_groups (PkClient *client)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *groups;
 	PkEnumList *elist;
 
@@ -2605,12 +2350,11 @@ pk_client_get_groups (PkClient *client)
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
 
-	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetGroups", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &groups,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
+	if (!ret) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetGroups failed :%s", error->message);
 		g_error_free (error);
@@ -2627,34 +2371,25 @@ pk_client_get_groups (PkClient *client)
  * pk_client_get_old_transactions:
  **/
 gboolean
-pk_client_get_old_transactions (PkClient *client, guint number)
+pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 {
 	gboolean ret;
-	GError *error;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client);
-	if (ret == FALSE) {
-		pk_warning ("Failed to get transaction ID");
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
 		return FALSE;
 	}
 
-	error = NULL;
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", &error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_UINT, number,
-				 G_TYPE_INVALID,
-				 G_TYPE_INVALID);
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
-		pk_warning ("GetOldTransactions failed :%s", error->message);
-		g_error_free (error);
-		return FALSE;
-	}
-	return TRUE;
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -2664,7 +2399,7 @@ PkEnumList *
 pk_client_get_filters (PkClient *client)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *filters;
 	PkEnumList *elist;
 
@@ -2674,12 +2409,11 @@ pk_client_get_filters (PkClient *client)
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
 
-	error = NULL;
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFilters", &error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, &filters,
 				 G_TYPE_INVALID);
-	if (ret == FALSE) {
+	if (!ret) {
 		/* abort as the DBUS method failed */
 		pk_warning ("GetFilters failed :%s", error->message);
 		g_error_free (error);
@@ -2703,16 +2437,17 @@ pk_client_get_filters (PkClient *client)
  * Return value: %TRUE if we could requeue the client
  */
 gboolean
-pk_client_requeue (PkClient *client)
+pk_client_requeue (PkClient *client, GError **error)
 {
 	PkRoleEnum role;
+	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* we are no longer waiting, we are setting up */
 	if (client->priv->role == PK_ROLE_ENUM_UNKNOWN) {
-		pk_warning ("role unknown!!");
+		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
 
@@ -2720,63 +2455,64 @@ pk_client_requeue (PkClient *client)
 	role = client->priv->role;
 
 	/* reset this client, which doesn't clear cached data */
-	pk_client_reset (client);
+	pk_client_reset (client, NULL);
 
 	/* restore the role */
 	client->priv->role = role;
 
 	/* do the correct action with the cached parameters */
 	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		pk_client_get_depends (client, client->priv->xcached_package_id,
-				       client->priv->xcached_force);
+		ret = pk_client_get_depends (client, client->priv->xcached_package_id,
+				       client->priv->xcached_force, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		pk_client_get_update_detail (client, client->priv->xcached_package_id);
+		ret = pk_client_get_update_detail (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_RESOLVE) {
-		pk_client_resolve (client, client->priv->xcached_filter,
-				   client->priv->xcached_package_id);
+		ret = pk_client_resolve (client, client->priv->xcached_filter,
+				   client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_ROLLBACK) {
-		pk_client_rollback (client, client->priv->xcached_transaction_id);
+		ret = pk_client_rollback (client, client->priv->xcached_transaction_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		pk_client_get_description (client, client->priv->xcached_package_id);
+		ret = pk_client_get_description (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_FILES) {
-		pk_client_get_files (client, client->priv->xcached_package_id);
+		ret = pk_client_get_files (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		pk_client_get_requires (client, client->priv->xcached_package_id,
-					client->priv->xcached_force);
+		ret = pk_client_get_requires (client, client->priv->xcached_package_id,
+					client->priv->xcached_force, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		pk_client_get_updates (client);
+		ret = pk_client_get_updates (client, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		pk_client_search_details (client, client->priv->xcached_filter,
-					  client->priv->xcached_search);
+		ret = pk_client_search_details (client, client->priv->xcached_filter,
+					  client->priv->xcached_search, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		pk_client_search_file (client, client->priv->xcached_filter,
-				       client->priv->xcached_search);
+		ret = pk_client_search_file (client, client->priv->xcached_filter,
+				       client->priv->xcached_search, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		pk_client_search_group (client, client->priv->xcached_filter,
-					client->priv->xcached_search);
+		ret = pk_client_search_group (client, client->priv->xcached_filter,
+					client->priv->xcached_search, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		pk_client_search_name (client, client->priv->xcached_filter,
-				       client->priv->xcached_search);
+		ret = pk_client_search_name (client, client->priv->xcached_filter,
+				       client->priv->xcached_search, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		pk_client_install_package (client, client->priv->xcached_package_id);
+		ret = pk_client_install_package (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		pk_client_install_file (client, client->priv->xcached_full_path);
+		ret = pk_client_install_file (client, client->priv->xcached_full_path, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		pk_client_service_pack (client, client->priv->xcached_full_path);
+		ret = pk_client_service_pack (client, client->priv->xcached_full_path, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		pk_client_refresh_cache (client, client->priv->xcached_force);
+		ret = pk_client_refresh_cache (client, client->priv->xcached_force, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		pk_client_remove_package (client, client->priv->xcached_package_id,
-					  client->priv->xcached_allow_deps);
+		ret = pk_client_remove_package (client, client->priv->xcached_package_id,
+					  client->priv->xcached_allow_deps, client->priv->xcached_autoremove, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		pk_client_update_package (client, client->priv->xcached_package_id);
+		ret = pk_client_update_package (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		pk_client_update_system (client);
+		ret = pk_client_update_system (client, error);
 	} else {
-		pk_warning ("role unknown");
+		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
-	return TRUE;
+	pk_client_error_fixup (error);
+	return ret;
 }
 
 /**
@@ -3131,7 +2867,7 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->tid);
 
 	/* clear the loop, if we were using it */
-	if (client->priv->synchronous == TRUE) {
+	if (client->priv->synchronous) {
 		g_main_loop_quit (client->priv->loop);
 	}
 	g_main_loop_unref (client->priv->loop);
@@ -3233,13 +2969,13 @@ libst_client (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "do any method");
 	/* we don't care if this fails */
-	pk_client_set_synchronous (client, TRUE);
-	pk_client_search_name (client, "none", "moooo");
+	pk_client_set_synchronous (client, TRUE, NULL);
+	pk_client_search_name (client, "none", "moooo", NULL);
 	libst_success (test, "did something");
 
 	/************************************************************/
 	libst_title (test, "we finished?");
-	if (finished == TRUE) {
+	if (finished) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

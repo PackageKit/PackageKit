@@ -79,11 +79,11 @@ pk_object_register (DBusGConnection *connection,
 		pk_warning ("RequestName failed!");
 		g_clear_error(error);
 		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
-			    "Acquiring D-Bus name %s failed due to security policies on this machine\n"
-			    "This can happen for two reasons:\n"
-			    "* The correct user is not launching the executable (usually root)\n"
-			    "* The org.freedesktop.PackageKit.conf file is "
-			    "not installed in the system /etc/dbus-1/system.d directory\n", PK_DBUS_SERVICE);
+			    _("Acquiring D-Bus name %s failed due to security policies on this machine\n"
+			      "This can happen for two reasons:\n"
+			      "* The correct user is not launching the executable (usually root)\n"
+			      "* The org.freedesktop.PackageKit.conf file is "
+			      "not installed in the system /etc/dbus-1/system.d directory\n"), PK_DBUS_SERVICE);
 		return FALSE;
 	}
 
@@ -182,19 +182,19 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
-		  "Backend to use (for debugging)", NULL },
+		  _("Backend to use"), NULL },
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
-		  "Daemonize and detach", NULL },
+		  _("Daemonize and detach"), NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
-		  "Show extra debugging information", NULL },
+		  _("Show extra debugging information"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
-		  "Disable the idle timer", NULL },
+		  _("Disable the idle timer"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
-		  "Show version of installed program and exit", NULL },
+		  _("Show version of installed program and exit"), NULL },
 		{ "timed-exit", '\0', 0, G_OPTION_ARG_NONE, &timed_exit,
-		  "Exit after a small delay (for debugging)", NULL },
+		  _("Exit after a small delay"), NULL },
 		{ "immediate-exit", '\0', 0, G_OPTION_ARG_NONE, &immediate_exit,
-		  "Exit after a the engine has loaded (for debugging)", NULL },
+		  _("Exit after a the engine has loaded"), NULL },
 		{ NULL}
 	};
 
@@ -266,7 +266,7 @@ main (int argc, char *argv[])
 	engine = pk_engine_new ();
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
-		g_error ("Error trying to start: %s", error->message);
+		g_error (_("Error trying to start: %s"), error->message);
 		g_error_free (error);
 		return 0;
 	}

@@ -1679,7 +1679,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
  * pk_engine_remove_package:
  **/
 void
-pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *package_id, gboolean allow_deps,
+pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *package_id, gboolean allow_deps, gboolean autoremove,
 			  DBusGMethodInvocation *context)
 {
 	PkTransactionItem *item;
@@ -1734,7 +1734,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_remove_package (item->runner, package_id, allow_deps);
+	ret = pk_runner_remove_package (item->runner, package_id, allow_deps, autoremove);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

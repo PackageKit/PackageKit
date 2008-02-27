@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+
+  <!--
+    Policy definitions for PackageKit system actions.
+    Copyright (c) 2007-2008 Richard Hughes <richard@hughsie.com>
+  -->
+
+  <vendor>The PackageKit Project</vendor>
+  <vendor_url>http://www.packagekit.org/</vendor_url>
+  <icon_name>package-x-generic</icon_name>
+
+  <action id="org.freedesktop.packagekit.install">
+    <_description>Install package</_description>
+    <_message>System policy prevents installing package</_message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-package</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.localinstall">
+    <_description>Install local file</_description>
+    <_message>System policy prevents installing file</_message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-file</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.service-pack">
+    <_description>Update from service pack</_description>
+    <_message>System policy prevents updating from service pack</_message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-service-pack</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.update-package">
+    <_description>Update package</_description>
+    <_message>System policy prevents updating package</_message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_self_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.remove">
+    <_description>Remove package</_description>
+    <_message>System policy prevents removing package</_message>
+    <icon_name>pk-package-delete</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-remove</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.update-system">
+    <_description>Update all packages on system</_description>
+    <_message>System policy prevents updating system</_message>
+    <icon_name>pk-package-update</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update-system</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.rollback">
+    <_description>Rollback to a previous transaction</_description>
+    <_message>System policy prevents rollback</_message>
+    <icon_name>pk-rollback</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-rollback</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.repo-change">
+    <_description>Change repository parameters</_description>
+    <_message>System policy prevents changing repository parameters</_message>
+    <icon_name>pk-package-info</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-repo-enable</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.refresh-cache">
+    <_description>Refresh package cache</_description>
+    <_message>System policy prevents refresh package cache</_message>
+    <icon_name>pk-refresh-cache</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#api-refresh-cache</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+</policyconfig>
+

@@ -605,7 +605,7 @@ backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
 }
 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);

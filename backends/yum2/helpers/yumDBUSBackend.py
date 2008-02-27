@@ -362,7 +362,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-name functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -383,7 +383,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-details functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -404,7 +404,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-group functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -453,12 +453,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-file functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
-        #self.yumbase.conf.cache = 1 # Only look in cache.
         fltlist = filters.split(';')
         found = {}
         if not FILTER_NOT_INSTALLED in fltlist:
@@ -488,7 +487,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of requires for a given package
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -515,7 +514,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of depends for a given package
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_INFO)
@@ -632,7 +631,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-resolve functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True);
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -801,7 +800,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a detailed description for a given package
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -820,7 +819,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                          in_signature='s', out_signature='')
     def GetFiles(self, package):
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -847,7 +846,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-updates functionality
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -881,7 +880,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param key: key to seach for
         '''
         self.last_action_time = time.time()
-        self._check_init(cache=True)
+        self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -1136,8 +1135,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
-        desc = desc.replace('\n\n',';')
+        desc = desc.replace('\n\n','__PARAGRAPH_SEPARATOR__')
         desc = desc.replace('\n',' ')
+        desc = desc.replace('__PARAGRAPH_SEPARATOR__','\n')
 
         self._show_description(id, pkg.license, "unknown", desc, pkg.url,
                              pkg.size)
@@ -1490,18 +1490,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Other utility methods
 #
 
-    def _check_init(self,cache=False):
+    def _check_init(self,lazy_cache=False):
         ''' Check if yum has setup, else call init '''
         if hasattr(self,'yumbase'):
             pass
         else:
             self.Init()
-        if cache:
-            self.yumbase.conf.cache = 1
-            self.yumbase.repos.setCache(1)
+        if lazy_cache:
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 60 * 60 * 24  # 24 hours
+                repo.mdpolicy = "group:all"
         else:
-            self.yumbase.conf.cache = 0
-            self.yumbase.repos.setCache(0)
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
+                repo.mdpolicy = "group:primary"
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''

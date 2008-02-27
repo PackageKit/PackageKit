@@ -76,7 +76,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	/* split */
 	ident = pk_package_id_new_from_string (package_id);
 	if (ident == NULL) {
-		pk_warning ("could not get valid ident from %s", package_id);
+		pk_warning (_("Could not get valid ident from %s"), package_id);
 		return;
 	}
 
@@ -129,7 +129,7 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 			     const gchar *cve_url, PkRestartEnum restart,
 			     const gchar *update_text, gpointer data)
 {
-	g_print ("Update detail\n");
+	g_print (_("Update detail\n"));
 	g_print ("  package:    '%s'\n", package_id);
 	if (pk_strzero (updates) == FALSE) {
 		g_print ("  updates:    '%s'\n", updates);
@@ -383,7 +383,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("\r");
 	}
 
-	pk_client_get_role (client, &role, NULL);
+	pk_client_get_role (client, &role, NULL, NULL);
 	role_text = pk_role_enum_to_text (role);
 	time = (gfloat) runtime / 1000.0;
 	g_print ("%s runtime was %.1f seconds\n", role_text, time);
@@ -391,7 +391,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
 	if (restart != PK_RESTART_ENUM_NONE) {
-		g_print ("Requires restart: %s\n", pk_restart_enum_to_text (restart));
+		g_print (_("Requires restart: %s\n"), pk_restart_enum_to_text (restart));
 	}
 }
 
@@ -399,7 +399,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
  * pk_console_perhaps_resolve:
  **/
 static gchar *
-pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package)
+pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gboolean valid;
@@ -416,9 +416,9 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* we need to resolve it */
 	filter_text = pk_filter_enum_to_text (filter);
-	ret = pk_client_resolve (client_task, filter_text, package);
+	ret = pk_client_resolve (client_task, filter_text, package, error);
 	if (ret == FALSE) {
-		pk_warning ("Resolve is not supported in this backend");
+		pk_warning (_("Resolve is not supported in this backend"));
 		return NULL;
 	}
 
@@ -433,7 +433,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* else list the options if multiple matches found */
 	if (length != 0) {
-		g_print ("There are multiple matches\n");
+		g_print (_("There are multiple matches\n"));
 		for (i=0; i<length; i++) {
 			item = pk_client_package_buffer_get_item (client_task, i);
 			g_print ("%i. %s\n", i+1, item->package_id);
@@ -446,16 +446,16 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
  * pk_console_install_package:
  **/
 static gboolean
-pk_console_install_package (PkClient *client, const gchar *package)
+pk_console_install_package (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to install\n");
+		g_print (_("Could not find a package with that name to install\n"));
 		return FALSE;
 	}
-	ret = pk_client_install_package (client, package_id);
+	ret = pk_client_install_package (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -464,19 +464,17 @@ pk_console_install_package (PkClient *client, const gchar *package)
  * pk_console_remove_only:
  **/
 static gboolean
-pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean force)
+pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean force, gboolean autoremove, GError **error)
 {
 	gboolean ret;
 
 	pk_debug ("remove %s", package_id);
-	pk_client_reset (client);
-	pk_client_set_synchronous (client, TRUE);
-	ret = pk_client_remove_package (client, package_id, force);
-	/* ick, we failed so pretend we didn't do the action */
-	if (ret == FALSE) {
-		pk_warning ("The package could not be removed");
+	ret = pk_client_reset (client, error);
+	if (!ret) {
+		return ret;
 	}
-	return ret;
+	pk_client_set_synchronous (client, TRUE, NULL);
+	return pk_client_remove_package (client, package_id, force, autoremove, error);
 }
 
 /**
@@ -526,30 +524,34 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
  * pk_console_remove_package:
  **/
 static gboolean
-pk_console_remove_package (PkClient *client, const gchar *package)
+pk_console_remove_package (PkClient *client, const gchar *package, GError **error)
 {
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	gboolean ret;
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to remove\n");
+		g_print (_("Could not find a package with that name to remove\n"));
 		return FALSE;
 	}
 
 	/* are we dumb and can't check for requires? */
 	if (pk_enum_list_contains (role_list, PK_ROLE_ENUM_GET_REQUIRES) == FALSE) {
 		/* no, just try to remove it without deps */
-		pk_console_remove_only (client, package_id, FALSE);
+		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
 		g_free (package_id);
-		return TRUE;
+		return ret;
 	}
 
 	/* see if any packages require this one */
-	pk_client_reset (client_task);
-	pk_client_set_use_buffer (client_task, TRUE);
-	pk_client_set_synchronous (client_task, TRUE);
+	pk_client_reset (client_task, NULL);
+	pk_client_set_use_buffer (client_task, TRUE, NULL);
+	pk_client_set_synchronous (client_task, TRUE, NULL);
 
-	pk_debug ("getting requires for %s", package_id);
-	pk_client_get_requires (client_task, package_id, TRUE);
+	pk_debug (_("Getting requires for %s"), package_id);
+	ret = pk_client_get_requires (client_task, package_id, TRUE, error);
+	if (!ret) {
+		return FALSE;
+	}
 
 	guint length;
 	PkPackageItem *item;
@@ -563,13 +565,13 @@ pk_console_remove_package (PkClient *client, const gchar *package)
 	/* if there are no required packages, just do the remove */
 	if (length == 0) {
 		pk_debug ("no requires");
-		pk_console_remove_only (client, package_id, FALSE);
+		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
 		g_free (package_id);
-		return TRUE;
+		return ret;
 	}
 
 	/* present this to the user */
-	g_print ("The following packages have to be removed:\n");
+	g_print (_("The following packages have to be removed:\n"));
 	for (i=0; i<length; i++) {
 		item = pk_client_package_buffer_get_item (client_task, i);
 		ident = pk_package_id_new_from_string (item->package_id);
@@ -578,7 +580,7 @@ pk_console_remove_package (PkClient *client, const gchar *package)
 	}
 
 	/* get user input */
-	remove = pk_console_get_prompt ("Okay to remove additional packages?", FALSE);
+	remove = pk_console_get_prompt (_("Okay to remove additional packages?"), FALSE);
 
 	/* we chickened out */
 	if (remove == FALSE) {
@@ -588,26 +590,26 @@ pk_console_remove_package (PkClient *client, const gchar *package)
 	}
 
 	/* remove all the stuff */
-	pk_console_remove_only (client, package_id, TRUE);
+	ret = pk_console_remove_only (client, package_id, TRUE, FALSE, error);
 	g_free (package_id);
 
-	return TRUE;
+	return ret;
 }
 
 /**
  * pk_console_update_package:
  **/
 static gboolean
-pk_console_update_package (PkClient *client, const gchar *package)
+pk_console_update_package (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to update\n");
+		g_print (_("Could not find a package with that name to update\n"));
 		return FALSE;
 	}
-	ret = pk_client_update_package (client, package_id);
+	ret = pk_client_update_package (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -616,16 +618,16 @@ pk_console_update_package (PkClient *client, const gchar *package)
  * pk_console_get_requires:
  **/
 static gboolean
-pk_console_get_requires (PkClient *client, const gchar *package)
+pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get requires\n");
+		g_print (_("Could not find a package with that name to get requires\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_requires (client, package_id, TRUE);
+	ret = pk_client_get_requires (client, package_id, TRUE, error);
 	g_free (package_id);
 	return ret;
 }
@@ -634,16 +636,16 @@ pk_console_get_requires (PkClient *client, const gchar *package)
  * pk_console_get_depends:
  **/
 static gboolean
-pk_console_get_depends (PkClient *client, const gchar *package)
+pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get depends\n");
+		g_print (_("Could not find a package with that name to get depends\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_depends (client, package_id, FALSE);
+	ret = pk_client_get_depends (client, package_id, FALSE, error);
 	g_free (package_id);
 	return ret;
 }
@@ -652,16 +654,16 @@ pk_console_get_depends (PkClient *client, const gchar *package)
  * pk_console_get_description:
  **/
 static gboolean
-pk_console_get_description (PkClient *client, const gchar *package)
+pk_console_get_description (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get description\n");
+		g_print (_("Could not find a package with that name to get description\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_description (client, package_id);
+	ret = pk_client_get_description (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -670,16 +672,16 @@ pk_console_get_description (PkClient *client, const gchar *package)
  * pk_console_get_files:
  **/
 static gboolean
-pk_console_get_files (PkClient *client, const gchar *package)
+pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get files\n");
+		g_print (_("Could not find a package with that name to get files\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_files (client, package_id);
+	ret = pk_client_get_files (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -688,16 +690,16 @@ pk_console_get_files (PkClient *client, const gchar *package)
  * pk_console_get_update_detail
  **/
 static gboolean
-pk_console_get_update_detail(PkClient *client, const gchar *package)
+pk_console_get_update_detail (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package);
+	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
 		g_print ("Could not find a package with that name to get update details\n");
 		return FALSE;
 	}
-	ret = pk_client_get_update_detail (client, package_id);
+	ret = pk_client_get_update_detail (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -728,162 +730,162 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 
 	if (strcmp (mode, "search") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a search type");
+			g_set_error (error, 0, 0, _("specify a search type"));
 			return FALSE;
 		} else if (strcmp (value, "name") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_name (client, "none", details);
+				ret = pk_client_search_name (client, "none", details, error);
 			}
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_details (client, "none", details);
+				ret = pk_client_search_details (client, "none", details, error);
 			}
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_group (client, "none", details);
+				ret = pk_client_search_group (client, "none", details, error);
 			}
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_file (client, "none", details);
+				ret = pk_client_search_file (client, "none", details, error);
 			}
 		} else {
-			g_set_error (error, 0, 0, "invalid search type");
+			g_set_error (error, 0, 0, _("invalid search type"));
 		}
 	} else if (strcmp (mode, "install") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a package to install");
+			g_set_error (error, 0, 0, _("specify a package to install"));
 			return FALSE;
 		} else {
-			ret = pk_console_install_package (client, value);
+			ret = pk_console_install_package (client, value, error);
 		}
 	} else if (strcmp (mode, "install-file") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a package to install");
+			g_set_error (error, 0, 0, _("specify a package to install"));
 			return FALSE;
 		} else {
-			ret = pk_client_install_file (client, value);
+			ret = pk_client_install_file (client, value, error);
 		}
 	} else if (strcmp (mode, "service-pack") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a location to update from");
+			g_set_error (error, 0, 0, _("specify a location to update from"));
 			return FALSE;
 		} else {
-			ret = pk_client_service_pack (client, value);
+			ret = pk_client_service_pack (client, value, error);
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a package to remove");
+			g_set_error (error, 0, 0, _("specify a package to remove"));
 			return FALSE;
 		} else {
-			ret = pk_console_remove_package (client, value);
+			ret = pk_console_remove_package (client, value, error);
 		}
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a package to update");
+			g_set_error (error, 0, 0, _("specify a package to update"));
 			return FALSE;
 		} else {
-			ret = pk_console_update_package (client, value);
+			ret = pk_console_update_package (client, value, error);
 		}
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a package name to resolve");
+			g_set_error (error, 0, 0, _("specify a package name to resolve"));
 			return FALSE;
 		} else {
-			ret = pk_client_resolve (client, "none", value);
+			ret = pk_client_resolve (client, "none", value, error);
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a repo name");
+			g_set_error (error, 0, 0, _("specify a repo name"));
 			return FALSE;
 		} else {
-			ret = pk_client_repo_enable (client, value, TRUE);
+			ret = pk_client_repo_enable (client, value, TRUE, error);
 		}
 	} else if (strcmp (mode, "disable-repo") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a repo name");
+			g_set_error (error, 0, 0, _("specify a repo name"));
 			return FALSE;
 		} else {
-			ret = pk_client_repo_enable (client, value, FALSE);
+			ret = pk_client_repo_enable (client, value, FALSE, error);
 		}
 	} else if (strcmp (mode, "set-repo-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a repo name/parameter and value");
+			g_set_error (error, 0, 0, _("specify a repo name/parameter and value"));
 			return FALSE;
 		} else {
-			ret = pk_client_repo_set_data (client, value, details, parameter);
+			ret = pk_client_repo_set_data (client, value, details, parameter, error);
 		}
 	} else if (strcmp (mode, "get") == 0) {
 		if (value == NULL) {
-			g_set_error (error, 0, 0, "you need to specify a get type");
+			g_set_error (error, 0, 0, _("specify a get type"));
 			return FALSE;
 		} else if (strcmp (value, "time") == 0) {
 			PkRoleEnum role;
 			guint time;
 			gboolean ret;
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			}
 			role = pk_role_enum_from_text (details);
 			if (role == PK_ROLE_ENUM_UNKNOWN) {
-				g_set_error (error, 0, 0, "you need to specify a correct role");
+				g_set_error (error, 0, 0, _("specify a correct role"));
 				return FALSE;
 			}
-			ret = pk_client_get_time_since_action (client, role, &time);
+			ret = pk_client_get_time_since_action (client, role, &time, error);
 			if (ret == FALSE) {
-				g_set_error (error, 0, 0, "failed to get last time");
+				g_set_error (error, 0, 0, _("failed to get last time"));
 				return FALSE;
 			}
 			g_print ("time since %s is %is\n", details, time);
 		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_console_get_depends (client, details);
+				ret = pk_console_get_depends (client, details, error);
 			}
 		} else if (strcmp (value, "updatedetail") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_console_get_update_detail (client, details);
+				ret = pk_console_get_update_detail (client, details, error);
 			}
 		} else if (strcmp (value, "requires") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a search term");
+				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_console_get_requires (client, details);
+				ret = pk_console_get_requires (client, details, error);
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a package to find the description for");
+				g_set_error (error, 0, 0, _("specify a package to find the description for"));
 				return FALSE;
 			} else {
-				ret = pk_console_get_description (client, details);
+				ret = pk_console_get_description (client, details, error);
 			}
 		} else if (strcmp (value, "files") == 0) {
 			if (details == NULL) {
-				g_set_error (error, 0, 0, "you need to specify a package to find the files for");
+				g_set_error (error, 0, 0, _("specify a package to find the files for"));
 				return FALSE;
 			} else {
-				ret = pk_console_get_files (client, details);
+				ret = pk_console_get_files (client, details, error);
 			}
 		} else if (strcmp (value, "updates") == 0) {
-			ret = pk_client_get_updates (client);
+			ret = pk_client_get_updates (client, error);
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_client_get_actions (client);
 			pk_enum_list_print (elist);
@@ -893,24 +895,24 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 		} else if (strcmp (value, "repos") == 0) {
-			ret = pk_client_get_repo_list (client);
+			ret = pk_client_get_repo_list (client, error);
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_client_get_groups (client);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 		} else if (strcmp (value, "transactions") == 0) {
-			ret = pk_client_get_old_transactions (client, 10);
+			ret = pk_client_get_old_transactions (client, 10, error);
 		} else {
-			g_set_error (error, 0, 0, "invalid get type");
+			g_set_error (error, 0, 0, _("invalid get type"));
 		}
 	} else if (strcmp (mode, "update-system") == 0) {
-		ret = pk_client_update_system (client);
+		ret = pk_client_update_system (client, error);
 	} else if (strcmp (mode, "refresh") == 0) {
-		ret = pk_client_refresh_cache (client, FALSE);
+		ret = pk_client_refresh_cache (client, FALSE, error);
 	} else if (strcmp (mode, "force-refresh") == 0) {
-		ret = pk_client_refresh_cache (client, TRUE);
+		ret = pk_client_refresh_cache (client, TRUE, error);
 	} else {
-		g_set_error (error, 0, 0, "option not yet supported");
+		g_set_error (error, 0, 0, _("option not yet supported"));
 	}
 	return ret;
 }
@@ -941,7 +943,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 	if (is_console == TRUE && printed_bar == TRUE) {
 		g_print ("\n");
 	}
-	g_print ("Package description\n");
+	g_print (_("Package description\n"));
 	g_print ("  package:     '%s'\n", package_id);
 	g_print ("  license:     '%s'\n", license);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
@@ -988,7 +990,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *repository
 				       const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				       const gchar *key_timestamp, PkSigTypeEnum type, gpointer data)
 {
-	g_print ("Signature Required\n");
+	g_print (_("Signature Required\n"));
 	g_print ("  repo name:       '%s'\n", repository_name);
 	g_print ("  key url:         '%s'\n", key_url);
 	g_print ("  key userid:      '%s'\n", key_userid);
@@ -1007,7 +1009,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 {
 	/* if the daemon crashed, don't hang around */
 	if (connected == FALSE) {
-		g_print ("The daemon crashed mid transaction. This is bad\n");
+		g_print (_("The daemon crashed mid transaction. This is bad\n"));
 		exit (2);
 	}
 }
@@ -1030,11 +1032,11 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-			"Show extra debugging information", NULL },
+			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
-			"Show the program version and exit", NULL},
+			_("Show the program version and exit"), NULL},
 		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
-			"Exit without waiting for actions to complete", NULL},
+			_("Exit without waiting for actions to complete"), NULL},
 		{ NULL}
 	};
 
@@ -1054,10 +1056,10 @@ main (int argc, char *argv[])
 	if (error) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
+		g_error (_("This program cannot start until you start the dbus system service."));
 	}
 
-	context = g_option_context_new (_("SUBCOMMAND"));
+	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
@@ -1083,8 +1085,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_connection_changed_cb), loop);
 
 	client = pk_client_new ();
-	pk_client_set_use_buffer (client, TRUE);
-	pk_client_set_synchronous (client, !nowait);
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, !nowait, NULL);
 	g_signal_connect (client, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
@@ -1107,8 +1109,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	client_task = pk_client_new ();
-	pk_client_set_use_buffer (client_task, TRUE);
-	pk_client_set_synchronous (client_task, TRUE);
+	pk_client_set_use_buffer (client_task, TRUE, NULL);
+	pk_client_set_synchronous (client_task, TRUE, NULL);
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
@@ -1118,7 +1120,7 @@ main (int argc, char *argv[])
 	/* run the commands */
 	ret = pk_console_process_commands (client, argc, argv, &error);
 	if (ret == FALSE) {
-		g_print ("Command failed\n");
+		g_print (_("Command failed\n"));
 	}
 	if (error != NULL) {
 		g_print ("Error:\n  %s\n\n", error->message);
