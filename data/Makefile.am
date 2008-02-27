@@ -24,9 +24,8 @@ dist_dbus_DATA = 					\
 servicemaindir       = $(DBUS_SERVICES_DIR)
 servicemain_in_files = org.freedesktop.PackageKit.service.in
 servicemain_DATA     = $(servicemain_in_files:.service.in=.service)
-
 $(servicemain_DATA): $(servicemain_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(sbindir)|" $< > $@
+	@sed -e "s|\@servicedir\@|$(sbindir)|" -e "s|\@PACKAGEKIT_USER\@|$(PACKAGEKIT_USER)|" $< > $@
 
 serviceyumdir       = $(DBUS_SERVICES_DIR)
 serviceyum_in_files = org.freedesktop.PackageKitYumBackend.service.in
