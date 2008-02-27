@@ -238,7 +238,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_remove_package (dbus, package_id, allow_deps);
+	pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
 }
 
 /**
