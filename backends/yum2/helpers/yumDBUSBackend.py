@@ -1498,11 +1498,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Init()
         if lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = "1d"
+                repo.metadata_expire = 60 * 60 * 24  # 24 hours
                 repo.mdpolicy = "group:all"
         else:
             for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = "1.5h"
+                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
                 repo.mdpolicy = "group:primary"
 
     def _get_package_ver(self,po):
