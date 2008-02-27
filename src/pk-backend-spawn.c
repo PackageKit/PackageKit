@@ -83,6 +83,7 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 	gchar **sections;
 	guint size;
 	gchar *command;
+	gchar *text;
 	gboolean ret = TRUE;
 	PkInfoEnum info;
 	PkRestartEnum restart;
@@ -136,9 +137,12 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			ret = FALSE;
 			goto out;
 		}
+		text = g_strdup (sections[4]);
+		/* convert ; to \n as we can't emit them on stdout */
+		g_strdelimit (text, ";", '\n');
 		pk_backend_description (backend_spawn->priv->backend, sections[1], sections[2],
-					group, sections[4], sections[5],
-					package_size);
+					group, text, sections[5], package_size);
+		g_free (text);
 	} else if (pk_strequal (command, "files") == TRUE) {
 		if (size != 3) {
 			pk_warning ("invalid command '%s'", command);
@@ -174,9 +178,14 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			ret = FALSE;
 			goto out;
 		}
+
+		text = g_strdup (sections[8]);
+		/* convert ; to \n as we can't emit them on stdout */
+		g_strdelimit (text, ";", '\n');
 		pk_backend_update_detail (backend_spawn->priv->backend, sections[1], sections[2],
 					  sections[3], sections[4], sections[5],
-					  sections[6], restart, sections[8]);
+					  sections[6], restart, text);
+		g_free (text);
 	} else {
 		pk_warning ("invalid command '%s'", command);
 	}
@@ -263,6 +272,7 @@ pk_backend_spawn_parse_common_error (PkBackendSpawn *backend_spawn, const gchar 
 		}
 		/* convert back all the ;'s to newlines */
 		text = g_strdup (sections[2]);
+		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
 		pk_backend_error_code (backend_spawn->priv->backend, error_enum, text);
 		g_free (text);
@@ -293,7 +303,11 @@ pk_backend_spawn_parse_common_error (PkBackendSpawn *backend_spawn, const gchar 
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_message (backend_spawn->priv->backend, message_enum, sections[2]);
+		text = g_strdup (sections[2]);
+		/* convert ; to \n as we can't emit them on stdout */
+		g_strdelimit (text, ";", '\n');
+		pk_backend_message (backend_spawn->priv->backend, message_enum, text);
+		g_free (text);
 	} else if (pk_strequal (command, "change-transaction-data") == TRUE) {
 		if (size != 2) {
 			pk_warning ("invalid command '%s'", command);
