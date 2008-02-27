@@ -134,7 +134,7 @@ typedef struct {
 	void		(*install_package)	(PkBackend *backend, const gchar *package_id);
 	void		(*install_file)		(PkBackend *backend, const gchar *full_path);
 	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
-	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps);
+	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove);
 	void		(*resolve)		(PkBackend *backend, const gchar *filter, const gchar *package);
 	void		(*rollback)		(PkBackend *backend, const gchar *transaction_id);
 	void		(*search_details)	(PkBackend *backend, const gchar *filter, const gchar *search);

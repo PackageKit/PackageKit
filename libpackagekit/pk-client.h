@@ -164,6 +164,7 @@ gboolean	 pk_client_get_files			(PkClient	*client,
 gboolean	 pk_client_remove_package		(PkClient	*client,
 							 const gchar	*package,
 							 gboolean	 allow_deps,
+							 gboolean	 autoremove,
 							 GError		**error);
 gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force,

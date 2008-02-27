@@ -924,7 +924,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
  * pk_backend_dbus_remove_package:
  **/
 gboolean
-pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps)
+pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	DBusGProxyCall *call;
 
@@ -940,6 +940,7 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 						     backend_dbus, NULL, G_MAXINT,
 						     G_TYPE_STRING, package_id,
 						     G_TYPE_BOOLEAN, allow_deps,
+						     G_TYPE_BOOLEAN, autoremove,
 						     G_TYPE_INVALID, G_TYPE_INVALID);
 
 	/* unlock the backend if we failed */
