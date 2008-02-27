@@ -23,8 +23,17 @@ AC_SUBST(LT_AGE)
 
 AC_PROG_CC
 AC_PROG_INSTALL
+AC_ISC_POSIX
+AC_HEADER_STDC
+AC_PROG_LIBTOOL
 AM_PROG_CC_C_O
-AM_PROG_LIBTOOL
+
+# Internationalisation
+IT_PROG_INTLTOOL([0.35.0])
+GETTEXT_PACKAGE=PackageKit
+AC_SUBST([GETTEXT_PACKAGE])
+AM_GLIB_GNU_GETTEXT
+AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],["$GETTEXT_PACKAGE"],[gettext domain])
 
 # set up gtk-doc
 GTK_DOC_CHECK(1.9)
@@ -549,6 +558,7 @@ src/Makefile
 client/Makefile
 python/Makefile
 python/packagekit/Makefile
+po/Makefile.in
 ])
 
 dnl ==========================================================================

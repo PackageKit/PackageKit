@@ -1135,8 +1135,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
-        desc = desc.replace('\n\n',';')
+        desc = desc.replace('\n\n','__PARAGRAPH_SEPARATOR__')
         desc = desc.replace('\n',' ')
+        desc = desc.replace('__PARAGRAPH_SEPARATOR__','\n')
 
         self._show_description(id, pkg.license, "unknown", desc, pkg.url,
                              pkg.size)
@@ -1497,11 +1498,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Init()
         if lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = "1d"
+                repo.metadata_expire = 60 * 60 * 24  # 24 hours
                 repo.mdpolicy = "group:all"
         else:
             for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = "1.5h"
+                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
                 repo.mdpolicy = "group:primary"
 
     def _get_package_ver(self,po):

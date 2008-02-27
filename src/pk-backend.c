@@ -415,6 +415,29 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 }
 
 /**
+ * pk_backend_check_newlines:
+ *
+ * Check if we've used wrong chars, or other common mistakes
+ **/
+gboolean
+pk_backend_check_newlines (PkBackend *backend, const gchar *text)
+{
+	/* double space */
+	if (strstr (text, "  ") != NULL) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "text contains a double space '%s'", text);
+		return FALSE;
+	}
+	/* old paragraph seporator */
+	if (strstr (text, ";;") != NULL) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "text contains a double semicolon '%s'", text);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_update_detail:
  **/
 gboolean
@@ -429,6 +452,9 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* check for common mistakes */
+	pk_backend_check_newlines (backend, update_text);
 
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
@@ -493,6 +519,9 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
+	/* check for common mistakes */
+	pk_backend_check_newlines (backend, buffer);
+
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
 	g_free (buffer);
@@ -528,6 +557,9 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* check for common mistakes */
+	pk_backend_check_newlines (backend, description);
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
