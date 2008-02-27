@@ -578,7 +578,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(True);
+        self.AllowCancel(True)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
 
@@ -632,7 +632,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
-        self.AllowCancel(True);
+        self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
@@ -688,7 +688,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not successful:
                     return
             except yum.Errors.InstallError,e:
-                msgs = ';'.join(e)
+                msgs = '\n'.join(e)
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
                 self.Finished(EXIT_FAILED)
                 return
@@ -709,7 +709,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(False);
+        self.AllowCancel(False)
         self.PercentageChanged(0)
 
         pkgs_to_inst = []
@@ -722,7 +722,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not successful:
                     return
         except yum.Errors.InstallError,e:
-            msgs = ';'.join(e)
+            msgs = '\n'.join(e)
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
             self.Finished(EXIT_FAILED)
             return
@@ -738,7 +738,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(False);
+        self.AllowCancel(False)
         self.PercentageChanged(0)
 
         pkg,inst = self._findPackage(package)
@@ -767,7 +767,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(False);
+        self.AllowCancel(False)
         self.PercentageChanged(0)
 
         pkg,inst = self._findPackage( package)
@@ -1346,7 +1346,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution;" +";".join(msgs)
+            retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
             self.Finished(EXIT_FAILED)
             return
@@ -1362,14 +1362,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 rpmDisplay = PackageKitCallback(self)
                 callback = ProcessTransPackageKitCallback(self)
                 self.yumbase.processTransaction(callback=callback,
-                                      rpmDisplay=rpmDisplay)
+                                                rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, ye:
-                retmsg = "Error in Download;" +";".join(ye.value)
+                retmsg = "Error in Download\n" + "\n".join(ye.value)
                 self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumGPGCheckError, ye:
-                retmsg = "Error in Package Signatures;" +";".join(ye.value)
+                retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
                 self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
@@ -1391,7 +1391,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing;" +";".join(ye.value)
+                retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
                 self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
@@ -1437,22 +1437,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     _updateMetadata = None
     updateMetadata = property(fget=_get_update_metadata)
 
-    def _format_str(self,str):
-        """
-        Convert a multi line string to a list separated by ';'
-        """
-        if str:
-            lines = str.split('\n')
-            return ";".join(lines)
-        else:
-            return ""
-
     def _format_list(self,lst):
         """
-        Convert a multi line string to a list separated by ';'
+        Convert a list to a multiline string
         """
         if lst:
-            return ";".join(lst)
+            return "\n".join(lst)
         else:
             return ""
 
@@ -1482,7 +1472,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 				reboot = 'system'
             else:
                 reboot = 'none'
-            return self._format_str(desc),urls,reboot
+            return desc,urls,reboot
         else:
             return "",urls,"none"
 
@@ -1631,9 +1621,9 @@ class DownloadCallback( BaseMeter ):
             self.base.SubPercentageChanged(0)
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
-	            self.lastPct = pct
-	            # bump the sub persentage for this package
-	            self.base.SubPercentageChanged(pct)
+                self.lastPct = pct
+	        # bump the sub percentage for this package
+                self.base.SubPercentageChanged(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
