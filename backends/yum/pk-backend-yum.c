@@ -243,7 +243,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * pk_backend_remove_package:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);

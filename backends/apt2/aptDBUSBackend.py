@@ -50,6 +50,10 @@ DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
                         xapian.QueryParser.FLAG_LOVEHATE |
                         xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
+# Avoid questions from the maintainer scripts as far as possible
+os.putenv("DEBIAN_FRONTEND", "noninteractive")
+os.putenv("APT_LISTCHANGES_FRONTEND", "none")
+
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
     Handle the cache opening process
@@ -112,7 +116,6 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def updateInterface(self):
         apt.progress.InstallProgress.updateInterface(self)
-        #FIXME: what is the best timeout?
 
     def fork(self):
         logging.debug("doing a pty.fork()")
@@ -141,9 +144,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
         self._xapian = None
-        # Avoid questions from the maintainer scripts as far as possible
-        os.environ["DEBIAN_FRONTEND"] = "noninteractive"
-        os.environ["APT_LISTCHANGES_FRONTEND"] = "none"
 
 
     # Methods ( client -> engine -> backend )
@@ -247,7 +247,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # do some regular expression magic on the description
         # Add a newline before each bullet
         p = re.compile(r'^(\s|\t)*(\*|0|-)',re.MULTILINE)
-        desc = p.sub('\n*', desc)
+        desc = p.sub(ur'\n\u2022', desc)
         # replace all newlines by spaces
         p = re.compile(r'\n', re.MULTILINE)
         desc = p.sub(" ", desc)
@@ -408,6 +408,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except:
             self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
             self.Finished(EXIT_FAILED)
+            self.doUnlock()
             self.Exit()
             return
         self.doUnlock()
@@ -490,10 +491,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return None
 
 
-if __name__ == '__main__':
+def main():
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)
     bus_name = dbus.service.BusName(PACKAGEKIT_DBUS_SERVICE, bus=bus)
     manager = PackageKitAptBackend(bus_name, PACKAGEKIT_DBUS_PATH)
+
+if __name__ == '__main__':
+    main()
 
 # vim: ts=4 et sts=4

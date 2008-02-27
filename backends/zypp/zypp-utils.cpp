@@ -95,9 +95,9 @@ zypp_build_pool (gboolean include_local)
                                 manager.loadFromCache (repo);
 		}
 	} catch (const zypp::repo::RepoNoAliasException &ex) {
-                fprintf (stderr, "Can't figure an alias to look in cache\n");
+                pk_warning ("Can't figure an alias to look in cache");
 	} catch (const zypp::Exception &ex) {
-fprintf (stderr, "TODO: Handle exceptions: %s\n", ex.asUserString ().c_str ());
+                pk_warning ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 	}
 
 	return zypp->pool ();

@@ -81,6 +81,7 @@ struct PkClientPrivate
 	PkRoleEnum		 role;
 	gboolean		 xcached_force;
 	gboolean		 xcached_allow_deps;
+	gboolean		 xcached_autoremove;
 	gchar			*xcached_package_id;
 	gchar			*xcached_transaction_id;
 	gchar			*xcached_full_path;
@@ -1653,7 +1654,8 @@ pk_client_get_files (PkClient *client, const gchar *package, GError **error)
  **/
 gboolean
 pk_client_remove_package_action (PkClient *client, const gchar *package,
-				 gboolean allow_deps, GError **error)
+				 gboolean allow_deps, gboolean autoremove,
+				 GError **error)
 {
 	gboolean ret;
 
@@ -1664,6 +1666,7 @@ pk_client_remove_package_action (PkClient *client, const gchar *package,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, package,
 				 G_TYPE_BOOLEAN, allow_deps,
+				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
@@ -1672,7 +1675,7 @@ pk_client_remove_package_action (PkClient *client, const gchar *package,
  * pk_client_remove_package:
  **/
 gboolean
-pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow_deps, GError **error)
+pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow_deps, gboolean autoremove, GError **error)
 {
 	gboolean ret;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
@@ -1688,10 +1691,11 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
 	client->priv->xcached_allow_deps = allow_deps;
+	client->priv->xcached_autoremove = autoremove;
 	client->priv->xcached_package_id = g_strdup (package);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_remove_package_action (client, package, allow_deps, &error_pk);
+	ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -1700,7 +1704,7 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_remove_package_action (client, package, allow_deps, &error_pk);
+			ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2498,7 +2502,7 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_refresh_cache (client, client->priv->xcached_force, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		ret = pk_client_remove_package (client, client->priv->xcached_package_id,
-					  client->priv->xcached_allow_deps, error);
+					  client->priv->xcached_allow_deps, client->priv->xcached_autoremove, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
 		ret = pk_client_update_package (client, client->priv->xcached_package_id, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {

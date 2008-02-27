@@ -147,6 +147,7 @@ void		 pk_engine_remove_package		(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*package_id,
 							 gboolean	 allow_deps,
+							 gboolean	 autoremove,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_install_package		(PkEngine	*engine,
 							 const gchar	*tid,

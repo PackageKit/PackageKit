@@ -464,7 +464,7 @@ pk_console_install_package (PkClient *client, const gchar *package, GError **err
  * pk_console_remove_only:
  **/
 static gboolean
-pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean force, GError **error)
+pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean force, gboolean autoremove, GError **error)
 {
 	gboolean ret;
 
@@ -474,7 +474,7 @@ pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean forc
 		return ret;
 	}
 	pk_client_set_synchronous (client, TRUE, NULL);
-	return pk_client_remove_package (client, package_id, force, error);
+	return pk_client_remove_package (client, package_id, force, autoremove, error);
 }
 
 /**
@@ -537,7 +537,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	/* are we dumb and can't check for requires? */
 	if (pk_enum_list_contains (role_list, PK_ROLE_ENUM_GET_REQUIRES) == FALSE) {
 		/* no, just try to remove it without deps */
-		ret = pk_console_remove_only (client, package_id, FALSE, error);
+		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
 		g_free (package_id);
 		return ret;
 	}
@@ -565,7 +565,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	/* if there are no required packages, just do the remove */
 	if (length == 0) {
 		pk_debug ("no requires");
-		ret = pk_console_remove_only (client, package_id, FALSE, error);
+		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
 		g_free (package_id);
 		return ret;
 	}
@@ -590,7 +590,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	/* remove all the stuff */
-	ret = pk_console_remove_only (client, package_id, TRUE, error);
+	ret = pk_console_remove_only (client, package_id, TRUE, FALSE, error);
 	g_free (package_id);
 
 	return ret;
