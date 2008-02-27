@@ -318,6 +318,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.doUnlock()
 
         self.loop.quit()
+    
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Cancel(self):
+        print "Cancelling immediately."
+        if hasattr(self, 'yumbase'):
+            self.yumbase.closeRpmDB()
+            self.yumbase.doUnlock(YUM_PID_FILE)
+
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
