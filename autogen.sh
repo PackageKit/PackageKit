@@ -19,6 +19,7 @@ fi
 
 (cd $srcdir && gtkdocize) || exit 1
 (cd $srcdir && autoreconf --force --install) || exit 1
+(cd $srcdir && intltoolize) || exit 1
 
 conf_flags="--enable-maintainer-mode --enable-gtk-doc"
 
