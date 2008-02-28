@@ -145,18 +145,20 @@ static PkEnumMatch enum_message[] = {
 static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_FILTER_ENUM_NONE,			"none"},
-	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
 	{PK_FILTER_ENUM_INSTALLED,		"installed"},
-	{PK_FILTER_ENUM_GUI,			"gui"},
-	{PK_FILTER_ENUM_FREE,			"free"},
-	{PK_FILTER_ENUM_VISIBLE,		"visible"},
-	{PK_FILTER_ENUM_SUPPORTED,		"supported"},
-	{PK_FILTER_ENUM_NOT_DEVELOPMENT,	"~devel"},
 	{PK_FILTER_ENUM_NOT_INSTALLED,		"~installed"},
+	{PK_FILTER_ENUM_DEVELOPMENT,		"devel"},
+	{PK_FILTER_ENUM_NOT_DEVELOPMENT,	"~devel"},
+	{PK_FILTER_ENUM_GUI,			"gui"},
 	{PK_FILTER_ENUM_NOT_GUI,		"~gui"},
+	{PK_FILTER_ENUM_FREE,			"free"},
 	{PK_FILTER_ENUM_NOT_FREE,		"~free"},
+	{PK_FILTER_ENUM_VISIBLE,		"visible"},
 	{PK_FILTER_ENUM_NOT_VISIBLE,		"~visible"},
+	{PK_FILTER_ENUM_SUPPORTED,		"supported"},
 	{PK_FILTER_ENUM_NOT_SUPPORTED,		"~supported"},
+	{PK_FILTER_ENUM_BASENAME,		"basename"},
+	{PK_FILTER_ENUM_NOT_BASENAME,		"~basename"},
 	{0, NULL}
 };
 

@@ -244,6 +244,18 @@
                 If the package is supported or is a third party addon.
               </entry>
             </row>
+            <row>
+              <entry><literal>basename</literal> or <literal>~basename</literal></entry>
+              <entry>
+                The basename filter will only return results according to the
+                package basename.
+                This is useful if you are searching for pm-utils and you only
+                want to show the main pm-utils package, not any of the
+                <literal>-devel</literal> or <literal>-debuginfo</literal> or
+                <literal>-common</literal> suffixes in the UI.
+                The basename is normally the original name of the source package.
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </informaltable>
