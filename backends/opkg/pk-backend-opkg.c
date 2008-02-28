@@ -47,7 +47,6 @@ enum filters {
 };
 
 /* global config structures */
-static int ref = 0;
 static opkg_conf_t global_conf;
 static args_t args;
 
@@ -251,9 +250,6 @@ backend_initialize (PkBackend *backend)
 	/* we use the thread helper */
 	thread = pk_backend_thread_new ();
 
-	/* reference count for the global variables */
-	if (++ref > 1)
-		return;
 
 	/* Ipkg requires the PATH env variable to be set to find wget when
 	 * downloading packages. PackageKit unsets all env variables as a
@@ -267,7 +263,6 @@ backend_initialize (PkBackend *backend)
 	opkg_cb_state_changed = pk_opkg_state_changed;
 
 	memset(&global_conf, 0 ,sizeof(global_conf));
-	memset(&args, 0 ,sizeof(args));
 
 	args_init (&args);
 
@@ -289,9 +284,6 @@ backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
-	if (--ref > 0)
-		return;
-
 	g_object_unref (thread);
 
 	/* this appears to (sometimes) be freed elsewhere, perhaps
@@ -306,9 +298,10 @@ backend_destroy (PkBackend *backend)
 static gboolean
 backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 {
-	pkg_t *pkg;
+	pkg_t *pkg = NULL;
 	PkPackageId *pi;
 	PkBackend *backend;
+	gboolean ret = TRUE;
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
@@ -318,19 +311,28 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
-		pk_package_id_free (pi);
-		pk_backend_finished (backend);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
+	if (!pkg)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		ret = FALSE;
+		goto out;
+	}
+
 	pk_backend_description (backend, pi->name,
 	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
+out:
 	g_free (package_id);
 	pk_backend_finished (backend);
-	return TRUE;
+	return ret;
+
 }
 
 /**
@@ -582,21 +584,34 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
+backend_remove_package_thread (PkBackendThread *thread, gpointer data[3])
 {
 	PkPackageId *pi;
 	gint err;
 	PkBackend *backend;
+	gchar *package_id;
+	gboolean allow_deps;
+	gboolean autoremove;
+
+
+	package_id = (gchar*) data[0];
+	allow_deps = GPOINTER_TO_INT (data[1]);
+	autoremove = GPOINTER_TO_INT (data[2]);
+	g_free (data);
+
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
+	args.autoremove = autoremove;
+	args.force_removal_of_dependent_packages = allow_deps;
+
 	err = opkg_packages_remove (&args, pi->name, 0);
 	/* TODO: improve error reporting */
 	if (err != 0)
-		opkg_unknown_error (backend, err, "Install");
+		opkg_unknown_error (backend, err, "Remove");
 
 	g_free (package_id);
 	pk_package_id_free (pi);
@@ -607,13 +622,22 @@ backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
+	gpointer *params;
+
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
-	/* TODO: allow_deps is currently ignored */
+
+	/* params is a small array we can pack our thread parameters into */
+	params = g_new0 (gpointer, 2);
+
+	params[0] = g_strdup (package_id);
+	params[1] = GINT_TO_POINTER (allow_deps);
+	params[2] = GINT_TO_POINTER (autoremove);
+
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_remove_package_thread,
-		g_strdup (package_id));
+		params);
 
 }
 

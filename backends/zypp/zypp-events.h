@@ -152,7 +152,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	virtual void start (zypp::Resolvable::constPtr resolvable)
 	{
 		clear_package_id ();
-		_package_id = zypp_build_package_id_from_resolvable (resolvable);
+		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
