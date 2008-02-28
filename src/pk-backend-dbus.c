@@ -114,6 +114,7 @@ pk_backend_dbus_lock (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Lock(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -132,6 +133,7 @@ pk_backend_dbus_unlock (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Unlock(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -406,6 +408,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Init(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -429,6 +432,7 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Exit(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -453,6 +457,7 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Cancel(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -472,6 +477,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, filter,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetUpdates(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -490,6 +496,7 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetRepoList(%p)", backend_dbus->priv->call);
 	return TRUE;
 }
 
@@ -512,6 +519,7 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_BOOLEAN, force,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC RefreshCache(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -539,6 +547,7 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC UpdateSystem(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -563,12 +572,13 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 	pk_backend_dbus_lock (backend_dbus);
 
 	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Resolve",
+	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RepoEnable",
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, rid,
 						G_TYPE_STRING, enabled,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC RepoEnable(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -596,13 +606,14 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 	pk_backend_dbus_lock (backend_dbus);
 
 	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Resolve",
+	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RepoSetData",
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, rid,
 						G_TYPE_STRING, parameter,
 						G_TYPE_STRING, value,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC RepoSetData(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -634,6 +645,7 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const
 						G_TYPE_STRING, filter,
 						G_TYPE_STRING, package,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Resolve(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -663,6 +675,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, transaction_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC Rollback(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -694,6 +707,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 						G_TYPE_STRING, filter,
 						G_TYPE_STRING, search,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC SearchName(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -725,6 +739,7 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
 						G_TYPE_STRING, filter,
 						G_TYPE_STRING, search,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC SearchDetails(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -756,6 +771,7 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
 						G_TYPE_STRING, filter,
 						G_TYPE_STRING, search,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC SearchGroup(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -787,6 +803,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
 						G_TYPE_STRING, filter,
 						G_TYPE_STRING, search,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC SearchFile(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -817,6 +834,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
 						G_TYPE_STRING, package_id,
 						G_TYPE_BOOLEAN, recursive,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetDepends(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -847,6 +865,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_
 						G_TYPE_STRING, package_id,
 						G_TYPE_BOOLEAN, recursive,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetRequires(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -876,6 +895,7 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, package_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetUpdateDetail(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -905,6 +925,7 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, package_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetDescription(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -934,6 +955,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, package_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC GetFiles(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -965,6 +987,7 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 						G_TYPE_BOOLEAN, allow_deps,
 						G_TYPE_BOOLEAN, autoremove,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC RemovePackage(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -994,6 +1017,7 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, package_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC InstallPackage(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -1023,6 +1047,7 @@ pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *packag
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, package_id,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC UpdatePackage(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -1052,6 +1077,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, full_path,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC InstallFile(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
@@ -1081,6 +1107,7 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 						backend_dbus, NULL, G_MAXINT,
 						G_TYPE_STRING, location,
 						G_TYPE_INVALID, G_TYPE_INVALID);
+	pk_debug ("ASYNC ServicePack(%p)", backend_dbus->priv->call);
 
 	/* unlock the backend if we failed */
 	if (backend_dbus->priv->call == NULL) {
