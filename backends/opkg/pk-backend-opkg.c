@@ -582,21 +582,34 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
+backend_remove_package_thread (PkBackendThread *thread, gpointer data[3])
 {
 	PkPackageId *pi;
 	gint err;
 	PkBackend *backend;
+	gchar *package_id;
+	gboolean allow_deps;
+	gboolean autoremove;
+
+
+	package_id = (gchar*) data[0];
+	allow_deps = GPOINTER_TO_INT (data[1]);
+	autoremove = GPOINTER_TO_INT (data[2]);
+	g_free (data);
+
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
 
+	args.autoremove = autoremove;
+	args.force_removal_of_dependent_packages = allow_deps;
+
 	err = opkg_packages_remove (&args, pi->name, 0);
 	/* TODO: improve error reporting */
 	if (err != 0)
-		opkg_unknown_error (backend, err, "Install");
+		opkg_unknown_error (backend, err, "Remove");
 
 	g_free (package_id);
 	pk_package_id_free (pi);
@@ -607,13 +620,22 @@ backend_remove_package_thread (PkBackendThread *thread, gchar *package_id)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
+	gpointer *params;
+
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
-	/* TODO: allow_deps is currently ignored */
+
+	/* params is a small array we can pack our thread parameters into */
+	params = g_new0 (gpointer, 2);
+
+	params[0] = g_strdup (package_id);
+	params[1] = GINT_TO_POINTER (allow_deps);
+	params[2] = GINT_TO_POINTER (autoremove);
+
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_remove_package_thread,
-		g_strdup (package_id));
+		params);
 
 }
 
