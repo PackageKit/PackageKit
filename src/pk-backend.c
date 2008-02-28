@@ -425,13 +425,13 @@ pk_backend_check_newlines (PkBackend *backend, const gchar *text)
 	/* double space */
 	if (strstr (text, "  ") != NULL) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "text contains a double space '%s'", text);
+				    "backend error: text contains a double space");
 		return FALSE;
 	}
 	/* old paragraph seporator */
 	if (strstr (text, ";;") != NULL) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "text contains a double semicolon '%s'", text);
+				    "backend error: text contains a double semicolon");
 		return FALSE;
 	}
 	return TRUE;
