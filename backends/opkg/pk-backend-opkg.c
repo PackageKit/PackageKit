@@ -47,7 +47,6 @@ enum filters {
 };
 
 /* global config structures */
-static int ref = 0;
 static opkg_conf_t global_conf;
 static args_t args;
 
@@ -251,9 +250,6 @@ backend_initialize (PkBackend *backend)
 	/* we use the thread helper */
 	thread = pk_backend_thread_new ();
 
-	/* reference count for the global variables */
-	if (++ref > 1)
-		return;
 
 	/* Ipkg requires the PATH env variable to be set to find wget when
 	 * downloading packages. PackageKit unsets all env variables as a
@@ -288,9 +284,6 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-
-	if (--ref > 0)
-		return;
 
 	g_object_unref (thread);
 
