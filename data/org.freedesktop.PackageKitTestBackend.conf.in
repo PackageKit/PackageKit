@@ -7,15 +7,5 @@
     <allow send_destination="org.freedesktop.PackageKitTestBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
-  <policy user="root">
-    <allow own="org.freedesktop.PackageKitTestBackend"/>
-    <allow send_destination="org.freedesktop.PackageKitTestBackend"/>
-    <allow send_interface="org.freedesktop.PackageKitBackend"/>
-  </policy>
-  <policy context="default">
-    <deny own="org.freedesktop.PackageKitTestBackend"/>
-    <deny send_destination="org.freedesktop.PackageKitTestBackend"/>
-    <deny send_interface="org.freedesktop.PackageKitBackend"/>
-  </policy>
 </busconfig>
 

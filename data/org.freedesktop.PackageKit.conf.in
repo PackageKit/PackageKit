@@ -6,11 +6,8 @@
   <!-- This configuration file specifies the required security policies
        for the PackageKit to work. -->
 
-  <!-- Only root or user @PACKAGEKIT_USER@ can own the PackageKit service -->
+  <!-- Only user @PACKAGEKIT_USER@ can own the PackageKit service -->
   <policy user="@PACKAGEKIT_USER@">
-    <allow own="org.freedesktop.PackageKit"/>
-  </policy>
-  <policy user="root">
     <allow own="org.freedesktop.PackageKit"/>
   </policy>
 
