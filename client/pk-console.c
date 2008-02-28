@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -1015,6 +1016,33 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 }
 
 /**
+ * pk_console_sigint_handler:
+ **/
+static void
+pk_console_sigint_handler (int sig)
+{
+	PkRoleEnum role;
+	pk_debug ("Handling SIGINT");
+
+	/* restore default ASAP, as the cancels might hang */
+	signal (SIGINT, SIG_DFL);
+
+	/* cancel any tasks */
+	pk_client_get_role (client, &role, NULL, NULL);
+	if (role != PK_ROLE_ENUM_UNKNOWN) {
+		pk_client_cancel (client, NULL);
+	}
+	pk_client_get_role (client_task, &role, NULL, NULL);
+	if (role != PK_ROLE_ENUM_UNKNOWN) {
+		pk_client_cancel (client_task, NULL);
+	}
+
+	/* kill ourselves */
+	pk_debug ("Retrying SIGINT");
+	kill (getpid (), SIGINT);
+}
+
+/**
  * main:
  **/
 int
@@ -1045,6 +1073,9 @@ main (int argc, char *argv[])
 	}
 	dbus_g_thread_init ();
 	g_type_init ();
+
+	/* do stuff on ctrl-c */
+	signal (SIGINT, pk_console_sigint_handler);
 
 	/* check if we are on console */
 	if (isatty (fileno (stdout)) == 1) {
