@@ -7,5 +7,9 @@
     <allow send_destination="org.freedesktop.PackageKitTestBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
+  <policy context="default">
+    <allow send_destination="org.freedesktop.PackageKitTestBackend"/>
+    <allow send_interface="org.freedesktop.PackageKitBackend"/>
+  </policy>
 </busconfig>
 
