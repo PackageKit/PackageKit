@@ -47,39 +47,39 @@ zypp::target::rpm::RpmDb& zypp_get_rpmDb();
 /**
   * Return the gchar of the given PoolItem.
   */
-gchar* zypp_get_group (zypp::ResObject::constPtr item, zypp::target::rpm::RpmDb &rpm);
+gchar* zypp_get_group (zypp::sat::Solvable item, zypp::target::rpm::RpmDb &rpm);
 
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum get_enum_group (zypp::ResObject::constPtr item);
+PkGroupEnum get_enum_group (zypp::sat::Solvable item);
 
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::PoolItem> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
 
 /**
  * Returns a list of packages that match the specified term in its name or description.
  */
-std::vector<zypp::PoolItem> * zypp_get_packages_by_details (const gchar *search_term, gboolean include_local);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_details (const gchar *search_term, gboolean include_local);
 
 /**
  * Returns a list of packages that owns the specified file.
  */
-std::vector<zypp::PoolItem> * zypp_get_packages_by_file (const gchar *search_file);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_file (const gchar *search_file);
 
 /**
  * Returns the Resolvable for the specified package_id.
  */
-zypp::Resolvable::constPtr zypp_get_package_by_id (const gchar *package_id);
+zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 
 /**
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
  */
-gchar * zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable);
+gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v);
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
 #endif // _ZYPP_UTILS_H_
 
