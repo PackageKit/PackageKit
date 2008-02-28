@@ -7,10 +7,5 @@
     <allow send_destination="org.freedesktop.PackageKitAptBackend"/>
     <allow send_interface="org.freedesktop.PackageKitBackend"/>
   </policy>
-  <policy user="root">
-    <allow own="org.freedesktop.PackageKitAptBackend"/>
-    <allow send_destination="org.freedesktop.PackageKitAptBackend"/>
-    <allow send_interface="org.freedesktop.PackageKitBackend"/>
-  </policy>
 </busconfig>
 

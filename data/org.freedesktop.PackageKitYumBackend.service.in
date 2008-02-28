@@ -1,5 +1,5 @@
 [D-BUS Service]
 Name=org.freedesktop.PackageKitYumBackend
 Exec=@servicedir@/yumDBUSBackend.py
-User=root
+User=@PACKAGEKIT_USER@
 
