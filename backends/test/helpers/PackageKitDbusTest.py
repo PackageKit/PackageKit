@@ -18,11 +18,12 @@ import dbus.service
 import gobject
 from packagekit.enums import *
 
-PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitTestBackend'
-PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitTestBackend'
-PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitTestBackend'
+# This is common between backends
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
 
-#sudo dbus-send --system --dest=org.freedesktop.PackageKitTestBackend --type=method_call --print-reply /org/freedesktop/PackageKitTestBackend org.freedesktop.PackageKitTestBackend.SearchName string:filter string:search
+PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitTestBackend'
+
+#sudo dbus-send --system --dest=org.freedesktop.PackageKitTestBackend --type=method_call --print-reply /org/freedesktop/PackageKitBackend org.freedesktop.PackageKitBackend.SearchName string:filter string:search
 
 class PackageKitTestBackendService(dbus.service.Object):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
