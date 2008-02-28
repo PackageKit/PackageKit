@@ -133,26 +133,25 @@ zypp_get_rpmDb()
 }
 
 gchar*
-zypp_get_group (zypp::ResObject::constPtr item, zypp::target::rpm::RpmDb &rpm)
+zypp_get_group (zypp::sat::Solvable item, zypp::target::rpm::RpmDb &rpm)
 {
         std::string group;
 
-        if (item->isSystem ()) {
+        if (item.isSystem ()) {
 
                 zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-                rpm.getData (item->name (), item->edition (), rpmHeader);
+                rpm.getData (item.name (), item.edition (), rpmHeader);
                 group = rpmHeader->tag_group ();
 
         }else{
-                zypp::Package::constPtr pkg = zypp::asKind<zypp::Package>(item);
-                group = pkg->group ();
+                group = item.lookupStrAttribute (zypp::sat::SolvAttr::group);
         }
         std::transform(group.begin(), group.end(), group.begin(), tolower);
         return (gchar*)group.c_str ();
 }
 
 PkGroupEnum
-get_enum_group (zypp::ResObject::constPtr item)
+get_enum_group (zypp::sat::Solvable item)
 {
         
         zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
@@ -212,27 +211,28 @@ get_enum_group (zypp::ResObject::constPtr item)
         return pkGroup;
 }
 
-std::vector<zypp::PoolItem> *
+std::vector<zypp::sat::Solvable> *
 zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
 {
-	std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
 	zypp::ResPool pool = zypp_build_pool (include_local);
 
-	std::string name (package_name);
-	for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, name);
-			it != pool.byIdentEnd (zypp::ResKind::package, name); it++) {
-		zypp::PoolItem item = (*it);
-		v->push_back (item);
-	}
+        zypp::Capability cap (package_name, zypp::ResKind::package, zypp::Capability::PARSED);
+        zypp::sat::WhatProvides provs (cap);
+
+        for (zypp::sat::WhatProvides::const_iterator it = provs.begin ();
+                        it != provs.end (); it++) {
+                v->push_back (*it);
+        }
 
 	return v;
 }
 
-std::vector<zypp::PoolItem> *
+std::vector<zypp::sat::Solvable> *
 zypp_get_packages_by_details (const gchar *search_term, gboolean include_local)
 {
-        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
         zypp::ResPool pool = zypp_build_pool (include_local);
 
@@ -240,16 +240,16 @@ zypp_get_packages_by_details (const gchar *search_term, gboolean include_local)
         for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
                         it != pool.byKindEnd (zypp::ResKind::package); it++) {
                 if ((*it)->name ().find (term) != std::string::npos || (*it)->description ().find (term) != std::string::npos )
-                    v->push_back (*it);
+                    v->push_back ((*it)->satSolvable ());
         }
 
         return v;
 }
 
-std::vector<zypp::PoolItem> * 
+std::vector<zypp::sat::Solvable> * 
 zypp_get_packages_by_file (const gchar *search_file)
 {
-        std::vector<zypp::PoolItem> *v = new std::vector<zypp::PoolItem> ();
+        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
         zypp::ResPool pool = zypp_build_local_pool ();
 
@@ -268,7 +268,7 @@ zypp_get_packages_by_file (const gchar *search_file)
                 std::list<std::string> files = rpmHeader->tag_filenames ();
 
                 if (std::find(files.begin(), files.end(), file) != files.end()) {
-                        v->push_back (*it);
+                        v->push_back ((*it)->satSolvable ());
                         break;
                 }
 
@@ -277,27 +277,26 @@ zypp_get_packages_by_file (const gchar *search_file)
         return v;
 }
 
-zypp::Resolvable::constPtr
+zypp::sat::Solvable
 zypp_get_package_by_id (const gchar *package_id)
 {
 	PkPackageId *pi;
 	pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
 		// TODO: Do we need to do something more for this error?
-		return NULL;
+		return zypp::sat::Solvable::nosolvable;
 	}
 
-	std::vector<zypp::PoolItem> *v = zypp_get_packages_by_name (pi->name, TRUE);
+	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, TRUE);
 	if (v == NULL)
-		return NULL;
+		return zypp::sat::Solvable::nosolvable;
 
-	zypp::ResObject::constPtr package = NULL;
-	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+	zypp::sat::Solvable package;
+	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		zypp::ResObject::constPtr pkg = (*it);
-		const char *version = pkg->edition ().asString ().c_str ();
+		const char *version = it->edition ().asString ().c_str ();
 		if (strcmp (pi->version, version) == 0) {
-			package = pkg;
+			package = *it;
 			break;
 		}
 	}
@@ -307,13 +306,13 @@ zypp_get_package_by_id (const gchar *package_id)
 }
 
 gchar *
-zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
+zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 {
 	gchar *package_id;
 	
-	package_id = pk_package_id_build (resolvable->name ().c_str (),
-					  resolvable->edition ().asString ().c_str (),
-					  resolvable->arch ().asString ().c_str (),
+	package_id = pk_package_id_build (resolvable.name ().c_str (),
+					  resolvable.edition ().asString ().c_str (),
+					  resolvable.arch ().asString ().c_str (),
 					  "opensuse");
 	// TODO: Figure out how to check if resolvable is really a ResObject and then cast it to a ResObject and pull of the repository alias for our "data" part in the package id
 //					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
@@ -322,20 +321,19 @@ zypp_build_package_id_from_resolvable (zypp::Resolvable::constPtr resolvable)
 }
 
 void
-zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::PoolItem> *v)
+zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
 {
-	for (std::vector<zypp::PoolItem>::iterator it = v->begin ();
+	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		zypp::ResObject::constPtr pkg = (*it);
 
 		// TODO: Determine whether this package is installed or not
-		gchar *package_id = zypp_build_package_id_from_resolvable (pkg);
+		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 		pk_backend_package (backend,
-			    it->status().isInstalled() == true ?
+			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :
 				PK_INFO_ENUM_AVAILABLE,
 			    package_id,
-			    pkg->description ().c_str ());
+			    it->lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 		g_free (package_id);
 	}
 }
