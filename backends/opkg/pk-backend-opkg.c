@@ -298,9 +298,10 @@ backend_destroy (PkBackend *backend)
 static gboolean
 backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 {
-	pkg_t *pkg;
+	pkg_t *pkg = NULL;
 	PkPackageId *pi;
 	PkBackend *backend;
+	gboolean ret = TRUE;
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
@@ -310,19 +311,28 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
-		pk_package_id_free (pi);
-		pk_backend_finished (backend);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
 
+	if (!pkg)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+				"Package not found");
+		ret = FALSE;
+		goto out;
+	}
+
 	pk_backend_description (backend, pi->name,
 	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
+out:
 	g_free (package_id);
 	pk_backend_finished (backend);
-	return TRUE;
+	return ret;
+
 }
 
 /**
