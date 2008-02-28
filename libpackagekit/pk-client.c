@@ -1077,11 +1077,11 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GErr
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (role != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (client->priv->tid != NULL, FALSE);
 
 	/* check to see if we have a valid transaction */
 	if (client->priv->tid == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
+		*role = PK_ROLE_ENUM_UNKNOWN;
 		return FALSE;
 	}
 
