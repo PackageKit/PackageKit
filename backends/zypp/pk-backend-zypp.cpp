@@ -568,7 +568,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
  * backend_get_updates
  */
 static void
-backend_get_updates (PkBackend *backend)
+backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);

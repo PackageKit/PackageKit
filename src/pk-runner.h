@@ -67,7 +67,8 @@ gboolean	 pk_runner_get_files 			(PkRunner	*runner,
 gboolean	 pk_runner_get_requires			(PkRunner	*runner,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
-gboolean	 pk_runner_get_updates			(PkRunner	*runner);
+gboolean	 pk_runner_get_updates			(PkRunner	*runner,
+							 const gchar	*filter);
 gboolean	 pk_runner_install_package		(PkRunner	*runner,
 							 const gchar	*package_id);
 gboolean	 pk_runner_install_file			(PkRunner	*runner,

@@ -425,7 +425,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except IOError,e:
             self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
 
-    def get_updates(self):
+    def get_updates(self, filter):
         self._apt_cache.upgrade(False)
         for pkg in self._apt_cache.getChanges():
             self._emit_package(Package(self, pkg))

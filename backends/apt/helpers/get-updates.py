@@ -12,6 +12,8 @@
 import sys
 from aptBackend import PackageKitAptBackend
 
+filter = sys.argv[1]
+
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.get_updates()
+backend.get_updates(filter)
 sys.exit(0)

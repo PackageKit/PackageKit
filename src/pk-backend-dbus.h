@@ -118,7 +118,8 @@ gboolean	 pk_backend_dbus_repo_set_data		(PkBackendDbus	*backend_dbus,
 							 const gchar	*value);
 gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_cancel			(PkBackendDbus	*backend_dbus);
-gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter);
 gboolean	 pk_backend_dbus_set_name		(PkBackendDbus	*backend_dbus,
 							 const gchar	*service);
 

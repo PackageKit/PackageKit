@@ -126,7 +126,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def get_updates(self):
+    def get_updates(self, filter):
         cache = self.ctrl.getCache()
 
         trans = smart.transaction.Transaction(cache,

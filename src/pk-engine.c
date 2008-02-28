@@ -104,6 +104,9 @@ static guint	     signals [PK_ENGINE_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
 
+/* prototype */
+gboolean pk_engine_filter_check (const gchar *filter, GError **error);
+
 /**
  * pk_engine_error_quark:
  * Return value: Our personal error quark.
@@ -887,7 +890,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
  * pk_engine_get_updates:
  **/
 void
-pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation *context)
+pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -907,13 +910,20 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, DBusGMethodInvocation
 		return;
 	}
 
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, &error);
+	if (ret == FALSE) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* create a new runner object */
 	item->runner = pk_engine_runner_new (engine);
 
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_get_updates (item->runner);
+	ret = pk_runner_get_updates (item->runner, filter);
 	if (ret == FALSE) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

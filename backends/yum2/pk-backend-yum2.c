@@ -163,11 +163,11 @@ backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recu
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend)
+backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_updates (dbus);
+	pk_backend_dbus_get_updates (dbus, filter);
 }
 
 /**

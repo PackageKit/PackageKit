@@ -12,6 +12,8 @@
 import sys
 from conaryBackend import PackageKitConaryBackend
 
+filter = sys.argv[1]
+
 backend = PackageKitConaryBackend(sys.argv[1:])
-backend.get_updates()
+backend.get_updates(filter)
 sys.exit(0)

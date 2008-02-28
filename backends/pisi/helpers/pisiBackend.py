@@ -223,7 +223,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         for pkg in self.packagedb.get_rev_deps(package):
             self.__get_package(pkg[0])
 
-    def get_updates(self):
+    def get_updates(self, filter):
         """ Prints available updates and types """
         self.allow_cancel(True);
         self.percentage(None)

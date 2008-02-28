@@ -80,6 +80,7 @@ gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 GError		**error);
 void		 pk_engine_get_updates			(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_search_name			(PkEngine	*engine,
 							 const gchar	*tid,

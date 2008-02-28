@@ -903,7 +903,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_updates (PkBackend *backend)
+backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 

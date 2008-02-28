@@ -1170,12 +1170,13 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
  * pk_client_get_updates:
  **/
 gboolean
-pk_client_get_updates (PkClient *client, GError **error)
+pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1187,6 +1188,7 @@ pk_client_get_updates (PkClient *client, GError **error)
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -2479,7 +2481,7 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_get_requires (client, client->priv->xcached_package_id,
 					client->priv->xcached_force, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		ret = pk_client_get_updates (client, error);
+		ret = pk_client_get_updates (client, client->priv->xcached_filter, error);
 	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		ret = pk_client_search_details (client, client->priv->xcached_filter,
 					  client->priv->xcached_search, error);

@@ -421,7 +421,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return INFO_NORMAL
 
     @ExceptionHandler
-    def get_updates(self):
+    def get_updates(self, filter):
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)

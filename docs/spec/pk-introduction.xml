@@ -1280,8 +1280,27 @@
         are upgradable.
       </para>
       <para>
-        There are no arguments.
+        The arguments are:
       </para>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Option</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>filter</literal></entry>
+              <entry>
+                A correct filter, e.g. <literal>none</literal> or
+                <literal>basename</literal>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
       <para>
         This method typically emits
         <literal>Progress</literal>,
@@ -1303,6 +1322,17 @@
         exists, but cannot be installed.
         The reason for it not being installed should be put into the update
         description when doing GetUpdateDetail.
+      </para>
+      <para>
+        A filter such as <literal>basename</literal> or <literal>gui</literal>
+        is also useful if you want to do filtering on the method to only show
+        the main packages rather than the complete list.
+        The complete list is available but specifying <literal>none</literal>
+        as the filter.
+        Using no filter which may be useful in advanced tools or when using
+        libpackagekit and searching for an update of a specific name.
+        Other filter types may be present, but can be safely ignored of the
+        backend does not support them.
       </para>
     </sect2>
 

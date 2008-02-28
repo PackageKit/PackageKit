@@ -1050,7 +1050,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return INFO_UNKNOWN
 
-    def get_updates(self):
+    def get_updates(self, filter):
         '''
         Implement the {backend}-get-updates functionality
         '''

@@ -201,7 +201,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend)
+backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	guint number;
 	GRand *rand;

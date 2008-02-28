@@ -288,7 +288,7 @@ pk_runner_set_running (PkRunner *runner)
 					     runner->priv->cached_package_id,
 					     runner->priv->cached_force);
 	} else if (runner->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		desc->get_updates (runner->priv->backend);
+		desc->get_updates (runner->priv->backend, runner->priv->cached_filter);
 	} else if (runner->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		desc->search_details (runner->priv->backend,
 					       runner->priv->cached_filter,
@@ -452,13 +452,14 @@ pk_runner_get_requires (PkRunner *runner, const gchar *package_id, gboolean recu
  * pk_runner_get_updates:
  */
 gboolean
-pk_runner_get_updates (PkRunner *runner)
+pk_runner_get_updates (PkRunner *runner, const gchar *filter)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_updates == NULL) {
 		pk_debug ("Not implemented yet: GetUpdates");
 		return FALSE;
 	}
+	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_UPDATES);
 	return TRUE;

@@ -456,7 +456,7 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
  * pk_backend_dbus_get_updates:
  **/
 gboolean
-pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus)
+pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
@@ -465,6 +465,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus)
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetUpdates",
 						pk_backend_dbus_proxy_async_callback,
 						backend_dbus, NULL, G_MAXINT,
+						G_TYPE_STRING, filter,
 						G_TYPE_INVALID, G_TYPE_INVALID);
 	return TRUE;
 }

@@ -125,6 +125,7 @@ gboolean	 pk_client_cancel			(PkClient	*client,
 
 
 gboolean	 pk_client_get_updates			(PkClient	*client,
+							 const gchar	*filter,
 							 GError		**error);
 gboolean	 pk_client_update_system		(PkClient	*client,
 							 GError		**error);

@@ -13,7 +13,9 @@
 import sys
 import pisiBackend
 
+filter = sys.argv[1]
+
 backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.get_updates()
+backend.get_updates(filter)
 
 sys.exit()
