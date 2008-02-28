@@ -81,6 +81,7 @@ pk_backend_dbus_proxy_async_callback (DBusGProxy *proxy, DBusGProxyCall *call, v
 
 	g_return_if_fail (backend_dbus != NULL);
 	g_return_if_fail (backend_dbus->priv->proxy != NULL);
+	g_return_if_fail (backend_dbus->priv->call != NULL);
 
 	/* we're done */
 	dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
@@ -105,6 +106,7 @@ static gboolean
 pk_backend_dbus_lock (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Lock",
@@ -121,6 +123,7 @@ static gboolean
 pk_backend_dbus_unlock (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	/* don't check backend_dbus->priv->call as we should be able to queue this */
 
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Unlock",
@@ -411,6 +414,12 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 
+	/* cancel async method if running */
+	if (backend_dbus->priv->call != NULL) {
+		pk_debug ("cancelling call %p", backend_dbus->priv->call);
+		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
+	}
+
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Exit",
 						pk_backend_dbus_proxy_async_callback,
@@ -427,6 +436,13 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
+
+	/* cancel async method if running */
+	if (backend_dbus->priv->call != NULL) {
+		pk_debug ("cancelling call %p", backend_dbus->priv->call);
+		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
+	}
 
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Cancel",
@@ -443,6 +459,7 @@ gboolean
 pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetUpdates",
@@ -459,6 +476,7 @@ gboolean
 pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
 	/* new async call */
 	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetRepoList",
@@ -475,6 +493,7 @@ gboolean
 pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -501,6 +520,7 @@ gboolean
 pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
 	/* lock the backend */
 	pk_backend_dbus_lock (backend_dbus);
@@ -526,6 +546,7 @@ gboolean
 pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboolean enabled)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 
 	/* lock the backend */
@@ -555,6 +576,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 			       const gchar *parameter, const gchar *value)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 	g_return_val_if_fail (parameter != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
@@ -586,6 +608,7 @@ gboolean
 pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 
@@ -615,6 +638,7 @@ gboolean
 pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (transaction_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -642,6 +666,7 @@ gboolean
 pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -671,6 +696,7 @@ gboolean
 pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -700,6 +726,7 @@ gboolean
 pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -729,6 +756,7 @@ gboolean
 pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -758,6 +786,7 @@ gboolean
 pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -786,6 +815,7 @@ gboolean
 pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -814,6 +844,7 @@ gboolean
 pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -841,6 +872,7 @@ gboolean
 pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -868,6 +900,7 @@ gboolean
 pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -895,6 +928,7 @@ gboolean
 pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -924,6 +958,7 @@ gboolean
 pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -951,6 +986,7 @@ gboolean
 pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* lock the backend */
@@ -978,6 +1014,7 @@ gboolean
 pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_path)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (full_path != NULL, FALSE);
 
 	/* lock the backend */
@@ -1005,6 +1042,7 @@ gboolean
 pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location)
 {
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (location != NULL, FALSE);
 
 	/* lock the backend */
@@ -1036,6 +1074,14 @@ pk_backend_dbus_finalize (GObject *object)
 	g_return_if_fail (PK_IS_BACKEND_DBUS (object));
 
 	backend_dbus = PK_BACKEND_DBUS (object);
+
+	/* cancel async method if running */
+	if (backend_dbus->priv->call != NULL) {
+		pk_debug ("cancelling call %p", backend_dbus->priv->call);
+		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
+	}
+
+	/* free name */
 	g_free (backend_dbus->priv->service);
 
 	/* we might not have actually set a name yet */
