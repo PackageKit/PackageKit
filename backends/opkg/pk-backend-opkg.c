@@ -263,7 +263,6 @@ backend_initialize (PkBackend *backend)
 	opkg_cb_state_changed = pk_opkg_state_changed;
 
 	memset(&global_conf, 0 ,sizeof(global_conf));
-	memset(&args, 0 ,sizeof(args));
 
 	args_init (&args);
 
