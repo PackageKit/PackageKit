@@ -70,7 +70,7 @@ zypp_build_pool (gboolean include_local)
 
 	if (include_local == TRUE) {
                 //FIXME have to wait for fix in zypp (repeated loading of target)
-                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::sat::Repo::norepo)
+                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::Repo::norepo)
                 {
 		        // Add local resolvables
 		        zypp::Target_Ptr target = zypp->target ();
@@ -91,7 +91,7 @@ zypp_build_pool (gboolean include_local)
 				continue;
                         
                         //FIXME see above, skip already cached repos
-                        if (zypp::sat::Pool::instance().reposFind( repo.alias ()) == zypp::sat::Repo::norepo)
+                        if (zypp::sat::Pool::instance().reposFind( repo.alias ()) == zypp::Repo::norepo)
                                 manager.loadFromCache (repo);
 		}
 	} catch (const zypp::repo::RepoNoAliasException &ex) {
