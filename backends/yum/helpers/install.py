@@ -14,7 +14,7 @@ import sys
 
 from yumBackend import PackageKitYumBackend
 
-package = sys.argv[1]
+packages = sys.argv[1:]
 backend = PackageKitYumBackend(sys.argv[1:])
-backend.install(package)
+backend.install(packages)
 sys.exit(0)
