@@ -148,6 +148,17 @@ fi
 AC_SUBST(PACKAGEKIT_USER)
 AC_DEFINE_UNQUOTED(PACKAGEKIT_USER,"$PACKAGEKIT_USER", [User for running the PackageKit daemon])
 
+AC_ARG_WITH([backend_user],
+	    AS_HELP_STRING([--with-backend-user=<user>],
+			   [Alternative user for running the PackageKit backend]))
+if test -z "$with_backend_user" ; then
+	PK_BACKEND_USER=$PACKAGEKIT_USER
+else
+	PK_BACKEND_USER=$with_backend_user
+fi
+AC_SUBST(PK_BACKEND_USER)
+AC_DEFINE_UNQUOTED(PK_BACKEND_USER,"$PK_BACKEND_USER", [Alternative user for running the PackageKit backend])
+
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
 dnl ---------------------------------------------------------------------------

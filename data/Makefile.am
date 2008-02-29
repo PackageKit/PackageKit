@@ -31,19 +31,19 @@ serviceyumdir       = $(DBUS_SERVICES_DIR)
 serviceyum_in_files = org.freedesktop.PackageKitYumBackend.service.in
 serviceyum_DATA     = $(serviceyum_in_files:.service.in=.service)
 $(serviceyum_DATA): $(serviceyum_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
+	@sed -e "s|\@servicedir\@|$(libexecdir)|"  -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
 servicetestdir       = $(DBUS_SERVICES_DIR)
 servicetest_in_files = org.freedesktop.PackageKitTestBackend.service.in
 servicetest_DATA     = $(servicetest_in_files:.service.in=.service)
 $(servicetest_DATA): $(servicetest_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
 serviceaptdir       = $(DBUS_SERVICES_DIR)
 serviceapt_in_files = org.freedesktop.PackageKitAptBackend.service.in
 serviceapt_DATA     = $(serviceapt_in_files:.service.in=.service)
 $(serviceapt_DATA): $(serviceapt_in_files) Makefile
-	@sed -e "s|\@servicedir\@|$(libexecdir)|" $< > $@
+	@sed -e "s|\@servicedir\@|$(libexecdir)|" -e "s|\@PK_BACKEND_USER\@|$(PK_BACKEND_USER)|" $< > $@
 
 localcachedir = $(localstatedir)/run/PackageKit
 localcache_DATA =					\
