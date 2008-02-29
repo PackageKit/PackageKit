@@ -774,26 +774,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
             
-    def install(self, package):
+    def install(self, packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
         self.allow_cancel(False)
         self.percentage(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            if inst:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
-            try:
+        txmbrs = []
+        for package in packages:
+            pkg,inst = self._findPackage(package)
+            if pkg and not inst:
                 txmbr = self.yumbase.install(name=pkg.name)
-                self._runYumTransaction()
-            except yum.Errors.InstallError,e:
-                msgs = ';'.join(e)
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+                txmbrs.extend(txmbr)
+        if txmbrs:
+            self._runYumTransaction()
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Package was not found")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No packages to instal")
 
     def _localInstall(self, inst_file):
         """handles installs/updates of rpms provided on the filesystem in a
@@ -887,21 +884,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             msgs = ';'.join(e)
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
-    def update(self, package):
+    def update(self, packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
         self.allow_cancel(False);
         self.percentage(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            txmbr = self.yumbase.update(name=pkg.name)
-            if txmbr:
-                self._runYumTransaction()
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+        txmbrs = []
+        for package in packages:
+            pkg,inst = self._findPackage(package)
+            if pkg:
+                txmbr = self.yumbase.update(name=pkg.name)
+                txmbrs.extend(txmbr)
+        if txmbrs:
+            self._runYumTransaction()
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
