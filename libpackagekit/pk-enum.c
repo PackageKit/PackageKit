@@ -122,6 +122,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_FAILED_INITIALIZATION,	"failed-initialization"},
 	{PK_ERROR_ENUM_FAILED_FINALISE,		"failed-finalise"},
 	{PK_ERROR_ENUM_FAILED_CONFIG_PARSING,	"failed-config-parsing"},
+	{PK_ERROR_ENUM_CANNOT_CANCEL,		"cannot-cancel"},
 	{0, NULL}
 };
 
