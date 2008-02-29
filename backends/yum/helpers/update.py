@@ -14,8 +14,8 @@ import sys
 
 from yumBackend import PackageKitYumBackend
 
-package = sys.argv[1]
+packages = sys.argv[1:]
 backend = PackageKitYumBackend(sys.argv[1:])
-backend.update(package)
+backend.update(packages)
 backend.unLock()
 sys.exit(0)

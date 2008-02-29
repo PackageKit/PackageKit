@@ -887,21 +887,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             msgs = ';'.join(e)
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
 
-    def update(self, package):
+    def update(self, packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
         self.allow_cancel(False);
         self.percentage(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            txmbr = self.yumbase.update(name=pkg.name)
-            if txmbr:
-                self._runYumTransaction()
-            else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+        txmbrs = []
+        for package in packages:
+            pkg,inst = self._findPackage(package)
+            if pkg:
+                txmbr = self.yumbase.update(name=pkg.name)
+                txmbrs.extend(txmbr)
+        if txmbrs:
+            self._runYumTransaction()
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
 
