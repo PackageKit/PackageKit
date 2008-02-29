@@ -146,8 +146,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Init(self):
-        self.last_action_time = time.time()
         pklog.info("Initializing cache")
+        self.last_action_time = time.time()
         self.StatusChanged(STATUS_SETUP)
         self._open_cache()
         self._xapian = xapian.Database(XAPIANDB)
@@ -211,6 +211,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update functionality
         '''
+        pklog.info("Get updates")
         self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -226,6 +227,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-description functionality
         '''
+        pklog.info("Get description of %s" % pkg_id)
         self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -264,6 +266,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Unlock(self):
+        pklog.info("Unlock")
         self.last_action_time = time.time()
         self.doUnlock()
 
@@ -274,6 +277,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Lock(self):
+        pklog.info("Lock")
         self.last_action_time = time.time()
         self.doLock()
 
@@ -375,6 +379,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
+        pklog.info("Refresh cache")
         self.last_action_time = time.time()
         self.AllowCancel(True);
         self.PercentageChanged(0)
@@ -396,6 +401,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         (Re)Open the APT cache
         '''
+        pklog.debug("Open APT cache")
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.doLock()
         try:
