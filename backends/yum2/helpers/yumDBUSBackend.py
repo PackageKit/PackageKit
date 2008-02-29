@@ -238,10 +238,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
 
+        print "__init__"
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
-        print "__init__"
+        print "__init__ done"
 
 #
 # Signals ( backend -> engine -> client )
@@ -301,41 +302,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Methods ( client -> engine -> backend )
 #
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Init(self):
-        self.last_action_time = time.time()
+    def doInit(self):
         self.yumbase = PackageKitYumBase()
         yumbase = self.yumbase
         self._setup_yum()
-        self.doLock()
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Exit(self):
-        self.last_action_time = time.time()
+    def doExit(self):
         if self.isLocked():
-            self.doUnlock()
-
-        self.loop.quit()
-    
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Cancel(self):
-        print "Cancelling immediately."
-        if hasattr(self, 'yumbase'):
-            self.yumbase.closeRpmDB()
-            self.yumbase.doUnlock(YUM_PID_FILE)
-
-        self.loop.quit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Lock(self):
-        self.last_action_time = time.time()
-        self.doLock()
+            self._unlock_yum()
 
     def doLock(self):
+        self._lock_yum()
+        PackageKitBaseBackend.doLock(self)
+
+    def _lock_yum(self):
         ''' Lock Yum'''
         retries = 0
         while not self.isLocked():
@@ -350,28 +330,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if retries > 20:
                     self.ErrorCode(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
                     self.Finished(EXIT_FAILED)
-                    return
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Unlock(self):
-        self.last_action_time = time.time()
-        self.doUnlock()
+                    self.loop.quit()
 
     def doUnlock(self):
+        self._unlock_yum()
+
+    def _unlock_yum(self):
         ''' Unlock Yum'''
         if self.isLocked():
             PackageKitBaseBackend.doUnlock(self)
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchName(self, filters, search):
+    def doSearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -386,13 +360,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchDetails(self,filters,key):
+    def doSearchDetails(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -407,13 +378,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchGroup(self,filters,key):
+    def doSearchGroup(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -456,13 +424,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def SearchFile(self,filters,key):
+    def doSearchFile(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -490,13 +455,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def GetRequires(self,package,recursive):
+    def doGetRequires(self,package,recursive):
         '''
         Print a list of requires for a given package
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -517,13 +479,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def GetDepends(self,package,recursive):
+    def doGetDepends(self,package,recursive):
         '''
         Print a list of depends for a given package
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.PercentageChanged(0)
@@ -553,13 +512,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def UpdateSystem(self):
+    def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -588,13 +544,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.conf.skip_broken = old_skip_broken
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='b', out_signature='')
-    def RefreshCache(self, force):
+    def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(True)
         self.PercentageChanged(0)
@@ -642,13 +595,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def Resolve(self, filters, name):
+    def doResolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -682,14 +632,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallPackage(self, package):
+    def doInstallPackage(self, package):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -717,15 +664,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallFile (self, inst_file):
+    def doInstallFile (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -747,14 +691,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def UpdatePackage(self, package):
+    def doUpdatePackage(self, package):
         '''
         Implement the {backend}-update functionality
         This will only work with yum 3.2.4 or higher
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -777,9 +718,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RemovePackage(self, package, allowdep):
+    def doRemovePackage(self, package, allowdep):
         '''
         Implement the {backend}-remove functionality
         '''
@@ -811,13 +750,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
             
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetDescription(self, package):
+    def doGetDescription(self, package):
         '''
         Print a detailed description for a given package
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -833,10 +769,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetFiles(self, package):
-        self.last_action_time = time.time()
+    def doGetFiles(self, package):
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -857,14 +790,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetUpdates(self, filters):
+    def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
         @param filters: package types to show
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -893,16 +823,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
         
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='ss', out_signature='')
-    def GetPackages(self,filters,showdesc='no'):
+    def doGetPackages(self,filters,showdesc='no'):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
-        self.last_action_time = time.time()
         self._check_init(lazy_cache=True)
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -941,13 +868,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
         
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RepoEnable(self, repoid, enable):
+    def doRepoEnable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         try:
             repo = self.yumbase.repos.getRepo(repoid)
@@ -965,13 +889,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def GetRepoList(self):
+    def doGetRepoList(self):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.StatusChanged(STATUS_INFO)
         for repo in self.yumbase.repos.repos.values():
@@ -982,13 +903,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def GetUpdateDetail(self,package):
+    def doGetUpdateDetail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -1011,13 +929,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sss', out_signature='')
-    def RepoSetData(self, repoid, parameter, value):
+    def doRepoSetData(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
         '''
-        self.last_action_time = time.time()
         self._check_init()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
