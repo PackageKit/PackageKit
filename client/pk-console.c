@@ -886,7 +886,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				ret = pk_console_get_files (client, details, error);
 			}
 		} else if (strcmp (value, "updates") == 0) {
-			ret = pk_client_get_updates (client, "none", error);
+			ret = pk_client_get_updates (client, "basename", error);
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_client_get_actions (client);
 			pk_enum_list_print (elist);
