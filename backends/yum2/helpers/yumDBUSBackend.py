@@ -566,18 +566,26 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
+        old_skip_broken = self.yumbase.conf.skip_broken
+        self.yumbase.conf.skip_broken = 1
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
             successful = self._runYumTransaction()
             if not successful:
+                self.yumbase.conf.throttle = old_throttle
+                self.yumbase.conf.skip_broken = old_skip_broken
+                # _runYumTransaction() sets the error code and calls Finished()
                 return
         else:
+            self.yumbase.conf.throttle = old_throttle
+            self.yumbase.conf.skip_broken = old_skip_broken
             self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
             self.Finished(EXIT_FAILED)
             return
 
         self.yumbase.conf.throttle = old_throttle
+        self.yumbase.conf.skip_broken = old_skip_broken
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
