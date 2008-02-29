@@ -37,7 +37,7 @@ from pkexceptions import *
 
 # Setup Logging
 
-logging.basicConfig()
+logging.basicConfig(format="%(levelname)s:%(message)s")
 pklog = logging.getLogger("PackageKitBackend")
 pklog.setLevel(logging.DEBUG)
 
