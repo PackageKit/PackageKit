@@ -22,16 +22,24 @@
 #
 
 # imports
+import logging
+import os
 import sys
+import time
 import traceback
 import types
-from enums import *
+
 import gobject
-import os
-from pkexceptions import *
 import dbus.service
 
-import time
+from enums import *
+from pkexceptions import *
+
+# Setup Logging
+
+logging.basicConfig()
+pklog = logging.getLogger("PackageKitBackend")
+pklog.setLevel(logging.DEBUG)
 
 # Classes
 
@@ -92,7 +100,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     def check_for_inactivity(self):
         if time.time() - self.last_action_time > INACTIVE_TIMEOUT:
-            print "Exiting due to timeout."
+            pklog.error("Exiting due to timeout.")
             self.Exit()
 
         return True
@@ -105,67 +113,67 @@ class PackageKitBaseBackend(dbus.service.Object):
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
     def Finished(self, exit):
-        print "Finished (%s)" % (exit)
+        pklog.info("Finished (%s)" % (exit))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssb')
     def RepoDetail(self, repo_id, description, enabled):
-        print "RepoDetail (%s, %s, %i)" % (repo_id, description, enabled)
+        pklog.info("RepoDetail (%s, %s, %i)" % (repo_id, description, enabled))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
     def AllowCancel(self, allow_cancel):
-        print "AllowCancel (%i)" % (allow_cancel)
+        pklog.info("AllowCancel (%i)" % (allow_cancel))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sss')
     def Package(self, status, package_id, summary):
-        print "Package (%s, %s, %s)" % (status, package_id, summary)
+        pklog.info("Package (%s, %s, %s)" % (status, package_id, summary))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssst')
     def Description(self, package_id, license, group, detail, url, size):
-        print "Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size)
+        pklog.info("Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
     def Files(self, package_id, file_list):
-        print "Files (%s, %s)" % (package_id, file_list)
+        pklog.info("Files (%s, %s)" % (package_id, file_list))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='s')
     def StatusChanged(self, status):
-        print "StatusChanged (%s)" % (status)
+        pklog.info("StatusChanged (%s)" % (status))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='')
     def NoPercentageUpdates(self):
-        print "NoPercentageUpdates"
+        pklog.info("NoPercentageUpdates")
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def PercentageChanged(self, percentage):
-        print "PercentageChanged (%i)" % (percentage)
+        pklog.debug("PercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def SubPercentageChanged(self, percentage):
-        print "SubPercentageChanged (%i)" % (percentage)
+        pklog.debug("SubPercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssssss')
     def UpdateDetail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update):
-        print "UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update)
+        pklog.info("UpdateDetail (%s, %s, %s, %s, %s, %s, %s, %s)" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -176,7 +184,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param err: Error Type (ERROR_NO_NETWORK,ERROR_NOT_SUPPORTED,ERROR_INTERNAL_ERROR)
         @param description: Error description
         '''
-        print "ErrorCode (%s, %s)" % (code, description)
+        pklog.info("ErrorCode (%s, %s)" % (code, description))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -187,7 +195,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
         @param fname:  The filename being downloaded
         '''
-        print  "MetaData (%s, %s)" % (typ,fname)
+        pklog.info("MetaData (%s, %s)" % (typ,fname))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -198,7 +206,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param type:   The level of restart required (system,application,session)
         @param details:  Optional details about the restart
         '''
-        print  "RestartRequired (%s, %s)" % (type,details)
+        pklog.info("RestartRequired (%s, %s)" % (type,details))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -209,7 +217,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param type:   The type of message (warning,notice,daemon)
         @param details:  Required details about the message
         '''
-        print  "Message (%s, %s)" % (type,details)
+        pklog.info("Message (%s, %s)" % (type,details))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -218,7 +226,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         send 'updates-changed' signal:
         '''
-        print  "UpdatesChanged ()"
+        pklog.info("UpdatesChanged ()")
 
 
 #
