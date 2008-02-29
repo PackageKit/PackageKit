@@ -312,8 +312,8 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RemovePackage(self, id, deps=True):
+                         in_signature='sbb', out_signature='')
+    def RemovePackage(self, id, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''

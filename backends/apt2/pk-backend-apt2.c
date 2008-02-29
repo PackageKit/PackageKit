@@ -165,17 +165,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 } 
 
 /**
- * pk_backend_remove_package:
- *
-static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
-} */
-
-/**
  * pk_backend_update_package:
  *
 static void
@@ -242,11 +231,11 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
  * backend_remove_package
  *  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
         g_return_if_fail (backend != NULL);
         g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_remove_package (dbus, package_id, allow_deps);
+        pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
 }
 
 /**
