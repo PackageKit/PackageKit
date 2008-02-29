@@ -18,7 +18,6 @@ the Free Software Foundation; either version 2 of the License, or
 __author__  = "Sebastian Heinlein <devel@glatzor.de>"
 __state__   = "experimental"
 
-import logging
 import os
 import pty
 import re
@@ -31,12 +30,8 @@ import dbus.service
 import dbus.mainloop.glib
 import xapian
 
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog
 from packagekit.enums import *
-
-logging.basicConfig()
-log = logging.getLogger("aptDBUSBackend")
-log.setLevel(logging.DEBUG)
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -107,8 +102,8 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         #FIXME: should represent the status better (install, remove, preparing)
         self._backend.StatusChanged(STATUS_INSTALL)
         if (self.last_activity + self.timeout) < time.time():
-            logging.critical("Sending Crtl+C. Inactivity of %s "
-                             "seconds (%s)" % (self.timeout, self.status))
+            pklog.critical("Sending Crtl+C. Inactivity of %s "
+                           "seconds (%s)" % (self.timeout, self.status))
             os.write(self.master_fd,chr(3))
 
     def startUpdate(self):
@@ -118,21 +113,21 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
         apt.progress.InstallProgress.updateInterface(self)
 
     def fork(self):
-        logging.debug("doing a pty.fork()")
+        pklog.debug("doing a pty.fork()")
         (self.pid, self.master_fd) = pty.fork()
         if self.pid != 0:
-            logging.debug("pid is: %s" % self.pid)
+            pklog.debug("pid is: %s" % self.pid)
         return self.pid
 
     def conffile(self, current, new):
-        logging.warning("Config file prompt: '%s'" % current)
+        pklog.warning("Config file prompt: '%s'" % current)
         # looks like we have a race here *sometimes*
         time.sleep(5)
         try:
             # don't overwrite
             os.write(self.master_fd,"n\n")
         except Exception, e:
-            logging.error(e)
+            pklog.error(e)
 
 
 class PackageKitAptBackend(PackageKitBaseBackend):
@@ -140,7 +135,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     PackageKit backend for apt
     '''
     def __init__(self, bus_name, dbus_path):
-        log.info("Initializing backend")
+        pklog.info("Initializing backend")
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
         self._xapian = None
@@ -152,7 +147,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          in_signature='', out_signature='')
     def Init(self):
         self.last_action_time = time.time()
-        log.info("Initializing cache")
+        pklog.info("Initializing cache")
         self.StatusChanged(STATUS_SETUP)
         self._open_cache()
         self._xapian = xapian.Database(XAPIANDB)
@@ -168,7 +163,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the apt2-search-name functionality
         '''
-        log.info("Searching for package name: %s" % search)
+        pklog.info("Searching for package name: %s" % search)
         self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -187,7 +182,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the apt2-search-details functionality
         '''
-        log.info("Searching for package name: %s" % search)
+        pklog.info("Searching for package name: %s" % search)
         self.last_action_time = time.time()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -294,7 +289,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Better exception and error handling
         #FIXME: Distupgrade or Upgrade?
         #FIXME: Handle progress in a more sane way
-        log.info("Upgrading system")
+        pklog.info("Upgrading system")
         self.last_action_time = time.time()
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
@@ -319,7 +314,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         #FIXME: Better exception and error handling
         #FIXME: Handle progress in a more sane way
-        log.info("Removing package with id %s" % id)
+        pklog.info("Removing package with id %s" % id)
         self.last_action_time = time.time()
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
@@ -351,7 +346,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         #FIXME: Exception and error handling
         #FIXME: Handle progress in a more sane way
-        log.info("Installing package with id %s" % id)
+        pklog.info("Installing package with id %s" % id)
         self.last_action_time = time.time()
         self.StatusChanged(STATUS_INSTALL)
         self.PercentageChanged(0)
