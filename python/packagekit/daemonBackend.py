@@ -101,7 +101,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         return True
 
     def forkme(self):
-        print "Calling forkme, child pid = " % self._child_pid
+        print "Calling forkme, child pid = %s" % self._child_pid
         if self._is_child:
             print "forkme() called from child thread."
             raise Exception, "forkme() called from child thread."
