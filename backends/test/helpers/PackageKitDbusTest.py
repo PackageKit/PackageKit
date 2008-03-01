@@ -27,9 +27,16 @@ PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitTestBackend'
 
 #sudo dbus-send --system --dest=org.freedesktop.PackageKitTestBackend --type=method_call --print-reply /org/freedesktop/PackageKitBackend org.freedesktop.PackageKitBackend.SearchName string:filter string:search
 
+def sigquit(signum, frame):
+    print >> sys.stderr, "Quit signal sent - exiting immediately"
+
+    sys.exit(1)
+
 class PackageKitTestBackendService(PackageKitBaseBackend):
 
     def __init__(self, bus_name, bus_path):
+        signal.signal(signal.SIGQUIT, sigquit)
+
         self.bus_name = bus_name
         self.bus_path = bus_path
         PackageKitBaseBackend.__init__(self, bus_name, bus_path)
