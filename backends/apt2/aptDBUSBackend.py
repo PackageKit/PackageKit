@@ -207,11 +207,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def GetUpdates(self):
+                         in_signature='s', out_signature='')
+    def GetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
         '''
+        #FIXME: Implment the basename filter
         pklog.info("Get updates")
         self.last_action_time = time.time()
         self._check_init()
@@ -434,6 +435,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.debug("Check apt cache and xapian database")
         if not isinstance(self._cache, apt.cache.Cache) or \
+           self._cache._depcache.BrokenCount > 0 or \
            not isinstance(self._xapian, xapian.Database):
             self.Init()
 
