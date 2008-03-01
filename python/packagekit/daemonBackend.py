@@ -74,6 +74,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self._locked = False
         self._allow_cancel = False
         self._child_pid = None
+        self._is_child = False
 
         self.loop = gobject.MainLoop()
 
