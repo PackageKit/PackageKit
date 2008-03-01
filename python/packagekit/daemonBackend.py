@@ -123,13 +123,17 @@ class PackageKitBaseBackend(dbus.service.Object):
         print "in child_is_running"
         if self._child_pid:
             print "in child_is_running, pid = %s" % self._child_pid
+            running = True
             try:
                 (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
+                if pid:
+                    running = False
             except OSError, e:
                 print "OS Error: %s" % str(e)
+                running = False
 
-            if os.WIFSTOPPED(status):
-                print "child is stopped"
+            if not running:
+                print "child %s is stopped" % pid
                 self._child_pid = None
                 return False
 
@@ -288,10 +292,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Exit(self):
         print "Exit()"
-        if self.child_is_running():
-            # Don't call Exit() or ErrorCode() here
-            return
-
+    
         self.doExit()
         self.loop.quit()
  
@@ -299,7 +300,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Lock(self):
         print "Lock()"
-        if self._child_pid:
+        if self._child_is_running():
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Lock() called while child process still running.")
             self.Exit()
 
@@ -311,7 +312,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Unlock(self):
         print "Unlock()"
-        if self._child_pid:
+        if self._child_is_running():
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Unlock() called while child process still running.")
             self.Exit()
 
