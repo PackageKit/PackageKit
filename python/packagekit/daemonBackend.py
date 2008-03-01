@@ -28,6 +28,7 @@ import types
 from enums import *
 import gobject
 import os
+import signal
 from pkexceptions import *
 import dbus.service
 
@@ -70,7 +71,9 @@ class PackageKitBaseBackend(dbus.service.Object):
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
 
-        self._locked = False
+        self._allow_cancel = False
+        self._child_pid = None
+        self._is_child = False
 
         self.loop = gobject.MainLoop()
 
@@ -79,17 +82,6 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         self.loop.run()
 
-    def doLock(self):
-        ''' Generic locking, overide and extend in child class'''
-        self._locked = True
-
-    def doUnlock(self):
-        ''' Generic unlocking, overide and extend in child class'''
-        self._locked = False
-
-    def isLocked(self):
-        return self._locked
-
     def check_for_inactivity(self):
         if time.time() - self.last_action_time > INACTIVE_TIMEOUT:
             print "Exiting due to timeout."
@@ -97,6 +89,48 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         return True
 
+    def forkme(self):
+        print "Calling forkme, child pid = %s" % self._child_pid
+        if self._is_child:
+            print "forkme() called from child thread."
+            raise Exception, "forkme() called from child thread."
+        self.last_action_time = time.time()
+
+        if self._child_is_running():
+            print "child was already running"
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Method called while child process is still running.")
+            raise Exception, "Method called while child process is still running"
+    
+        self._child_pid = os.fork()
+        if self._child_pid:
+            self._is_child = False
+        else:
+            self._is_child = True
+
+    def _child_is_running(self):
+        print "in child_is_running"
+        if self._child_pid:
+            print "in child_is_running, pid = %s" % self._child_pid
+            running = True
+            try:
+                (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
+                if pid:
+                    running = False
+            except OSError, e:
+                print "OS Error: %s" % str(e)
+                running = False
+
+            if not running:
+                print "child %s is stopped" % pid
+                self._child_pid = None
+                return False
+
+            print "child still running"
+            return True
+
+        print "No child."
+        return False
+                            
 #
 # Signals ( backend -> engine -> client )
 #
@@ -117,6 +151,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='b')
     def AllowCancel(self, allow_cancel):
+        self._allow_cancel = allow_cancel
         print "AllowCancel (%i)" % (allow_cancel)
 
     @PKSignalHouseKeeper
@@ -229,253 +264,322 @@ class PackageKitBaseBackend(dbus.service.Object):
 # they're commented out here.  Just implement the ones you need in
 # your class, and don't forget the decorators.
 #
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def Init(self):
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def Exit(self):
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def Lock(self):
-#        self.doLock()
-#
-#    def doLock(self):
-#        ''' Lock Yum'''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def Unlock(self):
-#        self.doUnlock()
-#
-#    def doUnlock(self):
-#        ''' Unlock Yum'''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='ss', out_signature='')
-#    def SearchName(self, filters, search):
-#        '''
-#        Implement the {backend}-search-name functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='ss', out_signature='')
-#    def SearchDetails(self,filters,key):
-#        '''
-#        Implement the {backend}-search-details functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='ss', out_signature='')
-#    def SearchGroup(self,filters,key):
-#        '''
-#        Implement the {backend}-search-group functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='ss', out_signature='')
-#    def SearchFile(self,filters,key):
-#        '''
-#        Implement the {backend}-search-file functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='sb', out_signature='')
-#    def GetRequires(self,package,recursive):
-#        '''
-#        Print a list of requires for a given package
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='sb', out_signature='')
-#    def GetDepends(self,package,recursive):
-#        '''
-#        Print a list of depends for a given package
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def UpdateSystem(self):
-#        '''
-#        Implement the {backend}-update-system functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='b', out_signature='')
-#    def RefreshCache(self, force):
-#        '''
-#        Implement the {backend}-refresh_cache functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='ss', out_signature='')
-#    def Resolve(self, filters, name):
-#        '''
-#        Implement the {backend}-resolve functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def InstallPackage(self, package):
-#        '''
-#        Implement the {backend}-install functionality
-#        This will only work with yum 3.2.4 or higher
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def InstallFile (self, inst_file):
-#        '''
-#        Implement the {backend}-install_file functionality
-#        Install the package containing the inst_file file
-#        Needed to be implemented in a sub class
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def ServicePack (self, location):
-#        '''
-#        Implement the {backend}-service-pack functionality
-#        Install the package containing the inst_file file
-#        Needed to be implemented in a sub class
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def UpdatePackage(self, package):
-#        '''
-#        Implement the {backend}-update functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='sb', out_signature='')
-#    def RemovePackage(self, package, allowdep):
-#        '''
-#        Implement the {backend}-remove functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def GetDescription(self, package):
-#        '''
-#        Print a detailed description for a given package
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def GetFiles(self, package):
-#        '''
-#        Implement the get-files method
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def GetUpdates(self):
-#        '''
-#        Implement the {backend}-get-updates functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='sb', out_signature='')
-#    def RepoEnable(self, repoid, enable):
-#        '''
-#        Implement the {backend}-repo-enable functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='', out_signature='')
-#    def GetRepoList(self):
-#        '''
-#        Implement the {backend}-get-repo-list functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='s', out_signature='')
-#    def GetUpdateDetail(self,package):
-#        '''
-#        Implement the {backend}-get-update_detail functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
-#
-#    @PKMethodHouseKeeper
-#    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-#                         in_signature='sss', out_signature='')
-#    def RepoSetData(self, repoid, parameter, value):
-#        '''
-#        Implement the {backend}-repo-set-data functionality
-#        '''
-#        self.ErrorCode(ERROR_NOT_SUPPORTED,"Method not supported")
-#        self.Exit()
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Init(self):
+        print "Init()"
+        if self._child_is_running():
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Init() called while child process still running.")
+            self.Exit()
+            
+            return
 
+        self.doInit()
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Exit(self):
+        print "Exit()"
+    
+        self.doExit()
+        self.loop.quit()
+ 
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchName(self, filters, search):
+        '''
+        Implement the {backend}-search-name functionality
+        '''
+        print "SearchName()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doSearchName(filters, search)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def Cancel(self):
+        print "Cancel()"
+    	if not self._allow_cancel:
+            self.ErrorCode(ERROR_CANNOT_CANCEL, "Current action cannot be cancelled")
+            self.Exit()
+            return
+    		
+        if self._child_pid:
+            os.kill(self._child_pid, signal.SIGQUIT)
+            self._child_pid = None
+
+        return
+    
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchDetails(self,filters,key):
+        '''
+        Implement the {backend}-search-details functionality
+        '''
+        print "SearchDetails()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doSearchDetails(filters,key)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchGroup(self,filters,key):
+        '''
+        Implement the {backend}-search-group functionality
+        '''
+        print "SearchGroup()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doSearchGroup(filters,key)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SearchFile(self,filters,key):
+        '''
+        Implement the {backend}-search-file functionality
+        '''
+        print "SearchFile()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doSearchFile(filters,key)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def GetRequires(self,package,recursive):
+        '''
+        Print a list of requires for a given package
+        '''
+        print "GetRequires()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetRequires(package,recursive)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def GetDepends(self,package,recursive):
+        '''
+        Print a list of depends for a given package
+        '''
+        print "GetDepends()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetDepends(package,recursive)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def UpdateSystem(self):
+        '''
+        Implement the {backend}-update-system functionality
+        '''
+        print "UpdateSystem()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doUpdateSystem()
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='b', out_signature='')
+    def RefreshCache(self, force):
+        '''
+        Implement the {backend}-refresh_cache functionality
+        '''
+        print "RefreshCache()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doRefreshCache( force)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def Resolve(self, filters, name):
+        '''
+        Implement the {backend}-resolve functionality
+        '''
+        print "Resolve()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doResolve( filters, name)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallPackage(self, package):
+        '''
+        Implement the {backend}-install functionality
+        This will only work with yum 3.2.4 or higher
+        '''
+        print "InstallPackage()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doInstallPackage( package)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallFile (self, inst_file):
+        '''
+        Implement the {backend}-install_file functionality
+        Install the package containing the inst_file file
+        Needed to be implemented in a sub class
+        '''
+        print "InstallFile()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doInstallFile( inst_file)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def ServicePack (self, location):
+        '''
+        Implement the {backend}-service-pack functionality
+        Install the package containing the inst_file file
+        Needed to be implemented in a sub class
+        '''
+        print "ServicePack()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doServicePack( location)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def UpdatePackage(self, package):
+        '''
+        Implement the {backend}-update functionality
+        '''
+        print "UpdatePackage()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doUpdatePackage( package)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RemovePackage(self, package, allowdep):
+        '''
+        Implement the {backend}-remove functionality
+        '''
+        print "RemovePackage()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doRemovePackage( package, allowdep)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetDescription(self, package):
+        '''
+        Print a detailed description for a given package
+        '''
+        print "GetDescription()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetDescription( package)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetFiles(self, package):
+        '''
+        Implement the get-files method
+        '''
+        print "GetFiles()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetFiles( package)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetUpdates(self, filters):
+        '''
+        Implement the {backend}-get-updates functionality
+        '''
+        print "GetUpdates()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetUpdates(filters)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sb', out_signature='')
+    def RepoEnable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        '''
+        print "RepoEnable()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doRepoEnable( repoid, enable)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='', out_signature='')
+    def GetRepoList(self):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        print "GetRepoList()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetRepoList()
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetUpdateDetail(self,package):
+        '''
+        Implement the {backend}-get-update_detail functionality
+        '''
+        print "GetUpdateDetail()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doGetUpdateDetail(package)
+        sys.exit(0)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sss', out_signature='')
+    def RepoSetData(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        '''
+        print "RepoSetData()"
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doRepoSetData( repoid, parameter, value)
+        sys.exit(0)
+
+
+                    
 #
 # Utility methods
 #
