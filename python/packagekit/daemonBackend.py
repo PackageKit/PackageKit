@@ -71,7 +71,6 @@ class PackageKitBaseBackend(dbus.service.Object):
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
 
-        self._locked = False
         self._allow_cancel = False
         self._child_pid = None
         self._is_child = False
@@ -82,17 +81,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.last_action_time = time.time()
 
         self.loop.run()
-
-    def doLock(self):
-        ''' Generic locking, overide and extend in child class'''
-        self._locked = True
-
-    def doUnlock(self):
-        ''' Generic unlocking, overide and extend in child class'''
-        self._locked = False
-
-    def isLocked(self):
-        return self._locked
 
     def check_for_inactivity(self):
         if time.time() - self.last_action_time > INACTIVE_TIMEOUT:
@@ -295,30 +283,6 @@ class PackageKitBaseBackend(dbus.service.Object):
     
         self.doExit()
         self.loop.quit()
- 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Lock(self):
-        print "Lock()"
-        if self._child_is_running():
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Lock() called while child process still running.")
-            self.Exit()
-
-            return
-
-        self.doLock()
- 
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def Unlock(self):
-        print "Unlock()"
-        if self._child_is_running():
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Unlock() called while child process still running.")
-            self.Exit()
-
-            return
-
-        self.doUnlock()
  
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')

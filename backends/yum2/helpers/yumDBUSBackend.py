@@ -242,6 +242,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
+
+        self.locked = False
         print "__init__ done"
 
 #
@@ -311,20 +313,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         print "yum set up"
 
     def doExit(self):
-        if self.isLocked():
+        if self.locked:
             self._unlock_yum()
-
-    def doLock(self):
-        self._lock_yum()
-        PackageKitBaseBackend.doLock(self)
 
     def _lock_yum(self):
         ''' Lock Yum'''
         retries = 0
-        while not self.isLocked():
+        while not self.locked:
             try: # Try to lock yum
                 self.yumbase.doLock( YUM_PID_FILE )
-                PackageKitBaseBackend.doLock(self)
             except:
                 if retries == 0:
                     self.StatusChanged(STATUS_WAIT)
@@ -335,13 +332,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self.Finished(EXIT_FAILED)
                     self.loop.quit()
 
-    def doUnlock(self):
-        self._unlock_yum()
-
     def _unlock_yum(self):
         ''' Unlock Yum'''
-        if self.isLocked():
-            PackageKitBaseBackend.doUnlock(self)
+        if self.locked:
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
 
@@ -350,6 +343,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-name functionality
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -359,8 +353,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         successful = self._do_search(searchlist, filters, search)
         if not successful:
             self.Finished(EXIT_FAILED)
+            self._unlock_yum()
             return
             
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doSearchDetails(self,filters,key):
@@ -368,6 +364,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-details functionality
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -376,9 +373,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         successful = self._do_search(searchlist, filters, key)
         if not successful:
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doSearchGroup(self,filters,key):
@@ -386,6 +385,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-group functionality
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -421,10 +421,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
 
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doSearchFile(self,filters,key):
@@ -432,6 +434,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-search-file functionality
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -456,6 +459,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetRequires(self,package,recursive):
@@ -463,6 +467,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of requires for a given package
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -470,6 +475,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         
         if not pkg:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
@@ -480,6 +486,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 self._show_package(pkg,INFO_AVAILABLE)
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetDepends(self,package,recursive):
@@ -487,6 +494,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Print a list of depends for a given package
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_INFO)
@@ -497,6 +505,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         if not pkg:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
@@ -513,6 +522,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if self._installable(pkg):
                         self._show_package(pkg, INFO_AVAILABLE)
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doUpdateSystem(self):
@@ -520,6 +530,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
         old_throttle = self.yumbase.conf.throttle
@@ -540,11 +551,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.conf.throttle = old_throttle
             self.yumbase.conf.skip_broken = old_skip_broken
             self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
         self.yumbase.conf.throttle = old_throttle
         self.yumbase.conf.skip_broken = old_skip_broken
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doRefreshCache(self, force):
@@ -552,6 +565,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-refresh_cache functionality
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(True)
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
@@ -564,6 +578,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             if len(self.yumbase.repos.listEnabled()) == 0:
                 self.PercentageChanged(100)
+                self._unlock_yum()
                 self.Finished(EXIT_SUCCESS)
                 return
 
@@ -590,12 +605,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.YumBaseError, e:
             self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
         self.yumbase.conf.cache = old_cache_setting
         self.yumbase.repos.setCache(old_cache_setting)
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doResolve(self, filters, name):
@@ -603,6 +620,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-resolve functionality
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -629,10 +647,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
 
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doInstallPackage(self, package):
@@ -641,6 +661,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         This will only work with yum 3.2.4 or higher
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -648,6 +669,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             if inst:
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return
             try:
@@ -658,13 +680,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.InstallError,e:
                 msgs = '\n'.join(e)
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
             
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doInstallFile (self, inst_file):
@@ -674,6 +699,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -689,9 +715,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.InstallError,e:
             msgs = '\n'.join(e)
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doUpdatePackage(self, package):
@@ -700,6 +728,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         This will only work with yum 3.2.4 or higher
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -712,13 +741,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     return
             else:
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return
         else:
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
             
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doRemovePackage(self, package, allowdep):
@@ -727,6 +759,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self.last_action_time = time.time()
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
 
@@ -744,20 +777,24 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         return
             else:
                 self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return
 
+            self._unlock_yum()
             self.Finished(EXIT_SUCCESS)
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
-            return
+        return
             
     def doGetDescription(self, package):
         '''
         Print a detailed description for a given package
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -767,13 +804,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._show_package_description(pkg)            
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
             
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetFiles(self, package):
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -788,9 +828,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Files(package, file_list)
         else:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetUpdates(self, filters):
@@ -799,6 +841,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to show
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -820,10 +863,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
 
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
     def doGetPackages(self,filters,showdesc='no'):
@@ -834,6 +879,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param key: key to seach for
         '''
         self._check_init(lazy_cache=True)
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -865,10 +911,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
 
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
     def doRepoEnable(self, repoid, enable):
@@ -887,9 +935,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.RepoError,e:
             self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetRepoList(self):
@@ -904,6 +954,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             else:
                 self.RepoDetail(repo.id,repo.name,False)
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doGetUpdateDetail(self,package):
@@ -911,6 +962,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-update_detail functionality
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -918,6 +970,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         
         if not pkg:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
@@ -930,6 +983,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self.UpdateDetail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
     def doRepoSetData(self, repoid, parameter, value):
@@ -937,6 +991,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-set-data functionality
         '''
         self._check_init()
+        self._lock_yum()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
         # Get the repo
@@ -947,13 +1002,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return
         else:
             self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
 #
@@ -1243,6 +1301,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
             self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1319,6 +1378,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if rc !=2:
             retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
         else:
@@ -1327,6 +1387,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if len(self.yumbase.tsInfo) > 1:
                     retmsg = 'package could not be remove, because something depends on it'
                     self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+                    self._unlock_yum()
                     self.Finished(EXIT_FAILED)
                     return False
             try:
@@ -1337,11 +1398,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.YumDownloadError, ye:
                 retmsg = "Error in Download\n" + "\n".join(ye.value)
                 self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
                 self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return False
             except GPGKeyNotImported, e:
@@ -1349,6 +1412,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not keyData:
                     self.ErrorCode(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
+                    self._unlock_yum()
                     self.Finished(EXIT_FAILED)
                     return False
                 self.repo_signature_required(keyData['po'].repoid,
@@ -1359,11 +1423,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['timestamp'],
                                              'GPG')
                 self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
                 self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+                self._unlock_yum()
                 self.Finished(EXIT_FAILED)
                 return False
         return True
