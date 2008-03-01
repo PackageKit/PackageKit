@@ -550,8 +550,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         sys.exit(0)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='', out_signature='')
-    def GetUpdates(self):
+                         in_signature='s', out_signature='')
+    def GetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
         '''
@@ -559,7 +559,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.forkme()
         if self._child_pid:
             return
-        self.doGetUpdates()
+        self.doGetUpdates(filters)
         sys.exit(0)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
