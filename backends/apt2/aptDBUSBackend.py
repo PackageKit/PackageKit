@@ -136,10 +136,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     def __init__(self, bus_name, dbus_path):
         pklog.info("Initializing backend")
-        PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
         self._cache = None
         self._xapian = None
-
+        PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
 
@@ -165,6 +164,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Searching for package name: %s" % search)
         self.last_action_time = time.time()
+        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
 
@@ -184,6 +184,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Searching for package name: %s" % search)
         self.last_action_time = time.time()
+        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
@@ -213,6 +214,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Get updates")
         self.last_action_time = time.time()
+        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -229,6 +231,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Get description of %s" % pkg_id)
         self.last_action_time = time.time()
+        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
@@ -295,6 +298,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
         self.last_action_time = time.time()
+        self._check_init()
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -320,6 +324,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
         self.last_action_time = time.time()
+        self._check_init()
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -352,6 +357,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
         self.last_action_time = time.time()
+        self._check_init()
         self.StatusChanged(STATUS_INSTALL)
         self.PercentageChanged(0)
         self.AllowCancel(False)
@@ -381,6 +387,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Refresh cache")
         self.last_action_time = time.time()
+        self._check_init()
         self.AllowCancel(True);
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
@@ -419,6 +426,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
+    
+    def _check_init(self):
+        '''
+        Check if the backend was initialized well and try to recover from
+        a broken setup
+        '''
+        pklog.debug("Check apt cache and xapian database")
+        if not isinstance(self._cache, apt.cache.Cache) or \
+           not isinstance(self._xapian, xapian.Database):
+            self.Init()
 
     def get_id_from_package(self, pkg, installed=False):
         '''
