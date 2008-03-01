@@ -108,7 +108,7 @@ class PackageKitBaseBackend(dbus.service.Object):
             raise Exception, "forkme() called from child thread."
         self.last_action_time = time.time()
 
-        if self.child_is_running():
+        if self._child_is_running():
             print "child was already running"
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Method called while child process is still running.")
             raise Exception, "Method called while child process is still running"
@@ -119,7 +119,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         else:
             self._is_child = True
 
-    def child_is_running(self):
+    def _child_is_running(self):
         print "in child_is_running"
         if self._child_pid:
             print "in child_is_running, pid = %s" % self._child_pid
@@ -280,7 +280,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Init(self):
         print "Init()"
-        if self.child_is_running():
+        if self._child_is_running():
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Init() called while child process still running.")
             self.Exit()
             

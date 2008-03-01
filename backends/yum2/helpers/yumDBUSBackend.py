@@ -303,9 +303,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 #
 
     def doInit(self):
+        print "Now in doInit()"
         self.yumbase = PackageKitYumBase()
+        print "new yumbase object"
         yumbase = self.yumbase
         self._setup_yum()
+        print "yum set up"
+        self.Finished(EXIT_SUCCESS)
 
     def doExit(self):
         if self.isLocked():
