@@ -122,7 +122,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     def child_is_running(self):
         print "in child_is_running"
         if self._child_pid:
-            print "in child_is_running, pid = " % self._child_pid
+            print "in child_is_running, pid = %s" % self._child_pid
             (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
 
             if os.WIFSTOPPED(status):
