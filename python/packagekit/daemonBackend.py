@@ -278,16 +278,19 @@ class PackageKitBaseBackend(dbus.service.Object):
         print "Init()"
         if self.child_is_running():
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Init() called while child process still running.")
+            self.Exit()
+            
+            return
 
         self.doInit()
-        return                            
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Exit(self):
         print "Exit()"
         if self.child_is_running():
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Exit() called while child process still running.")
+            # Don't call Exit() or ErrorCode() here
+            return
 
         self.doExit()
         self.loop.quit()
@@ -298,8 +301,11 @@ class PackageKitBaseBackend(dbus.service.Object):
         print "Lock()"
         if self._child_pid:
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Lock() called while child process still running.")
+            self.Exit()
+
+            return
+
         self.doLock()
-        return
  
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -307,8 +313,11 @@ class PackageKitBaseBackend(dbus.service.Object):
         print "Unlock()"
         if self._child_pid:
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Unlock() called while child process still running.")
+            self.Exit()
+
+            return
+
         self.doUnlock()
-        return
  
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -329,6 +338,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         print "Cancel()"
     	if not self._allow_cancel:
             self.ErrorCode(ERROR_CANNOT_CANCEL, "Current action cannot be cancelled")
+            self.Exit()
             return
     		
         if self._child_pid:
