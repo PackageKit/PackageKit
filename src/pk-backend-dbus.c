@@ -57,85 +57,19 @@
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_DBUS, PkBackendDbusPrivate))
+#define PK_BACKEND_DBUS_MAX_SYNC_RUNTIME	500 /* ms */
 
 struct PkBackendDbusPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
-	DBusGProxyCall		*call;
 	PkBackend		*backend;
+	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
-
-/**
- * pk_backend_dbus_proxy_async_callback:
- **/
-static void
-pk_backend_dbus_proxy_async_callback (DBusGProxy *proxy, DBusGProxyCall *call, void *user_data)
-{
-	GError *error = NULL;
-	PkBackendDbus *backend_dbus = user_data;
-
-	g_return_if_fail (backend_dbus != NULL);
-	g_return_if_fail (backend_dbus->priv->proxy != NULL);
-	g_return_if_fail (backend_dbus->priv->call != NULL);
-
-	/* we're done */
-	dbus_g_proxy_end_call (proxy, call, &error, G_TYPE_INVALID);
-	pk_debug ("dbus call finished %p", call);
-
-	/* did we fail? */
-	if (error != NULL) {
-		pk_warning ("message %s", error->message);
-		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-		pk_backend_finished (backend_dbus->priv->backend);
-		g_error_free (error);
-	}
-
-	/* no longer valid */
-	backend_dbus->priv->call = NULL;
-}
-
-/**
- * pk_backend_dbus_lock:
- **/
-static gboolean
-pk_backend_dbus_lock (PkBackendDbus *backend_dbus)
-{
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Lock",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Lock(%p)", backend_dbus->priv->call);
-	return TRUE;
-}
-
-/**
- * pk_backend_dbus_unlock:
- **/
-static gboolean
-pk_backend_dbus_unlock (PkBackendDbus *backend_dbus)
-{
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	/* don't check backend_dbus->priv->call as we should be able to queue this */
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Unlock",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Unlock(%p)", backend_dbus->priv->call);
-	return TRUE;
-}
 
 /**
  * pk_backend_dbus_repo_detail_cb:
@@ -248,7 +182,6 @@ static void
 pk_backend_dbus_finished_cb (DBusGProxy *proxy, const gchar *exit_text, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("deleting dbus %p, exit %s", backend_dbus, exit_text);
-	pk_backend_dbus_unlock (backend_dbus);
 	pk_backend_finished (backend_dbus->priv->backend);
 }
 
@@ -310,12 +243,53 @@ pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *repo
 }
 
 /**
+ * pk_backend_dbus_time_reset:
+ **/
+static gboolean
+pk_backend_dbus_time_reset (PkBackendDbus *backend_dbus)
+{
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	/* reset timer for the next method */
+	g_timer_reset (backend_dbus->priv->timer);
+	return TRUE;
+}
+
+/**
+ * pk_backend_dbus_time_check:
+ **/
+static gboolean
+pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
+{
+	gdouble seconds;
+	guint time;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+
+	seconds = g_timer_elapsed (backend_dbus->priv->timer, NULL);
+	time = (guint) seconds * 1000;
+	if (time > PK_BACKEND_DBUS_MAX_SYNC_RUNTIME) {
+		pk_warning ("too much time for sync method: %ims", time);
+		pk_backend_error_code (backend_dbus->priv->backend,
+				       PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "The backend took too much time to process the synchronous request - you need to fork!");
+		pk_backend_finished (backend_dbus->priv->backend);
+	}
+
+	/* reset timer for the next method */
+	g_timer_reset (backend_dbus->priv->timer);
+	return TRUE;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
 pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 {
 	DBusGProxy *proxy;
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->connection != NULL, FALSE);
 	g_return_val_if_fail (service != NULL, FALSE);
@@ -404,12 +378,19 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	backend_dbus->priv->service = g_strdup (service);
 
 	/* manually init the backend, which should get things spawned for us */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Init",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Init(%p)", backend_dbus->priv->call);
-	return TRUE;
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -418,22 +399,23 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 gboolean
 pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 {
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	gboolean ret;
+	GError *error = NULL;
 
-	/* cancel async method if running */
-	if (backend_dbus->priv->call != NULL) {
-		pk_debug ("cancelling call %p", backend_dbus->priv->call);
-		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Exit", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Exit",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Exit(%p)", backend_dbus->priv->call);
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -442,23 +424,26 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 gboolean
 pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
-	/* cancel async method if running */
-	if (backend_dbus->priv->call != NULL) {
-		pk_debug ("cancelling call %p", backend_dbus->priv->call);
-		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Cancel", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Cancel",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Cancel(%p)", backend_dbus->priv->call);
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -467,18 +452,27 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 gboolean
 pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetUpdates",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetUpdates(%p)", backend_dbus->priv->call);
-	return TRUE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdates", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -487,17 +481,26 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
 gboolean
 pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetRepoList",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetRepoList(%p)", backend_dbus->priv->call);
-	return TRUE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRepoList", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -506,27 +509,27 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
 gboolean
 pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RefreshCache",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_BOOLEAN, force,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC RefreshCache(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RefreshCache", &error,
+				 G_TYPE_BOOLEAN, force,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -535,26 +538,26 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 gboolean
 pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "UpdateSystem",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC UpdateSystem(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdateSystem", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -563,29 +566,29 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 gboolean
 pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboolean enabled)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RepoEnable",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, rid,
-						G_TYPE_STRING, enabled,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC RepoEnable(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RepoEnable", &error,
+				 G_TYPE_STRING, rid,
+				 G_TYPE_STRING, enabled,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -595,32 +598,32 @@ gboolean
 pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 			       const gchar *parameter, const gchar *value)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 	g_return_val_if_fail (parameter != NULL, FALSE);
 	g_return_val_if_fail (value != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RepoSetData",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, rid,
-						G_TYPE_STRING, parameter,
-						G_TYPE_STRING, value,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC RepoSetData(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RepoSetData", &error,
+				 G_TYPE_STRING, rid,
+				 G_TYPE_STRING, parameter,
+				 G_TYPE_STRING, value,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -629,30 +632,30 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 gboolean
 pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Resolve",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_STRING, package,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Resolve(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, package,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -661,28 +664,28 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const
 gboolean
 pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (transaction_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "Rollback",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, transaction_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC Rollback(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Rollback", &error,
+				 G_TYPE_STRING, transaction_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -691,30 +694,30 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 gboolean
 pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "SearchName",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_STRING, search,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC SearchName(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchName", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -723,30 +726,30 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 gboolean
 pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "SearchDetails",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_STRING, search,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC SearchDetails(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchDetails", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -755,30 +758,30 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
 gboolean
 pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "SearchGroup",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_STRING, search,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC SearchGroup(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchGroup", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -787,30 +790,30 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
 gboolean
 pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "SearchFile",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, filter,
-						G_TYPE_STRING, search,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC SearchFile(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchFile", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -819,29 +822,29 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
 gboolean
 pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetDepends",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_BOOLEAN, recursive,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetDepends(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -850,29 +853,29 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
 gboolean
 pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetRequires",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_BOOLEAN, recursive,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetRequires(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -881,28 +884,28 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_
 gboolean
 pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetUpdateDetail",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetUpdateDetail(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdateDetail", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -911,28 +914,28 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 gboolean
 pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetDescription",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetDescription(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDescription", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -941,28 +944,28 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
 gboolean
 pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "GetFiles",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC GetFiles(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetFiles", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -971,30 +974,30 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 gboolean
 pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "RemovePackage",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_BOOLEAN, allow_deps,
-						G_TYPE_BOOLEAN, autoremove,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC RemovePackage(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_BOOLEAN, allow_deps,
+				 G_TYPE_BOOLEAN, autoremove,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -1003,28 +1006,28 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 gboolean
 pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "InstallPackage",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC InstallPackage(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -1033,28 +1036,28 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 gboolean
 pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "UpdatePackage",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, package_id,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC UpdatePackage(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackage", &error,
+				 G_TYPE_STRING, package_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -1063,28 +1066,28 @@ pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *packag
 gboolean
 pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_path)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (full_path != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "InstallFile",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, full_path,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC InstallFile(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+				 G_TYPE_STRING, full_path,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -1093,28 +1096,28 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 gboolean
 pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location)
 {
+	gboolean ret;
+	GError *error = NULL;
+
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (backend_dbus->priv->call == NULL, FALSE);
 	g_return_val_if_fail (location != NULL, FALSE);
 
-	/* lock the backend */
-	pk_backend_dbus_lock (backend_dbus);
-
-	/* new async call */
-	backend_dbus->priv->call = dbus_g_proxy_begin_call_with_timeout (backend_dbus->priv->proxy, "ServicePack",
-						pk_backend_dbus_proxy_async_callback,
-						backend_dbus, NULL, G_MAXINT,
-						G_TYPE_STRING, location,
-						G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_debug ("ASYNC ServicePack(%p)", backend_dbus->priv->call);
-
-	/* unlock the backend if we failed */
-	if (backend_dbus->priv->call == NULL) {
-		pk_backend_dbus_unlock (backend_dbus);
-		return FALSE;
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "ServicePack", &error,
+				 G_TYPE_STRING, location,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
 	}
-	return TRUE;
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
 }
 
 /**
@@ -1129,12 +1132,6 @@ pk_backend_dbus_finalize (GObject *object)
 
 	backend_dbus = PK_BACKEND_DBUS (object);
 
-	/* cancel async method if running */
-	if (backend_dbus->priv->call != NULL) {
-		pk_debug ("cancelling call %p", backend_dbus->priv->call);
-		dbus_g_proxy_cancel_call (backend_dbus->priv->proxy, backend_dbus->priv->call);
-	}
-
 	/* free name */
 	g_free (backend_dbus->priv->service);
 
@@ -1142,6 +1139,7 @@ pk_backend_dbus_finalize (GObject *object)
 	if (backend_dbus->priv->proxy != NULL) {
 		g_object_unref (backend_dbus->priv->proxy);
 	}
+	g_timer_destroy (backend_dbus->priv->timer);
 	g_object_unref (backend_dbus->priv->backend);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
@@ -1167,10 +1165,10 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	GError *error = NULL;
 
 	backend_dbus->priv = PK_BACKEND_DBUS_GET_PRIVATE (backend_dbus);
-	backend_dbus->priv->call = NULL;
 	backend_dbus->priv->proxy = NULL;
 	backend_dbus->priv->service = NULL;
 	backend_dbus->priv->backend = pk_backend_new ();
+	backend_dbus->priv->timer = g_timer_new ();
 
 	/* get connection */
 	backend_dbus->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
