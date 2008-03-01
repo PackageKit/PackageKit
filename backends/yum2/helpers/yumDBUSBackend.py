@@ -322,6 +322,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         while not self.locked:
             try: # Try to lock yum
                 self.yumbase.doLock( YUM_PID_FILE )
+                self.locked = True
             except:
                 if retries == 0:
                     self.StatusChanged(STATUS_WAIT)
