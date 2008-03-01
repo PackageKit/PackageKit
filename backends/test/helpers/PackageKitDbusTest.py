@@ -18,6 +18,7 @@ import dbus.service
 import gobject
 from packagekit.enums import *
 import time
+import signal
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
