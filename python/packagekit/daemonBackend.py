@@ -105,9 +105,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.last_action_time = time.time()
 
         retries = 0
-        while self._child_is_running() and retries < 20:
+        while self._child_is_running() and retries < 5:
             pklog.warning("Method called, but a child is already running")
-            time.sleep(1)
+            time.sleep(0.1)
             retries += 1
 
         if self._child_is_running():

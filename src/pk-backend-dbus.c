@@ -57,6 +57,15 @@
 #include "pk-thread-list.h"
 
 #define PK_BACKEND_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_DBUS, PkBackendDbusPrivate))
+
+/**
+ * PK_BACKEND_DBUS_MAX_SYNC_RUNTIME:
+ *
+ * The time in ms the sync request is allowed to take.
+ * Any more than this will cause an error and the transaction to be aborted.
+ * This is required to stop dumb backends blocking the UI of client programs
+ * - what should happen is the program fork()'s and processes the request.
+ */
 #define PK_BACKEND_DBUS_MAX_SYNC_RUNTIME	500 /* ms */
 
 struct PkBackendDbusPrivate
