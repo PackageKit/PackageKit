@@ -123,7 +123,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     def _child_is_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
-            pkglog.debug("in child_is_running, pid = %s" % self._child_pid)
+            pklog.debug("in child_is_running, pid = %s" % self._child_pid)
             running = True
             try:
                 (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
