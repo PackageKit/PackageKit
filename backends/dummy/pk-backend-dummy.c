@@ -190,7 +190,8 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
 					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
-					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
+					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344;"
+					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
 					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
 	}

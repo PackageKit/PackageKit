@@ -2806,6 +2806,9 @@ pk_engine_init (PkEngine *engine)
 	/* lock database */
 	pk_backend_lock (engine->priv->backend);
 
+	/* we dont need this, just don't keep creating and destroying it */
+	engine->priv->network = pk_network_new ();
+
 	/* create a new backend so we can get the static stuff */
 	runner = pk_runner_new ();
 	engine->priv->actions = pk_runner_get_actions (runner);
@@ -2817,9 +2820,6 @@ pk_engine_init (PkEngine *engine)
 
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
-
-	/* we dont need this, just don't keep creating and destroying it */
-	engine->priv->network = pk_network_new ();
 
 	/* we need an auth framework */
 	engine->priv->security = pk_security_new ();

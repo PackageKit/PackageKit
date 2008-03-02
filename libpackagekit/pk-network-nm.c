@@ -81,6 +81,10 @@ pk_network_is_online (PkNetwork *network)
 {
 	libnm_glib_state state;
 	gboolean ret;
+
+	g_return_val_if_fail (network != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
+
 	state = libnm_glib_get_network_state (network->priv->ctx);
 	switch (state) {
 	case LIBNM_NO_NETWORK_CONNECTION:
@@ -100,6 +104,10 @@ pk_network_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
 {
 	gboolean ret;
 	PkNetwork *network = (PkNetwork *) data;
+
+	g_return_if_fail (network != NULL);
+	g_return_if_fail (PK_IS_NETWORK (network));
+
 	ret = pk_network_is_online (network);
 	g_signal_emit (network, signals [PK_NETWORK_ONLINE], 0, ret);
 }
@@ -137,6 +145,7 @@ pk_network_init (PkNetwork *network)
 		libnm_glib_register_callback (network->priv->ctx,
 					      pk_network_nm_changed_cb,
 					      network, context);
+	pk_debug ("ctx=%p, id=%i", network->priv->ctx, network->priv->callback_id);
 }
 
 /**
@@ -152,8 +161,14 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
+
+	pk_debug ("ctx=%p, id=%i", network->priv->ctx, network->priv->callback_id);
 	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callback_id);
 	libnm_glib_shutdown (network->priv->ctx);
+
+	/* be paranoid */
+	network->priv->ctx = NULL;
+	network->priv->callback_id = 0;
 
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }
