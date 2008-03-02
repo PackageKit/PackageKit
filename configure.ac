@@ -482,7 +482,7 @@ if test x$enable_apt2 = xyes; then
 fi
 
 if test x$enable_box = xyes; then
-	PKG_CHECK_MODULES(BOX, libbox >= 0.1.2 )
+	PKG_CHECK_MODULES(BOX, libbox >= 0.1.4 )
 	AC_SUBST(BOX_CFLAGS)
 	AC_SUBST(BOX_LIBS)
 fi
