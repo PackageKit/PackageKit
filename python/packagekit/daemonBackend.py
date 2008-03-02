@@ -96,8 +96,13 @@ class PackageKitBaseBackend(dbus.service.Object):
             raise Exception, "forkme() called from child thread."
         self.last_action_time = time.time()
 
+        retries = 0
+        while self._child_is_running() and retries < 20:
+            print "Method called, but a child is already running"
+            time.sleep(1)
+            retries += 1
+
         if self._child_is_running():
-            print "child was already running"
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Method called while child process is still running.")
             raise Exception, "Method called while child process is still running"
     
