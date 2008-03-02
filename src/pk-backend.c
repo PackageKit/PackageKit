@@ -41,8 +41,32 @@
 #include "pk-inhibit.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
+
+/**
+ * PK_BACKEND_PERCENTAGE_INVALID:
+ *
+ * The unknown percentage value
+ */
 #define PK_BACKEND_PERCENTAGE_INVALID		101
-#define PK_BACKEND_ERROR_FINISHED_TIMEOUT	500 /* ms */
+
+/**
+ * PK_BACKEND_FINISHED_ERROR_TIMEOUT:
+ *
+ * The time in ms the backend has to call Finished() after ErrorCode()
+ * If backends do not do this, they will be Finished() manually,
+ * and a Message() will be sent to warn the developer
+ */
+#define PK_BACKEND_FINISHED_ERROR_TIMEOUT	500 /* ms */
+
+/**
+ * PK_BACKEND_FINISHED_TIMEOUT_GRACE:
+ *
+ * The time in ms the backend waits after recieving Finished() before
+ * propogating the signal to the other components.
+ * This delay is required as some threads may take some time to cancel or a
+ * spawned executable to disappear of the system DBUS.
+ */
+#define PK_BACKEND_FINISHED_TIMEOUT_GRACE	50 /* ms */
 
 struct _PkBackendPrivate
 {
@@ -645,7 +669,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 /**
  * pk_backend_finished_delay:
  *
- * We have to call Finished() within PK_BACKEND_ERROR_FINISHED_TIMEOUT of ErrorCode(), enforce this.
+ * We have to call Finished() within PK_BACKEND_FINISHED_ERROR_TIMEOUT of ErrorCode(), enforce this.
  **/
 static gboolean
 pk_backend_error_timeout_delay_cb (gpointer data)
@@ -691,7 +715,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	backend->priv->set_error = TRUE;
 
 	/* we only allow a short time to send finished after error_code */
-	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_ERROR_FINISHED_TIMEOUT,
+	backend->priv->signal_error_timeout = g_timeout_add (PK_BACKEND_FINISHED_ERROR_TIMEOUT,
 							     pk_backend_error_timeout_delay_cb, backend);
 
 	/* we mark any transaction with errors as failed */
@@ -859,7 +883,7 @@ pk_backend_finished (PkBackend *backend)
 	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
 	pk_debug ("adding finished %p to timeout loop", backend);
-	backend->priv->signal_finished = g_timeout_add (50, pk_backend_finished_delay, backend);
+	backend->priv->signal_finished = g_timeout_add (PK_BACKEND_FINISHED_TIMEOUT_GRACE, pk_backend_finished_delay, backend);
 	return TRUE;
 }
 
