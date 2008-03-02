@@ -49,7 +49,7 @@ try:
         iface.SearchName(FILTER_NONE,'yum')
     if cmd == 'search-details' or cmd == 'all':
         print "SearchDetails(FILTER_NONE,'dbus')"
-        # This one is failing because of some  UnicodeDecodeError in yum 
+        # This one is failing because of some  UnicodeDecodeError in yum
         iface.SearchDetails(FILTER_NONE,'dbus')
     if cmd == 'search-group' or cmd == 'all':
         print "Testing SearchGroup(FILTER_NONE,GROUP_GAMES)"
@@ -89,7 +89,7 @@ try:
     if cmd == 'exit' or cmd == 'all':
         print "Testing Exit()"
         iface.Exit()
-    
+
 except dbus.DBusException, e:
     print "Unable to send message on dbus"
     print "%s" %(e,)

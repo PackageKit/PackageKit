@@ -505,4 +505,4 @@ def exceptionHandler(typ, value, tb, base):
 
 def installExceptionHandler(base):
     sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb,base)
-    
+

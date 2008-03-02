@@ -228,7 +228,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(pkg_id)
         #FIXME: error handling
         pkg = self._cache[name]
-        #FIXME: should perhaps go to python-apt since we need this in 
+        #FIXME: should perhaps go to python-apt since we need this in
         #       several applications
         desc = pkg.description
         # Skip the first line - it's a duplicate of the summary
@@ -380,7 +380,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
-    
+
     def _check_init(self):
         '''
         Check if the backend was initialized well and try to recover from
@@ -443,7 +443,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     def _package_has_gui(self, pkg):
         #FIXME: should go to a modified Package class
-        #FIXME: take application data into account. perhaps checking for 
+        #FIXME: take application data into account. perhaps checking for
         #       property in the xapian database
         return pkg.section.split('/')[-1].lower() in ['x11', 'gnome', 'kde']
 
