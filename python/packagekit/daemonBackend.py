@@ -123,7 +123,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     def _child_is_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
-            pkglog.debug("in child_is_running, pid = %s" % self._child_pid)
+            pklog.debug("in child_is_running, pid = %s" % self._child_pid)
             running = True
             try:
                 (pid, status) = os.waitpid(self._child_pid, os.WNOHANG)
@@ -267,6 +267,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         send 'updates-changed' signal:
         '''
         pklog.info("UpdatesChanged ()")
+
+    @PKSignalHouseKeeper
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='sssssss')
+    def RepoSignatureRequired(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type)
+        '''
+        send 'repo-signature-required' signal:
+        '''
+        pklog.info("RepoSignatureRequired (%s, %s, %s, %s, %s, %s, %s, %s)" %
+                   (repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type))
 
 
 #

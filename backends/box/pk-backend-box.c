@@ -35,6 +35,8 @@
 #include <libbox/libbox-repos.h>
 #include <libbox/libbox.h>
 
+#define ROOT_DIRECTORY "/"
+
 static PkBackendThread *thread;
 static PkNetwork *network;
 
@@ -72,8 +74,8 @@ db_open()
 {
 	sqlite3 *db;
 
-	db = box_db_open("/");
-	box_db_attach_repos(db, "/");
+	db = box_db_open(ROOT_DIRECTORY);
+	box_db_attach_repos(db, ROOT_DIRECTORY);
 	box_db_repos_init(db);
 
 	return db;
@@ -297,7 +299,7 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	box_upgrade_dist("/", common_progress, backend);
+	box_upgrade_dist(ROOT_DIRECTORY, common_progress, backend);
 	pk_backend_finished (backend);
 
 	return TRUE;
@@ -325,7 +327,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 		return FALSE;
 	}
-	result = box_package_install(pi->name, "/", common_progress, backend);
+	result = box_package_install(pi->name, ROOT_DIRECTORY, common_progress, backend, FALSE);
 
 	g_free (d->package_id);
 	g_free (d);
@@ -347,7 +349,7 @@ backend_install_file_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	result = box_package_install_file(d->package_id, "/", common_progress, backend);
+	result = box_package_install_file(d->package_id, ROOT_DIRECTORY, common_progress, backend);
 
 	g_free (d->package_id);
 	g_free (d);
@@ -514,7 +516,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 
-	if (!box_package_uninstall (pi->name, "/", common_progress, backend, FALSE))
+	if (!box_package_uninstall (pi->name, ROOT_DIRECTORY, common_progress, backend, FALSE))
 	{
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot uninstall");
 	}
@@ -537,7 +539,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
-    	box_repos_sync(common_progress, backend);
+	box_repos_sync(ROOT_DIRECTORY, common_progress, backend);
 	pk_backend_finished (backend);
 
 	return TRUE;
@@ -888,7 +890,7 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 
 PK_BACKEND_OPTIONS (
 	"Box",					/* description */
-	"Grzegorz Dąbrowski <gdx@o2.pl>",	/* author */
+	"Grzegorz Dąbrowski <grzegorz.dabrowski@gmail.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */

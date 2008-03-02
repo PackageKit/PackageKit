@@ -353,8 +353,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         successful = self._do_search(searchlist, filters, search)
         if not successful:
-            self.Finished(EXIT_FAILED)
             self._unlock_yum()
+            self.Finished(EXIT_FAILED)
             return
             
         self._unlock_yum()
@@ -475,8 +475,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         
         if not pkg:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
 
@@ -505,12 +505,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         results = {}
 
         if not pkg:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
 
-        deps = self._get_best_dependencies(pkg)
+        (dep_resolution_errors, deps) = self._get_best_dependencies(pkg)
+
+        if len(dep_resolution_errors) > 0:
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                           "Could not resolve dependencies: (" +
+                           ", ".join(dep_resolution_errors) +
+                           ")")
+
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+            return
 
         for pkg in deps:
             if pkg.name != name:
@@ -551,8 +561,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.yumbase.conf.throttle = old_throttle
             self.yumbase.conf.skip_broken = old_skip_broken
-            self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
             self._unlock_yum()
+            self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
             self.Finished(EXIT_FAILED)
             return
 
@@ -605,8 +615,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.PercentageChanged(100)
 
         except yum.Errors.YumBaseError, e:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
             self._unlock_yum()
+            self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -669,8 +679,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         if pkg:
             if inst:
-                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
                 self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
                 self.Finished(EXIT_FAILED)
                 return
             try:
@@ -680,13 +690,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     return
             except yum.Errors.InstallError,e:
                 msgs = '\n'.join(e)
-                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
                 self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
                 self.Finished(EXIT_FAILED)
                 return
         else:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
             self.Finished(EXIT_FAILED)
             return
             
@@ -715,8 +725,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     return
         except yum.Errors.InstallError,e:
             msgs = '\n'.join(e)
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
             self.Finished(EXIT_FAILED)
             return
 
@@ -741,13 +751,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not successful:
                     return
             else:
-                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
                 self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
                 self.Finished(EXIT_FAILED)
                 return
         else:
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
             self.Finished(EXIT_FAILED)
             return
             
@@ -777,16 +787,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if not successful:
                         return
             else:
-                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
                 self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
                 self.Finished(EXIT_FAILED)
                 return
 
             self._unlock_yum()
             self.Finished(EXIT_SUCCESS)
         else:
-            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
             self.Finished(EXIT_FAILED)
         return
             
@@ -804,8 +814,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             self._show_package_description(pkg)            
         else:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
             
@@ -828,8 +838,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             self.Files(package, file_list)
         else:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
 
@@ -935,8 +945,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     repo.disablePersistent()
 
         except yum.Errors.RepoError,e:
-            self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
             self._unlock_yum()
+            self.ErrorCode(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
             self.Finished(EXIT_FAILED)
             return
 
@@ -970,8 +980,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         
         if not pkg:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
 
@@ -1002,13 +1012,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
-                self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
                 self._unlock_yum()
+                self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
                 self.Finished(EXIT_FAILED)
                 return
         else:
-            self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
             self._unlock_yum()
+            self.ErrorCode(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
             self.Finished(EXIT_FAILED)
             return
 
@@ -1264,12 +1274,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         results = self.yumbase.findDeps([po])
         pkg = results.keys()[0]
         bestdeps=[]
+        dep_resolution_errors=[]
         if len(results[pkg].keys()) == 0: # No dependencies for this package ?
             return bestdeps
         for req in results[pkg].keys():
             reqlist = results[pkg][req]
             if not reqlist: #  Unsatisfied dependency
-                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req))
+                dep_resolution_errors.append(prco_tuple_to_string(req))
                 continue
             best = None
             for po in reqlist:
@@ -1279,7 +1290,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     best= po
             bestdeps.append(best)
-        return unique(bestdeps)
+                           
+        return (dep_resolution_errors, unique(bestdeps))
 
     def _localInstall(self, inst_file):
         """handles installs/updates of rpms provided on the filesystem in a
@@ -1301,8 +1313,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
             self._unlock_yum()
+            self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1378,8 +1390,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
             retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
             self._unlock_yum()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
             self.Finished(EXIT_FAILED)
             return
         else:
@@ -1387,8 +1399,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if removedeps == False:
                 if len(self.yumbase.tsInfo) > 1:
                     retmsg = 'package could not be remove, because something depends on it'
-                    self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
                     self._unlock_yum()
+                    self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
                     self.Finished(EXIT_FAILED)
                     return False
             try:
@@ -1398,39 +1410,39 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                                 rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, ye:
                 retmsg = "Error in Download\n" + "\n".join(ye.value)
-                self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
                 self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
-                self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
                 self._unlock_yum()
+                self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
                 if not keyData:
+                    self._unlock_yum()
                     self.ErrorCode(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
-                    self._unlock_yum()
                     self.Finished(EXIT_FAILED)
                     return False
-                self.repo_signature_required(keyData['po'].repoid,
-                                             keyData['keyurl'],
-                                             keyData['userid'],
-                                             keyData['hexkeyid'],
-                                             keyData['fingerprint'],
-                                             keyData['timestamp'],
-                                             'GPG')
-                self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
+                self.RepoSignatureRequired(keyData['po'].repoid,
+                                           keyData['keyurl'],
+                                           keyData['userid'],
+                                           keyData['hexkeyid'],
+                                           keyData['fingerprint'],
+                                           keyData['timestamp'],
+                                           SIGTYE_GPG)
                 self._unlock_yum()
+                self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
-                self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
                 self._unlock_yum()
+                self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
         return True
@@ -1857,7 +1869,6 @@ class PackageKitYumBase(yum.YumBase):
         '''
         Ask for GPGKeyImport
         '''
-        # TODO: Add code here to send the RepoSignatureRequired signal
         return False
 
 if __name__ == '__main__':
