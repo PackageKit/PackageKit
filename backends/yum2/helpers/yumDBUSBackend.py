@@ -510,7 +510,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
-        deps = self._get_best_dependencies(pkg)
+        (dep_resolution_errors, deps) = self._get_best_dependencies(pkg)
+
+        if len(dep_resolution_errors) > 0:
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
+                           "Could not resolve dependencies: (" +
+                           ", ".join(dep_resolution_errors) +
+                           ")")
+
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+            return
 
         for pkg in deps:
             if pkg.name != name:
@@ -1264,12 +1274,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         results = self.yumbase.findDeps([po])
         pkg = results.keys()[0]
         bestdeps=[]
+        dep_resolution_errors=[]
         if len(results[pkg].keys()) == 0: # No dependencies for this package ?
             return bestdeps
         for req in results[pkg].keys():
             reqlist = results[pkg][req]
             if not reqlist: #  Unsatisfied dependency
-                self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,"the (%s) requirement could not be resolved" % prco_tuple_to_string(req))
+                dep_resolution_errors.append(prco_tuple_to_string(req))
                 continue
             best = None
             for po in reqlist:
@@ -1279,7 +1290,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     best= po
             bestdeps.append(best)
-        return unique(bestdeps)
+                           
+        return (dep_resolution_errors, unique(bestdeps))
 
     def _localInstall(self, inst_file):
         """handles installs/updates of rpms provided on the filesystem in a
