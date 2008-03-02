@@ -50,6 +50,14 @@
 #define PK_BACKEND_PERCENTAGE_INVALID		101
 
 /**
+ * PK_BACKEND_PERCENTAGE_DEFAULT:
+ *
+ * The default percentage value, should never be emitted, but should be
+ * used so we can work out if a backend just calls NoPercentageUpdates
+ */
+#define PK_BACKEND_PERCENTAGE_DEFAULT		102
+
+/**
  * PK_BACKEND_FINISHED_ERROR_TIMEOUT:
  *
  * The time in ms the backend has to call Finished() after ErrorCode()
@@ -256,6 +264,11 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	percentage = backend->priv->last_percentage;
+
+	/* have not ever set any value? */
+	if (percentage == PK_BACKEND_PERCENTAGE_DEFAULT) {
+		percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	}
 	subpercentage = backend->priv->last_subpercentage;
 	elapsed = pk_time_get_elapsed (backend->priv->time);
 	remaining = backend->priv->last_remaining;
@@ -359,6 +372,12 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* set the same twice? */
+	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_debug ("duplicate set of %i", PK_BACKEND_PERCENTAGE_INVALID);
+		return FALSE;
+	}
 
 	/* invalidate previous percentage */
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
@@ -504,6 +523,10 @@ pk_backend_get_progress (PkBackend *backend,
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	*percentage = backend->priv->last_percentage;
+	/* have not ever set any value? */
+	if (*percentage == PK_BACKEND_PERCENTAGE_DEFAULT) {
+		*percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	}
 	*subpercentage = backend->priv->last_subpercentage;
 	*elapsed = pk_time_get_elapsed (backend->priv->time);
 	*remaining = backend->priv->last_remaining;
@@ -1102,7 +1125,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->last_remaining = 0;
-	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
+	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
 	backend->priv->last_subpercentage = PK_BACKEND_PERCENTAGE_INVALID;
 	pk_time_reset (backend->priv->time);
 
