@@ -192,10 +192,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("StatusChanged (%s)" % (status))
 
     @PKSignalHouseKeeper
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='')
     def NoPercentageUpdates(self):
-        pklog.info("NoPercentageUpdates")
+        self.PercentageChanged(101)
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
