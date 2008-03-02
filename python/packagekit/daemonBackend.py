@@ -410,7 +410,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        pklog("RefreshCache()")
+        pklog.info("RefreshCache()")
         self.forkme()
         if self._child_pid:
             return
