@@ -1428,13 +1428,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     self._unlock_yum()
                     self.Finished(EXIT_FAILED)
                     return False
-                self.repo_signature_required(keyData['po'].repoid,
-                                             keyData['keyurl'],
-                                             keyData['userid'],
-                                             keyData['hexkeyid'],
-                                             keyData['fingerprint'],
-                                             keyData['timestamp'],
-                                             'GPG')
+                self.RepoSignatureRequired(keyData['po'].repoid,
+                                           keyData['keyurl'],
+                                           keyData['userid'],
+                                           keyData['hexkeyid'],
+                                           keyData['fingerprint'],
+                                           keyData['timestamp'],
+                                           SIGTYE_GPG)
                 self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
                 self._unlock_yum()
                 self.Finished(EXIT_FAILED)
@@ -1869,7 +1869,6 @@ class PackageKitYumBase(yum.YumBase):
         '''
         Ask for GPGKeyImport
         '''
-        # TODO: Add code here to send the RepoSignatureRequired signal
         return False
 
 if __name__ == '__main__':
