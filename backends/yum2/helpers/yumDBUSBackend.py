@@ -239,11 +239,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         signal.signal(signal.SIGQUIT, sigquit)
 
         print "__init__"
+        self.locked = False
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
 
-        self.locked = False
         print "__init__ done"
 
 #
