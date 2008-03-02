@@ -61,8 +61,8 @@
 /**
  * PK_BACKEND_FINISHED_TIMEOUT_GRACE:
  *
- * The time in ms the backend waits after recieving Finished() before
- * propogating the signal to the other components.
+ * The time in ms the backend waits after receiving Finished() before
+ * propagating the signal to the other components.
  * This delay is required as some threads may take some time to cancel or a
  * spawned executable to disappear of the system DBUS.
  */
