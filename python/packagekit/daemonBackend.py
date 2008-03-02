@@ -271,7 +271,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='sssssss')
-    def RepoSignatureRequired(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type)
+    def RepoSignatureRequired(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type):
         '''
         send 'repo-signature-required' signal:
         '''
