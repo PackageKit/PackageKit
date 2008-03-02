@@ -2228,7 +2228,7 @@ PkEnumList *
 pk_client_get_actions (PkClient *client)
 {
 	gboolean ret;
-	GError *error;
+	GError *error = NULL;
 	gchar *actions;
 	PkEnumList *elist;
 
