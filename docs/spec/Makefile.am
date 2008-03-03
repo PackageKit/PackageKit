@@ -3,9 +3,16 @@ IMAGE_FILES =				\
 	pk-structure.svg
 
 SPEC_XML_FILES =			\
-	pk-reference.xml		\
+	pk-backend-compiled.xml		\
+	pk-backend-dbus.xml		\
+	pk-backend-spawn.xml		\
+	pk-concepts.xml			\
 	pk-introduction.xml		\
-	pk-backends.xml
+	pk-methods.xml			\
+	pk-reference.xml		\
+	pk-signals.xml			\
+	pk-reference.xml		\
+	pk-introduction.xml
 
 SPEC_HTML_FILES =			\
 	pk-reference.html
@@ -31,3 +38,4 @@ pk-reference.html : pk-introduction.xml
 EXTRA_DIST += $(SPEC_HTML_FILES)
 
 endif #DOCBOOK_DOCS_ENABLED
+
