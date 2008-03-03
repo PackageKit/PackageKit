@@ -112,7 +112,7 @@ add_packages_from_list (PkBackend *backend, GList *list, gboolean updates)
 			info = PK_INFO_ENUM_INSTALLED;
 		else
 			info = PK_INFO_ENUM_AVAILABLE;
-		pk_backend_package (backend, info, pkg_string, package->description);
+		pk_backend_package (backend, info, PK_TYPE_ENUM_PACKAGE, pkg_string, package->description);
 
 		g_free(pkg_string);
 	}

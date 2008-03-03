@@ -66,6 +66,7 @@ guint		 pk_backend_get_runtime			(PkBackend	*backend);
 gboolean	 pk_backend_finished			(PkBackend	*backend);
 gboolean	 pk_backend_package			(PkBackend	*backend,
 							 PkInfoEnum	 info,
+							 PkTypeEnum	 type,
 							 const gchar	*package_id,
 							 const gchar	*summary);
 gboolean	 pk_backend_repo_detail			(PkBackend	*backend,

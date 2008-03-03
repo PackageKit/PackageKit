@@ -133,7 +133,7 @@ sqlite_search_packages_thread (PkBackendThread *thread, gpointer data)
 		if (is_installed != NULL)
 			pie = is_installed(pid)?PK_INFO_ENUM_INSTALLED:PK_INFO_ENUM_AVAILABLE;
 
-		pk_backend_package(backend, pie, cpid, (const gchar*)sqlite3_column_text(package,4));
+		pk_backend_package(backend, pie, PK_TYPE_ENUM_PACKAGE, cpid, (const gchar*)sqlite3_column_text(package,4));
 
 		g_free(cpid);
 		pk_package_id_free(pid);

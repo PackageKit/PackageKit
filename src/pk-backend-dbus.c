@@ -136,11 +136,14 @@ pk_backend_dbus_no_percentage_updates_cb (DBusGProxy *proxy, PkBackendDbus *back
  * pk_backend_dbus_package_cb:
  **/
 static void
-pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *package_id,
+pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gchar *type_text, const gchar *package_id,
 			    const gchar *summary, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_package (backend_dbus->priv->backend, pk_info_enum_from_text (info_text), package_id, summary);
+	pk_backend_package (backend_dbus->priv->backend,
+			    pk_info_enum_from_text (info_text),
+			    pk_type_enum_from_text (type_text),
+			    package_id, summary);
 }
 
 /**
@@ -323,7 +326,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				 G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Description",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_INVALID);
@@ -1218,8 +1221,8 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
 
 	/* Package */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* RepoDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_BOOL,

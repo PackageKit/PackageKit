@@ -55,6 +55,7 @@ typedef struct
 typedef struct
 {
 	PkInfoEnum		 info;
+	PkTypeEnum		 type;
 	gchar			*package_id;
 	gchar			*summary;
 } PkPackageItem;
@@ -63,6 +64,7 @@ GType		 pk_package_list_get_type		(void);
 PkPackageList	*pk_package_list_new			(void);
 gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 PkInfoEnum		 info,
+							 PkTypeEnum		 type,
 							 const gchar		*package_id,
 							 const gchar		*summary);
 gboolean	 pk_package_list_contains		(PkPackageList		*plist,

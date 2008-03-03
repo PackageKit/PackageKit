@@ -203,6 +203,10 @@
             <entry>A valid <literal>info</literal> string enumerated type</entry>
           </row>
           <row>
+            <entry><literal>type</literal></entry>
+            <entry>A valid <literal>type</literal> string enumerated type</entry>
+          </row>
+          <row>
             <entry><literal>package_id</literal></entry>
             <entry>A valid package ID string with as much data as known</entry>
           </row>

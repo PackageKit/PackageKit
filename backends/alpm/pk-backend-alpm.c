@@ -218,7 +218,7 @@ add_package (PkBackend *backend, PackageSource *package)
     info = PK_INFO_ENUM_INSTALLED;
   else
     info = PK_INFO_ENUM_AVAILABLE;
-  pk_backend_package (backend, info, pkg_string, alpm_pkg_get_desc (package->pkg));
+  pk_backend_package (backend, info, PK_TYPE_ENUM_PACKAGE, pkg_string, alpm_pkg_get_desc (package->pkg));
 
   g_free(pkg_string);
 }
@@ -466,7 +466,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
       return;
     }
 
-  pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
+  pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE,
 			    package_id,
 			    "An HTML widget for GTK+ 2.0");
 

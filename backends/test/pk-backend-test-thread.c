@@ -66,9 +66,9 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* emit */
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 	return TRUE;
@@ -113,9 +113,9 @@ backend_search_name_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 100);
 	pk_debug ("exited task (%p,%p)", backend, data);
 
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 	return TRUE;

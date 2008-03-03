@@ -974,10 +974,9 @@ pk_runner_tid_valid (PkRunner *runner)
  * pk_runner_package_cb:
  **/
 static void
-pk_runner_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary, PkRunner *runner)
+pk_runner_package_cb (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, const gchar *package_id, const gchar *summary, PkRunner *runner)
 {
 	PkRoleEnum role;
-	const gchar *info_text;
 	gboolean valid;
 
 	g_return_if_fail (runner != NULL);
@@ -1003,10 +1002,10 @@ pk_runner_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	}
 
 	/* add to package cache even if we already got a result */
-	pk_package_list_add (runner->priv->package_list, info, package_id, summary);
+	pk_package_list_add (runner->priv->package_list, info, type, package_id, summary);
 
-	info_text = pk_info_enum_to_text (info);
-	pk_debug ("caching package info=%s %s, %s", info_text, package_id, summary);
+	pk_debug ("caching package info=%s type=%s %s, %s", pk_info_enum_to_text (info),
+		  pk_type_enum_to_text (type), package_id, summary);
 }
 
 /**

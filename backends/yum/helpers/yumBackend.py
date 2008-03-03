@@ -188,15 +188,15 @@ groupMap = {
 }
 
 MetaDataMap = {
-'repomd.xml'             : "repository",
-'primary.sqlite.bz2'     : "package",
-'primary.xml.gz'         : "package",
-'filelists.sqlite.bz2'   : "filelist",
-'filelists.xml.gz'       : "filelist",
-'other.sqlite.bz2'       : "changelog",
-'other.xml.gz'           : "changelog",
-'comps.xml'              : "group",
-'updateinfo.xml.gz'      : "update"
+'repomd.xml'             : TYPE_REPOSITORY,
+'primary.sqlite.bz2'     : TYPE_PACKAGELIST,
+'primary.xml.gz'         : TYPE_PACKAGELIST,
+'filelists.sqlite.bz2'   : TYPE_FILELIST,
+'filelists.xml.gz'       : TYPE_FILELIST,
+'other.sqlite.bz2'       : TYPE_CHANGELOG,
+'other.xml.gz'           : TYPE_CHANGELOG,
+'comps.xml'              : TYPE_GROUP,
+'updateinfo.xml.gz'      : TYPE_UPDATEINFO
 }
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
@@ -327,7 +327,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             count+=1
                             if count > 100:
                                 break
-                            self._show_package(pkg, INFO_INSTALLED)
+                            self._show_package(pkg, INFO_INSTALLED,TYPE_PACKAGE)
                 else:
                     available.append(pkg)
         except yum.Errors.RepoError,e:
@@ -337,7 +337,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if FILTER_INSTALLED not in fltlist:
             for pkg in available:
                 if self._do_extra_filtering(pkg,fltlist):
-                    self._show_package(pkg, INFO_AVAILABLE)
+                    self._show_package(pkg, INFO_AVAILABLE,TYPE_PACKAGE)
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -463,7 +463,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_INSTALLED)
+                            self._show_package(pkg, INFO_INSTALLED,TYPE_PACKAGE)
             if not FILTER_INSTALLED in fltlist:
                 # Check available for group
                 for pkg in self.yumbase.pkgSack:
@@ -474,7 +474,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             group = groupMap[cg]
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_AVAILABLE)
+                            self._show_package(pkg, INFO_AVAILABLE,TYPE_PACKAGE)
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
 
@@ -498,7 +498,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in self.yumbase.rpmdb:
                     if self._do_extra_filtering(pkg,fltlist):
                         if showPkg:
-                            self._show_package(pkg, INFO_INSTALLED)
+                            self._show_package(pkg, INFO_INSTALLED,TYPE_PACKAGE)
                         if showDesc:
                             self._show_description(pkg)
                         
@@ -508,7 +508,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
                     if self._do_extra_filtering(pkg,fltlist):
                         if showPkg:
-                            self._show_package(pkg, INFO_AVAILABLE)
+                            self._show_package(pkg, INFO_AVAILABLE,TYPE_PACKAGE)
                         if showDesc:
                             self._show_description(pkg)
         except yum.Errors.RepoError,e:
@@ -532,7 +532,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             for pkg in matches:
                 if not found.has_key(str(pkg)):
                     if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
+                        self._show_package(pkg, INFO_INSTALLED,TYPE_PACKAGE)
                         found[str(pkg)] = 1
         if not FILTER_INSTALLED in fltlist:
             # Check available for file
@@ -541,7 +541,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             for pkg in matches:
                 if found.has_key(str(pkg)):
                     if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+                        self._show_package(pkg, INFO_AVAILABLE,TYPE_PACKAGE)
                         found[str(pkg)] = 1
 
     def _getEVR(self,idver):
@@ -589,9 +589,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
         for pkg in pkgs:
             if inst:
-                self._show_package(pkg,INFO_INSTALLED)
+                self._show_package(pkg,INFO_INSTALLED,TYPE_PACKAGE)
             else:
-                self._show_package(pkg,INFO_AVAILABLE)
+                self._show_package(pkg,INFO_AVAILABLE,TYPE_PACKAGE)
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
@@ -689,10 +689,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
 
                 if self._is_inst(pkg):
-                    self.package(id, INFO_INSTALLED, pkg.summary)
+                    self.package(id, INFO_INSTALLED, TYPE_PACKAGE, pkg.summary)
                 else:
                     if self._installable(pkg):
-                        self.package(id, INFO_AVAILABLE, pkg.summary)
+                        self.package(id, INFO_AVAILABLE, TYPE_PACKAGE, pkg.summary)
 
     def update_system(self):
         '''
@@ -758,7 +758,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in installedByKey:
-                    self._show_package(pkg,INFO_INSTALLED)
+                    self._show_package(pkg,INFO_INSTALLED,TYPE_PACKAGE)
             # Get available packages
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
@@ -769,7 +769,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
                                 show = False
                         if show:
-                            self._show_package(pkg,INFO_AVAILABLE)
+                            self._show_package(pkg,INFO_AVAILABLE,TYPE_PACKAGE)
                             break
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
@@ -1031,10 +1031,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         return id
 
-    def _show_package(self,pkg,status):
+    def _show_package(self,pkg,status,pkgtype):
         '''  Show info about package'''
         id = self._pkg_to_id(pkg)
-        self.package(id,status, pkg.summary)
+        self.package(id,status, pkgtype, pkg.summary)
 
     def _get_status(self,notice):
         ut = notice['type']
@@ -1062,9 +1062,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 notice = md.get_notice((pkg.name, pkg.version, pkg.release))
                 if notice:
                     status = self._get_status(notice)
-                    self._show_package(pkg,status)
+                    self._show_package(pkg,status,TYPE_PACKAGE)
                 else:
-                    self._show_package(pkg,INFO_NORMAL)
+                    self._show_package(pkg,INFO_NORMAL,TYPE_PACKAGE)
         except yum.Errors.RepoError,e:
             self.error(ERROR_NO_CACHE,"Yum cache is invalid")
                 
@@ -1301,13 +1301,13 @@ class DownloadCallback( BaseMeter ):
             if self.showNames:
                 pkg = self._getPackage(name)
                 if pkg: # show package to download
-                    self.base._show_package(pkg,INFO_DOWNLOADING)
+                    self.base._show_package(pkg,INFO_DOWNLOADING,TYPE_PACKAGE)
                 else:
                     if name in MetaDataMap:
                         typ = MetaDataMap[name]
                     else:
-                        typ = 'unknown'
-                    self.base.metadata(typ,name)
+                        typ = TYPE_UNKNOWN
+                    self.base._show_package("metadata;;;",INFO_DOWNLOADING,typ)
             self.base.sub_percentage(0)        
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:

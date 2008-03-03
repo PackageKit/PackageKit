@@ -418,7 +418,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             status = INFO_AVAILABLE
         summary = pkg.summary
-        self.Package(status, id, summary)
+        self.Package(status, TYPE_PACKAGE, id, summary)
 
     def _is_package_visible(self, pkg, filters):
         '''

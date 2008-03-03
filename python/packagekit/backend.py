@@ -77,14 +77,15 @@ class PackageKitBaseBackend:
                 self.unLock()
             sys.exit(1)
 
-    def package(self,id,status,summary):
+    def package(self,id,status,pkgtype,summary):
         '''
         send 'package' signal
-        @param info: the enumerated INFO_* string
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param status: the enumerated INFO_* string
+        @param pkgtype: the enumerated TYPE_* string
         @param summary: The package Summary
         '''
-        print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
+        print >> sys.stdout,"package\t%s\t%s\t%s\t%s" % (status,pkgtype,id,summary)
 
     def status(self,state):
         '''
@@ -107,14 +108,6 @@ class PackageKitBaseBackend:
         @param data:  The current worked on package
         '''
         print >> sys.stderr,"data\t%s" % (data)
-
-    def metadata(self,typ,fname):
-        '''
-        send 'metadata' signal:
-        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
-        @param fname:  The filename being downloaded
-        '''
-        print >> sys.stderr,"metadata\t%s\t%s" % (typ,fname)
 
     def description(self,id,license,group,desc,url,bytes):
         '''

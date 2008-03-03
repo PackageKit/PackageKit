@@ -300,11 +300,13 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                         if (it->second.isSystem ()) {
                                 pk_backend_package (backend,
                                                     PK_INFO_ENUM_INSTALLED,
+                                                    PK_TYPE_ENUM_PACKAGE,
                                                     package_id,
                                                     item->description ().c_str());
                         }else{
                                 pk_backend_package (backend,
                                                     PK_INFO_ENUM_AVAILABLE,
+                                                    PK_TYPE_ENUM_PACKAGE,
                                                     package_id,
                                                     "");
                         }
@@ -553,6 +555,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_AVAILABLE,
+				    PK_TYPE_ENUM_PACKAGE,
 				    package_id,
 				    res->description ().c_str ());
 		g_free (package_id);
@@ -961,6 +964,7 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
 	// TODO: Determine whether the package is installed and emit either PK_INFO_ENUM_AVAILABLE or PK_INFO_ENUM_INSTALLED
 	pk_backend_package (backend,
 			    PK_INFO_ENUM_AVAILABLE,
+			    PK_TYPE_ENUM_PACKAGE,
 			    package_id,
 			    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
@@ -1470,6 +1474,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                                                            "opensuse");
                         pk_backend_package (backend,
 			                    PK_INFO_ENUM_INSTALLED,
+			                    PK_TYPE_ENUM_PACKAGE,
 			                    package_id,
 			                    it->resolvable ()->description ().c_str ());
                         g_free (package_id);

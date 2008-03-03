@@ -285,6 +285,23 @@ typedef enum {
 } PkInfoEnum;
 
 /**
+ * PkTypeEnum:
+ *
+ * The enumerated types used in Package() - these have to refer to a type
+ **/
+typedef enum {
+	PK_TYPE_ENUM_REPOSITORY,
+	PK_TYPE_ENUM_PACKAGE,
+	PK_TYPE_ENUM_FILELIST,
+	PK_TYPE_ENUM_CHANGELOG,
+	PK_TYPE_ENUM_GROUP,
+	PK_TYPE_ENUM_UPDATEINFO,
+	PK_TYPE_ENUM_PACKAGELIST,
+	PK_TYPE_ENUM_PATCH,
+	PK_TYPE_ENUM_UNKNOWN
+} PkTypeEnum;
+
+/**
  * PkSigTypeEnum:
  *
  * The signature type type
@@ -424,6 +441,9 @@ const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_typ
 
 PkInfoEnum	 pk_info_enum_from_text			(const gchar	*info);
 const gchar	*pk_info_enum_to_text			(PkInfoEnum	 info);
+
+PkTypeEnum	 pk_type_enum_from_text			(const gchar	*type);
+const gchar	*pk_type_enum_to_text			(PkTypeEnum	 type);
 
 PkUpdateEnum	 pk_update_enum_from_text		(const gchar	*update);
 const gchar	*pk_update_enum_to_text			(PkUpdateEnum	 update);
