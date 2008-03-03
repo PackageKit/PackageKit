@@ -1,31 +1,52 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 
-<chapter id="backends">
-  <title>Backends</title>
-
-  <sect1 id="backends-spawn-introduction">
-    <title>Spawn Introduction</title>
-    <para>
-      Backends are typically open-programmable, which means we can define a
-      standard for what goes on stdin, stdout and stderr to try and maximise
-      the common code between the backends.
-      The following section will explain the convention used on
-      <literal>backends/conary</literal> and <literal>backends/yum</literal>.
-    </para>
-    <para>
-      If you are unable to write scripts that conform to these specifications
-      then just launch a PkSpawn object in the compiled helper with stdout and
-      stderr callbacks and then try to do screenscraping in the backend.
-      This screenscraping is least popular for obvious reasons.
-    </para>
-    <para>
-      Backends scripts are run with arguments and data is sent to standard out
-      and standard error asyncronously so that PackageKit can proxy this to DBUS.
-      A method has command line arguments seporated with tabs, and data is also
-      seporated with tabs.
-    </para>
-  </sect1>
+<chapter id="backend-spawn">
+  <title>Spawned Backends</title>
+  <para>
+    If you do not have a C or C++ language binding, PackageKit executes
+    helper scripts written in pretty much any language.
+    It then watches the standard out and standard error and parses the
+    output into compiled backend commands.
+    This means a python library can be interfaced easily with a C backend.
+  </para>
+  <para>
+    Even when using helpers, a compiled backend stub is still used for
+    two reasons:
+  </para>
+  <itemizedlist>
+    <listitem>
+      <para>
+        It is still needed for the dlopen internally in PackageKit.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        You can add cleverness in the C backend that you might not want to
+        do in the scripted backend, for example using a hashtable in C
+        rather than checking all the names in awk.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    Backends are typically open-programmable, which means we can define a
+    standard for what goes on stdin, stdout and stderr to try and maximise
+    the common code between the backends.
+    The following section will explain the convention used on
+    <literal>backends/conary</literal> and <literal>backends/yum</literal>.
+  </para>
+  <para>
+    If you are unable to write scripts that conform to these specifications
+    then just launch a PkSpawn object in the compiled helper with stdout and
+    stderr callbacks and then try to do screenscraping in the backend.
+    This screenscraping is least popular for obvious reasons.
+  </para>
+  <para>
+    Backends scripts are run with arguments and data is sent to standard out
+    and standard error asyncronously so that PackageKit can proxy this to DBUS.
+    A method has command line arguments seporated with tabs, and data is also
+    seporated with tabs.
+  </para>
 
   <sect1 id="backends-spawn-methods">
     <title>Methods</title>
@@ -219,6 +240,5 @@
       </tgroup>
     </informaltable>
   </sect1>
-
 
 </chapter>

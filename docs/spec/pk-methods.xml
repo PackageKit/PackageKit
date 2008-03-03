@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="methods">
+  <title>Methods</title>
+  <para>
+    Methods used by the backends are as follows:
+  </para>
+
+  <sect1 id="methods-search-name">
+    <title>Search Name</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>search_term</literal></entry>
+            <entry>A single word search term with no wildcard chars.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      Do not refresh the package cache. This should be fast.
+    </para>
+    <para>
+      Always emit <literal>installed</literal> before
+      <literal>available</literal> packages first, as it allows the client
+      program to perform the GUI filtering and matching whilst the daemon is
+      running the transaction.
+    </para>
+    <para>
+      The search query in the backend should not be case sensitive, and
+      should not be sensitive to <literal>_</literal> or <literal>-</literal>.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-search-group">
+    <title>Search Group</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>group_type</literal></entry>
+            <entry>An enumerated group_type, or <literal>unknown</literal></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      Do not refresh the package cache. This should be fast.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-search-details">
+    <title>Search Details</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>search_term</literal></entry>
+            <entry>A single word search term with no wildcard chars.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      Do not refresh the package cache. This should be fast.
+      This is very similar to search-name.
+      This should search as much data as possible, including, if possible
+      repo names, package summaries, descriptions and URLs.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-search-file">
+    <title>Search File</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>search_term</literal></entry>
+            <entry>A single word search term with no wildcard chars.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This should search for files.
+      This should allow an application to find out what package owns
+      a file on the system.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-install-package">
+    <title>Install Package</title>
+    <para>
+      The installer should always install extra packages automatically
+      as the use could call GetDepends prior to the install if a confirmation
+      is required in the UI.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This should search for files.
+      This should allow an application to find out what package owns
+      a file on the system.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>downloading</literal>,
+      <literal>updating</literal>,
+      <literal>installing</literal> or
+      <literal>removing</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-install-file">
+    <title>Install File</title>
+    <para>
+      The installer should always install extra packages automatically
+      as the use could call GetDepends prior to the install if a confirmation
+      is required in the UI.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>full_path</literal></entry>
+            <entry>A full path and filename to a single package.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>downloading</literal>,
+      <literal>updating</literal>,
+      <literal>installing</literal> or
+      <literal>removing</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-remove">
+    <title>Remove Package</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>allow_deps</literal></entry>
+            <entry>
+              Either "yes" or "no". If yes allow other packages to be
+              removed with the package, but "no" should cause the script
+              to abort if other packages are dependant on the package.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>downloading</literal>,
+      <literal>updating</literal>,
+      <literal>installing</literal> or
+      <literal>removing</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-depends">
+    <title>Get Depends</title>
+    <para>
+      GetDepends should return packages that this package depends on.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+          <row>
+            <entry><literal>recursive</literal></entry>
+            <entry>
+              Either "yes" or "no". If yes then the requirements should be
+              returned for all packages returned.
+              This means if gnome-power-manager depends on NetworkManager
+              and NetworkManager depends on HAL, then GetDepends on
+              gnome-power-manager should return both HAL and NetworkManager.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-resolve">
+    <title>Resolve</title>
+    <para>
+      Resolve turns a single package name into a package_id suitable for the
+      other methods.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package</literal></entry>
+            <entry>A single package name, e.g. <literal>art-clipart</literal>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-update-detail">
+    <title>Get Update Detail</title>
+    <para>
+      GetUpdateDetail should return details about the update.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>UpdateDetail</literal> and
+      <literal>Error</literal>
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-requires">
+    <title>Get Requires</title>
+    <para>
+      GetRequires should return packages that depend on this package.
+      This is useful to know, as if <literal>package_id</literal> is being
+      removed, we can warn the user what else would be removed.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+          <row>
+            <entry><literal>recursive</literal></entry>
+            <entry>
+              Either "yes" or "no". If yes then the requirements should be
+              returned for all packages returned.
+              This means if gnome-power-manager depends on NetworkManager
+              and NetworkManager depends on HAL, then GetRequires on
+              HAL should return both gnome-power-manager and NetworkManager.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-description">
+    <title>Get Description</title>
+    <para>
+      GetDescription should return the description of that
+      <literal>package_id</literal>.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Description</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-files">
+    <title>Get Files</title>
+    <para>
+      GetFiles should return the file list of that
+      <literal>package_id</literal>.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Files</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-update">
+    <title>Update Package</title>
+    <para>
+      The installer should always update extra packages automatically.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A single, valid, package ID.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This should search for files.
+      This should allow an application to find out what package owns
+      a file on the system.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-update-system">
+    <title>Update System</title>
+    <para>
+      The installer should update all the updateable packages on the system,
+      including automatically installing any new packages that are needed for
+      dependancies.
+    </para>
+    <para>
+      There are no arguments.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>RequireRestart</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>downloading</literal>,
+      <literal>updating</literal>,
+      <literal>installing</literal> or
+      <literal>removing</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-updates">
+    <title>Get Updates</title>
+    <para>
+      This function should return a list of packages that are installed and
+      are upgradable.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>basename</literal>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>blocked</literal>,
+      <literal>low</literal>,
+      <literal>normal</literal>,
+      <literal>important</literal> or
+      <literal>security</literal>.
+    </para>
+    <para>
+      The status <literal>blocked</literal> signifies the package cannot be
+      updated, probably due to other dependencies not being met.
+      This type allows the GUI tools to show to the user that an update
+      exists, but cannot be installed.
+      The reason for it not being installed should be put into the update
+      description when doing GetUpdateDetail.
+    </para>
+    <para>
+      A filter such as <literal>basename</literal> or <literal>gui</literal>
+      is also useful if you want to do filtering on the method to only show
+      the main packages rather than the complete list.
+      The complete list is available but specifying <literal>none</literal>
+      as the filter.
+      Using no filter which may be useful in advanced tools or when using
+      libpackagekit and searching for an update of a specific name.
+      Other filter types may be present, but can be safely ignored of the
+      backend does not support them.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-refresh-cache">
+    <title>Refresh Cache</title>
+    <para>
+      There are no arguments.
+    </para>
+    <para>
+      This should fetch updated meta-data for all enabled repositories.
+      This operation should be only scheduled when the computer is idle as
+      the network connection will be very active, and will the computer will
+      have have non-trivial levels of hard disk and processor activity.
+      For these reasons, it should not be done automatically when on battery
+      power.
+    </para>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-get-repo-list">
+    <title>Get Repo List</title>
+    <para>
+      Return the list of repositories used in the system.
+    </para>
+    <para>
+      There are no arguments.
+    </para>
+    <para>
+      This method typically emits
+      <literal>RepoDetail</literal>.
+    </para>
+  </sect1>
+
+  <sect1 id="methods-repo-enable">
+    <title>Repo Enable</title>
+    <para>
+      This enables the repository specified.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>repo_id</literal></entry>
+            <entry>
+              A repository identifier, e.g.
+              <literal>fedora-development-debuginfo</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>enabled</literal></entry>
+            <entry>
+              <literal>true</literal> if enabled,
+              <literal>false</literal> if disabled.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="methods-repo-set-data">
+    <title>Repo Set Data</title>
+    <para>
+      This sets a parameter for the repository specified.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>repo_id</literal></entry>
+            <entry>
+              A repository identifier, e.g.
+              <literal>fedora-development-debuginfo</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>parameter</literal></entry>
+            <entry>
+              The backend specific value, e.g.
+              <literal>set-download-url</literal>.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>value</literal></entry>
+            <entry>
+              The backend specific value, e.g.
+              <literal>http://foo.bar.org/baz</literal>.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+</chapter>
+

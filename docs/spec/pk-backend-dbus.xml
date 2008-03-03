@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="backend-dbus">
+  <title>DBUS Backends</title>
+  <para>
+    Backend helpers communicating over standard out and standard
+    error are easy to write, but can have some performance
+    problems.
+    For instance, if your packages system has to do a lot of work when it
+    starts up and shuts down, performance in the UI may suffer.
+    In these cases, you can use a persistant backend daemon that
+    communicates to the C backend over DBUS.
+  </para>
+  <para>
+    Your daemon will be started by DBUS, and should be responsible
+    for it's own thread management.
+    It should receive an <literal>Init()</literal> method call when the C
+    backend starts, and an <literal>Exit()</literal> method call before it
+    exits.
+    You should also consider adding a timeout value to your daemon so that
+    it will exit after a set time with no activity from the C backend.
+    That way the daemon will still exit even if the C backend crashes for
+    some reason.
+  </para>
+  <para>
+    Again, like the helper backends described above, a compiled
+    backend stub is needed. An example of a DBUS backend written
+    in python can be found in <literal>backends/yum2</literal>,
+    along with a compiled stub written in C.
+  </para>
+</chapter>
+

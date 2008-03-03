@@ -30,7 +30,12 @@
     </authorgroup>
   </bookinfo>
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-introduction.xml" />
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backends.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-concepts.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-methods.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-signals.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-compiled.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-spawn.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-dbus.xml" />
 
 </book>
 

@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="concepts">
+  <title>Important Concepts</title>
+  <para>
+    The following sections explain key concepts used internally in PackageKit.
+  </para>
+  <sect1 id="introduction-ideas-packageid">
+    <title>Package ID</title>
+    <para>
+      One important idea is the <literal>package_id</literal>.
+      This is the <literal>name;version;arch;data</literal> in
+      a single string and is meant to represent a single package.
+      This is important when multiple versions of a package are installed and
+      only the correct one is removed.
+    </para>
+    <para>
+      The <literal>package_id</literal> is parsed and checked carefully in
+      the helper code.
+      The package arch and data is optional, but 3 <literal>;</literal>'s must
+      be present.
+      For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
+      valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
+      The data field can be used for the repository name or any other purpose.
+      It is designed to make the life of a backend writer a little bit easier.
+    </para>
+    <para>
+      The data field for an installed package must be
+      <literal>installed</literal> as this is used to identify which packages
+      are installable or installed in the client tools.
+    </para>
+    <para>
+      The backend must ensure that the package_id only matches on one
+      single package.
+      A single package_id must be enough to uniquely identify a single object
+      in any repository used on the system.
+    </para>
+  </sect1>
+
+  <sect1 id="introduction-ideas-filters">
+    <title>Filters</title>
+    <para>
+      Search filtering on the name is done in the backend for efficiency reasons.
+      This can be added into the compiled backend if this is not possible
+      in any new backend design.
+    </para>
+    <para>
+      Filter options are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>installed</literal> or <literal>~installed</literal></entry>
+            <entry>If the package is installed on the system</entry>
+          </row>
+          <row>
+            <entry><literal>devel</literal> or <literal>~devel</literal></entry>
+            <entry>Development packages typically end -devel, -dgb and -static.</entry>
+          </row>
+          <row>
+            <entry><literal>gui</literal> or <literal>~gui</literal></entry>
+            <entry>GUI programs typically depend on gtk, libkde or libxfce.</entry>
+          </row>
+          <row>
+            <entry><literal>free</literal> or <literal>~free</literal></entry>
+            <entry>
+              Free software. The package contains only software and
+              other content that is available under a free license.
+              See http://fedoraproject.org/wiki/Licensing for a list
+              of licenses that are considered free. If a license
+              cannot be determined from the package metadata, or the
+              status of the license is not known, the package will
+              be marked as 'non-free'.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>visible</literal> or <literal>~visible</literal></entry>
+            <entry>
+              Repositories may want to specify if a package should be visible
+              in an application chooser.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>supported</literal> or <literal>~supported</literal></entry>
+            <entry>
+              If the package is supported or is a third party addon.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>basename</literal> or <literal>~basename</literal></entry>
+            <entry>
+              The basename filter will only return results according to the
+              package basename.
+              This is useful if you are searching for pm-utils and you only
+              want to show the main pm-utils package, not any of the
+              <literal>-devel</literal> or <literal>-debuginfo</literal> or
+              <literal>-common</literal> suffixes in the UI.
+              The basename is normally the original name of the source package.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      So valid options would be:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>none</literal></entry>
+            <entry>All packages installed or available with no filtering</entry>
+          </row>
+          <row>
+            <entry><literal>devel;~installed</literal></entry>
+            <entry>All non-installed development packages</entry>
+          </row>
+          <row>
+            <entry><literal>installed;~devel</literal></entry>
+            <entry>All installed non-development packages</entry>
+          </row>
+          <row>
+            <entry><literal>gui;~installed;~devel</literal></entry>
+            <entry>All non-installed, non-devel gui programs</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect1>
+
+  <sect1 id="introduction-errors">
+    <title>Error Enums</title>
+    <para>
+      If you have to handle an error, try to use <literal>internal-error</literal>
+      as little as possible.
+      Just ask on the mailing list, and we can add some more error enums to
+      cover the type of error in an abstract way as possible.
+    </para>
+    <para>
+      Every error should have an enumerated type
+      (e.g. <literal>out-of-memory</literal>) and also an error description.
+      The error description is not translated and not converted into the users
+      locale.
+      The error description should be descriptive, as it's for power users
+      and people trying to debug the problem.
+      For instance, "Out of memory" is not helpful as an error description
+      that is reported in a bugzilla, but "Could not create database index" is.
+      For the description use <literal>;</literal> to separate the lines if
+      required.
+    </para>
+    <para>
+      The following error enumerated types are available for use in all
+      backends:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Error</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>out-of-memory</literal></entry>
+            <entry>There is an out of memory condition</entry>
+          </row>
+          <row>
+            <entry><literal>no-network</literal></entry>
+            <entry>There is no network connection that can be used</entry>
+          </row>
+          <row>
+            <entry><literal>not-supported</literal></entry>
+            <entry>
+              Not supported by the backend.
+              NOTE: You shouldn't be setting non-NULL in the compiled
+              backend symbol table if you find yourself using this.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>internal-error</literal></entry>
+            <entry>
+              There was an unspecified internal error.
+              NOTE: Please try and be more specific.
+              If you are using this then we should probably add a new type.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>gpg-failure</literal></entry>
+            <entry>There was a GPG failure in the transaction</entry>
+          </row>
+          <row>
+            <entry><literal>package-id-invalid</literal></entry>
+            <entry>The package ID is not valid for this transaction</entry>
+          </row>
+          <row>
+            <entry><literal>package-not-installed</literal></entry>
+            <entry>
+              The package that is trying to be removed or updated is not
+              installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>no-cache</literal></entry>
+            <entry>
+              The operation is trying to read from the cache, but the cache
+              is not present or invalid
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-already-installed</literal></entry>
+            <entry>
+              The package that is trying to be installed or updated is already
+              installed
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package-download-failed</literal></entry>
+            <entry>A package failed to download correctly</entry>
+          </row>
+          <row>
+            <entry><literal>dep-resolution-failed</literal></entry>
+            <entry>Dependency resolution failed</entry>
+          </row>
+          <row>
+            <entry><literal>filter-invalid</literal></entry>
+            <entry>
+              The filter was invalid.
+              NOTE: syntax checking is done in the backend loader, so you
+              should only use this if the filter is not supported by the
+              backend.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>create-thread-failed</literal></entry>
+            <entry>Failed to create a thread</entry>
+          </row>
+          <row>
+            <entry><literal>transaction-error</literal></entry>
+            <entry>
+              There was a generic transaction error, but please give more
+              details in the description
+            </entry>
+          </row>
+          <row>
+            <entry><literal>repo-not-found</literal></entry>
+            <entry>The repository name could not be found</entry>
+          </row>
+          <row>
+            <entry><literal>cannot-remove-system-package</literal></entry>
+            <entry>
+              Could not remove a protected system package that is needed for
+              stable operation of the system
+            </entry>
+          </row>
+          <row>
+            <entry><literal>process-quit</literal></entry>
+            <entry>
+              The process was asked to quit, probably because it was cancelled
+            </entry>
+          </row>
+          <row>
+            <entry><literal>process-kill</literal></entry>
+            <entry>
+              The process was forcibly killed, probably because ignored the
+              quit request. This is probably due to it being cancelled
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="introduction-group-type">
+    <title>Group type</title>
+    <para>
+      Groups are enumerated for localisation.
+      Backends should try to put packages in different groups if possible,
+      else just don't advertise SearchGroup and the options should not be
+      shown in the UI.
+    </para>
+    <para>
+      The following group enumerated types are available, but please check
+      <literal>libpackagekit/pk-enum.h</literal> for the latest list.
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Group</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>accessibility</literal></entry>
+            <entry>Accessibility</entry>
+          </row>
+          <row>
+            <entry><literal>accessories</literal></entry>
+            <entry>Accessories</entry>
+          </row>
+          <row>
+            <entry><literal>education</literal></entry>
+            <entry>Education</entry>
+          </row>
+          <row>
+            <entry><literal>games</literal></entry>
+            <entry>Games</entry>
+          </row>
+          <row>
+            <entry><literal>graphics</literal></entry>
+            <entry>Graphics</entry>
+          </row>
+          <row>
+            <entry><literal>internet</literal></entry>
+            <entry>Internet</entry>
+          </row>
+          <row>
+            <entry><literal>office</literal></entry>
+            <entry>Office</entry>
+          </row>
+          <row>
+            <entry><literal>other</literal></entry>
+            <entry>Other</entry>
+          </row>
+          <row>
+            <entry><literal>programming</literal></entry>
+            <entry>Programming</entry>
+          </row>
+          <row>
+            <entry><literal>multimedia</literal></entry>
+            <entry>Multimedia</entry>
+          </row>
+          <row>
+            <entry><literal>system</literal></entry>
+            <entry>System</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="introduction-cancellation">
+    <title>Cancellation</title>
+    <para>
+      If you have a multipart transaction that can be aborted in one phase but
+      not another then the AllowCancel signal can be sent.
+      This allows for example the yum download to be cancelled, but not the
+      install transaction.
+      By cancelling a job all subtransactions are killed.
+    </para>
+    <para>
+      By default actions cannot be cancelled unless enabled in the backend.
+      Use <literal>AllowCancel(true)</literal> to enable cancellation
+      and <literal>AllowCancel(false)</literal> to disable it.
+      This can be done for any job type.
+    </para>
+    <para>
+      For compiled backends that are threaded, the
+      <literal>cancel()</literal> method can be used to terminate
+      the thread.
+    </para>
+    <para>
+      For spawned backends, there are two staggered signals send to allow
+      locks to be released or for the backend to clean up after itself:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>Send the process <literal>SIGQUIT</literal>.</para>
+      </listitem>
+      <listitem>
+        <para>Wait 500ms</para>
+      </listitem>
+      <listitem>
+        <para>
+          If the process has not already quit, send the process
+          <literal>SIGKILL</literal> to terminate it.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect1>
+
+  <sect1 id="introduction-ideas-transactionid">
+    <title>Transaction ID</title>
+    <para>
+      A <literal>transaction_id</literal> is a unique identifier that
+      identifies the present or past transaction.
+      A transaction is made up of one or more sub-transactions.
+      A transaction has one <literal>role</literal> for the entire lifetime,
+      but the transaction can different values of <literal>status</literal>
+      as the transaction is processed.
+    </para>
+    <para>
+      For example, if the user "Installed OpenOffice" and the backend has to:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          update libxml2 as a dependency
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install java as dependency
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install openoffice-bin
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install openoffice-clipart
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      This is one single transaction with the role <literal>install</literal>,
+      with 4 different sub-transactions.
+      This allows the user to rollback transactions with selected backends,
+      rather than select sub-transactions which may need complex conflict
+      resolution.
+    </para>
+    <para>
+      The <literal>transaction_id</literal> must be of the format
+      <literal>job;identifier;data</literal> where the daemon controls
+      all parameters.
+      <literal>job</literal> is a monotonically updating number and is
+      retained over reboots.
+      <literal>identifier</literal> is random data used by the daemon to
+      ensure jobs started in parallel cannot race, and also to make a
+      malicious client program harder to write.
+      <literal>data</literal> can be used for ref-counting in the backend or
+      for any other purpose.
+      It is designed to make the life of a backend writer a little bit easier.
+      An example <literal>transaction_id</literal> would be
+      <literal>45;dafeca;checkpoint32</literal>
+    </para>
+  </sect1>
+</chapter>
+
