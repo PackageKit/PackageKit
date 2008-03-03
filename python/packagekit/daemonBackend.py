@@ -599,8 +599,19 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doRepoSetData( repoid, parameter, value)
         sys.exit(0)
 
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def InstallPublicKey(self, keyurl):
+        '''
+        Implement the {backend}-install-public-key functionality
+        '''
+        pklog.info("InstallPublicKey(%s)" % keyurl)
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doInstallPublicKey(keyurl)
+        sys.exit(0)
 
-                    
 #
 # Utility methods
 #

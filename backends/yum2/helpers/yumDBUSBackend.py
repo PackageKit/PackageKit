@@ -35,11 +35,12 @@ from packagekit.enums import *
 from packagekit.daemonBackend import PackagekitProgress
 import yum
 from urlgrabber.progress import BaseMeter,format_time,format_number
+import urlgrabber
 from yum.rpmtrans import RPMBaseCallback
 from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
-from yum.misc import prco_tuple_to_string, unique
+from yum.misc import prco_tuple_to_string, unique, keyInstalled, procgpgkey, getgpgkeyinfo, keyIdToRPMVer
 
 import dbus
 import dbus.service
@@ -897,7 +898,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         showDesc = (showdesc == 'yes' or showdesc == 'only' )
         showPkg = (showdesc != 'only')
-        print showDesc,showPkg
         try:
             fltlist = filters.split(';')
             available = []
@@ -1022,6 +1022,63 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
+        self._unlock_yum()
+        self.Finished(EXIT_SUCCESS)
+
+    def doInstallPublicKey(self, keyurl):
+        '''
+        Implement the {backend}-install-public-key functionality
+        '''
+        self._check_init()
+        self._lock_yum()
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+
+        # Go get the GPG key from the given URL
+        try:
+            rawkey = urlgrabber.urlread(keyurl, limit=9999)
+        except urlgrabber.grabber.URLGrabError, e:
+            self.ErrorCode(ERROR_GPG_FAILURE, 'GPG key retrieval failed: ' +
+                           str(e))
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+            return
+
+        self.PercentageChanged(50)
+
+        keyinfo = {}
+        # Parse the key
+        try:
+            keyinfo = getgpgkeyinfo(rawkey)
+        except ValueError, e:
+            raise Errors.YumBaseError, \
+                      'GPG key parsing failed: ' + str(e)
+
+        keyinfo['keyurl'] = keyurl
+        keyinfo['hexkeyid'] = keyIdToRPMVer(keyinfo['keyid']).upper()
+
+        ts = rpmUtils.transaction.TransactionWrapper(self.yumbase.conf.installroot)
+
+        # Check if key is already installed
+        if keyInstalled(ts, keyinfo['keyid'], keyinfo['timestamp']) >= 0:
+            self.ErrorCode(ERROR_GPG_FAILURE, "GPG key at %s (0x%s) is already installed" %
+                           (keyinfo['keyurl'], keyinfo['hexkeyid']))
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+            return
+
+        self.PercentageChanged(75)
+
+        # Import the key
+        result = ts.pgpImportPubkey(procgpgkey(rawkey))
+        if result != 0:
+            self.ErrorCode(ERROR_GPG_FAILURE, 'GPG key import failed (code %d)' % result)
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+            return
+
+        self.PercentageChanged(100)
+                           
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
