@@ -30,16 +30,16 @@ from types import FunctionType
 from packagekit.frontend import *
 
 class pkt(PackageKit):
-	def ProgressChanged(self,jid,percent, elapsed, remaining):
+	def ProgressChanged(self,tid,percent, elapsed, remaining):
 		print "Progress: %.2f%%"%percent, elapsed, remaining
 
-	def JobStatus(self,jid,type):
+	def JobStatus(self,tid,type):
 		print "Job type: %s"%type
 
-	def Package(self,jid,value,name,summary):
+	def Package(self,tid,info,type,name,summary):
 		print "Package: %s - %s"%(name,summary)
 
-	def Description(self,jid,package_id,license,group,detail,url,size,file_list):
+	def Description(self,tid,package_id,license,group,detail,url,size,file_list):
 		print "Package: %s" % package_id
 		print "  %s" % url
 		print "  %s" % detail
@@ -48,19 +48,19 @@ class pkt(PackageKit):
 		for file in file_list.split(";"):
 			print "    %s" % file
 
-	def Transaction(self,jid,old_jid,timespec,succeeded,role,duration):
+	def Transaction(self,tid,old_tid,timespec,succeeded,role,duration):
 		success = "Failed"
 		if succeeded:
 			success = "Successful"
 
-		print "Transaction: %s\n" % old_jid,
+		print "Transaction: %s\n" % old_tid,
 		print "  %s" % role
 		print "  %s" % timespec
 		print "  %s seconds" % duration
 		print "  %s" % success
 	
 	def ErrorCode(self,
-			jid,        # Job ID
+			tid,        # Job ID
 			error_code, # enumerated - see pk-enum.c in PackageKit source
 			details     # non-localized details
 			):

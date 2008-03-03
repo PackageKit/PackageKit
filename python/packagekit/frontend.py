@@ -38,13 +38,13 @@ class PackageKit(PackageKitDbusInterface):
 	def tid(self):
 		return self.pk_iface.GetTid()
 
-	def job_id(func):
+	def transaction_id(func):
 		def wrapper(*args,**kwargs):
-			jid = func(*args,**kwargs)
-			if jid == -1:
+			tid = func(*args,**kwargs)
+			if tid == -1:
 				raise PackageKitTransactionFailure
 			else:
-				return jid
+				return tid
 		return wrapper
 
 	def run(self):
@@ -60,7 +60,7 @@ class PackageKit(PackageKitDbusInterface):
 		elif kwargs['member'] == "StatusChanged":
 			self.JobStatus(args[0], args[1])
 		elif kwargs['member'] == "Package":
-			self.Package(args[0],args[1],args[2],args[3])
+			self.Package(args[0],args[1],args[2],args[3],args[4])
 		elif kwargs['member'] == "UpdateDetail":
 			self.UpdateDetail(args[0],args[1],args[2],args[3],args[4],args[5],args[6])
 		elif kwargs['member'] == "Description":
@@ -83,14 +83,14 @@ class PackageKit(PackageKitDbusInterface):
 # --- PK Signal Handlers ---
 
 	def Finished(self,
-			jid,          # Job ID
+			tid,          # Transaction ID
 			status,       # enum - unknown, success, failed, canceled
 			running_time  # amount of time transaction has been running in seconds
 			):
 		pass
 
 	def ProgressChanged(self,
-			jid,        # Job ID
+			tid,        # Transaction ID
 			percent,    # 0.0 - 100.0
 			elapsed,	# time
 			remaining	# time
@@ -98,21 +98,22 @@ class PackageKit(PackageKitDbusInterface):
 		pass
 
 	def JobStatus(self,
-			jid,        # Job ID
+			tid,        # Transaction ID
 			status      # enum - invalid, setup, download, install, update, exit
 			):
 		pass
 
 	def Package(self,
-			jid,        # Job ID
-			value,      # installed=1, not-installed=0 | security=1, normal=0
+			tid,        # Transaction ID
+			info,
+			type,
 			package_id,
 			package_summary
 			):
 		pass
 
 	def UpdateDetail(self,
-			 jid,        # Job ID
+			 tid,        # Transaction ID
 			 package_id,
 			 updates,
 			 obsoletes,
@@ -123,7 +124,7 @@ class PackageKit(PackageKitDbusInterface):
 		pass
 
 	def Description(self,
-			jid,        # Job ID
+			tid,        # Transaction ID
 			package_id,
 			license,
 			group,
@@ -135,22 +136,22 @@ class PackageKit(PackageKitDbusInterface):
 		pass
 
 	def ErrorCode(self,
-			jid,        # Job ID
+			tid,        # Transaction ID
 			error_code, # enumerated - see pk-enum.c in PackageKit source
 			details     # non-localized details
 			):
 		pass
 
 	def RequireRestart(self,
-			jid,        # Job ID
+			tid,        # Transaction ID
 			type,       # enum - system,application,session
 			details     # non-localized details
 			):
 		pass
 
 	def Transaction(self,
-			jid,       # Job ID
-			old_jid,   # Old Job ID
+			tid,       # Transaction ID
+			old_tid,   # Old Job ID
 			timespec,  # Time (2007-09-27T15:29:22Z)
 			succeeded, # 1 or 0
 			role,      # enum, see task_role in pk-enum.c
@@ -163,7 +164,7 @@ class PackageKit(PackageKitDbusInterface):
 ## Start a new transaction to do Foo
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetUpdates(self):
 		"""
 		Lists packages which could be updated.
@@ -172,7 +173,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetUpdates(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def RefreshCache(self,force=False):
 		"""
 		Refreshes the backend's cache.
@@ -180,7 +181,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.RefreshCache(self.tid(),force)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def UpdateSystem(self):
 		"""
 		Applies all available updates.
@@ -189,7 +190,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.UpdateSystem(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def Resolve(self,package_name,filter="none"):
 		"""
 		Finds a package with the given name, and gives back a Package that matches that name exactly
@@ -198,7 +199,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.Resolve(self.tid(),filter,package_name)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def SearchName(self,pattern,filter="none"):
 		"""
 		Searches the 'Name' field for something matching 'pattern'.
@@ -208,7 +209,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.SearchName(self.tid(),filter,pattern)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def SearchDetails(self,pattern,filter="none"):
 		"""
 		Searches the 'Details' field for something matching 'pattern'.
@@ -218,7 +219,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.SearchDetails(self.tid(),filter,pattern)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def SearchGroup(self,pattern,filter="none"):
 		"""
 		Lists all packages in groups matching 'pattern'.
@@ -229,7 +230,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.SearchGroup(self.tid(),filter,pattern)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def SearchFile(self,pattern,filter="none"):
 		"""
 		Lists all packages that provide a file matching 'pattern'.
@@ -239,7 +240,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.SearchFile(self.tid(),filter,pattern)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetDepends(self,package_id,recursive=False):
 		"""
 		Lists package dependancies?
@@ -248,7 +249,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetDepends(self.tid(),package_id,recursive)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetRequires(self,package_id,recursive):
 		"""
 		Lists package dependancies?
@@ -257,7 +258,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetRequires(self.tid(),package_id,recursive)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetUpdateDetail(self,package_id):
 		"""
 		More details about an update.
@@ -266,7 +267,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetUpdateDetail(self.tid(),package_id)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetDescription(self,package_id):
 		"""
 		Gets the Description of a given package_id.
@@ -275,7 +276,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetDescription(self.tid(),package_id)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def RemovePackage(self,package_id,allow_deps=False ):
 		"""
 		Removes a package.
@@ -284,7 +285,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.RemovePackage(self.tid(),package_id,allow_deps)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def InstallPackage(self,package_id):
 		"""
 		Installs a package.
@@ -293,7 +294,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.InstallPackage(self.tid(),package_id)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def UpdatePackage(self,package_id):
 		"""
 		Updates a package.
@@ -302,7 +303,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.UpdatePackage(self.tid(),package_id)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def InstallFile(self,full_path):
 		"""
 		Installs a package which provides given file?
@@ -311,7 +312,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.InstallFile(self.tid(),full_path)
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def ServicePack(self,location):
 		"""
 		Updates a service pack from a location
@@ -321,7 +322,7 @@ class PackageKit(PackageKitDbusInterface):
 
 ## Do things or query transactions
 	@dbusException
-	@job_id
+	@transaction_id
 	def Cancel(self):
 		"""
 		Might not succeed for all manner or reasons.
@@ -330,7 +331,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.Cancel(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetStatus(self):
 		"""
 		This is what the transaction is currrently doing, and might change.
@@ -340,7 +341,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetStatus(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetRole(self):
 		"""
 		This is the master role, i.e. won't change for the lifetime of the transaction
@@ -350,7 +351,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetRole(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetPercentage(self):
 		"""
 		Returns percentage of transaction complete
@@ -359,7 +360,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetPercentage(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetSubPercentage(self):
 		"""
 		Returns percentage of this part of transaction complete
@@ -368,7 +369,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetSubPercentage(self.tid())
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetPackage(self):
 		"""
 		Returns package being acted upon at this very moment
@@ -386,7 +387,7 @@ class PackageKit(PackageKitDbusInterface):
 		return self.pk_iface.GetTransactionList()
 
 	@dbusException
-	@job_id
+	@transaction_id
 	def GetOldTransactions(self,number=5):
 		"""
 		Causes Transaction signals for each Old transaction.
