@@ -1255,14 +1255,58 @@ pk_backend_dbus_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
+static GMainLoop *loop;
+static guint number_packages = 0;
+static guint hang_loop_id = 0;
+
+/**
+ * pk_backend_dbus_test_finished_cb:
+ **/
+static void
+pk_backend_dbus_test_finished_cb (PkBackend *backend, PkExitEnum exit, PkBackendDbus *backend_dbus)
+{
+	/* disable the loop watch */
+	if (hang_loop_id != 0) {
+		g_source_remove (hang_loop_id);
+		hang_loop_id = 0;
+	}
+	g_main_loop_quit (loop);
+}
+
+/**
+ * pk_backend_dbus_test_package_cb:
+ **/
+static void
+pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
+				 const gchar *package_id, const gchar *summary,
+				 PkBackendDbus *backend_dbus)
+{
+	number_packages++;
+}
+
+/**
+ * pk_backend_dbus_test_hang_check:
+ **/
+static gboolean
+pk_backend_dbus_test_hang_check (gpointer data)
+{
+	g_main_loop_quit (loop);
+	return FALSE;
+}
+
 void
 libst_backend_dbus (LibSelfTest *test)
 {
 	PkBackendDbus *backend_dbus;
+	gboolean ret;
+	gdouble time;
+	GTimer *timer;
 
 	if (libst_start (test, "PkBackendDbus", CLASS_AUTO) == FALSE) {
 		return;
 	}
+	timer = g_timer_new ();
+	loop = g_main_loop_new (NULL, FALSE);
 
 	/************************************************************/
 	libst_title (test, "get an backend_dbus");
@@ -1273,6 +1317,90 @@ libst_backend_dbus (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/* so we can spin until we finish */
+	g_signal_connect (backend_dbus->priv->backend, "finished",
+			  G_CALLBACK (pk_backend_dbus_test_finished_cb), backend_dbus);
+	/* so we can count the returned packages */
+	g_signal_connect (backend_dbus->priv->backend, "package",
+			  G_CALLBACK (pk_backend_dbus_test_package_cb), backend_dbus);
+
+	/* needed to avoid an error */
+	pk_backend_set_name (backend_dbus->priv->backend, "test_dbus");
+	pk_backend_lock (backend_dbus->priv->backend);
+
+	/************************************************************/
+	libst_title (test, "set the name and activate");
+	g_timer_reset (timer);
+	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
+	time = g_timer_elapsed (timer, NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wimp out until fork works */
+	goto chicken_out;
+
+	/************************************************************/
+	libst_title (test, "check we actually did something and didn't fork");
+	if (time > 0.0002) {
+		libst_success (test, "time = %lfs", time);
+	} else {
+		libst_failed (test, "time = %lfs", time);
+	}
+
+	/* hang check */
+	hang_loop_id = g_timeout_add (5000, pk_backend_dbus_test_hang_check, backend_dbus);
+
+	/************************************************************/
+	libst_title (test, "search by name");
+	g_timer_reset (timer);
+	ret = pk_backend_dbus_search_file (backend_dbus, "none", "power");
+	time = g_timer_elapsed (timer, NULL);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we forked and didn't block");
+	if (time < 0.1) {
+		libst_success (test, "time = %lfs", time);
+	} else {
+		libst_failed (test, "time = %lfs", time);
+	}
+
+
+	/* wait for finished */
+	g_main_loop_run (loop);
+
+	/************************************************************/
+	libst_title (test, "did we finish in the timeout");
+	if (hang_loop_id != 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "hangcheck saved us");
+	}
+
+	/* disable hang check */
+	if (hang_loop_id != 0) {
+		g_source_remove (hang_loop_id);
+		hang_loop_id = 0;
+	}
+
+	/************************************************************/
+	libst_title (test, "test number of packages");
+	if (number_packages == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %i", number_packages);
+	}
+
+chicken_out:
+	g_timer_destroy (timer);
+	g_main_loop_unref (loop);
 	g_object_unref (backend_dbus);
 
 	libst_end (test);
