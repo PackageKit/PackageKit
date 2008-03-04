@@ -12,5 +12,5 @@ else
 fi
 export G_DEBUG=fatal_criticals
 killall packagekitd
-./packagekitd --verbose --disable-timer --backend=$BACKEND | tee debug.log
+./packagekitd --verbose --disable-timer --backend=$BACKEND
 
