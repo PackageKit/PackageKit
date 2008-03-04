@@ -607,7 +607,7 @@ libst_spawn (LibSelfTest *test)
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
 	/* wait for finished */
-	libst_loopwait (test, 2000);
+	libst_loopwait (test, 5000);
 	libst_loopcheck (test);
 
 	/************************************************************/
