@@ -42,6 +42,17 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
+ * pk_backend_cancel:
+ */
+static void
+backend_cancel (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (dbus != NULL);
+	pk_backend_dbus_cancel (dbus);
+}
+
+/**
  * backend_initialize:
  * This should only be run once per backend load, i.e. not every transaction
  */
@@ -74,7 +85,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	NULL,					/* get_groups */
 	NULL,					/* get_filters */
-	NULL,					/* cancel */
+	backend_cancel,				/* cancel */
 	NULL,					/* get_depends */
 	NULL,					/* get_description */
 	NULL,					/* get_files */

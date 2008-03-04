@@ -46,6 +46,19 @@ enum filters {
 	PKG_NOT_GUI = 32
 };
 
+enum {
+	SEARCH_NAME,
+	SEARCH_DESCRIPTION,
+	SEARCH_TAG
+};
+
+/* parameters passed to the search thread */
+typedef struct {
+	gint search_type;
+	gchar *needle;
+	gint filter;
+} SearchParams;
+
 /* global config structures */
 static opkg_conf_t global_conf;
 static args_t args;
@@ -473,7 +486,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_search_name:
  */
 static gboolean
-backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
+backend_search_thread (PkBackendThread *thread, SearchParams *params)
 {
 	int i;
 	pkg_vec_t *available;
@@ -485,18 +498,42 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 
-	search = params[0];
-	filter = GPOINTER_TO_INT (params[1]);
+	search = params->needle;
+	filter = params->filter;
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
 	for (i=0; i < available->len; i++) {
 		char *uid;
 		gint status;
+		gchar *version;
 
 		pkg = available->pkgs[i];
-		if (!g_strrstr (pkg->name, search))
+
+		if (params->search_type == SEARCH_NAME
+				&& !g_strrstr (pkg->name, search))
 			continue;
+
+		else if (params->search_type == SEARCH_DESCRIPTION)
+		{
+			gchar *needle, *haystack;
+			gboolean match;
+
+			needle = g_utf8_strdown (search, -1);
+			haystack = g_utf8_strdown (pkg->description, -1);
+			match = (g_strrstr (haystack, needle) != NULL);
+			g_free (needle);
+			g_free (haystack);
+
+			if (!match)
+				continue;
+		}
+
+		else if (params->search_type == SEARCH_TAG
+				&&
+				(!pkg->tags || !g_strrstr (pkg->tags, search)))
+			continue;
+
 		if ((filter & PKG_DEVEL) && !opkg_is_devel_pkg (pkg))
 			continue;
 		if ((filter & PKG_NOT_DEVEL) && opkg_is_devel_pkg (pkg))
@@ -510,8 +547,10 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 		if ((filter & PKG_NOT_INSTALLED) && (pkg->state_status != SS_NOT_INSTALLED))
 			continue;
 
+		version = pkg_version_str_alloc (pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			pkg->name, pkg->version, pkg->architecture);
+			pkg->name, version, pkg->architecture);
+		g_free (version);
 
 		if (pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
@@ -524,31 +563,70 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 	pkg_vec_free(available);
 	pk_backend_finished (backend);
 
+	g_free (params->needle);
 	g_free (params);
-	g_free (search);
 	return TRUE;
 }
 
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	gint filter_enum;
-	gpointer *params;
+	SearchParams *params;
 
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	filter_enum = parse_filter (filter);
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_DESCRIPTION;
+	params->needle = g_strdup (search);
 
-	/* params is a small array we can pack our thread parameters into */
-	params = g_new0 (gpointer, 2);
-	params[0] = g_strdup (search);
-	params[1] = GINT_TO_POINTER (filter_enum);
-
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_name_thread, params);
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
 }
+
+/**
+ * backend_search_description:
+ */
+static void
+backend_search_description (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	SearchParams *params;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_DESCRIPTION;
+	params->needle = g_strdup (search);
+
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+}
+
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	SearchParams *params;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_TAG;
+	params->needle = g_strdup_printf ("group::%s", search);
+
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+}
+
+
+
 
 static void
 pk_opkg_install_progress_cb (int percent, char* url)
@@ -593,7 +671,9 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_install_package_thread,
 		g_strdup (package_id));
@@ -749,6 +829,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 		GMatchInfo *match_info = NULL;
 		gchar *uid = NULL, *pkg_name = NULL, *pkg_v = NULL, *pkg_req = NULL;
 		gint status;
+		gchar *version;
 
 		/* find the package by name and select the package with the
 		 * latest version number
@@ -782,8 +863,11 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 		g_free (pkg_req);
 		g_free (pkg_v);
 
+		version = pkg_version_str_alloc (d_pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			d_pkg->name, d_pkg->version, d_pkg->architecture);
+			d_pkg->name, version, d_pkg->architecture);
+		g_free (version);
+
 		if (d_pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
 		else
@@ -892,6 +976,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		gchar *uid;
 		pkg_t *pkg, *best_pkg;
 		gint status;
+		gchar *version;
 
 		pkg = installed->pkgs[i];
 		best_pkg = pkg_hash_fetch_best_installation_candidate_by_name (&global_conf, pkg->name);
@@ -904,8 +989,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		if (pkg_compare_versions (best_pkg, pkg) <= 0)
 			continue;
 
+		version = pkg_version_str_alloc (pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			pkg->name, pkg->version, pkg->architecture);
+			pkg->name, version, pkg->architecture);
+		g_free (version);
 
 		if (pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
@@ -950,79 +1037,6 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 			);
 }
 
-/**
- * backend_search_group:
- */
-static gboolean
-backend_search_group_thread (PkBackendThread *thread, gpointer params[2])
-{
-	int i;
-	pkg_vec_t *available;
-	pkg_t *pkg;
-	gint filter;
-	gchar *group;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
-
-	group = params[0];
-	filter = GPOINTER_TO_INT (params[1]);
-
-	available = pkg_vec_alloc();
-	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
-	for (i=0; i < available->len; i++) {
-		gchar *tag;
-
-		pkg = available->pkgs[i];
-		tag = g_strdup_printf ("group::%s", group);
-
-		if (opkg_check_tag (pkg, tag)) {
-			gchar *uid;
-			gint status;
-
-			uid = g_strdup_printf ("%s;%s;%s;",
-				pkg->name, pkg->version, pkg->architecture);
-
-			if (pkg->state_status == SS_INSTALLED)
-				status = PK_INFO_ENUM_INSTALLED;
-			else
-				status = PK_INFO_ENUM_AVAILABLE;
-
-			pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, pkg->description);
-		}
-	}
-
-	pkg_vec_free(available);
-	pk_backend_finished (backend);
-
-	g_free (group);
-	g_free (params);
-	return TRUE;
-}
-
-static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	gpointer *params;
-	gint filter_enum;
-
-	g_return_if_fail (backend != NULL);
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
-
-	filter_enum = parse_filter (filter);
-
-	/* params is a small array we can pack our thread parameters into */
-	params = g_new0 (gpointer, 2);
-	params[0] = g_strdup (search);
-	params[1] = GINT_TO_POINTER (filter_enum);
-
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_group_thread, params);
-
-}
-
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
@@ -1044,7 +1058,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
+	backend_search_description,		/* search_details */
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */

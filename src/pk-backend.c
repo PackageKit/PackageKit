@@ -204,7 +204,8 @@ pk_backend_lock (PkBackend *backend)
 
 	if (backend->priv->locked == TRUE) {
 		pk_warning ("already locked");
-		return FALSE;
+		/* we don't return FALSE here, as the action didn't fail */
+		return TRUE;
 	}
 	if (backend->desc->initialize != NULL) {
 		backend->priv->during_initialize = TRUE;
@@ -226,7 +227,8 @@ pk_backend_unlock (PkBackend *backend)
 
 	if (backend->priv->locked == FALSE) {
 		pk_warning ("already unlocked");
-		return FALSE;
+		/* we don't return FALSE here, as the action didn't fail */
+		return TRUE;
 	}
 	if (backend->desc == NULL) {
 		pk_warning ("not yet loaded backend, try pk_backend_lock()");
@@ -776,6 +778,8 @@ static gboolean
 pk_backend_error_timeout_delay_cb (gpointer data)
 {
 	PkBackend *backend = PK_BACKEND (data);
+	PkMessageEnum message;
+	const gchar *buffer;
 
 	/* check we have not already finished */
 	if (backend->priv->finished == TRUE) {
@@ -783,9 +787,14 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 		return FALSE;
 	}
 
-	/* warn the developer */
-	pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-			    "ErrorCode() has to be followed with Finished()!");
+	/* warn the backend developer that they've done something worng
+	 * - we can't use pk_backend_message here as we have already set
+	 * backend->priv->set_error to TRUE and hence the message would be ignored */
+	message = PK_MESSAGE_ENUM_DAEMON;
+	buffer = "ErrorCode() has to be followed with Finished()!";
+	pk_debug ("emit message %i, %s", message, buffer);
+	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
+
 	pk_backend_finished (backend);
 	return FALSE;
 }
@@ -1370,10 +1379,10 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "lock a backend again");
 	ret = pk_backend_lock (backend);
-	if (ret == FALSE) {
+	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "locked twice");
+		libst_failed (test, "locked twice should succeed");
 	}
 
 	/************************************************************/
@@ -1405,10 +1414,10 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "unlock an valid backend again");
 	ret = pk_backend_unlock (backend);
-	if (ret == FALSE) {
+	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "unlocked twice");
+		libst_failed (test, "unlocked twice, should succeed");
 	}
 
 	/************************************************************/
@@ -1417,6 +1426,14 @@ libst_backend (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "we did not clear finish!");
+	}
+
+	/************************************************************/
+	libst_title (test, "check we have no error");
+	if (backend->priv->set_error == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "an error has already been set");
 	}
 
 	pk_backend_lock (backend);
@@ -1446,7 +1463,7 @@ libst_backend (LibSelfTest *test)
 	/* wait for finished */
 	g_main_loop_run (loop);
 
-	if (number_messages == 2) {
+	if (number_messages == 1) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "we messaged %i times!", number_messages);
