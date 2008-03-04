@@ -79,11 +79,11 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 
 	/* always in light green */
 	pk_set_console_mode (CONSOLE_GREEN);
-	fprintf (stdout, "TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n", str_time, thread, file, func, line);
+	printf ("TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n", str_time, thread, file, func, line);
 
 	/* different colours according to the severity */
 	pk_set_console_mode (color);
-	fprintf (stdout, " - %s\n", buffer);
+	printf (" - %s\n", buffer);
 	pk_set_console_mode (CONSOLE_RESET);
 
 	/* flush this output, as we need to debug */
@@ -132,7 +132,7 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	fprintf (stderr, "*** WARNING ***\n");
+	printf ("*** WARNING ***\n");
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
@@ -152,7 +152,7 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	fprintf (stderr, "*** ERROR ***\n");
+	printf ("*** ERROR ***\n");
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
 
