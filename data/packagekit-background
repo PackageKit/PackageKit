@@ -1,15 +1,11 @@
 # Don't install, just check (valid: yes|no)
 CHECK_ONLY=no
 
-# if MAILTO is set, the mail command is used to deliver yum output
+# if MAILTO is set, the mail command is used to deliver PackageKit output
 # by default MAILTO is unset, so crond mails the output by itself
 #MAILTO=root
 
-# you may set SYSTEMNAME if you want your yum emails tagged differently
+# you may set SYSTEMNAME if you want your PackageKit emails tagged differently
 # default is output of hostname command
 #SYSTEM_NAME=""
-
-# you may set DAYS_OF_WEEK to the days of the week you want to run
-# default is every day
-#DAYS_OF_WEEK="0123456"
 

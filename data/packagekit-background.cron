@@ -14,13 +14,6 @@
 # set default for SYSTEMNAME
 [ -z "$SYSTEMNAME" ]  && SYSTEMNAME=$(hostname)
 
-# only run on certain days of the week
-dow=`date +%w`
-DAYS_OF_WEEK=${DAYS_OF_WEEK:-0123456}
-if [ ${DAYS_OF_WEEK/$dow/} == ${DAYS_OF_WEEK} ]; then
- 	exit 0
-fi
-
 PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
 
 # wait a random amount of time to avoid hammering the servers
