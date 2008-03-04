@@ -56,6 +56,7 @@ class PackageKitTestBackendService(PackageKitBaseBackend):
 
     def doSearchName(self, filters, search):
         print "SearchName (%s, %s)" % (filters, search)
+        self.AllowCancel(True)
         self.StatusChanged(STATUS_QUERY)
         self.Package(INFO_AVAILABLE, "foo;0.0.1;i398;fedora", "Foo")
         time.sleep(10)

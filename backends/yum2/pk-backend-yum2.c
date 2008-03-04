@@ -111,7 +111,6 @@ backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	/* this feels bad... */
 	pk_backend_dbus_cancel (dbus);
 }
 
