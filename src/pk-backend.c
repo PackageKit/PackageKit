@@ -290,6 +290,12 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	/* set the same twice? */
 	if (backend->priv->last_percentage == percentage) {
 		pk_debug ("duplicate set of %i", percentage);
@@ -343,6 +349,12 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	/* set the same twice? */
 	if (backend->priv->last_subpercentage == percentage) {
 		pk_debug ("duplicate set of %i", percentage);
@@ -373,6 +385,12 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	/* set the same twice? */
 	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
 		pk_debug ("duplicate set of %i", PK_BACKEND_PERCENTAGE_INVALID);
@@ -396,6 +414,12 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	/* already this? */
 	if (backend->priv->status == status) {
@@ -432,6 +456,12 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, const 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	/* we automatically set the transaction status for some infos */
 	if (info == PK_INFO_ENUM_DOWNLOADING) {
@@ -496,6 +526,12 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	/* check for common mistakes */
 	pk_backend_check_newlines (backend, update_text);
 
@@ -543,6 +579,12 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	pk_debug ("emit require-restart %i, %s", restart, details);
 	g_signal_emit (backend, signals [PK_BACKEND_REQUIRE_RESTART], 0, restart, details);
 
@@ -561,6 +603,12 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
@@ -586,6 +634,12 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	pk_debug ("emit change-transaction-data %s", data);
 	g_signal_emit (backend, signals [PK_BACKEND_CHANGE_TRANSACTION_DATA], 0, data);
 	return TRUE;
@@ -604,6 +658,12 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	/* check for common mistakes */
 	pk_backend_check_newlines (backend, description);
@@ -631,6 +691,12 @@ pk_backend_files (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	pk_debug ("emit files %s, %s", package_id, filelist);
 	g_signal_emit (backend, signals [PK_BACKEND_FILES], 0,
@@ -666,6 +732,12 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
 	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %i",
 		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED], 0,
@@ -683,6 +755,12 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
@@ -765,6 +843,12 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error == TRUE) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
 
 	/* remove or add the hal inhibit */
 	if (allow_cancel == TRUE) {
