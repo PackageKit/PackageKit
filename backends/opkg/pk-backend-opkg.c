@@ -205,6 +205,22 @@ opkg_vec_find_latest (pkg_vec_t *vec)
 }
 
 
+
+/**
+ * opkg_check_tag:
+ * check a tag name and value on a package
+ *
+ * returns true if the tag is present
+ */
+gboolean
+opkg_check_tag (pkg_t *pkg, gchar *tag)
+{
+	if (pkg->tags && tag)
+		return (g_strrstr (pkg->tags, tag) != NULL);
+	else
+		return FALSE;
+}
+
 /**
  * parse_filter:
  */
@@ -934,6 +950,80 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 			);
 }
 
+/**
+ * backend_search_group:
+ */
+static gboolean
+backend_search_group_thread (PkBackendThread *thread, gpointer params[2])
+{
+	int i;
+	pkg_vec_t *available;
+	pkg_t *pkg;
+	gint filter;
+	gchar *group;
+	PkBackend *backend;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
+	group = params[0];
+	filter = GPOINTER_TO_INT (params[1]);
+
+	available = pkg_vec_alloc();
+	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
+	for (i=0; i < available->len; i++) {
+		gchar *tag;
+
+		pkg = available->pkgs[i];
+		tag = g_strdup_printf ("group::%s", group);
+
+		if (opkg_check_tag (pkg, tag)) {
+			gchar *uid;
+			gint status;
+
+			uid = g_strdup_printf ("%s;%s;%s;",
+				pkg->name, pkg->version, pkg->architecture);
+
+			if (pkg->state_status == SS_INSTALLED)
+				status = PK_INFO_ENUM_INSTALLED;
+			else
+				status = PK_INFO_ENUM_AVAILABLE;
+
+			pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, pkg->description);
+		}
+	}
+
+	pkg_vec_free(available);
+	pk_backend_finished (backend);
+
+	g_free (group);
+	g_free (params);
+	return TRUE;
+}
+
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	gpointer *params;
+	gint filter_enum;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	filter_enum = parse_filter (filter);
+
+	/* params is a small array we can pack our thread parameters into */
+	params = g_new0 (gpointer, 2);
+	params[0] = g_strdup (search);
+	params[1] = GINT_TO_POINTER (filter_enum);
+
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_group_thread, params);
+
+}
+
+
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
 	"Thomas Wood <thomas@openedhand.com>",	/* author */
@@ -956,7 +1046,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
-	NULL,					/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	backend_update_package,			/* update_package */
 	backend_update_system,			/* update_system */
