@@ -1221,9 +1221,6 @@ void
 libst_runner (LibSelfTest *test)
 {
 	PkRunner *runner;
-	GTimer *timer;
-
-	timer = g_timer_new ();
 
 	if (libst_start (test, "PkRunner", CLASS_AUTO) == FALSE) {
 		return;
@@ -1238,7 +1235,6 @@ libst_runner (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
-	g_timer_destroy (timer);
 	g_object_unref (runner);
 
 	libst_end (test);
