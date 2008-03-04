@@ -312,7 +312,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param key: key to seach for
         '''
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
-        self.yumbase.conf.cache = 1 # Only look in cache.
         try:
             res = self.yumbase.searchGenerator(searchlist, [key])
             fltlist = filters.split(';')
@@ -331,7 +330,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     available.append(pkg)
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
 
         # Now show available packages.
         if FILTER_INSTALLED not in fltlist:
@@ -373,7 +373,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     return True
             return False
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
@@ -401,6 +402,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -412,6 +414,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -441,6 +444,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
@@ -476,7 +480,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_AVAILABLE)
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
 
     def get_packages(self,filters,showdesc='no'):
         '''
@@ -512,13 +517,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showDesc:
                             self._show_description(pkg)
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
 
     
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
@@ -582,6 +589,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -672,6 +680,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of depends for a given package
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -698,6 +707,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(False)
         self.percentage(0)
 
@@ -746,6 +756,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        self._check_init(lazy_cache=True)
         self.allow_cancel(True);
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
@@ -772,13 +783,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg,INFO_AVAILABLE)
                             break
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
             
     def install(self, packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
+        self._check_init()
         self.allow_cancel(False)
         self.percentage(0)
         txmbrs = []
@@ -870,6 +883,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
+        self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
 
@@ -889,6 +903,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
+        self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
         txmbrs = []
@@ -970,6 +985,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
+        self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
 
@@ -990,6 +1006,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
+        self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1011,6 +1028,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                          pkg.size)
 
     def get_files(self, package):
+        self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1051,6 +1069,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-updates functionality
         '''
+        self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1066,13 +1085,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
-            self.error(ERROR_NO_CACHE,"Yum cache is invalid")
+            self._refresh_yum_cache()
+            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
                 
 
     def repo_enable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
         '''
+        self._check_init()
         self.status(STATUS_SETUP)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
@@ -1090,6 +1111,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
+        self._check_init()
         self.status(STATUS_INFO)
         for repo in self.yumbase.repos.repos.values():
             if repo.isEnabled():
@@ -1179,6 +1201,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
+        self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
@@ -1195,6 +1218,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-repo-set-data functionality
         '''
+        self._check_init()
         # Get the repo
         repo = self.yumbase.repos.getRepo(repoid)
         if repo:
@@ -1205,6 +1229,30 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,str(e))
         else:
             self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
+
+    def _check_init(self,lazy_cache=False):
+        '''Just does the caching tweaks'''
+        if lazy_cache:
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 60 * 60 * 24  # 24 hours
+                repo.mdpolicy = "group:all"
+        else:
+            for repo in self.yumbase.repos.listEnabled():
+                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
+                repo.mdpolicy = "group:primary"
+
+    def _refresh_yum_cache(self):
+        self.status(STATUS_REFRESH_CACHE)
+        old_cache_setting = self.yumbase.conf.cache
+        self.yumbase.conf.cache = 0
+        self.yumbase.repos.setCache(0)
+
+        self.yumbase.repos.populateSack(mdtype='metadata', cacheonly=1)
+        self.yumbase.repos.populateSack(mdtype='filelists', cacheonly=1)
+        self.yumbase.repos.populateSack(mdtype='otherdata', cacheonly=1)
+
+        self.yumbase.conf.cache = old_cache_setting
+        self.yumbase.repos.setCache(old_cache_setting)
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
