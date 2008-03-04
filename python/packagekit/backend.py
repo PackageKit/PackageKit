@@ -379,7 +379,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend")
 
-    def get_updates(self,filter,package):
+    def get_updates(self,filter):
         '''
         Implement the {backend}-get-updates functionality
         Needed to be implemented in a sub class
