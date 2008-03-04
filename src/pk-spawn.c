@@ -426,7 +426,6 @@ pk_spawn_new (void)
 #include <libselftest.h>
 #define BAD_EXIT 999
 
-static GMainLoop *loop;
 PkExitEnum mexit = BAD_EXIT;
 guint stdout_count = 0;
 guint stderr_count = 0;
@@ -468,7 +467,7 @@ pk_test_finished_cb (PkSpawn *spawn, PkExitEnum exit, LibSelfTest *test)
 	pk_debug ("spawn exit=%i", exit);
 	mexit = exit;
 	finished_count++;
-	g_main_loop_quit (loop);
+	libst_loopquit (test);
 }
 
 /**
@@ -527,7 +526,6 @@ libst_spawn (LibSelfTest *test)
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
-	loop = g_main_loop_new (NULL, FALSE);
 
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
@@ -558,8 +556,9 @@ libst_spawn (LibSelfTest *test)
 		libst_failed (test, "did not run helper");
 	}
 
-	/* spin for a bit, todo add timer to break out if we fail */
-	g_main_loop_run (loop);
+	/* wait for finished */
+	libst_loopwait (test, 10000);
+	libst_loopcheck (test);
 
 	/************************************************************/
 	libst_title (test, "make sure finished okay");
@@ -607,8 +606,9 @@ libst_spawn (LibSelfTest *test)
 	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* spin for a bit, todo add timer to break out if we fail */
-	g_main_loop_run (loop);
+	/* wait for finished */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGKILL");
@@ -634,8 +634,9 @@ libst_spawn (LibSelfTest *test)
 	}
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* spin for a bit, todo add timer to break out if we fail */
-	g_main_loop_run (loop);
+	/* wait for finished */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGQUIT");
@@ -659,7 +660,6 @@ libst_spawn (LibSelfTest *test)
 
 	g_object_unref (spawn);
 	g_free (path);
-	g_main_loop_unref (loop);
 
 	libst_end (test);
 }

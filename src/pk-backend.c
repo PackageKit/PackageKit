@@ -1285,7 +1285,6 @@ pk_backend_new (void)
 #include <libselftest.h>
 
 static guint number_messages = 0;
-static GMainLoop *loop;
 
 /**
  * pk_backend_test_message_cb:
@@ -1301,9 +1300,9 @@ pk_backend_test_message_cb (PkBackend *backend, PkMessageEnum message, const gch
  * pk_backend_test_finished_cb:
  **/
 static void
-pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, gpointer data)
+pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *test)
 {
-	g_main_loop_quit (loop);
+	libst_loopquit (test);
 }
 
 void
@@ -1312,8 +1311,6 @@ libst_backend (LibSelfTest *test)
 	PkBackend *backend;
 	const gchar *text;
 	gboolean ret;
-
-	loop = g_main_loop_new (NULL, FALSE);
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1329,7 +1326,7 @@ libst_backend (LibSelfTest *test)
 	}
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
-	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), NULL);
+	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
 
 	/************************************************************/
 	libst_title (test, "get backend name");
@@ -1443,7 +1440,8 @@ libst_backend (LibSelfTest *test)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	g_main_loop_run (loop);
+	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
+	libst_loopcheck (test);
 
 	if (number_messages == 1) {
 		libst_success (test, NULL);
@@ -1461,7 +1459,8 @@ libst_backend (LibSelfTest *test)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
 
 	/* wait for finished */
-	g_main_loop_run (loop);
+	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
+	libst_loopcheck (test);
 
 	if (number_messages == 1) {
 		libst_success (test, NULL);
