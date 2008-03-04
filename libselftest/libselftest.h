@@ -62,6 +62,9 @@ void		libst_failed	(LibSelfTest *test, const gchar *format, ...);
 void		libst_init	(LibSelfTest *test);
 gint		libst_finish	(LibSelfTest *test);
 guint		libst_elapsed	(LibSelfTest *test);
+void		libst_loopquit	(LibSelfTest *test);
+void		libst_loopwait	(LibSelfTest *test, guint timeout);
+void		libst_loopcheck	(LibSelfTest *test);
 
 #endif	/* __LIBSELFTEST_H */
 

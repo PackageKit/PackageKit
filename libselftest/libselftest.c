@@ -42,6 +42,44 @@ libst_init (LibSelfTest *test)
 	test->hang_loop_id = 0;
 }
 
+void
+libst_loopquit (LibSelfTest *test)
+{
+	/* disable the loop watch */
+	if (test->hang_loop_id != 0) {
+		g_source_remove (test->hang_loop_id);
+		test->hang_loop_id = 0;
+	}
+	g_main_loop_quit (test->loop);
+}
+
+static gboolean
+libst_hang_check (gpointer data)
+{
+	LibSelfTest *test = (LibSelfTest *) data;
+	g_main_loop_quit (test->loop);
+	return FALSE;
+}
+
+void
+libst_loopwait (LibSelfTest *test, guint timeout)
+{
+	test->hang_loop_id = g_timeout_add (timeout, libst_hang_check, test);
+	g_main_loop_run (test->loop);
+}
+
+void
+libst_loopcheck (LibSelfTest *test)
+{
+	guint elapsed = libst_elapsed (test);
+	libst_title (test, "did we timeout out of the loop");
+	if (test->hang_loop_id == 0) {
+		libst_success (test, "loop blocked for %ims", elapsed);
+	} else {
+		libst_failed (test, "hangcheck saved us after %ims", elapsed);
+	}
+}
+
 gint
 libst_finish (LibSelfTest *test)
 {
