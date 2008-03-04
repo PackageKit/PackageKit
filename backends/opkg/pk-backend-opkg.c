@@ -514,11 +514,22 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 				&& !g_strrstr (pkg->name, search))
 			continue;
 
-		if (params->search_type == SEARCH_DESCRIPTION
-				&& !g_strrstr (pkg->description, search))
-			continue;
+		else if (params->search_type == SEARCH_DESCRIPTION)
+		{
+			gchar *needle, *haystack;
+			gboolean match;
 
-		if (params->search_type == SEARCH_TAG
+			needle = g_utf8_strdown (search, -1);
+			haystack = g_utf8_strdown (pkg->description, -1);
+			match = (g_strrstr (haystack, needle) != NULL);
+			g_free (needle);
+			g_free (haystack);
+
+			if (!match)
+				continue;
+		}
+
+		else if (params->search_type == SEARCH_TAG
 				&&
 				(!pkg->tags || !g_strrstr (pkg->tags, search)))
 			continue;
