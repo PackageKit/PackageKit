@@ -34,6 +34,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "pk-debug.h"
@@ -49,6 +50,7 @@
 #define CONSOLE_WHITE		37
 
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
+static gboolean is_console = FALSE;
 
 /**
  * pk_set_console_mode:
@@ -57,6 +59,11 @@ void
 pk_set_console_mode (guint console_code)
 {
 	gchar command[13];
+
+	/* don't put extra commands into logs */
+	if (!is_console) {
+		return;
+	}
 	/* Command is the control command to the terminal */
 	sprintf (command, "%c[%dm", 0x1B, console_code);
 	printf ("%s", command);
@@ -132,7 +139,9 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	printf ("*** WARNING ***\n");
+	if (!is_console) {
+		printf ("*** WARNING ***\n");
+	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
@@ -152,7 +161,9 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	va_end (args);
 
 	/* do extra stuff for a warning */
-	printf ("*** ERROR ***\n");
+	if (!is_console) {
+		printf ("*** ERROR ***\n");
+	}
 	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
 
@@ -178,6 +189,10 @@ void
 pk_debug_init (gboolean debug)
 {
 	do_verbose = debug;
-	pk_debug ("Verbose debugging %s", (do_verbose) ? "enabled" : "disabled");
+	/* check if we are on console */
+	if (isatty (fileno (stdout)) == 1) {
+		is_console = TRUE;
+	}
+	pk_debug ("Verbose debugging %i (on console %i)", do_verbose, is_console);
 }
 
