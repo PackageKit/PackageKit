@@ -723,11 +723,16 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	va_start (args, format);
 	g_vsnprintf (buffer, 1024, format, args);
 	va_end (args);
+
+	/* check we are not doing Init() */
+	if (backend->priv->during_initialize) {
+		pk_warning ("set during init: %s", buffer);
+		return FALSE;
+	}
 
 	/* did we set a duplicate error? */
 	if (backend->priv->set_error == TRUE) {
@@ -851,6 +856,14 @@ pk_backend_finished (PkBackend *backend)
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* check we are not doing Init() */
+	if (backend->priv->during_initialize) {
+		pk_warning ("finished during init");
+		return FALSE;
+	}
+
+	/* safe to check now */
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* find out what we just did */
