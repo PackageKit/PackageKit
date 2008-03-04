@@ -46,6 +46,19 @@ enum filters {
 	PKG_NOT_GUI = 32
 };
 
+enum {
+	SEARCH_NAME,
+	SEARCH_DESCRIPTION,
+	SEARCH_TAG
+};
+
+/* parameters passed to the search thread */
+typedef struct {
+	gint search_type;
+	gchar *needle;
+	gint filter;
+} SearchParams;
+
 /* global config structures */
 static opkg_conf_t global_conf;
 static args_t args;
@@ -473,7 +486,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_search_name:
  */
 static gboolean
-backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
+backend_search_thread (PkBackendThread *thread, SearchParams *params)
 {
 	int i;
 	pkg_vec_t *available;
@@ -485,8 +498,8 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 
-	search = params[0];
-	filter = GPOINTER_TO_INT (params[1]);
+	search = params->needle;
+	filter = params->filter;
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
@@ -496,8 +509,20 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 		gchar *version;
 
 		pkg = available->pkgs[i];
-		if (!g_strrstr (pkg->name, search))
+
+		if (params->search_type == SEARCH_NAME
+				&& !g_strrstr (pkg->name, search))
 			continue;
+
+		if (params->search_type == SEARCH_DESCRIPTION
+				&& !g_strrstr (pkg->description, search))
+			continue;
+
+		if (params->search_type == SEARCH_TAG
+				&&
+				(!pkg->tags || !g_strrstr (pkg->tags, search)))
+			continue;
+
 		if ((filter & PKG_DEVEL) && !opkg_is_devel_pkg (pkg))
 			continue;
 		if ((filter & PKG_NOT_DEVEL) && opkg_is_devel_pkg (pkg))
@@ -527,31 +552,70 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 	pkg_vec_free(available);
 	pk_backend_finished (backend);
 
+	g_free (params->needle);
 	g_free (params);
-	g_free (search);
 	return TRUE;
 }
 
 static void
 backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	gint filter_enum;
-	gpointer *params;
+	SearchParams *params;
 
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	filter_enum = parse_filter (filter);
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_DESCRIPTION;
+	params->needle = g_strdup (search);
 
-	/* params is a small array we can pack our thread parameters into */
-	params = g_new0 (gpointer, 2);
-	params[0] = g_strdup (search);
-	params[1] = GINT_TO_POINTER (filter_enum);
-
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_name_thread, params);
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
 }
+
+/**
+ * backend_search_description:
+ */
+static void
+backend_search_description (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	SearchParams *params;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_DESCRIPTION;
+	params->needle = g_strdup (search);
+
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+}
+
+static void
+backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+{
+	SearchParams *params;
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+
+	params = g_new0 (SearchParams, 1);
+	params->filter = parse_filter (filter);
+	params->search_type = SEARCH_TAG;
+	params->needle = g_strdup_printf ("group::%s", search);
+
+	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+}
+
+
+
 
 static void
 pk_opkg_install_progress_cb (int percent, char* url)
@@ -960,82 +1024,6 @@ backend_get_groups (PkBackend *backend, PkEnumList *elist)
 			);
 }
 
-/**
- * backend_search_group:
- */
-static gboolean
-backend_search_group_thread (PkBackendThread *thread, gpointer params[2])
-{
-	int i;
-	pkg_vec_t *available;
-	pkg_t *pkg;
-	gint filter;
-	gchar *group;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
-
-	group = params[0];
-	filter = GPOINTER_TO_INT (params[1]);
-
-	available = pkg_vec_alloc();
-	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
-	for (i=0; i < available->len; i++) {
-		gchar *tag;
-
-		pkg = available->pkgs[i];
-		tag = g_strdup_printf ("group::%s", group);
-
-		if (opkg_check_tag (pkg, tag)) {
-			gchar *uid;
-			gchar *version;
-			gint status;
-
-			version = pkg_version_str_alloc (pkg);
-			uid = g_strdup_printf ("%s;%s;%s;",
-				pkg->name, version, pkg->architecture);
-			g_free (version);
-
-			if (pkg->state_status == SS_INSTALLED)
-				status = PK_INFO_ENUM_INSTALLED;
-			else
-				status = PK_INFO_ENUM_AVAILABLE;
-
-			pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, pkg->description);
-		}
-	}
-
-	pkg_vec_free(available);
-	pk_backend_finished (backend);
-
-	g_free (group);
-	g_free (params);
-	return TRUE;
-}
-
-static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
-{
-	gpointer *params;
-	gint filter_enum;
-
-	g_return_if_fail (backend != NULL);
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
-
-	filter_enum = parse_filter (filter);
-
-	/* params is a small array we can pack our thread parameters into */
-	params = g_new0 (gpointer, 2);
-	params[0] = g_strdup (search);
-	params[1] = GINT_TO_POINTER (filter_enum);
-
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_group_thread, params);
-
-}
-
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
@@ -1057,7 +1045,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
-	NULL,					/* search_details */
+	backend_search_description,		/* search_details */
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
