@@ -1299,13 +1299,11 @@ libst_backend_dbus (LibSelfTest *test)
 {
 	PkBackendDbus *backend_dbus;
 	gboolean ret;
-	gdouble time;
-	GTimer *timer;
+	guint elapsed;
 
 	if (libst_start (test, "PkBackendDbus", CLASS_AUTO) == FALSE) {
 		return;
 	}
-	timer = g_timer_new ();
 	loop = g_main_loop_new (NULL, FALSE);
 
 	/************************************************************/
@@ -1330,9 +1328,8 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "set the name and activate");
-	g_timer_reset (timer);
 	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
-	time = g_timer_elapsed (timer, NULL);
+	elapsed = libst_elapsed (test);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -1344,7 +1341,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we actually did something and didn't fork");
-	if (time > 0.0002) {
+	if (elapsed > 1) {
 		libst_success (test, "time = %lfs", time);
 	} else {
 		libst_failed (test, "time = %lfs", time);
@@ -1355,9 +1352,8 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search by name");
-	g_timer_reset (timer);
 	ret = pk_backend_dbus_search_file (backend_dbus, "none", "power");
-	time = g_timer_elapsed (timer, NULL);
+	elapsed = libst_elapsed (test);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -1366,7 +1362,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we forked and didn't block");
-	if (time < 0.1) {
+	if (elapsed < 100) {
 		libst_success (test, "time = %lfs", time);
 	} else {
 		libst_failed (test, "time = %lfs", time);
@@ -1399,7 +1395,6 @@ libst_backend_dbus (LibSelfTest *test)
 	}
 
 chicken_out:
-	g_timer_destroy (timer);
 	g_main_loop_unref (loop);
 	g_object_unref (backend_dbus);
 

@@ -187,12 +187,8 @@ libst_backend_thread (LibSelfTest *test)
 {
 	PkBackendThread *backend_thread;
 	PkBackend *backend;
-
 	gboolean ret;
-	gdouble elapsed;
-	GTimer *timer;
-
-	timer = g_timer_new ();
+	guint elapsed;
 
 	if (libst_start (test, "PkBackendThread", CLASS_AUTO) == FALSE) {
 		return;
@@ -222,7 +218,6 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
-	g_timer_start (timer);
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_true, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
@@ -232,14 +227,14 @@ libst_backend_thread (LibSelfTest *test)
 
 	/* wait */
 	pk_thread_list_wait (backend_thread->priv->thread_list);
+	elapsed = libst_elapsed (test);
 
 	/************************************************************/
 	libst_title (test, "did we wait the correct time?");
-	elapsed = g_timer_elapsed (timer, NULL);
-	if (elapsed < 1.1 && elapsed > 0.9) {
+	if (elapsed < 1100 && elapsed > 900) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "did not wait for thread timeout");
+		libst_failed (test, "did not wait for thread timeout %ims", elapsed);
 	}
 
 	/* reset the backend */
@@ -253,7 +248,6 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false");
-	g_timer_start (timer);
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_false, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
@@ -263,14 +257,14 @@ libst_backend_thread (LibSelfTest *test)
 
 	/* wait */
 	pk_thread_list_wait (backend_thread->priv->thread_list);
+	elapsed = libst_elapsed (test);
 
 	/************************************************************/
 	libst_title (test, "did we wait the correct time2?");
-	elapsed = g_timer_elapsed (timer, NULL);
-	if (elapsed < 1.1 && elapsed > 0.9) {
+	if (elapsed < 1100 && elapsed > 900) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "did not wait for thread timeout");
+		libst_failed (test, "did not wait for thread timeout %ims", elapsed);
 	}
 
 	/* reset the backend */
@@ -284,25 +278,23 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");
-	g_timer_start (timer);
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_immediate_false, NULL);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "returned false!");
 	}
+	elapsed = libst_elapsed (test);
 
 	/************************************************************/
 	libst_title (test, "did we wait the correct time2?");
-	elapsed = g_timer_elapsed (timer, NULL);
-	if (elapsed < 0.1) {
+	if (elapsed < 100) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not wait for thread timeout2");
 	}
 
 	g_object_unref (backend_thread);
-	g_timer_destroy (timer);
 
 	libst_end (test);
 }
