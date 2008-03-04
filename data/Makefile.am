@@ -10,6 +10,12 @@ SUBDIRS = 						\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
+cronfiledir = ${SYSCONFDIR}/cron.daily
+cronfile_DATA = packagekit-background.cron
+
+crondatadir = ${SYSCONFDIR}/sysconfig
+crondata_DATA = packagekit-background
+
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
