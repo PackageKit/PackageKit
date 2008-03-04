@@ -671,7 +671,9 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
+	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_install_package_thread,
 		g_strdup (package_id));
