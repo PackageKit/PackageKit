@@ -23,6 +23,9 @@ fi
 
 PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
 
+# wait a random amount of time to avoid hammering the servers
+sleep $RANDOM
+
 # do action
 if [ "$CHECK_ONLY" == "yes" ]; then
 	pkcon get updates > $PKTMP
