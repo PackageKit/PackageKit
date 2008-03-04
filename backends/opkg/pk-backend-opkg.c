@@ -493,6 +493,7 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 	for (i=0; i < available->len; i++) {
 		char *uid;
 		gint status;
+		gchar *version;
 
 		pkg = available->pkgs[i];
 		if (!g_strrstr (pkg->name, search))
@@ -510,8 +511,10 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 		if ((filter & PKG_NOT_INSTALLED) && (pkg->state_status != SS_NOT_INSTALLED))
 			continue;
 
+		version = pkg_version_str_alloc (pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			pkg->name, pkg->version, pkg->architecture);
+			pkg->name, version, pkg->architecture);
+		g_free (version);
 
 		if (pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
@@ -749,6 +752,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 		GMatchInfo *match_info = NULL;
 		gchar *uid = NULL, *pkg_name = NULL, *pkg_v = NULL, *pkg_req = NULL;
 		gint status;
+		gchar *version;
 
 		/* find the package by name and select the package with the
 		 * latest version number
@@ -782,8 +786,11 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 		g_free (pkg_req);
 		g_free (pkg_v);
 
+		version = pkg_version_str_alloc (d_pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			d_pkg->name, d_pkg->version, d_pkg->architecture);
+			d_pkg->name, version, d_pkg->architecture);
+		g_free (version);
+
 		if (d_pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
 		else
@@ -892,6 +899,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		gchar *uid;
 		pkg_t *pkg, *best_pkg;
 		gint status;
+		gchar *version;
 
 		pkg = installed->pkgs[i];
 		best_pkg = pkg_hash_fetch_best_installation_candidate_by_name (&global_conf, pkg->name);
@@ -904,8 +912,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		if (pkg_compare_versions (best_pkg, pkg) <= 0)
 			continue;
 
+		version = pkg_version_str_alloc (pkg);
 		uid = g_strdup_printf ("%s;%s;%s;",
-			pkg->name, pkg->version, pkg->architecture);
+			pkg->name, version, pkg->architecture);
+		g_free (version);
 
 		if (pkg->state_status == SS_INSTALLED)
 			status = PK_INFO_ENUM_INSTALLED;
@@ -979,10 +989,13 @@ backend_search_group_thread (PkBackendThread *thread, gpointer params[2])
 
 		if (opkg_check_tag (pkg, tag)) {
 			gchar *uid;
+			gchar *version;
 			gint status;
 
+			version = pkg_version_str_alloc (pkg);
 			uid = g_strdup_printf ("%s;%s;%s;",
-				pkg->name, pkg->version, pkg->architecture);
+				pkg->name, version, pkg->architecture);
+			g_free (version);
 
 			if (pkg->state_status == SS_INSTALLED)
 				status = PK_INFO_ENUM_INSTALLED;
