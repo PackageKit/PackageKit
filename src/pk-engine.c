@@ -2770,6 +2770,8 @@ static void
 pk_engine_init (PkEngine *engine)
 {
 	PkRunner *runner;
+	gboolean ret;
+
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 
 	/* setup the backend backend */
@@ -2808,7 +2810,10 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
 
 	/* lock database */
-	pk_backend_lock (engine->priv->backend);
+	ret = pk_backend_lock (engine->priv->backend);
+	if (ret == FALSE) {
+		pk_error ("could not lock backend, you need to restart the daemon");
+	}
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->network = pk_network_new ();
