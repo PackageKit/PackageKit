@@ -1,5 +1,5 @@
 [D-BUS Service]
-Name=org.freedesktop.PackageKitDbus
+Name=org.freedesktop.PackageKitTestBackend
 Exec=@servicedir@/PackageKitDbusTest.py
 User=@PK_BACKEND_USER@
 
