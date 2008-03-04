@@ -797,26 +797,29 @@ gboolean
 pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *format, ...)
 {
 	va_list args;
-	gchar buffer[1025];
+	gchar *buffer;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	va_start (args, format);
-	g_vsnprintf (buffer, 1024, format, args);
+	buffer = g_strdup_vprintf (format, args);
 	va_end (args);
 
 	/* check we are not doing Init() */
 	if (backend->priv->during_initialize) {
 		pk_warning ("set during init: %s", buffer);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* did we set a duplicate error? */
 	if (backend->priv->set_error == TRUE) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "More than one error emitted! You tried to set '%s'", buffer);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 	backend->priv->set_error = TRUE;
 
@@ -830,7 +833,9 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	pk_debug ("emit error-code %i, %s", code, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
-	return TRUE;
+out:
+	g_free (buffer);
+	return ret;
 }
 
 /**
