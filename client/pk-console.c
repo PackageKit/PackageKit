@@ -59,7 +59,7 @@ typedef struct {
  * pk_console_package_cb:
  **/
 static void
-pk_console_package_cb (PkClient *client, PkInfoEnum info, PkTypeEnum type, const gchar *package_id, const gchar *summary, gpointer data)
+pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id, const gchar *summary, gpointer data)
 {
 	PkPackageId *ident;
 	PkPackageId *spacing;

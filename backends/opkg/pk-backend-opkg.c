@@ -96,16 +96,16 @@ pk_opkg_state_changed (opkg_state_t state, const char *data)
 	/* data is conveniently in pkgid format :-) */
 	switch (state) {
 	case OPKG_STATE_DOWNLOADING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE, data, NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, data, NULL);
 		break;
 	case OPKG_STATE_INSTALLING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE, data, NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, data, NULL);
 		break;
 	case OPKG_STATE_REMOVING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, PK_TYPE_ENUM_PACKAGE, data, NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, data, NULL);
 		break;
 	case OPKG_STATE_UPGRADING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, PK_TYPE_ENUM_PACKAGE, data, NULL);
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, data, NULL);
 		break;
 	default: return;
 	}
@@ -518,7 +518,7 @@ backend_search_name_thread (PkBackendThread *thread, gchar *params[2])
 		else
 			status = PK_INFO_ENUM_AVAILABLE;
 
-		pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, pkg->description);
+		pk_backend_package (backend, status, uid,pkg->description);
 	}
 
 	pkg_vec_free(available);
@@ -788,7 +788,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 			status = PK_INFO_ENUM_INSTALLED;
 		else
 			status = PK_INFO_ENUM_AVAILABLE;
-		pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, d_pkg->description);
+		pk_backend_package (backend, status, uid, d_pkg->description);
 	}
 
 	g_regex_unref (regex);
@@ -912,7 +912,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		else
 			status = PK_INFO_ENUM_AVAILABLE;
 
-		pk_backend_package (backend, status, PK_TYPE_ENUM_PACKAGE, uid, pkg->description);
+		pk_backend_package (backend, status, uid, pkg->description);
 	}
 	pk_backend_finished (backend);
 	return TRUE;

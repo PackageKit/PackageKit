@@ -91,7 +91,7 @@ pk_monitor_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer da
  * pk_monitor_package_cb:
  **/
 static void
-pk_monitor_package_cb (PkClient *client, PkInfoEnum info, PkTypeEnum type, const gchar *package_id,
+pk_monitor_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id,
 		       const gchar *summary, gpointer data)
 {
 	gchar *tid = pk_client_get_tid (client);

@@ -603,13 +603,11 @@ static void
 pk_client_package_cb (DBusGProxy   *proxy,
 		      const gchar  *tid,
 		      const gchar  *info_text,
-		      const gchar  *type_text,
 		      const gchar  *package_id,
 		      const gchar  *summary,
 		      PkClient     *client)
 {
 	PkInfoEnum info;
-	PkTypeEnum type;
 	PkPackageId *pid;
 	const gchar *data;
 
@@ -642,15 +640,14 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	}
 
 
-	pk_debug ("emit package %s, %s, %s, %s", info_text, type_text, package_id, summary);
+	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	info = pk_info_enum_from_text (info_text);
-	type = pk_type_enum_from_text (type_text);
-	g_signal_emit (client, signals [PK_CLIENT_PACKAGE], 0, info, type, package_id, summary);
+	g_signal_emit (client , signals [PK_CLIENT_PACKAGE], 0, info, package_id, summary);
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous) {
-		pk_debug ("adding to cache array package %i, %i, %s, %s", info, type, package_id, summary);
-		pk_package_list_add (client->priv->package_list, info, type, package_id, summary);
+		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
+		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
 }
 
@@ -2548,8 +2545,8 @@ pk_client_class_init (PkClientClass *klass)
 	signals [PK_CLIENT_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_CLIENT_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2743,8 +2740,8 @@ pk_client_init (PkClient *client)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Package */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* RepoDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL,
@@ -2776,7 +2773,7 @@ pk_client_init (PkClient *client)
 				     G_CALLBACK (pk_client_status_changed_cb), client, NULL);
 
 	dbus_g_proxy_add_signal (proxy, "Package",
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_client_package_cb), client, NULL);
 

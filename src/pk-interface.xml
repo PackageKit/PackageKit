@@ -124,7 +124,6 @@
     <signal name="Package">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="info" direction="out"/>
-      <arg type="s" name="type" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>

@@ -449,7 +449,7 @@ pk_backend_get_status (PkBackend *backend)
  * pk_backend_package:
  **/
 gboolean
-pk_backend_package (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, const gchar *package, const gchar *summary)
+pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, const gchar *summary)
 {
 	gchar *summary_safe;
 
@@ -481,8 +481,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, const 
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	pk_debug ("emit package %s, %s, %s, %s", pk_info_enum_to_text (info), pk_type_enum_to_text (type), package, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, type, package, summary_safe);
+	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
 	g_free (summary_safe);
 	return TRUE;
 }
@@ -1143,8 +1143,8 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_STRING_STRING,
-			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

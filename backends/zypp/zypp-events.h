@@ -156,7 +156,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
-			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, "TODO: Put the package summary here if possible");
 			reset_sub_percentage ();
 		}
 	}
@@ -179,7 +179,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	{
 		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::finish(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
-			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
 			clear_package_id ();
 		}
 	}
@@ -237,7 +237,7 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
-			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, "TODO: Put the package summary here if possible");
 			reset_sub_percentage ();
 		}
 	}
