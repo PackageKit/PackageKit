@@ -38,13 +38,35 @@
 
 #include "pk-debug.h"
 
+#define CONSOLE_RESET		0
+#define CONSOLE_BLACK 		30
+#define CONSOLE_RED		31
+#define CONSOLE_GREEN		32
+#define CONSOLE_YELLOW		33
+#define CONSOLE_BLUE		34
+#define CONSOLE_MAGENTA		35
+#define CONSOLE_CYAN		36
+#define CONSOLE_WHITE		37
+
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
+
+/**
+ * pk_set_console_mode:
+ **/
+void
+pk_set_console_mode (guint console_code)
+{
+	gchar command[13];
+	/* Command is the control command to the terminal */
+	sprintf (command, "%c[%dm", 0x1B, console_code);
+	printf ("%s", command);
+}
 
 /**
  * pk_print_line:
  **/
 static void
-pk_print_line (const gchar *func, const gchar *file, const int line, const gchar *buffer)
+pk_print_line (const gchar *func, const gchar *file, const int line, const gchar *buffer, guint color)
 {
 	gchar *str_time;
 	time_t the_time;
@@ -55,7 +77,18 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
 	thread = g_thread_self ();
 
-	fprintf (stderr, "TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n - %s\n", str_time, thread, file, func, line, buffer);
+	/* always in light green */
+	pk_set_console_mode (CONSOLE_GREEN);
+	fprintf (stdout, "TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n", str_time, thread, file, func, line);
+
+	/* different colours according to the severity */
+	pk_set_console_mode (color);
+	fprintf (stdout, " - %s\n", buffer);
+	pk_set_console_mode (CONSOLE_RESET);
+
+	/* flush this output, as we need to debug */
+	fflush (stdout);
+
 	g_free (str_time);
 }
 
@@ -76,7 +109,7 @@ pk_debug_real (const gchar *func, const gchar *file, const int line, const gchar
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	pk_print_line (func, file, line, buffer);
+	pk_print_line (func, file, line, buffer, CONSOLE_BLUE);
 
 	g_free(buffer);
 }
@@ -98,12 +131,9 @@ pk_warning_real (const gchar *func, const gchar *file, const int line, const gch
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	/* flush other output */
-	fflush (stdout);
-
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** WARNING ***\n");
-	pk_print_line (func, file, line, buffer);
+	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 
 	g_free(buffer);
 }
@@ -121,16 +151,11 @@ pk_error_real (const gchar *func, const gchar *file, const int line, const gchar
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
 
-	/* flush other output */
-	fflush (stdout);
-
 	/* do extra stuff for a warning */
 	fprintf (stderr, "*** ERROR ***\n");
-	pk_print_line (func, file, line, buffer);
+	pk_print_line (func, file, line, buffer, CONSOLE_RED);
 	g_free(buffer);
 
-	/* flush this message */
-	fflush (stderr);
 	exit (1);
 }
 
