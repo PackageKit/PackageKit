@@ -248,7 +248,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             desc = repr(desc)[1:-1]
             PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
 
-    def package(self,id,status,pkgtype,summary):
+    def package(self,id,status,summary):
         '''
         send 'package' signal
         @param info: the enumerated INFO_* string
@@ -258,10 +258,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         summary = self._toUTF(summary)
         try:
-            PackageKitBaseBackend.package(self,id,status,pkgtype,summary)
+            PackageKitBaseBackend.package(self,id,status,summary)
         except UnicodeDecodeError,e:
             summary = repr(summary)[1:-1]
-            PackageKitBaseBackend.package(self,id,status,pkgtype,summary)
+            PackageKitBaseBackend.package(self,id,status,summary)
 
     def _toUTF( self, txt ):
         rc=""
