@@ -1307,7 +1307,7 @@ class DownloadCallback( BaseMeter ):
                         typ = MetaDataMap[name]
                     else:
                         typ = TYPE_UNKNOWN
-                    self.base._show_package("metadata;;;",INFO_DOWNLOADING,typ)
+                    self.base.package(INFO_DOWNLOADING,typ,"metadata;;;","Repository metadata")
             self.base.sub_percentage(0)        
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
