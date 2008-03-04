@@ -49,6 +49,9 @@ typedef struct
 	LibSelfTestClass class;
 	LibSelfTestLevel level;
 	gchar		*type;
+	GTimer		*timer;
+	GMainLoop	*loop;
+	guint		 hang_loop_id;
 } LibSelfTest;
 
 gboolean	libst_start	(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
@@ -58,6 +61,7 @@ void		libst_success	(LibSelfTest *test, const gchar *format, ...);
 void		libst_failed	(LibSelfTest *test, const gchar *format, ...);
 void		libst_init	(LibSelfTest *test);
 gint		libst_finish	(LibSelfTest *test);
+guint		libst_elapsed	(LibSelfTest *test);
 
 #endif	/* __LIBSELFTEST_H */
 

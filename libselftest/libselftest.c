@@ -37,6 +37,9 @@ libst_init (LibSelfTest *test)
 	test->started = FALSE;
 	test->class = CLASS_AUTO;
 	test->level = LEVEL_ALL;
+	test->timer = g_timer_new ();
+	test->loop = g_main_loop_new (NULL, FALSE);
+	test->hang_loop_id = 0;
 }
 
 gint
@@ -51,7 +54,20 @@ libst_finish (LibSelfTest *test)
 		g_print ("%u FAILURE(S)\n", test->total - test->succeeded);
 		retval = 1;
 	}
+
+	g_timer_destroy (test->timer);
+	g_main_loop_unref (test->loop);
+
 	return retval;
+}
+
+/* returns ms */
+guint
+libst_elapsed (LibSelfTest *test)
+{
+	gdouble time;
+	time = g_timer_elapsed (test->timer, NULL);
+	return (guint) (time * 1000.0f);
 }
 
 gboolean
@@ -85,6 +101,13 @@ libst_end (LibSelfTest *test)
 	if (test->level == LEVEL_NORMAL) {
 		g_print ("OK\n");
 	}
+
+	/* disable hang check */
+	if (test->hang_loop_id != 0) {
+		g_source_remove (test->hang_loop_id);
+		test->hang_loop_id = 0;
+	}
+
 	test->started = FALSE;
 	g_free (test->type);
 }
@@ -94,6 +117,10 @@ libst_title (LibSelfTest *test, const gchar *format, ...)
 {
 	va_list args;
 	gchar *va_args_buffer = NULL;
+
+	/* reset the value libst_elapsed replies with */
+	g_timer_reset (test->timer);
+
 	if (test->level == LEVEL_ALL) {
 		va_start (args, format);
 		g_vasprintf (&va_args_buffer, format, args);
