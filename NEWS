@@ -1,3 +1,57 @@
+Version 0.1.9
+~~~~~~~~~~~~~
+Released: 2008-03-04
+
+* Backends:
+ - apt2: Add a simple profiler and a test script (Sebastian Heinlein)
+ - apt2: add Refresh, InstallPackage, RemovePackage, UpdateSystem (Sebastian Heinlein)
+ - apt2: Implement SearchDetails using the xapian database (Sebastian Heinlein)
+ - apt2: unlock the backend after reopening the cache (Sebastian Heinlein)
+ - apt2: Adapt new basename filter API change (Sebastian Heinlein)
+ - opkg: Call no percentage updates before the install thread starts (Thomas Wood)
+ - opkg: Make description search case insensitive (Thomas Wood)
+ - opkg: Implement search_group method (Thomas Wood)
+ - opkg: Consolidate search threads into one function and implement description search (Thomas Wood)
+ - opkg: Pass allow_deps and autoremove flags to libopkg (Thomas Wood)
+ - opkg: protect against packages not found in the package hash (Thomas Wood)
+ - yum2: Add an experimental InstallPublicKey method (Robin Norwood)
+ - yum2: Add a timeout on the yum dbus backend (Robin Norwood)
+ - yum2: Add skip_broken flag to update the system even if there are dep errors (Robin Norwood)
+ - yum2: Fix error code when package is not found for install (Robin Norwood)
+ - yum2: Make caching more lazy for certain calls (Robin Norwood)
+ - yum2: Over DBUS, we don't need to use semicolons instead of newlines (Robin Norwood)
+ - yum: Make install and update handle multiple packages (Tim Lauridsen)
+ - zypp: Assign the right group to a package (Stefan Haas)
+ - zypp: Changed backend to use sat::solvables (Stefan Haas)
+ - zypp: fix to build with newer libzyp (4.2.9) (Scott Reeves)
+ - zypp: Minor changes because of changes in the zypp api (Stefan Haas)
+
+* New features:
+ - Add another error constant: cannot-cancel (Richard Hughes)
+ - Add a new configuration option --with-backend-user (Sebastian Heinlein)
+ - Added a new filter 'basename' to the list of allowed filter types and use with GetUpdate (Richard Hughes)
+ - Make the PackageKit actions localised, and generally enable gettext (Richard Hughes)
+ - Add autoremove boolean to the PackageRemove method (Thomas Wood)
+ - Change the daemonBackend to fork to perform actions (Robin Norwood)
+ - Use colour on the terminal to help me debug warnings and errors (Richard Hughes)
+ - Change the daemonBackend to fork to perform actions (Rob Norwood)
+ - Use Python's logging instead of print statements in the daemonBackend (Sebastian Heinlein)
+
+* Bugfixes:
+ - Fix packagekitd startup failure due to NetworkManager (Richard Hughes)
+ - Make the backends use a common interface and path (Richard Hughes)
+ - Clean up dbus config files (Robin Norwood)
+ - Run intltoolize in the autogen.sh script (Thomas Wood)
+ - Make the PkClient gobjects return GError (Richard Hughes)
+ - Keep PolKitContext object up to date when we authorise (Richard Hughes)
+ - Add some icons and vendor_url's to the policykit actions (Richard Hughes)
+ - Remove the artificial 1024 char limit on error_code messages (Richard Hughes)
+ - Add more checks to ensure we can't output data after we called error-code (Richard Hughes)
+ - Initial version of packagekit cron support for headless servers (Richard Hughes)
+ - Don't try to set an error if we cancel an unused transaction (Richard Hughes)
+ - Properly detect NoPercentageUpdates at startup (Richard Hughes)
+ - Fixed possible GError segfault in the client library (Grzegorz Dabrowski)
+
 Version 0.1.8
 ~~~~~~~~~~~~~
 Released: 2008-02-21
