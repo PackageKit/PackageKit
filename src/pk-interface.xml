@@ -87,6 +87,7 @@
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="allow_deps" direction="in"/>
+      <arg type="b" name="autoremove" direction="in"/>
     </method>
     <method name="InstallPackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -124,7 +125,6 @@
     <signal name="Package">
       <arg type="s" name="tid" direction="out"/>
       <arg type="s" name="info" direction="out"/>
-      <arg type="s" name="type" direction="out"/>
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="summary" direction="out"/>
     </signal>

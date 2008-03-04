@@ -233,19 +233,6 @@ static PkEnumMatch enum_info[] = {
 	{0, NULL}
 };
 
-static PkEnumMatch enum_type[] = {
-	{PK_TYPE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_TYPE_ENUM_REPOSITORY,		"repository"},
-	{PK_TYPE_ENUM_PACKAGE,			"package"},
-	{PK_TYPE_ENUM_FILELIST,			"filelist"},
-	{PK_TYPE_ENUM_CHANGELOG,		"changelog"},
-	{PK_TYPE_ENUM_GROUP,			"group"},
-	{PK_TYPE_ENUM_UPDATEINFO,		"updateinfo"},
-	{PK_TYPE_ENUM_PACKAGELIST,		"packagelist"},
-	{PK_TYPE_ENUM_PATCH,			"patch"},
-	{0, NULL}
-};
-
 static PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
@@ -372,6 +359,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{0, NULL}
 };
 
+
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values
@@ -487,34 +475,6 @@ const gchar *
 pk_info_enum_to_text (PkInfoEnum info)
 {
 	return pk_enum_find_string (enum_info, info);
-}
-
-/**
- * pk_type_enum_from_text:
- * @type: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
- */
-PkTypeEnum
-pk_type_enum_from_text (const gchar *type)
-{
-	return pk_enum_find_value (enum_type, type);
-}
-
-/**
- * pk_type_enum_to_text:
- * @type: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "available"
- **/
-const gchar *
-pk_type_enum_to_text (PkTypeEnum type)
-{
-	return pk_enum_find_string (enum_type, type);
 }
 
 /**

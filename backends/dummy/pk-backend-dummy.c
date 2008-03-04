@@ -118,9 +118,9 @@ backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recur
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 }
@@ -165,9 +165,9 @@ backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recu
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 	pk_backend_finished (backend);
 }
@@ -222,13 +222,13 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 //	}
 
 	pk_backend_no_percentage_updates (backend);
-	pk_backend_package (backend, PK_INFO_ENUM_NORMAL, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 			    "powertop;1.8-1.fc8;i386;fedora",
 			    "Power consumption monitor");
-	pk_backend_package (backend, PK_INFO_ENUM_SECURITY, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
 			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 			    "The Linux kernel (the core of the Linux operating system)");
-	pk_backend_package (backend, PK_INFO_ENUM_SECURITY, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_SECURITY,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
 	pk_backend_finished (backend);
@@ -243,13 +243,13 @@ backend_install_timeout (gpointer data)
 		return FALSE;
 	}
 	if (progress_percentage == 30) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
 	if (progress_percentage == 50) {
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
@@ -278,7 +278,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	}
 
 	progress_percentage = 0;
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
 	signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
@@ -330,7 +330,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
 	pk_backend_finished (backend);
 }
@@ -365,7 +365,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips \"documentation\" package.");
 	pk_backend_finished (backend);
@@ -379,7 +379,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
 	pk_backend_finished (backend);
@@ -393,10 +393,10 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "bǣwulf-utf8;0.1;noarch;hughsie",
 			    "The bǣwulf server test name.");
 	pk_backend_finished (backend);
@@ -409,16 +409,16 @@ gboolean
 backend_search_name_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "evince;0.9.3-5.fc8;i386;installed",
 			    "PDF Document viewer");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "tetex;3.0-41.fc8;i386;fedora",
 			    "TeTeX is an implementation of TeX for Linux or UNIX systems.");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "scribus;1.3.4-1.fc8;i386;fedora",
 			    "Scribus is an desktop open source page layout program");
-	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, PK_TYPE_ENUM_PACKAGE,
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
 			    "vips-doc;7.12.4-2.fc8;noarch;linva",
 			    "The vips documentation package.");
 	pk_backend_finished (backend);
@@ -444,7 +444,7 @@ static void
 backend_update_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE, package_id, "The same thing");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "The same thing");
 	pk_backend_updates_changed (backend);
 	pk_backend_finished (backend);
 }
@@ -458,29 +458,29 @@ backend_update_system_timeout (gpointer data)
 		return FALSE;
 	}
 	if (progress_percentage == 0) {
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
 	}
 	if (progress_percentage == 20) {
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
 	if (progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
 	}
 	if (progress_percentage == 60) {
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
 	if (progress_percentage == 80) {
-		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP, PK_TYPE_ENUM_PACKAGE,
+		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update (old version)");
 	}

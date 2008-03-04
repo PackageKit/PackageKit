@@ -244,10 +244,9 @@ pk_engine_progress_changed_cb (PkBackend *backend, guint percentage, guint subpe
  * pk_engine_package_cb:
  **/
 static void
-pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, const gchar *package_id, const gchar *summary, PkEngine *engine)
+pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary, PkEngine *engine)
 {
 	const gchar *info_text;
-	const gchar *type_text;
 	const gchar *c_tid;
 
 	g_return_if_fail (engine != NULL);
@@ -260,9 +259,8 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, PkTypeEnum type, cons
 	}
 
 	info_text = pk_info_enum_to_text (info);
-	type_text = pk_type_enum_to_text (type);
-	pk_debug ("emitting package tid:%s info=%s type=%s %s, %s", c_tid, info_text, type_text, package_id, summary);
-	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, c_tid, info_text, type_text, package_id, summary);
+	pk_debug ("emitting package tid:%s info=%s %s, %s", c_tid, info_text, package_id, summary);
+	g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, c_tid, info_text, package_id, summary);
 	pk_engine_reset_timer (engine);
 }
 
@@ -937,7 +935,6 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	if (engine->priv->updates_cache != NULL) {
 		PkPackageItem *package;
 		const gchar *info_text;
-		const gchar *type_text;
 		const gchar *exit_text;
 		guint i;
 		guint length;
@@ -950,8 +947,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 		for (i=0; i<length; i++) {
 			package = pk_package_list_get_item (engine->priv->updates_cache, i);
 			info_text = pk_info_enum_to_text (package->info);
-			type_text = pk_type_enum_to_text (package->type);
-			g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, tid, info_text, type_text, package->package_id, package->summary);
+			g_signal_emit (engine, signals [PK_ENGINE_PACKAGE], 0, tid, info_text, package->package_id, package->summary);
 		}
 
 		/* we are done */
@@ -2682,8 +2678,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2770,6 +2766,8 @@ static void
 pk_engine_init (PkEngine *engine)
 {
 	PkRunner *runner;
+	gboolean ret;
+
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 
 	/* setup the backend backend */
@@ -2808,7 +2806,10 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_repo_detail_cb), engine);
 
 	/* lock database */
-	pk_backend_lock (engine->priv->backend);
+	ret = pk_backend_lock (engine->priv->backend);
+	if (ret == FALSE) {
+		pk_error ("could not lock backend, you need to restart the daemon");
+	}
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->network = pk_network_new ();

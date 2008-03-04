@@ -153,7 +153,6 @@ static gboolean
 pk_strvalidate_char (gchar item)
 {
 	switch (item) {
-	case ' ':
 	case '$':
 	case '`':
 	case '\'':

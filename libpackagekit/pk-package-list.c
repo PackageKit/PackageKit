@@ -69,7 +69,7 @@ G_DEFINE_TYPE (PkPackageList, pk_package_list, G_TYPE_OBJECT)
  * pk_package_list_add:
  **/
 gboolean
-pk_package_list_add (PkPackageList *plist, PkInfoEnum info, PkTypeEnum type, const gchar *package_id, const gchar *summary)
+pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	PkPackageItem *item;
 
@@ -79,7 +79,6 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, PkTypeEnum type, con
 	pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 	item = g_new0 (PkPackageItem, 1);
 	item->info = info;
-	item->type = type;
 	item->package_id = g_strdup (package_id);
 	item->summary = g_strdup (summary);
 	g_ptr_array_add (plist->priv->array, item);
@@ -97,7 +96,6 @@ pk_package_list_get_string (PkPackageList *plist)
 	guint i;
 	guint length;
 	const gchar *info_text;
-	const gchar *type_text;
 	GString *package_cache;
 
 	g_return_val_if_fail (plist != NULL, NULL);
@@ -108,8 +106,7 @@ pk_package_list_get_string (PkPackageList *plist)
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (plist->priv->array, i);
 		info_text = pk_info_enum_to_text (item->info);
-		type_text = pk_type_enum_to_text (item->type);
-		g_string_append_printf (package_cache, "%s\t%s\t%s\t%s\n", info_text, type_text, item->package_id, item->summary);
+		g_string_append_printf (package_cache, "%s\t%s\t%s\n", info_text, item->package_id, item->summary);
 	}
 
 	/* remove trailing newline */
@@ -278,7 +275,7 @@ libst_package_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "add entry");
-	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, PK_TYPE_ENUM_PACKAGE, "gnome;1.23;i386;data", "GNOME!");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
@@ -315,7 +312,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	text = pk_package_list_get_string (plist);
-	if (pk_strequal (text, "installed\tpackage\tgnome;1.23;i386;data\tGNOME!") == TRUE) {
+	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!") == TRUE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "get string incorrect '%s'", text);

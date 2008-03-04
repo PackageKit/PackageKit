@@ -584,12 +584,12 @@ libst_transaction_db (LibSelfTest *test)
 		libst_failed (test, "failed to reset value");
 	}
 
-	g_usleep (2000000);
+	g_usleep (2*1000*1000);
 
 	/************************************************************/
 	libst_title (test, "do we get the correct time");
 	value = pk_transaction_db_action_time_since (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (value == 2) {
+	if (value > 1 && value <= 4) {
 		libst_success (test, "failed to get correct time");
 	} else {
 		libst_failed (test, "failed to get correct time, %i", value);

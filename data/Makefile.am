@@ -10,6 +10,12 @@ SUBDIRS = 						\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = packagekit.pc
 
+cronfiledir = ${SYSCONFDIR}/cron.daily
+cronfile_DATA = packagekit-background.cron
+
+crondatadir = ${SYSCONFDIR}/sysconfig
+crondata_DATA = packagekit-background
+
 pmutilsdir = $(libdir)/pm-utils/sleep.d
 pmutils_DATA = 95packagekit
 
@@ -57,6 +63,8 @@ database_DATA =						\
 
 EXTRA_DIST =						\
 	95packagekit					\
+	packagekit-background				\
+	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitYumBackend.conf.in	\

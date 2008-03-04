@@ -169,9 +169,9 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ssss')
-    def Package(self, status, type, package_id, summary):
-        pklog.info("Package (%s, %s, %s, %s)" % (status, type, package_id, summary))
+                         signature='sss')
+    def Package(self, status, package_id, summary):
+        pklog.info("Package (%s, %s, %s)" % (status, package_id, summary))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -223,6 +223,17 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param description: Error description
         '''
         pklog.info("ErrorCode (%s, %s)" % (code, description))
+
+    @PKSignalHouseKeeper
+    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
+                         signature='ss')
+    def MetaData(self,typ,fname):
+        '''
+        send 'metadata' signal:
+        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
+        @param fname:  The filename being downloaded
+        '''
+        pklog.info("MetaData (%s, %s)" % (typ,fname))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -438,7 +449,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.forkme()
         if self._child_pid:
             return
-        self.doInstallPackage(package)
+        self.doInstallPackage( package)
         sys.exit(0)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,

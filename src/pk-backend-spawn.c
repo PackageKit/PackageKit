@@ -86,7 +86,6 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 	gchar *text;
 	gboolean ret = TRUE;
 	PkInfoEnum info;
-	PkTypeEnum type;
 	PkRestartEnum restart;
 	PkGroupEnum group;
 	gulong package_size;
@@ -105,12 +104,12 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 	size = g_strv_length (sections);
 
 	if (pk_strequal (command, "package") == TRUE) {
-		if (size != 5) {
+		if (size != 4) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}
-		if (pk_package_id_check (sections[3]) == FALSE) {
+		if (pk_package_id_check (sections[2]) == FALSE) {
 			pk_warning ("invalid package_id");
 			ret = FALSE;
 			goto out;
@@ -122,14 +121,7 @@ pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar
 			ret = FALSE;
 			goto out;
 		}
-		type = pk_type_enum_from_text (sections[2]);
-		if (type == PK_TYPE_ENUM_UNKNOWN) {
-			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
-					    "Type enum not recognised, and hence ignored: '%s'", sections[2]);
-			ret = FALSE;
-			goto out;
-		}
-		pk_backend_package (backend_spawn->priv->backend, info, type, sections[3], sections[4]);
+		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
 	} else if (pk_strequal (command, "description") == TRUE) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
@@ -841,7 +833,7 @@ libst_backend_spawn (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_out Package");
 	ret = pk_backend_spawn_parse_common_output (backend_spawn,
-		"package\tinstalled\tpackage\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software");
 	if (ret == TRUE) {
 		libst_success (test, NULL);
 	} else {
