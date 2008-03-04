@@ -1,0 +1,42 @@
+#!/bin/sh
+# Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+#
+# Some material taken from yum-cron, Copyright 2007 Alec Habig <ahabig@umn.edu>
+#
+# Licensed under the GNU General Public License Version 2
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+[ -f /etc/sysconfig/packagekit-background ] && . /etc/sysconfig/packagekit-background
+
+# set default for SYSTEMNAME
+[ -z "$SYSTEMNAME" ]  && SYSTEMNAME=$(hostname)
+
+# only run on certain days of the week
+dow=`date +%w`
+DAYS_OF_WEEK=${DAYS_OF_WEEK:-0123456}
+if [ ${DAYS_OF_WEEK/$dow/} == ${DAYS_OF_WEEK} ]; then
+ 	exit 0
+fi
+
+PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
+
+# do action
+if [ "$CHECK_ONLY" == "yes" ]; then
+	pkcon get updates > $PKTMP
+else
+	pkcon update-system > $PKTMP
+fi
+
+# send email
+if [ -n "$MAILTO" ]; then
+	mail -s "System updates available: $SYSTEMNAME" $MAILTO < $PKTMP
+else
+	# default behavior is to use cron's internal mailing of output from cron-script
+	cat $PKTMP
+fi
+
+rm -f $PKTMP
+
