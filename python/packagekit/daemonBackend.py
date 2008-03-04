@@ -49,7 +49,7 @@ PACKAGEKIT_DBUS_INTERFACE = 'org.freedesktop.PackageKitBackend'
 PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 
 INACTIVE_CHECK_TIMEOUT = 1000 * 60 * 5 # Check every 5 minutes.
-INACTIVE_TIMEOUT = 1000 * 60 * 30 # timeout after 30 minutes of inactivity.
+INACTIVE_TIMEOUT = 1000 * 60 * 10 # timeout after 10 minutes of inactivity.
 
 class PackageKitBaseBackend(dbus.service.Object):
 
