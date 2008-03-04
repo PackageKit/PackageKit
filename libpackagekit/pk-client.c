@@ -1126,7 +1126,7 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* check to see if we have an tid */
 	if (client->priv->tid == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "Transaction ID not set");
+		pk_debug ("Transaction ID not set, assumed never used");
 		return FALSE;
 	}
 
