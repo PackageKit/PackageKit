@@ -657,9 +657,7 @@ libst_backend_spawn (LibSelfTest *test)
 	PkBackendSpawn *backend_spawn;
 	const gchar *text;
 	gboolean ret;
-	GTimer *timer;
 
-	timer = g_timer_new ();
 	loop = g_main_loop_new (NULL, FALSE);
 
 	if (libst_start (test, "PkBackendSpawn", CLASS_AUTO) == FALSE) {
@@ -879,7 +877,6 @@ libst_backend_spawn (LibSelfTest *test)
 	}
 
 	/* done */
-	g_timer_destroy (timer);
 	g_object_unref (backend_spawn);
 	g_main_loop_unref (loop);
 
