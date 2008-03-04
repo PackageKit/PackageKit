@@ -63,6 +63,8 @@ database_DATA =						\
 
 EXTRA_DIST =						\
 	95packagekit					\
+	packagekit-background				\
+	packagekit-background.cron			\
 	org.freedesktop.PackageKit.conf.in		\
 	org.freedesktop.PackageKitTestBackend.conf.in	\
 	org.freedesktop.PackageKitYumBackend.conf.in	\
