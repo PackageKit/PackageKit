@@ -1331,7 +1331,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search by name");
-	ret = pk_backend_dbus_search_file (backend_dbus, "none", "power");
+	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
 	elapsed = libst_elapsed (test);
 	if (ret == TRUE) {
 		libst_success (test, NULL);
