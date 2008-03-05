@@ -23,13 +23,17 @@ import pty
 import re
 import signal
 import time
+import threading
 import warnings
 
 import apt
 import dbus
+import dbus.glib
 import dbus.service
 import dbus.mainloop.glib
+import gobject
 import xapian
+
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog
 from packagekit.enums import *
@@ -49,6 +53,10 @@ DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
 # Avoid questions from the maintainer scripts as far as possible
 os.putenv("DEBIAN_FRONTEND", "noninteractive")
 os.putenv("APT_LISTCHANGES_FRONTEND", "none")
+
+# Setup threading support
+gobject.threads_init()
+dbus.glib.threads_init()
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
@@ -74,14 +82,20 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         apt.progress.FetchProgress.__init__(self)
     # FetchProgress callbacks
     def pulse(self):
-        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        if self._backend._canceled.isSet():
+            return False
         percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
         self._backend.PercentageChanged(int(percent))
         apt.progress.FetchProgress.pulse(self)
         return True
 
+    def start(self):
+        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        self._backend.AllowCancel(True)
+
     def stop(self):
         self._backend.PercentageChanged(100)
+        self._backend.AllowCancel(False)
 
     def mediaChange(self, medium, drive):
         #FIXME: use the Message method to notify the user
@@ -138,12 +152,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
     '''
+
+    def threaded(func):
+        '''
+        Decorator to run a method in a separate thread
+        '''
+        def wrapper(*args, **kwargs):
+            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            thread.start()
+        wrapper.__name__ = func.__name__
+        return wrapper
+
     def __init__(self, bus_name, dbus_path):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
         self._xapian = None
         self._locked = False
+        self._canceled = threading.Event()
+        self._canceled.clear()
+        self._working = threading.Lock()
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -157,13 +185,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def doExit(self):
         pass
 
+    @threaded
+    def doCancel(self):
+        self._canceled.set()
+        #FIXME: Would be nice to have some feedback here:
+        #self._canceled.wait()
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
         '''
         pklog.info("Searching for package name: %s" % search)
         self._check_init()
-        self.AllowCancel(True)
+        self.AllowCancel(False)
         self.NoPercentageUpdates()
 
         self.StatusChanged(STATUS_QUERY)
@@ -173,14 +209,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
-
+    @threaded
     def doSearchDetails(self, filters, search):
         '''
         Implement the apt2-search-details functionality
         '''
         pklog.info("Searching for package name: %s" % search)
         self._check_init()
-        self.AllowCancel(True)
+        self.AllowCancel(False)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
@@ -200,7 +236,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-
+    @threaded
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -208,7 +244,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
         self._check_init()
-        self.AllowCancel(True)
+        self.AllowCancel(False)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         self._cache.upgrade(False)
@@ -216,13 +252,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def GetDescription(self, pkg_id):
         '''
         Implement the {backend}-get-description functionality
         '''
         pklog.info("Get description of %s" % pkg_id)
         self._check_init()
-        self.AllowCancel(True)
+        self.AllowCancel(False)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(pkg_id)
@@ -255,6 +292,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                          homepage, pkg.packageSize)
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -279,6 +317,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._open_cache()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doRemovePackage(self, id, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
@@ -309,6 +348,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
             self.Finished(EXIT_FAILED)
 
+    @threaded
     def doInstallPackage(self, id):
         '''
         Implement the {backend}-install functionality
@@ -338,6 +378,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
 
+    @threaded
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -345,7 +386,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Refresh cache")
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(True);
+        self.AllowCancel(False);
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_REFRESH_CACHE)
         try:
