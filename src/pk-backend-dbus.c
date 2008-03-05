@@ -1324,9 +1324,9 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we actually did something and didn't fork");
 	if (elapsed > 1) {
-		libst_success (test, "time = %lfs", time);
+		libst_success (test, "elapsed = %ims", elapsed);
 	} else {
-		libst_failed (test, "time = %lfs", time);
+		libst_failed (test, "elapsed = %ims", elapsed);
 	}
 
 	/************************************************************/
@@ -1342,9 +1342,9 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we forked and didn't block");
 	if (elapsed < 100) {
-		libst_success (test, "time = %lfs", time);
+		libst_success (test, "elapsed = %ims", elapsed);
 	} else {
-		libst_failed (test, "time = %lfs", time);
+		libst_failed (test, "elapsed = %ims", elapsed);
 	}
 
 	/* wait for finished */
