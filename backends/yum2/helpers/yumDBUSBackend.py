@@ -27,6 +27,7 @@
 import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
+from packagekit.daemonBackend import forked
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
@@ -339,6 +340,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
 
+    def doCancel(self):
+        if self._child_pid:
+            os.kill(self._child_pid, signal.SIGQUIT)
+            self._child_pid = None
+            self.Finished(EXIT_SUCCESS)
+            return
+        self.Finished(EXIT_FAILED)
+
+    @forked
     def doSearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
@@ -360,6 +370,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doSearchDetails(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
@@ -381,6 +392,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doSearchGroup(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
@@ -430,6 +442,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doSearchFile(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
@@ -463,6 +476,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetRequires(self,package,recursive):
         '''
         Print a list of requires for a given package
@@ -490,6 +504,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetDepends(self,package,recursive):
         '''
         Print a list of depends for a given package
@@ -571,6 +586,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -626,6 +642,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doResolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
@@ -846,6 +863,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
