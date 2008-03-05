@@ -44,6 +44,7 @@ class PackageKitTestBackendService(PackageKitBaseBackend):
 
     def doInit(self):
         print 'Init!'
+        time.sleep(0.1)
 
     def doLock(self):
         print 'Lock!'
@@ -58,8 +59,9 @@ class PackageKitTestBackendService(PackageKitBaseBackend):
         print "SearchName (%s, %s)" % (filters, search)
         self.AllowCancel(True)
         self.StatusChanged(STATUS_QUERY)
+        time.sleep(1)
         self.Package(INFO_AVAILABLE, "foo;0.0.1;i398;fedora", "Foo")
-        time.sleep(10)
+        time.sleep(1)
         self.Package(INFO_AVAILABLE, "foo-devel;0.0.1;i398;fedora", "Foo build files")
         self.Finished(EXIT_SUCCESS)
 
