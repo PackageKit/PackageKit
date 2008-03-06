@@ -27,6 +27,7 @@ import threading
 import warnings
 
 import apt
+import apt_pkg
 import dbus
 import dbus.glib
 import dbus.service
@@ -300,6 +301,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Distupgrade or Upgrade?
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
+        self._lock_cache()
         self._check_init()
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
@@ -314,6 +316,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache()
             return
         self._open_cache()
+        self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -324,6 +327,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Better exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
+        self._lock_cache()
         self._check_init()
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
@@ -341,6 +345,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         # FIXME: handle error
         self._open_cache()
+        self._unlock_cache()
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
@@ -355,6 +360,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
+        self._lock_cache()
         self._check_init()
         self.StatusChanged(STATUS_INSTALL)
         self.PercentageChanged(0)
@@ -371,6 +377,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache()
             return
         self._open_cache()
+        self._unlock_cache()
         if self._cache.has_key(name) and self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
@@ -384,6 +391,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Refresh cache")
         self.last_action_time = time.time()
+        self._lock_cache()
         self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
@@ -397,6 +405,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
         self._open_cache()
+        self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
     # Helpers
@@ -420,6 +429,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
             return
+
+    def _lock_cache(self):
+        '''
+        Lock the cache
+        '''
+        try:
+            apt_pkg.PkgSystemLock()
+        except SystemError:
+            self.ErrorCode(ERROR_INTERNAL_ERROR,
+                           "Could not lock cache")
+            self.Finished(EXIT_FAILED)
+            raise Exception()
+
+    def _unlock_cache(self):
+        '''
+        Unlock the cache
+        '''
+        apt_pkg.PkgSystemUnLock()
 
     def _check_init(self):
         '''
