@@ -79,6 +79,8 @@ class PackageKitBaseBackend(dbus.service.Object):
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
 
+        signal.signal(signal.SIGCHLD, signal.SIG_IGN) # avoid child zombie processes
+
         self._allow_cancel = False
         self._child_pid = None
         self._is_child = False
@@ -316,7 +318,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doSearchName(filters, search)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -345,7 +347,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doSearchDetails(filters,key)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -358,7 +360,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doSearchGroup(filters,key)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -371,7 +373,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doSearchFile(filters,key)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -384,7 +386,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetRequires(package,recursive)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -397,7 +399,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetDepends(package,recursive)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -410,7 +412,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doUpdateSystem()
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='b', out_signature='')
@@ -423,7 +425,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doRefreshCache( force)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -436,7 +438,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doResolve( filters, name)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -449,8 +451,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.forkme()
         if self._child_pid:
             return
-        self.doInstallPackage( package)
-        sys.exit(0)
+        self.doInstallPackage(package)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -465,7 +467,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doInstallFile( inst_file)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -480,7 +482,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doServicePack( location)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -493,7 +495,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doUpdatePackage( package)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -506,7 +508,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doRemovePackage( package, allowdep)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -519,7 +521,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetDescription( package)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -532,7 +534,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetFiles( package)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -545,7 +547,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetUpdates(filters)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -558,7 +560,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doRepoEnable( repoid, enable)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -571,7 +573,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetRepoList()
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -584,7 +586,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doGetUpdateDetail(package)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -597,7 +599,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doRepoSetData( repoid, parameter, value)
-        sys.exit(0)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -610,7 +612,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         if self._child_pid:
             return
         self.doInstallPublicKey(keyurl)
-        sys.exit(0)
+        self.loop.quit()
 
 #
 # Utility methods
