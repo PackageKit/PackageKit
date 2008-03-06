@@ -180,7 +180,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Initializing cache")
         self.StatusChanged(STATUS_SETUP)
         self._open_cache()
-        self._xapian = xapian.Database(XAPIANDB)
 
     def doExit(self):
         pass
@@ -220,11 +219,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
-        self._xapian.reopen()
+        xapian = xapian.Database(XAPIANDB)
         parser = xapian.QueryParser()
         query = parser.parse_query(unicode(search),
                                    DEFAULT_SEARCH_FLAGS)
-        enquire = xapian.Enquire(self._xapian)
+        enquire = xapian.Enquire(xapian)
         enquire.set_query(query)
         matches = enquire.get_mset(0, 1000)
         for m in matches:
@@ -429,8 +428,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.debug("Check apt cache and xapian database")
         if not isinstance(self._cache, apt.cache.Cache) or \
-           self._cache._depcache.BrokenCount > 0 or \
-           not isinstance(self._xapian, xapian.Database):
+           self._cache._depcache.BrokenCount > 0:
             self.doInit()
 
     def get_id_from_package(self, pkg, installed=False):
