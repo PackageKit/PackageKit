@@ -502,7 +502,7 @@ if test x$enable_alpm = xyes; then
 fi
 
 if test x$enable_zypp = xyes; then
-	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.2.3)
+	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.3.1)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
 fi
