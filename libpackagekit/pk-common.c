@@ -188,6 +188,10 @@ pk_strsafe (const gchar *text)
 	gchar *text_safe;
 	const gchar *delimiters;
 
+	if (text == NULL) {
+		return NULL;
+	}
+
 	/* rip out any insane characters */
 	delimiters = "\\\f\n\r\t\"'";
 	text_safe = g_strdup (text);
