@@ -1453,12 +1453,12 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                 for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
                    pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
                 }
-		/*pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 		pk_package_id_free (pi);
 		g_free (d->package_id);
 		g_free (d);
 		pk_backend_finished (backend);
-		return FALSE;*/
+		return FALSE;
 	}
 
 	pk_backend_set_percentage (backend, 60);
@@ -1480,6 +1480,10 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                 }
         }
         
+        // undo the status-change of the package and disable forceResolve
+        package.statusReset ();
+        solver.setForceResolve (false);
+
         pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);

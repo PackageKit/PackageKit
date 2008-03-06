@@ -119,9 +119,13 @@ zypp_build_local_pool ()
                         pool.reposErase(it->name ());
         }
 
-        //Add local resolvables
         zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp->target ()->load ();
+        if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::Repository::noRepository)
+        {
+                // Add local resolvables
+                zypp::Target_Ptr target = zypp->target ();
+                target->load ();
+        }
 
         return zypp->pool ();
 
@@ -324,6 +328,21 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 //					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
 
 	return package_id;
+}
+
+gboolean
+zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        key.path ().c_str (),
+                        key.id ().c_str (),
+                        key.id ().c_str (),
+                        key.fingerprint ().c_str (),
+                        key.created ().asString ().c_str (),
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
 }
 
 void

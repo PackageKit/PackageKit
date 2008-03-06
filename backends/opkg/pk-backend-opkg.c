@@ -495,6 +495,12 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 	gint filter;
 	PkBackend *backend;
 
+	if (!params->needle)
+	{
+		g_free (params);
+		return FALSE;
+	}
+
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 

@@ -257,6 +257,36 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 };
 
+struct KeyRingReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
+{
+        virtual bool askUserToAcceptUnsignedFile (const std::string &file)
+        {
+                pk_debug("_______askUserToAcceptUnsignedFile_______");
+                return true;
+        }
+
+        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id)
+        {
+                pk_debug("_______askUserToAcceptUnknownKey_______");
+                return true;
+        }
+
+        virtual bool askUserToTrustKey (const zypp::PublicKey &key)
+        {
+                gboolean ok = zypp_signature_required(_backend, key);
+
+                return ok;
+        }
+
+        virtual bool askUserToImportKey (const zypp::PublicKey &key)
+        {
+                gboolean ok = zypp_signature_required(_backend, key);
+
+                return ok;
+        }
+
+};
+
 }; // namespace ZyppBackend
 
 class EventDirector
