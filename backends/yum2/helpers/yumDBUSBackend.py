@@ -307,7 +307,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def doInit(self):
         print "Now in doInit()"
-        self.yumbase = PackageKitYumBase()
+        # yumbase is defined outside of this class so the sigquit handler can close the DB.
+        yumbase = PackageKitYumBase()
+        self.yumbase = yumbase
         print "new yumbase object"
         self._setup_yum()
         print "yum set up"
@@ -1497,7 +1499,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
+                retmsg = "Error in Transaction Processing\n" + ye.value
                 self._unlock_yum()
                 self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
