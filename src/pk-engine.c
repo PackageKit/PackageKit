@@ -1700,7 +1700,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("RemovePackage method called: %s, %s, %i", tid, package_id, allow_deps);
+	pk_debug ("RemovePackage method called: %s, %s, %i, %i", tid, package_id, allow_deps, autoremove);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
