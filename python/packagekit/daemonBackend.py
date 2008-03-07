@@ -79,8 +79,6 @@ class PackageKitBaseBackend(dbus.service.Object):
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
 
-        signal.signal(signal.SIGCHLD, signal.SIG_IGN) # avoid child zombie processes
-
         self._allow_cancel = False
         self._child_pid = None
         self._is_child = False
@@ -118,9 +116,14 @@ class PackageKitBaseBackend(dbus.service.Object):
     
         self._child_pid = os.fork()
         if self._child_pid:
+            # Setting up this watch causes gobject to nicely clean up zombie processes
+            gobject.child_watch_add(self._child_pid, self.on_child_exit)
             self._is_child = False
         else:
             self._is_child = True
+
+    def on_child_exit(pid, condition, data):
+        pass
 
     def _child_is_running(self):
         pklog.debug("in child_is_running")
@@ -136,7 +139,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                 running = False
 
             if not running:
-                pklog.debug("child %s is stopped" % pid)
+                pklog.debug("child %s is stopped" % self._child_pid)
                 self._child_pid = None
                 return False
 
@@ -498,8 +501,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RemovePackage(self, package, allowdep):
+                         in_signature='sbb', out_signature='')
+    def RemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''
@@ -507,7 +510,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.forkme()
         if self._child_pid:
             return
-        self.doRemovePackage( package, allowdep)
+        self.doRemovePackage(package, allowdep, autoremove)
         self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
