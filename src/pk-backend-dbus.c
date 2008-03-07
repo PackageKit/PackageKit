@@ -1274,6 +1274,7 @@ pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
 				 const gchar *package_id, const gchar *summary,
 				 PkBackendDbus *backend_dbus)
 {
+	pk_debug ("package");
 	number_packages++;
 }
 
@@ -1307,9 +1308,6 @@ libst_backend_dbus (LibSelfTest *test)
 	/* needed to avoid an error */
 	pk_backend_set_name (backend_dbus->priv->backend, "test_dbus");
 	pk_backend_lock (backend_dbus->priv->backend);
-
-	/* wimp out until fork works */
-	goto chicken_out;
 
 	/************************************************************/
 	libst_title (test, "set the name and activate");
@@ -1359,7 +1357,6 @@ libst_backend_dbus (LibSelfTest *test)
 		libst_failed (test, "wrong number of packages %i", number_packages);
 	}
 
-chicken_out:
 	g_object_unref (backend_dbus);
 
 	libst_end (test);
