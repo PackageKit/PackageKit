@@ -298,6 +298,7 @@ class EventDirector
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
 		ZyppBackend::DownloadProgressReportReceiver _downloadProgressReport;
+                ZyppBackend::KeyRingReceiver _keyRing;
 
 	public:
 		EventDirector (PkBackend *backend)
@@ -313,6 +314,9 @@ class EventDirector
 
 			_downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
+
+                        _keyRing.initWithBackend (backend);
+                        _keyRing.connect ();
 		}
 
 		~EventDirector ()
@@ -321,6 +325,7 @@ class EventDirector
 			_repoProgressReport.disconnect ();
 			_installResolvableReport.disconnect ();
 			_downloadProgressReport.disconnect ();
+                        _keyRing.disconnect ();
 		}
 };
 
