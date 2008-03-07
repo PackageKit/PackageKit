@@ -345,6 +345,36 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
         return ok;
 }
 
+gboolean
+zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        file.c_str (),
+                        id.c_str (),
+                        id.c_str (),
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
+}
+
+gboolean
+zypp_signature_required (PkBackend *backend, const std::string &file)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        file.c_str (),
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
+}
+
 void
 zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
 {

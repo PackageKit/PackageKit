@@ -257,18 +257,20 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 };
 
-struct KeyRingReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
+struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
 {
         virtual bool askUserToAcceptUnsignedFile (const std::string &file)
         {
-                pk_debug("_______askUserToAcceptUnsignedFile_______");
-                return true;
+                gboolean ok = zypp_signature_required(_backend, file);
+
+                return ok;
         }
 
         virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id)
         {
-                pk_debug("_______askUserToAcceptUnknownKey_______");
-                return true;
+                gboolean ok = zypp_signature_required(_backend, file, id);
+
+                return ok;
         }
 
         virtual bool askUserToTrustKey (const zypp::PublicKey &key)
@@ -298,7 +300,7 @@ class EventDirector
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
 		ZyppBackend::DownloadProgressReportReceiver _downloadProgressReport;
-                ZyppBackend::KeyRingReceiver _keyRing;
+                ZyppBackend::KeyRingReportReceiver _keyRingReport;
 
 	public:
 		EventDirector (PkBackend *backend)
@@ -315,8 +317,8 @@ class EventDirector
 			_downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
 
-                        _keyRing.initWithBackend (backend);
-                        _keyRing.connect ();
+                        _keyRingReport.initWithBackend (backend);
+                        _keyRingReport.connect ();
 		}
 
 		~EventDirector ()
@@ -325,7 +327,7 @@ class EventDirector
 			_repoProgressReport.disconnect ();
 			_installResolvableReport.disconnect ();
 			_downloadProgressReport.disconnect ();
-                        _keyRing.disconnect ();
+                        _keyRingReport.disconnect ();
 		}
 };
 
