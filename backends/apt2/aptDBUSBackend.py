@@ -35,7 +35,6 @@ import dbus.mainloop.glib
 import gobject
 import xapian
 
-
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog
 from packagekit.enums import *
 
@@ -128,13 +127,6 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     def updateInterface(self):
         apt.progress.InstallProgress.updateInterface(self)
 
-    def fork(self):
-        pklog.debug("doing a pty.fork()")
-        (self.pid, self.master_fd) = pty.fork()
-        if self.pid != 0:
-            pklog.debug("pid is: %s" % self.pid)
-        return self.pid
-
     def conffile(self, current, new):
         pklog.warning("Config file prompt: '%s'" % current)
         # looks like we have a race here *sometimes*
@@ -169,10 +161,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
         self._xapian = None
-        self._locked = False
         self._canceled = threading.Event()
         self._canceled.clear()
-        self._working = threading.Lock()
+        self._locked = threading.Lock()
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -187,10 +178,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     def doCancel(self):
+        pklog.info("Canceling current action")
+        self.StatusChanged(STATUS_CANCEL)
         self._canceled.set()
-        #FIXME: Would be nice to have some feedback here:
-        #self._canceled.wait()
-        self.Finished(EXIT_SUCCESS)
+        self._canceled.wait()
 
     @threaded
     def doSearchName(self, filters, search):
@@ -220,11 +211,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
-        xapian = xapian.Database(XAPIANDB)
+        db = xapian.Database(XAPIANDB)
         parser = xapian.QueryParser()
         query = parser.parse_query(unicode(search),
                                    DEFAULT_SEARCH_FLAGS)
-        enquire = xapian.Enquire(xapian)
+        enquire = xapian.Enquire(db)
         enquire.set_query(query)
         matches = enquire.get_mset(0, 1000)
         for m in matches:
@@ -243,13 +234,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
+        self.StatusChanged(STATUS_INFO)
+        self._lock_cache()
         self._check_init()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
-        self.StatusChanged(STATUS_INFO)
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
             self._emit_package(pkg)
+        self._open_cache()
+        self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -258,10 +252,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-get-description functionality
         '''
         pklog.info("Get description of %s" % pkg_id)
+        self.StatusChanged(STATUS_INFO)
         self._check_init()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
-        self.StatusChanged(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(pkg_id)
         #FIXME: error handling
         pkg = self._cache[name]
@@ -301,23 +295,36 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Distupgrade or Upgrade?
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
+        self.StatusChanged(STATUS_UPDATE)
         self._lock_cache()
         self._check_init()
-        self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         try:
             self._cache.upgrade(distUpgrade=True)
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
-        except:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Upgrade failed")
-            self.Finished(EXIT_FAILED)
+        except apt.cache.FetchFailedException:
             self._open_cache()
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
+            self.Finished(EXIT_FAILED)
+            self._unlock_cache()
             return
-        self._open_cache()
-        self._unlock_cache()
+        except apt.cache.FetchCancelledException:
+            self._open_cache()
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
+            self.Finished(EXIT_KILL)
+            self._unlock_cache()
+            self._canceled.clear()
+            return
+        except:
+            self._open_cache()
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "System update failed")
+            self.Finished(EXIT_FAILED)
+            self._unlock_cache()
+            return
         self.Finished(EXIT_SUCCESS)
+        self._unlock_cache()
 
     @threaded
     def doRemovePackage(self, id, deps=True, auto=False):
@@ -339,18 +346,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
         except:
+            self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
             self.Finished(EXIT_FAILED)
-            self._open_cache()
             return
-        # FIXME: handle error
         self._open_cache()
-        self._unlock_cache()
+        # FIXME: handle error
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
             self.Finished(EXIT_FAILED)
+        self._unlock_cache()
 
     @threaded
     def doInstallPackage(self, id):
@@ -372,17 +379,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
         except:
+            self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
-            self._open_cache()
             return
         self._open_cache()
-        self._unlock_cache()
         if self._cache.has_key(name) and self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
+        self._unlock_cache()
 
     @threaded
     def doRefreshCache(self, force):
@@ -390,21 +397,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
+        self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self._lock_cache()
         self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
-        self.StatusChanged(STATUS_REFRESH_CACHE)
         try:
             self._cache.update(PackageKitFetchProgress(self))
+        except apt.cache.FetchFailedException:
+            self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
+            self.Finished(EXIT_FAILED)
+        except apt.cache.FetchCancelledException:
+            self._canceled.clear()
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
+            self.Finished(EXIT_KILL)
         except:
             self._open_cache()
-            self.ErrorCode(ERROR_NO_CACHE,
-                           "Package cache could not be opened")
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Refreshing cache failed")
             self.Finished(EXIT_FAILED)
             return
-        self._open_cache()
         self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
@@ -434,19 +446,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Lock the cache
         '''
-        try:
-            apt_pkg.PkgSystemLock()
-        except SystemError:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,
-                           "Could not lock cache")
-            self.Finished(EXIT_FAILED)
-            raise Exception()
+        self._locked.acquire()
 
     def _unlock_cache(self):
         '''
         Unlock the cache
         '''
-        apt_pkg.PkgSystemUnLock()
+        self._locked.release()
 
     def _check_init(self):
         '''
