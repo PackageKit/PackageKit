@@ -308,7 +308,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def doInit(self):
         print "Now in doInit()"
-        self.yumbase = PackageKitYumBase()
+        # yumbase is defined outside of this class so the sigquit handler can close the DB.
+        yumbase = PackageKitYumBase()
+        self.yumbase = yumbase
         print "new yumbase object"
         self._setup_yum()
         print "yum set up"
@@ -704,6 +706,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.install(name=pkg.name)
                 successful = self._runYumTransaction()
                 if not successful:
+                    # _runYumTransaction unlocked yum, set the error code, and called Finished.
                     return
             except yum.Errors.InstallError,e:
                 msgs = '\n'.join(e)
@@ -781,7 +784,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
-    def doRemovePackage(self, package, allowdep):
+    def doRemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''
@@ -1467,7 +1470,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._unlock_yum()
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
             self.Finished(EXIT_FAILED)
-            return
+            return False
         else:
             self._check_for_reboot()
             if removedeps == False:
@@ -1514,7 +1517,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return False
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
+                retmsg = "Error in Transaction Processing\n" + ye.value
                 self._unlock_yum()
                 self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
                 self.Finished(EXIT_FAILED)
@@ -1609,7 +1612,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if hasattr(self,'yumbase'):
             pass
         else:
-            self.Init()
+            self.doInit()
         if lazy_cache:
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 60 * 60 * 24  # 24 hours

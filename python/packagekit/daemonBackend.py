@@ -88,6 +88,7 @@ def forked(func):
         self.last_action_time = time.time()
         self._child_pid = os.fork()
         if self._child_pid > 0:
+            gobject.child_watch_add(self._child_pid, self.on_child_exit)
             return
         self.loop.quit()
         sys.exit(func(*args, **kwargs))
@@ -140,7 +141,10 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         return True
 
-    def _is_child_running(self):
+    def on_child_exit(pid, condition, data):
+        pass
+
+    def _child_is_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
             pklog.debug("in child_is_running, pid = %s" % self._child_pid)
@@ -154,7 +158,7 @@ class PackageKitBaseBackend(dbus.service.Object):
                 running = False
 
             if not running:
-                pklog.debug("child %s is stopped" % pid)
+                pklog.debug("child %s is stopped" % self._child_pid)
                 self._child_pid = None
                 return False
 
@@ -450,15 +454,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("UpdatePackage()")
         self.doUpdatePackage( package)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
-    def RemovePackage(self, package, allowdep):
+                         in_signature='sbb', out_signature='')
+    def RemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''
         pklog.info("RemovePackage()")
-        self.doRemovePackage( package, allowdep)
+        self.doRemovePackage(package, allowdep, autoremove)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -504,6 +509,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("GetRepoList()")
         self.doGetRepoList()
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -513,6 +519,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("GetUpdateDetail()")
         self.doGetUpdateDetail(package)
+        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -531,6 +538,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("InstallPublicKey(%s)" % keyurl)
         self.doInstallPublicKey(keyurl)
+        self.loop.quit()
 
 #
 # Utility methods

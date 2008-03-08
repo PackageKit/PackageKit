@@ -257,6 +257,38 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 	}
 };
 
+struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRingReport>, ZyppBackendReceiver
+{
+        virtual bool askUserToAcceptUnsignedFile (const std::string &file)
+        {
+                gboolean ok = zypp_signature_required(_backend, file);
+
+                return ok;
+        }
+
+        virtual bool askUserToAcceptUnknownKey (const std::string &file, const std::string &id)
+        {
+                gboolean ok = zypp_signature_required(_backend, file, id);
+
+                return ok;
+        }
+
+        virtual bool askUserToTrustKey (const zypp::PublicKey &key)
+        {
+                gboolean ok = zypp_signature_required(_backend, key);
+
+                return ok;
+        }
+
+        virtual bool askUserToImportKey (const zypp::PublicKey &key)
+        {
+                gboolean ok = zypp_signature_required(_backend, key);
+
+                return ok;
+        }
+
+};
+
 }; // namespace ZyppBackend
 
 class EventDirector
@@ -268,6 +300,7 @@ class EventDirector
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
 		ZyppBackend::DownloadProgressReportReceiver _downloadProgressReport;
+                ZyppBackend::KeyRingReportReceiver _keyRingReport;
 
 	public:
 		EventDirector (PkBackend *backend)
@@ -283,6 +316,9 @@ class EventDirector
 
 			_downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
+
+                        _keyRingReport.initWithBackend (backend);
+                        _keyRingReport.connect ();
 		}
 
 		~EventDirector ()
@@ -291,6 +327,7 @@ class EventDirector
 			_repoProgressReport.disconnect ();
 			_installResolvableReport.disconnect ();
 			_downloadProgressReport.disconnect ();
+                        _keyRingReport.disconnect ();
 		}
 };
 

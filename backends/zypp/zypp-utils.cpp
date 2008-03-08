@@ -89,15 +89,21 @@ zypp_build_pool (gboolean include_local)
 			// skip disabled repos
 			if (repo.enabled () == false)
 				continue;
-                        
+                        // skip not cached repos
+                        if (manager.isCached (repo) == false) {
+                                pk_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+                                continue;
+                        }
                         //FIXME see above, skip already cached repos
                         if (zypp::sat::Pool::instance().reposFind( repo.alias ()) == zypp::Repository::noRepository)
                                 manager.loadFromCache (repo);
 		}
 	} catch (const zypp::repo::RepoNoAliasException &ex) {
-                pk_warning ("Can't figure an alias to look in cache");
+                pk_error ("Can't figure an alias to look in cache");
+        } catch (const zypp::repo::RepoNotCachedException &ex) {
+                pk_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
 	} catch (const zypp::Exception &ex) {
-                pk_warning ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
+                pk_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 	}
 
 	return zypp->pool ();
@@ -113,9 +119,13 @@ zypp_build_local_pool ()
                         pool.reposErase(it->name ());
         }
 
-        //Add local resolvables
         zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp->target ()->load ();
+        if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::Repository::noRepository)
+        {
+                // Add local resolvables
+                zypp::Target_Ptr target = zypp->target ();
+                target->load ();
+        }
 
         return zypp->pool ();
 
@@ -318,6 +328,51 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 //					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
 
 	return package_id;
+}
+
+gboolean
+zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        key.path ().c_str (),
+                        key.id ().c_str (),
+                        key.id ().c_str (),
+                        key.fingerprint ().c_str (),
+                        key.created ().asString ().c_str (),
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
+}
+
+gboolean
+zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        file.c_str (),
+                        id.c_str (),
+                        id.c_str (),
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
+}
+
+gboolean
+zypp_signature_required (PkBackend *backend, const std::string &file)
+{
+        gboolean ok = pk_backend_repo_signature_required (backend,
+                        "TODO: Repo-Name",
+                        file.c_str (),
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        "UNKNOWN",
+                        PK_SIGTYPE_ENUM_GPG);
+
+        return ok;
 }
 
 void

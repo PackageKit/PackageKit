@@ -48,6 +48,7 @@
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/RpmException.h>
+#include <zypp/base/LogControl.h>
 
 #include <zypp/sat/Solvable.h>
 
@@ -119,6 +120,7 @@ static PkBackendThread *thread;
 static void
 backend_initialize (PkBackend *backend)
 {
+        zypp::base::LogControl::instance ().logfile("/tmp/zypplog");
 	g_return_if_fail (backend != NULL);
 	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
@@ -382,7 +384,6 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		const char *version = it->edition ().asString ().c_str ();
-                //fprintf (stderr, "\n\n *** comparing versions '%s' == '%s'", pi->version, version);
 		if (strcmp (pi->version, version) == 0) {
 			package = *it;
 			break;
@@ -444,7 +445,6 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
                 return FALSE;
         }
 
-                        fprintf(stderr,"\n____________450________________________________\n");
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
@@ -599,42 +599,42 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 	try
 	{
-
                 zypp::ResPool pool = zypp_build_pool (TRUE);
 	        pk_backend_set_percentage (backend, 10);
+                gboolean hit = false;
 
-		// Iterate over the resolvables and mark the ones we want to install
-		//zypp->start ();
+		// Iterate over the selectables and mark the one with the right name
+                zypp::ui::Selectable::Ptr selectable;
 		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
 				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-			zypp::ui::Selectable::Ptr selectable = *it;
-			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
-				switch (selectable->status ()) {
-					case zypp::ui::S_Update:	// Have installedObj
-					case zypp::ui::S_NoInst:	// No installedObj
-						break;
-					default:
-						continue;
-						break;
-				}
-
-				// This package matches the name we're looking for and
-				// is available for update/install.
-				zypp::ResObject::constPtr installable = selectable->candidateObj();
-				const char *edition_str = installable->edition().asString().c_str();
-
-				if (strcmp (edition_str, pi->version) == 0) {
-//printf ("WOOT!  Marking the package to be installed!\n");
-					// this is the one, mark it to be installed
-					selectable->set_status (zypp::ui::S_Install);
-					break; // Found it, get out of the for loop
-				}
-			}
+			if (strcmp ((*it)->name ().c_str (), pi->name) == 0) {
+                                selectable = *it;
+                                break;
+                        }
 		}
+
+                // Choose the PoolItem with the right architecture and version
+                zypp::PoolItem item;
+                for (zypp::ui::Selectable::availablePoolItem_iterator it = selectable->availablePoolItemBegin ();
+                                it != selectable->availablePoolItemEnd (); it++) {
+                        if (strcmp ((*it)->edition ().asString ().c_str (), pi->version) == 0
+                                        && strcmp ((*it)->arch ().c_str (), pi->arch) == 0 ) {
+                                hit = true;
+                                it->status ().setToBeInstalled (zypp::ResStatus::USER);
+                                item = *it;
+                        }
+                }
+
+                if (!hit) {
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find the package.");
+                        g_free (package_id);
+                        pk_package_id_free (pi);
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
 
 		pk_backend_set_percentage (backend, 40);
 
-//printf ("Resolving dependencies...\n");
 		// Gather up any dependencies
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 		if (zypp->resolver ()->resolvePool () == FALSE) {
@@ -650,13 +650,14 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 60);
 
-//printf ("Performing installation...\n");
 		// Perform the installation
 		// TODO: If this were an update, you should use PK_INFO_ENUM_UPDATING instead
 		zypp::ZYppCommitPolicy policy;
 		policy.restrictToMedia (0);	// 0 - install all packages regardless to media
 		zypp::ZYppCommitResult result = zypp->commit (policy);
-printf ("Finished the installation.\n");
+
+                // Reset the Status of this Item
+                item.statusReset ();
 
 		pk_backend_set_percentage (backend, 100);
 
@@ -669,7 +670,6 @@ printf ("Finished the installation.\n");
 		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
-		//pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
 		g_free (package_id);
 		pk_package_id_free (pi);
@@ -694,7 +694,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
 
-	//printf("package_id is %s\n", package_id);
 	gchar *package_to_install = g_strdup (package_id);
 	pk_backend_thread_create (thread, backend_install_package_thread, package_to_install);
 }
@@ -729,6 +728,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 	int i = 1;
 	int num_of_repos = repos.size ();
 	int percentage_increment = 100 / num_of_repos;
+
 	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
 		zypp::RepoInfo repo (*it);
 
@@ -1422,8 +1422,10 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         gboolean found = FALSE;
         for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
                         it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
-                package = (*it);
-                found = TRUE;
+                if (it ->status ().isInstalled ()){
+                        package = (*it);
+                        found = TRUE;
+                }
         }
 
 	if (found == FALSE) {
@@ -1435,7 +1437,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 		return FALSE;
 	}
 
-        // set Package as to be installed
+        // set Package as to be uninstalled
         package.status ().setToBeUninstalled (zypp::ResStatus::USER);
 
 	pk_backend_set_percentage (backend, 40);
@@ -1443,11 +1445,12 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         // solver run
         zypp::Resolver solver(pool);
         
-        // DEBUG https://bugzilla.novell.com/show_bug.cgi?id=363545
-        if (solver.forceResolve () == FALSE) {
+        solver.setForceResolve (true);
+
+        if (solver.resolvePool () == FALSE) {
                 std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
                 for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-                   pk_warning("Solver problem: '%s'", (*it)->description ().c_str ());
+                   pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
                 }
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
 		pk_package_id_free (pi);
@@ -1460,9 +1463,9 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 	pk_backend_set_percentage (backend, 60);
 
         // look for packages which would be uninstalled
-        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
-                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
-                if (it->status () == zypp::ResStatus::toBeUninstalled || it->status () == zypp::ResStatus::toBeUninstalledSoft) {
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                if (it->status ().isToBeUninstalled ()) {
                         gchar *package_id;
                         package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
                                                            it->resolvable ()->edition ().asString ().c_str(),
@@ -1475,6 +1478,10 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         g_free (package_id);
                 }
         }
+        
+        // undo the status-change of the package and disable forceResolve
+        package.statusReset ();
+        solver.setForceResolve (false);
 
         pk_package_id_free (pi);
 	g_free (d->package_id);

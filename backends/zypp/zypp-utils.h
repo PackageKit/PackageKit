@@ -80,6 +80,21 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
  */
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
+/**
+  * Ask the User if it is OK to import an GPG-Key for a repo
+  */
+gboolean zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key);
+
+/**
+  * Ask the User if it is OK to refresh the Repo while we don't know the key
+  */
+gboolean zypp_signature_required (PkBackend *backend, const std::string &file);
+
+/**
+  * Ask the User if it is OK to refresh the Repo while we don't know the key, only its id which was never seen before
+  */
+gboolean zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id);
+
 void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
 #endif // _ZYPP_UTILS_H_
 
