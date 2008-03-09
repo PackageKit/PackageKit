@@ -38,6 +38,7 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
 
 #include "pk-enum.h"
@@ -145,6 +146,7 @@ pk_client_error_get_type (void)
 			ENUM_ENTRY (PK_CLIENT_ERROR_ALREADY_TID, "AlreadyTid"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnkown"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_PROMISCUOUS, "Promiscuous"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_PACKAGEID, "InvalidPackageId"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkClientError", values);
@@ -163,12 +165,21 @@ pk_client_error_get_type (void)
  * as a warning.
  **/
 static gboolean
-pk_client_error_set (GError **error, gint code, const gchar *text)
+pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 {
+	va_list args;
+	gchar *buffer = NULL;
+	gboolean ret = TRUE;
+
+	va_start (args, format);
+	g_vasprintf (&buffer, format, args);
+	va_end (args);
+
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("%s", text);
-		return FALSE;
+		pk_warning ("%s", buffer);
+		ret = FALSE;
+		goto out;
 	}
 
 	/* already set */
@@ -178,8 +189,11 @@ pk_client_error_set (GError **error, gint code, const gchar *text)
 	}
 
 	/* propogate */
-	g_set_error (error, PK_CLIENT_ERROR, code, text);
-	return TRUE;
+	g_set_error (error, PK_CLIENT_ERROR, code, buffer);
+
+out:
+	g_free(buffer);
+	return ret;
 }
 
 /**
@@ -1419,6 +1433,14 @@ pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recur
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
@@ -1456,6 +1478,14 @@ pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recu
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
@@ -1492,6 +1522,14 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1599,6 +1637,14 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
@@ -1633,6 +1679,14 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1691,6 +1745,14 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1827,6 +1889,14 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
+
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
@@ -1893,6 +1963,14 @@ pk_client_update_package (PkClient *client, const gchar *package_id, GError **er
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* check the PackageID here to avoid a round trip if invalid */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_id '%s' is not valid", package_id);
+		return FALSE;
+	}
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
