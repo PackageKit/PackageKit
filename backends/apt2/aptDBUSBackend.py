@@ -156,6 +156,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         wrapper.__name__ = func.__name__
         return wrapper
 
+    def locked(func):
+        '''
+        Decorator to run a method with a lock
+        '''
+        def wrapper(*args, **kwargs):
+            backend = args[0]
+            backend._lock_cache()
+            ret = func(*args, **kwargs)
+            backend._unlock_cache()
+            return ret
+        wrapper.__name__ = func.__name__
+        return wrapper
+
     def __init__(self, bus_name, dbus_path):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
@@ -228,6 +241,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @locked
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -235,7 +249,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
         self.StatusChanged(STATUS_INFO)
-        self._lock_cache()
         self._check_init()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
@@ -243,7 +256,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         for pkg in self._cache.getChanges():
             self._emit_package(pkg)
         self._open_cache()
-        self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -287,6 +299,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @locked
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -296,7 +309,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
         self.StatusChanged(STATUS_UPDATE)
-        self._lock_cache()
         self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
@@ -308,25 +320,22 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._open_cache()
             self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
             self.Finished(EXIT_FAILED)
-            self._unlock_cache()
             return
         except apt.cache.FetchCancelledException:
             self._open_cache()
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
             self.Finished(EXIT_KILL)
-            self._unlock_cache()
             self._canceled.clear()
             return
         except:
             self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "System update failed")
             self.Finished(EXIT_FAILED)
-            self._unlock_cache()
             return
         self.Finished(EXIT_SUCCESS)
-        self._unlock_cache()
 
     @threaded
+    @locked
     def doRemovePackage(self, id, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
@@ -334,12 +343,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Better exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
-        self._lock_cache()
         self._check_init()
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         pkg = self._find_package_by_id(id)
+        if not pkg.isInstalled:
+            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED, 
+                           "Package %s isn't installed" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         name = pkg.name[:]
         try:
             pkg.markDelete()
@@ -351,15 +364,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
         self._open_cache()
-        # FIXME: handle error
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Package is still installed")
             self.Finished(EXIT_FAILED)
-        self._unlock_cache()
 
     @threaded
+    @locked
     def doInstallPackage(self, id):
         '''
         Implement the {backend}-install functionality
@@ -367,12 +379,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
-        self._lock_cache()
         self._check_init()
         self.StatusChanged(STATUS_INSTALL)
         self.PercentageChanged(0)
         self.AllowCancel(False)
         pkg = self._find_package_by_id(id)
+        if pkg.isInstalled:
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED, 
+                           "Package %s is already installed" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         name = pkg.name[:]
         try:
             pkg.markInstall()
@@ -389,9 +405,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         else:
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
-        self._unlock_cache()
 
     @threaded
+    @locked
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -399,7 +415,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Refresh cache")
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
-        self._lock_cache()
         self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
@@ -408,16 +423,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         except apt.cache.FetchFailedException:
             self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
             self.Finished(EXIT_FAILED)
+            return
         except apt.cache.FetchCancelledException:
             self._canceled.clear()
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
             self.Finished(EXIT_KILL)
+            return
         except:
             self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Refreshing cache failed")
             self.Finished(EXIT_FAILED)
             return
-        self._unlock_cache()
         self.Finished(EXIT_SUCCESS)
 
     # Helpers
@@ -446,12 +462,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Lock the cache
         '''
+        pklog.debug("Locking cache")
         self._locked.acquire()
 
     def _unlock_cache(self):
         '''
         Unlock the cache
         '''
+        pklog.debug("Releasing cache")
         self._locked.release()
 
     def _check_init(self):
