@@ -164,12 +164,12 @@ class PackageKit(PackageKitDbusInterface):
 
 	@dbusException
 	@job_id
-	def GetUpdates(self):
+	def GetUpdates(self, filter="none"):
 		"""
 		Lists packages which could be updated.
 		Causes 'Package' signals for each available package.
 		"""
-		return self.pk_iface.GetUpdates(self.tid())
+		return self.pk_iface.GetUpdates(self.tid(), filter)
 
 	@dbusException
 	@job_id
