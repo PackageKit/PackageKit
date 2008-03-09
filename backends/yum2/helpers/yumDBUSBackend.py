@@ -685,6 +685,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doInstallPackage(self, package):
         '''
         Implement the {backend}-install functionality
@@ -723,6 +724,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doInstallFile (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -753,6 +755,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doUpdatePackage(self, package):
         '''
         Implement the {backend}-update functionality
@@ -784,6 +787,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doRemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
@@ -820,6 +824,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
         return
             
+    @forked
     def doGetDescription(self, package):
         '''
         Print a detailed description for a given package
@@ -842,6 +847,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetFiles(self, package):
         self._check_init(lazy_cache=True)
         self._lock_yum()
@@ -903,6 +909,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
+    @forked
     def doGetPackages(self,filters,showdesc='no'):
         '''
         Search for yum packages
@@ -950,6 +957,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
+    @forked
     def doRepoEnable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -973,6 +981,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetRepoList(self):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -988,6 +997,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doGetUpdateDetail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
@@ -1017,6 +1027,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doRepoSetData(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
@@ -1045,6 +1056,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @forked
     def doInstallPublicKey(self, keyurl):
         '''
         Implement the {backend}-install-public-key functionality
