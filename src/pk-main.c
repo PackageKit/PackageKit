@@ -212,7 +212,7 @@ main (int argc, char *argv[])
 
 	if (version == TRUE) {
 		g_print ("Version %s\n", VERSION);
-		goto unref_program;
+		goto exit_program;
 	}
 
 	if (!g_thread_supported ())
@@ -266,9 +266,9 @@ main (int argc, char *argv[])
 	engine = pk_engine_new ();
 
 	if (!pk_object_register (system_connection, G_OBJECT (engine), &error)) {
-		g_error (_("Error trying to start: %s"), error->message);
+		g_print (_("Error trying to start: %s\n"), error->message);
 		g_error_free (error);
-		return 0;
+		goto out;
 	}
 
 	loop = g_main_loop_new (NULL, FALSE);
@@ -291,10 +291,12 @@ main (int argc, char *argv[])
 
 	g_main_loop_run (loop);
 	g_main_loop_unref (loop);
+
+out:
 	g_object_unref (conf);
 	g_object_unref (engine);
 	g_object_unref (backend);
 
-unref_program:
+exit_program:
 	return 0;
 }
