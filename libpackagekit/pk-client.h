@@ -163,7 +163,7 @@ gboolean	 pk_client_get_files			(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
 gboolean	 pk_client_remove_package		(PkClient	*client,
-							 const gchar	*package,
+							 const gchar	*package_id,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove,
 							 GError		**error);

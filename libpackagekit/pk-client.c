@@ -1411,12 +1411,13 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
  * pk_client_get_depends:
  **/
 gboolean
-pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1425,12 +1426,12 @@ pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursiv
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 	client->priv->xcached_force = recursive;
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
@@ -1447,12 +1448,13 @@ pk_client_get_depends (PkClient *client, const gchar *package, gboolean recursiv
  * pk_client_get_requires:
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1461,12 +1463,12 @@ pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursi
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 	client->priv->xcached_force = recursive;
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
@@ -1483,12 +1485,13 @@ pk_client_get_requires (PkClient *client, const gchar *package, gboolean recursi
  * pk_client_get_update_detail:
  **/
 gboolean
-pk_client_get_update_detail (PkClient *client, const gchar *package, GError **error)
+pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1497,11 +1500,11 @@ pk_client_get_update_detail (PkClient *client, const gchar *package, GError **er
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -1557,6 +1560,7 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1587,12 +1591,13 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
  * pk_client_get_description:
  **/
 gboolean
-pk_client_get_description (PkClient *client, const gchar *package, GError **error)
+pk_client_get_description (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1601,11 +1606,11 @@ pk_client_get_description (PkClient *client, const gchar *package, GError **erro
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -1621,12 +1626,13 @@ pk_client_get_description (PkClient *client, const gchar *package, GError **erro
  * pk_client_get_files:
  **/
 gboolean
-pk_client_get_files (PkClient *client, const gchar *package, GError **error)
+pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1635,11 +1641,11 @@ pk_client_get_files (PkClient *client, const gchar *package, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -1655,7 +1661,7 @@ pk_client_get_files (PkClient *client, const gchar *package, GError **error)
  * pk_client_remove_package_action:
  **/
 gboolean
-pk_client_remove_package_action (PkClient *client, const gchar *package,
+pk_client_remove_package_action (PkClient *client, const gchar *package_id,
 				 gboolean allow_deps, gboolean autoremove,
 				 GError **error)
 {
@@ -1666,7 +1672,7 @@ pk_client_remove_package_action (PkClient *client, const gchar *package,
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackage", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1677,13 +1683,14 @@ pk_client_remove_package_action (PkClient *client, const gchar *package,
  * pk_client_remove_package:
  **/
 gboolean
-pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow_deps, gboolean autoremove, GError **error)
+pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps, gboolean autoremove, GError **error)
 {
 	gboolean ret;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1694,10 +1701,10 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
 	client->priv->xcached_allow_deps = allow_deps;
 	client->priv->xcached_autoremove = autoremove;
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->xcached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
+	ret = pk_client_remove_package_action (client, package_id, allow_deps, autoremove, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -1706,7 +1713,7 @@ pk_client_remove_package (PkClient *client, const gchar *package, gboolean allow
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_remove_package_action (client, package, allow_deps, autoremove, &error_pk);
+			ret = pk_client_remove_package_action (client, package_id, allow_deps, autoremove, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -1793,7 +1800,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
  * pk_client_install_package_action:
  **/
 gboolean
-pk_client_install_package_action (PkClient *client, const gchar *package, GError **error)
+pk_client_install_package_action (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
@@ -1802,7 +1809,7 @@ pk_client_install_package_action (PkClient *client, const gchar *package, GError
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackage", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
@@ -1818,6 +1825,7 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1859,7 +1867,7 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
  * pk_client_update_package_action:
  **/
 gboolean
-pk_client_update_package_action (PkClient *client, const gchar *package, GError **error)
+pk_client_update_package_action (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
@@ -1868,7 +1876,7 @@ pk_client_update_package_action (PkClient *client, const gchar *package, GError 
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackage", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package,
+				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
@@ -1884,6 +1892,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id, GError **er
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1950,6 +1959,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (file != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2017,6 +2027,7 @@ pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (location != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2110,6 +2121,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (repo_id != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2180,6 +2192,9 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (repo_id != NULL, FALSE);
+	g_return_val_if_fail (parameter != NULL, FALSE);
+	g_return_val_if_fail (value != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
