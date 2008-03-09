@@ -287,15 +287,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # replace all multiple spaces by newlines
         p = re.compile(r'\s\s+', re.MULTILINE)
         desc = p.sub('\n', desc)
-        # Get the homepage of the package
-        # FIXME: switch to the new unreleased API
-        if pkg.candidateRecord.has_key('Homepage'):
-            homepage = pkg.candidateRecord['Homepage']
-        else:
-            homepage = ''
         #FIXME: group and licence information missing
         self.Description(pkg_id, 'unknown', 'unknown', desc,
-                         homepage, pkg.packageSize)
+                         pkg.homepage, pkg.packageSize)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
