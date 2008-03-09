@@ -43,7 +43,7 @@ try:
         iface.Init()
     if cmd == 'get-updates' or cmd == 'all':
         print "Testing GetUpdate()"
-        iface.GetUpdates()
+        iface.GetUpdates(FILTER_NONE)
     if cmd == 'search-name' or cmd == 'all':
         print "Testing SearchName(FILTER_NONE,'yum')"
         iface.SearchName(FILTER_NONE,'yum')
