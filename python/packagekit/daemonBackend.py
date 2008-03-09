@@ -144,7 +144,7 @@ class PackageKitBaseBackend(dbus.service.Object):
     def on_child_exit(pid, condition, data):
         pass
 
-    def _child_is_running(self):
+    def _is_child_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
             pklog.debug("in child_is_running, pid = %s" % self._child_pid)
