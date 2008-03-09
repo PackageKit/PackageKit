@@ -269,7 +269,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.NoPercentageUpdates()
         name, version, arch, data = self.get_package_from_id(pkg_id)
-        #FIXME: error handling
+        if not self._cache.has_key(name):
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+                           "Package %s isn't available" % name)
+            self.Finished(EXIT_FAILED)
+            return
         pkg = self._cache[name]
         #FIXME: should perhaps go to python-apt since we need this in
         #       several applications
@@ -342,6 +346,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         pkg = self._find_package_by_id(id)
+        if pkg == None:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+                           "Package %s isn't available" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         if not pkg.isInstalled:
             self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED, 
                            "Package %s isn't installed" % pkg.name)
@@ -378,6 +387,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         self.AllowCancel(False)
         pkg = self._find_package_by_id(id)
+        if pkg == None:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+                           "Package %s isn't available" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         if pkg.isInstalled:
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED, 
                            "Package %s is already installed" % pkg.name)
