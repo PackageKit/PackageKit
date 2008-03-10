@@ -15,6 +15,9 @@ Backend: conary
 Backend: pisi
     S.Çağlar Onur <caglar@pardus.org.tr>
 
+Backend: poldek
+    Marcin Banasiak <megabajt@pld-linux.org>
+
 Backend: zypp
     Boyd Timothy <btimothy@gmail.com>
     Scott Reeves <sreeves@novell.com>

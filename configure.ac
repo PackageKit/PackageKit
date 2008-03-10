@@ -176,6 +176,7 @@ AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend])
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
 AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enable_opkg=$enableval,enable_opkg=no)
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
+AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
@@ -190,6 +191,7 @@ AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
 AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backend])
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
+AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes], [using poldek backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
@@ -341,6 +343,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=smart
 	elif test -f /usr/bin/pisi ; then
 		with_default_backend=pisi
+	elif test -f /usr/bin/poldek ; then
+		with_default_backend=poldek
 	elif test -f /usr/bin/zypper ; then
 		with_default_backend=zypp
 	else
@@ -501,6 +505,13 @@ if test x$enable_alpm = xyes; then
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
 fi
 
+if test x$enable_poldek = xyes; then
+	POLDEK_CFLAGS="-I/usr/include/poldek"
+	POLDEK_LIBS="-lpoclidek -lpoldek"
+	AC_SUBST(POLDEK_CFLAGS)
+	AC_SUBST(POLDEK_LIBS)
+fi
+
 if test x$enable_zypp = xyes; then
 	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.3.1)
 	AC_SUBST(ZYPP_CFLAGS)
@@ -553,6 +564,7 @@ backends/yum2/Makefile
 backends/yum2/helpers/Makefile
 backends/pisi/Makefile
 backends/pisi/helpers/Makefile
+backends/poldek/Makefile
 backends/zypp/Makefile
 data/Makefile
 data/packagekit.pc
@@ -597,6 +609,7 @@ echo "
         dummy backend:             ${enable_dummy}
         OPKG backend:              ${enable_opkg}
         PiSi backend:              ${enable_pisi}
+        poldek backend:            ${enable_poldek}
         SMART backend:             ${enable_smart}
         YUM backend:               ${enable_yum}
         YUM2 backend:              ${enable_yum2}
