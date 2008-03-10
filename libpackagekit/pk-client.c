@@ -198,6 +198,11 @@ out:
 
 /**
  * pk_client_error_print:
+ * @error: a %GError
+ *
+ * Prints the error to the screen.
+ *
+ * Return value: %TRUE if error was printed
  **/
 gboolean
 pk_client_error_print (GError **error)
@@ -220,6 +225,7 @@ pk_client_error_print (GError **error)
 
 /**
  * pk_client_error_fixup:
+ * @error: a %GError
  **/
 static gboolean
 pk_client_error_fixup (GError **error)
@@ -242,6 +248,7 @@ pk_client_error_fixup (GError **error)
  * pk_client_set_tid:
  * @client: a valid #PkClient instance
  * @tid: a transaction id
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * This method sets the transaction ID that should be used for the DBUS method
  * and then watched for any callback signals.
@@ -270,6 +277,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
  * pk_client_set_promiscuous:
  * @client: a valid #PkClient instance
  * @enabled: if we should set promiscuous mode on
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * If we set the client promiscuous then it listens to all signals from
  * all transactions. You can't set promiscuous mode on an already set tid
@@ -292,6 +300,8 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled, GError **error)
 /**
  * pk_client_get_tid:
  * @client: a valid #PkClient instance
+ *
+ * The %tid is unique for this transaction.
  *
  * Return value: The transaction_id we are using for this client, or %NULL
  **/
@@ -327,6 +337,7 @@ pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
  * pk_client_set_use_buffer:
  * @client: a valid #PkClient instance
  * @use_buffer: if we should use the package buffer
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * If the package buffer is enabled then after the transaction has completed
  * then the package list can be retrieved in one go, rather than processing
@@ -353,6 +364,9 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
  * pk_client_set_synchronous:
  * @client: a valid #PkClient instance
  * @synchronous: if we should do the method synchronous
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * A synchronous mode allows us to listen in all transactions.
  *
  * Return value: %TRUE if the synchronous mode was enabled
  **/
@@ -370,6 +384,9 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
  * pk_client_set_name_filter:
  * @client: a valid #PkClient instance
  * @name_filter: if we should check for previous packages before we emit
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * A name filter lets us do client side filtering.
  *
  * Return value: %TRUE if the name_filter mode was enabled
  **/
@@ -386,6 +403,8 @@ pk_client_set_name_filter (PkClient *client, gboolean name_filter, GError **erro
 /**
  * pk_client_get_use_buffer:
  * @client: a valid #PkClient instance
+ *
+ * Are we using a client side package buffer?
  *
  * Return value: %TRUE if the package buffer is enabled
  **/
@@ -425,6 +444,9 @@ pk_client_get_require_restart (PkClient *client)
  * pk_client_package_buffer_get_size:
  * @client: a valid #PkClient instance
  *
+ * We do not provide access to the internal package list (as it could be being
+ * updated) so provide a way to get access to the current size here.
+ *
  * Return value: The size of the package buffer.
  **/
 guint
@@ -443,6 +465,9 @@ pk_client_package_buffer_get_size (PkClient *client)
  * @client: a valid #PkClient instance
  * @item: the item in the package buffer
  *
+ * We do not provide access to the internal package list (as it could be being
+ * updated) so provide a way to get access to objects here.
+ *
  * Return value: The #PkPackageItem or %NULL if not found or invalid
  **/
 PkPackageItem *
@@ -459,6 +484,7 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 /**
  * pk_client_reset:
  * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * Resetting the client way be needed if we canceled the request without
  * waiting for ::finished, or if we want to reuse the #PkClient without
@@ -887,6 +913,15 @@ pk_client_allow_cancel_cb (DBusGProxy *proxy, const gchar *tid,
 
 /**
  * pk_client_get_allow_cancel:
+ * @client: a valid #PkClient instance
+ * @allow_cancel: %TRUE if we are able to cancel the transaction
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Should we be allowed to cancel this transaction?
+ * The tid should have been set with pk_client_set_tid() if this is being done
+ * on a foreign object.
+ *
+ * Return value: %TRUE if the daemon serviced the request
  */
 gboolean
 pk_client_get_allow_cancel (PkClient *client, gboolean *allow_cancel, GError **error)
@@ -988,6 +1023,14 @@ pk_client_message_cb (DBusGProxy  *proxy, const gchar *tid,
 
 /**
  * pk_client_get_status:
+ * @client: a valid #PkClient instance
+ * @status: a PkStatusEnum value such as %PK_STATUS_ENUM_WAITING
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Gets the status of a transaction.
+ * A transaction has one roles in it's lifetime, but many values of status.
+ *
+ * Return value: %TRUE if we found the status successfully
  **/
 gboolean
 pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
@@ -1021,6 +1064,14 @@ pk_client_get_status (PkClient *client, PkStatusEnum *status, GError **error)
 
 /**
  * pk_client_get_package:
+ * @client: a valid #PkClient instance
+ * @package: a %package_id or free text string
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Gets the aim of the transaction, e.g. what was asked to be installed or
+ * searched for.
+ *
+ * Return value: %TRUE if we found the status successfully
  **/
 gboolean
 pk_client_get_package (PkClient *client, gchar **package, GError **error)
@@ -1049,6 +1100,19 @@ pk_client_get_package (PkClient *client, gchar **package, GError **error)
 
 /**
  * pk_client_get_progress:
+ * @client: a valid #PkClient instance
+ * @percentage: the percentage complete of the transaction
+ * @subpercentage: the percentage complete of the sub-transaction
+ * @elapsed: the duration so far of the transaction
+ * @remaining: the estimated time to completion of the transaction
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * To show the user a progress bar or dialog is much more friendly than
+ * just a pulsing bar, so we can return this information here.
+ * NOTE: the %time_remaining value is guessed and may not be accurate if the
+ * backend does not do frequent calls to pk_backend_set_percentage().
+ *
+ * Return value: %TRUE if we found the progress successfully
  **/
 gboolean
 pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentage,
@@ -1080,6 +1144,15 @@ pk_client_get_progress (PkClient *client, guint *percentage, guint *subpercentag
 
 /**
  * pk_client_get_role:
+ * @client: a valid #PkClient instance
+ * @role: a PkRoleEnum value such as %PK_ROLE_ENUM_UPDATE_SYSTEM
+ * @package_id: the primary %package_id or thing associated with the role
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The role is the action of the transaction as does not change for the entire
+ * lifetime of the transaction.
+ *
+ * Return value: %TRUE if we found the status successfully
  **/
 gboolean
 pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GError **error)
@@ -1126,6 +1199,16 @@ pk_client_get_role (PkClient *client, PkRoleEnum *role, gchar **package_id, GErr
 
 /**
  * pk_client_cancel:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Cancel the transaction if possible.
+ * This is good idea when downloading or depsolving, but not when writing
+ * to the disk.
+ * The daemon shouldn't let you do anything stupid, so it's quite safe to call
+ * this method.
+ *
+ * Return value: %TRUE if we cancelled successfully
  **/
 gboolean
 pk_client_cancel (PkClient *client, GError **error)
@@ -1154,6 +1237,13 @@ pk_client_cancel (PkClient *client, GError **error)
 
 /**
  * pk_client_allocate_transaction_id:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We have to create a transaction ID then use it, as a one-step constructor
+ * is inherently racey.
+ *
+ * Return value: %TRUE if we allocated a TID.
  **/
 static gboolean
 pk_client_allocate_transaction_id (PkClient *client, GError **error)
@@ -1182,6 +1272,13 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 
 /**
  * pk_client_get_updates:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get a list of all the packages that can be updated for all repositories.
+ *
+ * Return value: %TRUE if we got told the daemon to get the update list
  **/
 gboolean
 pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
@@ -1217,7 +1314,7 @@ pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
 /**
  * pk_client_update_system_action:
  **/
-gboolean
+static gboolean
 pk_client_update_system_action (PkClient *client, GError **error)
 {
 	gboolean ret;
@@ -1233,6 +1330,17 @@ pk_client_update_system_action (PkClient *client, GError **error)
 
 /**
  * pk_client_update_system:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Update all the packages on the system with the highest versions found in all
+ * repositories.
+ * NOTE: you can't choose what repositories to update from, but you can do:
+ * - pk_client_repo_disable()
+ * - pk_client_update_system()
+ * - pk_client_repo_enable()
+ *
+ * Return value: %TRUE if we told the daemon to update the system
  **/
 gboolean
 pk_client_update_system (PkClient *client, GError **error)
@@ -1279,6 +1387,15 @@ pk_client_update_system (PkClient *client, GError **error)
 
 /**
  * pk_client_search_name:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @search: free text to search for, for instance, "power"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Search all the locally installed files and remote repositories for a package
+ * that matches a specific name.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_search_name (PkClient *client, const gchar *filter, const gchar *search, GError **error)
@@ -1315,6 +1432,16 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 
 /**
  * pk_client_search_details:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @search: free text to search for, for instance, "power"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Search all detailed summary information to try and find a keyword.
+ * Think of this as pk_client_search_name(), but trying much harder and
+ * taking longer.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_search_details (PkClient *client, const gchar *filter, const gchar *search, GError **error)
@@ -1351,6 +1478,14 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 
 /**
  * pk_client_search_group:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @search: a group enum to search for, for instance, "system-tools"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Return all packages in a specific group.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_search_group (PkClient *client, const gchar *filter, const gchar *search, GError **error)
@@ -1387,6 +1522,14 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 
 /**
  * pk_client_search_file:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @search: file to search for, for instance, "/sbin/service"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Search for packages that provide a specific file.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_search_file (PkClient *client, const gchar *filter, const gchar *search, GError **error)
@@ -1423,6 +1566,14 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 
 /**
  * pk_client_get_depends:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @recursive: If we should search recursively for depends
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the packages that depend this one, i.e. child->parent.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
@@ -1468,6 +1619,14 @@ pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recur
 
 /**
  * pk_client_get_requires:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @recursive: If we should search recursively for requires
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the packages that require this one, i.e. parent->child.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
@@ -1513,6 +1672,14 @@ pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recu
 
 /**
  * pk_client_get_update_detail:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get details about the specific update, for instance any CVE urls and
+ * severity information.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError **error)
@@ -1556,6 +1723,14 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 
 /**
  * pk_client_rollback:
+ * @client: a valid #PkClient instance
+ * @transaction_id: a transaction_id structure
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Roll back to a previous transaction. I think only conary supports this right
+ * now, but it's useful to add an abstract way of doing it.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **error)
@@ -1590,6 +1765,16 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 
 /**
  * pk_client_resolve:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @package: the package name to resolve, e.g. "gnome-system-tools"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Resolve a package name into a %package_id. This can return installed and
+ * available packages and allows you find out if a package is installed locally
+ * or is available in a repository.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, GError **error)
@@ -1627,6 +1812,14 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 
 /**
  * pk_client_get_description:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Det a description of a package, so more information can be obtained for GUI
+ * or command line tools.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_get_description (PkClient *client, const gchar *package_id, GError **error)
@@ -1670,6 +1863,13 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 
 /**
  * pk_client_get_files:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the file list (i.e. a list of files installed) for the specified package.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
@@ -1714,7 +1914,7 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 /**
  * pk_client_remove_package_action:
  **/
-gboolean
+static gboolean
 pk_client_remove_package_action (PkClient *client, const gchar *package_id,
 				 gboolean allow_deps, gboolean autoremove,
 				 GError **error)
@@ -1735,9 +1935,21 @@ pk_client_remove_package_action (PkClient *client, const gchar *package_id,
 
 /**
  * pk_client_remove_package:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @allow_deps: if other dependant packages are allowed to be removed from the computer
+ * @autoremove: if other packages installed at the same time should be tried to remove
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Remove a package (optionally with dependancies) from the system.
+ * If %allow_deps is set to %FALSE, and other packages would have to be removed,
+ * then the transaction would fail.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps, gboolean autoremove, GError **error)
+pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps,
+			  gboolean autoremove, GError **error)
 {
 	gboolean ret;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
@@ -1795,7 +2007,7 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 /**
  * pk_client_refresh_cache_action:
  **/
-gboolean
+static gboolean
 pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error)
 {
 	gboolean ret;
@@ -1812,6 +2024,16 @@ pk_client_refresh_cache_action (PkClient *client, gboolean force, GError **error
 
 /**
  * pk_client_refresh_cache:
+ * @client: a valid #PkClient instance
+ * @force: if we shoudl aggressively drop caches
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Refresh the cache, i.e. download new metadata from a remote URL so that
+ * package lists are up to date.
+ * This action may take a few minutes and should be done when the session and
+ * system are idle.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
@@ -1861,7 +2083,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 /**
  * pk_client_install_package_action:
  **/
-gboolean
+static gboolean
 pk_client_install_package_action (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
@@ -1878,6 +2100,13 @@ pk_client_install_package_action (PkClient *client, const gchar *package_id, GEr
 
 /**
  * pk_client_install_package:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Install a package of the newest and most correct version.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_install_package (PkClient *client, const gchar *package_id, GError **error)
@@ -1936,7 +2165,7 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 /**
  * pk_client_update_package_action:
  **/
-gboolean
+static gboolean
 pk_client_update_package_action (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
@@ -1953,6 +2182,13 @@ pk_client_update_package_action (PkClient *client, const gchar *package_id, GErr
 
 /**
  * pk_client_update_package:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Update a specific package to the newest available version.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_update_package (PkClient *client, const gchar *package_id, GError **error)
@@ -2011,7 +2247,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id, GError **er
 /**
  * pk_client_install_file_action:
  **/
-gboolean
+static gboolean
 pk_client_install_file_action (PkClient *client, const gchar *file, GError **error)
 {
 	gboolean ret;
@@ -2028,6 +2264,14 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
 
 /**
  * pk_client_install_file:
+ * @client: a valid #PkClient instance
+ * @file: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Install a file locally, and get the deps from the repositories.
+ * This is useful for double clicking on a .rpm or .deb file.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_install_file (PkClient *client, const gchar *file, GError **error)
@@ -2079,7 +2323,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 /**
  * pk_client_service_pack_action:
  **/
-gboolean
+static gboolean
 pk_client_service_pack_action (PkClient *client, const gchar *location, GError **error)
 {
 	gboolean ret;
@@ -2096,6 +2340,13 @@ pk_client_service_pack_action (PkClient *client, const gchar *location, GError *
 
 /**
  * pk_client_service_pack:
+ * @client: a valid #PkClient instance
+ * @location: a location such as "/dev/cdrom"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Install a service pack CD of updates or new functionality.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
 pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
@@ -2145,6 +2396,12 @@ pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 
 /**
  * pk_client_get_repo_list:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the list of repositories installed on the system.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
 pk_client_get_repo_list (PkClient *client, GError **error)
@@ -2172,7 +2429,7 @@ pk_client_get_repo_list (PkClient *client, GError **error)
 /**
  * pk_client_repo_enable_action:
  **/
-gboolean
+static gboolean
 pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
 {
 	gboolean ret;
@@ -2190,6 +2447,14 @@ pk_client_repo_enable_action (PkClient *client, const gchar *repo_id, gboolean e
 
 /**
  * pk_client_repo_enable:
+ * @client: a valid #PkClient instance
+ * @repo_id: a repo_id structure such as "livna-devel"
+ * @enabled: if we should enable the repository
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Enable or disable the repository.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
 pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled, GError **error)
@@ -2240,7 +2505,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 /**
  * pk_client_repo_set_data_action:
  **/
-gboolean
+static gboolean
 pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 				const gchar *parameter, const gchar *value, GError **error)
 {
@@ -2260,6 +2525,16 @@ pk_client_repo_set_data_action (PkClient *client, const gchar *repo_id,
 
 /**
  * pk_client_repo_set_data:
+ * @client: a valid #PkClient instance
+ * @repo_id: a repo_id structure such as "livna-devel"
+ * @parameter: the parameter to change
+ * @value: what we should change it to
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We may want to set a repository parameter.
+ * NOTE: this is free text, and is left to the backend to define a format.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
 pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *parameter,
@@ -2316,6 +2591,11 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 
 /**
  * pk_client_get_actions:
+ * @client: a valid #PkClient instance
+ *
+ * Actions are roles that the daemon can do with the current backend
+ *
+ * Return value: an enumerated list of the actions the backend supports
  **/
 PkEnumList *
 pk_client_get_actions (PkClient *client)
@@ -2350,6 +2630,15 @@ pk_client_get_actions (PkClient *client)
 
 /**
  * pk_client_get_backend_detail:
+ * @client: a valid #PkClient instance
+ * @name: the name of the backend
+ * @author: the author of the backend
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * The backend detail is useful for the pk-backend-status program, or for
+ * automatic bugreports.
+ *
+ * Return value: %TRUE if the daemon serviced the request
  **/
 gboolean
 pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, GError **error)
@@ -2388,6 +2677,15 @@ pk_client_get_backend_detail (PkClient *client, gchar **name, gchar **author, GE
 
 /**
  * pk_client_get_time_since_action:
+ * @client: a valid #PkClient instance
+ * @role: the role we are querying
+ * @seconds: the number of seconds since the request was completed
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We may want to know how long it has been since we refreshed the cache or
+ * retrieved the update list.
+ *
+ * Return value: %TRUE if the daemon serviced the request
  **/
 gboolean
 pk_client_get_time_since_action (PkClient *client, PkRoleEnum role, guint *seconds, GError **error)
@@ -2410,6 +2708,14 @@ pk_client_get_time_since_action (PkClient *client, PkRoleEnum role, guint *secon
 
 /**
  * pk_client_is_caller_active:
+ * @client: a valid #PkClient instance
+ * @is_active: if the caller of the method is still alive
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * If the caller is no longer active, we may want to show a warning or message
+ * as a libnotify box as the application can't handle it internally any more.
+ *
+ * Return value: %TRUE if the daemon serviced the request
  **/
 gboolean
 pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **error)
@@ -2430,6 +2736,13 @@ pk_client_is_caller_active (PkClient *client, gboolean *is_active, GError **erro
 
 /**
  * pk_client_get_groups:
+ * @client: a valid #PkClient instance
+ *
+ * The group list is enumerated so it can be localised and have deep
+ * integration with desktops.
+ * This method allows a frontend to only display the groups that are supported.
+ *
+ * Return value: an enumerated list of the groups the backend supports
  **/
 PkEnumList *
 pk_client_get_groups (PkClient *client)
@@ -2464,6 +2777,13 @@ pk_client_get_groups (PkClient *client)
 
 /**
  * pk_client_get_old_transactions:
+ * @client: a valid #PkClient instance
+ * @number: the number of past transactions to return, or 0 for all
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the old transaction list, mainly used for the rollback viewer.
+ *
+ * Return value: %TRUE if the daemon serviced the request
  **/
 gboolean
 pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
@@ -2489,6 +2809,11 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 
 /**
  * pk_client_get_filters:
+ * @client: a valid #PkClient instance
+ *
+ * Filters are how the backend can specify what type of package is returned.
+ *
+ * Return value: an enumerated list of the filters the backend supports
  **/
 PkEnumList *
 pk_client_get_filters (PkClient *client)
@@ -2524,6 +2849,7 @@ pk_client_get_filters (PkClient *client)
 /**
  * pk_client_requeue:
  * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
  *
  * We might need to requeue if we want to take an existing #PkClient instance
  * and re-run it after completion. Doing this allows us to do things like
@@ -2716,6 +3042,7 @@ pk_client_class_init (PkClientClass *klass)
 
 /**
  * pk_client_connect:
+ * @client: a valid #PkClient instance
  **/
 static void
 pk_client_connect (PkClient *client)
@@ -2834,11 +3161,13 @@ pk_client_init (PkClient *client)
 
 	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* RepoDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_BOOL,
-					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
 	/* UpdateDetail */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
@@ -3013,6 +3342,11 @@ pk_client_finalize (GObject *object)
 
 /**
  * pk_client_new:
+ *
+ * PkClient is a nice GObject wrapper for PackageKit and makes writing
+ * frontends easy.
+ *
+ * Return value: A new %PkClient instance
  **/
 PkClient *
 pk_client_new (void)

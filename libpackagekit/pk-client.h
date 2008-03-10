@@ -118,7 +118,7 @@ gboolean	 pk_client_get_progress			(PkClient	*client,
 							 guint		*remaining,
 							 GError		**error);
 gboolean	 pk_client_get_package			(PkClient	*client,
-							 gchar		**package_id,
+							 gchar		**package,
 							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error);
@@ -178,7 +178,7 @@ gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
 gboolean	 pk_client_install_file			(PkClient	*client,
-							 const gchar	*full_path,
+							 const gchar	*file,
 							 GError		**error);
 gboolean	 pk_client_service_pack			(PkClient	*client,
 							 const gchar	*location,
