@@ -196,13 +196,19 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Searching for package name: %s" % search)
         self._check_init()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self.NoPercentageUpdates()
 
         self.StatusChanged(STATUS_QUERY)
 
         for pkg in self._cache:
-            if search in pkg.name and self._is_package_visible(pkg, filters):
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            elif search in pkg.name and self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
@@ -213,7 +219,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Searching for package name: %s" % search)
         self._check_init()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
@@ -225,6 +231,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         enquire.set_query(query)
         matches = enquire.get_mset(0, 1000)
         for m in matches:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED, 
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
             name = m[xapian.MSET_DOCUMENT].get_data()
             if self._cache.has_key(name):
                 pkg = self._cache[name]
@@ -243,11 +255,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Get updates")
         self.StatusChanged(STATUS_INFO)
         self._check_init()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self.NoPercentageUpdates()
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
-            self._emit_package(pkg)
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED, 
+                               "Calculating updates was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            else:
+                self._emit_package(pkg)
         self._open_cache()
         self.Finished(EXIT_SUCCESS)
 
