@@ -173,31 +173,34 @@ pk_filter_new_from_string (const gchar *filter_text)
 	/* create new object, all set FALSE */
 	filter = pk_filter_new ();
 
+	/* by default we pass something, unless it's present in the negative */
+	pk_filter_set_all (filter, TRUE);
+
 	while (sections[i]) {
 		if (pk_strequal (sections[i], "installed")) {
-			filter->installed = TRUE;
+			filter->not_installed = FALSE;
 		} else if (pk_strequal (sections[i], "~installed")) {
-			filter->not_installed = TRUE;
+			filter->installed = FALSE;
 		} else if (pk_strequal (sections[i], "devel")) {
-			filter->devel = TRUE;
+			filter->not_devel = FALSE;
 		} else if (pk_strequal (sections[i], "~devel")) {
-			filter->not_devel = TRUE;
+			filter->devel = FALSE;
 		} else if (pk_strequal (sections[i], "gui")) {
-			filter->gui = TRUE;
+			filter->not_gui = FALSE;
 		} else if (pk_strequal (sections[i], "~gui")) {
-			filter->not_gui = TRUE;
+			filter->gui = FALSE;
 		} else if (pk_strequal (sections[i], "supported")) {
-			filter->supported = TRUE;
+			filter->not_supported = FALSE;
 		} else if (pk_strequal (sections[i], "~supported")) {
-			filter->not_supported = TRUE;
+			filter->supported = FALSE;
 		} else if (pk_strequal (sections[i], "visible")) {
-			filter->visible = TRUE;
+			filter->not_visible = FALSE;
 		} else if (pk_strequal (sections[i], "~visible")) {
-			filter->not_visible = TRUE;
+			filter->visible = FALSE;
 		} else if (pk_strequal (sections[i], "basename")) {
-			filter->basename = TRUE;
+			filter->not_basename = FALSE;
 		} else if (pk_strequal (sections[i], "~basename")) {
-			filter->not_basename = TRUE;
+			filter->basename = FALSE;
 		} else {
 			pk_warning ("element '%s' not recognised", sections[i]);
 			ret = FALSE;
