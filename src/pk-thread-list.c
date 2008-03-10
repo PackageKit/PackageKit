@@ -96,6 +96,11 @@ pk_thread_list_create (PkThreadList *tlist, PkThreadFunc func, gpointer param, g
 	item->data = data;
 	item->running = TRUE;
 	item->thread = g_thread_create (pk_thread_list_item_new, item, TRUE, NULL);
+	if (item->thread == NULL) {
+		pk_warning ("thread could not be created");
+		g_free (item);
+		return FALSE;
+	}
 
 	/* add to list */
 	g_ptr_array_add (tlist->priv->thread_list, item);
@@ -179,12 +184,35 @@ pk_thread_list_init (PkThreadList *tlist)
 }
 
 /**
+ * pk_thread_free_data:
+ **/
+static gboolean
+pk_thread_free_data (PkThreadList *tlist)
+{
+	guint i;
+	guint length;
+	PkThreadListItem *item;
+
+	g_return_val_if_fail (tlist != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
+
+	length = tlist->priv->thread_list->len;
+	for (i=0; i<length; i++) {
+		item = (PkThreadListItem *) g_ptr_array_index (tlist->priv->thread_list, 0);
+		g_ptr_array_remove_index (tlist->priv->thread_list, 0);
+		g_free (item);
+	}
+	return TRUE;
+}
+
+/**
  * pk_thread_list_finalize:
  * @object: The object to finalize
  **/
 static void
 pk_thread_list_finalize (GObject *object)
 {
+	guint running;
 	PkThreadList *tlist;
 
 	g_return_if_fail (object != NULL);
@@ -192,6 +220,17 @@ pk_thread_list_finalize (GObject *object)
 
 	tlist = PK_THREAD_LIST (object);
 	g_return_if_fail (tlist->priv != NULL);
+
+	/* wait for existing threads to finish */
+	pk_thread_list_wait (tlist);
+
+	/* be paranoid */
+	running = pk_thread_list_number_running (tlist);
+	if (running > 0) {
+		pk_warning ("running=%i", running);
+	}
+
+	pk_thread_free_data (tlist);
 	g_ptr_array_free (tlist->priv->thread_list, TRUE);
 	G_OBJECT_CLASS (pk_thread_list_parent_class)->finalize (object);
 }
