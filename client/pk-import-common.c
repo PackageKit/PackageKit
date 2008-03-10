@@ -43,8 +43,8 @@ pk_import_get_locale_list (void)
 	name = g_dir_read_name (dir);
 	while (name != NULL) {
 		pk_debug ("locale=%s", name);
-		name = g_dir_read_name (dir);
 		g_ptr_array_add (locale_array, g_strdup (name));
+		name = g_dir_read_name (dir);
 	}
 	g_dir_close (dir);
 	return locale_array;

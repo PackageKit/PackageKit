@@ -479,6 +479,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_AVAILABLE)
+        except yum.Errors.GroupsError,e:
+            self.error(ERROR_GROUP_NOT_FOUND,e)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
