@@ -252,6 +252,28 @@ pk_time_add_data (PkTime *time, guint percentage)
 }
 
 /**
+ * pk_time_free_data:
+ **/
+static gboolean
+pk_time_free_data (PkTime *time)
+{
+	guint i;
+	guint length;
+	gpointer mem;
+
+	g_return_val_if_fail (time != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
+
+	length = time->priv->array->len;
+	for (i=0; i<length; i++) {
+		mem = g_ptr_array_index (time->priv->array, 0);
+		g_ptr_array_remove_index (time->priv->array, 0);
+		g_free (mem);
+	}
+	return TRUE;
+}
+
+/**
  * pk_time_reset:
  **/
 gboolean
@@ -266,8 +288,8 @@ pk_time_reset (PkTime *time)
 	time->priv->average_max = PK_TIME_AVERAGE_DEFAULT_MAX;
 	time->priv->value_min = PK_TIME_VALUE_DEFAULT_MIN;
 	time->priv->value_max = PK_TIME_VALUE_DEFAULT_MAX;
-	g_ptr_array_set_size (time->priv->array, 0);
 	g_timer_reset (time->priv->timer);
+	pk_time_free_data (time);
 
 	return TRUE;
 }
@@ -311,6 +333,7 @@ pk_time_finalize (GObject *object)
 
 	time = PK_TIME (object);
 	g_return_if_fail (time->priv != NULL);
+	pk_time_free_data (time);
 	g_ptr_array_free (time->priv->array, TRUE);
 	g_timer_destroy (time->priv->timer);
 
