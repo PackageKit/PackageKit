@@ -7,6 +7,7 @@
 #include <zypp/media/MediaManager.h>
 #include <zypp/Resolvable.h>
 #include <zypp/ResPool.h>
+#include <zypp/ResFilters.h>
 
 #include <list>
 #include <set>
@@ -18,11 +19,16 @@ typedef zypp::ui::Selectable::Ptr ZyppSelectable;
 typedef zypp::ui::Selectable*		ZyppSelectablePtr;
 typedef zypp::ResObject::constPtr	ZyppObject;
 typedef zypp::Package::constPtr		ZyppPackage;
-typedef zypp::Patch::constPtr		ZyppPatch;
-typedef zypp::Pattern::constPtr		ZyppPattern;
+//typedef zypp::Patch::constPtr		ZyppPatch;
+//typedef zypp::Pattern::constPtr		ZyppPattern;
 //inline ZyppPackage tryCastToZyppPkg (ZyppObject obj)
 //	{ return zypp::dynamic_pointer_cast <const zypp::Package> (obj); }
-typedef std::set<zypp::PoolItem> Candidates;
+
+typedef enum {
+        INSTALL,
+        REMOVE,
+        UPDATE
+} PerformType;
 
 zypp::ZYpp::Ptr get_zypp ();
 
@@ -94,6 +100,21 @@ gboolean zypp_signature_required (PkBackend *backend, const std::string &file);
   * Ask the User if it is OK to refresh the Repo while we don't know the key, only its id which was never seen before
   */
 gboolean zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id);
+
+/**
+  * Find best (according to edition) uninstalled item with the same kind/name/arch as item.
+  */
+zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item);
+
+/**
+  * Returns a set of all packages the could be updated
+  */
+std::set<zypp::PoolItem> * zypp_get_updates ();
+
+/**
+  * perform changes in pool to the system
+  */
+gboolean zypp_perform_execution (PkBackend *backend, PerformType type);
 
 void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
 #endif // _ZYPP_UTILS_H_

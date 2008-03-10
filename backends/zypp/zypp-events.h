@@ -185,11 +185,48 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	}
 };
 
+struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zypp::target::rpm::RemoveResolvableReport>, ZyppBackendReceiver
+{
+	zypp::Resolvable::constPtr _resolvable;
+
+	virtual void start (zypp::Resolvable::constPtr resolvable)
+	{
+		clear_package_id ();
+		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
+		if (_package_id != NULL) {
+			pk_backend_set_status (_backend, PK_STATUS_ENUM_REMOVE);
+			pk_backend_package (_backend, PK_INFO_ENUM_REMOVING, _package_id, "");
+			reset_sub_percentage ();
+		}
+	}
+
+	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
+	{
+		if (_package_id != NULL)
+			update_sub_percentage (value);
+		return true;
+	}
+
+	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description)
+	{
+                pk_backend_error_code (_backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, description.c_str ());
+		return ABORT;
+	}
+
+	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason)
+	{
+		if (_package_id != NULL) {
+			pk_backend_package (_backend, PK_INFO_ENUM_AVAILABLE, _package_id, "");
+			clear_package_id ();
+		}
+	}
+};
+
 struct RepoProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::ProgressReport>, ZyppBackendReceiver
 {
 	virtual void start (const zypp::ProgressData &data)
 	{
-		//fprintf (stderr, "\n\n----> RepoProgressReportReceiver::start()\n\n");
+		pk_debug ("_____________- RepoProgressReportReceiver::start()___________________");
 		reset_sub_percentage ();
 	}
 
@@ -210,7 +247,7 @@ struct RepoReportReceiver : public zypp::callback::ReceiveReport<zypp::repo::Rep
 {
 	virtual void start (const zypp::ProgressData &data)
 	{
-		//fprintf (stderr, "\n\n----> RepoReportReceiver::start()\n");
+		pk_debug ("______________________ RepoReportReceiver::start()________________________");
 		reset_sub_percentage ();
 	}
 
@@ -289,6 +326,38 @@ struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRin
 
 };
 
+struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::media::MediaChangeReport>, ZyppBackendReceiver
+{
+        virtual Action requestMedia (zypp::Url &url, unsigned mediaNr, zypp::media::MediaChangeReport::Error error, const std::string &probl)
+        {
+                pk_backend_error_code (_backend,
+                                PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+                                probl.c_str ());
+                // We've to abort here, because there is currently no feasible way to inform the user to insert/change media
+                return ABORT;
+        }
+};
+
+struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::ProgressReport>, ZyppBackendReceiver
+{
+        virtual void start (const zypp::ProgressData &progress)
+        {
+		pk_debug ("__________________________ProgressReportReceiver____________________________");
+                reset_sub_percentage ();
+        }
+
+        virtual bool progress (const zypp::ProgressData &progress)
+        {
+                update_sub_percentage ((int)progress.val ());
+		return true;
+        }
+
+        virtual void finish (const zypp::ProgressData &progress)
+        {
+                update_sub_percentage ((int)progress.val ());
+        }
+};
+
 }; // namespace ZyppBackend
 
 class EventDirector
@@ -299,8 +368,11 @@ class EventDirector
 		ZyppBackend::RepoReportReceiver _repoReport;
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
+		ZyppBackend::RemoveResolvableReportReceiver _removeResolvableReport;
 		ZyppBackend::DownloadProgressReportReceiver _downloadProgressReport;
                 ZyppBackend::KeyRingReportReceiver _keyRingReport;
+                ZyppBackend::MediaChangeReportReceiver _mediaChangeReport;
+                ZyppBackend::ProgressReportReceiver _progressReport;
 
 	public:
 		EventDirector (PkBackend *backend)
@@ -314,11 +386,20 @@ class EventDirector
 			_installResolvableReport.initWithBackend (backend);
 			_installResolvableReport.connect ();
 
-			_downloadProgressReport.initWithBackend (backend);
+			_removeResolvableReport.initWithBackend (backend);
+			_removeResolvableReport.connect ();
+                        
+                        _downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
 
                         _keyRingReport.initWithBackend (backend);
                         _keyRingReport.connect ();
+
+                        _mediaChangeReport.initWithBackend (backend);
+                        _mediaChangeReport.connect ();
+                        
+                        _progressReport.initWithBackend (backend);
+                        _progressReport.connect ();
 		}
 
 		~EventDirector ()
@@ -326,8 +407,11 @@ class EventDirector
 			_repoReport.disconnect ();
 			_repoProgressReport.disconnect ();
 			_installResolvableReport.disconnect ();
+			_removeResolvableReport.disconnect ();
 			_downloadProgressReport.disconnect ();
                         _keyRingReport.disconnect ();
+                        _mediaChangeReport.disconnect ();
+                        _progressReport.disconnect ();
 		}
 };
 

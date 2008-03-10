@@ -471,53 +471,6 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
 }
 
-/**
- * Collect items, select best edition.  This is used to find the best
- * available or installed.  The name of the class is a bit misleading though ...
- */
-class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
-{
-	public:
-		zypp::PoolItem best;
-
-	bool operator() (zypp::PoolItem provider)
-	{
-		if ((provider.status ().isLocked () == FALSE) && (!best || best->edition ().compare (provider->edition ()) < 0)) {
-			best = provider;
-		}
-
-		return true;
-	}
-};
-
-/**
- * The following method was taken directly from zypper code
- *
- * Find best (according to edition) uninstalled item
- * with the same kind/name/arch as item.
- * Similar to zypp::solver::detail::Helper::findUpdateItem
- * but that allows changing the arch (#222140).
- */
-static zypp::PoolItem
-findArchUpdateItem (const zypp::ResPool & pool, zypp::PoolItem item)
-{
-	LookForArchUpdate info;
-
-	invokeOnEach (pool.byIdentBegin (item),
-			pool.byIdentEnd (item),
-			// get uninstalled, equal kind and arch, better edition
-			zypp::functor::chain (
-				zypp::functor::chain (
-					zypp::functor::chain (
-						zypp::resfilter::ByUninstalled (),
-						zypp::resfilter::ByKind (item->kind ())),
-					zypp::resfilter::byArch<zypp::CompareByEQ<zypp::Arch> > (item->arch ())),
-				zypp::resfilter::byEdition<zypp::CompareByGT<zypp::Edition> > (item->edition ())),
-			zypp::functor::functorRef<bool,zypp::PoolItem> (info));
-
-	return info.best;
-}
-
 static gboolean
 backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 {
@@ -530,22 +483,11 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
-	Candidates candidates;
-	zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
-	zypp::ResPool::byKind_iterator it = pool.byKindBegin (kind);
-	zypp::ResPool::byKind_iterator e = pool.byKindEnd (kind);
-	for (; it != e; ++it) {
-		if (it->status ().isUninstalled ())
-			continue;
-		zypp::PoolItem candidate = findArchUpdateItem (pool, *it);
-		if (!candidate.resolvable ())
-			continue;
-
-		candidates.insert (candidate);
-	}
+        // get all Packages for Update
+        std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
 
 	pk_backend_set_percentage (backend, 80);
-	Candidates::iterator cb = candidates.begin (), ce = candidates.end (), ci;
+        std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		zypp::ResObject::constPtr res = ci->resolvable();
 
@@ -558,7 +500,8 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		g_free (package_id);
 	}
 
-	pk_backend_set_percentage (backend, 100);
+	delete (candidates);
+        pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -572,6 +515,51 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
+}
+
+static gboolean
+backend_update_system_thread (PkBackendThread *thread, gpointer data)
+{
+	PkBackend *backend;
+	
+	backend = pk_backend_thread_get_backend (thread);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	zypp::ResPool pool = zypp_build_pool (TRUE);
+	pk_backend_set_percentage (backend, 40);
+
+        // get all Packages for Update
+        std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
+
+	pk_backend_set_percentage (backend, 80);
+        std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+                // set the status of the update to ToBeInstalled
+                zypp::ResStatus &status = ci->status ();
+                status.setToBeInstalled (zypp::ResStatus::USER);
+	}
+        
+        if (!zypp_perform_execution (backend, UPDATE)) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
+                pk_backend_finished (backend);
+                return FALSE;
+        }
+
+        delete (candidates);
+	pk_backend_set_percentage (backend, 100);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_update_system
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+        g_return_if_fail (backend != NULL);
+        pk_backend_thread_create (thread, backend_update_system_thread, NULL);
 }
 
 static gboolean
@@ -635,49 +623,25 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 40);
 
-		// Gather up any dependencies
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-		if (zypp->resolver ()->resolvePool () == FALSE) {
-			// Manual intervention required to resolve dependencies
-			// TODO: Figure out what we need to do with PackageKit
-			// to pull off interactive problem solving.
-			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
-			g_free (package_id);
-			pk_package_id_free (pi);
-			pk_backend_finished (backend);
-			return FALSE;
-		}
+		if (!zypp_perform_execution (backend, INSTALL)) {
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
+                        g_free (package_id);
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
 
-		pk_backend_set_percentage (backend, 60);
-
-		// Perform the installation
-		// TODO: If this were an update, you should use PK_INFO_ENUM_UPDATING instead
-		zypp::ZYppCommitPolicy policy;
-		policy.restrictToMedia (0);	// 0 - install all packages regardless to media
-		zypp::ZYppCommitResult result = zypp->commit (policy);
-
-                // Reset the Status of this Item
                 item.statusReset ();
-
 		pk_backend_set_percentage (backend, 100);
 
-		// TODO: Check result for success
-	} catch (const zypp::repo::RepoNotFoundException &ex) {
-		// TODO: make sure this dumps out the right sring.
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
-		g_free (package_id);
-		pk_package_id_free (pi);
-		pk_backend_finished (backend);
-		return FALSE;
-	} catch (const zypp::Exception &ex) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		g_free (package_id);
-		pk_package_id_free (pi);
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-	g_free (package_id);
+        } catch (const zypp::Exception &ex) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+                g_free (package_id);
+                pk_package_id_free (pi);
+                pk_backend_finished (backend);
+                return FALSE;
+        }
+	
+        g_free (package_id);
 	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return TRUE;
@@ -828,27 +792,14 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 40);
 
-//printf ("Resolving dependencies...\n");
-// TODO: Figure out what to do about d->deps_behavior
-		// Gather up any dependencies
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-		if (zypp->resolver ()->resolvePool () == FALSE) {
-			// Manual intervention required to resolve dependencies
-			// TODO: Figure out what we need to do with PackageKit
-			// to pull off interactive problem solving.
-			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
-			g_free (d->package_id);
-			g_free (d);
-			pk_package_id_free (pi);
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
-		pk_backend_set_percentage (backend, 60);
-
-		zypp::ZYppCommitPolicy policy;
-		zypp::ZYppCommitResult result = zypp->commit (policy);
-printf ("Finished the removal.\n");
+                if (!zypp_perform_execution (backend, REMOVE)){
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't remove the package");
+                        g_free (d->package_id);
+                        g_free (d);
+                        pk_package_id_free (pi);
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
 
 		pk_backend_set_percentage (backend, 100);
 
@@ -1533,7 +1484,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_group,    		/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* update_package */
-	NULL,					/* update_system */
+	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */

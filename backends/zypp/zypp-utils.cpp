@@ -1,6 +1,3 @@
-#ifndef _ZYPP_UTILS_H_
-#define _ZYPP_UTILS_H_
-
 #include <stdlib.h>
 #include <glib.h>
 #include <zypp/ZYpp.h>
@@ -14,6 +11,7 @@
 #include <zypp/RepoInfo.h>
 #include <zypp/repo/RepoException.h>
 #include <zypp/parser/ParseException.h>
+#include <zypp/base/Algorithm.h>
 #include <zypp/Pathname.h>
 #include <zypp/Patch.h>
 #include <zypp/Package.h>
@@ -24,6 +22,25 @@
 #include <pk-backend.h>
 
 #include "zypp-utils.h"
+
+/**
+ * Collect items, select best edition.  This is used to find the best
+ * available or installed.  The name of the class is a bit misleading though ...
+ */
+class LookForArchUpdate : public zypp::resfilter::PoolItemFilterFunctor
+{
+	public:
+		zypp::PoolItem best;
+
+	bool operator() (zypp::PoolItem provider)
+	{
+		if ((provider.status ().isLocked () == FALSE) && (!best || best->edition ().compare (provider->edition ()) < 0)) {
+			best = provider;
+		}
+
+		return true;
+	}
+};
 
 /**
  * Initialize Zypp (Factory method)
@@ -393,5 +410,103 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 	}
 }
 
-#endif // _ZYPP_UTILS_H_
+/**
+ * The following method was taken directly from zypper code
+ *
+ * Find best (according to edition) uninstalled item
+ * with the same kind/name/arch as item.
+ * Similar to zypp::solver::detail::Helper::findUpdateItem
+ * but that allows changing the arch (#222140).
+ */
+zypp::PoolItem
+zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item)
+{
+	LookForArchUpdate info;
 
+	invokeOnEach (pool.byIdentBegin (item),
+			pool.byIdentEnd (item),
+			// get uninstalled, equal kind and arch, better edition
+			zypp::functor::chain (
+				zypp::functor::chain (
+					zypp::functor::chain (
+						zypp::resfilter::ByUninstalled (),
+						zypp::resfilter::ByKind (item->kind ())),
+					zypp::resfilter::byArch<zypp::CompareByEQ<zypp::Arch> > (item->arch ())),
+				zypp::resfilter::byEdition<zypp::CompareByGT<zypp::Edition> > (item->edition ())),
+			zypp::functor::functorRef<bool,zypp::PoolItem> (info));
+
+	return info.best;
+}
+
+std::set<zypp::PoolItem> *
+zypp_get_updates ()
+{
+        std::set<zypp::PoolItem> *pks = new std::set<zypp::PoolItem> ();
+        zypp::ResPool pool = zypp::ResPool::instance ();
+        
+        zypp::ResObject::Kind kind = zypp::ResTraits<zypp::Package>::kind;
+        zypp::ResPool::byKind_iterator it = pool.byKindBegin (kind);
+        zypp::ResPool::byKind_iterator e = pool.byKindEnd (kind);
+
+        for (; it != e; ++it) {
+                if (it->status ().isUninstalled ())
+                        continue;
+                zypp::PoolItem candidate =  zypp_find_arch_update_item (pool, *it);
+                if (!candidate.resolvable ())
+                        continue;
+                pks->insert (candidate);
+        }
+
+        return pks;
+}
+
+gboolean
+zypp_perform_execution (PkBackend *backend, PerformType type)
+{
+        try {
+                zypp::ZYpp::Ptr zypp = get_zypp ();
+
+                // Gather up any dependencies
+                pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+                if (zypp->resolver ()->resolvePool () == FALSE) {
+                       // Manual intervention required to resolve dependencies
+                       // TODO: Figure out what we need to do with PackageKit
+                       // to pull off interactive problem solving.
+
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
+        
+                switch (type) {
+                        case INSTALL:
+                                pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+                                break;
+                        case REMOVE:
+                                pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+                                break;
+                        case UPDATE:
+                                pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+                                break;
+                };
+
+                // Perform the installation
+                zypp::ZYppCommitPolicy policy;
+                policy.restrictToMedia (0);	// 0 - install all packages regardless to media
+                zypp::ZYppCommitResult result = zypp->commit (policy);
+        
+                // TODO: Check result for success
+
+        } catch (const zypp::repo::RepoNotFoundException &ex) {
+                // TODO: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return FALSE;
+	}       
+        
+        return TRUE;
+}
