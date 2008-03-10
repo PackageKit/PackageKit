@@ -1474,7 +1474,7 @@ libst_backend (LibSelfTest *test)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
+	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
 	libst_loopcheck (test);
 
 	if (number_messages == 1) {
