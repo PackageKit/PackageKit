@@ -133,6 +133,7 @@ pk_backend_build_library_path (PkBackend *backend)
 
 	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->name != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
 #if PK_BUILD_LOCAL
@@ -164,7 +165,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	if (backend->priv->handle != NULL) {
+	if (backend->priv->name != NULL) {
 		pk_warning ("pk_backend_set_name called multiple times");
 		return FALSE;
 	}
@@ -178,6 +179,9 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	if (handle == NULL) {
 		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
 		g_free (path);
+		/* we free the name, as we might be trying to find one that passes */
+		g_free (backend->priv->name);
+		backend->priv->name = NULL;
 		return FALSE;
 	}
 	g_free (path);
