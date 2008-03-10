@@ -38,6 +38,7 @@ libpackagekit_include_HEADERS =					\
 	pk-connection.h						\
 	pk-network.h						\
 	pk-package-id.h						\
+	pk-package-ids.h					\
 	pk-package-list.h					\
 	pk-enum-list.h						\
 	pk-enum.h						\
@@ -62,6 +63,8 @@ libpackagekit_la_SOURCES =					\
 	pk-network.h						\
 	pk-package-id.c						\
 	pk-package-id.h						\
+	pk-package-ids.c					\
+	pk-package-ids.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
 	pk-enum-list.c						\
