@@ -26,7 +26,37 @@
 
 G_BEGIN_DECLS
 
-gboolean	 pk_filter_check			(const gchar	*filter);
+/**
+ * PkFilter:
+ *
+ * Convenience object that is unwrapped.
+ **/
+typedef struct {
+	gboolean installed;
+	gboolean not_installed;
+	gboolean devel;
+	gboolean not_devel;
+	gboolean gui;
+	gboolean not_gui;
+	gboolean supported;
+	gboolean not_supported;
+	gboolean visible;
+	gboolean not_visible;
+	gboolean basename;
+	gboolean not_basename;
+} PkFilter;
+
+gboolean	 pk_filter_check			(const gchar	*filter)
+							 G_GNUC_WARN_UNUSED_RESULT;
+PkFilter	*pk_filter_new				(void)
+							 G_GNUC_WARN_UNUSED_RESULT;
+PkFilter	*pk_filter_new_from_string		(const gchar	*filter)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_filter_to_string			(PkFilter	*filter)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_filter_free				(PkFilter	*filter);
+gboolean	 pk_filter_set_all			(PkFilter	*filter,
+							 gboolean 	 value);
 
 G_END_DECLS
 
