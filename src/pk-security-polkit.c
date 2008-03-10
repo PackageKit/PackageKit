@@ -55,7 +55,7 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
 /**
  * pk_security_can_do_action:
  **/
-static PolKitResult
+G_GNUC_WARN_UNUSED_RESULT static PolKitResult
 pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const gchar *action)
 {
 	PolKitResult pk_result;

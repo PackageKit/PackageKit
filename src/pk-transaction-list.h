@@ -65,10 +65,12 @@ PkTransactionItem *pk_transaction_list_create		(PkTransactionList	*tlist);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
 							 PkTransactionItem	*item);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
-							 PkTransactionItem	*item);
+							 PkTransactionItem	*item)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);
-gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist);
+gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist)
+							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
 PkTransactionItem *pk_transaction_list_get_from_tid	(PkTransactionList	*tlist,
 							 const gchar		*tid);

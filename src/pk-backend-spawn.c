@@ -77,7 +77,7 @@ G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
  * If you are editing this function creating a new backend,
  * then you are probably doing something wrong.
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_backend_spawn_parse_common_output (PkBackendSpawn *backend_spawn, const gchar *line)
 {
 	gchar **sections;
@@ -200,7 +200,7 @@ out:
  * If you are editing this function creating a new backend,
  * then you are probably doing something wrong.
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_backend_spawn_parse_common_error (PkBackendSpawn *backend_spawn, const gchar *line)
 {
 	gchar **sections;
@@ -421,9 +421,13 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *b
 static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
+	gboolean ret;
 	g_return_if_fail (backend_spawn != NULL);
 	pk_debug ("stdout from %p = '%s'", spawn, line);
-	pk_backend_spawn_parse_common_output (backend_spawn, line);
+	ret = pk_backend_spawn_parse_common_output (backend_spawn, line);
+	if (!ret) {
+		pk_warning ("failed to parse '%s'", line);
+	}
 }
 
 /**
@@ -432,9 +436,13 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 static void
 pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
+	gboolean ret;
 	g_return_if_fail (backend_spawn != NULL);
 	pk_debug ("stderr from %p = '%s'", spawn, line);
-	pk_backend_spawn_parse_common_error (backend_spawn, line);
+	ret = pk_backend_spawn_parse_common_error (backend_spawn, line);
+	if (!ret) {
+		pk_warning ("failed to parse '%s'", line);
+	}
 }
 
 /**
@@ -701,8 +709,8 @@ libst_backend_spawn (LibSelfTest *test)
 	}
 
 	/* needed to avoid an error */
-	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
-	pk_backend_lock (backend_spawn->priv->backend);
+	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+	ret = pk_backend_lock (backend_spawn->priv->backend);
 
 	/************************************************************
 	 **********       Check parsing common error      ***********
@@ -806,7 +814,7 @@ libst_backend_spawn (LibSelfTest *test)
 	}
 
 	/* needed to avoid an error */
-	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
 
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");
@@ -843,9 +851,9 @@ libst_backend_spawn (LibSelfTest *test)
 	backend_spawn = pk_backend_spawn_new ();
 
 	/* needed to avoid an error */
-	pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
-	pk_backend_lock (backend_spawn->priv->backend);
+	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
+	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
+	ret = pk_backend_lock (backend_spawn->priv->backend);
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_spawn->priv->backend, "finished",

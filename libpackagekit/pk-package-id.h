@@ -39,20 +39,26 @@ typedef struct {
 } PkPackageId;
 
 PkPackageId	*pk_package_id_new			(void);
-PkPackageId	*pk_package_id_new_from_string		(const gchar	*package_id);
+PkPackageId	*pk_package_id_new_from_string		(const gchar	*package_id)
+							 G_GNUC_WARN_UNUSED_RESULT;
 PkPackageId	*pk_package_id_new_from_list		(const gchar	*name,
 							 const gchar	*version,
 							 const gchar	*arch,
-							 const gchar	*data);
+							 const gchar	*data)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_package_id_build			(const gchar	*name,
 							 const gchar	*version,
 							 const gchar	*arch,
-							 const gchar	*data);
-gchar		*pk_package_id_to_string		(PkPackageId	*ident);
+							 const gchar	*data)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_package_id_to_string		(PkPackageId	*ident)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_id_free			(PkPackageId	*ident);
-gboolean	 pk_package_id_check			(const gchar	*package_id);
+gboolean	 pk_package_id_check			(const gchar	*package_id)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_id_equal			(const gchar	*pid1,
-							 const gchar	*pid2);
+							 const gchar	*pid2)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

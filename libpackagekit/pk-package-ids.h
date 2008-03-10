@@ -28,11 +28,13 @@ G_BEGIN_DECLS
 
 gchar		**pk_package_ids_from_va_list		(const gchar	*package_id_first,
 							 va_list	*args);
-gboolean	 pk_package_ids_check			(gchar		**package_ids);
+gboolean	 pk_package_ids_check			(gchar		**package_ids)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_package_ids_print			(gchar		**package_ids);
 guint		 pk_package_ids_size			(gchar		**package_ids);
 gchar		*pk_package_ids_to_text			(gchar		**package_ids,
-							 const gchar	*delimiter);
+							 const gchar	*delimiter)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

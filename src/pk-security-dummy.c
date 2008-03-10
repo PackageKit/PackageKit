@@ -50,7 +50,7 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
  * Only valid from an async caller, which is fine, as we won't prompt the user
  * when not async.
  **/
-gboolean
+G_GNUC_WARN_UNUSED_RESULT gboolean
 pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 			       PkRoleEnum role, gchar **error_detail)
 {

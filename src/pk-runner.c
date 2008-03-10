@@ -128,11 +128,6 @@ pk_runner_set_role (PkRunner *runner, PkRoleEnum role)
 	return TRUE;
 }
 
-//package_cb
-//	/* save in case we need this from coldplug */
-//	g_free (backend->priv->last_package);
-//	backend->priv->last_package = g_strdup (package);
-
 /**
  * pk_runner_get_package:
  **/
@@ -245,7 +240,7 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 /**
  * pk_runner_set_running:
  */
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_runner_set_running (PkRunner *runner)
 {
 	PkBackendDesc *desc;
@@ -938,7 +933,7 @@ pk_runner_connection_changed_cb (LibGBus *libgbus, gboolean connected, PkRunner 
 /**
  * pk_runner_tid_valid:
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_runner_tid_valid (PkRunner *runner)
 {
 	const gchar *c_tid;

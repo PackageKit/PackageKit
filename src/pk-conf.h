@@ -53,7 +53,8 @@ GType		 pk_conf_get_type		(void);
 PkConf		*pk_conf_new			(void);
 
 gchar		*pk_conf_get_string		(PkConf		*conf,
-						 const gchar	*key);
+						 const gchar	*key)
+						 G_GNUC_WARN_UNUSED_RESULT;
 gint		 pk_conf_get_int		(PkConf		*conf,
 						 const gchar	*key);
 

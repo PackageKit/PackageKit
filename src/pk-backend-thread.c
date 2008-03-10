@@ -213,8 +213,8 @@ libst_backend_thread (LibSelfTest *test)
 	}
 
 	/* needed to call initialize and destroy */
-	pk_backend_set_name (backend, "dummy");
-	pk_backend_lock (backend);
+	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_lock (backend);
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
@@ -243,8 +243,8 @@ libst_backend_thread (LibSelfTest *test)
 	backend = pk_backend_thread_get_backend (backend_thread);
 
 	/* needed to call initialize and destroy */
-	pk_backend_set_name (backend, "dummy");
-	pk_backend_lock (backend);
+	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_lock (backend);
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false");
@@ -273,8 +273,8 @@ libst_backend_thread (LibSelfTest *test)
 	backend = pk_backend_thread_get_backend (backend_thread);
 
 	/* needed to call initialize and destroy */
-	pk_backend_set_name (backend, "dummy");
-	pk_backend_lock (backend);
+	ret = pk_backend_set_name (backend, "dummy");
+	ret = pk_backend_lock (backend);
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");

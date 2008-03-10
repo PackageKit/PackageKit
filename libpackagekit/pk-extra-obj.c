@@ -146,7 +146,14 @@ libst_extra_obj (LibSelfTest *test)
 
 	/* should be single instance */
 	extra = pk_extra_new ();
-	pk_extra_set_database (extra, "extra.db");
+	/************************************************************/
+	libst_title (test, "set database");
+	ret = pk_extra_set_database (extra, "extra.db");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	/* set correct locale */
 	pk_extra_set_locale (extra, "en_GB");

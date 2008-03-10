@@ -24,10 +24,13 @@
 
 G_BEGIN_DECLS
 
-gchar		*pk_transaction_id_generate		(void);
-gboolean	 pk_transaction_id_check		(const gchar	*tid);
+gchar		*pk_transaction_id_generate		(void)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_transaction_id_check		(const gchar	*tid)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_transaction_id_equal		(const gchar	*tid1,
-							 const gchar	*tid2);
+							 const gchar	*tid2)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

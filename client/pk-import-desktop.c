@@ -199,6 +199,7 @@ main (int argc, char *argv[])
 {
 	GOptionContext *context;
 	gboolean verbose = FALSE;
+	gboolean ret;
 	gchar *database_location = NULL;
 	gchar *desktop_location = NULL;
 
@@ -230,10 +231,15 @@ main (int argc, char *argv[])
 
 	client = pk_client_new ();
 	extra = pk_extra_new ();
-	pk_extra_set_database (extra, database_location);
+	ret = pk_extra_set_database (extra, database_location);
+	if (!ret) {
+		pk_warning ("could not open database %s", database_location);
+		goto out;
+	}
 
 	pk_desktop_process_directory (desktop_location);
 
+out:
 	g_ptr_array_free (locale_array, TRUE);
 	g_object_unref (extra);
 	g_object_unref (client);

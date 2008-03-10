@@ -50,9 +50,11 @@ GType		 pk_polkit_client_get_type		(void);
 PkPolkitClient	*pk_polkit_client_new			(void);
 
 gboolean	 pk_polkit_client_gain_privilege	(PkPolkitClient	*pclient,
-							 const gchar	*pk_action);
+							 const gchar	*pk_action)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_polkit_client_gain_privilege_str	(PkPolkitClient	*pclient,
-							 const gchar	*error_str);
+							 const gchar	*error_str)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_polkit_client_error_denied_by_policy(GError		*error);
 
 G_END_DECLS

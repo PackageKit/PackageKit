@@ -1306,8 +1306,8 @@ libst_backend_dbus (LibSelfTest *test)
 			  G_CALLBACK (pk_backend_dbus_test_package_cb), backend_dbus);
 
 	/* needed to avoid an error */
-	pk_backend_set_name (backend_dbus->priv->backend, "test_dbus");
-	pk_backend_lock (backend_dbus->priv->backend);
+	ret = pk_backend_set_name (backend_dbus->priv->backend, "test_dbus");
+	ret = pk_backend_lock (backend_dbus->priv->backend);
 
 	/************************************************************/
 	libst_title (test, "set the name and activate");

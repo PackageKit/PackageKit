@@ -48,32 +48,43 @@ G_BEGIN_DECLS
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
 guint		 pk_strlen				(gchar		*text,
-							 guint		 max_length);
-gboolean	 pk_strzero				(const gchar	*text);
-gboolean	 pk_strvalidate				(const gchar	*text);
+							 guint		 max_length)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_strzero				(const gchar	*text)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_strvalidate				(const gchar	*text)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strequal				(const gchar	*id1,
-							 const gchar	*id2);
-gboolean	 pk_strnumber				(const gchar	*text);
+							 const gchar	*id2)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_strnumber				(const gchar	*text)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strtoint				(const gchar	*text,
 							 gint		*value);
 gboolean	 pk_strtouint				(const gchar	*text,
 							 guint		*value);
 gchar		*pk_strpad				(const gchar	*data,
-							 guint		 length);
+							 guint		 length)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_strpad_extra			(const gchar	*data,
 							 guint		 length,
-							 guint		*extra);
-gchar		*pk_strsafe				(const gchar	*text);
+							 guint		*extra)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_strsafe				(const gchar	*text)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		**pk_strsplit				(const gchar	*id,
 							 guint		 parts);
 gchar		*pk_strbuild_va				(const gchar	*first_element,
-							 va_list	*args);
+							 va_list	*args)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 const gchar	*id2,
 							 guint		 parts,
-							 guint		 compare);
+							 guint		 compare)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_filter_check			(const gchar	*filter);
-gchar		*pk_iso8601_present			(void);
+gchar		*pk_iso8601_present			(void)
+							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
 gboolean	 pk_delay_yield				(gfloat		 delay);
 

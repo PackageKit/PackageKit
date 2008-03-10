@@ -172,6 +172,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 {
 	guint i;
 	guint length;
+	gboolean ret;
 	PkTransactionItem *item;
 	PkTransactionFinished *finished;
 	const gchar *c_tid;
@@ -222,8 +223,11 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 			pk_debug ("running %s", item->tid);
 			item->running = TRUE;
 			pk_runner_set_tid (item->runner, item->tid);
-			pk_runner_run (item->runner);
-			break;
+			ret = pk_runner_run (item->runner);
+			/* only stop lookng if we run the job */
+			if (ret) {
+				break;
+			}
 		}
 	}
 }
@@ -261,6 +265,8 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 gboolean
 pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
@@ -276,7 +282,11 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
 		pk_debug ("running %s", item->tid);
 		item->running = TRUE;
 		pk_runner_set_tid (item->runner, item->tid);
-		pk_runner_run (item->runner);
+		ret = pk_runner_run (item->runner);
+		if (!ret) {
+			pk_warning ("unable to start first job");
+			return FALSE;
+		}
 	}
 
 	return TRUE;

@@ -51,7 +51,7 @@ static PkBackend *backend = NULL;
  *
  * Return value: success
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_object_register (DBusGConnection *connection,
 		    GObject	     *object,
 		    GError **error)
@@ -140,13 +140,17 @@ pk_main_timeout_check_cb (PkEngine *engine)
 static void
 pk_main_sigint_handler (int sig)
 {
+	gboolean ret;
 	pk_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
 
 	/* unlock the backend to call destroy - TODO: we shouldn't have to do this! */
-	pk_backend_unlock (backend);
+	ret = pk_backend_unlock (backend);
+	if (!ret) {
+		pk_warning ("failed to unlock in finalise!");
+	}
 
 	/* cleanup */
 	g_object_unref (backend);

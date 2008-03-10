@@ -523,6 +523,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
+	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -535,7 +536,11 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	}
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, update_text);
+	ret = pk_backend_check_newlines (backend, update_text);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", update_text);
+		return FALSE;
+	}
 
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
@@ -601,6 +606,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 {
 	va_list args;
 	gchar *buffer;
+	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -617,7 +623,11 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_end (args);
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, buffer);
+	ret = pk_backend_check_newlines (backend, buffer);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", buffer);
+		return FALSE;
+	}
 
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -657,6 +667,8 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			gulong size)
 {
 	gchar *description_safe;
+	gboolean ret;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -668,7 +680,11 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	}
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, description);
+	ret = pk_backend_check_newlines (backend, description);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", description);
+		return FALSE;
+	}
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
@@ -1097,6 +1113,7 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 static void
 pk_backend_finalize (GObject *object)
 {
+	gboolean ret;
 	PkBackend *backend;
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND (object));
@@ -1119,7 +1136,10 @@ pk_backend_finalize (GObject *object)
 	}
 
 	/* unlock the backend to call destroy */
-	pk_backend_unlock (backend);
+	ret = pk_backend_unlock (backend);
+	if (!ret) {
+		pk_warning ("failed to unlock in finalise!");
+	}
 
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
@@ -1433,7 +1453,14 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "an error has already been set");
 	}
 
-	pk_backend_lock (backend);
+	/************************************************************/
+	libst_title (test, "lock again");
+	ret = pk_backend_lock (backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to unlock");
+	}
 
 	/************************************************************/
 	libst_title (test, "check we enforce finished after error_code");
