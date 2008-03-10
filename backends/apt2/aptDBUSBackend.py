@@ -58,6 +58,16 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 gobject.threads_init()
 dbus.glib.threads_init()
 
+def threaded(func):
+    '''
+    Decorator to run a method in a separate thread
+    '''
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+        thread.start()
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
     Handle the cache opening process
@@ -145,16 +155,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
     '''
-
-    def threaded(func):
-        '''
-        Decorator to run a method in a separate thread
-        '''
-        def wrapper(*args, **kwargs):
-            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-            thread.start()
-        wrapper.__name__ = func.__name__
-        return wrapper
 
     def locked(func):
         '''
