@@ -52,12 +52,16 @@ struct _PkBackendClass
 
 GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(void);
-gboolean	 pk_backend_lock			(PkBackend	*backend);
-gboolean	 pk_backend_unlock			(PkBackend	*backend);
+gboolean	 pk_backend_lock			(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_backend_unlock			(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_reset			(PkBackend	*backend);
 gboolean	 pk_backend_set_name			(PkBackend	*backend,
-							 const gchar	*name);
-gchar		*pk_backend_get_name			(PkBackend	*backend);
+							 const gchar	*name)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_backend_get_name			(PkBackend	*backend)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
 							 gchar		**name,
 							 gchar		**author);

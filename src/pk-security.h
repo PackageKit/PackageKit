@@ -53,7 +53,8 @@ PkSecurity	*pk_security_new		(void);
 gboolean	 pk_security_action_is_allowed	(PkSecurity	*security,
 						 const gchar	*dbus_sender,
 						 PkRoleEnum	 role,
-						 gchar		**error_detail);
+						 gchar		**error_detail)
+						 G_GNUC_WARN_UNUSED_RESULT;
 
 G_END_DECLS
 

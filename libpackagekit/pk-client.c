@@ -313,7 +313,7 @@ pk_client_get_tid (PkClient *client)
  * Return value: %TRUE if tid1 and tid2 are equal
  * TODO: only compare first two sections...
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
 	if (tid1 == NULL || tid2 == NULL) {

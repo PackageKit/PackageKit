@@ -74,7 +74,7 @@ pk_inhibit_locked (PkInhibit *inhibit)
 /**
  * pk_inhibit_lock:
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_lock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
@@ -115,7 +115,7 @@ pk_inhibit_lock (PkInhibit *inhibit)
 /**
  * pk_inhibit_unlock:
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_inhibit_unlock (PkInhibit *inhibit)
 {
 	GError *error = NULL;
@@ -160,6 +160,7 @@ gboolean
 pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 {
 	guint i;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
@@ -173,9 +174,9 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 	g_ptr_array_add (inhibit->priv->array, data);
 	/* do inhibit */
 	if (inhibit->priv->array->len == 1) {
-		pk_inhibit_lock (inhibit);
+		ret = pk_inhibit_lock (inhibit);
 	}
-	return TRUE;
+	return ret;
 }
 
 /**
@@ -185,6 +186,7 @@ gboolean
 pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 {
 	guint i;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
@@ -193,9 +195,9 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
 			g_ptr_array_remove_index (inhibit->priv->array, i);
 			if (inhibit->priv->array->len == 0) {
-				pk_inhibit_unlock (inhibit);
+				ret = pk_inhibit_unlock (inhibit);
 			}
-			return TRUE;
+			return ret;
 		}
 	}
 	pk_debug ("cannot find item %p", data);
@@ -209,13 +211,18 @@ static void
 pk_inhibit_finalize (GObject *object)
 {
 	PkInhibit *inhibit;
+	gboolean ret;
+
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_INHIBIT (object));
 	inhibit = PK_INHIBIT (object);
 
 	/* force an unlock if we are inhibited */
 	if (inhibit->priv->is_locked == TRUE) {
-		pk_inhibit_unlock (inhibit);
+		ret = pk_inhibit_unlock (inhibit);
+		if (!ret) {
+			pk_warning ("failed to unock on finalise!");
+		}
 	}
 	g_ptr_array_free (inhibit->priv->array, TRUE);
 	g_object_unref (inhibit->priv->proxy);

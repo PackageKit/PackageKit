@@ -52,7 +52,8 @@ GType		 pk_spawn_get_type		  	(void);
 PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_command			(PkSpawn	*spawn,
-							 const gchar	*command);
+							 const gchar	*command)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_spawn_kill				(PkSpawn	*spawn);
 
 G_END_DECLS

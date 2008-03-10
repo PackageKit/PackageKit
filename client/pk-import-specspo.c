@@ -127,6 +127,7 @@ main (int argc, char *argv[])
 {
 	GOptionContext *context;
 	gboolean verbose = FALSE;
+	gboolean ret;
 	gchar *database_location = NULL;
 	const gchar *package;
 	guint i;
@@ -153,7 +154,11 @@ main (int argc, char *argv[])
 	package_array = pk_import_get_package_list ();
 
 	extra = pk_extra_new ();
-	pk_extra_set_database (extra, database_location);
+	ret = pk_extra_set_database (extra, database_location);
+	if (!ret) {
+		pk_warning ("could not open database %s", database_location);
+		goto out;
+	}
 
 	/* set the gettext bits */
 	textdomain (PK_SPECSPO_DOMAIN);
@@ -166,6 +171,7 @@ main (int argc, char *argv[])
 		pk_import_specspo_do_package (package);
 	}
 
+out:
 	g_object_unref (client);
 	g_object_unref (extra);
 	g_ptr_array_free (package_array, TRUE);

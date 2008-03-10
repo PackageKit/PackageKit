@@ -61,7 +61,8 @@ gboolean	 pk_enum_list_set_type			(PkEnumList	*elist,
 							 PkEnumListType	 type);
 gboolean	 pk_enum_list_from_string		(PkEnumList	*elist,
 							 const gchar	*enums);
-gchar		*pk_enum_list_to_string			(PkEnumList	*elist);
+gchar		*pk_enum_list_to_string			(PkEnumList	*elist)
+							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_enum_list_size			(PkEnumList	*elist);
 guint		 pk_enum_list_get_item			(PkEnumList	*elist,
 							 guint		 item);

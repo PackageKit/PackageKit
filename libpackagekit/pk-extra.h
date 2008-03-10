@@ -62,7 +62,8 @@ PkExtra		*pk_extra_new				(void);
 gboolean	 pk_extra_set_locale			(PkExtra	*extra,
 							 const gchar	*locale);
 gboolean	 pk_extra_set_database			(PkExtra	*extra,
-							 const gchar	*filename);
+							 const gchar	*filename)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_extra_get_localised_detail		(PkExtra	*extra,
 							 const gchar	*package,
 							 gchar		**summary);

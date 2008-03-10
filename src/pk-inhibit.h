@@ -49,7 +49,8 @@ typedef struct
 GType		 pk_inhibit_get_type		(void);
 PkInhibit	*pk_inhibit_new			(void);
 
-gboolean	 pk_inhibit_locked		(PkInhibit	*inhibit);
+gboolean	 pk_inhibit_locked		(PkInhibit	*inhibit)
+						 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_inhibit_add			(PkInhibit	*inhibit,
 						 gpointer	 data);
 gboolean	 pk_inhibit_remove		(PkInhibit	*inhibit,

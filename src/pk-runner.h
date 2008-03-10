@@ -52,7 +52,8 @@ typedef struct
 /* general */
 GType		 pk_runner_get_type			(void);
 PkRunner	*pk_runner_new				(void);
-gboolean	 pk_runner_run				(PkRunner      *runner);
+gboolean	 pk_runner_run				(PkRunner      *runner)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_runner_cancel			(PkRunner	*runner,
 							 gchar		**error_text);
 gboolean	 pk_runner_get_depends			(PkRunner	*runner,

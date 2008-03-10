@@ -25,6 +25,7 @@
 #include <pk-backend-thread.h>
 #include <unistd.h>
 #include <pk-debug.h>
+#include <pk-filter.h>
 #include <string>
 #include <set>
 
@@ -942,57 +943,21 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	}
 }
 
-/* TODO: this was taken directly from pk-backend-box.c.  Perhaps this
- * ought to be part of libpackagekit? */
 static void
-parse_filter (const gchar *filter, gboolean *installed, gboolean *available,
-	      gboolean *devel, gboolean *nondevel, gboolean *gui, gboolean *text)
-{
-	gchar **sections = NULL;
-	gint i = 0;
-
-	*installed = TRUE;
-	*available = TRUE;
-	*devel = TRUE;
-	*nondevel = TRUE;
-	*gui = TRUE;
-	*text = TRUE;
-
-	sections = g_strsplit (filter, ";", 0);
-	while (sections[i]) {
-		if (strcmp(sections[i], "installed") == 0)
-			*available = FALSE;
-		if (strcmp(sections[i], "~installed") == 0)
-			*installed = FALSE;
-		if (strcmp(sections[i], "devel") == 0)
-			*nondevel = FALSE;
-		if (strcmp(sections[i], "~devel") == 0)
-			*devel = FALSE;
-		if (strcmp(sections[i], "gui") == 0)
-			*text = FALSE;
-		if (strcmp(sections[i], "~gui") == 0)
-			*gui = FALSE;
-		i++;
-	}
-	g_strfreev (sections);
-}
-
-static void
-find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter_text, gint mode)
 {
 	//GList *list = NULL;
-	gboolean installed;
-	gboolean available;
-	gboolean devel;
-	gboolean nondevel;
-	gboolean gui;
-	gboolean text;
+	PkFilter *filter;
 
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	parse_filter (filter, &installed, &available, &devel, &nondevel, &gui, &text);
+	/* parse */
+	filter = pk_filter_new_from_string (filter_text)
+	if (filter == NULL) {
+		pk_error ("filter invalid, daemon broken");
+	}
 
 	pk_backend_no_percentage_updates (backend);
 
@@ -1015,7 +980,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	delete (v);
 /*
 	if (mode == SEARCH_TYPE_FILE) {
-		if (installed == FALSE && available == FALSE) {
+		if (filter->installed == FALSE && filter->not_installed == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
 		} else	{
 			list = box_db_repos_search_file_with_filter (db, search, search_filter);
@@ -1027,14 +992,14 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		add_packages_from_list (backend, list, FALSE);
 		box_db_repos_package_list_free (list);
 	} else {
-		if (installed == FALSE && available == FALSE) {
+		if (filter->installed == FALSE && filter->not_installed == FALSE) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
 		} else	{
-			if (installed == TRUE && available == TRUE) {
+			if (filter->installed == TRUE && filter->not_installed == TRUE) {
 				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
-			} else if (installed == TRUE) {
+			} else if (filter->installed == TRUE) {
 				list = box_db_repos_packages_search_installed(db, (gchar *)search, search_filter);
-			} else if (available == TRUE) {
+			} else if (filter->not_installed == TRUE) {
 				list = box_db_repos_packages_search_available(db, (gchar *)search, search_filter);
 			}
 			add_packages_from_list (backend, list, FALSE);
@@ -1042,6 +1007,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		}
 	}
 */
+	pk_filter_free (filter);
 }
 
 static gboolean

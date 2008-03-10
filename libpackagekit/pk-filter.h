@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,23 +19,45 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_PACKAGE_IDS_H
-#define __PK_PACKAGE_IDS_H
+#ifndef __PK_FILTER_H
+#define __PK_FILTER_H
 
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
-gchar		**pk_package_ids_from_va_list		(const gchar	*package_id_first,
-							 va_list	*args);
-gboolean	 pk_package_ids_check			(gchar		**package_ids)
+/**
+ * PkFilter:
+ *
+ * Convenience object that is unwrapped.
+ **/
+typedef struct {
+	gboolean installed;
+	gboolean not_installed;
+	gboolean devel;
+	gboolean not_devel;
+	gboolean gui;
+	gboolean not_gui;
+	gboolean supported;
+	gboolean not_supported;
+	gboolean visible;
+	gboolean not_visible;
+	gboolean basename;
+	gboolean not_basename;
+} PkFilter;
+
+gboolean	 pk_filter_check			(const gchar	*filter)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_package_ids_print			(gchar		**package_ids);
-guint		 pk_package_ids_size			(gchar		**package_ids);
-gchar		*pk_package_ids_to_text			(gchar		**package_ids,
-							 const gchar	*delimiter)
+PkFilter	*pk_filter_new				(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
+PkFilter	*pk_filter_new_from_string		(const gchar	*filter)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		*pk_filter_to_string			(PkFilter	*filter)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_filter_free				(PkFilter	*filter);
+gboolean	 pk_filter_set_all			(PkFilter	*filter,
+							 gboolean 	 value);
 
 G_END_DECLS
 
-#endif /* __PK_PACKAGE_IDS_H */
+#endif /* __PK_FILTER_H */

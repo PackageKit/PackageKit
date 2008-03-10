@@ -133,6 +133,7 @@ pk_backend_build_library_path (PkBackend *backend)
 
 	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (backend->priv->name != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
 #if PK_BUILD_LOCAL
@@ -164,7 +165,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	if (backend->priv->handle != NULL) {
+	if (backend->priv->name != NULL) {
 		pk_warning ("pk_backend_set_name called multiple times");
 		return FALSE;
 	}
@@ -178,6 +179,9 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	if (handle == NULL) {
 		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
 		g_free (path);
+		/* we free the name, as we might be trying to find one that passes */
+		g_free (backend->priv->name);
+		backend->priv->name = NULL;
 		return FALSE;
 	}
 	g_free (path);
@@ -194,6 +198,13 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 
 /**
  * pk_backend_lock:
+ *
+ * Responsible for initialising the external backend object.
+ *
+ * Typically this will involve taking database locks for exclusive package access.
+ * This method should only be called from the engine, unless the backend object
+ * is used in self-check code, in which case the lock and unlock will have to
+ * be done manually.
  **/
 gboolean
 pk_backend_lock (PkBackend *backend)
@@ -218,6 +229,12 @@ pk_backend_lock (PkBackend *backend)
 
 /**
  * pk_backend_unlock:
+ *
+ * Responsible for finalising the external backend object.
+ *
+ * Typically this will involve releasing database locks for any other access.
+ * This method should only be called from the engine, unless the backend object
+ * is used in self-check code, in which case it will have to be done manually.
  **/
 gboolean
 pk_backend_unlock (PkBackend *backend)
@@ -523,6 +540,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
+	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -535,7 +553,11 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	}
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, update_text);
+	ret = pk_backend_check_newlines (backend, update_text);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", update_text);
+		return FALSE;
+	}
 
 	/* replace unsafe chars */
 	update_text_safe = pk_strsafe (update_text);
@@ -601,6 +623,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 {
 	va_list args;
 	gchar *buffer;
+	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -617,7 +640,11 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_end (args);
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, buffer);
+	ret = pk_backend_check_newlines (backend, buffer);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", buffer);
+		return FALSE;
+	}
 
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -657,6 +684,8 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			gulong size)
 {
 	gchar *description_safe;
+	gboolean ret;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -668,7 +697,11 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	}
 
 	/* check for common mistakes */
-	pk_backend_check_newlines (backend, description);
+	ret = pk_backend_check_newlines (backend, description);
+	if (!ret) {
+		pk_debug ("failed common checks: %s", description);
+		return FALSE;
+	}
 
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
@@ -1118,9 +1151,6 @@ pk_backend_finalize (GObject *object)
 		g_source_remove (backend->priv->signal_error_timeout);
 	}
 
-	/* unlock the backend to call destroy */
-	pk_backend_unlock (backend);
-
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 
@@ -1269,6 +1299,7 @@ pk_backend_init (PkBackend *backend)
 PkBackend *
 pk_backend_new (void)
 {
+	pk_debug ("new object");
 	if (pk_backend_object != NULL) {
 		g_object_ref (pk_backend_object);
 	} else {
@@ -1309,7 +1340,7 @@ void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
-	const gchar *text;
+	gchar *text;
 	gboolean ret;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
@@ -1336,6 +1367,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "invalid name %s", text);
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "load an invalid backend");
@@ -1398,6 +1430,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "invalid name %s", text);
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "unlock an valid backend");
@@ -1433,14 +1466,21 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, "an error has already been set");
 	}
 
-	pk_backend_lock (backend);
+	/************************************************************/
+	libst_title (test, "lock again");
+	ret = pk_backend_lock (backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed to unlock");
+	}
 
 	/************************************************************/
 	libst_title (test, "check we enforce finished after error_code");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
+	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
 	libst_loopcheck (test);
 
 	if (number_messages == 1) {

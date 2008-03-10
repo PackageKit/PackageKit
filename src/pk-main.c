@@ -51,7 +51,7 @@ static PkBackend *backend = NULL;
  *
  * Return value: success
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_object_register (DBusGConnection *connection,
 		    GObject	     *object,
 		    GError **error)
@@ -144,9 +144,6 @@ pk_main_sigint_handler (int sig)
 
 	/* restore default ASAP, as the finalisers might hang */
 	signal (SIGINT, SIG_DFL);
-
-	/* unlock the backend to call destroy - TODO: we shouldn't have to do this! */
-	pk_backend_unlock (backend);
 
 	/* cleanup */
 	g_object_unref (backend);

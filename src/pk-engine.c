@@ -41,6 +41,7 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
+#include <pk-filter.h>
 #include <pk-network.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>
@@ -145,6 +146,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INPUT_INVALID, "InputInvalid"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_COMMIT_FAILED, "CommitFailed"),
 			{ 0, 0, 0 }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -705,9 +707,10 @@ pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 /**
  * pk_engine_item_commit:
  **/
-static gboolean
+G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 {
+	gboolean ret;
 	PkRoleEnum role;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -720,7 +723,11 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 	}
 
 	/* commit, so it appears in the JobList */
-	pk_transaction_list_commit (engine->priv->transaction_list, item);
+	ret = pk_transaction_list_commit (engine->priv->transaction_list, item);
+	if (!ret) {
+		pk_warning ("failed to commit (job not run?)");
+		return FALSE;
+	}
 
 	/* only save into the database for useful stuff */
 	role = pk_runner_get_role (item->runner);
@@ -791,7 +798,7 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 
 	/* could we actually do this, even with the right permissions? */
 	ret = pk_enum_list_contains (engine->priv->actions, role);
-	if (ret == FALSE) {
+	if (!ret) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "%s not supported", pk_role_enum_to_text (role));
 		return FALSE;
@@ -799,7 +806,7 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 
 	/* use security model to get auth */
 	ret = pk_security_action_is_allowed (engine->priv->security, dbus_sender, role, &error_detail);
-	if (ret == FALSE) {
+	if (!ret) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, error_detail);
 		return FALSE;
 	}
@@ -856,7 +863,7 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REFRESH_CACHE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -875,14 +882,22 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 	}
 
 	ret = pk_runner_refresh_cache (item->runner, force);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 			     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -912,7 +927,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -924,7 +939,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_updates (item->runner, filter);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -961,7 +976,15 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	}
 
 	/* only commit if we haven't emulated */
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 
 	dbus_g_method_return (context);
 }
@@ -1009,7 +1032,7 @@ pk_engine_search_check (const gchar *search, GError **error)
 		return FALSE;
 	}
 	ret = pk_strvalidate (search);
-	if (ret == FALSE) {
+	if (!ret) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid search term");
 		return FALSE;
@@ -1027,7 +1050,7 @@ pk_engine_filter_check (const gchar *filter, GError **error)
 
 	/* check for invalid input */
 	ret = pk_strvalidate (filter);
-	if (ret == FALSE) {
+	if (!ret) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid filter term");
 		return FALSE;
@@ -1035,7 +1058,7 @@ pk_engine_filter_check (const gchar *filter, GError **error)
 
 	/* check for invalid filter */
 	ret = pk_filter_check (filter);
-	if (ret == FALSE) {
+	if (!ret) {
 		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_FILTER_INVALID,
 				     "Filter '%s' is invalid", filter);
 		return FALSE;
@@ -1070,14 +1093,14 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter,
 
 	/* check the search term */
 	ret = pk_engine_search_check (search, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1089,13 +1112,21 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter,
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_search_name (item->runner, filter, search);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1126,14 +1157,14 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 
 	/* check the search term */
 	ret = pk_engine_search_check (search, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1145,13 +1176,21 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_search_details (item->runner, filter, search);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1182,14 +1221,14 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 
 	/* check the search term */
 	ret = pk_engine_search_check (search, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1201,13 +1240,21 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_search_group (item->runner, filter, search);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1238,14 +1285,14 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter,
 
 	/* check the search term */
 	ret = pk_engine_search_check (search, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1257,13 +1304,21 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter,
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_search_file (item->runner, filter, search);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1294,14 +1349,14 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
 
 	/* check the filter */
 	ret = pk_engine_filter_check (filter, &error);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check for sanity */
 	ret = pk_strvalidate (package);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1315,13 +1370,21 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_resolve (item->runner, filter, package);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1352,7 +1415,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1361,7 +1424,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1375,13 +1438,21 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_depends (item->runner, package_id, recursive);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1412,7 +1483,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1421,7 +1492,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1435,13 +1506,21 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_requires (item->runner, package_id, recursive);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1472,7 +1551,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1481,7 +1560,7 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1495,13 +1574,21 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_update_detail (item->runner, package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1532,7 +1619,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1541,7 +1628,7 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1555,13 +1642,21 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_description (item->runner, package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1592,7 +1687,7 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1601,7 +1696,7 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1615,13 +1710,21 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_files (item->runner, package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1654,7 +1757,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1674,14 +1777,22 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_update_system (item->runner);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1713,7 +1824,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1722,7 +1833,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1733,7 +1844,7 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1745,14 +1856,22 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_remove_package (item->runner, package_id, allow_deps, autoremove);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1784,7 +1903,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1793,7 +1912,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -1804,7 +1923,7 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1816,14 +1935,22 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_install_package (item->runner, package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1855,7 +1982,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 
 	/* check file exists */
 	ret = g_file_test (full_path, G_FILE_TEST_EXISTS);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NO_SUCH_FILE,
 				     "No such file '%s'", full_path);
 		dbus_g_method_return_error (context, error);
@@ -1866,7 +1993,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_INSTALL_FILE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1878,14 +2005,22 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_install_file (item->runner, full_path);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1919,7 +2054,7 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_SERVICE_PACK, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1931,14 +2066,22 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_service_pack (item->runner, location);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -1970,7 +2113,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 
 	/* check for sanity */
 	ret = pk_strvalidate (transaction_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -1981,7 +2124,7 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_ROLLBACK, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1993,14 +2136,22 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_rollback (item->runner, transaction_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -2031,7 +2182,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	/* check for sanity */
 	ret = pk_strvalidate (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -2040,7 +2191,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 
 	/* check package_id */
 	ret = pk_package_id_check (package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
 				     "The package id '%s' is not valid", package_id);
 		dbus_g_method_return_error (context, error);
@@ -2051,7 +2202,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2063,14 +2214,22 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_update_package (item->runner, package_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -2105,13 +2264,21 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_get_repo_list (item->runner);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -2143,7 +2310,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 
 	/* check for sanity */
 	ret = pk_strvalidate (repo_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -2154,7 +2321,7 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2167,14 +2334,22 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_repo_enable (item->runner, repo_id, enabled);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -2207,7 +2382,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 
 	/* check for sanity */
 	ret = pk_strvalidate (repo_id);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
 				     "Invalid input passed to daemon");
 		dbus_g_method_return_error (context, error);
@@ -2218,7 +2393,7 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	sender = dbus_g_method_get_sender (context);
 	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	g_free (sender);
-	if (ret == FALSE) {
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2230,14 +2405,22 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_repo_set_data (item->runner, repo_id, parameter, value);
-	if (ret == FALSE) {
+	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_engine_item_delete (engine, item);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
-	pk_engine_item_commit (engine, item);
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
 	dbus_g_method_return (context);
 }
 
@@ -2347,7 +2530,7 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 		return FALSE;
 	}
 	ret = pk_backend_get_progress (engine->priv->backend, percentage, subpercentage, elapsed, remaining);
-	if (ret == FALSE) {
+	if (!ret) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No progress data available");
 		return FALSE;
@@ -2377,7 +2560,7 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 		return FALSE;
 	}
 	ret = pk_runner_get_package (item->runner, package);
-	if (ret == FALSE) {
+	if (!ret) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
 			     "No package data available");
 		return FALSE;
@@ -2470,7 +2653,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 
 	/* try to cancel the transaction */
 	ret = pk_runner_cancel (item->runner, &error_text);
-	if (ret == FALSE) {
+	if (!ret) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, error_text);
 		g_free (error_text);
 		return FALSE;
@@ -2525,7 +2708,7 @@ pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_act
 
 	/* is the caller still active? */
 	ret = pk_runner_is_caller_active (item->runner, is_active);
-	if (ret == FALSE) {
+	if (!ret) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, "We don't know if the caller is still there");
 		return FALSE;
 	}
@@ -2807,7 +2990,7 @@ pk_engine_init (PkEngine *engine)
 
 	/* lock database */
 	ret = pk_backend_lock (engine->priv->backend);
-	if (ret == FALSE) {
+	if (!ret) {
 		pk_error ("could not lock backend, you need to restart the daemon");
 	}
 
@@ -2851,6 +3034,7 @@ static void
 pk_engine_finalize (GObject *object)
 {
 	PkEngine *engine;
+	gboolean ret;
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_ENGINE (object));
@@ -2859,6 +3043,12 @@ pk_engine_finalize (GObject *object)
 
 	g_return_if_fail (engine->priv != NULL);
 	pk_debug ("engine finalise");
+
+	/* unlock if we locked this */
+	ret = pk_backend_unlock (engine->priv->backend);
+	if (!ret) {
+		pk_warning ("couldn't unlock the backend");
+	}
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
@@ -2908,6 +3098,7 @@ pk_engine_new (void)
 void
 libst_engine (LibSelfTest *test)
 {
+	gboolean ret;
 	PkEngine *engine;
 	PkBackend *backend;
 
@@ -2925,7 +3116,14 @@ libst_engine (LibSelfTest *test)
 	}
 
 	/* set the type, as we have no pk-main doing this for us */
-	pk_backend_set_name (backend, "dummy");
+	/************************************************************/
+	libst_title (test, "set the backend name");
+	ret = pk_backend_set_name (backend, "dummy");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
 
 	/************************************************************/
 	libst_title (test, "get an engine instance");

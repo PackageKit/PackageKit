@@ -257,7 +257,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	/* we won't overwrite this if not unknown */
 	spawn->priv->exit = PK_EXIT_ENUM_QUIT;
 
-	pk_warning ("sending SIGQUIT %i", spawn->priv->child_pid);
+	pk_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
 	if (retval == EINVAL) {
 		pk_warning ("The signum argument is an invalid or unsupported number");
