@@ -57,7 +57,6 @@ G_BEGIN_DECLS
 #define pk_debug
 #define pk_warning
 #define pk_error
-#define pk_assert_run_once(x)
 #endif
 
 void		pk_debug_init			(gboolean	 debug);
