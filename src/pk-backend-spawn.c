@@ -583,6 +583,7 @@ static void
 pk_backend_spawn_finalize (GObject *object)
 {
 	PkBackendSpawn *backend_spawn;
+
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (object));
 
@@ -663,7 +664,9 @@ void
 libst_backend_spawn (LibSelfTest *test)
 {
 	PkBackendSpawn *backend_spawn;
+	PkBackend *backend;
 	const gchar *text;
+	guint refcount;
 	gboolean ret;
 
 	loop = g_main_loop_new (NULL, FALSE);
@@ -680,6 +683,11 @@ libst_backend_spawn (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/* private copy for unref testing */
+	backend = backend_spawn->priv->backend;
+	/* incr ref count so we don't kill the object */
+	g_object_ref (backend);
 
 	/************************************************************/
 	libst_title (test, "get backend name");
@@ -813,9 +821,6 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "did not detect incorrect enum");
 	}
 
-	/* needed to avoid an error */
-	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
-
 	/************************************************************/
 	libst_title (test, "test pk_backend_spawn_parse_common_error AllowUpdate1");
 	ret = pk_backend_spawn_parse_common_error (backend_spawn, "allow-cancel\ttrue");
@@ -846,14 +851,38 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "did not validate correctly");
 	}
 
+	/************************************************************/
+	libst_title (test, "manually unlock as we have no engine");
+	ret = pk_backend_unlock (backend_spawn->priv->backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not unlock");
+	}
+
 	/* reset */
 	g_object_unref (backend_spawn);
+
+	/************************************************************/
+	libst_title (test, "test we unref'd all but one of the PkBackend instances");
+	refcount = G_OBJECT(backend)->ref_count;
+	if (refcount == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "refcount invalid %i", refcount);
+	}
+
+	/* new */
 	backend_spawn = pk_backend_spawn_new ();
 
-	/* needed to avoid an error */
+	/************************************************************/
+	libst_title (test, "set backend name");
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	ret = pk_backend_set_name (backend_spawn->priv->backend, "test_spawn");
-	ret = pk_backend_lock (backend_spawn->priv->backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "invalid set name");
+	}
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_spawn->priv->backend, "finished",
@@ -861,6 +890,9 @@ libst_backend_spawn (LibSelfTest *test)
 	/* so we can count the returned packages */
 	g_signal_connect (backend_spawn->priv->backend, "package",
 			  G_CALLBACK (pk_backend_spawn_test_package_cb), backend_spawn);
+
+	/* needed to avoid an error */
+	ret = pk_backend_lock (backend_spawn->priv->backend);
 
 	/************************************************************
 	 **********          Use a spawned helper         ***********
@@ -884,8 +916,29 @@ libst_backend_spawn (LibSelfTest *test)
 		libst_failed (test, "wrong number of packages %i", number_packages);
 	}
 
+	/************************************************************/
+	libst_title (test, "manually unlock as we have no engine");
+	ret = pk_backend_unlock (backend_spawn->priv->backend);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "did not unlock");
+	}
+
 	/* done */
 	g_object_unref (backend_spawn);
+
+	/************************************************************/
+	libst_title (test, "test we unref'd all but one of the PkBackend instances");
+	refcount = G_OBJECT(backend)->ref_count;
+	if (refcount == 1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "refcount invalid %i", refcount);
+	}
+
+	/* we ref'd it manually for checking, so we need to unref it */
+	g_object_unref (backend);
 	g_main_loop_unref (loop);
 
 	libst_end (test);

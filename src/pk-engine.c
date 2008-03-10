@@ -3033,6 +3033,7 @@ static void
 pk_engine_finalize (GObject *object)
 {
 	PkEngine *engine;
+	gboolean ret;
 
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_ENGINE (object));
@@ -3041,6 +3042,12 @@ pk_engine_finalize (GObject *object)
 
 	g_return_if_fail (engine->priv != NULL);
 	pk_debug ("engine finalise");
+
+	/* unlock if we locked this */
+	ret = pk_backend_unlock (engine->priv->backend);
+	if (!ret) {
+		pk_warning ("couldn't unlock the backend");
+	}
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
@@ -3109,7 +3116,7 @@ libst_engine (LibSelfTest *test)
 
 	/* set the type, as we have no pk-main doing this for us */
 	/************************************************************/
-	libst_title (test, "gset the backend name");
+	libst_title (test, "set the backend name");
 	ret = pk_backend_set_name (backend, "dummy");
 	if (ret == TRUE) {
 		libst_success (test, NULL);

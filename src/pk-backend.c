@@ -198,6 +198,13 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 
 /**
  * pk_backend_lock:
+ *
+ * Responsible for initialising the external backend object.
+ *
+ * Typically this will involve taking database locks for exclusive package access.
+ * This method should only be called from the engine, unless the backend object
+ * is used in self-check code, in which case the lock and unlock will have to
+ * be done manually.
  **/
 gboolean
 pk_backend_lock (PkBackend *backend)
@@ -222,6 +229,12 @@ pk_backend_lock (PkBackend *backend)
 
 /**
  * pk_backend_unlock:
+ *
+ * Responsible for finalising the external backend object.
+ *
+ * Typically this will involve releasing database locks for any other access.
+ * This method should only be called from the engine, unless the backend object
+ * is used in self-check code, in which case it will have to be done manually.
  **/
 gboolean
 pk_backend_unlock (PkBackend *backend)
@@ -1117,7 +1130,6 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 static void
 pk_backend_finalize (GObject *object)
 {
-	gboolean ret;
 	PkBackend *backend;
 	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND (object));
@@ -1137,12 +1149,6 @@ pk_backend_finalize (GObject *object)
 	/* if we set an error code notifier, clear */
 	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
-	}
-
-	/* unlock the backend to call destroy */
-	ret = pk_backend_unlock (backend);
-	if (!ret) {
-		pk_warning ("failed to unlock in finalise!");
 	}
 
 	g_free (backend->priv->name);
