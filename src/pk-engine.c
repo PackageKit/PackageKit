@@ -41,6 +41,7 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
+#include <pk-filter.h>
 #include <pk-network.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>

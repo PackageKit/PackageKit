@@ -82,7 +82,6 @@ gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 guint		 parts,
 							 guint		 compare)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_filter_check			(const gchar	*filter);
 gchar		*pk_iso8601_present			(void)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_iso8601_difference			(const gchar	*isodate);
