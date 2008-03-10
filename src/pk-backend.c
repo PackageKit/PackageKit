@@ -1293,6 +1293,7 @@ pk_backend_init (PkBackend *backend)
 PkBackend *
 pk_backend_new (void)
 {
+	pk_debug ("new object");
 	if (pk_backend_object != NULL) {
 		g_object_ref (pk_backend_object);
 	} else {
@@ -1333,7 +1334,7 @@ void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
-	const gchar *text;
+	gchar *text;
 	gboolean ret;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
@@ -1360,6 +1361,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "invalid name %s", text);
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "load an invalid backend");
@@ -1422,6 +1424,7 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "invalid name %s", text);
 	}
+	g_free (text);
 
 	/************************************************************/
 	libst_title (test, "unlock an valid backend");
