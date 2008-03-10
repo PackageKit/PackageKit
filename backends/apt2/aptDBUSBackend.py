@@ -50,6 +50,9 @@ DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
                         xapian.QueryParser.FLAG_LOVEHATE |
                         xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
+# Required for daemon mode
+os.putenv("PATH",
+          "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 # Avoid questions from the maintainer scripts as far as possible
 os.putenv("DEBIAN_FRONTEND", "noninteractive")
 os.putenv("APT_LISTCHANGES_FRONTEND", "none")
@@ -124,28 +127,18 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def statusChange(self, pkg, percent, status):
         self._backend.PercentageChanged(int(percent))
-        #FIXME: should represent the status better (install, remove, preparing)
-        self._backend.StatusChanged(STATUS_INSTALL)
-        if (self.last_activity + self.timeout) < time.time():
-            pklog.critical("Sending Crtl+C. Inactivity of %s "
-                           "seconds (%s)" % (self.timeout, self.status))
-            os.write(self.master_fd,chr(3))
+        pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
+        self._backend.StatusChanged(STATUS_INSTALL)
         self.last_activity = time.time()
 
     def updateInterface(self):
+        pklog.debug("Updating interface")
         apt.progress.InstallProgress.updateInterface(self)
 
     def conffile(self, current, new):
-        pklog.warning("Config file prompt: '%s'" % current)
-        # looks like we have a race here *sometimes*
-        time.sleep(5)
-        try:
-            # don't overwrite
-            os.write(self.master_fd,"n\n")
-        except Exception, e:
-            pklog.error(e)
+        pklog.critical("Config file prompt: '%s'" % current)
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -338,7 +331,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        #FIXME: Better exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
         self._check_init()
@@ -379,7 +371,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        #FIXME: Exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
         self._check_init()
