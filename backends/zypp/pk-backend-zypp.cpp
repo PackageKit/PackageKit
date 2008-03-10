@@ -954,7 +954,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	/* parse */
-	filter = pk_filter_new_from_string (filter_text)
+	filter = pk_filter_new_from_string (filter_text);
 	if (filter == NULL) {
 		pk_error ("filter invalid, daemon broken");
 	}
