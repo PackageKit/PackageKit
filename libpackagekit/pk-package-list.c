@@ -58,7 +58,7 @@ static void     pk_package_list_finalize	(GObject            *object);
  *
  * Private #PkPackageList data
  **/
-struct PkPackageListPrivate
+struct _PkPackageListPrivate
 {
 	GPtrArray	*array;
 };

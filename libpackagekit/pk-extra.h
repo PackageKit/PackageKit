@@ -43,18 +43,20 @@ G_BEGIN_DECLS
  */
 #define PK_EXTRA_DEFAULT_DATABASE	"/var/lib/PackageKit/extra-data.db"
 
-typedef struct PkExtraPrivate PkExtraPrivate;
+typedef struct _PkExtraPrivate		PkExtraPrivate;
+typedef struct _PkExtra			PkExtra;
+typedef struct _PkExtraClass		PkExtraClass;
 
-typedef struct
+struct _PkExtra
 {
 	GObject		 parent;
 	PkExtraPrivate	*priv;
-} PkExtra;
+};
 
-typedef struct
+struct _PkExtraClass
 {
 	GObjectClass	parent_class;
-} PkExtraClass;
+};
 
 GType		 pk_extra_get_type			(void);
 PkExtra		*pk_extra_new				(void);

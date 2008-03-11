@@ -34,18 +34,20 @@ G_BEGIN_DECLS
 #define PK_IS_PACKAGE_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PACKAGE_LIST))
 #define PK_PACKAGE_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PACKAGE_LIST, PkPackageListClass))
 
-typedef struct PkPackageListPrivate PkPackageListPrivate;
+typedef struct _PkPackageListPrivate	PkPackageListPrivate;
+typedef struct _PkPackageList		PkPackageList;
+typedef struct _PkPackageListClass	PkPackageListClass;
 
-typedef struct
+struct _PkPackageList
 {
 	 GObject		 parent;
 	 PkPackageListPrivate	*priv;
-} PkPackageList;
+};
 
-typedef struct
+struct _PkPackageListClass
 {
 	GObjectClass	parent_class;
-} PkPackageListClass;
+};
 
 /**
  * PkPackageItem:

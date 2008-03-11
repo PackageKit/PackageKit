@@ -56,7 +56,7 @@ static void     pk_extra_finalize	(GObject     *object);
  *
  * Private #PkExtra data
  **/
-struct PkExtraPrivate
+struct _PkExtraPrivate
 {
 	gchar			*database;
 	gchar			*locale;

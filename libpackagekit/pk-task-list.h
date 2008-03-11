@@ -35,7 +35,9 @@ G_BEGIN_DECLS
 #define PK_IS_TASK_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK_LIST))
 #define PK_TASK_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_LIST, PkTaskListClass))
 
-typedef struct PkTaskListPrivate PkTaskListPrivate;
+typedef struct _PkTaskListPrivate	PkTaskListPrivate;
+typedef struct _PkTaskList		PkTaskList;
+typedef struct _PkTaskListClass		PkTaskListClass;
 
 typedef struct
 {
@@ -47,16 +49,16 @@ typedef struct
 	gboolean		 valid;
 } PkTaskListItem;
 
-typedef struct
+struct _PkTaskList
 {
 	GObject			 parent;
 	PkTaskListPrivate	*priv;
-} PkTaskList;
+};
 
-typedef struct
+struct _PkTaskListClass
 {
 	GObjectClass	parent_class;
-} PkTaskListClass;
+};
 
 GType		 pk_task_list_get_type			(void);
 PkTaskList	*pk_task_list_new			(void);

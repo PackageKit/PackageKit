@@ -58,7 +58,7 @@ static void     pk_job_list_finalize		(GObject        *object);
  *
  * Private #PkJobList data
  **/
-struct PkJobListPrivate
+struct _PkJobListPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;

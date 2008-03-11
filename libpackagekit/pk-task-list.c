@@ -59,7 +59,7 @@ static void     pk_task_list_finalize		(GObject         *object);
  *
  * Private #PkTaskList data
  **/
-struct PkTaskListPrivate
+struct _PkTaskListPrivate
 {
 	GPtrArray		*task_list;
 	PkJobList		*job_list;

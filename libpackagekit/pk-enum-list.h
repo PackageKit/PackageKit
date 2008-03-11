@@ -33,18 +33,20 @@ G_BEGIN_DECLS
 #define PK_IS_ENUM_LIST_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_ENUM_LIST))
 #define PK_ENUM_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_ENUM_LIST, PkEnumListClass))
 
-typedef struct PkEnumListPrivate PkEnumListPrivate;
+typedef struct _PkEnumListPrivate	PkEnumListPrivate;
+typedef struct _PkEnumList		PkEnumList;
+typedef struct _PkEnumListClass		PkEnumListClass;
 
-typedef struct
+struct _PkEnumList
 {
 	GObject			 parent;
 	PkEnumListPrivate	*priv;
-} PkEnumList;
+};
 
-typedef struct
+struct _PkEnumListClass
 {
 	GObjectClass	parent_class;
-} PkEnumListClass;
+};
 
 typedef enum {
 	PK_ENUM_LIST_TYPE_ROLE,

@@ -33,18 +33,20 @@ G_BEGIN_DECLS
 #define PK_IS_POLKIT_CLIENT_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_POLKIT_CLIENT))
 #define PK_POLKIT_CLIENT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_POLKIT_CLIENT, PkPolkitClientClass))
 
-typedef struct PkPolkitClientPrivate PkPolkitClientPrivate;
+typedef struct _PkPolkitClientPrivate	PkPolkitClientPrivate;
+typedef struct _PkPolkitClient		PkPolkitClient;
+typedef struct _PkPolkitClientClass	PkPolkitClientClass;
 
-typedef struct
+struct _PkPolkitClient
 {
 	GObject			 parent;
 	PkPolkitClientPrivate	*priv;
-} PkPolkitClient;
+};
 
-typedef struct
+struct _PkPolkitClientClass
 {
 	GObjectClass	parent_class;
-} PkPolkitClientClass;
+};
 
 GType		 pk_polkit_client_get_type		(void);
 PkPolkitClient	*pk_polkit_client_new			(void);

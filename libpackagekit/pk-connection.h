@@ -33,20 +33,22 @@ G_BEGIN_DECLS
 #define PK_IS_CONNECTION_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CONNECTION))
 #define PK_CONNECTION_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CONNECTION, PkConnectionClass))
 
-typedef struct PkConnectionPrivate PkConnectionPrivate;
+typedef struct _PkConnectionPrivate	PkConnectionPrivate;
+typedef struct _PkConnection		PkConnection;
+typedef struct _PkConnectionClass	PkConnectionClass;
 
-typedef struct
+struct _PkConnection
 {
 	GObject		     parent;
 	PkConnectionPrivate *priv;
-} PkConnection;
+};
 
-typedef struct
+struct _PkConnectionClass
 {
 	GObjectClass	parent_class;
 	void		(* connection_changed)	(PkConnection	*connection,
 						 gboolean	 connected);
-} PkConnectionClass;
+};
 
 GType		 pk_connection_get_type		(void);
 PkConnection	*pk_connection_new		(void);

@@ -42,18 +42,20 @@ G_BEGIN_DECLS
 #define PK_NETWORK_ERROR	(pk_network_error_quark ())
 #define PK_NETWORK_TYPE_ERROR	(pk_network_error_get_type ()) 
 
-typedef struct PkNetworkPrivate PkNetworkPrivate;
+typedef struct _PkNetworkPrivate	PkNetworkPrivate;
+typedef struct _PkNetwork		PkNetwork;
+typedef struct _PkNetworkClass		PkNetworkClass;
 
-typedef struct
+struct _PkNetwork
 {
 	 GObject		 parent;
 	 PkNetworkPrivate	*priv;
-} PkNetwork;
+};
 
-typedef struct
+struct _PkNetworkClass
 {
 	GObjectClass	parent_class;
-} PkNetworkClass;
+};
 
 GType		 pk_network_get_type		  	(void);
 PkNetwork	*pk_network_new				(void);

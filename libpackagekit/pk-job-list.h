@@ -33,18 +33,20 @@ G_BEGIN_DECLS
 #define PK_IS_JOB_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_JOB_LIST))
 #define PK_JOB_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_JOB_LIST, PkJobListClass))
 
-typedef struct PkJobListPrivate PkJobListPrivate;
+typedef struct _PkJobListPrivate	PkJobListPrivate;
+typedef struct _PkJobList		PkJobList;
+typedef struct _PkJobListClass		PkJobListClass;
 
-typedef struct
+struct _PkJobList
 {
 	GObject			 parent;
 	PkJobListPrivate	*priv;
-} PkJobList;
+};
 
-typedef struct
+struct _PkJobListClass
 {
 	GObjectClass	parent_class;
-} PkJobListClass;
+};
 
 GType		 pk_job_list_get_type			(void);
 PkJobList	*pk_job_list_new			(void);

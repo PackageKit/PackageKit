@@ -54,7 +54,7 @@
  *
  * Private #PkConnection data
  **/
-struct PkConnectionPrivate
+struct _PkConnectionPrivate
 {
 	LibGBus			*libgbus;
 };

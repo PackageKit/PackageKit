@@ -57,7 +57,7 @@ static void     pk_enum_list_finalize		(GObject         *object);
  *
  * Private #PkEnumList data
  **/
-struct PkEnumListPrivate
+struct _PkEnumListPrivate
 {
 	PkEnumListType		 type;
 	GPtrArray		*data;

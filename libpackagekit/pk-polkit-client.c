@@ -59,7 +59,7 @@ static void     pk_polkit_client_finalize		(GObject           *object);
  *
  * Private #PkPolkitClient data
  **/
-struct PkPolkitClientPrivate
+struct _PkPolkitClientPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;

@@ -61,15 +61,17 @@ typedef enum
 	PK_CLIENT_ERROR_LAST
 } PkClientError;
 
-typedef struct PkClientPrivate PkClientPrivate;
+typedef struct _PkClientPrivate		PkClientPrivate;
+typedef struct _PkClient		PkClient;
+typedef struct _PkClientClass		PkClientClass;
 
-typedef struct
+struct _PkClient
 {
 	GObject		 parent;
 	PkClientPrivate	*priv;
-} PkClient;
+};
 
-typedef struct
+struct _PkClientClass
 {
 	GObjectClass	parent_class;
 	/* Signals */
@@ -147,7 +149,7 @@ typedef struct
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
 	void (*_pk_reserved5) (void);
-} PkClientClass;
+};
 
 GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_error_get_type		(void);

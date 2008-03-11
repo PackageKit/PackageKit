@@ -62,7 +62,7 @@ static void     pk_client_finalize	(GObject       *object);
  *
  * Private #PkClient data
  **/
-struct PkClientPrivate
+struct _PkClientPrivate
 {
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
