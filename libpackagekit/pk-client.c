@@ -150,7 +150,7 @@ pk_client_error_get_type (void)
 			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnkown"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_PROMISCUOUS, "Promiscuous"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_INVALID_PACKAGEID, "InvalidPackageId"),
-			{ 0, 0, 0 }
+			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkClientError", values);
 	}
