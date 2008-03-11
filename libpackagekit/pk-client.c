@@ -117,6 +117,9 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 /**
  * pk_client_error_quark:
+ *
+ * We are a clever GObject that sets errors
+ *
  * Return value: Our personal error quark.
  **/
 GQuark
@@ -613,10 +616,7 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
  * pk_client_status_changed_cb:
  */
 static void
-pk_client_status_changed_cb (DBusGProxy  *proxy,
-				         const gchar *tid,
-				         const gchar *status_text,
-				         PkClient    *client)
+pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *tid, const gchar *status_text, PkClient *client)
 {
 	PkStatusEnum status;
 
@@ -2945,95 +2945,283 @@ pk_client_class_init (PkClientClass *klass)
 
 	object_class->finalize = pk_client_finalize;
 
+	/**
+	 * PkClient::status-changed:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @status: the #PkStatusEnum type, e.g. PK_STATUS_ENUM_REMOVE
+	 *
+	 * The ::status-changed signal is emitted when the transaction status
+	 * has changed.
+	 **/
 	signals [PK_CLIENT_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_STRUCT_OFFSET (PkClientClass, status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
+	/**
+	 * PkClient::updates-changed:
+	 * @client: the #PkClient instance that emitted the signal
+	 *
+	 * The ::updates-changed signal is emitted when the update list may have
+	 * changed and the client program may have to update some UI.
+	 **/
 	signals [PK_CLIENT_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_STRUCT_OFFSET (PkClientClass, updates_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	/**
+	 * PkClient::progress-changed:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @percentage: the percentage of the transaction
+	 * @subpercentage: the percentage of the sub-transaction
+	 * @elapsed: the elapsed time in seconds of the transaction
+	 * @client: the remaining time in seconds of the transaction
+	 *
+	 * The ::progress-changed signal is emitted when the update list may have
+	 * changed and the client program may have to update some UI.
+	 **/
 	signals [PK_CLIENT_PROGRESS_CHANGED] =
 		g_signal_new ("progress-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
+			      G_STRUCT_OFFSET (PkClientClass, progress_changed),
+			      NULL, NULL, pk_marshal_VOID__UINT_UINT_UINT_UINT,
 			      G_TYPE_NONE, 4, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_UINT);
+
+	/**
+	 * PkClient::package:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @info: the #PkInfoEnum of the package, e.g. PK_INFO_ENUM_INSTALLED
+	 * @package_id: the package_id of the package
+	 * @summary: the summary of the package
+	 *
+	 * The ::package signal is emitted when the update list may have
+	 * changed and the client program may have to update some UI.
+	 **/
 	signals [PK_CLIENT_PACKAGE] =
 		g_signal_new ("package",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, package),
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+	/**
+	 * PkClient::transaction:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @tid: the moo of the transaction
+	 * @timespec: the iso8601 date and time the transaction completed
+	 * @succeeded: if the transaction succeeded
+	 * @role: the #PkRoleEnum of the transaction, e.g. PK_ROLE_ENUM_REFRESH_CACHE
+	 * @duration: the duration in seconds of the transaction
+	 * @data: the data of the transaction, typiically a list of package_id's
+	 *
+	 * The ::transaction is emitted when the method GetOldTransactions() is
+	 * called, and the values are being replayed from a database.
+	 **/
 	signals [PK_CLIENT_TRANSACTION] =
 		g_signal_new ("transaction",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, transaction),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOL_UINT_UINT_STRING,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::update-detail:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @package_id: the package_id of the package
+	 * @updates: the list of packages the update updates
+	 * @obsoletes: the list of packages the update obsoletes
+	 * @vendor_url: the list of vendor URL's of the update
+	 * @bugzilla_url: the list of bugzilla URL's of the update
+	 * @cve_url: the list of CVE URL's of the update
+	 * @restart: the #PkRestartEnum of the update, e.g. PK_RESTART_ENUM_SYSTEM
+	 * @update_text: the update summary of the update
+	 *
+	 * The ::update-detail signal is emitted when GetUpdateDetail() is
+	 * called on a set of package_id's.
+	 **/
 	signals [PK_CLIENT_UPDATE_DETAIL] =
 		g_signal_new ("update-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, update_detail),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::description:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @package_id: the package_id of the package
+	 * @group: the #PkGroupEnum of the package, e.g. PK_GROUP_ENUM_EDUCATION
+	 * @description: the description of the package
+	 * @url: the upstream URL of the package
+	 * @size: the size of the package in bytes
+	 *
+	 * The ::description signal is emitted when GetDescription() is called.
+	 **/
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
+			      G_STRUCT_OFFSET (PkClientClass, description),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_UINT64);
+	/**
+	 * PkClient::files:
+	 * @package_id: the package_id of the package
+	 * @files: the list of files owned by the package, delimited by ';'
+	 *
+	 * The ::files signal is emitted when the method GetFiles() is used.
+	 **/
 	signals [PK_CLIENT_FILES] =
 		g_signal_new ("files",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, files),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
+	/**
+	 * PkClient::repo-signature-required:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @repository_name: the name of the repository
+	 * @key_url: the URL of the repository
+	 * @key_userid: the user signing the repository
+	 * @key_id: the id of the repository
+	 * @key_fingerprint: the fingerprint of the repository
+	 * @key_timestamp: the timestamp of the repository
+	 * @type: the #PkSigTypeEnum of the repository, e.g. PK_SIGTYPE_ENUM_GPG
+	 *
+	 * The ::repo-signature-required signal is emitted when the transaction
+	 * needs to fail for a signature prompt.
+	 **/
 	signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
+			      G_STRUCT_OFFSET (PkClientClass, repo_signature_required),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	/**
+	 * PkClient::repo-detail:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @repo_id: the ID of the repository
+	 * @description: the description of the repository
+	 * @enabled: if the repository is enabled
+	 *
+	 * The ::repo-detail signal is emitted when the method GetRepos() is
+	 * called.
+	 **/
 	signals [PK_CLIENT_REPO_DETAIL] =
 		g_signal_new ("repo-detail",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOLEAN,
+			      G_STRUCT_OFFSET (PkClientClass, repo_detail),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_BOOLEAN,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN);
+	/**
+	 * PkClient::error-code:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @code: the #PkErrorCodeEnum of the error, e.g. PK_ERROR_ENUM_DEP_RESOLUTION_FAILED
+	 * @details: the non-locaised details about the error
+	 *
+	 * The ::error-code signal is emitted when the transaction wants to
+	 * convey an error in the transaction.
+	 *
+	 * This can only happen once in a transaction.
+	 **/
 	signals [PK_CLIENT_ERROR_CODE] =
 		g_signal_new ("error-code",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, error_code),
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::require-restart:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @restart: the PkRestartEnum type of restart, e.g. PK_RESTART_ENUM_SYSTEM
+	 * @details: the optional details about the restart, why this is needed
+	 *
+	 * The ::require-restart signal is emitted when the transaction
+	 * requires a application or session restart.
+	 **/
 	signals [PK_CLIENT_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, require_restart),
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::message:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @details: the non-localised message details
+	 *
+	 * The ::message signal is emitted when the transaction wants to tell
+	 * the user something.
+	 **/
 	signals [PK_CLIENT_MESSAGE] =
 		g_signal_new ("message",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
+			      G_STRUCT_OFFSET (PkClientClass, message),
+			      NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkClient::allow-cancel:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @allow_cancel: If cancel would succeed
+	 *
+	 * The ::allow-cancel signal is emitted when the transaction cancellable
+	 * value changes.
+	 *
+	 * You probably want to enable and disable cancel buttons according to
+	 * this value.
+	 **/
 	signals [PK_CLIENT_ALLOW_CANCEL] =
 		g_signal_new ("allow-cancel",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_STRUCT_OFFSET (PkClientClass, allow_cancel),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	/**
+	 * PkClient::locked:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @is_locked: if the session/system would be inhibited from performing an action
+	 *
+	 * The ::locked signal is emitted when the backend has locked restart
+	 * or session logout.
+	 **/
 	signals [PK_CLIENT_LOCKED] =
 		g_signal_new ("locked",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_STRUCT_OFFSET (PkClientClass, locked),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	/**
+	 * PkClient::caller-active-changed:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @is_active: if the caller is still active
+	 *
+	 * The ::caller-active-changed signal is emitted when the client that
+	 * issued the dbus method is exited.
+	 **/
 	signals [PK_CLIENT_CALLER_ACTIVE_CHANGED] =
 		g_signal_new ("caller-active-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
+			      G_STRUCT_OFFSET (PkClientClass, caller_active_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	/**
+	 * PkClient::finished:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @exit: the #PkExitEnum status value, e.g. PK_EXIT_ENUM_SUCCESS
+	 * @runtime: the time in seconds the transaction has been running
+	 *
+	 * The ::finished signal is emitted when the transaction is complete.
+	 **/
 	signals [PK_CLIENT_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__UINT_UINT,
+			      G_STRUCT_OFFSET (PkClientClass, finished),
+			      NULL, NULL, pk_marshal_VOID__UINT_UINT,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_UINT);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));

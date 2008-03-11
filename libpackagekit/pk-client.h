@@ -72,6 +72,81 @@ typedef struct
 typedef struct
 {
 	GObjectClass	parent_class;
+	/* Signals */
+	void		(* status_changed)		(PkClient	*client,
+							 PkStatusEnum	 status);
+	void		(* updates_changed)		(PkClient	*client);
+	void		(* progress_changed)		(PkClient	*client,
+							 guint		 percentage,
+							 guint		 subpercentage,
+							 guint		 elapsed,
+							 guint		 remaining);
+	void		(* package)			(PkClient	*client,
+							 PkInfoEnum	 info,
+							 const gchar	*package_id,
+							 const gchar	*summary);
+	void		(* transaction)			(PkClient	*client,
+							 const gchar	*tid,
+							 const gchar	*timespec,
+							 gboolean	 succeeded,
+							 PkRoleEnum	 role,
+							 guint		 duration,
+							 const gchar	*data);
+	void		(* update_detail)		(PkClient	*client,
+							 const gchar	*package_id,
+							 const gchar	*updates,
+							 const gchar	*obsoletes,
+							 const gchar	*vendor_url,
+							 const gchar	*bugzilla_url,
+							 const gchar	*cve_url,
+							 PkRestartEnum	 restart,
+							 const gchar	*update_text);
+	void		(* description)			(PkClient	*client,
+							 const gchar	*package_id,
+							 const gchar	*license,
+							 PkGroupEnum	 group,
+							 const gchar	*description,
+							 const gchar	*url,
+							 gulong		 size);
+	void		(* files)			(PkClient	*client,
+							 const gchar	*package_id,
+							 const gchar	*filelist);
+	void		(* repo_signature_required)	(PkClient	*client,
+							 const gchar	*repository_name,
+							 const gchar	*key_url,
+							 const gchar	*key_userid,
+							 const gchar	*key_id,
+							 const gchar	*key_fingerprint,
+							 const gchar	*key_timestamp,
+							 PkSigTypeEnum	 type);
+	void		(* repo_detail)			(PkClient	*client,
+							 const gchar	*repo_id,
+							 const gchar	*description,
+							 gboolean	 enabled);
+	void		(* error_code)			(PkClient	*client,
+							 PkErrorCodeEnum code,
+							 const gchar	*details);
+	void		(* require_restart)		(PkClient	*client,
+							 PkRestartEnum	 restart,
+							 const gchar	*details);
+	void		(* message)			(PkClient	*client,
+							 PkMessageEnum	 message,
+							 const gchar	*details);
+	void		(* allow_cancel)		(PkClient	*client,
+							 gboolean	 allow_cancel);
+	void		(* locked)			(PkClient	*client,
+							 gboolean	 is_locked);
+	void		(* caller_active_changed)	(PkClient	*client,
+							 gboolean	 is_active);
+	void		(* finished)			(PkClient	*client,
+							 PkExitEnum	 exit,
+							 guint		 runtime);
+	/* Padding for future expansion */
+	void (*_pk_reserved1) (void);
+	void (*_pk_reserved2) (void);
+	void (*_pk_reserved3) (void);
+	void (*_pk_reserved4) (void);
+	void (*_pk_reserved5) (void);
 } PkClientClass;
 
 GQuark		 pk_client_error_quark			(void);
