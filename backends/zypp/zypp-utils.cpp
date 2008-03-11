@@ -340,7 +340,7 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
 					  resolvable.arch ().asString ().c_str (),
-					  "opensuse");
+					  resolvable.vendor ().c_str ());
 	// TODO: Figure out how to check if resolvable is really a ResObject and then cast it to a ResObject and pull of the repository alias for our "data" part in the package id
 //					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
 
@@ -494,8 +494,12 @@ zypp_perform_execution (PkBackend *backend, PerformType type)
                 zypp::ZYppCommitPolicy policy;
                 policy.restrictToMedia (0);	// 0 - install all packages regardless to media
                 zypp::ZYppCommitResult result = zypp->commit (policy);
-        
-                // TODO: Check result for success
+
+                if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "There are packages which couldn't be installed");
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
                 // TODO: make sure this dumps out the right sring.
