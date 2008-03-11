@@ -47,6 +47,12 @@ G_BEGIN_DECLS
 
 /**
  * PkClientError:
+ * @PK_CLIENT_ERROR_FAILED: the transaction failed for an unknown reason
+ * @PK_CLIENT_ERROR_NO_TID: the transaction id was not pre-allocated (internal error)
+ * @PK_CLIENT_ERROR_ALREADY_TID: the transaction id has already been used (internal error)
+ * @PK_CLIENT_ERROR_ROLE_UNKNOWN: the role was not set (internal error)
+ * @PK_CLIENT_ERROR_PROMISCUOUS: we are in a promiscuous mode where we have no transaction ID
+ * @PK_CLIENT_ERROR_INVALID_PACKAGEID: the package_id is invalid
  *
  * Errors that can be thrown
  */
@@ -57,8 +63,7 @@ typedef enum
 	PK_CLIENT_ERROR_ALREADY_TID,
 	PK_CLIENT_ERROR_ROLE_UNKNOWN,
 	PK_CLIENT_ERROR_PROMISCUOUS,
-	PK_CLIENT_ERROR_INVALID_PACKAGEID,
-	PK_CLIENT_ERROR_LAST
+	PK_CLIENT_ERROR_INVALID_PACKAGEID
 } PkClientError;
 
 typedef struct _PkClientPrivate		PkClientPrivate;
