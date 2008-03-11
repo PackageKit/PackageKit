@@ -932,6 +932,14 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 		return;
 	}
 
+	/* are we already performing a GetUpdates? */
+	if (pk_transaction_list_role_present (engine->priv->transaction_list, PK_ROLE_ENUM_GET_UPDATES) == TRUE) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
+				     "Already getting the update list");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* create a new runner object */
 	item->runner = pk_engine_runner_new (engine);
 
