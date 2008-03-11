@@ -296,7 +296,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                         package_id = pk_package_id_build ( it->second.name ().c_str(),
                                                            it->second.edition ().asString ().c_str(),
                                                            it->second.arch ().c_str(),
-                                                           "opensuse");
+                                                           it->second.vendor ().c_str());
                         
                         zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
 
@@ -609,6 +609,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
                         if (strcmp ((*it)->edition ().asString ().c_str (), pi->version) == 0
                                         && strcmp ((*it)->arch ().c_str (), pi->arch) == 0 ) {
                                 hit = true;
+                                // set status to ToBeInstalled
                                 it->status ().setToBeInstalled (zypp::ResStatus::USER);
                                 item = *it;
                         }
@@ -1387,7 +1388,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
                                                            it->resolvable ()->edition ().asString ().c_str(),
                                                            it->resolvable ()->arch ().c_str(),
-                                                           "opensuse");
+                                                           it->resolvable ()->vendor ().c_str ());
                         pk_backend_package (backend,
 			                    PK_INFO_ENUM_INSTALLED,
 			                    package_id,
