@@ -56,8 +56,8 @@ pk_package_ids_from_va_list (const gchar *package_id_first, va_list *args)
 	guint i;
 	gchar *value_temp;
 
-	g_return_val_if_fail (args != NULL, FALSE);
-	g_return_val_if_fail (package_id_first != NULL, FALSE);
+	g_return_val_if_fail (args != NULL, NULL);
+	g_return_val_if_fail (package_id_first != NULL, NULL);
 
 	/* find how many elements we have in a temp array */
 	data = g_ptr_array_new ();
@@ -175,8 +175,8 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 	GString *string;
 	gchar *string_ret;
 
-	g_return_val_if_fail (package_ids != NULL, FALSE);
-	g_return_val_if_fail (delimiter != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, NULL);
+	g_return_val_if_fail (delimiter != NULL, NULL);
 
 	string = g_string_new ("");
 
@@ -210,7 +210,7 @@ pk_package_ids_to_text (gchar **package_ids, const gchar *delimiter)
 /**
  * libst_package_ids_va_list:
  **/
-gchar **
+static gchar **
 libst_package_ids_va_list (const gchar *package_id_first, ...)
 {
 	va_list args;

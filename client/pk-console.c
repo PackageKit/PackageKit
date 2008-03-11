@@ -327,7 +327,7 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
 	}
 }
 
-const gchar *summary =
+static const gchar *summary =
 	"PackageKit Console Interface\n"
 	"\n"
 	"Subcommands:\n"
@@ -481,7 +481,7 @@ pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean forc
 /**
  * pk_console_get_prompt:
  **/
-gboolean
+static gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
 	gchar answer = '\0';
@@ -529,6 +529,12 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 {
 	gchar *package_id;
 	gboolean ret;
+	guint length;
+	PkPackageItem *item;
+	PkPackageId *ident;
+	guint i;
+	gboolean remove;
+
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
 		g_print (_("Could not find a package with that name to remove\n"));
@@ -553,12 +559,6 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	if (!ret) {
 		return FALSE;
 	}
-
-	guint length;
-	PkPackageItem *item;
-	PkPackageId *ident;
-	guint i;
-	gboolean remove;
 
 	/* see how many packages there are */
 	length = pk_client_package_buffer_get_size (client_task);

@@ -236,7 +236,7 @@ pk_filter_to_string (PkFilter *filter)
 
 	if (filter == NULL) {
 		pk_warning ("no filter");
-		return FALSE;
+		return NULL;
 	}
 
 	string = g_string_new ("");

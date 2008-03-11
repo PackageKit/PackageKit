@@ -98,7 +98,7 @@ gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 							 const gchar	*package_id,
 							 const gchar 	*filelist);
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
-							 guint		 code,
+							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
 gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
 gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,

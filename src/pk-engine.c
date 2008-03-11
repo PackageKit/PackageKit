@@ -147,7 +147,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_COMMIT_FAILED, "CommitFailed"),
-			{ 0, 0, 0 }
+			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
 	}
@@ -750,7 +750,7 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
  * Use this function when a function failed, and we just want to get rid
  * of all references to it.
  **/
-gboolean
+static gboolean
 pk_engine_item_delete (PkEngine *engine, PkTransactionItem *item)
 {
 	g_return_val_if_fail (engine != NULL, FALSE);
@@ -1000,7 +1000,7 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 /**
  * pk_engine_search_check:
  **/
-gboolean
+static gboolean
 pk_engine_search_check (const gchar *search, GError **error)
 {
 	guint size;

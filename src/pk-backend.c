@@ -511,7 +511,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
  *
  * Check if we've used wrong chars, or other common mistakes
  **/
-gboolean
+static gboolean
 pk_backend_check_newlines (PkBackend *backend, const gchar *text)
 {
 	/* double space */

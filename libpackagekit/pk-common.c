@@ -620,6 +620,8 @@ libst_common (LibSelfTest *test)
 	guint length;
 	gint value;
 	guint uvalue;
+	gchar *present;
+	guint seconds;
 
 	if (libst_start (test, "PkCommon", CLASS_AUTO) == FALSE) {
 		return;
@@ -1224,9 +1226,6 @@ libst_common (LibSelfTest *test)
 	} else {
 		libst_failed (test, "value is %i", uvalue);
 	}
-
-	gchar *present;
-	guint seconds;
 
 	/************************************************************
 	 **************            iso8601           ****************

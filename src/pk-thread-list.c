@@ -254,8 +254,8 @@ pk_thread_list_new (void)
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
 
-gboolean done_func1 = FALSE;
-gboolean done_func2 = FALSE;
+static gboolean done_func1 = FALSE;
+static gboolean done_func2 = FALSE;
 
 static gboolean
 test_func1 (PkThreadList *tlist, gpointer data)

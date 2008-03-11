@@ -450,7 +450,7 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	statement = "TRUNCATE TABLE transactions;";
-	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 	return TRUE;
 }
 
@@ -470,12 +470,12 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 
 	timespec = pk_iso8601_present ();
 	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
-	sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
 		role_text = pk_role_enum_to_text (i);
 		/* reset to now if the role does not exist */
 		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
-		sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+		sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 		g_free (statement);
 	}
 	g_free (timespec);
@@ -516,7 +516,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 				    "role TEXT,"
 				    "data TEXT,"
 				    "description TEXT);";
-			sqlite3_exec (tdb->priv->db, statement, NULL, 0, NULL);
+			sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
 		}
 	}
 

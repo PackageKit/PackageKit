@@ -445,7 +445,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "package TEXT,"
 				    "locale TEXT,"
 				    "summary TEXT);";
-			rc = sqlite3_exec (extra->priv->db, statement, NULL, 0, &error_msg);
+			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
 				pk_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
@@ -455,7 +455,7 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 				    "package TEXT,"
 				    "icon TEXT,"
 				    "exec TEXT);";
-			rc = sqlite3_exec (extra->priv->db, statement, NULL, 0, &error_msg);
+			rc = sqlite3_exec (extra->priv->db, statement, NULL, NULL, &error_msg);
 			if (rc != SQLITE_OK) {
 				pk_warning ("SQL error: %s\n", error_msg);
 				sqlite3_free (error_msg);
@@ -541,6 +541,9 @@ libst_extra (LibSelfTest *test)
 	PkExtra *extra;
 	const gchar *text;
 	gboolean ret;
+	gchar *icon;
+	gchar *exec;
+	gchar *summary;
 
 	if (libst_start (test, "PkExtra", CLASS_AUTO) == FALSE) {
 		return;
@@ -592,10 +595,6 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "locale was %s", text);
 	}
-
-	gchar *icon;
-	gchar *exec;
-	gchar *summary;
 
 	/************************************************************/
 	libst_title (test, "insert localised data");

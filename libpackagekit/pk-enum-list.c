@@ -487,14 +487,14 @@ pk_enum_list_new (void)
 void
 libst_enum_list (LibSelfTest *test)
 {
-	if (libst_start (test, "PkEnumList", CLASS_AUTO) == FALSE) {
-		return;
-	}
-
 	PkEnumList *elist;
 	gboolean ret;
 	gchar *text;
 	guint value;
+
+	if (libst_start (test, "PkEnumList", CLASS_AUTO) == FALSE) {
+		return;
+	}
 
 	/************************************************************
 	 ****************          ENUM         ******************

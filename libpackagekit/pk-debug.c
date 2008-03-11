@@ -55,7 +55,7 @@ static gboolean is_console = FALSE;
 /**
  * pk_set_console_mode:
  **/
-void
+static void
 pk_set_console_mode (guint console_code)
 {
 	gchar command[13];

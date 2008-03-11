@@ -63,6 +63,7 @@ PkExtra		*pk_extra_new				(void);
 
 gboolean	 pk_extra_set_locale			(PkExtra	*extra,
 							 const gchar	*locale);
+const gchar	*pk_extra_get_locale			(PkExtra	*extra);
 gboolean	 pk_extra_set_database			(PkExtra	*extra,
 							 const gchar	*filename)
 							 G_GNUC_WARN_UNUSED_RESULT;
