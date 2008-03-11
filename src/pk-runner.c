@@ -43,7 +43,6 @@
 #include <pk-common.h>
 #include <pk-package-id.h>
 #include <pk-enum.h>
-#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-runner.h"
@@ -78,7 +77,6 @@ struct PkRunnerPrivate
 	gchar			*cached_parameter;
 	gchar			*cached_value;
 	LibGBus			*libgbus;
-	PkNetwork		*network;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	gulong			 signal_package;
@@ -854,16 +852,6 @@ pk_runner_get_runtime (PkRunner *runner)
 }
 
 /**
- * pk_runner_network_is_online:
- */
-gboolean
-pk_runner_network_is_online (PkRunner *runner)
-{
-	g_return_val_if_fail (runner != NULL, FALSE);
-	return pk_network_is_online (runner->priv->network);
-}
-
-/**
  * pk_runner_set_dbus_name:
  */
 gboolean
@@ -1098,7 +1086,6 @@ pk_runner_finalize (GObject *object)
 	g_object_unref (runner->priv->backend);
 	g_object_unref (runner->priv->libgbus);
 
-	g_object_unref (runner->priv->network);
 	g_object_unref (runner->priv->thread_list);
 	g_object_unref (runner->priv->package_list);
 
@@ -1161,7 +1148,6 @@ pk_runner_init (PkRunner *runner)
 			  G_CALLBACK (pk_runner_allow_cancel_cb), runner);
 
 	runner->priv->inhibit = pk_inhibit_new ();
-	runner->priv->network = pk_network_new ();
 	runner->priv->thread_list = pk_thread_list_new ();
 	runner->priv->package_list = pk_package_list_new ();
 
