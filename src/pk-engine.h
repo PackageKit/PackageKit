@@ -105,6 +105,7 @@ void		 pk_engine_search_file			(PkEngine	*engine,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_get_depends			(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
@@ -114,6 +115,7 @@ void		 pk_engine_get_update_detail		(PkEngine	*engine,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_get_requires			(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);

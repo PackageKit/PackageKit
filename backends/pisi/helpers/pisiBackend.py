@@ -150,7 +150,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
 
         return self.package(id, status, pkg.summary)
 
-    def get_depends(self, package_id, recursive):
+    def get_depends(self, filters, package_id, recursive):
         """ Prints a list of depends for a given package """
         self.allow_cancel(True)
         self.percentage(None)
@@ -212,7 +212,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # FIXME: Use repository enabled/disabled state
             self.repo_detail(repo, self.repodb.get_repo(repo).indexuri.get_uri(), "true")
 
-    def get_requires(self, package_id, recursive):
+    def get_requires(self, filters, package_id, recursive):
         """ Prints a list of requires for a given package """
         self.allow_cancel(True)
         self.percentage(None)

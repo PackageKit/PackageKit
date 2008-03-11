@@ -12,7 +12,8 @@
 import sys
 from conaryBackend import PackageKitConaryBackend
 
-package = sys.argv[1]
+filters = sys.argv[1]
+package = sys.argv[2]
 backend = PackageKitConaryBackend(sys.argv[1:])
-backend.get_depends(package)
+backend.get_depends(filters,package)
 sys.exit(0)

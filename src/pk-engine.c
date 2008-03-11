@@ -1392,7 +1392,7 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
  * pk_engine_get_depends:
  **/
 void
-pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_id,
+pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *package_id,
 		       gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
@@ -1409,6 +1409,13 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, &error);
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1437,7 +1444,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_get_depends (item->runner, package_id, recursive);
+	ret = pk_runner_get_depends (item->runner, filter, package_id, recursive);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -1460,7 +1467,7 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *package_
  * pk_engine_get_requires:
  **/
 void
-pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package_id,
+pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *package_id,
 			gboolean recursive, DBusGMethodInvocation *context)
 {
 	gboolean ret;
@@ -1477,6 +1484,13 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	if (item == NULL) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, &error);
+	if (!ret) {
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -1505,7 +1519,7 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *package
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_get_requires (item->runner, package_id, recursive);
+	ret = pk_runner_get_requires (item->runner, filter, package_id, recursive);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

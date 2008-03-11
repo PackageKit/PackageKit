@@ -829,7 +829,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
  * pk_backend_dbus_get_depends:
  **/
 gboolean
-pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -841,6 +841,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -860,7 +861,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *package_i
  * pk_backend_dbus_get_requires:
  **/
 gboolean
-pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -872,6 +873,7 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *package_
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);

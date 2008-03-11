@@ -556,7 +556,7 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	ThreadData *data = g_new0(ThreadData, 1);
 
@@ -614,7 +614,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	ThreadData *data = g_new0(ThreadData, 1);
 

@@ -85,9 +85,11 @@ gboolean	 pk_backend_dbus_search_file		(PkBackendDbus	*backend_dbus,
 							 const gchar	*filter,
 							 const gchar	*search);
 gboolean	 pk_backend_dbus_get_depends		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,

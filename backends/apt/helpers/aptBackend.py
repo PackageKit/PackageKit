@@ -310,7 +310,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     continue
         return deps
 
-    def get_depends(self,package, recursive):
+    def get_depends(self,filters,package, recursive):
         '''
         Implement the {backend}-get-depends functionality
         '''

@@ -346,6 +346,13 @@
         </thead>
         <tbody>
           <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;</literal>
+            </entry>
+          </row>
+          <row>
             <entry><literal>package_id</literal></entry>
             <entry>A single, valid, package ID.</entry>
           </row>
@@ -468,6 +475,13 @@
           </row>
         </thead>
         <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;</literal>
+            </entry>
+          </row>
           <row>
             <entry><literal>package_id</literal></entry>
             <entry>A single, valid, package ID.</entry>

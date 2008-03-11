@@ -889,7 +889,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 }
 
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	/* TODO: revursive is ignored */
 	g_return_if_fail (backend != NULL);

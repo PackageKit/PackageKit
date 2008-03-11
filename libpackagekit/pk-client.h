@@ -147,6 +147,7 @@ gboolean	 pk_client_search_file			(PkClient	*client,
 							 const gchar	*search,
 							 GError		**error);
 gboolean	 pk_client_get_depends			(PkClient	*client,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error);
@@ -154,6 +155,7 @@ gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
 gboolean	 pk_client_get_requires			(PkClient	*client,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error);

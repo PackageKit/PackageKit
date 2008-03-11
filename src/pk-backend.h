@@ -125,10 +125,10 @@ typedef struct {
 	void		(*get_groups)		(PkBackend *backend, PkEnumList *elist);
 	void		(*get_filters)		(PkBackend *backend, PkEnumList *elist);
 	void		(*cancel)		(PkBackend *backend);
-	void		(*get_depends)		(PkBackend *backend, const gchar *package_id, gboolean recursive);
+	void		(*get_depends)		(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive);
 	void		(*get_description)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_files)	        (PkBackend *backend, const gchar *package_id);
-	void		(*get_requires)		(PkBackend *backend, const gchar *package_id, gboolean recursive);
+	void		(*get_requires)		(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive);
 	void		(*get_update_detail)	(PkBackend *backend, const gchar *package_id);
 	void		(*get_updates)		(PkBackend *backend, const gchar *filter);
 	void		(*install_package)	(PkBackend *backend, const gchar *package_id);

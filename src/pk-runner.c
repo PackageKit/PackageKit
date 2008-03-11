@@ -244,93 +244,66 @@ G_GNUC_WARN_UNUSED_RESULT static gboolean
 pk_runner_set_running (PkRunner *runner)
 {
 	PkBackendDesc *desc;
-
+	PkRunnerPrivate *priv = PK_RUNNER_GET_PRIVATE (runner);
 	g_return_val_if_fail (runner != NULL, FALSE);
 
 	/* assign */
-	pk_backend_set_current_tid (runner->priv->backend, runner->priv->tid);
+	pk_backend_set_current_tid (priv->backend, priv->tid);
 
 	/* i don't think we actually need to do this */
-	pk_backend_set_role (runner->priv->backend, runner->priv->role);
+	pk_backend_set_role (priv->backend, priv->role);
 
 	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (runner->priv->backend, PK_STATUS_ENUM_SETUP);
+	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
 
 	/* lets reduce pointer dereferences... */
-	desc = runner->priv->backend->desc;
+	desc = priv->backend->desc;
 
 	/* do the correct action with the cached parameters */
-	if (runner->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		desc->get_depends (runner->priv->backend,
-					    runner->priv->cached_package_id,
-					    runner->priv->cached_force);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		desc->get_update_detail (runner->priv->backend,
-						  runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_RESOLVE) {
-		desc->resolve (runner->priv->backend, runner->priv->cached_filter,
-					runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_ROLLBACK) {
-		desc->rollback (runner->priv->backend, runner->priv->cached_transaction_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		desc->get_description (runner->priv->backend,
-						runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_FILES) {
-		desc->get_files (runner->priv->backend,
-					  runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		desc->get_requires (runner->priv->backend,
-					     runner->priv->cached_package_id,
-					     runner->priv->cached_force);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		desc->get_updates (runner->priv->backend, runner->priv->cached_filter);
-	} else if (runner->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		desc->search_details (runner->priv->backend,
-					       runner->priv->cached_filter,
-					       runner->priv->cached_search);
-	} else if (runner->priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		desc->search_file (runner->priv->backend,
-					    runner->priv->cached_filter,
-					    runner->priv->cached_search);
-	} else if (runner->priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		desc->search_group (runner->priv->backend,
-					     runner->priv->cached_filter,
-					     runner->priv->cached_search);
-	} else if (runner->priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		desc->search_name (runner->priv->backend,
-					    runner->priv->cached_filter,
-					    runner->priv->cached_search);
-	} else if (runner->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		desc->install_package (runner->priv->backend,
-						runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		desc->install_file (runner->priv->backend,
-					     runner->priv->cached_full_path);
-	} else if (runner->priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		desc->service_pack (runner->priv->backend,
-				    runner->priv->cached_full_path);
-	} else if (runner->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		desc->refresh_cache (runner->priv->backend,
-					      runner->priv->cached_force);
-	} else if (runner->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		desc->remove_package (runner->priv->backend,
-					       runner->priv->cached_package_id,
-					       runner->priv->cached_allow_deps,
-					       runner->priv->cached_autoremove);
-	} else if (runner->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		desc->update_package (runner->priv->backend,
-					       runner->priv->cached_package_id);
-	} else if (runner->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		desc->update_system (runner->priv->backend);
-	} else if (runner->priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		desc->get_repo_list (runner->priv->backend);
-	} else if (runner->priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
-		desc->repo_enable (runner->priv->backend, runner->priv->cached_repo_id,
-					    runner->priv->cached_enabled);
-	} else if (runner->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		desc->repo_set_data (runner->priv->backend, runner->priv->cached_repo_id,
-					      runner->priv->cached_parameter,
-					      runner->priv->cached_value);
+	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		desc->get_depends (priv->backend, priv->cached_filter, priv->cached_package_id, priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		desc->get_update_detail (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
+		desc->resolve (priv->backend, priv->cached_filter, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		desc->rollback (priv->backend, priv->cached_transaction_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
+		desc->get_description (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
+		desc->get_files (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		desc->get_requires (priv->backend, priv->cached_filter, priv->cached_package_id, priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+		desc->get_updates (priv->backend, priv->cached_filter);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		desc->search_details (priv->backend, priv->cached_filter, priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+		desc->search_file (priv->backend,priv->cached_filter,priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		desc->search_group (priv->backend, priv->cached_filter, priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+		desc->search_name (priv->backend,priv->cached_filter,priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		desc->install_package (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
+		desc->install_file (priv->backend, priv->cached_full_path);
+	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+		desc->service_pack (priv->backend, priv->cached_full_path);
+	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		desc->refresh_cache (priv->backend,  priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		desc->remove_package (priv->backend, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		desc->update_package (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		desc->update_system (priv->backend);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		desc->get_repo_list (priv->backend);
+	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
+		desc->repo_enable (priv->backend, priv->cached_repo_id,priv->cached_enabled);
+	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		desc->repo_set_data (priv->backend, priv->cached_repo_id,  priv->cached_parameter,  priv->cached_value);
 	} else {
 		pk_error ("failed to run as role not assigned");
 		return FALSE;
@@ -360,13 +333,14 @@ pk_runner_run (PkRunner *runner)
  * pk_runner_get_depends:
  */
 gboolean
-pk_runner_get_depends (PkRunner *runner, const gchar *package_id, gboolean recursive)
+pk_runner_get_depends (PkRunner *runner, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_depends == NULL) {
 		pk_debug ("Not implemented yet: GetDepends");
 		return FALSE;
 	}
+	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_package_id = g_strdup (package_id);
 	runner->priv->cached_force = recursive;
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
@@ -429,13 +403,14 @@ pk_runner_get_files (PkRunner *runner, const gchar *package_id)
  * pk_runner_get_requires:
  */
 gboolean
-pk_runner_get_requires (PkRunner *runner, const gchar *package_id, gboolean recursive)
+pk_runner_get_requires (PkRunner *runner, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_requires == NULL) {
 		pk_debug ("Not implemented yet: GetRequires");
 		return FALSE;
 	}
+	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->cached_package_id = g_strdup (package_id);
 	runner->priv->cached_force = recursive;
 	runner->priv->status = PK_STATUS_ENUM_WAIT;

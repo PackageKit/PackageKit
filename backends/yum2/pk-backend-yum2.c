@@ -118,11 +118,11 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_depends (dbus, package_id, recursive);
+	pk_backend_dbus_get_depends (dbus, filter, package_id, recursive);
 }
 
 /**
@@ -151,11 +151,11 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_requires (dbus, package_id, recursive);
+	pk_backend_dbus_get_requires (dbus, filter, package_id, recursive);
 }
 
 /**

@@ -1067,7 +1067,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 } 
 
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	DepsData	*data = g_new0 (DepsData, 1);
 
@@ -1278,7 +1278,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_requires (PkBackend	*backend, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	DepsData	*data = g_new0 (DepsData, 1);
 

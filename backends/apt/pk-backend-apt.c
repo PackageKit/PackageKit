@@ -112,11 +112,11 @@ pk_backend_bool_to_text (gboolean value)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filter, package_id, pk_backend_bool_to_text (recursive), NULL);
 }
 
 /**

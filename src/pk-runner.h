@@ -57,6 +57,7 @@ gboolean	 pk_runner_run				(PkRunner      *runner)
 gboolean	 pk_runner_cancel			(PkRunner	*runner,
 							 gchar		**error_text);
 gboolean	 pk_runner_get_depends			(PkRunner	*runner,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
 gboolean	 pk_runner_get_update_detail		(PkRunner	*runner,
@@ -66,6 +67,7 @@ gboolean	 pk_runner_get_description		(PkRunner	*runner,
 gboolean	 pk_runner_get_files 			(PkRunner	*runner,
 							 const gchar	*package_id);
 gboolean	 pk_runner_get_requires			(PkRunner	*runner,
+							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
 gboolean	 pk_runner_get_updates			(PkRunner	*runner,

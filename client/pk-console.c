@@ -548,8 +548,8 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	pk_client_set_use_buffer (client_task, TRUE, NULL);
 	pk_client_set_synchronous (client_task, TRUE, NULL);
 
-	pk_debug (_("Getting requires for %s"), package_id);
-	ret = pk_client_get_requires (client_task, package_id, TRUE, error);
+	pk_debug (_("Getting installed requires for %s"), package_id);
+	ret = pk_client_get_requires (client_task, "installed", package_id, TRUE, error);
 	if (!ret) {
 		return FALSE;
 	}
@@ -628,7 +628,7 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 		g_print (_("Could not find a package with that name to get requires\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_requires (client, package_id, TRUE, error);
+	ret = pk_client_get_requires (client, "none", package_id, TRUE, error);
 	g_free (package_id);
 	return ret;
 }
@@ -646,7 +646,7 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 		g_print (_("Could not find a package with that name to get depends\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_depends (client, package_id, FALSE, error);
+	ret = pk_client_get_depends (client, "none", package_id, FALSE, error);
 	g_free (package_id);
 	return ret;
 }

@@ -179,11 +179,11 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
     def search_details(self, opt, key):
         pass
 
-    def get_requires(self, package_id):
+    def get_requires(self, filters, package_id):
         pass
 
     @ExceptionHandler
-    def get_depends(self, package_id):
+    def get_depends(self, filters, package_id):
         name, version, flavor, installed = self._findPackage(package_id)
 
         if name:

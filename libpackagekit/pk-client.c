@@ -80,14 +80,14 @@ struct PkClientPrivate
 	PkRestartEnum		 require_restart;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
-	gboolean		 xcached_force;
-	gboolean		 xcached_allow_deps;
-	gboolean		 xcached_autoremove;
-	gchar			*xcached_package_id;
-	gchar			*xcached_transaction_id;
-	gchar			*xcached_full_path;
-	gchar			*xcached_filter;
-	gchar			*xcached_search;
+	gboolean		 cached_force;
+	gboolean		 cached_allow_deps;
+	gboolean		 cached_autoremove;
+	gchar			*cached_package_id;
+	gchar			*cached_transaction_id;
+	gchar			*cached_full_path;
+	gchar			*cached_filter;
+	gchar			*cached_search;
 };
 
 typedef enum {
@@ -1412,8 +1412,8 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
-	client->priv->xcached_filter = g_strdup (filter);
-	client->priv->xcached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_search = g_strdup (search);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1458,8 +1458,8 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
-	client->priv->xcached_filter = g_strdup (filter);
-	client->priv->xcached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_search = g_strdup (search);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1502,8 +1502,8 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
-	client->priv->xcached_filter = g_strdup (filter);
-	client->priv->xcached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_search = g_strdup (search);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1546,8 +1546,8 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
-	client->priv->xcached_filter = g_strdup (filter);
-	client->priv->xcached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_search = g_strdup (search);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1567,6 +1567,7 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 /**
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1576,12 +1577,13 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1599,11 +1601,12 @@ pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recur
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
-	client->priv->xcached_package_id = g_strdup (package_id);
-	client->priv->xcached_force = recursive;
+	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_force = recursive;
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1620,6 +1623,7 @@ pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recur
 /**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1629,12 +1633,13 @@ pk_client_get_depends (PkClient *client, const gchar *package_id, gboolean recur
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, const gchar *filter, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1652,11 +1657,12 @@ pk_client_get_requires (PkClient *client, const gchar *package_id, gboolean recu
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
-	client->priv->xcached_package_id = g_strdup (package_id);
-	client->priv->xcached_force = recursive;
+	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_force = recursive;
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1705,7 +1711,7 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1747,7 +1753,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
-	client->priv->xcached_transaction_id = g_strdup (transaction_id);
+	client->priv->cached_transaction_id = g_strdup (transaction_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1792,8 +1798,8 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
-	client->priv->xcached_filter = g_strdup (filter);
-	client->priv->xcached_package_id = g_strdup (package);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_package_id = g_strdup (package);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1845,7 +1851,7 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1895,7 +1901,7 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
 				 G_TYPE_STRING, client->priv->tid,
@@ -1973,9 +1979,9 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
-	client->priv->xcached_allow_deps = allow_deps;
-	client->priv->xcached_autoremove = autoremove;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_allow_deps = allow_deps;
+	client->priv->cached_autoremove = autoremove;
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_remove_package_action (client, package_id, allow_deps, autoremove, &error_pk);
@@ -2051,7 +2057,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
-	client->priv->xcached_force = force;
+	client->priv->cached_force = force;
 
 	/* hopefully do the operation first time */
 	ret = pk_client_refresh_cache_action (client, force, &error_pk);
@@ -2133,7 +2139,7 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_install_package_action (client, package_id, &error_pk);
@@ -2215,7 +2221,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id, GError **er
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGE;
-	client->priv->xcached_package_id = g_strdup (package_id);
+	client->priv->cached_package_id = g_strdup (package_id);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_update_package_action (client, package_id, &error_pk);
@@ -2290,7 +2296,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
-	client->priv->xcached_full_path = g_strdup (file);
+	client->priv->cached_full_path = g_strdup (file);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_install_file_action (client, file, &error_pk);
@@ -2365,7 +2371,7 @@ pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SERVICE_PACK;
-	client->priv->xcached_full_path = g_strdup (location);
+	client->priv->cached_full_path = g_strdup (location);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_service_pack_action (client, location, &error_pk);
@@ -2862,71 +2868,64 @@ pk_client_requeue (PkClient *client, GError **error)
 {
 	PkRoleEnum role;
 	gboolean ret;
+	PkClientPrivate *priv = PK_CLIENT_GET_PRIVATE (client);
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	/* we are no longer waiting, we are setting up */
-	if (client->priv->role == PK_ROLE_ENUM_UNKNOWN) {
+	if (priv->role == PK_ROLE_ENUM_UNKNOWN) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
 	}
 
 	/* save the role */
-	role = client->priv->role;
+	role = priv->role;
 
 	/* reset this client, which doesn't clear cached data */
 	pk_client_reset (client, NULL);
 
 	/* restore the role */
-	client->priv->role = role;
+	priv->role = role;
 
 	/* do the correct action with the cached parameters */
-	if (client->priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		ret = pk_client_get_depends (client, client->priv->xcached_package_id,
-				       client->priv->xcached_force, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		ret = pk_client_get_update_detail (client, client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_RESOLVE) {
-		ret = pk_client_resolve (client, client->priv->xcached_filter,
-				   client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_ROLLBACK) {
-		ret = pk_client_rollback (client, client->priv->xcached_transaction_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		ret = pk_client_get_description (client, client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_GET_FILES) {
-		ret = pk_client_get_files (client, client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		ret = pk_client_get_requires (client, client->priv->xcached_package_id,
-					client->priv->xcached_force, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		ret = pk_client_get_updates (client, client->priv->xcached_filter, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		ret = pk_client_search_details (client, client->priv->xcached_filter,
-					  client->priv->xcached_search, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		ret = pk_client_search_file (client, client->priv->xcached_filter,
-				       client->priv->xcached_search, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		ret = pk_client_search_group (client, client->priv->xcached_filter,
-					client->priv->xcached_search, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		ret = pk_client_search_name (client, client->priv->xcached_filter,
-				       client->priv->xcached_search, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		ret = pk_client_install_package (client, client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		ret = pk_client_install_file (client, client->priv->xcached_full_path, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		ret = pk_client_service_pack (client, client->priv->xcached_full_path, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		ret = pk_client_refresh_cache (client, client->priv->xcached_force, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		ret = pk_client_remove_package (client, client->priv->xcached_package_id,
-					  client->priv->xcached_allow_deps, client->priv->xcached_autoremove, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		ret = pk_client_update_package (client, client->priv->xcached_package_id, error);
-	} else if (client->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		ret = pk_client_get_depends (client, priv->cached_filter, priv->cached_package_id, priv->cached_force, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		ret = pk_client_get_update_detail (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
+		ret = pk_client_resolve (client, priv->cached_filter, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		ret = pk_client_rollback (client, priv->cached_transaction_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
+		ret = pk_client_get_description (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
+		ret = pk_client_get_files (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		ret = pk_client_get_requires (client, priv->cached_filter, priv->cached_package_id, priv->cached_force, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+		ret = pk_client_get_updates (client, priv->cached_filter, error);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		ret = pk_client_search_details (client, priv->cached_filter, priv->cached_search, error);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+		ret = pk_client_search_file (client, priv->cached_filter, priv->cached_search, error);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		ret = pk_client_search_group (client, priv->cached_filter, priv->cached_search, error);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+		ret = pk_client_search_name (client, priv->cached_filter, priv->cached_search, error);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		ret = pk_client_install_package (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
+		ret = pk_client_install_file (client, priv->cached_full_path, error);
+	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+		ret = pk_client_service_pack (client, priv->cached_full_path, error);
+	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		ret = pk_client_refresh_cache (client, priv->cached_force, error);
+	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		ret = pk_client_remove_package (client, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove, error);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+		ret = pk_client_update_package (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
 	} else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
@@ -3081,11 +3080,11 @@ pk_client_init (PkClient *client)
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 	client->priv->package_list = pk_package_list_new ();
-	client->priv->xcached_package_id = NULL;
-	client->priv->xcached_transaction_id = NULL;
-	client->priv->xcached_full_path = NULL;
-	client->priv->xcached_filter = NULL;
-	client->priv->xcached_search = NULL;
+	client->priv->cached_package_id = NULL;
+	client->priv->cached_transaction_id = NULL;
+	client->priv->cached_full_path = NULL;
+	client->priv->cached_filter = NULL;
+	client->priv->cached_search = NULL;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -3283,11 +3282,11 @@ pk_client_finalize (GObject *object)
 	g_return_if_fail (client->priv != NULL);
 
 	/* free cached strings */
-	g_free (client->priv->xcached_package_id);
-	g_free (client->priv->xcached_transaction_id);
-	g_free (client->priv->xcached_full_path);
-	g_free (client->priv->xcached_filter);
-	g_free (client->priv->xcached_search);
+	g_free (client->priv->cached_package_id);
+	g_free (client->priv->cached_transaction_id);
+	g_free (client->priv->cached_full_path);
+	g_free (client->priv->cached_filter);
+	g_free (client->priv->cached_search);
 	g_free (client->priv->tid);
 
 	/* clear the loop, if we were using it */
