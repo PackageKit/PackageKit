@@ -58,7 +58,7 @@ static void     pk_network_finalize	(GObject        *object);
  *
  * Private #PkNetwork data
  **/
-struct PkNetworkPrivate
+struct _PkNetworkPrivate
 {
 	gpointer		 data;
 };
