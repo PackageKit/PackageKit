@@ -506,6 +506,19 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='as', out_signature='')
+    def UpdatePackages(self, packages):
+        '''
+        Implement the {backend}-update-packages functionality
+        '''
+        pklog.info("UpdatePackages()")
+        self.forkme()
+        if self._child_pid:
+            return
+        self.doUpdatePackages(packages)
+        self.loop.quit()
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sbb', out_signature='')
     def RemovePackage(self, package, allowdep, autoremove):
         '''

@@ -767,6 +767,49 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    def doUpdatePackages(self, packages):
+        '''
+        Implement the {backend}-update functionality
+        This will only work with yum 3.2.4 or higher
+        '''
+        self._check_init()
+        self._lock_yum()
+        self.AllowCancel(False)
+        self.PercentageChanged(0)
+
+        for package_id in packages:
+            package, installed = self._findPackage(package_id)
+
+            if not package:
+                self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, "%s could not be found." % package_id)
+                self.Finished(EXIT_FAILED)
+                return
+
+            if installed:
+                self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed." % package_id)
+                self.Finished(EXIT_FAILED)
+                return
+
+            txmbr = self.yumbase.update(po=package)
+
+            if not txmbr:
+                self._unlock_yum()
+                self.ErrorCode(ERROR_TRANSACTION_ERROR,
+                               "Package %s could not be added to the transaction." % package_id)
+                self.Finished(EXIT_FAILED)
+                return
+                
+        successful = self._runYumTransaction()
+
+        if not successful:
+            # _runYumTransaction() sets the error code and calls Finished()
+            return
+            
+        self._unlock_yum()
+        self.Finished(EXIT_SUCCESS)
+
     def doRemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
