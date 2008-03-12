@@ -112,6 +112,11 @@ zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::Poo
 std::set<zypp::PoolItem> * zypp_get_updates ();
 
 /**
+  * Returns a set of all patches the could be installed
+  */
+std::set<zypp::ui::Selectable::Ptr> * zypp_get_patches ();
+
+/**
   * perform changes in pool to the system
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type);

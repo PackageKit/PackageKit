@@ -344,7 +344,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	ThreadData *data = g_new0(ThreadData, 1);
@@ -484,6 +484,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
+        
         // get all Packages for Update
         std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
 
@@ -502,6 +503,39 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	delete (candidates);
+
+        //get all Patches for Update
+
+        std::set<zypp::ui::Selectable::Ptr> *patches = zypp_get_patches ();
+
+        for (std::set<zypp::ui::Selectable::Ptr>::iterator it = patches->begin (); it != patches->end (); it++) {
+                gchar *package_id;
+
+                zypp::ResObject::constPtr candidate = (*it)->candidateObj ();
+                zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(candidate);
+
+                PkInfoEnum infoEnum = PK_INFO_ENUM_SECURITY;
+
+                /* This is usesless ATM, because category isn't implemented yet
+                if(patch->category () == "security") {
+                        infoEnum = PK_INFO_ENUM_SECURITY;
+                }else if(patch->category () == "recommended") {
+                        infoEnum = PK_INFO_ENUM_IMPORTANT;
+                }*/
+
+                package_id = pk_package_id_build ((*it)->name ().c_str (),
+                                                  candidate->edition ().c_str (),
+                                                  candidate->arch ().c_str (),
+                                                  candidate->vendor ().c_str ());
+
+                pk_backend_package (backend,
+                                    infoEnum,
+                                    package_id,
+                                    candidate->description ().c_str ());
+                g_free (package_id);
+        }
+
+        delete (patches);
         pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
@@ -516,6 +550,87 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
+}
+
+static gboolean
+backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
+{
+        PkBackend *backend;
+	PkPackageId *pi;
+	ThreadData *d = (ThreadData*) data;
+
+	backend = pk_backend_thread_get_backend (thread);
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+        zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
+
+        zypp::Capabilities obs = solvable.obsoletes ();
+
+        gchar *obsoletes = new gchar (); 
+
+        for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
+                g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
+                g_strlcat(obsoletes, ";", (strlen (obsoletes) + 2));
+        }
+
+        PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+        
+        zypp::ZYpp::Ptr zypp = get_zypp ();
+        zypp::ResObject::constPtr item = zypp->pool ().find (solvable).resolvable ();
+
+        if (zypp::isKind<zypp::Patch>(solvable)) {
+                zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
+                if (patch->reboot_needed ()) {
+                        restart = PK_RESTART_ENUM_SYSTEM;
+                }else if (patch->affects_pkg_manager ()) {
+                        restart = PK_RESTART_ENUM_SESSION;
+                }
+        }
+
+        pk_backend_update_detail (backend,
+                                  d->package_id,
+                                  "",
+                                  obsoletes,
+                                  solvable.vendor ().c_str (),
+                                  "",
+                                  "",
+                                  restart,
+                                  item->description ().c_str ());
+
+        g_free (obsoletes);
+        pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+	pk_backend_finished (backend);
+
+        return TRUE;
+}
+
+/**
+  * backend_get_update_detail
+  */
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+        g_return_if_fail (backend != NULL);
+        
+        ThreadData *data = g_new0(ThreadData, 1);
+	if (data == NULL) {
+		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_description");
+		pk_backend_finished (backend);
+	} else {
+		data->package_id = g_strdup(package_id);
+		pk_backend_thread_create (thread, backend_get_update_detail_thread, data);
+	}
 }
 
 static gboolean
@@ -612,6 +727,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
                                 // set status to ToBeInstalled
                                 it->status ().setToBeInstalled (zypp::ResStatus::USER);
                                 item = *it;
+                                break;
                         }
                 }
 
@@ -1413,7 +1529,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
   * backend_get_requires:
   */
 static void
-backend_get_requires(PkBackend *backend, const gchar *package_id, gboolean recursive) {
+backend_get_requires(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive) {
         g_return_if_fail (backend != NULL);
 
         ThreadData *data = g_new0(ThreadData, 1);
@@ -1438,7 +1554,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
 	backend_get_requires,			/* get_requires */
-	NULL,					/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_file */

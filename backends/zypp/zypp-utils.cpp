@@ -322,7 +322,8 @@ zypp_get_package_by_id (const gchar *package_id)
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		const char *version = it->edition ().asString ().c_str ();
-		if (strcmp (pi->version, version) == 0) {
+                const char *arch = it->arch ().c_str ();
+		if (strcmp (pi->version, version) == 0 || strcmp (pi->arch, arch) == 0) {
 			package = *it;
 			break;
 		}
@@ -458,6 +459,27 @@ zypp_get_updates ()
         }
 
         return pks;
+}
+
+std::set<zypp::ui::Selectable::Ptr> *
+zypp_get_patches ()
+{
+        std::set<zypp::ui::Selectable::Ptr> *patches = new std::set<zypp::ui::Selectable::Ptr> ();
+
+        zypp::ZYpp::Ptr zypp;
+        zypp = get_zypp ();
+
+
+        for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
+                        it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
+                // check if patch is needed 
+                if((*it)->candidatePoolItem ().status ().isNeeded())
+                        patches->insert (*it);
+
+        }
+
+        return patches;
+
 }
 
 gboolean
