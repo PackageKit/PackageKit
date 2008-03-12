@@ -262,6 +262,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         print "__init__"
         self.locked = False
+        self._canceled = threading.Event()
+        self._canceled.clear()
+        self._locked = threading.Lock()
+
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
@@ -363,12 +367,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.doUnlock(YUM_PID_FILE)
 
     def doCancel(self):
-        if self._child_pid:
-            os.kill(self._child_pid, signal.SIGQUIT)
-            self._child_pid = None
-            self.Finished(EXIT_SUCCESS)
-            return
-        self.Finished(EXIT_FAILED)
+        pklog.info("Canceling current action")
+        self.StatusChanged(STATUS_CANCEL)
+        self._canceled.set()
+        self._canceled.wait()
+
+#        self.Finished(EXIT_FAILED)
 
     @threaded
     def doSearchName(self, filters, search):
