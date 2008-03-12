@@ -384,7 +384,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
+                         in_signature='sbb', out_signature='')
     def GetRequires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
@@ -397,7 +397,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sb', out_signature='')
+                         in_signature='sbb', out_signature='')
     def GetDepends(self,filters,package,recursive):
         '''
         Print a list of depends for a given package
