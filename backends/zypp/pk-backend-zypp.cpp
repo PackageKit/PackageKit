@@ -98,6 +98,12 @@ typedef struct {
 } ThreadData;
 
 typedef struct {
+        gchar *package_id;
+        gchar *filter;
+        gint type;
+} FilterData;
+
+typedef struct {
 	gboolean force;
 } RefreshData;
 
@@ -146,6 +152,172 @@ backend_destroy (PkBackend *backend)
 	}
 
 	g_object_unref (thread);
+}
+
+/**
+  * backend_get_requires_thread:
+  */
+static gboolean
+backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
+        
+        PkPackageId *pi;
+        PkBackend *backend;
+        
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	FilterData *d = (FilterData*) data;
+
+	pi = pk_package_id_new_from_string (d->package_id);
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+                g_free (d->filter);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+        
+        zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
+        zypp::PoolItem package;
+
+        if (solvable.isSystem ()) {
+                zypp::ResPool pool = zypp_build_local_pool ();
+
+                gboolean found = FALSE;
+
+                for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+                                it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+                        if (it->status ().isInstalled ()) {
+                                package = (*it);
+                                found = TRUE;
+                        }
+                }
+
+                if (found == FALSE) {
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Package is not installed");
+                        pk_package_id_free (pi);
+                        g_free (d->package_id);
+                        g_free (d->filter);
+                        g_free (d);
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
+
+                // set Package as to be uninstalled
+                package.status ().setToBeUninstalled (zypp::ResStatus::USER);
+
+        }else{
+
+                if (solvable == zypp::sat::Solvable::nosolvable) {
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Package couldn't be found");
+                        pk_package_id_free (pi);
+                        g_free (d->package_id);
+                        g_free (d->filter);
+                        g_free (d);
+                        pk_backend_finished (backend);
+                        return FALSE;
+                }
+
+                zypp::ResPool pool = zypp::ResPool::instance ();
+                package = pool.find (solvable);
+                //set Package as to be installed
+                package.status ().setToBeInstalled (zypp::ResStatus::USER);
+        }
+
+	pk_backend_set_percentage (backend, 40);
+
+        // solver run
+        zypp::ResPool pool = zypp::ResPool::instance ();
+        zypp::Resolver solver(pool);
+        
+        solver.setForceResolve (true);
+
+        if (solver.resolvePool () == FALSE) {
+                std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
+                for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
+                   pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
+                }
+		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
+		pk_package_id_free (pi);
+		g_free (d->package_id);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	pk_backend_set_percentage (backend, 60);
+
+        // look for packages which would be uninstalled
+        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
+                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
+                PkInfoEnum status = PK_INFO_ENUM_UNKNOWN;
+
+                gboolean hit = FALSE;
+
+                if (it->status ().isToBeUninstalled ()) {
+                        status = PK_INFO_ENUM_REMOVING;
+                        hit = TRUE;
+                }else if (it->status ().isToBeInstalled ()) {
+                        status = PK_INFO_ENUM_INSTALLING;
+                        hit = TRUE;
+                }else if (it->status ().isToBeUninstalledDueToUpgrade ()) {
+                        status = PK_INFO_ENUM_UPDATING;
+                        hit = TRUE;
+                }else if (it->status ().isToBeUninstalledDueToObsolete ()) {
+                        status = PK_INFO_ENUM_OBSOLETING;
+                        hit = TRUE;
+                }
+
+                if (hit) {
+                        gchar *package_id;
+        
+                        package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
+                                        it->resolvable ()->edition ().asString ().c_str(),
+                                        it->resolvable ()->arch ().c_str(),
+                                        it->resolvable ()->vendor ().c_str ());
+        
+                        pk_backend_package (backend,
+                                        status,
+                                        package_id,
+                                        it->resolvable ()->description ().c_str ());          
+                
+                        g_free (package_id);
+                }
+                it->statusReset ();
+        }
+        
+        // undo the status-change of the package and disable forceResolve
+        package.statusReset ();
+        solver.setForceResolve (false);
+
+        pk_package_id_free (pi);
+	g_free (d->package_id);
+	g_free (d);
+	pk_backend_finished (backend);
+
+        return TRUE;
+}
+
+/**
+  * backend_get_requires:
+  */
+static void
+backend_get_requires(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive) {
+        g_return_if_fail (backend != NULL);
+
+        FilterData *data = g_new0(FilterData, 1);
+        if (data == NULL) {
+                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_requires");
+                pk_backend_finished (backend);
+        } else {
+                data->package_id = g_strdup(package_id);
+                data->type = recursive;
+                data->filter = g_strdup(filter);
+                pk_backend_thread_create (thread, backend_get_requires_thread, data);
+        }
 }
 
 /**
@@ -656,7 +828,7 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
                 status.setToBeInstalled (zypp::ResStatus::USER);
 	}
         
-        if (!zypp_perform_execution (backend, UPDATE)) {
+        if (!zypp_perform_execution (backend, UPDATE, FALSE)) {
                 pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
                 pk_backend_finished (backend);
                 return FALSE;
@@ -741,7 +913,8 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 40);
 
-		if (!zypp_perform_execution (backend, INSTALL)) {
+		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+                        
                         pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
                         g_free (package_id);
                         pk_backend_finished (backend);
@@ -910,7 +1083,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 40);
 
-                if (!zypp_perform_execution (backend, REMOVE)){
+                if (!zypp_perform_execution (backend, REMOVE, FALSE)){
                         pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't remove the package");
                         g_free (d->package_id);
                         g_free (d);
@@ -1422,123 +1595,6 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
         } else {
                 data->package_id = g_strdup(package_id);
                 pk_backend_thread_create (thread, backend_get_files_thread, data);
-        }
-}
-
-/**
-  * backend_get_requires_thread:
-  */
-static gboolean
-backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
-        
-        PkPackageId *pi;
-        PkBackend *backend;
-        
-        /* get current backend */
-        backend = pk_backend_thread_get_backend (thread);
-	ThreadData *d = (ThreadData*) data;
-
-	pi = pk_package_id_new_from_string (d->package_id);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_package_id_free (pi);
-		g_free (d->package_id);
-		g_free (d);
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
-        
-        zypp::ResPool pool = zypp_build_local_pool();        
-
-        zypp::PoolItem package;
-        gboolean found = FALSE;
-        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
-                        it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
-                if (it ->status ().isInstalled ()){
-                        package = (*it);
-                        found = TRUE;
-                }
-        }
-
-	if (found == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Package is not installed");
-		pk_package_id_free (pi);
-		g_free (d->package_id);
-		g_free (d);
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-        // set Package as to be uninstalled
-        package.status ().setToBeUninstalled (zypp::ResStatus::USER);
-
-	pk_backend_set_percentage (backend, 40);
-
-        // solver run
-        zypp::Resolver solver(pool);
-        
-        solver.setForceResolve (true);
-
-        if (solver.resolvePool () == FALSE) {
-                std::list<zypp::ResolverProblem_Ptr> problems = solver.problems ();
-                for(std::list<zypp::ResolverProblem_Ptr>::iterator it = problems.begin (); it != problems.end (); it++){
-                   pk_warning("Solver problem (This should never happen): '%s'", (*it)->description ().c_str ());
-                }
-		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Resolution failed");
-		pk_package_id_free (pi);
-		g_free (d->package_id);
-		g_free (d);
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-	pk_backend_set_percentage (backend, 60);
-
-        // look for packages which would be uninstalled
-        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
-                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
-                if (it->status ().isToBeUninstalled ()) {
-                        gchar *package_id;
-                        package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
-                                                           it->resolvable ()->edition ().asString ().c_str(),
-                                                           it->resolvable ()->arch ().c_str(),
-                                                           it->resolvable ()->vendor ().c_str ());
-                        pk_backend_package (backend,
-			                    PK_INFO_ENUM_INSTALLED,
-			                    package_id,
-			                    it->resolvable ()->description ().c_str ());
-                        g_free (package_id);
-                }
-        }
-        
-        // undo the status-change of the package and disable forceResolve
-        package.statusReset ();
-        solver.setForceResolve (false);
-
-        pk_package_id_free (pi);
-	g_free (d->package_id);
-	g_free (d);
-	pk_backend_finished (backend);
-
-        return TRUE;
-}
-
-/**
-  * backend_get_requires:
-  */
-static void
-backend_get_requires(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive) {
-        g_return_if_fail (backend != NULL);
-
-        ThreadData *data = g_new0(ThreadData, 1);
-        if (data == NULL) {
-                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_requires");
-                pk_backend_finished (backend);
-        } else {
-                data->package_id = g_strdup(package_id);
-                pk_backend_thread_create (thread, backend_get_requires_thread, data);
         }
 }
 

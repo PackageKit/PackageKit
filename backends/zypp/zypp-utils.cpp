@@ -1,3 +1,4 @@
+#include <sstream>
 #include <stdlib.h>
 #include <glib.h>
 #include <zypp/ZYpp.h>
@@ -469,7 +470,6 @@ zypp_get_patches ()
         zypp::ZYpp::Ptr zypp;
         zypp = get_zypp ();
 
-
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
@@ -483,10 +483,13 @@ zypp_get_patches ()
 }
 
 gboolean
-zypp_perform_execution (PkBackend *backend, PerformType type)
+zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 {
         try {
                 zypp::ZYpp::Ptr zypp = get_zypp ();
+
+                if (force)
+                        zypp->resolver ()->setForceResolve (force);
 
                 // Gather up any dependencies
                 pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -522,6 +525,8 @@ zypp_perform_execution (PkBackend *backend, PerformType type)
                         pk_backend_finished (backend);
                         return FALSE;
                 }
+
+                zypp->resolver ()->setForceResolve (FALSE);
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
                 // TODO: make sure this dumps out the right sring.
