@@ -119,7 +119,7 @@ std::set<zypp::ui::Selectable::Ptr> * zypp_get_patches ();
 /**
   * perform changes in pool to the system
   */
-gboolean zypp_perform_execution (PkBackend *backend, PerformType type);
+gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
 void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
 #endif // _ZYPP_UTILS_H_
