@@ -727,7 +727,7 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 static gboolean
 backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 {
-        PkBackend *backend;
+	PkBackend *backend;
 	PkPackageId *pi;
 	ThreadData *d = (ThreadData*) data;
 
@@ -743,48 +743,48 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-        zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
+	zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
 
-        zypp::Capabilities obs = solvable.obsoletes ();
+	zypp::Capabilities obs = solvable.obsoletes ();
 
-        gchar *obsoletes = new gchar (); 
+	gchar *obsoletes = new gchar (); 
 
-        for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
-                g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
-                g_strlcat(obsoletes, ";", (strlen (obsoletes) + 2));
-        }
+	for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
+		g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
+		g_strlcat(obsoletes, ";", (strlen (obsoletes) + 2));
+	}
 
-        PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-        
-        zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp::ResObject::constPtr item = zypp->pool ().find (solvable).resolvable ();
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+	
+	zypp::ZYpp::Ptr zypp = get_zypp ();
+	zypp::ResObject::constPtr item = zypp->pool ().find (solvable).resolvable ();
 
-        if (zypp::isKind<zypp::Patch>(solvable)) {
-                zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
-                if (patch->reboot_needed ()) {
-                        restart = PK_RESTART_ENUM_SYSTEM;
-                }else if (patch->affects_pkg_manager ()) {
-                        restart = PK_RESTART_ENUM_SESSION;
-                }
-        }
+	if (zypp::isKind<zypp::Patch>(solvable)) {
+		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
+		if (patch->reboot_needed ()) {
+			restart = PK_RESTART_ENUM_SYSTEM;
+		}else if (patch->affects_pkg_manager ()) {
+			restart = PK_RESTART_ENUM_SESSION;
+		}
+	}
 
-        pk_backend_update_detail (backend,
-                                  d->package_id,
-                                  "",
-                                  obsoletes,
-                                  solvable.vendor ().c_str (),
-                                  "",
-                                  "",
-                                  restart,
-                                  item->description ().c_str ());
+	pk_backend_update_detail (backend,
+				  d->package_id,
+				  "",
+				  "", // CURRENTLY CAUSES SEGFAULT obsoletes,
+				  "", // CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
+				  "",
+				  "",
+				  restart,
+				  item->description ().c_str ());
 
-        g_free (obsoletes);
-        pk_package_id_free (pi);
+	g_free (obsoletes);
+	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
 	pk_backend_finished (backend);
 
-        return TRUE;
+	return TRUE;
 }
 
 /**
