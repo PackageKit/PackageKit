@@ -21,6 +21,7 @@
 
 #include <pk-backend.h>
 #include <pk-backend-thread.h>
+#include <pk-filter.h>
 #include <pk-network.h>
 
 #include <log.h>
@@ -52,17 +53,8 @@ enum {
 };
 
 typedef struct {
-	gboolean installed;
-	gboolean notinstalled;
-	gboolean devel;
-	gboolean notdevel;
-	gboolean gui;
-	gboolean notgui;
-} FilterData;
-
-typedef struct {
 	gint		mode;
-	FilterData	*fd;
+	PkFilter	*filter;
 	gchar		*search;
 } SearchData;
 
@@ -766,46 +758,6 @@ poldek_pkg_is_gui (struct pkg *pkg)
 }
 
 /**
- * process_filter:
- */
-static FilterData*
-process_filter (const gchar* filter)
-{
-	FilterData	*fd = g_new0 (FilterData, 1);
-	gchar**		sections = NULL;
-	gint		i = 0;
-	
-	/* by default query all packages */
-	fd->installed = TRUE;
-	fd->notinstalled = TRUE;
-	fd->devel = TRUE;
-	fd->notdevel = TRUE;
-	fd->gui = TRUE;
-	fd->notgui = TRUE;
-	
-	sections = g_strsplit (filter, ";", 0);
-	while (sections[i])
-	{
-		if (strcmp (sections[i], "installed") == 0)
-			fd->notinstalled = FALSE;
-		else if (strcmp (sections[i], "~installed") == 0)
-			fd->installed = FALSE;
-		else if (strcmp (sections[i], "devel") == 0)
-			fd->notdevel = FALSE;
-		else if (strcmp (sections[i], "~devel") == 0)
-			fd->devel = FALSE;
-		else if (strcmp (sections[i], "gui") == 0)
-			fd->notgui = FALSE;
-		else if (strcmp (sections[i], "~gui") == 0)
-			fd->gui = FALSE;
-		i++;
-	}
-	g_strfreev (sections);
-	
-	return fd;
-}
-
-/**
  * search_package:
  */
 static gboolean
@@ -846,7 +798,7 @@ search_package (PkBackendThread *thread, gpointer data)
 		gchar		*command = NULL;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 		
-		if (d->fd->installed)
+		if (d->filter->installed)
 		{
 			command = g_strdup_printf ("cd /installed; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command))
@@ -854,7 +806,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			
 			g_free (command);
 		}
-		if (d->fd->notinstalled)
+		if (d->filter->not_installed)
 		{
 			command = g_strdup_printf ("cd /all-avail; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command))
@@ -863,7 +815,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			g_free (command);
 		}
 		
-		if (d->fd->installed && d->fd->notinstalled && installed && available)
+		if (d->filter->installed && d->filter->not_installed && installed && available)
 		{
 			pkgs = n_array_concat_ex (installed, available, (tn_fn_dup)pkg_link);
 			
@@ -872,9 +824,9 @@ search_package (PkBackendThread *thread, gpointer data)
 			n_array_free (installed);
 			n_array_free (available);
 		}
-		else if (!d->fd->installed || available)
+		else if (!d->filter->installed || available)
 			pkgs = available;
-		else if (!d->fd->notinstalled || installed)
+		else if (!d->filter->not_installed || installed)
 			pkgs = installed;
 		
 		if (pkgs)
@@ -886,26 +838,26 @@ search_package (PkBackendThread *thread, gpointer data)
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 				
 				/* development filter */
-				if (!d->fd->devel || !d->fd->notdevel)
+				if (!d->filter->devel || !d->filter->not_devel)
 				{
 					/* devel in filter */
-					if (d->fd->devel && !poldek_pkg_is_devel (pkg))
+					if (d->filter->devel && !poldek_pkg_is_devel (pkg))
 						continue;
 					
 					/* ~devel in filter */
-					if (d->fd->notdevel && poldek_pkg_is_devel (pkg))
+					if (d->filter->not_devel && poldek_pkg_is_devel (pkg))
 						continue;
 				}
 				
 				/* gui filter */
-				if (!d->fd->gui || !d->fd->notgui)
+				if (!d->filter->gui || !d->filter->not_gui)
 				{
 					/* gui in filter */
-					if (d->fd->gui && !poldek_pkg_is_gui (pkg))
+					if (d->filter->gui && !poldek_pkg_is_gui (pkg))
 						continue;
 					
 					/* ~gui in filter */
-					if (d->fd->notgui && poldek_pkg_is_gui (pkg))
+					if (d->filter->not_gui && poldek_pkg_is_gui (pkg))
 						continue;
 				}
 				
@@ -921,7 +873,7 @@ search_package (PkBackendThread *thread, gpointer data)
 		poclidek_rcmd_free (cmd);
 	}
 	
-	g_free (d->fd);
+	pk_filter_free (d->filter);
 	g_free (d->search);
 	g_free (d);
 	
@@ -1595,7 +1547,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
 		pk_backend_finished (backend);
 	} else {
 		data->mode = SEARCH_ENUM_NAME;
-		data->fd = process_filter (filter);
+		data->filter = pk_filter_new_from_string (filter);
 		data->search = g_strdup (package);
 		pk_backend_thread_create (thread, search_package, data);
 	}
@@ -1619,7 +1571,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 		pk_backend_finished (backend);
 	} else {
 		data->mode = SEARCH_ENUM_DETAILS;
-		data->fd = process_filter (filter);
+		data->filter = pk_filter_new_from_string (filter);
 		data->search = g_strdup (search);
 		pk_backend_thread_create (thread, search_package, data);
 	}
@@ -1643,7 +1595,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 		pk_backend_finished (backend);
 	} else {
 		data->mode = SEARCH_ENUM_FILE;
-		data->fd = process_filter (filter);
+		data->filter = pk_filter_new_from_string (filter);
 		data->search = g_strdup (search);
 		pk_backend_thread_create (thread, search_package, data);
 	}
@@ -1667,7 +1619,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 		pk_backend_finished (backend);
 	} else {
 		data->mode = SEARCH_ENUM_GROUP;
-		data->fd = process_filter (filter);
+		data->filter = pk_filter_new_from_string (filter);
 		data->search = g_strdup (search);
 		pk_backend_thread_create (thread, search_package, data);
 	}
@@ -1691,7 +1643,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 		pk_backend_finished (backend);
 	} else {
 		data->mode = SEARCH_ENUM_NAME;
-		data->fd = process_filter (filter);
+		data->filter = pk_filter_new_from_string (filter);
 		data->search = g_strdup (search);
 		pk_backend_thread_create (thread, search_package, data);
 	}
