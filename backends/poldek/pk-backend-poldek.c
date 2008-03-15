@@ -1336,7 +1336,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_updates (PkBackend *backend)
+backend_get_updates (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);	
 	
@@ -1558,7 +1558,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps)
+backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
 	RemoveData	*data = g_new0 (RemoveData, 1);
 	
