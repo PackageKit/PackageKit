@@ -930,6 +930,9 @@ backend_initalize (PkBackend *backend)
 	
 	poldek_log_set_appender ("PackageKit", NULL, NULL, 0, (poldek_vlog_fn)poldek_backend_log);
 	
+	/* unique package names */
+	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 1);
+	
 	/* poldek has to ask. Otherwise callbacks won't be used */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_INST, 1);
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
