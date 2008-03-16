@@ -11,6 +11,11 @@
 
 [ -f /etc/sysconfig/packagekit-background ] && . /etc/sysconfig/packagekit-background
 
+# are we disabled?
+if [ "$ENABLED" == "no" ]; then
+	exit 1
+fi
+
 # set default for SYSTEMNAME
 [ -z "$SYSTEMNAME" ]  && SYSTEMNAME=$(hostname)
 
