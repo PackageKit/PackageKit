@@ -1359,6 +1359,9 @@ pk_client_update_system (PkClient *client, GError **error)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
+	/* clear the package list in case we are promiscuous and watching the update list */
+	pk_package_list_clear (client->priv->package_list);
+
 	/* hopefully do the operation first time */
 	ret = pk_client_update_system_action (client, &error_pk);
 
