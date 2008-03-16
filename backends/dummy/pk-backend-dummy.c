@@ -405,7 +405,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 /**
  * backend_search_name_timeout:
  **/
-gboolean
+static gboolean
 backend_search_name_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
