@@ -313,7 +313,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _to_unicode(self, txt, encoding='utf-8'):
         if isinstance(txt, basestring):
             if not isinstance(txt, unicode):
-                txt = unicode(txt, encoding):
+                txt = unicode(txt, encoding)
         return txt
 
     def _pkg_to_id(self,pkg):
