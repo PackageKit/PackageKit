@@ -1,4 +1,7 @@
-# Don't install, just check (valid: yes|no)
+# should we attempt to do this? (valid: yes|no)
+ENABLED=no
+
+# don't install, just check (valid: yes|no)
 CHECK_ONLY=no
 
 # if MAILTO is set, the mail command is used to deliver PackageKit output
