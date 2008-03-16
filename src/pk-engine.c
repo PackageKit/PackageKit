@@ -63,6 +63,18 @@ static void     pk_engine_finalize	(GObject       *object);
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 #define PK_ENGINE_UPDATES_CHANGED_TIMEOUT	100 /* ms */
 
+/**
+ * PK_ENGINE_STATE_CHANGED_TIMEOUT:
+ *
+ * The timeout in ms to wait when we get the StateHasChanged method.
+ * We don't want to queue these transactions if one is already in progress.
+ *
+ * We probably also need to wait for NetworkManager to come back up if we are
+ * resuming, and we probably don't want to be doing this at a busy time after
+ * a yum tramsaction.
+ */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT		5000 /* ms */
+
 struct PkEnginePrivate
 {
 	GTimer			*timer;
@@ -77,6 +89,7 @@ struct PkEnginePrivate
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
+	gboolean		 signal_state_timeout; /* don't queue StateHasChanged */
 };
 
 enum {
@@ -850,6 +863,12 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 
 	pk_debug ("RefreshCache method called: %s, %i", tid, force);
 
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
+	}
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -915,6 +934,12 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetUpdates method called: %s", tid);
+
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
+	}
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2685,6 +2710,33 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 }
 
 /**
+ * pk_engine_state_changed_cb:
+ *
+ * wait a little delay in case we get multiple requests or we need to setup state
+ **/
+static gboolean
+pk_engine_state_changed_cb (gpointer data)
+{
+	PkEngine *engine = PK_ENGINE (data);
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache as state may have changed");
+		g_object_unref (engine->priv->updates_cache);
+		engine->priv->updates_cache = NULL;
+	}
+	pk_debug ("emitting updates-changed tid:%s", "unknown");
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+
+	/* reset, now valid */
+	engine->priv->signal_state_timeout = 0;
+
+	return FALSE;
+}
+
+/**
  * pk_engine_state_has_changed:
  *
  * This should be called when tools like pup, pirut and yum-cli
@@ -2696,13 +2748,17 @@ pk_engine_state_has_changed (PkEngine *engine, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	if (engine->priv->updates_cache != NULL) {
-		pk_debug ("unreffing updates cache as state may have changed");
-		g_object_unref (engine->priv->updates_cache);
-		engine->priv->updates_cache = NULL;
+	if (engine->priv->signal_state_timeout != 0) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "Already asked to refresh state less than %ims ago",
+			     PK_ENGINE_STATE_CHANGED_TIMEOUT);
+		return FALSE;
 	}
-	pk_debug ("emitting updates-changed tid:%s", "unknown");
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+
+	/* wait a little delay in case we get multiple requests */
+	engine->priv->signal_state_timeout = g_timeout_add (PK_ENGINE_STATE_CHANGED_TIMEOUT,
+							    pk_engine_state_changed_cb, engine);
+
 	return TRUE;
 }
 
@@ -3031,6 +3087,9 @@ pk_engine_init (PkEngine *engine)
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
 
+	/* we need to be able to clear this */
+	engine->priv->signal_state_timeout = 0;
+
 	/* we need an auth framework */
 	engine->priv->security = pk_security_new ();
 
@@ -3070,6 +3129,12 @@ pk_engine_finalize (GObject *object)
 	ret = pk_backend_unlock (engine->priv->backend);
 	if (!ret) {
 		pk_warning ("couldn't unlock the backend");
+	}
+
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
 	}
 
 	/* compulsory gobjects */
