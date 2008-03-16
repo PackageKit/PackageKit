@@ -264,7 +264,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the summary to UTF before sending
         '''
         id = self._pkg_to_id(pkg)
-        summary = self._toUTF(pkg.summary)
+        summary = self._to_unicode(pkg.summary)
         self.Package(status,id,summary)
 
     def _show_description(self,id,license,group,desc,url,bytes):
@@ -278,23 +278,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param bytes: The size of the package, in bytes
         convert the description to UTF before sending
         '''
-        desc = self._toUTF(desc)
+        desc = self._to_unicode(desc)
         self.Description(id,license,group,desc,url,bytes)
 
 #
 # Utility methods for Signals
 #
 
-    def _toUTF( self, txt ):
-        rc=""
-        if isinstance(txt,types.UnicodeType):
-            return txt
-        else:
-            try:
-                rc = unicode( txt, 'utf-8' )
-            except UnicodeDecodeError, e:
-                rc = unicode( txt, 'iso-8859-1' )
-            return rc.encode('utf-8')
+    def _to_unicode(self, txt, encoding='utf-8'):
+        if isinstance(txt, basestring):
+            if not isinstance(txt, unicode):
+                txt = unicode(txt, encoding):
+        return txt
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)

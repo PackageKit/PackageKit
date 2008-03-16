@@ -22,8 +22,12 @@
 
 # imports
 import sys
+import codecs
 import traceback
-import types
+import locale
+
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
 from enums import *
 
 # Classes
