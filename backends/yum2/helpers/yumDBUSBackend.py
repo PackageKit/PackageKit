@@ -27,6 +27,7 @@
 import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
+from packagekit.daemonBackend import forked
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
@@ -53,6 +54,12 @@ import signal
 import time
 import os.path
 import operator
+import threading
+import gobject
+import dbus
+import dbus.glib
+import dbus.service
+import dbus.mainloop.glib
 
 
 # Global vars
@@ -229,6 +236,10 @@ def sigquit(signum, frame):
 # This is specific to this backend
 PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitYumBackend'
 
+# Setup threading support
+gobject.threads_init()
+dbus.glib.threads_init()
+
 class PackageKitYumBackend(PackageKitBaseBackend):
 
     # Packages there require a reboot
@@ -236,11 +247,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
+    def threaded(func):
+        '''
+        Decorator to run a method in a separate thread
+        '''
+        def wrapper(*args, **kwargs):
+            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            thread.start()
+        wrapper.__name__ = func.__name__
+        return wrapper
+
     def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
 
         print "__init__"
         self.locked = False
+        self._canceled = threading.Event()
+        self._canceled.clear()
+        self._locked = threading.Lock()
+
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
                                        dbus_path)
@@ -336,6 +361,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.closeRpmDB()
             self.yumbase.doUnlock(YUM_PID_FILE)
 
+    def doCancel(self):
+        pklog.info("Canceling current action")
+        self.StatusChanged(STATUS_CANCEL)
+        self._canceled.set()
+        self._canceled.wait()
+
+#        self.Finished(EXIT_FAILED)
+
+    @threaded
     def doSearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
@@ -357,6 +391,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doSearchDetails(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
@@ -378,6 +413,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doSearchGroup(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
@@ -427,6 +463,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doSearchFile(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
@@ -460,6 +497,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetRequires(self,package,recursive):
         '''
         Print a list of requires for a given package
@@ -487,6 +525,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetDepends(self,package,recursive):
         '''
         Print a list of depends for a given package
@@ -568,6 +607,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -623,6 +663,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doResolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
@@ -663,6 +704,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doInstallPackage(self, package):
         '''
         Implement the {backend}-install functionality
@@ -701,6 +743,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doInstallFile (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -731,6 +774,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doUpdatePackage(self, package):
         '''
         Implement the {backend}-update functionality
@@ -762,6 +806,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doUpdatePackages(self, packages):
         '''
         Implement the {backend}-update functionality
@@ -805,6 +850,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doRemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
@@ -841,6 +887,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
         return
             
+    @threaded
     def doGetDescription(self, package):
         '''
         Print a detailed description for a given package
@@ -863,6 +910,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetFiles(self, package):
         self._check_init(lazy_cache=True)
         self._lock_yum()
@@ -887,6 +935,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
@@ -923,6 +972,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
+    @threaded
     def doGetPackages(self,filters,showdesc='no'):
         '''
         Search for yum packages
@@ -970,6 +1020,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
         
+    @threaded
     def doRepoEnable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -993,6 +1044,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetRepoList(self):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -1008,6 +1060,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doGetUpdateDetail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
@@ -1037,6 +1090,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doRepoSetData(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
@@ -1065,6 +1119,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doInstallPublicKey(self, keyurl):
         '''
         Implement the {backend}-install-public-key functionality
