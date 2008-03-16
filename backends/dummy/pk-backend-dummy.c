@@ -467,6 +467,11 @@ backend_update_system_timeout (gpointer data)
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
+	if (progress_percentage == 30) {
+		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+				    "update3;2.19.1-4.fc8;i386;fedora",
+				    "The third update");
+	}
 	if (progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
