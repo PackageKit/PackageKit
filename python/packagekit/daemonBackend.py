@@ -57,6 +57,50 @@ PACKAGEKIT_DBUS_PATH = '/org/freedesktop/PackageKitBackend'
 INACTIVE_CHECK_INTERVAL = 1000 * 60 * 5 # Check every 5 minutes.
 INACTIVE_TIMEOUT = 60 * 10 # timeout after 10 minutes of inactivity.
 
+def forked(func):
+    '''
+    Decorator to fork a worker process.
+
+    Use a custom doCancel method in your backend to cancel forks:
+    
+    def doCancel(self):
+        if self._child_pid:
+            os.kill(self._child_pid, signal.SIGQUIT)
+            self._child_pid = None
+            self.Finished(EXIT_SUCCESS)
+            return
+        self.Finished(EXIT_FAILED)
+    '''
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        self.AllowCancel(True)
+        # Make sure that we are not in the worker process
+        if self._child_pid == 0:
+            pklog.debug("forkme() called from child thread.")
+            raise Exception("forkme() called from child thread.")
+        # Make sure that there is no another child process running
+        retries = 0
+        while self._is_child_running() and retries < 5:
+            pklog.warning("Method called, but a child is already running")
+            time.sleep(0.1)
+            retries += 1
+        if self._is_child_running():
+            self.ErrorCode(ERROR_INTERNAL_ERROR,
+                           "Method called while child process is still "
+                           "running.")
+            raise Exception("Method called while child process is "
+                            "still running")
+        # Fork a worker process
+        self.last_action_time = time.time()
+        self._child_pid = os.fork()
+        if self._child_pid > 0:
+            gobject.child_watch_add(self._child_pid, self.on_child_exit)
+            return
+        self.loop.quit()
+        sys.exit(func(*args, **kwargs))
+    return wrapper
+
+
 class PackageKitBaseBackend(dbus.service.Object):
 
     def PKSignalHouseKeeper(func):
@@ -102,35 +146,10 @@ class PackageKitBaseBackend(dbus.service.Object):
             self.Exit()
         return True
 
-    def forkme(self):
-        pklog.debug("Calling forkme, child pid = %s" % self._child_pid)
-        if self._is_child:
-            pklog.debug("forkme() called from child thread.")
-            raise Exception, "forkme() called from child thread."
-        self.last_action_time = time.time()
-
-        retries = 0
-        while self._child_is_running() and retries < 5:
-            pklog.warning("Method called, but a child is already running")
-            time.sleep(0.1)
-            retries += 1
-
-        if self._child_is_running():
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Method called while child process is still running.")
-            raise Exception, "Method called while child process is still running"
-    
-        self._child_pid = os.fork()
-        if self._child_pid:
-            # Setting up this watch causes gobject to nicely clean up zombie processes
-            gobject.child_watch_add(self._child_pid, self.on_child_exit)
-            self._is_child = False
-        else:
-            self._is_child = True
-
     def on_child_exit(pid, condition, data):
         pass
 
-    def _child_is_running(self):
+    def _is_child_running(self):
         pklog.debug("in child_is_running")
         if self._child_pid:
             pklog.debug("in child_is_running, pid = %s" % self._child_pid)
@@ -153,7 +172,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         pklog.debug("No child.")
         return False
-                            
+
 #
 # Signals ( backend -> engine -> client )
 #
@@ -299,19 +318,12 @@ class PackageKitBaseBackend(dbus.service.Object):
                          in_signature='', out_signature='')
     def Init(self):
         pklog.info("Init()")
-        if self._child_is_running():
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Init() called while child process still running.")
-            self.Exit()
-            
-            return
-
         self.doInit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
-    
         self.doExit()
         self.loop.quit()
  
@@ -322,27 +334,18 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-name functionality
         '''
         pklog.info("SearchName()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doSearchName(filters, search)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Cancel(self):
         pklog.info("Cancel()")
-    	if not self._allow_cancel:
+        if not self._allow_cancel:
             self.ErrorCode(ERROR_CANNOT_CANCEL, "Current action cannot be cancelled")
-            self.Exit()
+            self.Finished(EXIT_FAILED)
             return
-    		
-        if self._child_pid:
-            os.kill(self._child_pid, signal.SIGQUIT)
-            self._child_pid = None
-
+        self.doCancel()
         return
-    
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -351,11 +354,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-details functionality
         '''
         pklog.info("SearchDetails()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doSearchDetails(filters,key)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -364,11 +363,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-group functionality
         '''
         pklog.info("SearchGroup()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doSearchGroup(filters,key)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -377,11 +372,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-file functionality
         '''
         pklog.info("SearchFile()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doSearchFile(filters,key)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
@@ -390,11 +381,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a list of requires for a given package
         '''
         pklog.info("GetRequires()")
-        self.forkme()
-        if self._child_pid:
-            return
-        self.doGetRequires(filters,package,recursive)
-        self.loop.quit()
+        self.doGetRequires(package,recursive)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
@@ -403,11 +390,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a list of depends for a given package
         '''
         pklog.info("GetDepends()")
-        self.forkme()
-        if self._child_pid:
-            return
-        self.doGetDepends(filters,package,recursive)
-        self.loop.quit()
+        self.doGetDepends(package,recursive)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -416,11 +399,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-update-system functionality
         '''
         pklog.info("UpdateSystem()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doUpdateSystem()
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='b', out_signature='')
@@ -429,11 +408,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("RefreshCache()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doRefreshCache( force)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -442,11 +417,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-resolve functionality
         '''
         pklog.info("Resolve()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doResolve( filters, name)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -456,11 +427,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         This will only work with yum 3.2.4 or higher
         '''
         pklog.info("InstallPackage()")
-        self.forkme()
-        if self._child_pid:
-            return
-        self.doInstallPackage(package)
-        self.loop.quit()
+        self.doInstallPackage( package)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -471,11 +438,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Needed to be implemented in a sub class
         '''
         pklog.info("InstallFile()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doInstallFile( inst_file)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -486,11 +449,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Needed to be implemented in a sub class
         '''
         pklog.info("ServicePack()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doServicePack( location)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -499,9 +458,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-update functionality
         '''
         pklog.info("UpdatePackage()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doUpdatePackage( package)
         self.loop.quit()
 
@@ -525,11 +481,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-remove functionality
         '''
         pklog.info("RemovePackage()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doRemovePackage(package, allowdep, autoremove)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -538,11 +490,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a detailed description for a given package
         '''
         pklog.info("GetDescription()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doGetDescription( package)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -551,11 +499,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the get-files method
         '''
         pklog.info("GetFiles()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doGetFiles( package)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -564,11 +508,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-get-updates functionality
         '''
         pklog.info("GetUpdates()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doGetUpdates(filters)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -577,11 +517,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-repo-enable functionality
         '''
         pklog.info("RepoEnable()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doRepoEnable( repoid, enable)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -590,9 +526,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-get-repo-list functionality
         '''
         pklog.info("GetRepoList()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doGetRepoList()
         self.loop.quit()
 
@@ -603,9 +536,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-get-update_detail functionality
         '''
         pklog.info("GetUpdateDetail()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doGetUpdateDetail(package)
         self.loop.quit()
 
@@ -616,11 +546,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-repo-set-data functionality
         '''
         pklog.info("RepoSetData()")
-        self.forkme()
-        if self._child_pid:
-            return
         self.doRepoSetData( repoid, parameter, value)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -629,9 +555,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-install-public-key functionality
         '''
         pklog.info("InstallPublicKey(%s)" % keyurl)
-        self.forkme()
-        if self._child_pid:
-            return
         self.doInstallPublicKey(keyurl)
         self.loop.quit()
 

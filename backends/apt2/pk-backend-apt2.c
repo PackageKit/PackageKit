@@ -127,25 +127,6 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 } 
 
 /**
- * backend_install_package:
- *
-static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
-	// check network state 
-	if (pk_network_is_online (network) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
-	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
-} */
-
-/**
  * backend_refresh_cache:
  * */
 static void
@@ -165,25 +146,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 } 
 
 /**
- * pk_backend_update_package:
- *
-static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-
-	// check network state
-	if (pk_network_is_online (network) == FALSE) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_finished (backend);
-		return;
-	}
-
-	pk_backend_spawn_helper (spawn, "update.py", package_id, NULL);
-} */
-
-/**
  * pk_backend_update_system:
  * */
 static void
@@ -193,28 +155,6 @@ backend_update_system (PkBackend *backend)
 	g_return_if_fail (dbus != NULL);
         pk_backend_dbus_update_system (dbus);
 }
-
-/**
- * pk_backend_resolve:
- *
-static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "resolve.py", filter, package_id, NULL);
-} */
-
-/**
- * pk_backend_get_repo_list:
- *
-static void
-backend_get_repo_list (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-repo-list.py", NULL);
-} */
 
 /**
  * backend_install_package
@@ -271,6 +211,18 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
         pk_backend_dbus_search_name (dbus, filter, search);
 }
 
+/**
+ *  * pk_backend_cancel:
+ *   */
+static void
+backend_cancel (PkBackend *backend)
+{
+        g_return_if_fail (backend != NULL);
+        g_return_if_fail (dbus != NULL);
+        pk_backend_dbus_cancel (dbus);
+}
+
+
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
 	"Ali Sabil <ali.sabil@gmail.com>; Tom Parker <palfrey@tevp.net>; Sebastian Heinlein <glatzor@ubuntu.com>",	/* author */
@@ -278,7 +230,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
 	backend_get_filters,			/* get_filters */
-	NULL,					/* cancel */
+	backend_cancel,				/* cancel */
 	NULL,					/* get_depends */
 	backend_get_description,	        /* get_description */
 	NULL,					/* get_files */
