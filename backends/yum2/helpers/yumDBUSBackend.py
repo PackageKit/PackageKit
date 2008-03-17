@@ -306,6 +306,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = self._to_unicode(desc)
         self.Description(id,license,group,desc,url,bytes)
 
+    def _show_update_detail(self,pkg,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc):
+        '''
+        Send the 'UpdateDetail' signal
+        convert the description to UTF before sending
+        '''
+        id = self._pkg_to_id(pkg)
+        desc = self._to_unicode(desc)
+        self.UpdateDetail(id,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+
 #
 # Utility methods for Signals
 #
@@ -1091,7 +1100,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         bz_url = self._format_list(urls['bugzilla'])
         vendor_url = self._format_list(urls['vendor'])
 
-        self.UpdateDetail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
+        self._show_update_detail(pkg,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
