@@ -79,6 +79,7 @@ struct PkBackendDbusPrivate
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
+static gpointer pk_backend_dbus_object = NULL;
 
 /**
  * pk_backend_dbus_repo_detail_cb:
@@ -1246,9 +1247,13 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 PkBackendDbus *
 pk_backend_dbus_new (void)
 {
-	PkBackendDbus *backend_dbus;
-	backend_dbus = g_object_new (PK_TYPE_BACKEND_DBUS, NULL);
-	return PK_BACKEND_DBUS (backend_dbus);
+	if (pk_backend_dbus_object != NULL) {
+		g_object_ref (pk_backend_dbus_object);
+	} else {
+		pk_backend_dbus_object = g_object_new (PK_TYPE_BACKEND_DBUS, NULL);
+		g_object_add_weak_pointer (pk_backend_dbus_object, &pk_backend_dbus_object);
+	}
+	return PK_BACKEND_DBUS (pk_backend_dbus_object);
 }
 
 /***************************************************************************
@@ -1276,8 +1281,8 @@ pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
 				 const gchar *package_id, const gchar *summary,
 				 PkBackendDbus *backend_dbus)
 {
-	pk_debug ("package");
 	number_packages++;
+	pk_debug ("package count now %i", number_packages);
 }
 
 void
@@ -1299,9 +1304,6 @@ libst_backend_dbus (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
-
-	/* FUBAR */
-	goto out;
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_dbus->priv->backend, "finished",
@@ -1326,7 +1328,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we actually did something and didn't fork");
-	if (elapsed > 1) {
+	if (elapsed >= 1) {
 		libst_success (test, "elapsed = %ims", elapsed);
 	} else {
 		libst_failed (test, "elapsed = %ims", elapsed);
@@ -1356,12 +1358,12 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages");
-	if (number_packages == 2) {
+	if (number_packages == 3) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "wrong number of packages %i", number_packages);
+		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
 	}
-out:
+
 	g_object_unref (backend_dbus);
 
 	libst_end (test);
