@@ -372,7 +372,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-file functionality
         '''
         pklog.info("SearchFile()")
-        self.doSearchFile(filters,filters,key)
+        self.doSearchFile(filters,key)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
