@@ -567,6 +567,19 @@ backend_service_pack (PkBackend *backend, const gchar *location, gboolean enable
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "update1;2.19.1-4.fc8;i386;fedora",
+			    "The first update");
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Dummy",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -596,6 +609,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-	backend_service_pack			/* service_pack */
+	backend_service_pack,			/* service_pack */
+	backend_what_provides			/* what_provides */
 );
 

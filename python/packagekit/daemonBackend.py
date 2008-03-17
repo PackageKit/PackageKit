@@ -372,7 +372,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-file functionality
         '''
         pklog.info("SearchFile()")
-        self.doSearchFile(filters,key)
+        self.doSearchFile(filters,filters,key)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
@@ -381,7 +381,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a list of requires for a given package
         '''
         pklog.info("GetRequires()")
-        self.doGetRequires(package,recursive)
+        self.doGetRequires(filters,package,recursive)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='sss', out_signature='')
+    def WhatProvides(self,filters,provides_type,search):
+        '''
+        Print a list of packages for a given provide string
+        '''
+        pklog.info("WhatProvides()")
+        self.doWhatProvides(filters,provides_type,search)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')

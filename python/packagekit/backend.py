@@ -311,6 +311,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def what_provides(self,filters,provides_type,search):
+        '''
+        Implement the {backend}-what-provides functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def update_system(self):
         '''
         Implement the {backend}-update-system functionality
