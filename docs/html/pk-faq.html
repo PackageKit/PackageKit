@@ -480,9 +480,16 @@
 
 <h3>Why doesn't PackageKit work with SELinux?</h3>
 <p>
-<code>packagekitd</code> is not recognized by SELinux yet.
+The process <code>packagekitd</code> is not recognized by SELinux in Fedora 8.
 Until the policy is fixed to handle system activation, you'll have
 to run in permissive mode, rather than enforcing.
+</p>
+<p>
+Using Fedora Rawhide, <code>selinux-policy-3.0.8-62.fc8</code> will make the
+<code>yum</code> backend work correctly when enforcing.
+The future backend <code>yum2</code> will need further changes.
+See <a href="https://bugzilla.redhat.com/show_bug.cgi?id=361151">Red Hat Bugzilla</a>
+for further information.
 </p>
 
 <h3>What if the backend package manager doesn't support percentage updates?</h3>
