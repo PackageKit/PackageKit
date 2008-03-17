@@ -232,7 +232,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         matches = enquire.get_mset(0, 1000)
         for m in matches:
             if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED, 
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "The search was canceled")
                 self.Finished(EXIT_KILL)
                 self._canceled.clear()
@@ -260,7 +260,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
             if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED, 
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "Calculating updates was canceled")
                 self.Finished(EXIT_KILL)
                 self._canceled.clear()
@@ -282,7 +282,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         name, version, arch, data = self.get_package_from_id(pkg_id)
         if not self._cache.has_key(name):
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % name)
             self.Finished(EXIT_FAILED)
             return
@@ -358,12 +358,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         pkg = self._find_package_by_id(id)
         if pkg == None:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % pkg.name)
             self.Finished(EXIT_FAILED)
             return
         if not pkg.isInstalled:
-            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED, 
+            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,
                            "Package %s isn't installed" % pkg.name)
             self.Finished(EXIT_FAILED)
             return
@@ -398,12 +398,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         pkg = self._find_package_by_id(id)
         if pkg == None:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, 
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
                            "Package %s isn't available" % pkg.name)
             self.Finished(EXIT_FAILED)
             return
         if pkg.isInstalled:
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED, 
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
                            "Package %s is already installed" % pkg.name)
             self.Finished(EXIT_FAILED)
             return

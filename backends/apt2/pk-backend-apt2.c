@@ -124,7 +124,7 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
 	pk_backend_dbus_get_updates (dbus, filter);
-} 
+}
 
 /**
  * backend_refresh_cache:
@@ -143,7 +143,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	}
 
 	pk_backend_dbus_refresh_cache(dbus, force);
-} 
+}
 
 /**
  * pk_backend_update_system:

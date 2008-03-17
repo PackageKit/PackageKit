@@ -159,10 +159,10 @@ backend_destroy (PkBackend *backend)
   */
 static gboolean
 backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
-        
+
         PkPackageId *pi;
         PkBackend *backend;
-        
+
         /* get current backend */
         backend = pk_backend_thread_get_backend (thread);
 	FilterData *d = (FilterData*) data;
@@ -179,7 +179,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 	}
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
-        
+
         zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
         zypp::PoolItem package;
 
@@ -232,7 +232,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         // solver run
         zypp::ResPool pool = zypp::ResPool::instance ();
         zypp::Resolver solver(pool);
-        
+
         solver.setForceResolve (true);
 
         if (solver.resolvePool () == FALSE) {
@@ -273,22 +273,22 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 
                 if (hit) {
                         gchar *package_id;
-        
+
                         package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
                                         it->resolvable ()->edition ().asString ().c_str(),
                                         it->resolvable ()->arch ().c_str(),
                                         it->resolvable ()->vendor ().c_str ());
-        
+
                         pk_backend_package (backend,
                                         status,
                                         package_id,
-                                        it->resolvable ()->description ().c_str ());          
-                
+                                        it->resolvable ()->description ().c_str ());
+
                         g_free (package_id);
                 }
                 it->statusReset ();
         }
-        
+
         // undo the status-change of the package and disable forceResolve
         package.statusReset ();
         solver.setForceResolve (false);
@@ -422,14 +422,14 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
 		// Gather up any dependencies
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-	        
+
 		pk_backend_set_percentage (backend, 60);
 
                 // get dependencies
 
                 zypp::sat::Solvable solvable = pool_item.satSolvable ();
                 zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
-                
+
                 std::map<std::string, zypp::sat::Solvable> caps;
                 std::vector<std::string> temp;
 
@@ -449,17 +449,17 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                                                 if(it2->isSystem ()){
                                                         caps.erase (mIt);
                                                         caps[it->asString ()] = *it2;
-                                                }                       
+                                                }
                                         }else{
                                                 caps[it->asString ()] = *it2;
                                         }
                                         temp.push_back(it2->name ());
                                 }
-                              
+
                         }
                 }
                 // print dependencies
-                
+
                 for (std::map<std::string, zypp::sat::Solvable>::iterator it = caps.begin ();
                     it != caps.end();
                     it++) {
@@ -469,7 +469,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                                                            it->second.edition ().asString ().c_str(),
                                                            it->second.arch ().c_str(),
                                                            it->second.vendor ().c_str());
-                        
+
                         zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
 
                         if (it->second.isSystem ()) {
@@ -485,7 +485,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
                         }
                         g_free (package_id);
                 }
-                  
+
 		pk_backend_set_percentage (backend, 100);
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
@@ -573,14 +573,14 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-        
+
         try {
                 PkGroupEnum group = get_enum_group (package);
 
                 // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
                 if (package.isSystem ()){
 
-                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb (); 
+                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
                         rpm.initDatabase();
                         zypp::target::rpm::RpmHeader::constPtr rpmHeader;
                         rpm.getData (package.name (), package.edition (), rpmHeader);
@@ -648,7 +648,7 @@ static gboolean
 backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 {
 	PkBackend *backend;
-	
+
 	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -656,7 +656,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
-        
+
         // get all Packages for Update
         std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
 
@@ -747,7 +747,7 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 
 	zypp::Capabilities obs = solvable.obsoletes ();
 
-	gchar *obsoletes = new gchar (); 
+	gchar *obsoletes = new gchar ();
 
 	for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
 		g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
@@ -755,7 +755,7 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-	
+
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 	zypp::ResObject::constPtr item = zypp->pool ().find (solvable).resolvable ();
 
@@ -794,7 +794,7 @@ static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
         g_return_if_fail (backend != NULL);
-        
+
         ThreadData *data = g_new0(ThreadData, 1);
 	if (data == NULL) {
 		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_description");
@@ -809,7 +809,7 @@ static gboolean
 backend_update_system_thread (PkBackendThread *thread, gpointer data)
 {
 	PkBackend *backend;
-	
+
 	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
@@ -827,7 +827,7 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
                 zypp::ResStatus &status = ci->status ();
                 status.setToBeInstalled (zypp::ResStatus::USER);
 	}
-        
+
         if (!zypp_perform_execution (backend, UPDATE, FALSE)) {
                 pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
                 pk_backend_finished (backend);
@@ -914,7 +914,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_set_percentage (backend, 40);
 
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
-                        
+
                         pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
                         g_free (package_id);
                         pk_backend_finished (backend);
@@ -931,7 +931,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
                 pk_backend_finished (backend);
                 return FALSE;
         }
-	
+
         g_free (package_id);
 	pk_package_id_free (pi);
 	pk_backend_finished (backend);
@@ -1113,7 +1113,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 		return FALSE;
 	}
 
-	
+
 
 	g_free (d->package_id);
 	g_free (d);
@@ -1257,15 +1257,15 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 		case SEARCH_TYPE_NAME:
 			v = zypp_get_packages_by_name (search, TRUE);
 			break;
-	
+
                 case SEARCH_TYPE_DETAILS:
                         v = zypp_get_packages_by_details (search, TRUE);
-                        break;      
+                        break;
                 case SEARCH_TYPE_FILE:
                         v = zypp_get_packages_by_file (search);
                         break;
         };
-        
+
 	zypp_emit_packages_in_list (backend, v);
 	delete (v);
 /*
@@ -1361,7 +1361,7 @@ static gboolean
 backend_search_group_thread (PkBackendThread *thread, gpointer data)
 {
         GroupData *d = (GroupData*) data;
-        
+
         PkBackend *backend;
         backend = pk_backend_thread_get_backend (thread);
 
@@ -1373,7 +1373,7 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-        
+
 	pk_backend_set_percentage (backend, 0);
 
         zypp::ResPool pool = zypp_build_pool(true);
@@ -1382,21 +1382,21 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();         
-        rpm.initDatabase ();                                      
+        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
+        rpm.initDatabase ();
 
         for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
                   if (g_strrstr (zypp_get_group ((*it)->satSolvable (), rpm), d->pkGroup))
                           v->push_back((*it)->satSolvable ());
         }
 
-        rpm.closeDatabase ();                                     
+        rpm.closeDatabase ();
 	pk_backend_set_percentage (backend, 70);
 
         zypp_emit_packages_in_list (backend ,v);
 
         delete (v);
-        
+
 	pk_backend_set_percentage (backend, 100);
 
         g_free (d->filter);
@@ -1405,7 +1405,7 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_finished (backend);
 
         return TRUE;
-} 
+}
 
 /**
  * backend_search_group:
@@ -1483,7 +1483,7 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 
 	zypp::RepoManager manager;
 	zypp::RepoInfo repo;
-	
+
 	try {
 		repo = manager.getRepositoryInfo (rid);
 		repo.setEnabled (enabled);
@@ -1501,10 +1501,10 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 
 static gboolean
 backend_get_files_thread (PkBackendThread *thread, gpointer data) {
-        
+
         PkPackageId *pi;
         PkBackend *backend;
-        
+
         /* get current backend */
         backend = pk_backend_thread_get_backend (thread);
 	ThreadData *d = (ThreadData*) data;
@@ -1548,7 +1548,7 @@ backend_get_files_thread (PkBackendThread *thread, gpointer data) {
         if (package.isSystem ()){
 
                 try {
-                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb (); 
+                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
                         rpm.initDatabase();
                         zypp::target::rpm::RpmHeader::constPtr rpmHeader;
                         rpm.getData (package.name (), package.edition (), rpmHeader);
