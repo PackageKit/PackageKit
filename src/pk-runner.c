@@ -76,6 +76,7 @@ struct PkRunnerPrivate
 	gchar			*cached_repo_id;
 	gchar			*cached_parameter;
 	gchar			*cached_value;
+	PkProvidesEnum		 cached_provides;
 	LibGBus			*libgbus;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -272,6 +273,8 @@ pk_runner_set_running (PkRunner *runner)
 		desc->get_files (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
 		desc->get_requires (priv->backend, priv->cached_filter, priv->cached_package_id, priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+		desc->what_provides (priv->backend, priv->cached_filter, priv->cached_provides, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		desc->get_updates (priv->backend, priv->cached_filter);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
@@ -413,6 +416,25 @@ pk_runner_get_requires (PkRunner *runner, const gchar *filter, const gchar *pack
 	runner->priv->cached_force = recursive;
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_REQUIRES);
+	return TRUE;
+}
+
+/**
+ * pk_runner_what_provides:
+ */
+gboolean
+pk_runner_what_provides (PkRunner *runner, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_val_if_fail (runner != NULL, FALSE);
+	if (runner->priv->backend->desc->get_requires == NULL) {
+		pk_debug ("Not implemented yet: WhatProvides");
+		return FALSE;
+	}
+	runner->priv->cached_filter = g_strdup (filter);
+	runner->priv->cached_search = g_strdup (search);
+	runner->priv->cached_provides = provides;
+	runner->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_runner_set_role (runner, PK_ROLE_ENUM_WHAT_PROVIDES);
 	return TRUE;
 }
 
@@ -745,6 +767,9 @@ pk_runner_get_actions (PkRunner *runner)
 	}
 	if (desc->get_requires != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REQUIRES);
+	}
+	if (desc->what_provides != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_WHAT_PROVIDES);
 	}
 	if (desc->get_updates != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATES);

@@ -70,6 +70,10 @@ gboolean	 pk_runner_get_requires			(PkRunner	*runner,
 							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
+gboolean	 pk_runner_what_provides		(PkRunner	*runner,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search);
 gboolean	 pk_runner_get_updates			(PkRunner	*runner,
 							 const gchar	*filter);
 gboolean	 pk_runner_install_package		(PkRunner	*runner,
