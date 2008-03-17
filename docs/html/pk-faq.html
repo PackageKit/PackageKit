@@ -19,7 +19,29 @@
 
 <h1>Frequently asked questions</h1>
 
-<h3>How complete are the backends?</h3>
+<h2>Table Of Contents</h2>
+<ul>
+<li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#selinux">Why doesn't PackageKit work with SELinux?</a></li>
+<li><a href="#no-percentage-updates">What if we don't support percentage updates?</a></li>
+<li><a href="#remaining-times">Why are the remaining times sometimes wildly wrong?</a></li>
+<li><a href="#different-options">How will PackageKit support all the different options?</a></li>
+<li><a href="#error-codes">Error codes are different on each backend?</a></li>
+<li><a href="#user-interaction">Installation an application that needs user interaction?</a></li>
+<li><a href="#up2date">Does PackageKit replace up2date?</a></li>
+<li><a href="#system=daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
+<li><a href="#dependencies">How does PackageKit handle dependencies?</a></li>
+<li><a href="#rcd">Does PackageKit replace the Red Carpet service?</a></li>
+<li><a href="#how-fast">How fast is PackageKit?</a></li>
+<li><a href="#multiple-users">How does PackageKit work with multiple users?</a></li>
+<li><a href="#use-existing-tools">Can users still use their normal package managers?</a></li>
+<li><a href="#hughsies-law">What is Hughsie's law?</a></li>
+<li><a href="#translation">How do I translate gnome-packagekit?</a></li>
+<li><a href="#corporate-sponsor">Is there an organization sponsoring development of PackageKit?</a></li>
+</ul>
+
+<hr>
+<h3><a name="how-complete">How complete are the backends?</a></h3>
 <h4>Methods</h4>
 <table>
 <tr>
@@ -478,7 +500,8 @@
 </tr>
 </table>
 
-<h3>Why doesn't PackageKit work with SELinux?</h3>
+<hr>
+<h3><a name="selinux">Why doesn't PackageKit work with SELinux?</a></h3>
 <p>
 The process <code>packagekitd</code> is not recognized by SELinux in Fedora 8.
 Until the policy is fixed to handle system activation, you'll have
@@ -492,14 +515,16 @@ See <a href="https://bugzilla.redhat.com/show_bug.cgi?id=361151">Red Hat Bugzill
 for further information.
 </p>
 
-<h3>What if the backend package manager doesn't support percentage updates?</h3>
+<hr>
+<h3><a name="no-percentage-updates">What if the backend package manager doesn't support percentage updates?</a></h3>
 <p>
 You don't have to have a backend that supports percentage updates.
 If you don't know the progress, just emit NoPercentageUpdates and then the UI
 should just do the right thing and spin backwards and forwards.
 </p>
 
-<h3>Why are the remaining times sometimes not present or wildly wrong?</h3>
+<hr>
+<h3><a name="remaining-times">Why are the remaining times sometimes not present or wildly wrong?</a></h3>
 <p>
 The remaining time to completion of the transaction is calculated using an
 average time of the time between percentage updates points, extrapolated to 100%.
@@ -517,13 +542,15 @@ It is up to the backends to map the transaction progress to fine-granularity
 accurate percentage updates, at least as best as possible.
 </p>
 
-<h3>With all the differences between backends, how will PackageKit support all the different options?</h3>
+<hr>
+<h3><a name="different-options">With all the differences between backends, how will PackageKit support all the different options?</a></h3>
 <p>
 Backends don't have to support all options of all methods.
 Just set an error and return false if not implemented.
 </p>
 
-<h3>But error codes are different on each backend?</h3>
+<hr>
+<h3><a name="error-codes">But error codes are different on each backend?</a></h3>
 <p>
 Error codes have to be standardized so they can be localized.
 The error detail field can just be the untranslatable output.
@@ -531,7 +558,8 @@ If you are creating a backend and you need another error enum, mention it
 and we can add it to the supported list.
 </p>
 
-<h3>How will PackageKit handle installation an application that needs user interaction?</h3>
+<hr>
+<h3><a name="user-interaction">How will PackageKit handle installation an application that needs user interaction?</a></h3>
 <p>
 Upgrading, installing or removing packages <b>has to be 100% silent</b>.
 </p>
@@ -592,21 +620,24 @@ method can be used that will localise the message up the stack, and also give th
 of ignoring duplicate messages of this type.
 </p>
 
-<h3>Does PackageKit replace up2date?</h3>
+<hr>
+<h3><a name="up2date">Does PackageKit replace up2date?</a></h3>
 <p>
 PackageKit does not replace up2date.
 PackageKit is a way for users to interact with the packaging system, not for an
 administrator to install software on remote machines.
 </p>
 
-<h3>Is PackageKit a system daemon, always running and using resources?</h3>
+<hr>
+<h3><a name="system=daemon">Is PackageKit a system daemon, always running and using resources?</a></h3>
 <p>
 PackageKit is not yet another system daemon.
 It quits when not doing anything, and only starts when something wants
 information or a task completed.
 </p>
 
-<h3>How does PackageKit handle dependencies?</h3>
+<hr>
+<h3><a name="dependencies">How does PackageKit handle dependencies?</a></h3>
 <p>
 PackageKit <b>does not do</b> dependency resolution.
 This problem has already been solved by the backend systems and we don't really
@@ -618,7 +649,8 @@ For instance, synaptic should still use libapt as can do much more than can be
 provided by PackageKit.
 </p>
 
-<h3>Does PackageKit replace the Red Carpet service?</h3>
+<hr>
+<h3><a name="rcd">Does PackageKit replace the Red Carpet service?</a></h3>
 <p>
 PackageKit is not a replacement to red carpet.
 Red carpet was really great and years ahead of it's time, but tried to do
@@ -627,7 +659,8 @@ centralized management model.
 Although cool, this latter point made things too political in my opinion.
 </p>
 
-<h3>How fast is PackageKit?</h3>
+<hr>
+<h3><a name="how-fast">How fast is PackageKit?</a></h3>
 <p>
 PackageKit is really fast.
 It takes about 1 second to search for installed and available packages
@@ -636,7 +669,8 @@ all asynchronous.
 All the applications start instantly with no root password needed at startup.
 </p>
 
-<h3>How does PackageKit work with multiple users?</h3>
+<hr>
+<h3><a name="multiple-users">How does PackageKit work with multiple users?</a></h3>
 <p>
 PackageKit is designed from the ground up to work with fast user switching and
 logging in and out of sessions during upgrades.
@@ -644,7 +678,8 @@ You can start a system upgrade, log out, log in as another user, and be notified
 when the upgrade is complete, all without risking your rpmdb.
 </p>
 
-<h3>Can users still use their normal package managers and backends, such as Yum, APT or Conary?</h3>
+<hr>
+<h3><a name="use-existing-tools">Can users still use their normal package managers and backends, such as Yum, APT or Conary?</a></h3>
 <p>
 PackageKit does not stop you using the low level tools yourself.
 You can use rpm and yum or dpkg and apt when PK is inactive (99.999% of the time)
@@ -653,7 +688,8 @@ No more fighting over <code>yum</code>, <code>yum-updatesd</code>,
 <code>pup</code> and <code>pirut</code>.
 </p>
 
-<h3>What is Hughsie's law?</h3>
+<hr>
+<h3><a name="hughsies-law">What is Hughsie's law?</a></h3>
 <p>
 A joke that started on IRC late one night in '07.
 Put formally it is: <i>Authentication or license prompts can only be done before the
@@ -661,20 +697,29 @@ transaction has started, and messages or notices about the transaction
 can only be shown after the transaction has completed.</i>
 </p>
 
-<h3>How do I translate gnome-packagekit?</h3>
+<hr>
+<h3><a name="translation">How do I translate gnome-packagekit?</a></h3>
 <p>
 Please see the <a href="http://l10n.gnome.org/teams">GNOME Translation Team</a>
 web pages for how to contribute to GNOME localisation.
 </p>
 
-<h3>Is there an organization or corporation sponsoring development of PackageKit?</h3>
+<hr>
+<h3><a name="corporate-sponsor">Is there an organization or corporation sponsoring development of PackageKit?</a></h3>
 <p>
 PackageKit is not sponsored by anyone.
-Whilst interning at Red Hat I spent a few days on the API and some UI designs,
+Whilst interning at Red Hat in '07 I spent a few days on the API and some UI designs,
 but all the coding is done in my free time.
+I now work at Red Hat full time.
 </p>
 
 <p>Back to the <a href="index.html">main page</a></p>
+
+<!-- space for the links to be at the top -->
+<br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br>
 
 <p class="footer">
  Copyright <a href="mailto:richard@hughsie.com">Richard Hughes 2007-2008</a><br/>
