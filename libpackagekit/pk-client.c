@@ -23,7 +23,7 @@
  * SECTION:pk-client
  * @short_description: GObject class for PackageKit client access
  *
- * This file contains a nice GObject to use for accessing PackageKit
+ * A nice GObject to use for accessing PackageKit asynchronously
  */
 
 #include "config.h"
