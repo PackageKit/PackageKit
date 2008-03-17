@@ -427,6 +427,15 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	/* get length of items found */
 	length = pk_client_package_buffer_get_size (client_task);
 
+	/* didn't resolve to anything, try to get a provide */
+	if (length == 0) {
+		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_MODALIAS, package, error);
+		if (ret == FALSE) {
+			pk_warning (_("WhatProvides is not supported in this backend"));
+			return NULL;
+		}
+	}
+
 	/* only found one, great! */
 	if (length == 1) {
 		item = pk_client_package_buffer_get_item (client_task, 0);
