@@ -1154,7 +1154,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
  * pk_backend_dbus_service_pack:
  **/
 gboolean
-pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location)
+pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location, gboolean enabled)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1167,6 +1167,7 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "ServicePack", &error,
 				 G_TYPE_STRING, location,
+				 G_TYPE_BOOLEAN, enabled,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);

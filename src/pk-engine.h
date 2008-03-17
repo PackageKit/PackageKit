@@ -164,6 +164,7 @@ void		 pk_engine_install_file			(PkEngine	*engine,
 void		 pk_engine_service_pack			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*location,
+							 gboolean	 enabled,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_update_package		(PkEngine	*engine,
 							 const gchar	*tid,

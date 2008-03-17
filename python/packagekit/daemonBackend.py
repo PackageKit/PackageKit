@@ -441,15 +441,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doInstallFile( inst_file)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def ServicePack (self, location):
+                         in_signature='sb', out_signature='')
+    def ServicePack (self, location, enabled):
         '''
         Implement the {backend}-service-pack functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
         pklog.info("ServicePack()")
-        self.doServicePack( location)
+        self.doServicePack( location, enabled)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')

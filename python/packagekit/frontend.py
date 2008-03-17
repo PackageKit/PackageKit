@@ -312,12 +312,12 @@ class PackageKit(PackageKitDbusInterface):
 
 	@dbusException
 	@job_id
-	def ServicePack(self,location):
+	def ServicePack(self,location,enabled):
 		"""
 		Updates a service pack from a location
 		Asynchronous
 		"""
-		return self.pk_iface.ServicePack(self.tid(),location)
+		return self.pk_iface.ServicePack(self.tid(),location,enabled)
 
 ## Do things or query transactions
 	@dbusException
