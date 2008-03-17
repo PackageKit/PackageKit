@@ -61,6 +61,7 @@ typedef struct {
 /* used by get_depends and get_requires */
 typedef struct {
 	gchar		*package_id;
+	PkFilter	*filter;
 	gboolean	recursive;
 } DepsData;
 
@@ -493,64 +494,76 @@ poldek_get_installed_packages (void)
  * do_requires:
  */
 static void
-do_requires (tn_array *installed, tn_array *available, tn_array *requires, struct pkg *pkg, gboolean recursive)
+do_requires (tn_array *installed, tn_array *available, tn_array *requires, struct pkg *pkg, DepsData *data)
 {
 	gint	i;
 
-	for (i = 0; i < n_array_size (installed); i++) {
-                struct pkg      *ipkg = n_array_nth (installed, i);
-                int j;
+	if (data->filter->installed) {
+		for (i = 0; i < n_array_size (installed); i++) {
+			struct pkg      *ipkg = n_array_nth (installed, i);
+			int j;
 
-                /* skip when there is no reqs */
-                if (!ipkg->reqs)
-                        continue;
+			/* self match */
+			if (pkg_cmp_name_evr (pkg, ipkg) == 0)
+				continue;
 
-                for (j = 0; j < n_array_size (ipkg->reqs); j++) {
-                        struct capreq   *req = n_array_nth (ipkg->reqs, j);
+	                /* skip when there is no reqs */
+        	        if (!ipkg->reqs)
+				continue;
 
-                        if (capreq_is_rpmlib (req))
-                                continue;
-                        else if (capreq_is_file (req))
-                                continue;
+			for (j = 0; j < n_array_size (ipkg->reqs); j++) {
+				struct capreq   *req = n_array_nth (ipkg->reqs, j);
 
-                        if (pkg_satisfies_req (pkg, req, 1)) {
-                                n_array_push (requires, pkg_link (ipkg));
-                                break;
-                        }
+				if (capreq_is_rpmlib (req))
+					continue;
+				else if (capreq_is_file (req))
+					continue;
+
+				if (pkg_satisfies_req (pkg, req, 1)) {
+					n_array_push (requires, pkg_link (ipkg));
+                                	break;
+				}
+                	}
                 }
         }
-        for (i = 0; i < n_array_size (available); i++) {
-                struct pkg      *apkg = n_array_nth (available, i);
-                int j;
+        if (data->filter->not_installed) {
+	        for (i = 0; i < n_array_size (available); i++) {
+        	        struct pkg      *apkg = n_array_nth (available, i);
+	                int j;
 
-                if (!apkg->reqs)
-                        continue;
+			/* self match */
+			if (pkg_cmp_name_evr (pkg, apkg) == 0)
+				continue;
 
-                for (j = 0; j < n_array_size (apkg->reqs); j++) {
-                        struct capreq   *req = n_array_nth (apkg->reqs, j);
+	                if (!apkg->reqs)
+	                        continue;
 
-                        if (capreq_is_rpmlib (req))
-                                continue;
-                        else if (capreq_is_file (req))
-                                continue;
+	                for (j = 0; j < n_array_size (apkg->reqs); j++) {
+	                        struct capreq   *req = n_array_nth (apkg->reqs, j);
 
-                        if (pkg_satisfies_req (pkg, req, 1)) {
-                                int k, res = -1;
-                                for (k = 0; k < n_array_size (requires); k++) {
-					struct pkg      *p = n_array_nth (requires, k);
+	                        if (capreq_is_rpmlib (req))
+	                                continue;
+	                        else if (capreq_is_file (req))
+	                                continue;
 
-                                        if (pkg_cmp_name_evr_rev (apkg, p) == 0) {
-                                                res = k;
-                                                break;
-                                        }
-                                }
+	                        if (pkg_satisfies_req (pkg, req, 1)) {
+	                                int k, res = -1;
+	                                for (k = 0; k < n_array_size (requires); k++) {
+						struct pkg      *p = n_array_nth (requires, k);
 
-                                if (res == -1) {
-                                        n_array_push (requires, pkg_link (apkg));
-                                }
-                                break;
-                        }
-                }
+	                                        if (pkg_cmp_name_evr_rev (apkg, p) == 0) {
+	                                                res = k;
+	                                                break;
+	                                        }
+	                                }
+
+	                                if (res == -1)
+	                                        n_array_push (requires, pkg_link (apkg));
+
+	                                break;
+                        	}
+                	}
+        	}
         }
 }
 
@@ -558,7 +571,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
  * do_depends:
  */
 static void
-do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct pkg *pkg, gboolean recursive)
+do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct pkg *pkg, DepsData *data)
 {
 	tn_array	*reqs = pkg->reqs;
 	tn_array	*tmp = NULL;
@@ -604,14 +617,16 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* first check in installed packages */
-		for (j = 0; j < n_array_size (installed); j++) {
-			struct pkg	*p = n_array_nth (installed, j);
+		if (data->filter->installed) {
+			for (j = 0; j < n_array_size (installed); j++) {
+				struct pkg	*p = n_array_nth (installed, j);
 
-			if (pkg_satisfies_req (p, req, 1)) {
-				found = TRUE;
-				n_array_push (depends, pkg_link (p));
-				n_array_push (tmp, pkg_link (p));
-				break;
+				if (pkg_satisfies_req (p, req, 1)) {
+					found = TRUE;
+					n_array_push (depends, pkg_link (p));
+					n_array_push (tmp, pkg_link (p));
+					break;
+				}
 			}
 		}
 
@@ -619,22 +634,24 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* ... now available */
-		for (j = 0; j < n_array_size (available); j++) {
-			struct pkg	*p = n_array_nth (available, j);
+		if (data->filter->not_installed) {
+			for (j = 0; j < n_array_size (available); j++) {
+				struct pkg	*p = n_array_nth (available, j);
 
-			if (pkg_satisfies_req (p, req, 1)) {
-				n_array_push (depends, pkg_link (p));
-				n_array_push (tmp, pkg_link (p));
-				break;
+				if (pkg_satisfies_req (p, req, 1)) {
+					n_array_push (depends, pkg_link (p));
+					n_array_push (tmp, pkg_link (p));
+					break;
+				}
 			}
 		}
 	}
 
-	if (recursive && tmp && n_array_size (tmp) > 0) {
+	if (data->recursive && tmp && n_array_size (tmp) > 0) {
 		for (i = 0; i < n_array_size (tmp); i++) {
 			struct pkg	*p = n_array_nth (tmp, i);
 
-			do_depends (installed, available, depends, p, recursive);
+			do_depends (installed, available, depends, p, data);
 		}
 	}
 
@@ -997,7 +1014,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
 	pkg = poldek_get_pkg_from_package_id (d->package_id);
 
-	do_depends (installed, available, deppkgs, pkg, d->recursive);
+	do_depends (installed, available, deppkgs, pkg, d);
 
 	n_array_sort_ex(deppkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev);
 
@@ -1014,6 +1031,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 	n_array_free (installed);
 
 	g_free (d->package_id);
+	pk_filter_free (d->filter);
 	g_free (d);
 
 	pk_backend_finished (backend);
@@ -1036,6 +1054,7 @@ backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *packa
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup (package_id);
+		data->filter = pk_filter_new_from_string (filter);
 		data->recursive = recursive;
 		pk_backend_thread_create (thread, backend_get_depends_thread, data);
 	}
@@ -1209,7 +1228,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 	installed = poldek_get_installed_packages ();
 	available = poldek_get_avail_packages (ctx);
 
-	do_requires (installed, available, reqpkgs, pkg, d->recursive);
+	do_requires (installed, available, reqpkgs, pkg, d);
 
 	/* sort output */
 	n_array_sort_ex(reqpkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev);
@@ -1225,6 +1244,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 	n_array_free (available);
 
 	g_free (d->package_id);
+	pk_filter_free (d->filter);
 	g_free (d);
 
 	pk_backend_finished (backend);
@@ -1247,6 +1267,7 @@ backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *pack
 		pk_backend_finished (backend);
 	} else {
 		data->package_id = g_strdup (package_id);
+		data->filter = pk_filter_new_from_string (filter);
 		data->recursive = recursive;
 		pk_backend_thread_create (thread, backend_get_requires_thread, data);
 	}
