@@ -94,6 +94,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
+	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
 	{0, NULL}
 };
 
