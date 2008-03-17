@@ -69,6 +69,13 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="recursive" direction="in"/>
     </method>
+    <method name="WhatProvides">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="tid" direction="in"/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="type" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
     <method name="GetUpdateDetail">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>

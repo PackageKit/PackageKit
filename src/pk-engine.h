@@ -68,6 +68,7 @@ typedef enum
 	PK_ENGINE_ERROR_INVALID_STATE,
 	PK_ENGINE_ERROR_INITIALIZE_FAILED,
 	PK_ENGINE_ERROR_COMMIT_FAILED,
+	PK_ENGINE_ERROR_INVALID_PROVIDE,
 	PK_ENGINE_ERROR_LAST
 } PkEngineError;
 
@@ -118,6 +119,12 @@ void		 pk_engine_get_requires			(PkEngine	*engine,
 							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
+							 DBusGMethodInvocation *context);
+void		 pk_engine_what_provides		(PkEngine	*engine,
+							 const gchar	*tid,
+							 const gchar	*filter,
+							 const gchar	*type,
+							 const gchar	*search,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_get_description		(PkEngine	*engine,
 							 const gchar	*tid,

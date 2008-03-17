@@ -160,6 +160,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_COMMIT_FAILED, "CommitFailed"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_PROVIDE, "InvalidProvide"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -1559,6 +1560,73 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *filter,
 		dbus_g_method_return_error (context, error);
 		return;
 	}
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	dbus_g_method_return (context);
+}
+
+/**
+ * pk_engine_what_provides:
+ **/
+void
+pk_engine_what_provides (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *type,
+			 const gchar *search, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	PkProvidesEnum provides;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("WhatProvides method called: %s, %s, %s", tid, type, search);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	provides = pk_role_enum_from_text (type);
+	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_PROVIDE,
+				     "provide type '%s' not found", type);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
+
+	ret = pk_runner_what_provides (item->runner, filter, provides, search);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
 	/* try to commit this */
 	ret = pk_engine_item_commit (engine, item);
 	if (!ret) {
