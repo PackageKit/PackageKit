@@ -585,15 +585,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                            # to avoid taking all the system's bandwidth.
         old_skip_broken = self.yumbase.conf.skip_broken
         self.yumbase.conf.skip_broken = 1
+        self.yumbase.skipped_packages = []
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
             successful = self._runYumTransaction()
+            skipped_packages = self.yumbase.skipped_packages
+            self.yumbase.skipped_packages = []
             if not successful:
                 self.yumbase.conf.throttle = old_throttle
                 self.yumbase.conf.skip_broken = old_skip_broken
                 # _runYumTransaction() sets the error code and calls Finished()
                 return
+            # Transaction successful, but maybe some packages were skipped.
+            for package in skipped_packages:
+                self._show_package(package, INFO_BLOCKED)
         else:
             self.yumbase.conf.throttle = old_throttle
             self.yumbase.conf.skip_broken = old_skip_broken
@@ -1914,6 +1920,7 @@ class PackageKitYumBase(yum.YumBase):
     def __init__(self):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
+        self.skipped_packages = []
 
     # Modified searchGenerator to make sure that
     # non unicode strings read from rpmdb is converted to unicode
@@ -2023,6 +2030,16 @@ class PackageKitYumBase(yum.YumBase):
         '''
         return False
 
+    def _removePoFromTransaction(self,po):
+        '''
+        Overridden so we can keep track of the package objects as they
+        are removed from a transaction when skip_broken is used.
+        '''
+        skipped = yum.YumBase._removePoFromTransaction(self, po)
+        self.skipped_packages.extend(skipped)
+
+        return skipped
+    
 if __name__ == '__main__':
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)
