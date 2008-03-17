@@ -2076,7 +2076,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
  **/
 void
 pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *location,
-			DBusGMethodInvocation *context)
+			gboolean enabled, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -2086,7 +2086,7 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("ServicePack method called: %s, %s", tid, location);
+	pk_debug ("ServicePack method called: %s, %s, %i", tid, location, enabled);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2112,7 +2112,7 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_service_pack (item->runner, location);
+	ret = pk_runner_service_pack (item->runner, location, enabled);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");

@@ -63,26 +63,26 @@ struct ZyppBackendReceiver
 		gchar *package_id;
 		gchar *basename;
 		gchar *tmp;
-	
+
 		gchar *arch;
 		gchar *edition;
 		gchar *name;
 		gboolean first_dash_found;
-	
+
 		basename = g_strdup (zypp::Pathname (url->getPathName ()).basename ().c_str());
-	
+
 		tmp = g_strrstr (basename, ".rpm");
-	
+
 		if (tmp == NULL) {
 			g_free (basename);
 			return NULL;
 		}
-	
+
 		// Parse the architecture
 		tmp [0] = '\0'; // null-terminate the arch section
 		for (tmp--; tmp != basename && tmp [0] != '.'; tmp--) {}
 		arch = tmp + 1;
-	
+
 		// Parse the edition
 		tmp [0] = '\0'; // null-terminate the edition (version)
 		first_dash_found = FALSE;
@@ -97,14 +97,14 @@ struct ZyppBackendReceiver
 			}
 		}
 		edition = tmp + 1;
-	
+
 		// Parse the name
 		tmp [0] = '\0'; // null-terminate the name
 		name = basename;
-	
+
 		package_id = pk_package_id_build (name, edition, arch, "opensuse");
 		g_free (basename);
-	
+
 		return package_id;
 	}
 
@@ -364,7 +364,7 @@ class EventDirector
 {
 	private:
 		EventDirector () {}
-	
+
 		ZyppBackend::RepoReportReceiver _repoReport;
 		ZyppBackend::RepoProgressReportReceiver _repoProgressReport;
 		ZyppBackend::InstallResolvableReportReceiver _installResolvableReport;
@@ -388,7 +388,7 @@ class EventDirector
 
 			_removeResolvableReport.initWithBackend (backend);
 			_removeResolvableReport.connect ();
-                        
+
                         _downloadProgressReport.initWithBackend (backend);
 			_downloadProgressReport.connect ();
 
@@ -397,7 +397,7 @@ class EventDirector
 
                         _mediaChangeReport.initWithBackend (backend);
                         _mediaChangeReport.connect ();
-                        
+
                         _progressReport.initWithBackend (backend);
                         _progressReport.connect ();
 		}

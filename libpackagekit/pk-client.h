@@ -266,6 +266,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_service_pack			(PkClient	*client,
 							 const gchar	*location,
+							 gboolean	 enabled,
 							 GError		**error);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,

@@ -77,7 +77,8 @@ gboolean	 pk_runner_install_package		(PkRunner	*runner,
 gboolean	 pk_runner_install_file			(PkRunner	*runner,
 							 const gchar	*full_path);
 gboolean	 pk_runner_service_pack			(PkRunner	*runner,
-							 const gchar	*location);
+							 const gchar	*location,
+							 gboolean	 enabled);
 gboolean	 pk_runner_refresh_cache		(PkRunner	*runner,
 							 gboolean	 force);
 gboolean	 pk_runner_remove_package		(PkRunner	*runner,

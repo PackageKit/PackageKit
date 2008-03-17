@@ -40,8 +40,8 @@ class Package(apt.Package):
         return True
 
     def __init__(self, backend, pkg, data="",version=[]):
-        apt.package.Package.__init__(self, pkg._cache, pkg._depcache, 
-                                     pkg._records, pkg._list, pkg._pcache, 
+        apt.package.Package.__init__(self, pkg._cache, pkg._depcache,
+                                     pkg._records, pkg._list, pkg._pcache,
                                      pkg._pkg)
         self._version = version
         self._data = data
@@ -72,7 +72,7 @@ class Package(apt.Package):
             for ver in pkg._pkg.VersionList:
                 print "vers",version,ver.VerStr
             backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
-    
+
     def setVersion(self,version,compare="="):
         if version!=None and (self.installedVersion == None or not apt_pkg.CheckDep(version,compare,self.installedVersion)):
             self.markInstall(False,False)
@@ -216,7 +216,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 raise Exception,d.id
 
         self._caches[default] = self._apt_cache
-            
+
 
     def search_name(self, filters, key):
         '''
@@ -278,7 +278,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name, version, arch, data = self.get_package_from_id(package)
         pkg = Package(self, self._apt_cache[name])
         description = re.sub('\s+', ' ', pkg.description).strip()
-        self.description(package, 'unknown', pkg.group, description, 
+        self.description(package, 'unknown', pkg.group, description,
                          pkg.architecture, pkg.packageSize)
 
     def resolve(self, name):
@@ -391,7 +391,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                     name = "%s/%s"%(origin,suite)
                 if entry.type == "deb-src":
                     name += "-src"
-                    
+
                 repo[name] = {"entry":entry}
         return repo
 
@@ -406,7 +406,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             if e == "__sources":
                 continue
             self.repo_detail(repo[e]["entry"].line.strip(),e,not repo[e]["entry"].disabled)
-        
+
     def repo_enable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality

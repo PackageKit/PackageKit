@@ -287,7 +287,7 @@ pk_runner_set_running (PkRunner *runner)
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		desc->install_file (priv->backend, priv->cached_full_path);
 	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		desc->service_pack (priv->backend, priv->cached_full_path);
+		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		desc->refresh_cache (priv->backend,  priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
@@ -299,9 +299,9 @@ pk_runner_set_running (PkRunner *runner)
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
 		desc->get_repo_list (priv->backend);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
-		desc->repo_enable (priv->backend, priv->cached_repo_id,priv->cached_enabled);
+		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		desc->repo_set_data (priv->backend, priv->cached_repo_id,  priv->cached_parameter,  priv->cached_value);
+		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
 	} else {
 		pk_error ("failed to run as role not assigned");
 		return FALSE;
@@ -471,13 +471,14 @@ pk_runner_install_file (PkRunner *runner, const gchar *full_path)
  * pk_runner_service_pack:
  */
 gboolean
-pk_runner_service_pack (PkRunner *runner, const gchar *location)
+pk_runner_service_pack (PkRunner *runner, const gchar *location, gboolean enabled)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->service_pack == NULL) {
 		pk_debug ("Not implemented yet: ServicePack");
 		return FALSE;
 	}
+	runner->priv->cached_enabled = enabled;
 	runner->priv->cached_full_path = g_strdup (location);
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_SERVICE_PACK);

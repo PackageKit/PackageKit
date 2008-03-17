@@ -110,6 +110,7 @@
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="location" direction="in"/>
+      <arg type="b" name="enabled" direction="in"/>
     </method>
 
     <!-- signals emitted from any transaction -->

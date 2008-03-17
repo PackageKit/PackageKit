@@ -783,7 +783,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_set_error (error, 0, 0, _("specify a location to update from"));
 			return FALSE;
 		} else {
-			ret = pk_client_service_pack (client, value, error);
+			ret = pk_client_service_pack (client, value, TRUE, error);
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {

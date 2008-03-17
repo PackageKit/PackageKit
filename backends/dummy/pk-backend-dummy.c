@@ -560,10 +560,10 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * backend_service_pack:
  */
 static void
-backend_service_pack (PkBackend *backend, const gchar *location)
+backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
-	pk_warning ("service pack on %s device", location);
+	pk_warning ("service pack %i on %s device", enabled, location);
 	pk_backend_finished (backend);
 }
 

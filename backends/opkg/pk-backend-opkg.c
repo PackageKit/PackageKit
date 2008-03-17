@@ -524,12 +524,18 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 		{
 			gchar *needle, *haystack;
 			gboolean match;
-
-			needle = g_utf8_strdown (search, -1);
-			haystack = g_utf8_strdown (pkg->description, -1);
-			match = (g_strrstr (haystack, needle) != NULL);
-			g_free (needle);
-			g_free (haystack);
+			if (pkg->description && search)
+			{
+				needle = g_utf8_strdown (search, -1);
+				haystack = g_utf8_strdown (pkg->description, -1);
+				match = (g_strrstr (haystack, needle) != NULL);
+				g_free (needle);
+				g_free (haystack);
+			}
+			else
+			{
+				continue;
+			}
 
 			if (!match)
 				continue;
@@ -586,7 +592,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	params = g_new0 (SearchParams, 1);
 	params->filter = parse_filter (filter);
-	params->search_type = SEARCH_DESCRIPTION;
+	params->search_type = SEARCH_NAME;
 	params->needle = g_strdup (search);
 
 	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
