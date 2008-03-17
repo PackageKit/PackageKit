@@ -309,15 +309,10 @@ backend_get_requires(PkBackend *backend, const gchar *filter, const gchar *packa
         g_return_if_fail (backend != NULL);
 
         FilterData *data = g_new0(FilterData, 1);
-        if (data == NULL) {
-                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_requires");
-                pk_backend_finished (backend);
-        } else {
-                data->package_id = g_strdup(package_id);
-                data->type = recursive;
-                data->filter = g_strdup(filter);
-                pk_backend_thread_create (thread, backend_get_requires_thread, data);
-        }
+        data->package_id = g_strdup(package_id);
+        data->type = recursive;
+        data->filter = g_strdup(filter);
+        pk_backend_thread_create (thread, backend_get_requires_thread, data);
 }
 
 /**
@@ -520,12 +515,6 @@ backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *packa
 {
 	g_return_if_fail (backend != NULL);
 	ThreadData *data = g_new0(ThreadData, 1);
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-		return;
-	}
-
 	data->package_id = g_strdup (package_id);
 	data->type = DEPS_TYPE_DEPENDS;
 	pk_backend_thread_create (thread, backend_get_depends_thread, data);
@@ -635,13 +624,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	ThreadData *data = g_new0(ThreadData, 1);
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_description");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_get_description_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_get_description_thread, data);
 }
 
 static gboolean
@@ -796,13 +780,8 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
         g_return_if_fail (backend != NULL);
 
         ThreadData *data = g_new0(ThreadData, 1);
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_description");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_get_update_detail_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_get_update_detail_thread, data);
 }
 
 static gboolean
@@ -1155,13 +1134,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	}
 	*/
 	RefreshData *data = g_new(RefreshData, 1);
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_refresh_cache");
-		pk_backend_finished (backend);
-	} else {
-		data->force = force;
-		pk_backend_thread_create (thread, backend_refresh_cache_thread, data);
-	}
+	data->force = force;
+	pk_backend_thread_create (thread, backend_refresh_cache_thread, data);
 }
 
 static gboolean
@@ -1223,14 +1197,9 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
 	g_return_if_fail (backend != NULL);
 	//printf("Enter backend_resolve - filter:%s, package_id:%s\n", filter, package_id);
 	ResolveData *data = g_new0(ResolveData, 1);
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_resolve");
-		pk_backend_finished (backend);
-	} else {
-		data->name = g_strdup (package_id);
-		data->filter = g_strdup (filter);
-		pk_backend_thread_create (thread, backend_resolve_thread, data);
-	}
+	data->name = g_strdup (package_id);
+	data->filter = g_strdup (filter);
+	pk_backend_thread_create (thread, backend_resolve_thread, data);
 }
 
 static void
@@ -1326,15 +1295,10 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->search = g_strdup(search);
-		data->filter = g_strdup(filter);
-		data->mode = mode;
-		pk_backend_thread_create (thread, backend_find_packages_thread, data);
-	}
+	data->search = g_strdup(search);
+	data->filter = g_strdup(filter);
+	data->mode = mode;
+	pk_backend_thread_create (thread, backend_find_packages_thread, data);
 }
 
 /**
@@ -1416,14 +1380,9 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *pkGr
         g_return_if_fail (backend != NULL);
 
         GroupData *data = g_new0(GroupData, 1);
-        if (data == NULL) {
-                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_search_group");
-                pk_backend_finished (backend);
-        } else {
-                data->pkGroup = g_strdup(pkGroup);
-                data->filter = g_strdup(filter);
-                pk_backend_thread_create (thread, backend_search_group_thread, data);
-        }
+        data->pkGroup = g_strdup(pkGroup);
+        data->filter = g_strdup(filter);
+        pk_backend_thread_create (thread, backend_search_group_thread, data);
 }
 
 /**
@@ -1589,13 +1548,8 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
         g_return_if_fail (backend != NULL);
 
         ThreadData *data = g_new0(ThreadData, 1);
-        if (data == NULL) {
-                pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory in backend_get_files");
-                pk_backend_finished (backend);
-        } else {
-                data->package_id = g_strdup(package_id);
-                pk_backend_thread_create (thread, backend_get_files_thread, data);
-        }
+        data->package_id = g_strdup(package_id);
+        pk_backend_thread_create (thread, backend_get_files_thread, data);
 }
 
 extern "C" PK_BACKEND_OPTIONS (

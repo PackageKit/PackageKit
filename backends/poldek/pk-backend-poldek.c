@@ -1048,16 +1048,10 @@ backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *packa
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup (package_id);
-		data->filter = pk_filter_new_from_string (filter);
-		data->recursive = recursive;
-		pk_backend_thread_create (thread, backend_get_depends_thread, data);
-	}
+	data->package_id = g_strdup (package_id);
+	data->filter = pk_filter_new_from_string (filter);
+	data->recursive = recursive;
+	pk_backend_thread_create (thread, backend_get_depends_thread, data);
 }
 
 /**
@@ -1261,16 +1255,10 @@ backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *pack
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup (package_id);
-		data->filter = pk_filter_new_from_string (filter);
-		data->recursive = recursive;
-		pk_backend_thread_create (thread, backend_get_requires_thread, data);
-	}
+	data->package_id = g_strdup (package_id);
+	data->filter = pk_filter_new_from_string (filter);
+	data->recursive = recursive;
+	pk_backend_thread_create (thread, backend_get_requires_thread, data);
 }
 
 /**
@@ -1392,15 +1380,9 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory!");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup (package_id);
-		data->pd = g_new0 (PercentageData, 1);
-		pk_backend_thread_create (thread, backend_install_package_thread, data);
-	}
+	data->package_id = g_strdup (package_id);
+	data->pd = g_new0 (PercentageData, 1);
+	pk_backend_thread_create (thread, backend_install_package_thread, data);
 }
 
 /**
@@ -1542,15 +1524,9 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup (package_id);
-		data->allow_deps = allow_deps;
-		pk_backend_thread_create (thread, backend_remove_package_thread, data);
-	}
+	data->package_id = g_strdup (package_id);
+	data->allow_deps = allow_deps;
+	pk_backend_thread_create (thread, backend_remove_package_thread, data);
 }
 
 /**
@@ -1565,16 +1541,10 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->mode = SEARCH_ENUM_NAME;
-		data->filter = pk_filter_new_from_string (filter);
-		data->search = g_strdup (package);
-		pk_backend_thread_create (thread, search_package, data);
-	}
+	data->mode = SEARCH_ENUM_NAME;
+	data->filter = pk_filter_new_from_string (filter);
+	data->search = g_strdup (package);
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -1589,16 +1559,10 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->mode = SEARCH_ENUM_DETAILS;
-		data->filter = pk_filter_new_from_string (filter);
-		data->search = g_strdup (search);
-		pk_backend_thread_create (thread, search_package, data);
-	}
+	data->mode = SEARCH_ENUM_DETAILS;
+	data->filter = pk_filter_new_from_string (filter);
+	data->search = g_strdup (search);
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -1613,16 +1577,10 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->mode = SEARCH_ENUM_FILE;
-		data->filter = pk_filter_new_from_string (filter);
-		data->search = g_strdup (search);
-		pk_backend_thread_create (thread, search_package, data);
-	}
+	data->mode = SEARCH_ENUM_FILE;
+	data->filter = pk_filter_new_from_string (filter);
+	data->search = g_strdup (search);
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -1637,16 +1595,10 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->mode = SEARCH_ENUM_GROUP;
-		data->filter = pk_filter_new_from_string (filter);
-		data->search = g_strdup (search);
-		pk_backend_thread_create (thread, search_package, data);
-	}
+	data->mode = SEARCH_ENUM_GROUP;
+	data->filter = pk_filter_new_from_string (filter);
+	data->search = g_strdup (search);
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -1661,16 +1613,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->mode = SEARCH_ENUM_NAME;
-		data->filter = pk_filter_new_from_string (filter);
-		data->search = g_strdup (search);
-		pk_backend_thread_create (thread, search_package, data);
-	}
+	data->mode = SEARCH_ENUM_NAME;
+	data->filter = pk_filter_new_from_string (filter);
+	data->search = g_strdup (search);
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -1743,16 +1689,10 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	if (data == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_OOM,
-				       "Failed to allocate memory!");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup (package_id);
-		data->pd = g_new0 (PercentageData, 1);
-		data->pd->mode = PROGRESS_ENUM_INSTALL;
-		pk_backend_thread_create (thread, backend_update_package_thread, data);
-	}
+	data->package_id = g_strdup (package_id);
+	data->pd = g_new0 (PercentageData, 1);
+	data->pd->mode = PROGRESS_ENUM_INSTALL;
+	pk_backend_thread_create (thread, backend_update_package_thread, data);
 }
 
 /**

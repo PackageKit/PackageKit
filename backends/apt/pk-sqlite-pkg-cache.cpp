@@ -163,18 +163,10 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 {
 	g_return_if_fail (backend != NULL);
 	search_task *data = g_new(search_task, 1);
-	if (data == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
-		pk_backend_finished(backend);
-	}
-	else
-	{
-		data->search = g_strdup(search);
-		data->filter = g_strdup(filter);
-		data->depth = which;
-		pk_backend_thread_create (thread, func, data);
-	}
+	data->search = g_strdup(search);
+	data->filter = g_strdup(filter);
+	data->depth = which;
+	pk_backend_thread_create (thread, func, data);
 }
 
 /**
@@ -239,13 +231,6 @@ sqlite_get_description (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	desc_task *data = g_new(desc_task, 1);
-	if (data == NULL)
-	{
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory for search task");
-		pk_backend_finished(backend);
-		return;
-	}
-
 	data->pi = pk_package_id_new_from_string(package_id);
 	if (data->pi == NULL)
 	{
