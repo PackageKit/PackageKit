@@ -88,6 +88,7 @@ struct _PkClientPrivate
 	gchar			*cached_full_path;
 	gchar			*cached_filter;
 	gchar			*cached_search;
+	PkProvidesEnum		 cached_provides;
 };
 
 typedef enum {
@@ -1636,7 +1637,8 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *filter, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, const gchar *filter,
+			const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
@@ -1668,6 +1670,61 @@ pk_client_get_requires (PkClient *client, const gchar *filter, const gchar *pack
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
+ * pk_client_what_provides:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
+ * @search: a search term such as "sound/mp3"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * This should return packages that provide the supplied attributes.
+ * This method is useful for finding out what package(s) provide a modalias
+ * or GStreamer codec string.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum provides,
+			 const gchar *search, GError **error)
+{
+	gboolean ret;
+	const gchar *provides_text;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
+	client->priv->cached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_provides = provides;
+
+	provides_text = pk_provides_enum_to_text (provides);
+	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, provides_text,
+				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -3278,6 +3335,7 @@ pk_client_init (PkClient *client)
 	client->priv->cached_full_path = NULL;
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
+	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);

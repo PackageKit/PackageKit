@@ -241,6 +241,11 @@ gboolean	 pk_client_get_requires			(PkClient	*client,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error);
+gboolean	 pk_client_what_provides		(PkClient	*client,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_get_description		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);

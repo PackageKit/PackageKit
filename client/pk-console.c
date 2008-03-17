@@ -344,6 +344,7 @@ static const gchar *summary =
 	"  get updates\n"
 	"  get depends <package_id>\n"
 	"  get requires <package_id>\n"
+	"  what-provides <search>\n"
 	"  get description <package_id>\n"
 	"  get files <package_id>\n"
 	"  get updatedetail <package_id>\n"
@@ -870,6 +871,13 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				return FALSE;
 			} else {
 				ret = pk_console_get_requires (client, details, error);
+			}
+		} else if (strcmp (value, "what-provides") == 0) {
+			if (details == NULL) {
+				g_set_error (error, 0, 0, _("specify a search term"));
+				return FALSE;
+			} else {
+				ret = pk_client_what_provides (client, "none", PK_PROVIDES_ENUM_CODEC, details, error);
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
