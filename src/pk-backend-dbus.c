@@ -1548,6 +1548,9 @@ libst_backend_dbus (LibSelfTest *test)
 		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
 
+	/* needed to avoid an error */
+	ret = pk_backend_unlock (backend_dbus->priv->backend);
+
 	g_object_unref (backend_dbus);
 
 	libst_end (test);
