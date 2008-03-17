@@ -321,9 +321,20 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		return FALSE;
 	}
 
-	/* invalid number? */
-	if (percentage > 100 && percentage != PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_debug ("invalid number %i", percentage);
+	/* check over */
+	if (percentage > PK_BACKEND_PERCENTAGE_INVALID) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "percentage value is invalid: %i", percentage);
+		return FALSE;
+	}
+
+	/* check under */
+	if (percentage < 100 &&
+	    backend->priv->last_percentage < 100 &&
+	    percentage < backend->priv->last_percentage) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "percentage value is going down to %i from %i",
+				    percentage, backend->priv->last_percentage);
 		return FALSE;
 	}
 
