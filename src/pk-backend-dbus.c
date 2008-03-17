@@ -291,6 +291,53 @@ pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
 }
 
 /**
+ * pk_backend_dbus_remove_callbacks:
+ **/
+static gboolean
+pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
+{
+	DBusGProxy *proxy;
+
+	/* get copy */
+	proxy = backend_dbus->priv->proxy;
+	if (proxy == NULL) {
+		return FALSE;
+	}
+
+	dbus_g_proxy_disconnect_signal (proxy, "RepoDetail",
+					G_CALLBACK (pk_backend_dbus_repo_detail_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
+					G_CALLBACK (pk_backend_dbus_status_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "PercentageChanged",
+					G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "SubPercentageChanged",
+					G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "NoPercentageChanged",
+					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Package",
+					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Description",
+					G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Files",
+					G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
+					G_CALLBACK (pk_backend_dbus_update_detail_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Finished",
+					G_CALLBACK (pk_backend_dbus_finished_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
+					G_CALLBACK (pk_backend_dbus_allow_cancel_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "ErrorCode",
+					G_CALLBACK (pk_backend_dbus_error_code_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
+					G_CALLBACK (pk_backend_dbus_require_restart_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Message",
+					G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
+					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
+	return TRUE;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
@@ -306,6 +353,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 
 	if (backend_dbus->priv->proxy != NULL) {
 		pk_warning ("need to unref old one -- is this logically allowed?");
+		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
 
@@ -1149,6 +1197,7 @@ pk_backend_dbus_finalize (GObject *object)
 
 	/* we might not have actually set a name yet */
 	if (backend_dbus->priv->proxy != NULL) {
+		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
