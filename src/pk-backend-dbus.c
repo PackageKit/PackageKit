@@ -1334,6 +1334,37 @@ pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
 	pk_debug ("package count now %i", number_packages);
 }
 
+static gboolean
+pk_backend_dbus_test_cancel_cb (gpointer data)
+{
+	gboolean ret;
+	guint elapsed;
+	LibSelfTest *test = (LibSelfTest *) data;
+	PkBackendDbus *backend_dbus = PK_BACKEND_DBUS (libst_get_user_data (test));
+
+	/* save time */
+	libst_set_user_data (test, (gpointer) libst_elapsed (test));
+
+	/************************************************************/
+	libst_title (test, "cancel");
+	ret = pk_backend_dbus_cancel (backend_dbus);
+	elapsed = libst_elapsed (test);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we didnt take too long");
+	if (elapsed < 1000) {
+		libst_success (test, "elapsed = %ims", elapsed);
+	} else {
+		libst_failed (test, "elapsed = %ims", elapsed);
+	}
+	return FALSE;
+}
+
 void
 libst_backend_dbus (LibSelfTest *test)
 {
@@ -1411,6 +1442,72 @@ libst_backend_dbus (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+	}
+
+	/* reset number_packages */
+	pk_backend_reset (backend_dbus->priv->backend);
+	number_packages = 0;
+
+	/************************************************************/
+	libst_title (test, "search by name again");
+	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wait for finished */
+	libst_loopwait (test, 5000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "test number of packages again");
+	if (number_packages == 3) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+	}
+
+	/* reset number_packages */
+	pk_backend_reset (backend_dbus->priv->backend);
+	number_packages = 0;
+
+	/************************************************************/
+	libst_title (test, "search by name");
+	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* schedule a cancel */
+	libst_set_user_data (test, backend_dbus);
+	g_timeout_add (1500, pk_backend_dbus_test_cancel_cb, test);
+
+	/************************************************************/
+	libst_title (test, "wait for cancel");
+	/* wait for finished */
+	libst_loopwait (test, 5000);
+	libst_loopcheck (test);
+	libst_success (test, NULL);
+	elapsed = (guint) libst_get_user_data (test);
+
+	/************************************************************/
+	libst_title (test, "check we waited correct time");
+	if (elapsed < 1600 && elapsed > 1400) {
+		libst_success (test, "waited %ims", elapsed);
+	} else {
+		libst_failed (test, "waited %ims", elapsed);
+	}
+
+	/************************************************************/
+	libst_title (test, "test number of packages");
+	if (number_packages == 2) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
 
 	g_object_unref (backend_dbus);
