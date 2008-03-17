@@ -235,7 +235,14 @@ static PkEnumMatch enum_info[] = {
 
 static PkEnumMatch enum_sig_type[] = {
 	{PK_SIGTYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_SIGTYPE_ENUM_GPG,                   "gpg"},
+	{PK_SIGTYPE_ENUM_GPG,			"gpg"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_provides[] = {
+	{PK_PROVIDES_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_PROVIDES_ENUM_MODALIAS,		"codec"},
+	{PK_PROVIDES_ENUM_CODEC,		"codec"},
 	{0, NULL}
 };
 
@@ -447,6 +454,34 @@ const gchar *
 pk_sig_type_enum_to_text (PkSigTypeEnum sig_type)
 {
 	return pk_enum_find_string (enum_sig_type, sig_type);
+}
+
+/**
+ * pk_provides_enum_from_text:
+ * @provides: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_PROVIDES_ENUM_MODALIAS
+ */
+PkProvidesEnum
+pk_provides_enum_from_text (const gchar *provides)
+{
+	return pk_enum_find_value (enum_provides, provides);
+}
+
+/**
+ * pk_provides_enum_to_text:
+ * @provides: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "codec"
+ **/
+const gchar *
+pk_provides_enum_to_text (PkProvidesEnum provides)
+{
+	return pk_enum_find_string (enum_provides, provides);
 }
 
 /**

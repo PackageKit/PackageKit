@@ -294,6 +294,17 @@ typedef enum {
 	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
 
+/**
+ * PkProvidesEnum:
+ *
+ * The signature type type
+ **/
+typedef enum {
+	PK_PROVIDES_ENUM_MODALIAS,
+	PK_PROVIDES_ENUM_CODEC,
+	PK_PROVIDES_ENUM_UNKNOWN
+} PkProvidesEnum;
+
 typedef enum {
 	PK_LICENSE_ENUM_GLIDE,
 	PK_LICENSE_ENUM_AFL,
