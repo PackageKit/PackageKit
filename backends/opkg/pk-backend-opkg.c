@@ -586,7 +586,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	params = g_new0 (SearchParams, 1);
 	params->filter = parse_filter (filter);
-	params->search_type = SEARCH_DESCRIPTION;
+	params->search_type = SEARCH_NAME;
 	params->needle = g_strdup (search);
 
 	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
