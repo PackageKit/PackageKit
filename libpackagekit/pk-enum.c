@@ -242,7 +242,8 @@ static PkEnumMatch enum_sig_type[] = {
 
 static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_PROVIDES_ENUM_MODALIAS,		"codec"},
+	{PK_PROVIDES_ENUM_ANY,			"any"},
+	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
 	{0, NULL}
 };

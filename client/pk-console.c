@@ -429,7 +429,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
-		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_MODALIAS, package, error);
+		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
 			return NULL;

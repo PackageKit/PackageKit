@@ -301,6 +301,7 @@ typedef enum {
  * The signature type type
  **/
 typedef enum {
+	PK_PROVIDES_ENUM_ANY,
 	PK_PROVIDES_ENUM_MODALIAS,
 	PK_PROVIDES_ENUM_CODEC,
 	PK_PROVIDES_ENUM_UNKNOWN
