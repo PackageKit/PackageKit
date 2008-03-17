@@ -383,7 +383,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-name functionality
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -405,7 +405,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-details functionality
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -427,7 +427,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-group functionality
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -477,31 +477,39 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-search-file functionality
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
-        fltlist = filters.split(';')
-        found = {}
-        if not FILTER_NOT_INSTALLED in fltlist:
-            # Check installed for file
-            matches = self.yumbase.rpmdb.searchFiles(key)
-            for pkg in matches:
-                if not found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
-                        found[str(pkg)] = 1
-        if not FILTER_INSTALLED in fltlist:
-            # Check available for file
-            self.yumbase.repos.populateSack(mdtype='filelists')
-            matches = self.yumbase.pkgSack.searchFiles(key)
-            for pkg in matches:
-                if found.has_key(str(pkg)):
-                    if self._do_extra_filtering(pkg, fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
-                        found[str(pkg)] = 1
+        try:
+            fltlist = filters.split(';')
+            found = {}
+            if not FILTER_NOT_INSTALLED in fltlist:
+                # Check installed for file
+                matches = self.yumbase.rpmdb.searchFiles(key)
+                for pkg in matches:
+                    if not found.has_key(str(pkg)):
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_INSTALLED)
+                            found[str(pkg)] = 1
+            if not FILTER_INSTALLED in fltlist:
+                # Check available for file
+                self.yumbase.repos.populateSack(mdtype='filelists')
+                matches = self.yumbase.pkgSack.searchFiles(key)
+                for pkg in matches:
+                    if found.has_key(str(pkg)):
+                        if self._do_extra_filtering(pkg, fltlist):
+                            self._show_package(pkg, INFO_AVAILABLE)
+                            found[str(pkg)] = 1
+        except yum.Errors.RepoError,e:
+            self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
+            self._refresh_yum_cache()
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
+
+            return
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
@@ -511,7 +519,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of requires for a given package
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -539,7 +547,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a list of depends for a given package
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.PercentageChanged(0)
@@ -684,7 +692,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -908,7 +916,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Print a detailed description for a given package
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -928,7 +936,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     def doGetFiles(self, package):
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -957,7 +965,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-updates functionality
         @param filters: package types to show
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -996,7 +1004,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
-        self._check_init(lazy_cache=True)
+        self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
@@ -1047,6 +1055,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if enable:
                 if not repo.isEnabled():
                     repo.enablePersistent()
+                    repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
+                    repo.mdpolicy = "group:all"
             else:
                 if repo.isEnabled():
                     repo.disablePersistent()
@@ -1698,20 +1708,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Other utility methods
 #
 
-    def _check_init(self,lazy_cache=False):
+    def _check_init(self):
         ''' Check if yum has setup, else call init '''
         if hasattr(self,'yumbase'):
             pass
         else:
             self.doInit()
-        if lazy_cache:
-            for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = 60 * 60 * 24  # 24 hours
-                repo.mdpolicy = "group:all"
-        else:
-            for repo in self.yumbase.repos.listEnabled():
-                repo.metadata_expire = 60 * 60 * 1.5 # 1.5 hours, the default
-                repo.mdpolicy = "group:primary"
 
     def _get_package_ver(self,po):
         ''' return the a ver as epoch:version-release or version-release, if epoch=0'''
@@ -1736,6 +1738,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _setup_yum(self):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
+
+        # Setup caching strategy for all repos.
+        for repo in self.yumbase.repos.listEnabled():
+            repo.metadata_expire = 60 * 60 * 1.5  # 1.5 hours, the default
+            repo.mdpolicy = "group:all"
+
         self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 90%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
