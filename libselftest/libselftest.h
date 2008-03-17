@@ -52,19 +52,22 @@ typedef struct
 	GTimer		*timer;
 	GMainLoop	*loop;
 	guint		 hang_loop_id;
+	gpointer	 user_data;
 } LibSelfTest;
 
-gboolean	libst_start	(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
-void		libst_end	(LibSelfTest *test);
-void		libst_title	(LibSelfTest *test, const gchar *format, ...);
-void		libst_success	(LibSelfTest *test, const gchar *format, ...);
-void		libst_failed	(LibSelfTest *test, const gchar *format, ...);
-void		libst_init	(LibSelfTest *test);
-gint		libst_finish	(LibSelfTest *test);
-guint		libst_elapsed	(LibSelfTest *test);
-void		libst_loopquit	(LibSelfTest *test);
-void		libst_loopwait	(LibSelfTest *test, guint timeout);
-void		libst_loopcheck	(LibSelfTest *test);
+gboolean	libst_start		(LibSelfTest *test, const gchar *name, LibSelfTestClass class);
+void		libst_end		(LibSelfTest *test);
+void		libst_title		(LibSelfTest *test, const gchar *format, ...);
+void		libst_success		(LibSelfTest *test, const gchar *format, ...);
+void		libst_failed		(LibSelfTest *test, const gchar *format, ...);
+void		libst_init		(LibSelfTest *test);
+gint		libst_finish		(LibSelfTest *test);
+guint		libst_elapsed		(LibSelfTest *test);
+void		libst_loopquit		(LibSelfTest *test);
+void		libst_loopwait		(LibSelfTest *test, guint timeout);
+void		libst_loopcheck		(LibSelfTest *test);
+void		libst_set_user_data	(LibSelfTest *test, gpointer user_data);
+gpointer	libst_get_user_data	(LibSelfTest *test);
 
 #endif	/* __LIBSELFTEST_H */
 
