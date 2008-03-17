@@ -581,6 +581,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
