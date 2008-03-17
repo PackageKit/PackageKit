@@ -111,6 +111,10 @@ gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
 gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,
 							 const gchar	*location,
 							 gboolean	 enabled);
+gboolean	 pk_backend_dbus_what_provides		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search);
 gboolean	 pk_backend_dbus_kill			(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_repo_enable		(PkBackendDbus	*backend_dbus,
 							 const gchar	*rid,

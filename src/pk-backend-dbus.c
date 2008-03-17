@@ -1182,6 +1182,43 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 }
 
 /**
+ * pk_backend_dbus_what_provides:
+ **/
+gboolean
+pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, const gchar *filter,
+			      PkProvidesEnum provides, const gchar *search)
+{
+	gboolean ret;
+	GError *error = NULL;
+	const gchar *provides_text;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
+	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	provides_text = pk_provides_enum_to_text (provides);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "WhatProvides", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, provides_text,
+				 G_TYPE_STRING, search,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
+}
+
+/**
  * pk_backend_dbus_finalize:
  **/
 static void

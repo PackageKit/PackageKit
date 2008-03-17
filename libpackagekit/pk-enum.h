@@ -469,6 +469,9 @@ const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);
 
+PkProvidesEnum	 pk_provides_enum_from_text		(const gchar	*provides);
+const gchar	*pk_provides_enum_to_text		(PkProvidesEnum	 provides);
+
 PkLicenseEnum	 pk_license_enum_from_text		(const gchar	*license);
 const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);
 
