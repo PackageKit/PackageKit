@@ -58,11 +58,11 @@ try:
         print "Testing SearchFile(FILTER_NONE,'/usr/bin/yum')"
         iface.SearchFile(FILTER_NONE,'/usr/bin/yum')
     if cmd == 'get-requires' or cmd == 'all':
-        print "Testing GetRequires(PKG_ID,False)"
-        iface.GetRequires(PKG_ID,False)
+        print "Testing GetRequires(FILTER_NONE,PKG_ID,False)"
+        iface.GetRequires(FILTER_NONE,PKG_ID,False)
     if cmd == 'get-depends' or cmd == 'all':
-        print "Testing GetDepends(PKG_ID,False)"
-        iface.GetDepends(PKG_ID,False)
+        print "Testing GetDepends(FILTER_NONE,PKG_ID,False)"
+        iface.GetDepends(FILTER_NONE,PKG_ID,False)
     if cmd == 'refresh-cache' or cmd == 'all':
         print "Testing RefreshCache(False)"
         iface.RefreshCache(False)
@@ -77,7 +77,7 @@ try:
         iface.GetFiles(PKG_ID)
     if cmd == 'get-packages' or cmd == 'all':
         print "Testing GetPackages(FILTER_INSTALLED,'no')"
-        iface.GetPackages(FILTER_INSTALLED,'no')
+        #iface.GetPackages(FILTER_INSTALLED,'no')
     if cmd == 'get-repolist' or cmd == 'all':
         print "Testing GetRepoList()"
         iface.GetRepoList()
