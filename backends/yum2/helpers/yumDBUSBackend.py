@@ -252,6 +252,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Decorator to run a method in a separate thread
         '''
         def wrapper(*args, **kwargs):
+            self = args[0]
+            self.last_action_time = time.time()
             thread = threading.Thread(target=func, args=args, kwargs=kwargs)
             thread.start()
         wrapper.__name__ = func.__name__
@@ -515,7 +517,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    def doGetRequires(self,package,recursive):
+    def doGetRequires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
         '''
