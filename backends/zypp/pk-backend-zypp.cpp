@@ -1581,5 +1581,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
-        NULL                                    /* service_pack */
+        NULL,                                   /* service_pack */
+        NULL                                    /* what_provides */
 );
