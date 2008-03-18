@@ -1,7 +1,0 @@
-#!/usr/bin/env python
-import os
-os.environ['WAFDIR'] = "."
-os.environ['WAF_HOME'] = "_build_"
-import imp
-imp.load_source("waf","waf-light")
-
