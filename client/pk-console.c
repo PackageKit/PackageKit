@@ -429,11 +429,19 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
+		pk_client_reset (client_task, NULL);
 		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
 			return NULL;
 		}
+	}
+
+	/* get length of items found again (we might have has success) */
+	length = pk_client_package_buffer_get_size (client_task);
+	if (length == 0) {
+		pk_warning (_("Could not find a package match"));
+		return NULL;
 	}
 
 	/* only found one, great! */
@@ -443,12 +451,10 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* else list the options if multiple matches found */
-	if (length != 0) {
-		g_print (_("There are multiple matches\n"));
-		for (i=0; i<length; i++) {
-			item = pk_client_package_buffer_get_item (client_task, i);
-			g_print ("%i. %s\n", i+1, item->package_id);
-		}
+	g_print (_("There are multiple matches\n"));
+	for (i=0; i<length; i++) {
+		item = pk_client_package_buffer_get_item (client_task, i);
+		g_print ("%i. %s\n", i+1, item->package_id);
 	}
 	return NULL;
 }
@@ -463,7 +469,7 @@ pk_console_install_package (PkClient *client, const gchar *package, GError **err
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to install\n"));
+		g_print (_("Could not find a package with that name to install, or package already installed\n"));
 		return FALSE;
 	}
 	ret = pk_client_install_package (client, package_id, error);
