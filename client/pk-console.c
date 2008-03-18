@@ -398,6 +398,33 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 }
 
 /**
+ * pk_console_get_number:
+ **/
+static guint
+pk_console_get_number (const gchar *question, guint maxnum)
+{
+	gint answer = 0;
+	gint retval;
+
+	/* pretty print */
+	g_print ("%s", question);
+
+	do {
+		/* get a number */
+		retval = scanf("%u", &answer);
+
+		/* positive */
+		if (retval == 1 && answer > 0 && answer <= maxnum) {
+			return answer;
+		}
+		g_print (_("Please enter a number from 1 to %i: "), maxnum);
+	} while (TRUE);
+
+	/* keep GCC happy */
+	return 0;
+}
+
+/**
  * pk_console_perhaps_resolve:
  **/
 static gchar *
@@ -456,7 +483,12 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 		item = pk_client_package_buffer_get_item (client_task, i);
 		g_print ("%i. %s\n", i+1, item->package_id);
 	}
-	return NULL;
+
+	/* find out what package the user wants to use */
+	i = pk_console_get_number (_("Please enter the package number: "), length);
+	item = pk_client_package_buffer_get_item (client_task, i-1);
+	pk_debug ("package_id = %s", item->package_id);
+	return g_strdup (item->package_id);
 }
 
 /**
