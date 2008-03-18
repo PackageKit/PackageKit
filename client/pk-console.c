@@ -501,7 +501,6 @@ static gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
 	gchar answer = '\0';
-	gint retval;
 
 	/* pretty print */
 	g_print ("%s", question);
@@ -513,7 +512,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 	do {
 		/* get one char */
-		retval = scanf("%c", &answer);
+		answer = (gchar) getchar();
 
 		/* positive */
 		if (answer == 'y' || answer == 'Y') {
