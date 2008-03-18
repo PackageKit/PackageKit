@@ -1566,7 +1566,7 @@ backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
 
         for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
                 gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-                
+
                 PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
                 if( it->isSystem ())
                         info = PK_INFO_ENUM_INSTALLED;
@@ -1620,7 +1620,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,    		/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	NULL,					/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */

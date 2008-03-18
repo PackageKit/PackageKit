@@ -24,6 +24,7 @@
 #include <string.h>
 #include <pk-common.h>
 #include <pk-backend.h>
+#include <pk-package-ids.h>
 
 static guint progress_percentage;
 static gulong signal_timeout = 0;
@@ -438,14 +439,21 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_update_package:
+ * backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	guint i;
+	guint len;
+
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "The same thing");
-	pk_backend_updates_changed (backend);
+
+	len = pk_package_ids_size (package_ids);
+	for (i=0; i<len; i++) {
+		pk_debug ("package_ids[%i]=%s", i, package_ids[i]);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[i], "The same thing");
+	}
 	pk_backend_finished (backend);
 }
 
@@ -604,7 +612,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */

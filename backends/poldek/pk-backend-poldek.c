@@ -1671,7 +1671,7 @@ backend_update_package_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	InstallData	*data = g_new0 (InstallData, 1);
 
@@ -1689,7 +1689,8 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	data->package_id = g_strdup (package_id);
+	/* TODO: process the entire list */
+	data->package_id = g_strdup (package_ids[0]);
 	data->pd = g_new0 (PercentageData, 1);
 	data->pd->mode = PROGRESS_ENUM_INSTALL;
 	pk_backend_thread_create (thread, backend_update_package_thread, data);

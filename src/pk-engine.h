@@ -173,9 +173,9 @@ void		 pk_engine_service_pack			(PkEngine	*engine,
 							 const gchar	*location,
 							 gboolean	 enabled,
 							 DBusGMethodInvocation *context);
-void		 pk_engine_update_package		(PkEngine	*engine,
+void		 pk_engine_update_packages		(PkEngine	*engine,
 							 const gchar	*tid,
-							 const gchar	*package_id,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 
 gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,

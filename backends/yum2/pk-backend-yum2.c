@@ -285,10 +285,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * pk_backend_update_package:
+ * pk_backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
@@ -300,7 +300,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_dbus_update_package (dbus, package_id);
+	pk_backend_dbus_update_packages (dbus, package_ids);
 }
 
 /**
@@ -382,7 +382,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */

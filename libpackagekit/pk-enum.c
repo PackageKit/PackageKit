@@ -88,7 +88,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
 	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
 	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
-	{PK_ROLE_ENUM_UPDATE_PACKAGE,		"update-package"},
+	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-package"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
 	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},

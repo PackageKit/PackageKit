@@ -69,6 +69,7 @@ struct PkRunnerPrivate
 	gboolean		 cached_autoremove;
 	gboolean		 cached_enabled;
 	gchar			*cached_package_id;
+	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
 	gchar			*cached_filter;
@@ -191,6 +192,8 @@ pk_runner_get_text (PkRunner *runner)
 
 	if (runner->priv->cached_package_id != NULL) {
 		return runner->priv->cached_package_id;
+	} else if (runner->priv->cached_package_ids != NULL) {
+		return runner->priv->cached_package_ids[0];
 	} else if (runner->priv->cached_search != NULL) {
 		return runner->priv->cached_search;
 	}
@@ -295,8 +298,8 @@ pk_runner_set_running (PkRunner *runner)
 		desc->refresh_cache (priv->backend,  priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		desc->remove_package (priv->backend, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		desc->update_package (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		desc->update_packages (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		desc->update_system (priv->backend);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
@@ -650,19 +653,19 @@ pk_runner_search_name (PkRunner *runner, const gchar *filter, const gchar *searc
 }
 
 /**
- * pk_runner_update_package:
+ * pk_runner_update_packages:
  */
 gboolean
-pk_runner_update_package (PkRunner *runner, const gchar *package_id)
+pk_runner_update_packages (PkRunner *runner, gchar **package_ids)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
-	if (runner->priv->backend->desc->update_package == NULL) {
+	if (runner->priv->backend->desc->update_packages == NULL) {
 		pk_debug ("Not implemented yet: UpdatePackage");
 		return FALSE;
 	}
-	runner->priv->cached_package_id = g_strdup (package_id);
+	runner->priv->cached_package_ids = g_strdupv (package_ids);
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_runner_set_role (runner, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	pk_runner_set_role (runner, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	return TRUE;
 }
 
@@ -807,8 +810,8 @@ pk_runner_get_actions (PkRunner *runner)
 	if (desc->search_name != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
 	}
-	if (desc->update_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	if (desc->update_packages != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	}
 	if (desc->update_system != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_SYSTEM);
@@ -977,7 +980,7 @@ pk_runner_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	role = pk_runner_get_role (runner);
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (runner->priv->backend, PK_MESSAGE_ENUM_DAEMON,
 					    "backend emitted 'installed' rather than 'installing' "
@@ -1098,6 +1101,7 @@ pk_runner_finalize (GObject *object)
 	g_free (runner->priv->last_package);
 	g_free (runner->priv->dbus_name);
 	g_free (runner->priv->cached_package_id);
+	g_strfreev (runner->priv->cached_package_ids);
 	g_free (runner->priv->cached_transaction_id);
 	g_free (runner->priv->cached_filter);
 	g_free (runner->priv->cached_search);
@@ -1148,6 +1152,7 @@ pk_runner_init (PkRunner *runner)
 	runner->priv->dbus_name = NULL;
 	runner->priv->cached_enabled = FALSE;
 	runner->priv->cached_package_id = NULL;
+	runner->priv->cached_package_ids = NULL;
 	runner->priv->cached_transaction_id = NULL;
 	runner->priv->cached_full_path = NULL;
 	runner->priv->cached_filter = NULL;

@@ -398,7 +398,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
-            
+
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -527,7 +527,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         pkg,inst = self._findPackage(package)
-        
+
         if not pkg:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
@@ -540,7 +540,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             results = self.yumbase.pkgSack.searchRequires(pkg.name)
             for result in results:
                 self._show_package(result,INFO_AVAILABLE)
-                
+
         if not FILTER_INSTALLED in fltlist:
             results = self.yumbase.rpmdb.searchRequires(pkg.name)
             for result in results:
@@ -770,7 +770,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
             self.Finished(EXIT_FAILED)
             return
-            
+
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -802,38 +802,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
-        self._unlock_yum()
-        self.Finished(EXIT_SUCCESS)
-
-    @threaded
-    def doUpdatePackage(self, package):
-        '''
-        Implement the {backend}-update functionality
-        This will only work with yum 3.2.4 or higher
-        '''
-        self._check_init()
-        self._lock_yum()
-        self.AllowCancel(False)
-        self.PercentageChanged(0)
-
-        pkg,inst = self._findPackage(package)
-        if pkg:
-            txmbr = self.yumbase.update(name=pkg.name)
-            if txmbr:
-                successful = self._runYumTransaction()
-                if not successful:
-                    return
-            else:
-                self._unlock_yum()
-                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-                self.Finished(EXIT_FAILED)
-                return
-        else:
-            self._unlock_yum()
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"No available updates")
-            self.Finished(EXIT_FAILED)
-            return
-            
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -871,13 +839,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                "Package %s could not be added to the transaction." % package_id)
                 self.Finished(EXIT_FAILED)
                 return
-                
+
         successful = self._runYumTransaction()
 
         if not successful:
             # _runYumTransaction() sets the error code and calls Finished()
             return
-            
+
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -917,7 +885,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
             self.Finished(EXIT_FAILED)
         return
-            
+
     @threaded
     def doGetDescription(self, package):
         '''
@@ -931,13 +899,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkg,inst = self._findPackage(package)
         if pkg:
-            self._show_package_description(pkg)            
+            self._show_package_description(pkg)
         else:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
             return
-            
+
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -1002,7 +970,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
-        
+
     @threaded
     def doGetPackages(self,filters,showdesc='no'):
         '''
@@ -1030,7 +998,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(pkg, INFO_INSTALLED)
                         if showDesc:
                             self._show_package_description(pkg)
-                        
+
 
         # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
@@ -1050,7 +1018,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
-        
+
     @threaded
     def doRepoEnable(self, repoid, enable):
         '''
@@ -1104,7 +1072,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
         pkg,inst = self._findPackage(package)
-        
+
         if not pkg:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
@@ -1206,7 +1174,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return
 
         self.PercentageChanged(100)
-                           
+
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
@@ -1250,7 +1218,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._refresh_yum_cache()
 
             return False
-       
+
         return True
 
     def _do_extra_filtering(self,pkg,filterList):
@@ -1332,12 +1300,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         if pkg.sourcerpm:
             basename = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
-            
+
         if basename == pkg.name:
             return True
 
         return False
-    
+
     def _buildGroupDict(self):
         pkgGroups= {}
         cats = self.yumbase.comps.categories
@@ -1356,7 +1324,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
 
-    def _show_package_description(self,pkg):        
+    def _show_package_description(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
@@ -1475,7 +1443,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     best= po
             bestdeps.append(best)
-                           
+
         return (dep_resolution_errors, unique(bestdeps))
 
     def _localInstall(self, inst_file):
@@ -1991,8 +1959,8 @@ class PackageKitYumBase(yum.YumBase):
             if len(tmpvalues) > 0:
                 sorted_lists[count].append((po, tmpvalues))
 
-            
-        
+
+
         for po in self.rpmdb:
             tmpvalues = []
             criteria_matched = 0
@@ -2007,18 +1975,18 @@ class PackageKitYumBase(yum.YumBase):
                         if not matched_s:
                             criteria_matched += 1
                             matched_s = True
-                        
+
                         tmpvalues.append(value)
 
 
             if len(tmpvalues) > 0:
                 if criteria_matched not in sorted_lists: sorted_lists[criteria_matched] = []
                 sorted_lists[criteria_matched].append((po, tmpvalues))
-                
 
-        # close our rpmdb connection so we can ctrl-c, kthxbai                    
+
+        # close our rpmdb connection so we can ctrl-c, kthxbai
         self.closeRpmDB()
-        
+
         yielded = {}
         for val in reversed(sorted(sorted_lists)):
             for (po, matched) in sorted(sorted_lists[val], key=operator.itemgetter(0)):
@@ -2064,7 +2032,7 @@ class PackageKitYumBase(yum.YumBase):
         self.skipped_packages.extend(skipped)
 
         return skipped
-    
+
 if __name__ == '__main__':
     loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus(mainloop=loop)

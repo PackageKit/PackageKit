@@ -299,20 +299,27 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * pk_backend_update_package:
+ * pk_backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	gchar *package_ids_temp;
+
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
+
 	/* check network state */
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update when offline");
 		pk_backend_finished (backend);
 		return;
 	}
-	pk_backend_spawn_helper (spawn, "update.py", package_id, NULL);
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, " ");
+	pk_backend_spawn_helper (spawn, "update.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -404,7 +411,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
