@@ -534,12 +534,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
-        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
-        for pkg in pkgs:
-            if inst:
-                self._show_package(pkg,INFO_INSTALLED)
-            else:
-                self._show_package(pkg,INFO_AVAILABLE)
+        fltlist = filters.split(';')
+
+        if not FILTER_NOT_INSTALLED in fltlist:
+            results = self.yumbase.pkgSack.searchRequires(pkg.name)
+            for result in results:
+                self._show_package(result,INFO_AVAILABLE)
+                
+        if not FILTER_INSTALLED in fltlist:
+            results = self.yumbase.rpmdb.searchRequires(pkg.name)
+            for result in results:
+                self._show_package(result,INFO_INSTALLED)
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
