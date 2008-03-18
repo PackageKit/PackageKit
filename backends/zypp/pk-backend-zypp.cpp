@@ -1552,6 +1552,50 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
         pk_backend_thread_create (thread, backend_get_files_thread, data);
 }
 
+static gboolean
+backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
+
+        PkBackend *backend;
+
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	ResolveData *d = (ResolveData*) data;
+
+        zypp::Capability cap (d->name);
+        zypp::sat::WhatProvides prov (cap);
+
+        for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+                gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+                
+                PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+                if( it->isSystem ())
+                        info = PK_INFO_ENUM_INSTALLED;
+
+                pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+        }
+
+	g_free (d->filter);
+        g_free (d->name);
+        g_free (d);
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+/**
+  * backend_what_provides
+  */
+static void
+backend_what_provides(PkBackend *backend, const gchar *filter, PkProvidesEnum provide, const gchar *search)
+{
+        g_return_if_fail (backend != NULL);
+
+        ResolveData *data = g_new0(ResolveData, 1);
+        data->name = g_strdup(search);
+        data->filter = g_strdup(filter);
+        pk_backend_thread_create (thread, backend_what_provides_thread, data);
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>, Stefan Haas <shaas@suse.de>",	/* author */
@@ -1582,5 +1626,5 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
         NULL,                                   /* service_pack */
-        NULL                                    /* what_provides */
+        backend_what_provides                   /* what_provides */
 );
