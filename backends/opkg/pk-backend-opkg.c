@@ -355,7 +355,7 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 		goto out;
 	}
 
-	pk_backend_description (backend, pi->name,
+	pk_backend_description (backend, package_id,
 	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
 out:
