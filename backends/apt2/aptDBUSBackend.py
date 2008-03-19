@@ -222,26 +222,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
+        results = []
 
-        db = xapian.Database(XAPIANDB)
-        parser = xapian.QueryParser()
-        query = parser.parse_query(unicode(search),
-                                   DEFAULT_SEARCH_FLAGS)
-        enquire = xapian.Enquire(db)
-        enquire.set_query(query)
-        matches = enquire.get_mset(0, 1000)
-        for m in matches:
-            if self._canceled.isSet():
-                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
-                               "The search was canceled")
-                self.Finished(EXIT_KILL)
-                self._canceled.clear()
-                return
-            name = m[xapian.MSET_DOCUMENT].get_data()
-            if self._cache.has_key(name):
-                pkg = self._cache[name]
-                if self._is_package_visible(pkg, filters) == True:
-                    self._emit_package(pkg)
+        if os.access(XAPIANDB, os.R_OK):
+            pklog.debug("Performing xapian db based search")
+            db = xapian.Database(XAPIANDB)
+            parser = xapian.QueryParser()
+            query = parser.parse_query(unicode(search),
+                                       DEFAULT_SEARCH_FLAGS)
+            enquire = xapian.Enquire(db)
+            enquire.set_query(query)
+            matches = enquire.get_mset(0, 1000)
+            for r in  map(lambda m: m[xapian.MSET_DOCUMENT].get_data(),
+                          enquire.get_mset(0,1000)):
+                if self._cache.has_key(r):
+                    results.append(self._cache[r])
+        else:
+            pklog.debug("Performing apt cache based search")
+            for p in self._cache._dict.values():
+                if self._check_canceled("Search was canceled"): return
+                needle = search.strip().lower()
+                haystack = p.description.lower()
+                if p.name.find(needle) >= 0 or haystack.find(needle) >= 0:
+                    results.append(p)
+
+        for r in results:
+            if self._check_canceled("Search was canceled"): return
+            if self._is_package_visible(r, filters) == True:
+                self._emit_package(r)
 
         self.Finished(EXIT_SUCCESS)
 
@@ -500,6 +508,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
            self._cache._depcache.BrokenCount > 0:
             self.doInit()
 
+    def _check_canceled(self, msg):
+        '''
+        Check if the current transaction was canceled. If so send the
+        corresponding error message and return True
+        '''
+        if self._canceled.isSet():
+             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, msg)
+             self.Finished(EXIT_KILL)
+             self._canceled.clear()
+             return True
+        return False
+ 
     def get_id_from_package(self, pkg, installed=False):
         '''
         Return the id of the installation candidate of a core
