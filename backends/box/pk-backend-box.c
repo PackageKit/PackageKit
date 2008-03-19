@@ -360,7 +360,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 	ps = (PackageSearch*) list->data;
 
-	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
+	pk_backend_description (backend, d->package_id, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
