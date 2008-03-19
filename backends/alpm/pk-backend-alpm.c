@@ -29,6 +29,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-debug.h>
+#include <pk-package-ids.h>
 
 #include <alpm.h>
 #include <alpm_list.h>

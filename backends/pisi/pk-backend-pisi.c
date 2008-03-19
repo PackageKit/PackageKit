@@ -23,6 +23,7 @@
 #include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
+#include <pk-package-ids.h>
 
 static PkBackendSpawn *spawn;
 static PkNetwork *network;

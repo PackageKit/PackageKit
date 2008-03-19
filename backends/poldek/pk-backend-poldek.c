@@ -23,6 +23,7 @@
 #include <pk-backend-thread.h>
 #include <pk-filter.h>
 #include <pk-network.h>
+#include <pk-package-ids.h>
 
 #include <log.h>
 #include <capreq.h>

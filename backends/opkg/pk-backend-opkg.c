@@ -26,6 +26,7 @@
 #include <pk-backend.h>
 #include <pk-backend-thread.h>
 #include <pk-debug.h>
+#include <pk-package-ids.h>
 
 
 #define OPKG_LIB
