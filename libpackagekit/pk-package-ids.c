@@ -40,6 +40,37 @@
 #include "pk-package-ids.h"
 
 /**
+ * pk_package_ids_from_array:
+ * @array: the GPtrArray of package_id's
+ *
+ * Form a composite string array of package_id's.
+ * The data in the GPtrArray is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+gchar **
+pk_package_ids_from_array (GPtrArray *array)
+{
+	gchar **strv_array;
+	const gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	/* copy the temp array to a strv */
+	strv_array = g_new0 (gchar *, array->len + 2);
+	for (i=0; i<array->len; i++) {
+		value_temp = (const gchar *) g_ptr_array_index (array, i);
+		/* we don't need to copy the copy */
+		strv_array[i] = g_strdup (value_temp);
+	}
+	/* set the last element to NULL */
+	strv_array[i] = NULL;
+
+	return strv_array;
+}
+
+/**
  * pk_package_ids_from_va_list:
  * @package_id_first: the first package_id
  * @args: any subsequant package_id's
@@ -53,8 +84,8 @@ pk_package_ids_from_va_list (const gchar *package_id_first, va_list *args)
 {
 	GPtrArray *data;
 	gchar **array;
-	guint i;
 	gchar *value_temp;
+	guint i;
 
 	g_return_val_if_fail (args != NULL, NULL);
 	g_return_val_if_fail (package_id_first != NULL, NULL);
@@ -69,18 +100,11 @@ pk_package_ids_from_va_list (const gchar *package_id_first, va_list *args)
 	}
 	pk_debug ("number of packages=%i", i+1);
 
-	/* copy the temp array to a strv */
-	array = g_new0 (gchar *, data->len + 2);
-	for (i=0; i<data->len; i++) {
-		value_temp = (gchar *) g_ptr_array_index (data, i);
-		/* we don't need to copy the copy */
-		array[i] = value_temp;
-	}
-	/* set the last element to NULL */
-	array[i] = NULL;
+	/* convert the array to a strv type */
+	array = pk_package_ids_from_array (data);
 
-	/* get rid of the array, but don't free the (linked) contents */
-	g_ptr_array_free (data, FALSE);
+	/* get rid of the array, and free the contents */
+	g_ptr_array_free (data, TRUE);
 	return array;
 }
 

@@ -20,21 +20,14 @@ In the C files use the following convention.
 The number of spaces and tabs are very important!
 
 	/* map the roles to policykit rules */
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		policy = "org.freedesktop.packagekit.update";
 	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		policy = "org.freedesktop.packagekit.remove";
 	}
 
-and please DO NOT use "!" for a null pointer or boolean - it's too easy to miss
-in an audit...
-
-	/* check the search term */
-	ret = pk_engine_search_check (search, error);
-	if (ret == FALSE) {
-		return FALSE;
-	}
+and please DO NOT use "!" for a null pointer check.
 
 Functions are nearly always the same format, gtk-doc is optional:
 

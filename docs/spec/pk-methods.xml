@@ -382,6 +382,61 @@
     </para>
   </sect1>
 
+  <sect1 id="methods-what-provides">
+    <title>Get Depends</title>
+    <para>
+      WhatProvides should return packages that provide the supplied attributes.
+      This method is useful for finding out what package(s) provide a modalias
+      or GStreamer codec string.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;</literal>
+            </entry>
+          </row>
+          <row>
+            <entry><literal>type</literal></entry>
+            <entry>
+              A PkProvideType, e.g. <literal>PK_PROVIDE_ENUM_CODEC</literal>.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>data</literal></entry>
+            <entry>
+              The data to send to the backend to get the packages.
+              Note: This is backend specific.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Status</literal> and
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
   <sect1 id="methods-resolve">
     <title>Resolve</title>
     <para>

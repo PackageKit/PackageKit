@@ -1,5 +1,13 @@
 Order of no particular importance:
 
+* Make installing firmware with udev possible:
+  http://lists.freedesktop.org/archives/packagekit/2008-March/002430.html
+
+* Make the Update call into Updates. Big change.
+
+* Fix ServicePack to work correctly:
+  http://lists.freedesktop.org/archives/packagekit/2008-March/002434.html
+
 * Find out why yum doesn't output some package status calls.
 
 * Lots of the functions are not well commented with gtk-doc. Most

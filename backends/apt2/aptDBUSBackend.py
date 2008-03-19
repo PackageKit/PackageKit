@@ -23,12 +23,16 @@ import pty
 import re
 import signal
 import time
+import threading
 import warnings
 
 import apt
+import apt_pkg
 import dbus
+import dbus.glib
 import dbus.service
 import dbus.mainloop.glib
+import gobject
 import xapian
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog
@@ -46,9 +50,26 @@ DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
                         xapian.QueryParser.FLAG_LOVEHATE |
                         xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
+# Required for daemon mode
+os.putenv("PATH",
+          "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 # Avoid questions from the maintainer scripts as far as possible
 os.putenv("DEBIAN_FRONTEND", "noninteractive")
 os.putenv("APT_LISTCHANGES_FRONTEND", "none")
+
+# Setup threading support
+gobject.threads_init()
+dbus.glib.threads_init()
+
+def threaded(func):
+    '''
+    Decorator to run a method in a separate thread
+    '''
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+        thread.start()
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''
@@ -74,14 +95,20 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         apt.progress.FetchProgress.__init__(self)
     # FetchProgress callbacks
     def pulse(self):
-        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        if self._backend._canceled.isSet():
+            return False
         percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
         self._backend.PercentageChanged(int(percent))
         apt.progress.FetchProgress.pulse(self)
         return True
 
+    def start(self):
+        self._backend.StatusChanged(STATUS_DOWNLOAD)
+        self._backend.AllowCancel(True)
+
     def stop(self):
         self._backend.PercentageChanged(100)
+        self._backend.AllowCancel(False)
 
     def mediaChange(self, medium, drive):
         #FIXME: use the Message method to notify the user
@@ -100,35 +127,18 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
 
     def statusChange(self, pkg, percent, status):
         self._backend.PercentageChanged(int(percent))
-        #FIXME: should represent the status better (install, remove, preparing)
-        self._backend.StatusChanged(STATUS_INSTALL)
-        if (self.last_activity + self.timeout) < time.time():
-            pklog.critical("Sending Crtl+C. Inactivity of %s "
-                           "seconds (%s)" % (self.timeout, self.status))
-            os.write(self.master_fd,chr(3))
+        pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
+        self._backend.StatusChanged(STATUS_INSTALL)
         self.last_activity = time.time()
 
     def updateInterface(self):
+        pklog.debug("Updating interface")
         apt.progress.InstallProgress.updateInterface(self)
 
-    def fork(self):
-        pklog.debug("doing a pty.fork()")
-        (self.pid, self.master_fd) = pty.fork()
-        if self.pid != 0:
-            pklog.debug("pid is: %s" % self.pid)
-        return self.pid
-
     def conffile(self, current, new):
-        pklog.warning("Config file prompt: '%s'" % current)
-        # looks like we have a race here *sometimes*
-        time.sleep(5)
-        try:
-            # don't overwrite
-            os.write(self.master_fd,"n\n")
-        except Exception, e:
-            pklog.error(e)
+        pklog.critical("Config file prompt: '%s'" % current)
 
 def sigquit(signum, frame):
     pklog.error("Was killed")
@@ -138,12 +148,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
     '''
+
+    def locked(func):
+        '''
+        Decorator to run a method with a lock
+        '''
+        def wrapper(*args, **kwargs):
+            backend = args[0]
+            backend._lock_cache()
+            ret = func(*args, **kwargs)
+            backend._unlock_cache()
+            return ret
+        wrapper.__name__ = func.__name__
+        return wrapper
+
     def __init__(self, bus_name, dbus_path):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
         self._xapian = None
-        self._locked = False
+        self._canceled = threading.Event()
+        self._canceled.clear()
+        self._locked = threading.Lock()
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -152,11 +178,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Initializing cache")
         self.StatusChanged(STATUS_SETUP)
         self._open_cache()
-        self._xapian = xapian.Database(XAPIANDB)
 
     def doExit(self):
         pass
 
+    @threaded
+    def doCancel(self):
+        pklog.info("Canceling current action")
+        self.StatusChanged(STATUS_CANCEL)
+        self._canceled.set()
+        self._canceled.wait()
+
+    @threaded
     def doSearchName(self, filters, search):
         '''
         Implement the apt2-search-name functionality
@@ -169,11 +202,17 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_QUERY)
 
         for pkg in self._cache:
-            if search in pkg.name and self._is_package_visible(pkg, filters):
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            elif search in pkg.name and self._is_package_visible(pkg, filters):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
-
+    @threaded
     def doSearchDetails(self, filters, search):
         '''
         Implement the apt2-search-details functionality
@@ -184,14 +223,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
 
-        self._xapian.reopen()
+        db = xapian.Database(XAPIANDB)
         parser = xapian.QueryParser()
         query = parser.parse_query(unicode(search),
                                    DEFAULT_SEARCH_FLAGS)
-        enquire = xapian.Enquire(self._xapian)
+        enquire = xapian.Enquire(db)
         enquire.set_query(query)
         matches = enquire.get_mset(0, 1000)
         for m in matches:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
             name = m[xapian.MSET_DOCUMENT].get_data()
             if self._cache.has_key(name):
                 pkg = self._cache[name]
@@ -200,33 +245,47 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
         self.Finished(EXIT_SUCCESS)
 
-
+    @threaded
+    @locked
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
         '''
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
+        self.StatusChanged(STATUS_INFO)
         self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
-        self.StatusChanged(STATUS_INFO)
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
-            self._emit_package(pkg)
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "Calculating updates was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            else:
+                self._emit_package(pkg)
+        self._open_cache()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
     def GetDescription(self, pkg_id):
         '''
         Implement the {backend}-get-description functionality
         '''
         pklog.info("Get description of %s" % pkg_id)
-        self._check_init()
-        self.AllowCancel(True)
-        self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
+        self._check_init()
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
         name, version, arch, data = self.get_package_from_id(pkg_id)
-        #FIXME: error handling
+        if not self._cache.has_key(name):
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                           "Package %s isn't available" % name)
+            self.Finished(EXIT_FAILED)
+            return
         pkg = self._cache[name]
         #FIXME: should perhaps go to python-apt since we need this in
         #       several applications
@@ -244,17 +303,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # replace all multiple spaces by newlines
         p = re.compile(r'\s\s+', re.MULTILINE)
         desc = p.sub('\n', desc)
-        # Get the homepage of the package
-        # FIXME: switch to the new unreleased API
-        if pkg.candidateRecord.has_key('Homepage'):
-            homepage = pkg.candidateRecord['Homepage']
-        else:
-            homepage = ''
         #FIXME: group and licence information missing
         self.Description(pkg_id, 'unknown', 'unknown', desc,
-                         homepage, pkg.packageSize)
+                         pkg.homepage, pkg.packageSize)
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    @locked
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -263,27 +318,38 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Distupgrade or Upgrade?
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
-        self._check_init()
         self.StatusChanged(STATUS_UPDATE)
+        self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
         try:
             self._cache.upgrade(distUpgrade=True)
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
-        except:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Upgrade failed")
-            self.Finished(EXIT_FAILED)
+        except apt.cache.FetchFailedException:
             self._open_cache()
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
+            self.Finished(EXIT_FAILED)
             return
-        self._open_cache()
+        except apt.cache.FetchCancelledException:
+            self._open_cache()
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
+            self.Finished(EXIT_KILL)
+            self._canceled.clear()
+            return
+        except:
+            self._open_cache()
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "System update failed")
+            self.Finished(EXIT_FAILED)
+            return
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    @locked
     def doRemovePackage(self, id, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''
-        #FIXME: Better exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
         self._check_init()
@@ -291,29 +357,39 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(False)
         self.PercentageChanged(0)
         pkg = self._find_package_by_id(id)
+        if pkg == None:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                           "Package %s isn't available" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
+        if not pkg.isInstalled:
+            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,
+                           "Package %s isn't installed" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         name = pkg.name[:]
         try:
             pkg.markDelete()
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
         except:
+            self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
             self.Finished(EXIT_FAILED)
-            self._open_cache()
             return
-        # FIXME: handle error
         self._open_cache()
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Package is still installed")
             self.Finished(EXIT_FAILED)
 
+    @threaded
+    @locked
     def doInstallPackage(self, id):
         '''
         Implement the {backend}-install functionality
         '''
-        #FIXME: Exception and error handling
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
         self._check_init()
@@ -321,15 +397,25 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         self.AllowCancel(False)
         pkg = self._find_package_by_id(id)
+        if pkg == None:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                           "Package %s isn't available" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
+        if pkg.isInstalled:
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
+                           "Package %s is already installed" % pkg.name)
+            self.Finished(EXIT_FAILED)
+            return
         name = pkg.name[:]
         try:
             pkg.markInstall()
             self._cache.commit(PackageKitFetchProgress(self),
                                PackageKitInstallProgress(self))
         except:
+            self._open_cache()
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
-            self._open_cache()
             return
         self._open_cache()
         if self._cache.has_key(name) and self._cache[name].isInstalled:
@@ -338,25 +424,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
 
+    @threaded
+    @locked
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
         pklog.info("Refresh cache")
+        self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
         self._check_init()
-        self.AllowCancel(True);
+        self.AllowCancel(False);
         self.PercentageChanged(0)
-        self.StatusChanged(STATUS_REFRESH_CACHE)
         try:
             self._cache.update(PackageKitFetchProgress(self))
-        except:
-            self._open_cache()
-            self.ErrorCode(ERROR_NO_CACHE,
-                           "Package cache could not be opened")
+        except apt.cache.FetchFailedException:
+            self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
             self.Finished(EXIT_FAILED)
             return
-        self._open_cache()
+        except apt.cache.FetchCancelledException:
+            self._canceled.clear()
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
+            self.Finished(EXIT_KILL)
+            return
+        except:
+            self._open_cache()
+            self.ErrorCode(ERROR_INTERNAL_ERROR, "Refreshing cache failed")
+            self.Finished(EXIT_FAILED)
+            return
         self.Finished(EXIT_SUCCESS)
 
     # Helpers
@@ -381,6 +476,20 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Exit()
             return
 
+    def _lock_cache(self):
+        '''
+        Lock the cache
+        '''
+        pklog.debug("Locking cache")
+        self._locked.acquire()
+
+    def _unlock_cache(self):
+        '''
+        Unlock the cache
+        '''
+        pklog.debug("Releasing cache")
+        self._locked.release()
+
     def _check_init(self):
         '''
         Check if the backend was initialized well and try to recover from
@@ -388,8 +497,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.debug("Check apt cache and xapian database")
         if not isinstance(self._cache, apt.cache.Cache) or \
-           self._cache._depcache.BrokenCount > 0 or \
-           not isinstance(self._xapian, xapian.Database):
+           self._cache._depcache.BrokenCount > 0:
             self.doInit()
 
     def get_id_from_package(self, pkg, installed=False):

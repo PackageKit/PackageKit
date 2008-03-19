@@ -222,15 +222,10 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->search = g_strdup(search);
-		data->filter = g_strdup(filter);
-		data->mode = mode;
-		pk_backend_thread_create (thread, backend_find_packages_thread, data);
-	}
+	data->search = g_strdup(search);
+	data->filter = g_strdup(filter);
+	data->mode = mode;
+	pk_backend_thread_create (thread, backend_find_packages_thread, data);
 }
 
 static gboolean
@@ -365,7 +360,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 	ps = (PackageSearch*) list->data;
 
-	pk_backend_description (backend, pi->name, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
+	pk_backend_description (backend, d->package_id, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
@@ -562,14 +557,9 @@ backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *packa
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		data->type = DEPS_TYPE_DEPENDS;
-		pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	data->type = DEPS_TYPE_DEPENDS;
+	pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
 }
 
 /**
@@ -582,13 +572,8 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_get_description_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_get_description_thread, data);
 }
 
 /**
@@ -601,13 +586,8 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_get_files_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_get_files_thread, data);
 }
 
 /**
@@ -620,14 +600,9 @@ backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *pack
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		data->type = DEPS_TYPE_REQUIRES;
-		pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	data->type = DEPS_TYPE_REQUIRES;
+	pk_backend_thread_create (thread, backend_get_depends_requires_thread, data);
 }
 
 /**
@@ -657,13 +632,8 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_install_package_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_install_package_thread, data);
 }
 
 /**
@@ -676,13 +646,8 @@ backend_install_file (PkBackend *backend, const gchar *file)
 
 	g_return_if_fail (backend != NULL);
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(file);
-		pk_backend_thread_create (thread, backend_install_file_thread, data);
-	}
+	data->package_id = g_strdup(file);
+	pk_backend_thread_create (thread, backend_install_file_thread, data);
 }
 
 /**
@@ -777,13 +742,8 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	if (data == NULL) {
-		pk_backend_error_code(backend, PK_ERROR_ENUM_OOM, "Failed to allocate memory");
-		pk_backend_finished (backend);
-	} else {
-		data->package_id = g_strdup(package_id);
-		pk_backend_thread_create (thread, backend_install_package_thread, data);
-	}
+	data->package_id = g_strdup(package_id);
+	pk_backend_thread_create (thread, backend_install_package_thread, data);
 }
 
 /**
@@ -884,6 +844,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-	NULL					/* service_pack */
+	NULL,					/* service_pack */
+	NULL					/* what_provides */
 );
 

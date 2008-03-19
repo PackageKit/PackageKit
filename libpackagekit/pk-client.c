@@ -23,7 +23,7 @@
  * SECTION:pk-client
  * @short_description: GObject class for PackageKit client access
  *
- * This file contains a nice GObject to use for accessing PackageKit
+ * A nice GObject to use for accessing PackageKit asynchronously
  */
 
 #include "config.h"
@@ -45,6 +45,7 @@
 #include "pk-client.h"
 #include "pk-connection.h"
 #include "pk-package-id.h"
+#include "pk-package-ids.h"
 #include "pk-package-list.h"
 #include "pk-debug.h"
 #include "pk-marshal.h"
@@ -84,10 +85,12 @@ struct _PkClientPrivate
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_autoremove;
 	gchar			*cached_package_id;
+	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
 	gchar			*cached_filter;
 	gchar			*cached_search;
+	PkProvidesEnum		 cached_provides;
 };
 
 typedef enum {
@@ -1359,6 +1362,9 @@ pk_client_update_system (PkClient *client, GError **error)
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
+	/* clear the package list in case we are promiscuous and watching the update list */
+	pk_package_list_clear (client->priv->package_list);
+
 	/* hopefully do the operation first time */
 	ret = pk_client_update_system_action (client, &error_pk);
 
@@ -1633,7 +1639,8 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *filter, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, const gchar *filter,
+			const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
 
@@ -1665,6 +1672,61 @@ pk_client_get_requires (PkClient *client, const gchar *filter, const gchar *pack
 				 G_TYPE_STRING, filter,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (ret) {
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
+ * pk_client_what_provides:
+ * @client: a valid #PkClient instance
+ * @filter: a filter enum such as "basename;~development" or "none"
+ * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
+ * @search: a search term such as "sound/mp3"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * This should return packages that provide the supplied attributes.
+ * This method is useful for finding out what package(s) provide a modalias
+ * or GStreamer codec string.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum provides,
+			 const gchar *search, GError **error)
+{
+	gboolean ret;
+	const gchar *provides_text;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
+	client->priv->cached_search = g_strdup (search);
+	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_provides = provides;
+
+	provides_text = pk_provides_enum_to_text (provides);
+	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
+				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, provides_text,
+				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
 		/* spin until finished */
@@ -2169,21 +2231,117 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 }
 
 /**
- * pk_client_update_package_action:
+ * pk_client_update_packages_action:
  **/
 static gboolean
-pk_client_update_package_action (PkClient *client, const gchar *package_id, GError **error)
+pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackage", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "UpdatePackages", error,
 				 G_TYPE_STRING, client->priv->tid,
-				 G_TYPE_STRING, package_id,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
+}
+
+/**
+ * pk_client_update_packages_strv:
+ * @client: a valid #PkClient instance
+ * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Update specific packages to the newest available versions.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **error)
+{
+	gboolean ret;
+	gchar *package_ids_temp;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
+
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
+	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
+		return FALSE;
+	}
+
+	/* check to see if we already have a transaction */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* hopefully do the operation first time */
+	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
+
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_update_packages_action (client, package_ids, &error_pk);
+		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
+	}
+
+	/* spin until finished */
+	if (ret && client->priv->synchronous) {
+		g_main_loop_run (client->priv->loop);
+	}
+
+	return ret;
+}
+
+/**
+ * pk_client_update_packages:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ * @package_id: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @...: NULL terminated list
+ *
+ * Update specific packages to the newest available versions.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_update_packages (PkClient *client, GError **error, const gchar *package_id, ...)
+{
+	va_list args;
+	gchar **package_ids;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	/* process the valist */
+	va_start (args, package_id);
+	package_ids = pk_package_ids_from_va_list (package_id, &args);
+	va_end (args);
+
+	return pk_client_update_packages_strv (client, package_ids, error);
 }
 
 /**
@@ -2199,55 +2357,11 @@ pk_client_update_package_action (PkClient *client, const gchar *package_id, GErr
 gboolean
 pk_client_update_package (PkClient *client, const gchar *package_id, GError **error)
 {
-	gboolean ret;
-	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
-
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
-		return FALSE;
-	}
-
-	/* check to see if we already have a transaction */
-	ret = pk_client_allocate_transaction_id (client, error);
-	if (!ret) {
-		return FALSE;
-	}
-	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGE;
-	client->priv->cached_package_id = g_strdup (package_id);
-
-	/* hopefully do the operation first time */
-	ret = pk_client_update_package_action (client, package_id, &error_pk);
-
-	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
-		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
-			/* clear old error */
-			g_clear_error (&error_pk);
-			/* retry the action now we have got auth */
-			ret = pk_client_update_package_action (client, package_id, &error_pk);
-		}
-	}
-	/* we failed one of these, return the error to the user */
-	if (!ret) {
-		pk_client_error_fixup (&error_pk);
-		g_propagate_error (error, error_pk);
-	}
-
-	/* spin until finished */
-	if (ret && client->priv->synchronous) {
-		g_main_loop_run (client->priv->loop);
-	}
-
-	return ret;
+	return pk_client_update_packages (client, error, package_id, NULL);
 }
 
 /**
@@ -2330,7 +2444,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
  * pk_client_service_pack_action:
  **/
 static gboolean
-pk_client_service_pack_action (PkClient *client, const gchar *location, GError **error)
+pk_client_service_pack_action (PkClient *client, const gchar *location, gboolean enabled, GError **error)
 {
 	gboolean ret;
 
@@ -2340,6 +2454,7 @@ pk_client_service_pack_action (PkClient *client, const gchar *location, GError *
 	ret = dbus_g_proxy_call (client->priv->proxy, "ServicePack", error,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_STRING, location,
+				 G_TYPE_BOOLEAN, enabled,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
@@ -2355,7 +2470,7 @@ pk_client_service_pack_action (PkClient *client, const gchar *location, GError *
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
+pk_client_service_pack (PkClient *client, const gchar *location, gboolean enabled, GError **error)
 {
 	gboolean ret;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
@@ -2371,10 +2486,11 @@ pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 	}
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SERVICE_PACK;
+	client->priv->cached_force = enabled;
 	client->priv->cached_full_path = g_strdup (location);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_service_pack_action (client, location, &error_pk);
+	ret = pk_client_service_pack_action (client, location, enabled, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -2383,7 +2499,7 @@ pk_client_service_pack (PkClient *client, const gchar *location, GError **error)
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_service_pack_action (client, location, &error_pk);
+			ret = pk_client_service_pack_action (client, location, enabled, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2918,13 +3034,13 @@ pk_client_requeue (PkClient *client, GError **error)
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		ret = pk_client_install_file (client, priv->cached_full_path, error);
 	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		ret = pk_client_service_pack (client, priv->cached_full_path, error);
+		ret = pk_client_service_pack (client, priv->cached_full_path, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		ret = pk_client_refresh_cache (client, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		ret = pk_client_remove_package (client, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove, error);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
-		ret = pk_client_update_package (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		ret = pk_client_update_packages_strv (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
 	} else {
@@ -3269,10 +3385,12 @@ pk_client_init (PkClient *client)
 	client->priv->is_finished = FALSE;
 	client->priv->package_list = pk_package_list_new ();
 	client->priv->cached_package_id = NULL;
+	client->priv->cached_package_ids = NULL;
 	client->priv->cached_transaction_id = NULL;
 	client->priv->cached_full_path = NULL;
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
+	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
 
 	/* check dbus connections, exit if not valid */
 	client->priv->connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
@@ -3476,6 +3594,7 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->cached_filter);
 	g_free (client->priv->cached_search);
 	g_free (client->priv->tid);
+	g_strfreev (client->priv->cached_package_ids);
 
 	/* clear the loop, if we were using it */
 	if (client->priv->synchronous) {
@@ -3581,6 +3700,8 @@ libst_client (LibSelfTest *test)
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (libst_client_finished_cb), NULL);
+
+pk_client_update_packages (client, NULL, "foo;0.0.1;i386;data", "bar;0.1.1;noarch;fedora", "baz;0.0.1;i386;livna", NULL);
 
 	/************************************************************/
 	libst_title (test, "do any method");

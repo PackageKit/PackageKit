@@ -204,9 +204,6 @@ gboolean	 pk_client_get_package			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error);
-
-
-
 gboolean	 pk_client_get_updates			(PkClient	*client,
 							 const gchar	*filter,
 							 GError		**error);
@@ -241,6 +238,11 @@ gboolean	 pk_client_get_requires			(PkClient	*client,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error);
+gboolean	 pk_client_what_provides		(PkClient	*client,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search,
+							 GError		**error);
 gboolean	 pk_client_get_description		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
@@ -261,11 +263,18 @@ gboolean	 pk_client_install_package		(PkClient	*client,
 gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
+gboolean	 pk_client_update_packages		(PkClient	*client,
+							 GError		**error,
+							 const gchar	*package_id, ...);
+gboolean	 pk_client_update_packages_strv		(PkClient	*client,
+							 gchar		**package_ids,
+							 GError		**error);
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*file,
 							 GError		**error);
 gboolean	 pk_client_service_pack			(PkClient	*client,
 							 const gchar	*location,
+							 gboolean	 enabled,
 							 GError		**error);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,

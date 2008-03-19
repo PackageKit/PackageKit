@@ -285,10 +285,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * pk_backend_update_package:
+ * pk_backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
@@ -300,7 +300,7 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_dbus_update_package (dbus, package_id);
+	pk_backend_dbus_update_packages (dbus, package_ids);
 }
 
 /**
@@ -358,6 +358,17 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_dbus_repo_set_data (dbus, rid, parameter, value);
 }
 
+/**
+ * pk_backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (dbus != NULL);
+	pk_backend_dbus_what_provides (dbus, filter, provides, search);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM-DBUS",				/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
@@ -382,11 +393,12 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-	NULL					/* service_pack */
+	NULL,					/* service_pack */
+	backend_what_provides			/* what_provides */
 );
 

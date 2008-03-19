@@ -29,6 +29,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-debug.h>
+#include <pk-package-ids.h>
 
 #include <alpm.h>
 #include <alpm_list.h>
@@ -495,6 +496,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_update_packages:
+ */
+static void
+backend_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	/* TODO: process the entire list */
+	backend_install_package (backend, package_ids[0]);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -801,11 +812,12 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* search_file */
 	NULL,						/* search_group */
 	backend_search_name,				/* search_name */
-	backend_install_package,			/* update_package */
+	backend_update_packages,			/* update_packages */
 	NULL,						/* update_system */
 	backend_get_repo_list,				/* get_repo_list */
 	NULL,						/* repo_enable */
 	NULL,						/* repo_set_data */
-	NULL						/* service_pack */
+	NULL,						/* service_pack */
+	NULL						/* what_provides */
 );
 

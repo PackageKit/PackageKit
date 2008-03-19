@@ -22,8 +22,12 @@
 
 # imports
 import sys
+import codecs
 import traceback
-import types
+import locale
+
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
 from enums import *
 
 # Classes
@@ -303,6 +307,13 @@ class PackageKitBaseBackend:
     def get_requires(self,filters,package,recursive):
         '''
         Implement the {backend}-get-requires functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def what_provides(self,filters,provides_type,search):
+        '''
+        Implement the {backend}-what-provides functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

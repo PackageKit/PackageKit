@@ -256,10 +256,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_update_package:
+ * backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -309,7 +309,17 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * backend_service_pack:
  */
 static void
-backend_service_pack (PkBackend *backend, const gchar *location)
+backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -339,11 +349,12 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-	backend_service_pack			/* service_pack */
+	backend_service_pack,			/* service_pack */
+	backend_what_provides			/* what_provides */
 );
 

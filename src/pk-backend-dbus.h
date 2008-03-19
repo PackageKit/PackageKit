@@ -104,12 +104,17 @@ gboolean	 pk_backend_dbus_remove_package		(PkBackendDbus	*backend_dbus,
 							 gboolean	 autoremove);
 gboolean	 pk_backend_dbus_install_package	(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
-gboolean	 pk_backend_dbus_update_package		(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus	*backend_dbus,
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
 							 const gchar	*full_path);
 gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,
-							 const gchar	*location);
+							 const gchar	*location,
+							 gboolean	 enabled);
+gboolean	 pk_backend_dbus_what_provides		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search);
 gboolean	 pk_backend_dbus_kill			(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_repo_enable		(PkBackendDbus	*backend_dbus,
 							 const gchar	*rid,

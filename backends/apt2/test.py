@@ -41,15 +41,17 @@ try:
     if cmd == 'init' or cmd == 'all':
         print "Testing Init()"
         iface.Init()
+    if cmd == 'cancel':
+        print "Canceling"
+        iface.Cancel()
     if cmd == 'get-updates' or cmd == 'all':
         print "Testing GetUpdate()"
         iface.GetUpdates()
     if cmd == 'search-name' or cmd == 'all':
-        print "Testing SearchName(FILTER_NONE,'yum')"
-        iface.SearchName(FILTER_NONE,'yum')
+        print "Testing SearchName(FILTER_NONE,'apt')"
+        iface.SearchName(FILTER_NONE,'apt')
     if cmd == 'search-details' or cmd == 'all':
         print "SearchDetails(FILTER_NONE,'dbus')"
-        # This one is failing because of some  UnicodeDecodeError in yum 
         iface.SearchDetails(FILTER_NONE,'dbus')
     if cmd == 'search-group' or cmd == 'all':
         print "Testing SearchGroup(FILTER_NONE,GROUP_GAMES)"

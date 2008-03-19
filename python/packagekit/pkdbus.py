@@ -42,19 +42,19 @@ def dbusException(func):
 
 class PackageKitDbusInterface:
 
-	def __init__(self, interface, service, path):
-		DBusGMainLoop(set_as_default=True)
-		bus = dbus.SystemBus()
-		try:
-			pk = bus.get_object(service, path)
-			self.pk_iface = dbus.Interface(pk, dbus_interface=interface)
-		except dbus.exceptions.DBusException,e:
-			if e.get_dbus_name() == "org.freedesktop.DBus.Error.ServiceUnknown":
-				raise PackageKitNotStarted
-			else:
-				raise PackageKitException(e)
+    def __init__(self, interface, service, path):
+        DBusGMainLoop(set_as_default=True)
+        bus = dbus.SystemBus()
+        try:
+            pk = bus.get_object(service, path)
+            self.pk_iface = dbus.Interface(pk, dbus_interface=interface)
+        except dbus.exceptions.DBusException,e:
+            if e.get_dbus_name() == "org.freedesktop.DBus.Error.ServiceUnknown":
+                raise PackageKitNotStarted
+            else:
+                raise PackageKitException(e)
 
-		bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface=interface)
+        bus.add_signal_receiver(self.catchall_signal_handler, interface_keyword='dbus_interface', member_keyword='member',dbus_interface=interface)
 
         def catchall_signal_handler(self, *args, **kwargs):
             raise NotImplementedError()

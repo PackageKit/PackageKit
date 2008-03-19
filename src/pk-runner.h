@@ -70,6 +70,10 @@ gboolean	 pk_runner_get_requires			(PkRunner	*runner,
 							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
+gboolean	 pk_runner_what_provides		(PkRunner	*runner,
+							 const gchar	*filter,
+							 PkProvidesEnum	 provides,
+							 const gchar	*search);
 gboolean	 pk_runner_get_updates			(PkRunner	*runner,
 							 const gchar	*filter);
 gboolean	 pk_runner_install_package		(PkRunner	*runner,
@@ -77,7 +81,8 @@ gboolean	 pk_runner_install_package		(PkRunner	*runner,
 gboolean	 pk_runner_install_file			(PkRunner	*runner,
 							 const gchar	*full_path);
 gboolean	 pk_runner_service_pack			(PkRunner	*runner,
-							 const gchar	*location);
+							 const gchar	*location,
+							 gboolean	 enabled);
 gboolean	 pk_runner_refresh_cache		(PkRunner	*runner,
 							 gboolean	 force);
 gboolean	 pk_runner_remove_package		(PkRunner	*runner,
@@ -101,8 +106,8 @@ gboolean	 pk_runner_search_group			(PkRunner	*runner,
 gboolean	 pk_runner_search_name			(PkRunner	*runner,
 							 const gchar	*filter,
 							 const gchar	*search);
-gboolean	 pk_runner_update_package		(PkRunner	*runner,
-							 const gchar	*package_id);
+gboolean	 pk_runner_update_packages		(PkRunner	*runner,
+							 gchar		**package_ids);
 gboolean	 pk_runner_update_system		(PkRunner	*runner);
 gboolean	 pk_runner_get_repo_list		(PkRunner	*runner);
 gboolean	 pk_runner_repo_enable			(PkRunner	*runner,

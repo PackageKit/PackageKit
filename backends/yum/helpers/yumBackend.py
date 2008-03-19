@@ -220,8 +220,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "glibc", "hal", "dbus", "xen")
 
     def __init__(self,args,lock=True):
-        import codecs
-        sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
         self.yumbase = PackageKitYumBase()
@@ -241,12 +239,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param bytes: The size of the package, in bytes
         convert the description to UTF before sending
         '''
-        desc = self._toUTF(desc)
-        try:
-            PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)            
-        except UnicodeDecodeError,e:
-            desc = repr(desc)[1:-1]
-            PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
+        desc = self._to_unicode(desc)
+        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
 
     def package(self,id,status,summary):
         '''
@@ -256,23 +250,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param summary: The package Summary
         convert the summary to UTF before sending
         '''
-        summary = self._toUTF(summary)
-        try:
-            PackageKitBaseBackend.package(self,id,status,summary)
-        except UnicodeDecodeError,e:
-            summary = repr(summary)[1:-1]
-            PackageKitBaseBackend.package(self,id,status,summary)
+        summary = self._to_unicode(summary)
+        PackageKitBaseBackend.package(self,id,status,summary)
 
-    def _toUTF( self, txt ):
-        rc=""
-        if isinstance(txt,types.UnicodeType):
-            return txt
-        else:
-            try:
-                rc = unicode( txt, 'utf-8' )
-            except UnicodeDecodeError, e:
-                rc = unicode( txt, 'iso-8859-1' )
-            return rc.encode('utf-8')
+    def _to_unicode(self, txt, encoding='utf-8'):
+        if isinstance(txt, basestring):
+            if not isinstance(txt, unicode):
+                txt = unicode(txt, encoding)
+        return txt
 
     def doLock(self):
         ''' Lock Yum'''
@@ -1096,7 +1081,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-enable functionality
         '''
         self._check_init()
-        self.status(STATUS_SETUP)
+        self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
             if enable == 'false':

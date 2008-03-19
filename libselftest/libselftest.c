@@ -80,6 +80,18 @@ libst_loopcheck (LibSelfTest *test)
 	}
 }
 
+void
+libst_set_user_data (LibSelfTest *test, gpointer user_data)
+{
+	test->user_data = user_data;
+}
+
+gpointer
+libst_get_user_data (LibSelfTest *test)
+{
+	return test->user_data;
+}
+
 gint
 libst_finish (LibSelfTest *test)
 {

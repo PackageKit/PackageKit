@@ -26,6 +26,7 @@
 #include <pk-backend.h>
 #include <pk-backend-thread.h>
 #include <pk-debug.h>
+#include <pk-package-ids.h>
 
 
 #define OPKG_LIB
@@ -354,7 +355,7 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 		goto out;
 	}
 
-	pk_backend_description (backend, pi->name,
+	pk_backend_description (backend, package_id,
 	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
 out:
@@ -524,12 +525,18 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 		{
 			gchar *needle, *haystack;
 			gboolean match;
-
-			needle = g_utf8_strdown (search, -1);
-			haystack = g_utf8_strdown (pkg->description, -1);
-			match = (g_strrstr (haystack, needle) != NULL);
-			g_free (needle);
-			g_free (haystack);
+			if (pkg->description && search)
+			{
+				needle = g_utf8_strdown (search, -1);
+				haystack = g_utf8_strdown (pkg->description, -1);
+				match = (g_strrstr (haystack, needle) != NULL);
+				g_free (needle);
+				g_free (haystack);
+			}
+			else
+			{
+				continue;
+			}
 
 			if (!match)
 				continue;
@@ -586,7 +593,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 
 	params = g_new0 (SearchParams, 1);
 	params->filter = parse_filter (filter);
-	params->search_type = SEARCH_DESCRIPTION;
+	params->search_type = SEARCH_NAME;
 	params->needle = g_strdup (search);
 
 	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
@@ -947,7 +954,7 @@ backend_update_package_thread (PkBackendThread *thread, gchar *package_id)
 }
 
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	g_return_if_fail (backend != NULL);
 
@@ -956,7 +963,8 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 
 	pk_backend_thread_create (thread,
 		(PkBackendThreadFunc) backend_update_package_thread,
-		g_strdup (package_id));
+		/* TODO: process the entire list */
+		g_strdup (package_ids[0]));
 }
 
 /**
@@ -1068,11 +1076,12 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	NULL,					/* get_repo_list */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
-	NULL					/* service_pack */
+	NULL,					/* service_pack */
+	NULL					/* what_provides */
 );
 

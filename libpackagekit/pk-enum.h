@@ -64,11 +64,12 @@ typedef enum {
 	PK_ROLE_ENUM_REMOVE_PACKAGE,
 	PK_ROLE_ENUM_INSTALL_PACKAGE,
 	PK_ROLE_ENUM_INSTALL_FILE,
-	PK_ROLE_ENUM_UPDATE_PACKAGE,
+	PK_ROLE_ENUM_UPDATE_PACKAGES,
 	PK_ROLE_ENUM_GET_REPO_LIST,
 	PK_ROLE_ENUM_REPO_ENABLE,
 	PK_ROLE_ENUM_REPO_SET_DATA,
 	PK_ROLE_ENUM_SERVICE_PACK,
+	PK_ROLE_ENUM_WHAT_PROVIDES,
 	PK_ROLE_ENUM_UNKNOWN
 } PkRoleEnum;
 
@@ -294,6 +295,18 @@ typedef enum {
 	PK_SIGTYPE_ENUM_UNKNOWN
 } PkSigTypeEnum;
 
+/**
+ * PkProvidesEnum:
+ *
+ * The signature type type
+ **/
+typedef enum {
+	PK_PROVIDES_ENUM_ANY,
+	PK_PROVIDES_ENUM_MODALIAS,
+	PK_PROVIDES_ENUM_CODEC,
+	PK_PROVIDES_ENUM_UNKNOWN
+} PkProvidesEnum;
+
 typedef enum {
 	PK_LICENSE_ENUM_GLIDE,
 	PK_LICENSE_ENUM_AFL,
@@ -456,6 +469,9 @@ const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
 
 PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);
+
+PkProvidesEnum	 pk_provides_enum_from_text		(const gchar	*provides);
+const gchar	*pk_provides_enum_to_text		(PkProvidesEnum	 provides);
 
 PkLicenseEnum	 pk_license_enum_from_text		(const gchar	*license);
 const gchar	*pk_license_enum_to_text		(PkLicenseEnum	 license);

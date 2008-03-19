@@ -37,6 +37,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <pk-package-id.h>
+#include <pk-package-ids.h>
 #include <pk-package-list.h>
 
 #include <pk-debug.h>
@@ -63,6 +64,18 @@ static void     pk_engine_finalize	(GObject       *object);
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 #define PK_ENGINE_UPDATES_CHANGED_TIMEOUT	100 /* ms */
 
+/**
+ * PK_ENGINE_STATE_CHANGED_TIMEOUT:
+ *
+ * The timeout in ms to wait when we get the StateHasChanged method.
+ * We don't want to queue these transactions if one is already in progress.
+ *
+ * We probably also need to wait for NetworkManager to come back up if we are
+ * resuming, and we probably don't want to be doing this at a busy time after
+ * a yum tramsaction.
+ */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT		5000 /* ms */
+
 struct PkEnginePrivate
 {
 	GTimer			*timer;
@@ -77,6 +90,7 @@ struct PkEnginePrivate
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
+	gboolean		 signal_state_timeout; /* don't queue StateHasChanged */
 };
 
 enum {
@@ -147,6 +161,7 @@ pk_engine_error_get_type (void)
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_INITIALIZE_FAILED, "InitializeFailed"),
 			ENUM_ENTRY (PK_ENGINE_ERROR_COMMIT_FAILED, "CommitFailed"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_PROVIDE, "InvalidProvide"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -514,7 +529,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 
 	/* we unref the update cache if it exists */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (engine->priv->updates_cache != NULL) {
 			pk_debug ("unreffing updates cache as we have just finished an update");
 			g_object_unref (engine->priv->updates_cache);
@@ -534,7 +549,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 
 	/* could the update list have changed? */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -592,7 +607,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* add to the database if we are going to log it */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		packages = pk_package_list_get_string (pk_runner_get_package_list (item->runner));
@@ -734,7 +749,7 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* add to database */
 		pk_transaction_db_add (engine->priv->transaction_db, item->tid);
 
@@ -850,6 +865,12 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 
 	pk_debug ("RefreshCache method called: %s, %i", tid, force);
 
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
+	}
+
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
 	if (item == NULL) {
@@ -915,6 +936,12 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetUpdates method called: %s", tid);
+
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
+	}
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -1547,6 +1574,73 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *filter,
 }
 
 /**
+ * pk_engine_what_provides:
+ **/
+void
+pk_engine_what_provides (PkEngine *engine, const gchar *tid, const gchar *filter, const gchar *type,
+			 const gchar *search, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+	PkProvidesEnum provides;
+	GError *error;
+
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("WhatProvides method called: %s, %s, %s", tid, type, search);
+
+	/* find pre-requested transaction id */
+	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
+	if (item == NULL) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "transaction_id '%s' not found", tid);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the filter */
+	ret = pk_engine_filter_check (filter, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	provides = pk_role_enum_from_text (type);
+	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_PROVIDE,
+				     "provide type '%s' not found", type);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* create a new runner object */
+	item->runner = pk_engine_runner_new (engine);
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
+
+	ret = pk_runner_what_provides (item->runner, filter, provides, search);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* try to commit this */
+	ret = pk_engine_item_commit (engine, item);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
+				     "Could not commit to a runner object");
+		pk_engine_item_delete (engine, item);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_engine_get_update_detail:
  **/
 void
@@ -2051,7 +2145,7 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
  **/
 void
 pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *location,
-			DBusGMethodInvocation *context)
+			gboolean enabled, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkTransactionItem *item;
@@ -2061,7 +2155,7 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("ServicePack method called: %s, %s", tid, location);
+	pk_debug ("ServicePack method called: %s, %s, %i", tid, location, enabled);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2087,7 +2181,7 @@ pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *locatio
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_service_pack (item->runner, location);
+	ret = pk_runner_service_pack (item->runner, location, enabled);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2178,20 +2272,21 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 }
 
 /**
- * pk_engine_update_package:
+ * pk_engine_update_packages:
  **/
 void
-pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *package_id, DBusGMethodInvocation *context)
+pk_engine_update_packages (PkEngine *engine, const gchar *tid, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
 	gchar *sender;
+	gchar *package_id_temp;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("UpdatePackage method called: %s, %s", tid, package_id);
+	pk_debug ("UpdatePackage method called: %s, %s", tid, package_ids[0]);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2202,27 +2297,20 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_id_temp);
+		g_free (package_id_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2235,7 +2323,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_update_package (item->runner, package_id);
+	ret = pk_runner_update_packages (item->runner, package_ids);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2685,6 +2773,33 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 }
 
 /**
+ * pk_engine_state_changed_cb:
+ *
+ * wait a little delay in case we get multiple requests or we need to setup state
+ **/
+static gboolean
+pk_engine_state_changed_cb (gpointer data)
+{
+	PkEngine *engine = PK_ENGINE (data);
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	if (engine->priv->updates_cache != NULL) {
+		pk_debug ("unreffing updates cache as state may have changed");
+		g_object_unref (engine->priv->updates_cache);
+		engine->priv->updates_cache = NULL;
+	}
+	pk_debug ("emitting updates-changed tid:%s", "unknown");
+	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+
+	/* reset, now valid */
+	engine->priv->signal_state_timeout = 0;
+
+	return FALSE;
+}
+
+/**
  * pk_engine_state_has_changed:
  *
  * This should be called when tools like pup, pirut and yum-cli
@@ -2696,13 +2811,17 @@ pk_engine_state_has_changed (PkEngine *engine, GError **error)
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	if (engine->priv->updates_cache != NULL) {
-		pk_debug ("unreffing updates cache as state may have changed");
-		g_object_unref (engine->priv->updates_cache);
-		engine->priv->updates_cache = NULL;
+	if (engine->priv->signal_state_timeout != 0) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "Already asked to refresh state less than %ims ago",
+			     PK_ENGINE_STATE_CHANGED_TIMEOUT);
+		return FALSE;
 	}
-	pk_debug ("emitting updates-changed tid:%s", "unknown");
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+
+	/* wait a little delay in case we get multiple requests */
+	engine->priv->signal_state_timeout = g_timeout_add (PK_ENGINE_STATE_CHANGED_TIMEOUT,
+							    pk_engine_state_changed_cb, engine);
+
 	return TRUE;
 }
 
@@ -3031,6 +3150,9 @@ pk_engine_init (PkEngine *engine)
 	/* we save a cache of the latest update lists sowe can do cached responses */
 	engine->priv->updates_cache = NULL;
 
+	/* we need to be able to clear this */
+	engine->priv->signal_state_timeout = 0;
+
 	/* we need an auth framework */
 	engine->priv->security = pk_security_new ();
 
@@ -3070,6 +3192,12 @@ pk_engine_finalize (GObject *object)
 	ret = pk_backend_unlock (engine->priv->backend);
 	if (!ret) {
 		pk_warning ("couldn't unlock the backend");
+	}
+
+	/* if we set an state changed notifier, clear */
+	if (engine->priv->signal_state_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_timeout);
+		engine->priv->signal_state_timeout = 0;
 	}
 
 	/* compulsory gobjects */

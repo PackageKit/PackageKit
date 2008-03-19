@@ -24,6 +24,7 @@
 #include <string.h>
 #include <pk-common.h>
 #include <pk-backend.h>
+#include <pk-package-ids.h>
 
 static guint progress_percentage;
 static gulong signal_timeout = 0;
@@ -405,7 +406,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 /**
  * backend_search_name_timeout:
  **/
-gboolean
+static gboolean
 backend_search_name_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
@@ -438,14 +439,21 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_update_package:
+ * backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	guint i;
+	guint len;
+
 	g_return_if_fail (backend != NULL);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, "The same thing");
-	pk_backend_updates_changed (backend);
+
+	len = pk_package_ids_size (package_ids);
+	for (i=0; i<len; i++) {
+		pk_debug ("package_ids[%i]=%s", i, package_ids[i]);
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[i], "The same thing");
+	}
 	pk_backend_finished (backend);
 }
 
@@ -466,6 +474,11 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
+	}
+	if (progress_percentage == 30) {
+		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
+				    "update3;2.19.1-4.fc8;i386;fedora",
+				    "The third update");
 	}
 	if (progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
@@ -510,6 +523,7 @@ static void
 backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_repo_detail (backend, "development",
 				"Fedora - Development", TRUE);
 	pk_backend_repo_detail (backend, "development-debuginfo",
@@ -532,6 +546,7 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	if (enabled == TRUE) {
 		pk_warning ("REPO ENABLE '%s'", rid);
 	} else {
@@ -547,6 +562,7 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
 }
@@ -555,10 +571,23 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * backend_service_pack:
  */
 static void
-backend_service_pack (PkBackend *backend, const gchar *location)
+backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
-	pk_warning ("service pack on %s device", location);
+	pk_warning ("service pack %i on %s device", enabled, location);
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+			    "update1;2.19.1-4.fc8;i386;fedora",
+			    "The first update");
 	pk_backend_finished (backend);
 }
 
@@ -586,11 +615,12 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-	backend_service_pack			/* service_pack */
+	backend_service_pack,			/* service_pack */
+	backend_what_provides			/* what_provides */
 );
 

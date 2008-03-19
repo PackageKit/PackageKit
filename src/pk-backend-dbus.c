@@ -79,6 +79,7 @@ struct PkBackendDbusPrivate
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
+static gpointer pk_backend_dbus_object = NULL;
 
 /**
  * pk_backend_dbus_repo_detail_cb:
@@ -290,6 +291,53 @@ pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
 }
 
 /**
+ * pk_backend_dbus_remove_callbacks:
+ **/
+static gboolean
+pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
+{
+	DBusGProxy *proxy;
+
+	/* get copy */
+	proxy = backend_dbus->priv->proxy;
+	if (proxy == NULL) {
+		return FALSE;
+	}
+
+	dbus_g_proxy_disconnect_signal (proxy, "RepoDetail",
+					G_CALLBACK (pk_backend_dbus_repo_detail_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "StatusChanged",
+					G_CALLBACK (pk_backend_dbus_status_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "PercentageChanged",
+					G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "SubPercentageChanged",
+					G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "NoPercentageChanged",
+					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Package",
+					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Description",
+					G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Files",
+					G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
+					G_CALLBACK (pk_backend_dbus_update_detail_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Finished",
+					G_CALLBACK (pk_backend_dbus_finished_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "AllowCancel",
+					G_CALLBACK (pk_backend_dbus_allow_cancel_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "ErrorCode",
+					G_CALLBACK (pk_backend_dbus_error_code_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "RequireRestart",
+					G_CALLBACK (pk_backend_dbus_require_restart_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Message",
+					G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
+					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
+	return TRUE;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
@@ -305,6 +353,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 
 	if (backend_dbus->priv->proxy != NULL) {
 		pk_warning ("need to unref old one -- is this logically allowed?");
+		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
 
@@ -1042,22 +1091,22 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 }
 
 /**
- * pk_backend_dbus_update_package:
+ * pk_backend_dbus_update_packages:
  **/
 gboolean
-pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1105,7 +1154,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
  * pk_backend_dbus_service_pack:
  **/
 gboolean
-pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location)
+pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location, gboolean enabled)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1118,6 +1167,44 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "ServicePack", &error,
 				 G_TYPE_STRING, location,
+				 G_TYPE_BOOLEAN, enabled,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_what_provides:
+ **/
+gboolean
+pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, const gchar *filter,
+			      PkProvidesEnum provides, const gchar *search)
+{
+	gboolean ret;
+	GError *error = NULL;
+	const gchar *provides_text;
+
+	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (search != NULL, FALSE);
+	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	provides_text = pk_provides_enum_to_text (provides);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "WhatProvides", &error,
+				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, provides_text,
+				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1148,6 +1235,7 @@ pk_backend_dbus_finalize (GObject *object)
 
 	/* we might not have actually set a name yet */
 	if (backend_dbus->priv->proxy != NULL) {
+		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
@@ -1246,9 +1334,13 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 PkBackendDbus *
 pk_backend_dbus_new (void)
 {
-	PkBackendDbus *backend_dbus;
-	backend_dbus = g_object_new (PK_TYPE_BACKEND_DBUS, NULL);
-	return PK_BACKEND_DBUS (backend_dbus);
+	if (pk_backend_dbus_object != NULL) {
+		g_object_ref (pk_backend_dbus_object);
+	} else {
+		pk_backend_dbus_object = g_object_new (PK_TYPE_BACKEND_DBUS, NULL);
+		g_object_add_weak_pointer (pk_backend_dbus_object, &pk_backend_dbus_object);
+	}
+	return PK_BACKEND_DBUS (pk_backend_dbus_object);
 }
 
 /***************************************************************************
@@ -1276,8 +1368,39 @@ pk_backend_dbus_test_package_cb (PkBackend *backend, PkInfoEnum info,
 				 const gchar *package_id, const gchar *summary,
 				 PkBackendDbus *backend_dbus)
 {
-	pk_debug ("package");
 	number_packages++;
+	pk_debug ("package count now %i", number_packages);
+}
+
+static gboolean
+pk_backend_dbus_test_cancel_cb (gpointer data)
+{
+	gboolean ret;
+	guint elapsed;
+	LibSelfTest *test = (LibSelfTest *) data;
+	PkBackendDbus *backend_dbus = PK_BACKEND_DBUS (libst_get_user_data (test));
+
+	/* save time */
+	libst_set_user_data (test, (gpointer) libst_elapsed (test));
+
+	/************************************************************/
+	libst_title (test, "cancel");
+	ret = pk_backend_dbus_cancel (backend_dbus);
+	elapsed = libst_elapsed (test);
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we didnt take too long");
+	if (elapsed < 1000) {
+		libst_success (test, "elapsed = %ims", elapsed);
+	} else {
+		libst_failed (test, "elapsed = %ims", elapsed);
+	}
+	return FALSE;
 }
 
 void
@@ -1299,9 +1422,6 @@ libst_backend_dbus (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
-
-	/* FUBAR */
-	goto out;
 
 	/* so we can spin until we finish */
 	g_signal_connect (backend_dbus->priv->backend, "finished",
@@ -1326,7 +1446,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we actually did something and didn't fork");
-	if (elapsed > 1) {
+	if (elapsed >= 1) {
 		libst_success (test, "elapsed = %ims", elapsed);
 	} else {
 		libst_failed (test, "elapsed = %ims", elapsed);
@@ -1356,12 +1476,81 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "test number of packages");
+	if (number_packages == 3) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+	}
+
+	/* reset number_packages */
+	pk_backend_reset (backend_dbus->priv->backend);
+	number_packages = 0;
+
+	/************************************************************/
+	libst_title (test, "search by name again");
+	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wait for finished */
+	libst_loopwait (test, 5000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "test number of packages again");
+	if (number_packages == 3) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong number of packages %i, expected 3", number_packages);
+	}
+
+	/* reset number_packages */
+	pk_backend_reset (backend_dbus->priv->backend);
+	number_packages = 0;
+
+	/************************************************************/
+	libst_title (test, "search by name");
+	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	if (ret == TRUE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* schedule a cancel */
+	libst_set_user_data (test, backend_dbus);
+	g_timeout_add (1500, pk_backend_dbus_test_cancel_cb, test);
+
+	/************************************************************/
+	libst_title (test, "wait for cancel");
+	/* wait for finished */
+	libst_loopwait (test, 5000);
+	libst_loopcheck (test);
+	libst_success (test, NULL);
+	elapsed = (guint) libst_get_user_data (test);
+
+	/************************************************************/
+	libst_title (test, "check we waited correct time");
+	if (elapsed < 1600 && elapsed > 1400) {
+		libst_success (test, "waited %ims", elapsed);
+	} else {
+		libst_failed (test, "waited %ims", elapsed);
+	}
+
+	/************************************************************/
+	libst_title (test, "test number of packages");
 	if (number_packages == 2) {
 		libst_success (test, NULL);
 	} else {
-		libst_failed (test, "wrong number of packages %i", number_packages);
+		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
-out:
+
+	/* needed to avoid an error */
+	ret = pk_backend_unlock (backend_dbus->priv->backend);
+
 	g_object_unref (backend_dbus);
 
 	libst_end (test);
