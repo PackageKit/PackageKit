@@ -27,6 +27,7 @@ import logging.handlers
 import os
 import signal
 import sys
+import threading
 import time
 import traceback
 import types
@@ -100,6 +101,30 @@ def forked(func):
         sys.exit(func(*args, **kwargs))
     return wrapper
 
+class PackageKitThread(threading.Thread):
+    '''
+    Threading class which can handle crashes. Inspired by
+    http://spyced.blogspot.com/2007/06/workaround-for-sysexcepthook-bug.html
+    '''
+    def run(self):
+        try:
+            threading.Thread.run(self)
+        except (KeyboardInterrupt, SystemExit):
+           raise
+        except:
+           sys.excepthook(*sys.exc_info())
+
+def threaded(func):
+    '''
+    Decorator to run a PackageKitBaseBackend method in a separate thread
+    '''
+    def wrapper(*args, **kwargs):
+        backend = args[0]
+        backend.last_action_time = time.time()
+        thread = PackageKitThread(target=func, args=args, kwargs=kwargs)
+        thread.start()
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 class PackageKitBaseBackend(dbus.service.Object):
 
@@ -128,6 +153,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     def __init__(self, bus_name, dbus_path):
         dbus.service.Object.__init__(self, bus_name, dbus_path)
+        sys.excepthook = self._excepthook
 
         self._allow_cancel = False
         self._child_pid = None
@@ -626,6 +652,27 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         return True
 
+    def _excepthook(self, exctype, excvalue, exctb):
+        '''
+        Handle a crash: try to submit the message to packagekitd and the logger.
+        afterwards shutdown the daemon.
+        '''
+        if (issubclass(exctype, KeyboardInterrupt) or
+            issubclass(exctype, SystemExit)):
+            return
+        tbtext = ''.join(traceback.format_exception(exctype, excvalue, exctb))
+        try:
+            self.ErrorCode(ERROR_INTERNAL_ERROR, tbtext)
+            self.Finished(EXIT_FAILED)
+        except:
+            pass
+        try:
+            pklog.critical(tbtext)
+        except:
+            pass
+        self.loop.quit()
+        sys.exit(1)
+
 class PackagekitProgress:
     '''
     Progress class there controls the total progress of a transaction
@@ -707,4 +754,3 @@ class PackagekitProgress:
         f = float(self.subpercent)/100.0
         incr = int(f*deltapct)
         self.percent = startpct + incr
-
