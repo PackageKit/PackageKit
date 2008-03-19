@@ -35,7 +35,7 @@ import dbus.mainloop.glib
 import gobject
 import xapian
 
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded
 from packagekit.enums import *
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -60,16 +60,6 @@ os.putenv("APT_LISTCHANGES_FRONTEND", "none")
 # Setup threading support
 gobject.threads_init()
 dbus.glib.threads_init()
-
-def threaded(func):
-    '''
-    Decorator to run a method in a separate thread
-    '''
-    def wrapper(*args, **kwargs):
-        thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-        thread.start()
-    wrapper.__name__ = func.__name__
-    return wrapper
 
 class PackageKitOpProgress(apt.progress.OpProgress):
     '''

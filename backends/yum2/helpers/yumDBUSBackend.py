@@ -27,7 +27,7 @@
 import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
-from packagekit.daemonBackend import forked
+from packagekit.daemonBackend import threaded
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
@@ -246,18 +246,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     rebootpkgs = ("kernel", "kernel-smp", "kernel-xen-hypervisor", "kernel-PAE",
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
-
-    def threaded(func):
-        '''
-        Decorator to run a method in a separate thread
-        '''
-        def wrapper(*args, **kwargs):
-            self = args[0]
-            self.last_action_time = time.time()
-            thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-            thread.start()
-        wrapper.__name__ = func.__name__
-        return wrapper
 
     def __init__(self, bus_name, dbus_path):
         signal.signal(signal.SIGQUIT, sigquit)
