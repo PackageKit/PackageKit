@@ -523,6 +523,7 @@ static void
 backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_repo_detail (backend, "development",
 				"Fedora - Development", TRUE);
 	pk_backend_repo_detail (backend, "development-debuginfo",
@@ -545,6 +546,7 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	if (enabled == TRUE) {
 		pk_warning ("REPO ENABLE '%s'", rid);
 	} else {
@@ -560,6 +562,7 @@ static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
 }
