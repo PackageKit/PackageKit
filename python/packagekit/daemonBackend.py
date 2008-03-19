@@ -222,19 +222,20 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     def NoPercentageUpdates(self):
+        pklog.info("NoPercentageUpdates ()")
         self.PercentageChanged(101)
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def PercentageChanged(self, percentage):
-        pklog.debug("PercentageChanged (%i)" % (percentage))
+        pklog.info("PercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='u')
     def SubPercentageChanged(self, percentage):
-        pklog.debug("SubPercentageChanged (%i)" % (percentage))
+        pklog.info("SubPercentageChanged (%i)" % (percentage))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -345,7 +346,6 @@ class PackageKitBaseBackend(dbus.service.Object):
             self.Finished(EXIT_FAILED)
             return
         self.doCancel()
-        return
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -353,7 +353,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-search-details functionality
         '''
-        pklog.info("SearchDetails()")
+        pklog.info("SearchDetails(%s, %s)" % (filters, key))
         self.doSearchDetails(filters,key)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -362,7 +362,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-search-group functionality
         '''
-        pklog.info("SearchGroup()")
+        pklog.info("SearchGroup(%s, %s)" % (filters, key))
         self.doSearchGroup(filters,key)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -371,7 +371,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-search-file functionality
         '''
-        pklog.info("SearchFile()")
+        pklog.info("SearchFile(%s, %s)" % (filters, key))
         self.doSearchFile(filters,key)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -380,7 +380,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of requires for a given package
         '''
-        pklog.info("GetRequires()")
+        pklog.info("GetRequires(%s, %s, %s)" % (filters, package, recursive))
         self.doGetRequires(filters,package,recursive)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -389,7 +389,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of packages for a given provide string
         '''
-        pklog.info("WhatProvides()")
+        pklog.info("WhatProvides(%s, %s, %s)" % (filters, provides_type, search))
         self.doWhatProvides(filters,provides_type,search)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -398,7 +398,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of depends for a given package
         '''
-        pklog.info("GetDepends()")
+        pklog.info("GetDepends(%s, %s, %s)" % (filters, package, recursive))
         self.doGetDepends(package,recursive)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -416,7 +416,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-refresh_cache functionality
         '''
-        pklog.info("RefreshCache()")
+        pklog.info("RefreshCache(%s)" % force)
         self.doRefreshCache( force)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -425,7 +425,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-resolve functionality
         '''
-        pklog.info("Resolve()")
+        pklog.info("Resolve(%s, %s)" % (filters, name))
         self.doResolve( filters, name)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -435,7 +435,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
-        pklog.info("InstallPackage()")
+        pklog.info("InstallPackage(%s)" % package)
         self.doInstallPackage( package)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -446,7 +446,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        pklog.info("InstallFile()")
+        pklog.info("InstallFile(%s)" % inst_file)
         self.doInstallFile( inst_file)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -457,7 +457,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        pklog.info("ServicePack()")
+        pklog.info("ServicePack(%s, %s)" % (location, enabled))
         self.doServicePack( location, enabled)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -466,12 +466,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-update-packages functionality
         '''
-        pklog.info("UpdatePackages()")
-        self.forkme()
-        if self._child_pid:
-            return
+        pklog.info("UpdatePackages(%s)" % ", ".join(packages))
         self.doUpdatePackages(packages)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sbb', out_signature='')
@@ -479,7 +475,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackage()")
+        pklog.info("RemovePackage(%s, %s, %s)" % (package, allowdep, autoremove))
         self.doRemovePackage(package, allowdep, autoremove)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -488,7 +484,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a detailed description for a given package
         '''
-        pklog.info("GetDescription()")
+        pklog.info("GetDescription(%s)" % package)
         self.doGetDescription( package)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -497,7 +493,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the get-files method
         '''
-        pklog.info("GetFiles()")
+        pklog.info("GetFiles(%s)" % package)
         self.doGetFiles( package)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -506,7 +502,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-get-updates functionality
         '''
-        pklog.info("GetUpdates()")
+        pklog.info("GetUpdates(%s)" % filters)
         self.doGetUpdates(filters)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -515,7 +511,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-repo-enable functionality
         '''
-        pklog.info("RepoEnable()")
+        pklog.info("RepoEnable(%s, %s)" % (repoid, enable))
         self.doRepoEnable( repoid, enable)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -526,7 +522,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("GetRepoList()")
         self.doGetRepoList()
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -534,9 +529,8 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
-        pklog.info("GetUpdateDetail()")
+        pklog.info("GetUpdateDetail(%s)" % package)
         self.doGetUpdateDetail(package)
-        self.loop.quit()
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -544,7 +538,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-repo-set-data functionality
         '''
-        pklog.info("RepoSetData()")
+        pklog.info("RepoSetData(%s, %s, %s)" % (repoid, parameter, value))
         self.doRepoSetData( repoid, parameter, value)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
@@ -555,7 +549,7 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("InstallPublicKey(%s)" % keyurl)
         self.doInstallPublicKey(keyurl)
-        self.loop.quit()
+
 
 #
 # Utility methods
