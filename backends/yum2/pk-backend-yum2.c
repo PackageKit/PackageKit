@@ -358,6 +358,17 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_dbus_repo_set_data (dbus, rid, parameter, value);
 }
 
+/**
+ * pk_backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (dbus != NULL);
+	pk_backend_dbus_what_provides (dbus, filter, provides, search);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM-DBUS",				/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
@@ -388,6 +399,6 @@ PK_BACKEND_OPTIONS (
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	NULL,					/* service_pack */
-	NULL					/* what_provides */
+	backend_what_provides			/* what_provides */
 );
 

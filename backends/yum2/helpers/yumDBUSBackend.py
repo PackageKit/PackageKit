@@ -1210,6 +1210,37 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    def doWhatProvides(self, filters, provides_type, search):
+        '''
+        Provide a list of packages that satisfy a given requirement.
+
+        The yum backend ignores the provides_type - the search string
+        should always be a standard rpm provides.
+        '''
+        self._check_init()
+        self._lock_yum()
+        self.AllowCancel(True)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_INFO)
+        
+        fltlist = filters.split(';')
+
+        if not FILTER_NOT_INSTALLED in fltlist:
+            results = self.yumbase.pkgSack.searchProvides(search)
+            for result in results:
+                if self._do_extra_filtering(result, fltlist):
+                    self._show_package(result,INFO_AVAILABLE)
+                
+        if not FILTER_INSTALLED in fltlist:
+            results = self.yumbase.rpmdb.searchProvides(search)
+            for result in results:
+                if self._do_extra_filtering(result, fltlist):
+                    self._show_package(result,INFO_INSTALLED)
+
+        self._unlock_yum()
+        self.Finished(EXIT_SUCCESS)
+
 #
 # Utility methods for Methods
 #
