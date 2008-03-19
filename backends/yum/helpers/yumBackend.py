@@ -1081,7 +1081,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-enable functionality
         '''
         self._check_init()
-        self.status(STATUS_SETUP)
+        self.status(STATUS_INFO)
         try:
             repo = self.yumbase.repos.getRepo(repoid)
             if enable == 'false':
