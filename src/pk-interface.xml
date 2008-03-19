@@ -103,10 +103,10 @@
       <arg type="s" name="tid" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
-    <method name="UpdatePackage">
+    <method name="UpdatePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
     <method name="InstallFile">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>

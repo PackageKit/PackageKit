@@ -461,16 +461,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doServicePack( location, enabled)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def UpdatePackage(self, package):
-        '''
-        Implement the {backend}-update functionality
-        '''
-        pklog.info("UpdatePackage()")
-        self.doUpdatePackage( package)
-        self.loop.quit()
-
-    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='as', out_signature='')
     def UpdatePackages(self, packages):
         '''

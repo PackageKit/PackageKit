@@ -204,9 +204,6 @@ gboolean	 pk_client_get_package			(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error);
-
-
-
 gboolean	 pk_client_get_updates			(PkClient	*client,
 							 const gchar	*filter,
 							 GError		**error);
@@ -265,6 +262,12 @@ gboolean	 pk_client_install_package		(PkClient	*client,
 							 GError		**error);
 gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
+							 GError		**error);
+gboolean	 pk_client_update_packages		(PkClient	*client,
+							 GError		**error,
+							 const gchar	*package_id, ...);
+gboolean	 pk_client_update_packages_strv		(PkClient	*client,
+							 gchar		**package_ids,
 							 GError		**error);
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*file,
