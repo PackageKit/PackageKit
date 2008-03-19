@@ -525,12 +525,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 static gboolean
 pk_backend_check_newlines (PkBackend *backend, const gchar *text)
 {
-	/* double space */
-	if (strstr (text, "  ") != NULL) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "backend error: text contains a double space");
-		return FALSE;
-	}
 	/* old paragraph seporator */
 	if (strstr (text, ";;") != NULL) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,

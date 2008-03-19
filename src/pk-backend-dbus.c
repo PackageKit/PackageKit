@@ -1091,22 +1091,22 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 }
 
 /**
- * pk_backend_dbus_update_package:
+ * pk_backend_dbus_update_packages:
  **/
 gboolean
-pk_backend_dbus_update_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (backend_dbus != NULL, FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "UpdatePackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1547,6 +1547,9 @@ libst_backend_dbus (LibSelfTest *test)
 	} else {
 		libst_failed (test, "wrong number of packages %i, expected 2", number_packages);
 	}
+
+	/* needed to avoid an error */
+	ret = pk_backend_unlock (backend_dbus->priv->backend);
 
 	g_object_unref (backend_dbus);
 

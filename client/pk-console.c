@@ -398,6 +398,33 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 }
 
 /**
+ * pk_console_get_number:
+ **/
+static guint
+pk_console_get_number (const gchar *question, guint maxnum)
+{
+	gint answer = 0;
+	gint retval;
+
+	/* pretty print */
+	g_print ("%s", question);
+
+	do {
+		/* get a number */
+		retval = scanf("%u", &answer);
+
+		/* positive */
+		if (retval == 1 && answer > 0 && answer <= maxnum) {
+			return answer;
+		}
+		g_print (_("Please enter a number from 1 to %i: "), maxnum);
+	} while (TRUE);
+
+	/* keep GCC happy */
+	return 0;
+}
+
+/**
  * pk_console_perhaps_resolve:
  **/
 static gchar *
@@ -429,11 +456,19 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
+		pk_client_reset (client_task, NULL);
 		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
 			return NULL;
 		}
+	}
+
+	/* get length of items found again (we might have has success) */
+	length = pk_client_package_buffer_get_size (client_task);
+	if (length == 0) {
+		pk_warning (_("Could not find a package match"));
+		return NULL;
 	}
 
 	/* only found one, great! */
@@ -443,14 +478,17 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* else list the options if multiple matches found */
-	if (length != 0) {
-		g_print (_("There are multiple matches\n"));
-		for (i=0; i<length; i++) {
-			item = pk_client_package_buffer_get_item (client_task, i);
-			g_print ("%i. %s\n", i+1, item->package_id);
-		}
+	g_print (_("There are multiple matches\n"));
+	for (i=0; i<length; i++) {
+		item = pk_client_package_buffer_get_item (client_task, i);
+		g_print ("%i. %s\n", i+1, item->package_id);
 	}
-	return NULL;
+
+	/* find out what package the user wants to use */
+	i = pk_console_get_number (_("Please enter the package number: "), length);
+	item = pk_client_package_buffer_get_item (client_task, i-1);
+	pk_debug ("package_id = %s", item->package_id);
+	return g_strdup (item->package_id);
 }
 
 /**
@@ -463,7 +501,7 @@ pk_console_install_package (PkClient *client, const gchar *package, GError **err
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to install\n"));
+		g_print (_("Could not find a package with that name to install, or package already installed\n"));
 		return FALSE;
 	}
 	ret = pk_client_install_package (client, package_id, error);
@@ -495,7 +533,6 @@ static gboolean
 pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 {
 	gchar answer = '\0';
-	gint retval;
 
 	/* pretty print */
 	g_print ("%s", question);
@@ -507,7 +544,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 	do {
 		/* get one char */
-		retval = scanf("%c", &answer);
+		answer = (gchar) getchar();
 
 		/* positive */
 		if (answer == 'y' || answer == 'Y') {

@@ -104,8 +104,8 @@ gboolean	 pk_backend_dbus_remove_package		(PkBackendDbus	*backend_dbus,
 							 gboolean	 autoremove);
 gboolean	 pk_backend_dbus_install_package	(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
-gboolean	 pk_backend_dbus_update_package		(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus	*backend_dbus,
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
 							 const gchar	*full_path);
 gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,

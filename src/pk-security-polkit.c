@@ -104,7 +104,7 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 	g_return_val_if_fail (security != NULL, NULL);
 	g_return_val_if_fail (PK_IS_SECURITY (security), NULL);
 
-	if (role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		policy = "org.freedesktop.packagekit.update-package";
 	} else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		policy = "org.freedesktop.packagekit.update-system";
@@ -331,7 +331,7 @@ libst_security (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "map valid role to action");
-	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGE);
+	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (pk_strequal (action, "org.freedesktop.packagekit.update-package") == TRUE) {
 		libst_success (test, NULL, error);
 	} else {
@@ -350,7 +350,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get the default backend");
 	error = NULL;
-	ret = pk_security_action_is_allowed (security, ":0", PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	ret = pk_security_action_is_allowed (security, ":0", PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (ret == FALSE) {
 		libst_success (test, "did not authenticate update-package, error '%s'", error);
 	} else {

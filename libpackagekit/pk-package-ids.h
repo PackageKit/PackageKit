@@ -26,6 +26,7 @@
 
 G_BEGIN_DECLS
 
+gchar		**pk_package_ids_from_array		(GPtrArray	*array);
 gchar		**pk_package_ids_from_va_list		(const gchar	*package_id_first,
 							 va_list	*args);
 gboolean	 pk_package_ids_check			(gchar		**package_ids)

@@ -112,6 +112,10 @@ typedef struct {
 	gint deps_behavior;
 } RemovePackageData;
 
+typedef struct {
+        gchar **packages;
+} UpdateData;
+
 /**
  * A map to keep track of the EventDirector objects for
  * each zypp backend that is created.
@@ -1552,6 +1556,89 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
         pk_backend_thread_create (thread, backend_get_files_thread, data);
 }
 
+static gboolean
+backend_update_packages_thread (PkBackendThread *thread, gpointer data) {
+
+        PkBackend *backend;
+
+        /*get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+        UpdateData *d = (UpdateData*) data;
+
+        for (guint i = 0; i < g_strv_length (d->packages); i++) {
+                zypp::sat::Solvable solvable = zypp_get_package_by_id (d->packages[i]);
+                zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
+
+                item.status ().setToBeInstalled (zypp::ResStatus::USER);
+        }
+        
+        zypp_perform_execution (backend, UPDATE, FALSE);
+
+        g_strfreev (d->packages);
+        g_free (d);
+	pk_backend_finished (backend);
+        
+        return TRUE;
+}
+
+/**
+  *backend_update_packages
+  */
+static void
+backend_update_packages(PkBackend *backend, gchar **package_ids)
+{
+        g_return_if_fail (backend != NULL);
+
+        UpdateData *data = g_new0(UpdateData, 1);
+        data->packages = g_strdupv (package_ids);
+
+        pk_backend_thread_create(thread, backend_update_packages_thread, data);
+
+}
+static gboolean
+backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
+
+        PkBackend *backend;
+
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	ResolveData *d = (ResolveData*) data;
+
+        zypp::Capability cap (d->name);
+        zypp::sat::WhatProvides prov (cap);
+
+        for(zypp::sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); it++) {
+                gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+
+                PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+                if( it->isSystem ())
+                        info = PK_INFO_ENUM_INSTALLED;
+
+                pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
+        }
+
+	g_free (d->filter);
+        g_free (d->name);
+        g_free (d);
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+/**
+  * backend_what_provides
+  */
+static void
+backend_what_provides(PkBackend *backend, const gchar *filter, PkProvidesEnum provide, const gchar *search)
+{
+        g_return_if_fail (backend != NULL);
+
+        ResolveData *data = g_new0(ResolveData, 1);
+        data->name = g_strdup(search);
+        data->filter = g_strdup(filter);
+        pk_backend_thread_create (thread, backend_what_provides_thread, data);
+}
+
 extern "C" PK_BACKEND_OPTIONS (
 	"Zypp",					/* description */
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>, Stefan Haas <shaas@suse.de>",	/* author */
@@ -1576,10 +1663,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	backend_search_group,    		/* search_group */
 	backend_search_name,			/* search_name */
-	NULL,					/* update_package */
+	backend_update_packages,                /* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	NULL,					/* repo_set_data */
-        NULL                                    /* service_pack */
+        NULL,                                   /* service_pack */
+        backend_what_provides                   /* what_provides */
 );

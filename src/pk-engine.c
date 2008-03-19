@@ -37,6 +37,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <pk-package-id.h>
+#include <pk-package-ids.h>
 #include <pk-package-list.h>
 
 #include <pk-debug.h>
@@ -528,7 +529,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 
 	/* we unref the update cache if it exists */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (engine->priv->updates_cache != NULL) {
 			pk_debug ("unreffing updates cache as we have just finished an update");
 			g_object_unref (engine->priv->updates_cache);
@@ -548,7 +549,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 
 	/* could the update list have changed? */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -606,7 +607,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* add to the database if we are going to log it */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE ||
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
 		packages = pk_package_list_get_string (pk_runner_get_package_list (item->runner));
@@ -748,7 +749,7 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	    role == PK_ROLE_ENUM_UPDATE_PACKAGE) {
+	    role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* add to database */
 		pk_transaction_db_add (engine->priv->transaction_db, item->tid);
 
@@ -2271,20 +2272,21 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 }
 
 /**
- * pk_engine_update_package:
+ * pk_engine_update_packages:
  **/
 void
-pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *package_id, DBusGMethodInvocation *context)
+pk_engine_update_packages (PkEngine *engine, const gchar *tid, gchar **package_ids, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	PkTransactionItem *item;
 	GError *error;
 	gchar *sender;
+	gchar *package_id_temp;
 
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	pk_debug ("UpdatePackage method called: %s, %s", tid, package_id);
+	pk_debug ("UpdatePackage method called: %s, %s", tid, package_ids[0]);
 
 	/* find pre-requested transaction id */
 	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
@@ -2295,27 +2297,20 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
 	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_id_temp);
+		g_free (package_id_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGE, &error);
+	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2328,7 +2323,7 @@ pk_engine_update_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	/* set the dbus name, so we can get the disconnect */
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
-	ret = pk_runner_update_package (item->runner, package_id);
+	ret = pk_runner_update_packages (item->runner, package_ids);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
