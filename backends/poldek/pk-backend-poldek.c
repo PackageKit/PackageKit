@@ -959,24 +959,10 @@ poldek_backend_log (void *data, int pri, char *message)
 	}
 }
 
-/**
- * backend_initalize:
- */
 static void
-backend_initalize (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-
-	thread = pk_backend_thread_new ();
-
-	/* reference count for the global variables */
-	if (ref++ > 1)
-		return;
-
-	network = pk_network_new ();
-
+do_poldek_init (void) {
 	poldeklib_init ();
-
+	
 	ctx = poldek_new (0);
 	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
 
@@ -1000,6 +986,39 @@ backend_initalize (PkBackend *backend)
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
 }
+
+static void
+do_poldek_destroy (void) {
+	poclidek_free (cctx);
+	poldek_free (ctx);
+
+	poldeklib_destroy ();
+}
+
+static void
+poldek_reload (void) {
+	do_poldek_destroy ();
+	do_poldek_init ();
+}
+
+/**
+ * backend_initalize:
+ */
+static void
+backend_initalize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	thread = pk_backend_thread_new ();
+
+	/* reference count for the global variables */
+	if (ref++ > 1)
+		return;
+
+	network = pk_network_new ();
+
+	do_poldek_init ();
+}
 /**
  * backend_destroy:
  */
@@ -1012,11 +1031,8 @@ backend_destroy (PkBackend *backend)
 
 	if (ref-- > 0)
 		return;
-
-	poclidek_free (cctx);
-	poldek_free (ctx);
-
-	poldeklib_destroy ();
+	
+	do_poldek_destroy ();
 }
 
 /**
@@ -1447,7 +1463,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_set_percentage (backend, 1);
 
 	sources = poldek_get_sources (ctx);
 
@@ -1479,13 +1495,9 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 		n_array_free (sources);
 	}
 
-	/* FIXME: ugly reload */
-	poclidek_free (cctx);
-	poldek_free (ctx);
-	ctx = poldek_new (0);
-	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
-	poldek_setup (ctx);
-	cctx = poclidek_new (ctx);
+	poldek_reload ();
+
+	pk_backend_set_percentage (backend, 100);
 
 	pk_backend_finished (backend);
 
@@ -1499,8 +1511,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	if (pk_network_is_online (network) == FALSE)
-	{
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
 		pk_backend_finished (backend);
 		return;
