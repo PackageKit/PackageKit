@@ -223,7 +223,7 @@ pk_client_error_print (GError **error)
 		} else {
 			name = g_quark_to_string ((*error)->domain);
 		}
-		pk_warning ("ERROR: %s: %s", name, (*error)->message);
+		pk_debug ("ERROR: %s: %s", name, (*error)->message);
 		return TRUE;
 	}
 	return FALSE;
@@ -244,7 +244,6 @@ pk_client_error_fixup (GError **error)
 			pk_debug ("fixing up code from %i", (*error)->code);
 			(*error)->code = PK_CLIENT_ERROR_FAILED;
 		}
-		pk_client_error_print (error);
 		return TRUE;
 	}
 	return FALSE;
