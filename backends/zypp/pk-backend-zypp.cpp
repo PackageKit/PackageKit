@@ -116,6 +116,12 @@ typedef struct {
         gchar **packages;
 } UpdateData;
 
+typedef struct {
+        gchar *repo_id;
+        gchar *parameter;
+        gchar *value;
+} RepoData;
+
 /**
  * A map to keep track of the EventDirector objects for
  * each zypp backend that is created.
@@ -1595,6 +1601,104 @@ backend_update_packages(PkBackend *backend, gchar **package_ids)
         pk_backend_thread_create(thread, backend_update_packages_thread, data);
 
 }
+
+static gboolean
+backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
+
+        PkBackend *backend;
+
+        /* get current backend */
+        backend = pk_backend_thread_get_backend (thread);
+	RepoData *d = (RepoData*) data;
+
+        zypp::RepoManager manager;
+	zypp::RepoInfo repo;
+
+        gboolean bReturn = TRUE;
+
+        try {
+                pk_backend_set_status(backend, PK_STATUS_ENUM_SETUP);
+                // add a new repo
+                if (g_ascii_strcasecmp (d->parameter, "add") == 0) {
+                        repo.setAlias (d->repo_id);
+                        repo.setBaseUrl (zypp::Url(d->value));
+                        repo.setAutorefresh (TRUE);
+                        repo.setEnabled (TRUE);
+
+                        manager.addRepository (repo);
+
+                // remove a repo
+                }else if (g_ascii_strcasecmp (d->parameter, "remove") == 0) {
+                        repo = manager.getRepositoryInfo (d->repo_id);
+                        manager.removeRepository (repo);
+                // set autorefresh of a repo true/false
+                }else if (g_ascii_strcasecmp (d->parameter, "refresh") == 0) {
+                        repo = manager.getRepositoryInfo (d->repo_id);
+
+                        if (g_ascii_strcasecmp (d->value, "true") == 0) {
+                                repo.setAutorefresh (TRUE);
+                        }else if (g_ascii_strcasecmp (d->value, "false") == 0) {
+                                repo.setAutorefresh (FALSE);
+                        }else{
+                                pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Autorefresh a repo: Enter true or false");
+                                bReturn = FALSE;
+                        }
+
+                        manager.modifyRepository (d->repo_id, repo);
+                }else{
+                        pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Valid parameters for set_repo_data are remove/add/refresh");
+                        bReturn = FALSE;
+                }
+
+        } catch (const zypp::repo::RepoNotFoundException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
+                bReturn = FALSE;
+        } catch (const zypp::repo::RepoAlreadyExistsException &ex) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "This repo already exists");
+                bReturn = FALSE;
+        } catch (const zypp::repo::RepoUnknownTypeException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Type of the repo can't be determined"); 
+                bReturn = FALSE;
+        } catch (const zypp::repo::RepoException &ex) {
+                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't access the given URL");
+                bReturn = FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asString ().c_str ());
+                g_free (d->repo_id);
+                g_free (d->parameter);
+                g_free (d->value);
+                g_free (d);
+                pk_backend_finished (backend);
+
+                return FALSE;
+	}
+
+        g_free (d->repo_id);
+        g_free (d->parameter);
+        g_free (d->value);
+        g_free (d);
+	pk_backend_finished (backend);
+
+        return bReturn;
+}
+
+/**
+  * backend_repo_set_data
+  */
+static void
+backend_repo_set_data(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
+{
+        g_return_if_fail (backend != NULL);
+
+        RepoData *data = g_new0(RepoData, 1);
+        data->repo_id = g_strdup (repo_id);
+        data->parameter = g_strdup (parameter);
+        data->value = g_strdup (value);
+
+        pk_backend_thread_create(thread, backend_repo_set_data_thread, data);
+
+}
+
 static gboolean
 backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
 
@@ -1667,7 +1771,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
-	NULL,					/* repo_set_data */
+	backend_repo_set_data,			/* repo_set_data */
         NULL,                                   /* service_pack */
         backend_what_provides                   /* what_provides */
 );
