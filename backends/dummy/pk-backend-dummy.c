@@ -29,6 +29,7 @@
 /* static bodges */
 static guint _progress_percentage = 0;
 static gulong _signal_timeout = 0;
+static const gchar *_package_id;
 static gchar **_package_ids;
 static guint _package_current = 0;
 
@@ -177,22 +178,20 @@ backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *pack
 }
 
 /**
- * backend_get_update_detail:
- */
-static void
-backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+ * backend_get_update_detail_timeout:
+ **/
+static gboolean
+backend_get_update_detail_timeout (gpointer data)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
+	PkBackend *backend = (PkBackend *) data;
 	/* each one has a different detail for testing */
-	if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
+	if (pk_strequal (_package_id, "powertop;1.8-1.fc8;i386;fedora")) {
 		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
 					  "powertop;1.7-1.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 					  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
-	} else if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
+	} else if (pk_strequal (_package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
 					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
@@ -200,7 +199,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
 					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
-	} else if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+	} else if (pk_strequal (_package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
 		pk_backend_update_detail (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 					  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
@@ -208,35 +207,32 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 					  NULL,
 					  PK_RESTART_ENUM_SESSION, "Update to latest whizz bang version");
 	} else {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", package_id);
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", _package_id);
 	}
 	pk_backend_finished (backend);
+	_signal_timeout = 0;
+	return FALSE;
 }
 
 /**
- * backend_get_updates:
+ * backend_get_update_detail:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
-	guint number;
-	GRand *rand;
-
 	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	_package_id = package_id;
+	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
+}
 
-	rand = g_rand_new ();
-	number = g_rand_int_range (rand, 1, 5);
-	g_rand_free (rand);
-
-	/* only find updates one in 5 times */
-//	if (number != 1) {
-//		pk_backend_finished (backend);
-//		return;
-//	}
-
-	pk_backend_no_percentage_updates (backend);
+/**
+ * backend_get_updates_timeout:
+ **/
+static gboolean
+backend_get_updates_timeout (gpointer data)
+{
+	PkBackend *backend = (PkBackend *) data;
 	pk_backend_package (backend, PK_INFO_ENUM_NORMAL,
 			    "powertop;1.8-1.fc8;i386;fedora",
 			    "Power consumption monitor");
@@ -247,6 +243,21 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
 	pk_backend_finished (backend);
+	_signal_timeout = 0;
+	return FALSE;
+}
+
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, const gchar *filter)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_no_percentage_updates (backend);
+	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
 }
 
 static gboolean

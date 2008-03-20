@@ -423,6 +423,22 @@ pkg_cmp_name_evr_rev_recno (const struct pkg *p1, const struct pkg *p2) {
 	return rc;
 }
 
+#define	PKG_INSTALLED (1 << 30)
+
+#define poldek_pkg_is_installed(pkg) ((pkg)->flags & PKG_INSTALLED)
+
+/**
+ * poldek_pkg_set_installed:
+ */
+static void
+poldek_pkg_set_installed (struct pkg *pkg, gboolean installed) {
+	if (installed) {
+		pkg->flags |= PKG_INSTALLED;
+	} else {
+		pkg->flags &= (~PKG_INSTALLED);
+	}
+}
+
 /**
  * poldek_pkg_evr:
  */
@@ -675,7 +691,7 @@ poldek_backend_package (const struct pkg *pkg, gint status)
 
 	evr = poldek_pkg_evr (pkg);
 
-	if (pkg->recno == 0)
+	if (!(poldek_pkg_is_installed(pkg)))
 	{
 		if (status == PK_INFO_ENUM_UNKNOWN)
 			status = PK_INFO_ENUM_AVAILABLE;
@@ -819,8 +835,18 @@ search_package (PkBackendThread *thread, gpointer data)
 		if (d->filter->installed)
 		{
 			command = g_strdup_printf ("cd /installed; %s *%s*", search_inst, d->search);
-			if (poclidek_rcmd_execline (cmd, command))
+			if (poclidek_rcmd_execline (cmd, command)) {
+				gint	i;
+
 				installed = poclidek_rcmd_get_packages (cmd);
+
+				/* mark packages as installed */
+				for (i = 0; i < n_array_size (installed); i++) {
+					struct pkg	*pkg = n_array_nth (installed, i);
+					
+					poldek_pkg_set_installed (pkg, TRUE);
+				}
+			}
 
 			g_free (command);
 		}
@@ -833,18 +859,47 @@ search_package (PkBackendThread *thread, gpointer data)
 			g_free (command);
 		}
 
-		if (d->filter->installed && d->filter->not_installed && installed && available)
-		{
-			pkgs = n_array_concat_ex (installed, available, (tn_fn_dup)pkg_link);
+		if (d->filter->installed && d->filter->not_installed && installed && available) {
+			gint	i;
 
+			pkgs = installed;
+
+			for (i = 0; i < n_array_size (available); i++) {
+				struct pkg	*pkg = n_array_nth (available, i);
+				gint		j;
+				gboolean	found = FALSE;
+				
+				/* check for duplicates */
+				for (j = 0; j < n_array_size (pkgs); j++) {
+					struct pkg	*p = n_array_nth (pkgs, j);
+					
+					if (pkg_cmp_name_evr (p, pkg) == 0) {
+						found = TRUE;
+						break;
+					}
+				}
+				
+				if (!found) {	// duplicates not found
+					/* mark package as NOT installed */
+					poldek_pkg_set_installed (pkg, FALSE);
+
+					n_array_push (pkgs, pkg_link (pkg));
+				}
+			}
+			
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
-
-			n_array_free (installed);
 			n_array_free (available);
-		}
-		else if (!d->filter->installed || available)
+		} else if (!d->filter->installed || available) {
+			gint	i;
+
 			pkgs = available;
-		else if (!d->filter->not_installed || installed)
+
+			for (i = 0; i < n_array_size (pkgs); i++) {
+				struct pkg	*pkg = n_array_nth (pkgs, i);
+				
+				poldek_pkg_set_installed (pkg, FALSE);
+			}
+		} else if (!d->filter->not_installed || installed)
 			pkgs = installed;
 
 		if (pkgs)
@@ -1621,10 +1676,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_update_package:
+ * backend_update_packages:
  */
 static gboolean
-backend_update_package_thread (PkBackendThread *thread, gpointer data)
+backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 {
 	InstallData		*id = (InstallData *)data;
 	PkBackend		*backend;
@@ -1694,7 +1749,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	data->package_id = g_strdup (package_ids[0]);
 	data->pd = g_new0 (PercentageData, 1);
 	data->pd->mode = PROGRESS_ENUM_INSTALL;
-	pk_backend_thread_create (thread, backend_update_package_thread, data);
+	pk_backend_thread_create (thread, backend_update_packages_thread, data);
 }
 
 /**
@@ -1754,7 +1809,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,				/* search_file */
 	backend_search_group,				/* search_group */
 	backend_search_name,				/* search_name */
-	backend_update_package,				/* update_package */
+	backend_update_packages,			/* update_packages */
 	NULL,						/* update_system */
 	backend_get_repo_list,				/* get_repo_list */
 	NULL,						/* repo_enable */
