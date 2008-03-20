@@ -82,9 +82,9 @@ opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 	backend = pk_backend_thread_get_backend (thread);
 
 	if (level == OPKG_NOTICE)
-		pk_warning (msg);
+		pk_debug (msg);
 	if (level == OPKG_ERROR)
-		pk_error (msg);
+		pk_warning (msg);
 
 	/* print messages only if in verbose mode */
 	if (level < OPKG_NOTICE && pk_debug_enabled ())
