@@ -27,7 +27,7 @@
 import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
-from packagekit.daemonBackend import threaded
+from packagekit.daemonBackend import threaded, async
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
@@ -254,7 +254,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.locked = False
         self._canceled = threading.Event()
         self._canceled.clear()
-        self._locked = threading.Lock()
+        self._lock = threading.Lock()
 
         PackageKitBaseBackend.__init__(self,
                                        bus_name,
@@ -369,6 +369,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 #        self.Finished(EXIT_FAILED)
 
     @threaded
+    @async
     def doSearchName(self, filters, search):
         '''
         Implement the {backend}-search-name functionality
@@ -391,6 +392,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doSearchDetails(self,filters,key):
         '''
         Implement the {backend}-search-details functionality
@@ -413,6 +415,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doSearchGroup(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
@@ -463,6 +466,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doSearchFile(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
@@ -505,6 +509,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetRequires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
@@ -538,6 +543,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetDepends(self,package,recursive):
         '''
         Print a list of depends for a given package
@@ -585,6 +591,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -627,6 +634,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
@@ -683,6 +691,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doResolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
@@ -724,6 +733,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doInstallPackage(self, package):
         '''
         Implement the {backend}-install functionality
@@ -763,6 +773,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doInstallFile (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -794,6 +805,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doUpdatePackages(self, packages):
         '''
         Implement the {backend}-update functionality
@@ -838,6 +850,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doRemovePackage(self, package, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
@@ -875,6 +888,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         return
 
     @threaded
+    @async
     def doGetDescription(self, package):
         '''
         Print a detailed description for a given package
@@ -898,6 +912,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetFiles(self, package):
         self._check_init()
         self._lock_yum()
@@ -923,6 +938,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
@@ -960,6 +976,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetPackages(self,filters,showdesc='no'):
         '''
         Search for yum packages
@@ -1008,6 +1025,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doRepoEnable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
@@ -1034,6 +1052,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetRepoList(self):
         '''
         Implement the {backend}-get-repo-list functionality
@@ -1050,6 +1069,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doGetUpdateDetail(self,package):
         '''
         Implement the {backend}-get-update_detail functionality
@@ -1080,6 +1100,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doRepoSetData(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
@@ -1109,6 +1130,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doInstallPublicKey(self, keyurl):
         '''
         Implement the {backend}-install-public-key functionality
@@ -1167,6 +1189,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
+    @async
     def doWhatProvides(self, filters, provides_type, search):
         '''
         Provide a list of packages that satisfy a given requirement.

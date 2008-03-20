@@ -126,6 +126,18 @@ def threaded(func):
     wrapper.__name__ = func.__name__
     return wrapper
 
+def async(func):
+    '''
+    Decorator which makes sure no other threads are running before executing function.
+    '''
+    def wrapper(*args, **kwargs):
+        backend = args[0]
+        backend._lock.acquire()
+        func(*args, **kwargs)
+        backend._lock.release()
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 class PackageKitBaseBackend(dbus.service.Object):
 
     def PKSignalHouseKeeper(func):
