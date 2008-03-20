@@ -82,12 +82,12 @@ opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 	backend = pk_backend_thread_get_backend (thread);
 
 	if (level == OPKG_NOTICE)
-		pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, msg);
+		pk_warning (msg);
 	if (level == OPKG_ERROR)
-		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, msg);
+		pk_error (msg);
 
 	/* print messages only if in verbose mode */
-	if (level <= OPKG_NOTICE && pk_debug_enabled ())
+	if (level < OPKG_NOTICE && pk_debug_enabled ())
 		printf ("OPKG: %s", msg);
 
 	/* free the last error message and store the new one */
