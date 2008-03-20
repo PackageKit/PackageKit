@@ -26,8 +26,11 @@
 #include <pk-backend.h>
 #include <pk-package-ids.h>
 
-static guint progress_percentage;
-static gulong signal_timeout = 0;
+/* static bodges */
+static guint _progress_percentage = 0;
+static gulong _signal_timeout = 0;
+static gchar **_package_ids;
+static guint _package_current = 0;
 
 /**
  * backend_initialize:
@@ -36,7 +39,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
-	progress_percentage = 0;
+	_progress_percentage = 0;
 }
 
 /**
@@ -85,7 +88,7 @@ backend_cancel_timeout (gpointer data)
 	PkBackend *backend = (PkBackend *) data;
 
 	/* we can now cancel again */
-	signal_timeout = 0;
+	_signal_timeout = 0;
 
 	/* now mark as finished */
 	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
@@ -102,8 +105,8 @@ backend_cancel (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	/* cancel the timeout */
-	if (signal_timeout != 0) {
-		g_source_remove (signal_timeout);
+	if (_signal_timeout != 0) {
+		g_source_remove (_signal_timeout);
 
 		/* emulate that it takes us a few ms to cancel */
 		pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
@@ -250,24 +253,24 @@ static gboolean
 backend_install_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (progress_percentage == 100) {
+	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (progress_percentage == 30) {
+	if (_progress_percentage == 30) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
-	if (progress_percentage == 50) {
+	if (_progress_percentage == 50) {
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
-	progress_percentage += 10;
-	pk_backend_set_percentage (backend, progress_percentage);
+	_progress_percentage += 10;
+	pk_backend_set_percentage (backend, _progress_percentage);
 	return TRUE;
 }
 
@@ -289,11 +292,11 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	}
 
-	progress_percentage = 0;
+	_progress_percentage = 0;
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
-	signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
+	_signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
 }
 
 /**
@@ -313,12 +316,12 @@ static gboolean
 backend_refresh_cache_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (progress_percentage == 100) {
+	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	progress_percentage += 10;
-	pk_backend_set_percentage (backend, progress_percentage);
+	_progress_percentage += 10;
+	pk_backend_set_percentage (backend, _progress_percentage);
 	return TRUE;
 }
 
@@ -329,9 +332,9 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	g_return_if_fail (backend != NULL);
-	progress_percentage = 0;
+	_progress_percentage = 0;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
+	_signal_timeout = g_timeout_add (500, backend_refresh_cache_timeout, backend);
 }
 
 /**
@@ -446,7 +449,54 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
+	_signal_timeout = g_timeout_add (2000, backend_search_name_timeout, backend);
+}
+
+/**
+ * backend_update_packages_update_timeout:
+ **/
+static gboolean
+backend_update_packages_update_timeout (gpointer data)
+{
+	guint len;
+	PkBackend *backend = (PkBackend *) data;
+
+	/* emit the next package */
+	pk_backend_package (backend, PK_INFO_ENUM_UPDATING, _package_ids[_package_current], "The same thing");
+
+	/* are we done? */
+	_package_current++;
+	len = pk_package_ids_size (_package_ids);
+	if (_package_current + 1 > len) {
+		pk_backend_finished (backend);
+		_signal_timeout = 0;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * backend_update_packages_download_timeout:
+ **/
+static gboolean
+backend_update_packages_download_timeout (gpointer data)
+{
+	guint len;
+	PkBackend *backend = (PkBackend *) data;
+
+	/* emit the next package */
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, _package_ids[_package_current], "The same thing");
+
+	/* are we done? */
+	_package_current++;
+	len = pk_package_ids_size (_package_ids);
+	if (_package_current + 1 > len) {
+		_package_current = 0;
+		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 /**
@@ -455,61 +505,55 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	guint i;
-	guint len;
-
 	g_return_if_fail (backend != NULL);
-
-	len = pk_package_ids_size (package_ids);
-	for (i=0; i<len; i++) {
-		pk_debug ("package_ids[%i]=%s", i, package_ids[i]);
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[i], "The same thing");
-	}
-	pk_backend_finished (backend);
+	_package_ids = package_ids;
+	_package_current = 0;
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+	_signal_timeout = g_timeout_add (2000, backend_update_packages_download_timeout, backend);
 }
 
 static gboolean
 backend_update_system_timeout (gpointer data)
 {
 	PkBackend *backend = (PkBackend *) data;
-	if (progress_percentage == 100) {
+	if (_progress_percentage == 100) {
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (progress_percentage == 0) {
+	if (_progress_percentage == 0) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
 	}
-	if (progress_percentage == 20) {
+	if (_progress_percentage == 20) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
-	if (progress_percentage == 30) {
+	if (_progress_percentage == 30) {
 		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 				    "update3;2.19.1-4.fc8;i386;fedora",
 				    "The third update");
 	}
-	if (progress_percentage == 40) {
+	if (_progress_percentage == 40) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update");
 	}
-	if (progress_percentage == 60) {
+	if (_progress_percentage == 60) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "update2;2.19.1-4.fc8;i386;fedora",
 				    "The second update");
 	}
-	if (progress_percentage == 80) {
+	if (_progress_percentage == 80) {
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "update1;2.19.1-4.fc8;i386;fedora",
 				    "The first update (old version)");
 	}
-	progress_percentage += 10;
-	pk_backend_set_percentage (backend, progress_percentage);
+	_progress_percentage += 10;
+	pk_backend_set_percentage (backend, _progress_percentage);
 	return TRUE;
 }
 
@@ -522,9 +566,9 @@ backend_update_system (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
-	progress_percentage = 0;
+	_progress_percentage = 0;
 	pk_backend_require_restart (backend, PK_RESTART_ENUM_SYSTEM, NULL);
-	signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
+	_signal_timeout = g_timeout_add (1000, backend_update_system_timeout, backend);
 }
 
 /**
