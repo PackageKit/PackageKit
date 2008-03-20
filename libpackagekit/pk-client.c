@@ -506,8 +506,22 @@ pk_client_reset (PkClient *client, GError **error)
 	if (client->priv->is_finished != TRUE) {
 		pk_debug ("not exit status, reset might be invalid");
 	}
+
 	g_free (client->priv->tid);
+	g_free (client->priv->cached_package_id);
+	g_free (client->priv->cached_transaction_id);
+	g_free (client->priv->cached_full_path);
+	g_free (client->priv->cached_filter);
+	g_free (client->priv->cached_search);
+	g_strfreev (client->priv->cached_package_ids);
+
 	client->priv->tid = NULL;
+	client->priv->cached_package_id = NULL;
+	client->priv->cached_transaction_id = NULL;
+	client->priv->cached_full_path = NULL;
+	client->priv->cached_filter = NULL;
+	client->priv->cached_search = NULL;
+	client->priv->cached_search = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->synchronous = FALSE;
 	client->priv->name_filter = FALSE;
@@ -3699,8 +3713,6 @@ libst_client (LibSelfTest *test)
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (libst_client_finished_cb), NULL);
-
-pk_client_update_packages (client, NULL, "foo;0.0.1;i386;data", "bar;0.1.1;noarch;fedora", "baz;0.0.1;i386;livna", NULL);
 
 	/************************************************************/
 	libst_title (test, "do any method");
