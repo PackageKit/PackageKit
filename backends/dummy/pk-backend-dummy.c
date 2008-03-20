@@ -181,13 +181,15 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora") == TRUE) {
+
+	/* each one has a different detail for testing */
+	if (pk_strequal (package_id, "powertop;1.8-1.fc8;i386;fedora")) {
 		pk_backend_update_detail (backend, "powertop;1.8-1.fc8;i386;available",
 					  "powertop;1.7-1.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for powertop",
 					  "http://bgzilla.fd.org/result.php?#12344;Freedesktop Bugzilla #12344",
 					  "", PK_RESTART_ENUM_NONE, "Update to newest upstream source");
-	} else {
+	} else if (pk_strequal (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed")) {
 		pk_backend_update_detail (backend, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;available",
 					  "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed", "",
 					  "http://www.distro-update.org/page?moo;Bugfix release for kernel",
@@ -195,6 +197,15 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 					  "http://nvd.nist.gov/nvd.cfm?cvename=CVE-2007-3381;CVE-2007-3381",
 					  PK_RESTART_ENUM_SYSTEM, "Update to newest version");
+	} else if (pk_strequal (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora")) {
+		pk_backend_update_detail (backend, "gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					  "gtkhtml2;2.18.1-22.fc8;i386;installed", "",
+					  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
+					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
+					  NULL,
+					  PK_RESTART_ENUM_SESSION, "Update to latest whizz bang version");
+	} else {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", package_id);
 	}
 	pk_backend_finished (backend);
 }
