@@ -311,7 +311,7 @@ backend_install_file_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	result = box_package_install_file(d->package_id, ROOT_DIRECTORY, common_progress, backend);
+	result = box_package_install(d->package_id, ROOT_DIRECTORY, common_progress, backend, FALSE);
 
 	g_free (d->package_id);
 	g_free (d);
