@@ -43,6 +43,7 @@ static long do_get_bytes_to_download (const struct poldek_ts *ts, const gchar *m
 
 enum {
 	PROGRESS_ENUM_INSTALL,
+	PROGRESS_ENUM_UPDATE,
 	PROGRESS_ENUM_REFRESH_CACHE
 };
 
@@ -90,7 +91,12 @@ typedef struct {
 /* used by install / update */
 typedef struct {
 	PercentageData	*pd;
+
+	/* required by InstallPackage */
 	gchar		*package_id;
+
+	/* required by UpdatePackages */
+	gchar		**package_ids;
 } InstallData;
 
 typedef struct {
@@ -167,7 +173,7 @@ poldek_vf_progress_new (void *data, const gchar *label)
 {
 	PercentageData	*bar = (PercentageData*) data;
 
-	if (bar->mode == PROGRESS_ENUM_INSTALL) {
+	if (bar->mode == PROGRESS_ENUM_INSTALL || bar->mode == PROGRESS_ENUM_UPDATE) {
 		gchar		*filename = g_path_get_basename (label), *pkgname, *command;
 		struct poclidek_rcmd *rcmd;
 		tn_array	*pkgs = NULL;
@@ -218,9 +224,16 @@ poldek_vf_progress (void *bar, long total, long amount)
 			pd->bytesget += total;
 			pd->subpercentage = 100;
 		}
-		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 	}
-	pk_backend_set_percentage (backend, pd->percentage);
+
+	if (pd->mode != PROGRESS_ENUM_UPDATE)
+		pk_backend_set_percentage (backend, pd->percentage);
+
+	if (pd->mode == PROGRESS_ENUM_INSTALL)
+		pk_backend_set_sub_percentage (backend, pd->subpercentage);
+	else if (pd->mode == PROGRESS_ENUM_UPDATE)
+		/* UpdatePackages uses pd->percentage as sub_percentage */
+		pk_backend_set_sub_percentage (backend, pd->percentage);
 }
 
 static void
@@ -252,6 +265,8 @@ ts_confirm (void *data, struct poldek_ts *ts)
 			upkgs = n_array_new (2, NULL, NULL);
 
 			tsd->idata->pd->step = 0;
+
+			tsd->idata->pd->bytesget = 0;
 			tsd->idata->pd->bytesdownload = poldek_get_bytes_to_download (ts);
 
 			if (rpkgs) {
@@ -1438,6 +1453,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
+	data->package_ids = NULL;
 	data->package_id = g_strdup (package_id);
 	data->pd = g_new0 (PercentageData, 1);
 	pk_backend_thread_create (thread, backend_install_package_thread, data);
@@ -1682,9 +1698,9 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	PkBackend		*backend;
 	struct poldek_ts	*ts;
 	struct poclidek_rcmd	*rcmd;
-	gchar			*command, *nvra;
 	struct vf_progress	vf_progress;
 	TsConfirmData		*tcd = g_new0 (TsConfirmData, 1);
+	guint			i;
 
 	tcd->idata = id;
 
@@ -1697,25 +1713,46 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	/* setup callbacks */
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, tcd);
 
-	ts = poldek_ts_new (ctx, 0);
-	rcmd = poclidek_rcmd_new (cctx, ts);
+	pk_backend_set_percentage (backend, 1);
 
-	nvra = poldek_get_nvra_from_package_id (id->package_id);
-	command = g_strdup_printf ("upgrade %s", nvra);
+	for (i = 0; i < g_strv_length (id->package_ids); i++) {
+		gchar	*command, *nvra;
+		guint	percentage;
 
-	if (!poclidek_rcmd_execline (rcmd, command))
-	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Cannot update package!");
+		ts = poldek_ts_new (ctx, 0);
+		rcmd = poclidek_rcmd_new (cctx, ts);
+
+		pk_backend_set_sub_percentage (backend, 0);
+
+		nvra = poldek_get_nvra_from_package_id (id->package_ids[i]);
+		command = g_strdup_printf ("upgrade %s", nvra);
+
+		if (!poclidek_rcmd_execline (rcmd, command)) {
+			gchar	*error;
+
+			error = g_strdup_printf ("Cannot update %s", nvra);
+
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
+
+			g_free (error);
+		}
+
+		percentage = (gint)(((float)(i + 1) / (float)g_strv_length (id->package_ids)) * 100);
+
+		if (percentage > 1)
+			pk_backend_set_percentage (backend, percentage);
+
+		g_free (nvra);
+		g_free (command);
+
+		poclidek_rcmd_free (rcmd);
+		poldek_ts_free (ts);
 	}
 
-	g_free (nvra);
-	g_free (command);
-
-	poldek_ts_free (ts);
-	poclidek_rcmd_free (rcmd);
+	pk_backend_set_percentage (backend, 100);
 
 	g_free (id->pd);
-	g_free (id->package_id);
+	g_strfreev (id->package_ids);
 	g_free (id);
 
 	pk_backend_finished (backend);
@@ -1737,15 +1774,15 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 		if (data)
 			g_free (data);
 
-		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update package when offline!");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
 		pk_backend_finished (backend);
 		return;
 	}
 
-	/* TODO: process the entire list */
-	data->package_id = g_strdup (package_ids[0]);
+	data->package_id = NULL;
+	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
-	data->pd->mode = PROGRESS_ENUM_INSTALL;
+	data->pd->mode = PROGRESS_ENUM_UPDATE;
 	pk_backend_thread_create (thread, backend_update_packages_thread, data);
 }
 
