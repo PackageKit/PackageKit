@@ -729,14 +729,12 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 	vr = poldek_get_vr_from_package_id_evr (pi->version);
 	command = g_strdup_printf ("cd /%s; ls -q %s-%s.%s", pi->data, pi->name, vr, pi->arch);
 
-	if (poclidek_rcmd_execline (rcmd, command))
-	{
+	if (poclidek_rcmd_execline (rcmd, command)) {
 		tn_array	*pkgs = NULL;
 
 		pkgs = poclidek_rcmd_get_packages (rcmd);
 
-		if (n_array_size (pkgs) > 0)
-		{
+		if (n_array_size (pkgs) > 0) {
 			/* only one package is needed */
 			result = pkg_link (n_array_nth (pkgs, 0));
 		}
@@ -866,7 +864,7 @@ search_package (PkBackendThread *thread, gpointer data)
 						break;
 					}
 				}
-				
+
 				if (!found) {	// duplicates not found
 					/* mark package as NOT installed */
 					poldek_pkg_set_installed (pkg, FALSE);
@@ -874,7 +872,7 @@ search_package (PkBackendThread *thread, gpointer data)
 					n_array_push (pkgs, pkg_link (pkg));
 				}
 			}
-			
+
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 			n_array_free (available);
 		} else if (!d->filter->installed || available) {
@@ -884,23 +882,20 @@ search_package (PkBackendThread *thread, gpointer data)
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
-				
+
 				poldek_pkg_set_installed (pkg, FALSE);
 			}
 		} else if (!d->filter->not_installed || installed)
 			pkgs = installed;
 
-		if (pkgs)
-		{
+		if (pkgs) {
 			gint	i;
 
-			for (i = 0; i < n_array_size (pkgs); i++)
-			{
+			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
 				/* development filter */
-				if (!d->filter->devel || !d->filter->not_devel)
-				{
+				if (!d->filter->devel || !d->filter->not_devel) {
 					/* devel in filter */
 					if (d->filter->devel && !poldek_pkg_is_devel (pkg))
 						continue;
@@ -911,8 +906,7 @@ search_package (PkBackendThread *thread, gpointer data)
 				}
 
 				/* gui filter */
-				if (!d->filter->gui || !d->filter->not_gui)
-				{
+				if (!d->filter->gui || !d->filter->not_gui) {
 					/* gui in filter */
 					if (d->filter->gui && !poldek_pkg_is_gui (pkg))
 						continue;
@@ -1345,6 +1339,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
+
+				/* skip held packages */
+				if (pkg->flags & PKG_HELD)
+					continue;
 
 				poldek_backend_package (pkg, PK_INFO_ENUM_NORMAL);
 			}
