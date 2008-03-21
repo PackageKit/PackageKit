@@ -166,30 +166,31 @@ static void*
 poldek_vf_progress_new (void *data, const gchar *label)
 {
 	PercentageData	*bar = (PercentageData*) data;
+
 	if (bar->mode == PROGRESS_ENUM_INSTALL) {
-	gchar		*filename = g_path_get_basename (label), *pkgname, *command;
-	struct poclidek_rcmd *rcmd;
-	tn_array	*pkgs = NULL;
-	struct pkg	*pkg = NULL;
+		gchar		*filename = g_path_get_basename (label), *pkgname, *command;
+		struct poclidek_rcmd *rcmd;
+		tn_array	*pkgs = NULL;
+		struct pkg	*pkg = NULL;
 
-	pkgname = g_strndup (filename, (sizeof(gchar)*strlen(filename)-4));
+		pkgname = g_strndup (filename, (sizeof(gchar)*strlen(filename)-4));
 
-	command = g_strdup_printf ("cd /all-avail; ls -q %s", pkgname);
+		command = g_strdup_printf ("cd /all-avail; ls -q %s", pkgname);
 
-	rcmd = poclidek_rcmd_new (cctx, NULL);
-	poclidek_rcmd_execline (rcmd, command);
-	pkgs = poclidek_rcmd_get_packages (rcmd);
+		rcmd = poclidek_rcmd_new (cctx, NULL);
+		poclidek_rcmd_execline (rcmd, command);
+		pkgs = poclidek_rcmd_get_packages (rcmd);
 
-	if (pkgs) {
-		pkg = n_array_nth (pkgs, 0);
+		if (pkgs) {
+			pkg = n_array_nth (pkgs, 0);
 
-		poldek_backend_package (pkg, PK_INFO_ENUM_DOWNLOADING);
-	}
+			poldek_backend_package (pkg, PK_INFO_ENUM_DOWNLOADING);
+		}
 
-	poclidek_rcmd_free (rcmd);
+		poclidek_rcmd_free (rcmd);
 
-	g_free (pkgname);
-	g_free (filename);
+		g_free (pkgname);
+		g_free (filename);
 	}
 	return bar;
 }
@@ -198,31 +199,18 @@ static void
 poldek_vf_progress (void *bar, long total, long amount)
 {
 	PercentageData	*pd = (PercentageData*) bar;
-	gint		tmp_subpercentage;
 	PkBackend	*backend;
 
 	backend = pk_backend_thread_get_backend (thread);
 
-	tmp_subpercentage = (gint)(((float)amount / (float)total) * 100);
-
 	if (pd->mode == PROGRESS_ENUM_REFRESH_CACHE) {
-		if (tmp_subpercentage >= pd->subpercentage) {
-			if (pd->step - 1 == 0)
-				pd->percentage = 1;
-			else
-				pd->percentage = (gint)(((pd->step - 1) / pd->nsources) * 100);
-
-			pd->subpercentage = tmp_subpercentage;
-		} else {
-			if (pd->step == pd->nsources) {
-				pd->percentage = 100;
-			} else {
-				pd->percentage = (gint)(((float)pd->step / (float)pd->nsources) * 100);
-			}
-
-			pd->subpercentage = 100;
-		}
+		if (pd->step == 0)
+			pd->percentage = 1;
+		else
+			pd->percentage = (gint)(((float)pd->step / (float)pd->nsources) * 100);
 	} else {
+		gint	tmp_subpercentage = (gint)(((float)amount / (float)total) * 100);
+
 		if (tmp_subpercentage >= pd->subpercentage) {
 			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
 			pd->subpercentage = tmp_subpercentage;
@@ -230,9 +218,9 @@ poldek_vf_progress (void *bar, long total, long amount)
 			pd->bytesget += total;
 			pd->subpercentage = 100;
 		}
+		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 	}
 	pk_backend_set_percentage (backend, pd->percentage);
-	pk_backend_set_sub_percentage (backend, pd->subpercentage);
 }
 
 static void
@@ -971,24 +959,10 @@ poldek_backend_log (void *data, int pri, char *message)
 	}
 }
 
-/**
- * backend_initalize:
- */
 static void
-backend_initalize (PkBackend *backend)
-{
-	g_return_if_fail (backend != NULL);
-
-	thread = pk_backend_thread_new ();
-
-	/* reference count for the global variables */
-	if (ref++ > 1)
-		return;
-
-	network = pk_network_new ();
-
+do_poldek_init (void) {
 	poldeklib_init ();
-
+	
 	ctx = poldek_new (0);
 	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
 
@@ -1012,6 +986,39 @@ backend_initalize (PkBackend *backend)
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
 }
+
+static void
+do_poldek_destroy (void) {
+	poclidek_free (cctx);
+	poldek_free (ctx);
+
+	poldeklib_destroy ();
+}
+
+static void
+poldek_reload (void) {
+	do_poldek_destroy ();
+	do_poldek_init ();
+}
+
+/**
+ * backend_initalize:
+ */
+static void
+backend_initalize (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	thread = pk_backend_thread_new ();
+
+	/* reference count for the global variables */
+	if (ref++ > 1)
+		return;
+
+	network = pk_network_new ();
+
+	do_poldek_init ();
+}
 /**
  * backend_destroy:
  */
@@ -1024,11 +1031,8 @@ backend_destroy (PkBackend *backend)
 
 	if (ref-- > 0)
 		return;
-
-	poclidek_free (cctx);
-	poldek_free (ctx);
-
-	poldeklib_destroy ();
+	
+	do_poldek_destroy ();
 }
 
 /**
@@ -1448,26 +1452,27 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 static gboolean
 backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 {
-	PkBackend	*backend;
-	tn_array	*sources = NULL;
-	PercentageData	*pp = g_new0 (PercentageData, 1);
+	PkBackend		*backend;
+	tn_array		*sources = NULL;
+	PercentageData		*pd = g_new0 (PercentageData, 1);
 	struct vf_progress	vfpro;
 
-	setup_vf_progress (&vfpro, pp);
+	setup_vf_progress (&vfpro, pd);
 
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
-	pk_backend_set_percentage (backend, 0);
+	pk_backend_set_percentage (backend, 1);
 
 	sources = poldek_get_sources (ctx);
 
 	if (sources) {
-		gint i;
+		gint	i;
 
-		pp->mode = PROGRESS_ENUM_REFRESH_CACHE;
-		pp->step = 0;
+		pd->mode = PROGRESS_ENUM_REFRESH_CACHE;
+		pd->step = 0;
+		pd->nsources = 0;
 
 		for (i = 0; i < n_array_size (sources); i++) {
 			struct source	*src = n_array_nth (sources, i);
@@ -1475,7 +1480,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 			if (src->flags & PKGSOURCE_NOAUTOUP)
 				continue;
 			else
-				pp->nsources++;
+				pd->nsources++;
 		}
 
 		for (i = 0; i < n_array_size (sources); i++) {
@@ -1484,20 +1489,15 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 			if (src->flags & PKGSOURCE_NOAUTOUP)
 				continue;
 
-			pp->step++;
 			source_update (src, 0);
+			pd->step++;
 		}
+		n_array_free (sources);
 	}
 
-	poclidek_free (cctx);
-	poldek_free (ctx);
+	poldek_reload ();
 
-	ctx = poldek_new (0);
-	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
-
-	poldek_setup (ctx);
-
-	cctx = poclidek_new (ctx);
+	pk_backend_set_percentage (backend, 100);
 
 	pk_backend_finished (backend);
 
@@ -1511,8 +1511,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 
-	if (pk_network_is_online (network) == FALSE)
-	{
+	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
 		pk_backend_finished (backend);
 		return;
