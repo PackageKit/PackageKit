@@ -28,6 +28,7 @@ import re
 
 from packagekit.daemonBackend import PackageKitBaseBackend
 from packagekit.daemonBackend import threaded, async
+from packagekit.daemonBackend import pklog
 
 # This is common between backends
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH
@@ -252,8 +253,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         print "__init__"
         self.locked = False
-        self._canceled = threading.Event()
-        self._canceled.clear()
+        self._cancelled = threading.Event()
+        self._cancelled.clear()
         self._lock = threading.Lock()
 
         PackageKitBaseBackend.__init__(self,
@@ -363,11 +364,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def doCancel(self):
         pklog.info("Canceling current action")
         self.StatusChanged(STATUS_CANCEL)
-        self._canceled.set()
-        self._canceled.wait()
+        self._cancelled.set()
+        self._cancelled.wait()
 
-#        self.Finished(EXIT_FAILED)
-
+    def _cancel_check(self, msg):
+        if self._cancelled.isSet():
+            self._unlock_yum()
+            self.ErrorCode(ERROR_TRANSACTION_CANCELLED, msg)
+            self.Finished(EXIT_KILL)
+            self._cancelled.clear()
+            return True
+        return False
+        
     @threaded
     @async
     def doSearchName(self, filters, search):
@@ -384,8 +392,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         successful = self._do_search(searchlist, filters, search)
         if not successful:
-            self._unlock_yum()
-            self.Finished(EXIT_FAILED)
+            # _do_search unlocks yum, sets errors, and calls Finished() if it fails.
             return
 
         self._unlock_yum()
@@ -407,8 +414,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         successful = self._do_search(searchlist, filters, key)
         if not successful:
-            self._unlock_yum()
-            self.Finished(EXIT_FAILED)
+            # _do_search unlocks yum, sets errors, and calls Finished() if it fails.
             return
 
         self._unlock_yum()
@@ -428,13 +434,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         try:
             pkgGroupDict = self._buildGroupDict()
-            self.yumbase.conf.cache = 1 # Only look in cache.
             fltlist = filters.split(';')
             found = {}
 
             if not FILTER_NOT_INSTALLED in fltlist:
                 # Check installed for group
                 for pkg in self.yumbase.rpmdb:
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
+
                     group = GROUP_OTHER                    # Default Group
                     if pkgGroupDict.has_key(pkg.name):     # check if pkg name exist in package / group dictinary
                         cg = pkgGroupDict[pkg.name]
@@ -446,6 +455,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if not FILTER_INSTALLED in fltlist:
                 # Check available for group
                 for pkg in self.yumbase.pkgSack:
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
                     group = GROUP_OTHER
                     if pkgGroupDict.has_key(pkg.name):
                         cg = pkgGroupDict[pkg.name]
@@ -484,6 +496,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 # Check installed for file
                 matches = self.yumbase.rpmdb.searchFiles(key)
                 for pkg in matches:
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
                     if not found.has_key(str(pkg)):
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_INSTALLED)
@@ -493,6 +508,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.repos.populateSack(mdtype='filelists')
                 matches = self.yumbase.pkgSack.searchFiles(key)
                 for pkg in matches:
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
                     if found.has_key(str(pkg)):
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_AVAILABLE)
@@ -527,16 +545,27 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
+        if self._cancel_check("Search cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         fltlist = filters.split(';')
 
         if not FILTER_NOT_INSTALLED in fltlist:
             results = self.yumbase.pkgSack.searchRequires(pkg.name)
             for result in results:
+                if self._cancel_check("Search cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
+
                 self._show_package(result,INFO_AVAILABLE)
 
         if not FILTER_INSTALLED in fltlist:
             results = self.yumbase.rpmdb.searchRequires(pkg.name)
             for result in results:
+                if self._cancel_check("Search cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
                 self._show_package(result,INFO_INSTALLED)
 
         self._unlock_yum()
@@ -564,6 +593,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
+        if self._cancel_check("Search cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         (dep_resolution_errors, deps) = self._get_best_dependencies(pkg)
 
         if len(dep_resolution_errors) > 0:
@@ -577,6 +610,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return
 
         for pkg in deps:
+            if self._cancel_check("Search cancelled."):
+                # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                return
+
             if pkg.name != name:
                 pkgver = self._get_package_ver(pkg)
                 id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
@@ -663,12 +700,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             for repo in self.yumbase.repos.listEnabled():
                 repo.metadata_expire = 0
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='metadata', cacheonly=1)
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
                 pct+=bump
                 self.PercentageChanged(pct)
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='filelists', cacheonly=1)
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
                 pct+=bump
                 self.PercentageChanged(pct)
                 self.yumbase.repos.populateSack(which=[repo.id], mdtype='otherdata', cacheonly=1)
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
                 pct+=bump
                 self.PercentageChanged(pct)
 
@@ -708,10 +754,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in installedByKey:
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
+
                     self._show_package(pkg,INFO_INSTALLED)
             # Get available packages
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if self._cancel_check("Search cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
                     if pkg.name == name:
                         show = True
                         for instpo in installedByKey:
@@ -900,6 +953,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
 
         pkg,inst = self._findPackage(package)
+
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         if pkg:
             self._show_package_description(pkg)
         else:
@@ -921,6 +979,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
 
         pkg,inst = self._findPackage(package)
+
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         if pkg:
             files = pkg.returnFileEntries('dir')
             files.extend(pkg.returnFileEntries()) # regular files
@@ -956,6 +1019,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
             md = self.updateMetadata
             for pkg in ygl.updates:
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
+
                 if self._do_extra_filtering(pkg, fltlist):
                     # Get info about package in updates info
                     notice = md.get_notice((pkg.name, pkg.version, pkg.release))
@@ -998,6 +1065,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             count = 1
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in self.yumbase.rpmdb:
+                    if self._cancel_check("Action cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
+
                     if self._do_extra_filtering(pkg,fltlist):
                         if showPkg:
                             self._show_package(pkg, INFO_INSTALLED)
@@ -1008,6 +1079,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                    if self._cancel_check("Action cancelled."):
+                        # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                        return
+
                     if self._do_extra_filtering(pkg,fltlist):
                         if showPkg:
                             self._show_package(pkg, INFO_AVAILABLE)
@@ -1031,6 +1106,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-repo-enable functionality
         '''
         self._check_init()
+        self._lock_yum()
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_SETUP)
+
         try:
             repo = self.yumbase.repos.getRepo(repoid)
             if enable:
@@ -1058,7 +1138,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-get-repo-list functionality
         '''
         self._check_init()
+        self._lock_yum()
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
+
         for repo in self.yumbase.repos.repos.values():
             if repo.isEnabled():
                 self.RepoDetail(repo.id,repo.name,True)
@@ -1079,12 +1163,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
+
         pkg,inst = self._findPackage(package)
 
         if not pkg:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
             self.Finished(EXIT_FAILED)
+            return
+
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
             return
 
         update = self._get_updated(pkg)
@@ -1109,6 +1198,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(False)
         self.NoPercentageUpdates()
+        self.StatusChanged(STATUS_SETUP)
+
         # Get the repo
         repo = self.yumbase.repos.getRepo(repoid)
         if repo:
@@ -1137,7 +1228,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self._check_init()
         self._lock_yum()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self.PercentageChanged(0)
 
         # Go get the GPG key from the given URL
@@ -1150,6 +1241,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
 
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         self.PercentageChanged(50)
 
         keyinfo = {}
@@ -1160,10 +1255,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             raise Errors.YumBaseError, \
                       'GPG key parsing failed: ' + str(e)
 
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
         keyinfo['keyurl'] = keyurl
         keyinfo['hexkeyid'] = keyIdToRPMVer(keyinfo['keyid']).upper()
 
         ts = rpmUtils.transaction.TransactionWrapper(self.yumbase.conf.installroot)
+
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
 
         # Check if key is already installed
         if keyInstalled(ts, keyinfo['keyid'], keyinfo['timestamp']) >= 0:
@@ -1172,6 +1275,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._unlock_yum()
             self.Finished(EXIT_FAILED)
             return
+
+        if self._cancel_check("Action cancelled."):
+            # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+            return
+
+        self.AllowCancel(False)
 
         self.PercentageChanged(75)
 
@@ -1208,12 +1317,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if not FILTER_NOT_INSTALLED in fltlist:
             results = self.yumbase.pkgSack.searchProvides(search)
             for result in results:
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
+
                 if self._do_extra_filtering(result, fltlist):
                     self._show_package(result,INFO_AVAILABLE)
                 
         if not FILTER_INSTALLED in fltlist:
             results = self.yumbase.rpmdb.searchProvides(search)
             for result in results:
+                if self._cancel_check("Action cancelled."):
+                    # _cancel_check() sets the error message, unlocks yum, and calls Finished()
+                    return
+
                 if self._do_extra_filtering(result, fltlist):
                     self._show_package(result,INFO_INSTALLED)
 
@@ -1238,6 +1355,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             available = []
             count = 1
             for (pkg,values) in res:
+                if self._cancel_check("Search cancelled."):
+                    return False
                 # are we installed?
                 if pkg.repo.id == 'installed':
                     if FILTER_NOT_INSTALLED not in fltlist:
@@ -1252,12 +1371,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
                 for pkg in available:
+                    if self._cancel_check("Search cancelled."):
+                        return False
                     if self._do_extra_filtering(pkg,fltlist):
                         self._show_package(pkg, INFO_AVAILABLE)
 
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
+            self._unlock_yum()
+            self.Finished(EXIT_FAILED)
 
             return False
 
@@ -1908,6 +2031,9 @@ class PackageKitCallback(RPMBaseCallback):
         self.base.Package(status, id, "")
 
     def event(self, package, action, te_current, te_total, ts_current, ts_total):
+        if self.base._cancel_check("Action cancelled."):
+            sys.exit(0)
+
         if str(package) != str(self.curpkg):
             self.curpkg = package
             self.base.StatusChanged(self.state_actions[action])
