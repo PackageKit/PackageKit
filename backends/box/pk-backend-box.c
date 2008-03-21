@@ -66,6 +66,7 @@ typedef struct {
 
 typedef struct {
 	gchar *package_id;
+	gchar **package_ids;
 	gint type;
 } ThreadData;
 
@@ -298,7 +299,41 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	return result;
 }
 
+static gboolean
+backend_update_packages_thread (PkBackendThread *thread, gpointer data)
+{
+	ThreadData *d = (ThreadData*) data;
+	gboolean result = TRUE;
+	PkPackageId *pi;
+	PkBackend *backend;
+	gint i;
 
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	for (i = 0; i < g_strv_length (d->package_ids); i++)
+	{
+		pi = pk_package_id_new_from_string (d->package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_package_id_free (pi);
+			g_strfreev (d->package_ids);
+			g_free (d);
+
+			return FALSE;
+		}
+		result |= box_package_install(pi->name, ROOT_DIRECTORY, common_progress, backend, FALSE);
+
+	}
+
+	g_strfreev (d->package_ids);
+	g_free (d);
+	pk_backend_finished (backend);
+
+	return result;
+}
 static gboolean
 backend_install_file_thread (PkBackendThread *thread, gpointer data)
 {
@@ -727,10 +762,10 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 }
 
 /**
- * backend_update_package:
+ * backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	ThreadData *data = g_new0(ThreadData, 1);
 
@@ -742,8 +777,8 @@ backend_update_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	data->package_id = g_strdup(package_id);
-	pk_backend_thread_create (thread, backend_install_package_thread, data);
+	data->package_ids = g_strdupv (package_ids);
+	pk_backend_thread_create (thread, backend_update_packages_thread, data);
 }
 
 /**
@@ -839,7 +874,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
-	backend_update_package,			/* update_package */
+	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
