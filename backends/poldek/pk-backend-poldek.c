@@ -1331,6 +1331,93 @@ backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *pack
 }
 
 /**
+ * backend_get_update_detail:
+ */
+static gboolean
+backend_get_update_detail_thread (PkBackendThread *thread, gchar *package_id)
+{
+	PkBackend	*backend;
+	PkPackageId	*pi;
+	struct poclidek_rcmd	*rcmd;
+	gchar		*command;
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pi = pk_package_id_new_from_string (package_id);
+
+	rcmd = poclidek_rcmd_new (cctx, NULL);
+
+	command = g_strdup_printf ("cd /installed; ls -q %s", pi->name);
+
+	if (poclidek_rcmd_execline (rcmd, command)) {
+		tn_array	*pkgs = NULL;
+		struct pkg	*pkg = NULL;
+
+		pkgs = poclidek_rcmd_get_packages (rcmd);
+
+		/* get one package */
+		pkg = n_array_nth (pkgs, 0);
+
+		if (strcmp (pkg->name, pi->name) == 0) {
+			gchar	*evr, *update_id;
+
+			evr = poldek_pkg_evr (pkg);
+			update_id = pk_package_id_build (pkg->name,
+							 evr,
+							 pkg_arch (pkg),
+							 "installed");
+
+			pk_backend_update_detail (backend,
+						  package_id,
+						  update_id,
+						  "",
+						  "",
+						  "",
+						  "",
+						  PK_RESTART_ENUM_NONE,
+						  "");
+
+			g_free (evr);
+			g_free (update_id);
+		}
+
+		n_array_free (pkgs);
+	} else {
+		pk_backend_update_detail (backend,
+					  package_id,
+					  "",
+					  "",
+					  "",
+					  "",
+					  "",
+					  PK_RESTART_ENUM_NONE,
+					  "");
+	}
+
+	g_free (command);
+	poclidek_rcmd_free (rcmd);
+	pk_package_id_free (pi);
+
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	pk_backend_thread_create (thread,
+				  (PkBackendThreadFunc)backend_get_update_detail_thread,
+				  g_strdup (package_id));
+}
+
+/**
  * backend_get_updates:
  */
 static gboolean
@@ -1831,7 +1918,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_description,			/* get_description */
 	backend_get_files,				/* get_files */
 	backend_get_requires,				/* get_requires */
-	NULL,						/* get_update_detail */
+	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
 	backend_install_package,			/* install_package */
 	NULL,						/* install_file */
