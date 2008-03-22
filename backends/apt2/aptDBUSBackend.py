@@ -341,16 +341,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
-        #FIXME: Better exception and error handling
-        #FIXME: Distupgrade or Upgrade?
-        #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,5))
         try:
-            self._cache.upgrade(distUpgrade=True)
+            self._cache.upgrade(distUpgrade=False)
             self._cache.commit(PackageKitFetchProgress(self, prange=(5,50)),
                                PackageKitInstallProgress(self, prange=(50,95)))
         except apt.cache.FetchFailedException:
@@ -378,7 +375,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
@@ -419,7 +415,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
