@@ -794,6 +794,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 successful = self._runYumTransaction()
                 if not successful:
                     return
+	    else:
+		self.StatusChanged(STATUS_CLEANUP)
         except yum.Errors.InstallError,e:
             msgs = '\n'.join(e)
             self._unlock_yum()
