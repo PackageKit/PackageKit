@@ -699,7 +699,10 @@ poldek_backend_package (const struct pkg *pkg, gint status)
 		if (status == PK_INFO_ENUM_UNKNOWN)
 			status = PK_INFO_ENUM_AVAILABLE;
 
-		poldek_dir = g_strdup ("all-avail");
+		if (pkg->pkgdir && pkg->pkgdir->name)
+			poldek_dir = g_strdup (pkg->pkgdir->name);
+		else
+			poldek_dir = g_strdup ("all-avail");
 	} else {
 		if (status == PK_INFO_ENUM_UNKNOWN)
 			status = PK_INFO_ENUM_INSTALLED;
