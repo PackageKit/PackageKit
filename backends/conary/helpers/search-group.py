@@ -16,6 +16,6 @@ searchterms = sys.argv[2]
 
 from conaryBackend import PackageKitConaryBackend
 
-backend = PackageKitConaryBackend(sys.argv[1:],lock=False)
+backend = PackageKitConaryBackend(sys.argv[1:])
 backend.search_group(options,searchterms)
 sys.exit(0)
