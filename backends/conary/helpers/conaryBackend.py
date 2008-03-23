@@ -166,6 +166,16 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return installed
 
     @ExceptionHandler
+    def search_group(self, options, searchterms):
+        '''
+        Implement the {backend}-search-name functionality
+        '''
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+        pass
+
+    @ExceptionHandler
     def search_name(self, options, searchlist):
         '''
         Implement the {backend}-search-name functionality
