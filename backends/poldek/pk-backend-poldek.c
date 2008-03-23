@@ -1445,11 +1445,11 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
-				/* skip held packages */
+				/* mark held packages as blocked */
 				if (pkg->flags & PKG_HELD)
-					continue;
-
-				poldek_backend_package (pkg, PK_INFO_ENUM_NORMAL);
+					poldek_backend_package (pkg, PK_INFO_ENUM_BLOCKED);
+				else
+					poldek_backend_package (pkg, PK_INFO_ENUM_NORMAL);
 			}
 			n_array_free (pkgs);
 		}

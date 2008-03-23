@@ -359,13 +359,29 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("Init()")
         self.doInit()
 
+    def doInit(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
         self.doExit()
         self.loop.quit()
- 
+
+    def doExit(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
     def SearchName(self, filters, search):
@@ -374,6 +390,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("SearchName()")
         self.doSearchName(filters, search)
+
+    def doSearchName(self, filters, search):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -385,6 +409,14 @@ class PackageKitBaseBackend(dbus.service.Object):
             return
         self.doCancel()
 
+    def doCancel(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
     def SearchDetails(self,filters,key):
@@ -392,7 +424,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-details functionality
         '''
         pklog.info("SearchDetails(%s, %s)" % (filters, key))
-        self.doSearchDetails(filters,key)
+        self.doSearchDetails(filters, key)
+
+    def doSearchDetails(self, filters, key):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -401,7 +441,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-group functionality
         '''
         pklog.info("SearchGroup(%s, %s)" % (filters, key))
-        self.doSearchGroup(filters,key)
+        self.doSearchGroup(filters, key)
+
+    def doSearchGroup(self, filters, key):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
@@ -410,7 +458,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-search-file functionality
         '''
         pklog.info("SearchFile(%s, %s)" % (filters, key))
-        self.doSearchFile(filters,key)
+        self.doSearchFile(filters, key)
+
+    def doSearchFile(self, filters, key):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
@@ -419,7 +475,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a list of requires for a given package
         '''
         pklog.info("GetRequires(%s, %s, %s)" % (filters, package, recursive))
-        self.doGetRequires(filters,package,recursive)
+        self.doGetRequires(filters, package, recursive)
+
+    def doGetRequires(self, filters, package, recursive):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -427,17 +491,34 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Print a list of packages for a given provide string
         '''
-        pklog.info("WhatProvides(%s, %s, %s)" % (filters, provides_type, search))
-        self.doWhatProvides(filters,provides_type,search)
+        pklog.info("WhatProvides(%s, %s, %s)" % (filters, provides_type,
+                                                 search))
+        self.doWhatProvides(filters, provides_type, search)
+
+    def doWhatProvides(self, filters, provides_type, search):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ssb', out_signature='')
-    def GetDepends(self,filters,package,recursive):
+    def GetDepends(self, filters, package, recursive):
         '''
         Print a list of depends for a given package
         '''
         pklog.info("GetDepends(%s, %s, %s)" % (filters, package, recursive))
-        self.doGetDepends(package,recursive)
+        self.doGetDepends(package, recursive)
+
+    def doGetDepends(self, package, recursive):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
@@ -448,6 +529,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("UpdateSystem()")
         self.doUpdateSystem()
 
+    def doUpdateSystem(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='b', out_signature='')
     def RefreshCache(self, force):
@@ -457,6 +546,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("RefreshCache(%s)" % force)
         self.doRefreshCache( force)
 
+    def doRefreshCash(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='ss', out_signature='')
     def Resolve(self, filters, name):
@@ -464,17 +561,32 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-resolve functionality
         '''
         pklog.info("Resolve(%s, %s)" % (filters, name))
-        self.doResolve( filters, name)
+        self.doResolve(filters, name)
+
+    def doResolve(self, filters, name):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def InstallPackage(self, package):
         '''
         Implement the {backend}-install functionality
-        This will only work with yum 3.2.4 or higher
         '''
         pklog.info("InstallPackage(%s)" % package)
-        self.doInstallPackage( package)
+        self.doInstallPackage(package)
+
+    def doInstallPackage(self, package):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -482,21 +594,34 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
-        Needed to be implemented in a sub class
         '''
         pklog.info("InstallFile(%s)" % inst_file)
-        self.doInstallFile( inst_file)
+        self.doInstallFile(inst_file)
+
+    def doInstallFile(self, inst_file):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
     def ServicePack (self, location, enabled):
         '''
         Implement the {backend}-service-pack functionality
-        Install the package containing the inst_file file
-        Needed to be implemented in a sub class
         '''
         pklog.info("ServicePack(%s, %s)" % (location, enabled))
-        self.doServicePack( location, enabled)
+        self.doServicePack(location, enabled)
+
+    def doServicePack(self, location, enabled):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='as', out_signature='')
@@ -507,6 +632,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("UpdatePackages(%s)" % ", ".join(packages))
         self.doUpdatePackages(packages)
 
+    def doUpdatePackages(self, packages):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sbb', out_signature='')
     def RemovePackage(self, package, allowdep, autoremove):
@@ -516,6 +649,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("RemovePackage(%s, %s, %s)" % (package, allowdep, autoremove))
         self.doRemovePackage(package, allowdep, autoremove)
 
+    def doRemovePackage(self, package, allowdep, autoremove):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def GetDescription(self, package):
@@ -523,7 +664,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Print a detailed description for a given package
         '''
         pklog.info("GetDescription(%s)" % package)
-        self.doGetDescription( package)
+        self.doGetDescription(package)
+
+    def doGetDescription(self, package):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -534,6 +683,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("GetFiles(%s)" % package)
         self.doGetFiles( package)
 
+    def doGetFiles(self, package):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def GetUpdates(self, filters):
@@ -542,6 +699,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         pklog.info("GetUpdates(%s)" % filters)
         self.doGetUpdates(filters)
+
+    def doGetUpdates(self, filters):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sb', out_signature='')
@@ -552,6 +717,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("RepoEnable(%s, %s)" % (repoid, enable))
         self.doRepoEnable( repoid, enable)
 
+    def doRepoEnable(self, repoid, enable):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def GetRepoList(self):
@@ -561,14 +734,30 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("GetRepoList()")
         self.doGetRepoList()
 
+    def doGetRepoList(self):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
-    def GetUpdateDetail(self,package):
+    def GetUpdateDetail(self, package):
         '''
         Implement the {backend}-get-update_detail functionality
         '''
         pklog.info("GetUpdateDetail(%s)" % package)
         self.doGetUpdateDetail(package)
+
+    def doGetUpdateDetail(self, package):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='sss', out_signature='')
@@ -577,7 +766,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         Implement the {backend}-repo-set-data functionality
         '''
         pklog.info("RepoSetData(%s, %s, %s)" % (repoid, parameter, value))
-        self.doRepoSetData( repoid, parameter, value)
+        self.doRepoSetData(repoid, parameter, value)
+
+    def doRepoSetData(self, repoid, parameter, value):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
@@ -588,6 +785,13 @@ class PackageKitBaseBackend(dbus.service.Object):
         pklog.info("InstallPublicKey(%s)" % keyurl)
         self.doInstallPublicKey(keyurl)
 
+    def doInstallPublicKey(self, keyurl):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
 
 #
 # Utility methods

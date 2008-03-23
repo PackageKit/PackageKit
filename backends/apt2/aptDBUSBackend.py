@@ -65,30 +65,52 @@ class PackageKitOpProgress(apt.progress.OpProgress):
     '''
     Handle the cache opening process
     '''
-    def __init__(self, backend):
+    def __init__(self, backend, prange=(0,100), progress=True):
         self._backend = backend
         apt.progress.OpProgress.__init__(self)
+        self.steps = []
+        for v in [0.12, 0.25, 0.50, 0.75, 1.00]:
+            s = prange[0] + (prange[1] - prange[0]) * v
+            self.steps.append(s)
+        self.pstart = float(prange[0])
+        self.pend = self.steps.pop(0)
+        self.pprev = None
+        self.show_progress = progress
 
     # OpProgress callbacks
     def update(self, percent):
-        self._backend.PercentageChanged(int(percent))
+        progress = int(self.pstart + percent / 100 * (self.pend - self.pstart))
+        if self.show_progress == True and self.pprev < progress:
+            self._backend.PercentageChanged(progress)
+            self.pprev = progress
 
     def done(self):
-        self._backend.PercentageChanged(100)
+        self.pstart = self.pend
+        try:
+            self.pend = self.steps.pop(0)
+        except:
+            pklog.warning("An additional step to open the cache is required")
 
 class PackageKitFetchProgress(apt.progress.FetchProgress):
     '''
     Handle the package download process
     '''
-    def __init__(self, backend):
+    def __init__(self, backend, prange=(0,100)):
         self._backend = backend
         apt.progress.FetchProgress.__init__(self)
+        self.pstart = prange[0]
+        self.pend = prange[1]
+        self.pprev = None
+
     # FetchProgress callbacks
     def pulse(self):
         if self._backend._canceled.isSet():
             return False
         percent = ((self.currentBytes + self.currentItems)*100.0)/float(self.totalBytes+self.totalItems)
-        self._backend.PercentageChanged(int(percent))
+        progress = int(self.pstart + percent/100 * (self.pend - self.pstart))
+        if self.pprev < progress:
+            self._backend.PercentageChanged(progress)
+            self.pprev = progress
         apt.progress.FetchProgress.pulse(self)
         return True
 
@@ -97,7 +119,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
         self._backend.AllowCancel(True)
 
     def stop(self):
-        self._backend.PercentageChanged(100)
+        self._backend.PercentageChanged(self.pend)
         self._backend.AllowCancel(False)
 
     def mediaChange(self, medium, drive):
@@ -110,13 +132,19 @@ class PackageKitInstallProgress(apt.progress.InstallProgress):
     Handle the installation and removal process. Bits taken from
     DistUpgradeViewNonInteractive.
     '''
-    def __init__(self, backend):
+    def __init__(self, backend, prange=(0,100)):
         apt.progress.InstallProgress.__init__(self)
         self._backend = backend
         self.timeout = 900
+        self.pstart = prange[0]
+        self.pend = prange[1]
+        self.pprev = None
 
     def statusChange(self, pkg, percent, status):
-        self._backend.PercentageChanged(int(percent))
+        progress = self.pstart + percent/100 * (self.pend - self.pstart)
+        if self.pprev < progress:
+            self._backend.PercentageChanged(int(progress))
+            self.pprev = progress
         pklog.debug("PM status: %s" % status)
 
     def startUpdate(self):
@@ -167,7 +195,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     def doInit(self):
         pklog.info("Initializing cache")
         self.StatusChanged(STATUS_SETUP)
-        self._open_cache()
+        self.AllowCancel(False)
+        self.NoPercentageUpdates()
+        self._open_cache(progress=False)
 
     def doExit(self):
         pass
@@ -185,11 +215,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-search-name functionality
         '''
         pklog.info("Searching for package name: %s" % search)
-        self._check_init()
-        self.AllowCancel(True)
-        self.NoPercentageUpdates()
-
         self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
 
         for pkg in self._cache:
             if self._canceled.isSet():
@@ -208,10 +237,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         Implement the apt2-search-details functionality
         '''
         pklog.info("Searching for package name: %s" % search)
-        self._check_init()
-        self.AllowCancel(True)
-        self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
         results = []
 
         if os.access(XAPIANDB, os.R_OK):
@@ -252,9 +281,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Implment the basename filter
         pklog.info("Get updates")
         self.StatusChanged(STATUS_INFO)
-        self._check_init()
         self.AllowCancel(True)
         self.NoPercentageUpdates()
+        self._check_init(progress=False)
         self._cache.upgrade(False)
         for pkg in self._cache.getChanges():
             if self._canceled.isSet():
@@ -265,7 +294,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 return
             else:
                 self._emit_package(pkg)
-        self._open_cache()
+        self._open_cache(progress=False)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -275,9 +304,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         pklog.info("Get description of %s" % pkg_id)
         self.StatusChanged(STATUS_INFO)
-        self._check_init()
-        self.AllowCancel(False)
         self.NoPercentageUpdates()
+        self.AllowCancel(False)
+        self._check_init(progress=False)
         name, version, arch, data = self.get_package_from_id(pkg_id)
         if not self._cache.has_key(name):
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -317,29 +346,30 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
         self.StatusChanged(STATUS_UPDATE)
-        self._check_init()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self._check_init(prange=(0,5))
         try:
             self._cache.upgrade(distUpgrade=True)
-            self._cache.commit(PackageKitFetchProgress(self),
-                               PackageKitInstallProgress(self))
+            self._cache.commit(PackageKitFetchProgress(self, prange=(5,50)),
+                               PackageKitInstallProgress(self, prange=(50,95)))
         except apt.cache.FetchFailedException:
             self._open_cache()
             self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED, "Download failed")
             self.Finished(EXIT_FAILED)
             return
         except apt.cache.FetchCancelledException:
-            self._open_cache()
+            self._open_cache(prange=(95,100))
             self.ErrorCode(ERROR_TRANSACTION_CANCELLED, "Download was canceled")
             self.Finished(EXIT_KILL)
             self._canceled.clear()
             return
         except:
-            self._open_cache()
+            self._open_cache(prange=(95,100))
             self.ErrorCode(ERROR_INTERNAL_ERROR, "System update failed")
             self.Finished(EXIT_FAILED)
             return
+        self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
@@ -350,10 +380,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
-        self._check_init()
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
         pkg = self._find_package_by_id(id)
         if pkg == None:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -368,14 +398,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name = pkg.name[:]
         try:
             pkg.markDelete()
-            self._cache.commit(PackageKitFetchProgress(self),
-                               PackageKitInstallProgress(self))
+            self._cache.commit(PackageKitFetchProgress(self, prange=(10,10)),
+                               PackageKitInstallProgress(self, prange=(10,90)))
         except:
-            self._open_cache()
+            self._open_cache(prange=(90,100))
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
             self.Finished(EXIT_FAILED)
             return
-        self._open_cache()
+        self._open_cache(prange=(90,100))
+        self.PercentageChanged(100)
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
@@ -390,10 +421,10 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
-        self._check_init()
         self.StatusChanged(STATUS_INSTALL)
-        self.PercentageChanged(0)
         self.AllowCancel(False)
+        self.PercentageChanged(0)
+        self._check_init(prange=(0,10))
         pkg = self._find_package_by_id(id)
         if pkg == None:
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
@@ -408,14 +439,15 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         name = pkg.name[:]
         try:
             pkg.markInstall()
-            self._cache.commit(PackageKitFetchProgress(self),
-                               PackageKitInstallProgress(self))
+            self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
+                               PackageKitInstallProgress(self, prange=(50,90)))
         except:
-            self._open_cache()
+            self._open_cache(prange=(90,100))
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
             self.Finished(EXIT_FAILED)
             return
-        self._open_cache()
+        self._open_cache(prange=(90,100))
+        self.PercentageChanged(100)
         if self._cache.has_key(name) and self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
@@ -431,11 +463,11 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Refresh cache")
         self.StatusChanged(STATUS_REFRESH_CACHE)
         self.last_action_time = time.time()
-        self._check_init()
         self.AllowCancel(False);
         self.PercentageChanged(0)
+        self._check_init((0,10))
         try:
-            self._cache.update(PackageKitFetchProgress(self))
+            self._cache.update(PackageKitFetchProgress(self, prange=(10,95)))
         except apt.cache.FetchFailedException:
             self.ErrorCode(ERROR_NO_NETWORK, "Download failed")
             self.Finished(EXIT_FAILED)
@@ -446,22 +478,24 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Finished(EXIT_KILL)
             return
         except:
-            self._open_cache()
+            self._open_cache(prange=(95,100))
             self.ErrorCode(ERROR_INTERNAL_ERROR, "Refreshing cache failed")
             self.Finished(EXIT_FAILED)
             return
+        self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
     # Helpers
 
-    def _open_cache(self):
+    def _open_cache(self, prange=(0,100), progress=True):
         '''
         (Re)Open the APT cache
         '''
         pklog.debug("Open APT cache")
         self.StatusChanged(STATUS_REFRESH_CACHE)
         try:
-            self._cache = apt.Cache(PackageKitOpProgress(self))
+            self._cache = apt.Cache(PackageKitOpProgress(self, prange,
+                                                         progress))
         except:
             self.ErrorCode(ERROR_NO_CACHE, "Package cache could not be opened")
             self.Finished(EXIT_FAILED)
@@ -488,7 +522,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Releasing cache")
         self._locked.release()
 
-    def _check_init(self):
+    def _check_init(self, prange=(0,10), progress=True):
         '''
         Check if the backend was initialized well and try to recover from
         a broken setup
@@ -496,7 +530,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.debug("Check apt cache and xapian database")
         if not isinstance(self._cache, apt.cache.Cache) or \
            self._cache._depcache.BrokenCount > 0:
-            self.doInit()
+            self._open_cache(prange, progress)
 
     def _check_canceled(self, msg):
         '''
