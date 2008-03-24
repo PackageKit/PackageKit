@@ -104,7 +104,10 @@ pk_log_line (const gchar *buffer)
 		g_warning ("could not write %s", buffer);
 	}
 	/* newline */
-	write (fd, "\n", 1);
+	count = write (fd, "\n", 1);
+	if (count == -1) {
+		g_warning ("could not write newline");
+	}
 }
 
 /**
