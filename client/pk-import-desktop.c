@@ -38,7 +38,6 @@
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
-static GPtrArray *locale_array = NULL;
 
 static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
@@ -87,6 +86,22 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	return name;
 }
 
+static gchar *
+pk_import_get_locale (const gchar *buffer)
+{
+	guint len;
+	gchar *locale;
+	gchar *result;
+	result = g_strrstr (buffer, "[");
+	if (result == NULL) {
+		return NULL;
+	}
+	locale = g_strdup (result+1);
+	len = strlen (locale);
+	locale[len-1] = '\0';
+	return locale;
+}
+
 static void
 pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 {
@@ -100,12 +115,26 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	gchar *comment = NULL;
 	gchar *genericname = NULL;
 	const gchar *locale = NULL;
+	gchar **key_array;
+	gsize len;
+	gchar *locale_temp;
+	static GPtrArray *locale_array = NULL;
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
 	if (ret == FALSE) {
 		pk_error ("bad!!");
 	}
+
+	/* get this specific locale list */
+	key_array = g_key_file_get_keys (key, G_KEY_FILE_DESKTOP_GROUP, &len, NULL);
+	locale_array = g_ptr_array_new ();
+	for (i=0; i<len; i++) {
+		/* set the locale */
+		locale_temp = pk_import_get_locale (key_array[i]);
+		g_ptr_array_add (locale_array, g_strdup (locale_temp));
+	}
+	g_strfreev (key_array);
 
 	g_print ("PackageName:\t%s\t[", package_name);
 
@@ -142,6 +171,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		}
 		g_free (name);
 	}
+	g_ptr_array_free (locale_array, TRUE);
 	g_free (name_unlocalised);
 	g_print ("]\n");
 
@@ -222,8 +252,6 @@ main (int argc, char *argv[])
 
 	pk_debug_init (verbose);
 
-	locale_array = pk_import_get_locale_list ();
-
 	/* set defaults */
 	if (desktop_location == NULL) {
 		desktop_location = PK_IMPORT_APPLICATIONSDIR;
@@ -240,7 +268,6 @@ main (int argc, char *argv[])
 	pk_desktop_process_directory (desktop_location);
 
 out:
-	g_ptr_array_free (locale_array, TRUE);
 	g_object_unref (extra);
 	g_object_unref (client);
 	return 0;
