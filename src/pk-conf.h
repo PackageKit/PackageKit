@@ -57,6 +57,8 @@ gchar		*pk_conf_get_string		(PkConf		*conf,
 						 G_GNUC_WARN_UNUSED_RESULT;
 gint		 pk_conf_get_int		(PkConf		*conf,
 						 const gchar	*key);
+gboolean	 pk_conf_get_bool		(PkConf		*conf,
+						 const gchar	*key);
 
 G_END_DECLS
 

@@ -82,6 +82,22 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 }
 
 /**
+ * pk_conf_get_bool:
+ **/
+gint
+pk_conf_get_bool (PkConf *conf, const gchar *key)
+{
+	gboolean value;
+	GError *error = NULL;
+	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
+	if (error != NULL) {
+		pk_debug ("%s read error: %s", key, error->message);
+		g_error_free (error);
+	}
+	return value;
+}
+
+/**
  * pk_conf_finalize:
  **/
 static void
