@@ -35,6 +35,9 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <time.h>
 
 #include "pk-debug.h"
@@ -50,7 +53,18 @@
 #define CONSOLE_WHITE		37
 
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
+static gboolean do_logging = FALSE;	/* if we should write to a file */
 static gboolean is_console = FALSE;
+static gint fd = -1;
+
+/**
+ * pk_debug_set_logging:
+ **/
+void
+pk_debug_set_logging (gboolean enabled)
+{
+	do_logging = enabled;
+}
 
 /**
  * pk_set_console_mode:
@@ -70,12 +84,37 @@ pk_set_console_mode (guint console_code)
 }
 
 /**
+ * pk_log_line:
+ **/
+static void
+pk_log_line (const gchar *buffer)
+{
+	ssize_t count;
+	/* open a file */
+	if (fd == -1) {
+		mkdir (PK_LOG_DIR, 0777);
+		fd = open (PK_LOG_DIR "/PackageKit", O_WRONLY|O_APPEND|O_CREAT);
+		if (fd == -1) {
+			g_error ("could not open log");
+		}
+	}
+	/* whole line */
+	count = write (fd, buffer, strlen (buffer));
+	if (count == -1) {
+		g_warning ("could not write %s", buffer);
+	}
+	/* newline */
+	write (fd, "\n", 1);
+}
+
+/**
  * pk_print_line:
  **/
 static void
 pk_print_line (const gchar *func, const gchar *file, const int line, const gchar *buffer, guint color)
 {
 	gchar *str_time;
+	gchar *header;
 	time_t the_time;
 	GThread *thread;
 
@@ -84,19 +123,29 @@ pk_print_line (const gchar *func, const gchar *file, const int line, const gchar
 	strftime (str_time, 254, "%H:%M:%S", localtime (&the_time));
 	thread = g_thread_self ();
 
+	/* generate header text */
+	header = g_strdup_printf ("TI:%s\tTH:%p\tFI:%s\tFN:%s,%d", str_time, thread, file, func, line);
+	g_free (str_time);
+
 	/* always in light green */
 	pk_set_console_mode (CONSOLE_GREEN);
-	printf ("TI:%s\tTH:%p\tFI:%s\tFN:%s,%d\n", str_time, thread, file, func, line);
+	printf ("%s\n", header);
 
 	/* different colours according to the severity */
 	pk_set_console_mode (color);
 	printf (" - %s\n", buffer);
 	pk_set_console_mode (CONSOLE_RESET);
 
+	/* log to a file */
+	if (do_logging) {
+		pk_log_line (header);
+		pk_log_line (buffer);
+	}
+
 	/* flush this output, as we need to debug */
 	fflush (stdout);
 
-	g_free (str_time);
+	g_free (header);
 }
 
 /**

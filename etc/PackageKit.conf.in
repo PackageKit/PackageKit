@@ -5,7 +5,7 @@
 
 # Log transactions to the database
 # default=yes
-TransactionLogging=yes
+TransactionLogging=true
 
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
 # default=300

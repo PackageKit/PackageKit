@@ -10,6 +10,7 @@ INCLUDES = \
 	-I$(top_srcdir)/libgbus					\
 	-I$(top_srcdir)/libselftest				\
 	-DPK_DB_DIR=\""$(PK_DB_DIR)"\" 				\
+	-DPK_LOG_DIR=\""$(PK_LOG_DIR)"\" 			\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"			\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\"
 

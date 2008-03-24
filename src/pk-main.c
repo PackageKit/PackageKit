@@ -172,6 +172,7 @@ main (int argc, char *argv[])
 	gboolean use_daemon = FALSE;
 	gboolean timed_exit = FALSE;
 	gboolean immediate_exit = FALSE;
+	gboolean do_logging = FALSE;
 	gchar *backend_name = NULL;
 	PkConf *conf = NULL;
 	GError *error = NULL;
@@ -241,6 +242,13 @@ main (int argc, char *argv[])
 
 	/* get values from the config file */
 	conf = pk_conf_new ();
+
+	/* do we log? */
+	do_logging = pk_conf_get_bool (conf, "TransactionLogging");
+	pk_debug ("Log all transactions: %i", do_logging);
+	pk_debug_set_logging (do_logging);
+
+	/* after how long do we timeout? */
 	exit_idle_time = pk_conf_get_int (conf, "ShutdownTimeout");
 	pk_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
