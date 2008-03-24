@@ -1810,27 +1810,40 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 1);
 
 	for (i = 0; i < g_strv_length (td->package_ids); i++) {
-		gchar	*command, *nvra;
+		struct pkg	*pkg = NULL;
 		guint	percentage;
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
-		ts = poldek_ts_new (ctx, 0);
-		rcmd = poclidek_rcmd_new (cctx, ts);
-
 		pk_backend_set_sub_percentage (backend, 0);
 
-		nvra = poldek_get_nvra_from_package_id (td->package_ids[i]);
-		command = g_strdup_printf ("upgrade %s", nvra);
+		pkg = poldek_get_pkg_from_package_id (td->package_ids[i]);
 
-		if (!poclidek_rcmd_execline (rcmd, command)) {
-			gchar	*error;
+		/* don't try to update blocked packages */
+		if (!(pkg->flags & PKG_HELD)) {
+			gchar	*command, *nvra;
 
-			error = g_strdup_printf ("Cannot update %s", nvra);
+			ts = poldek_ts_new (ctx, 0);
+			rcmd = poclidek_rcmd_new (cctx, ts);
 
-			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
+			nvra = poldek_get_nvra_from_package_id (td->package_ids[i]);
+			command = g_strdup_printf ("upgrade %s", nvra);
 
-			g_free (error);
+			if (!poclidek_rcmd_execline (rcmd, command)) {
+				gchar	*error;
+
+				error = g_strdup_printf ("Cannot update %s", nvra);
+
+				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
+
+				g_free (error);
+			}
+
+			g_free (nvra);
+			g_free (command);
+
+			poclidek_rcmd_free (rcmd);
+			poldek_ts_free (ts);
 		}
 
 		percentage = (gint)(((float)(i + 1) / (float)g_strv_length (td->package_ids)) * 100);
@@ -1838,11 +1851,7 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 		if (percentage > 1)
 			pk_backend_set_percentage (backend, percentage);
 
-		g_free (nvra);
-		g_free (command);
-
-		poclidek_rcmd_free (rcmd);
-		poldek_ts_free (ts);
+		pkg_free (pkg);
 	}
 
 	pk_backend_set_percentage (backend, 100);
