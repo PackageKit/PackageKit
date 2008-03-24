@@ -86,6 +86,8 @@ typedef struct {
 	gint		filesdownload;
 
 	gint		percentage;
+	float		stepvalue;
+
 	gint		subpercentage;
 } PercentageData;
 
@@ -225,6 +227,7 @@ poldek_vf_progress_new (void *data, const gchar *label)
 
 		poclidek_rcmd_free (rcmd);
 
+		g_free (command);
 		g_free (pkgname);
 		g_free (filename);
 	}
@@ -238,35 +241,56 @@ poldek_vf_progress (void *bar, long total, long amount)
 	TsData		*td = (TsData*) bar;
 	PercentageData	*pd = td->pd;
 	PkBackend	*backend;
+	guint		percentage = 0;
 
 	backend = pk_backend_thread_get_backend (thread);
 
-	if (td->type == TS_TYPE_ENUM_REFRESH_CACHE) {
+	if (td->type == TS_TYPE_ENUM_INSTALL) {
+		float	frac = (float)amount / (float)total;
+
+		/* file already downloaded */
+		if (frac < 0) {
+			pd->bytesget += total;
+			pd->filesget++;
+
+			pd->percentage = (gint)((float)(pd->bytesget) / (float)pd->bytesdownload * 100);
+			pd->subpercentage = 100;
+		} else {
+			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
+			pd->subpercentage = (gint)(frac * 100);
+		}
+	} else if (td->type == TS_TYPE_ENUM_UPDATE) {
+		float	stepfrac = pd->stepvalue / (float)pd->filesdownload;
+
+		/* file already downloaded */
+		if ((float)amount / (float)total < 0) {
+			pd->bytesget += total;
+			pd->filesget++;
+
+			pd->subpercentage = (gint)((float)pd->bytesget / (float)pd->bytesdownload * 100);
+			percentage = (guint)(stepfrac * (float)pd->filesget);
+		} else {
+			pd->subpercentage = (gint)((float)(pd->bytesget + amount) / (float)pd->bytesdownload * 100);
+			percentage = (guint)(stepfrac * ((float)pd->filesget + ((float)pd->subpercentage / (float)100)));
+		}
+	} else if (td->type == TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->step == 0)
 			pd->percentage = 1;
 		else
 			pd->percentage = (gint)(((float)pd->step / (float)pd->nsources) * 100);
-	} else {
-		gint	tmp_subpercentage = (gint)(((float)amount / (float)total) * 100);
-
-		if (tmp_subpercentage >= pd->subpercentage) {
-			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
-			pd->subpercentage = tmp_subpercentage;
-		} else {
-			pd->bytesget += total;
-			pd->filesget++;
-			pd->subpercentage = 100;
-		}
 	}
 
-	if (td->type != TS_TYPE_ENUM_UPDATE)
+	if (td->type == TS_TYPE_ENUM_INSTALL ||
+	    td->type == TS_TYPE_ENUM_REFRESH_CACHE)
 		pk_backend_set_percentage (backend, pd->percentage);
-
-	if (td->type == TS_TYPE_ENUM_INSTALL)
-		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 	else if (td->type == TS_TYPE_ENUM_UPDATE)
-		/* UpdatePackages uses pd->percentage as sub_percentage */
-		pk_backend_set_sub_percentage (backend, pd->percentage);
+		if ((pd->percentage + percentage) > 1)
+			pk_backend_set_percentage (backend, pd->percentage + percentage);
+
+	/* RefreshCache doesn't use subpercentage */
+	if (td->type == TS_TYPE_ENUM_INSTALL ||
+	    td->type == TS_TYPE_ENUM_UPDATE)
+		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 
 	if (td->type != TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->filesget == pd->filesdownload) {
@@ -1808,10 +1832,10 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
 
 	pk_backend_set_percentage (backend, 1);
+	td->pd->stepvalue = (float)100 / (float)g_strv_length (td->package_ids);
 
 	for (i = 0; i < g_strv_length (td->package_ids); i++) {
 		struct pkg	*pkg = NULL;
-		guint	percentage;
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -1846,10 +1870,10 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 			poldek_ts_free (ts);
 		}
 
-		percentage = (gint)(((float)(i + 1) / (float)g_strv_length (td->package_ids)) * 100);
+		td->pd->percentage = (gint)((float)(i + 1) * td->pd->stepvalue);
 
-		if (percentage > 1)
-			pk_backend_set_percentage (backend, percentage);
+		if (td->pd->percentage > 1)
+			pk_backend_set_percentage (backend, td->pd->percentage);
 
 		pkg_free (pkg);
 	}
@@ -1884,7 +1908,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 		return;
 	}
 
-	data->package_id = NULL;
 	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;
