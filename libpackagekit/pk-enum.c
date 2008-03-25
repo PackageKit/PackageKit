@@ -51,6 +51,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
+	{PK_STATUS_ENUM_RUNNING,		"running"},
 	{PK_STATUS_ENUM_QUERY,			"query"},
 	{PK_STATUS_ENUM_INFO,			"info"},
 	{PK_STATUS_ENUM_REFRESH_CACHE,		"refresh-cache"},

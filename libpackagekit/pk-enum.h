@@ -81,10 +81,22 @@ typedef enum {
  * Icons that change to represent the current status of the transaction will
  * use these constants
  * If you add to these, make sure you add filenames in pk-watch also
+ *
+ * A typical transaction will do:
+ * - schedule task
+ *	WAIT
+ * - run task
+ *	SETUP
+ * - wait for lock
+ *	RUNNING
+ *
+ * This means that backends should run pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING)
+ * when they are ready to start running the transaction and after a lock has been got.
  **/
 typedef enum {
-	PK_STATUS_ENUM_SETUP,
 	PK_STATUS_ENUM_WAIT,
+	PK_STATUS_ENUM_SETUP,
+	PK_STATUS_ENUM_RUNNING,
 	PK_STATUS_ENUM_QUERY,
 	PK_STATUS_ENUM_INFO,
 	PK_STATUS_ENUM_REMOVE,
