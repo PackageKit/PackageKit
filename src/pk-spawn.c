@@ -53,25 +53,22 @@ static void     pk_spawn_init		(PkSpawn      *spawn);
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
-#define PK_SPAWN_POLL_DELAY	100 /* ms */
+#define PK_SPAWN_POLL_DELAY	10 /* ms */
 #define PK_SPAWN_SIGKILL_DELAY	500 /* ms */
 
 struct PkSpawnPrivate
 {
 	gint			 child_pid;
-	gint			 stderr_fd;
 	gint			 stdout_fd;
 	guint			 poll_id;
 	guint			 kill_id;
 	gboolean		 finished;
 	PkExitEnum		 exit;
-	GString			*stderr_buf;
 	GString			*stdout_buf;
 };
 
 enum {
 	PK_SPAWN_FINISHED,
-	PK_SPAWN_STDERR,
 	PK_SPAWN_STDOUT,
 	PK_SPAWN_LAST_SIGNAL
 };
@@ -133,9 +130,6 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 		} else if (is_stdout == TRUE) {
 			pk_debug ("emitting stdout %s", message);
 			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
-		} else {
-			pk_debug ("emitting stderr %s", message);
-			g_signal_emit (spawn, signals [PK_SPAWN_STDERR], 0, message);
 		}
 		g_free (message);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
@@ -163,9 +157,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 
 	pk_spawn_read_fd_into_buffer (spawn->priv->stdout_fd, spawn->priv->stdout_buf);
-	pk_spawn_read_fd_into_buffer (spawn->priv->stderr_fd, spawn->priv->stderr_buf);
 	pk_spawn_emit_whole_lines (spawn, spawn->priv->stdout_buf, TRUE);
-	pk_spawn_emit_whole_lines (spawn, spawn->priv->stderr_buf, FALSE);
 
 	/* check if the child exited */
 	if (waitpid (spawn->priv->child_pid, &status, WNOHANG) != spawn->priv->child_pid)
@@ -175,7 +167,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 	g_source_remove (spawn->priv->poll_id);
 
 	/* child exited, display some information... */
-	close (spawn->priv->stderr_fd);
 	close (spawn->priv->stdout_fd);
 
 	if (WEXITSTATUS (status) > 0) {
@@ -302,7 +293,7 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 				 NULL, NULL, &spawn->priv->child_pid,
 				 NULL, /* stdin */
 				 &spawn->priv->stdout_fd,
-				 &spawn->priv->stderr_fd,
+				 NULL,
 				 NULL);
 	g_strfreev (argv);
 
@@ -314,7 +305,6 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 
 	/* install an idle handler to check if the child returnd successfully. */
 	fcntl (spawn->priv->stdout_fd, F_SETFL, O_NONBLOCK);
-	fcntl (spawn->priv->stderr_fd, F_SETFL, O_NONBLOCK);
 
 	/* poll quickly */
 	spawn->priv->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
@@ -343,11 +333,6 @@ pk_spawn_class_init (PkSpawnClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_SPAWN_STDERR] =
-		g_signal_new ("stderr",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkSpawnPrivate));
 }
@@ -362,14 +347,12 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv = PK_SPAWN_GET_PRIVATE (spawn);
 
 	spawn->priv->child_pid = -1;
-	spawn->priv->stderr_fd = -1;
 	spawn->priv->stdout_fd = -1;
 	spawn->priv->poll_id = 0;
 	spawn->priv->kill_id = 0;
 	spawn->priv->finished = FALSE;
 	spawn->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 
-	spawn->priv->stderr_buf = g_string_new ("");
 	spawn->priv->stdout_buf = g_string_new ("");
 }
 
@@ -400,7 +383,6 @@ pk_spawn_finalize (GObject *object)
 	}
 
 	/* free the buffers */
-	g_string_free (spawn->priv->stderr_buf, TRUE);
 	g_string_free (spawn->priv->stdout_buf, TRUE);
 
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
@@ -428,7 +410,6 @@ pk_spawn_new (void)
 
 PkExitEnum mexit = BAD_EXIT;
 guint stdout_count = 0;
-guint stderr_count = 0;
 guint finished_count = 0;
 
 /**
@@ -480,16 +461,6 @@ pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
 	stdout_count++;
 }
 
-/**
- * pk_test_stderr_cb:
- **/
-static void
-pk_test_stderr_cb (PkSpawn *spawn, const gchar *line, LibSelfTest *test)
-{
-	pk_debug ("stderr '%s'", line);
-	stderr_count++;
-}
-
 static gboolean
 cancel_cb (gpointer data)
 {
@@ -509,8 +480,6 @@ new_spawn_object (LibSelfTest *test, PkSpawn **pspawn)
 			  G_CALLBACK (pk_test_finished_cb), test);
 	g_signal_connect (*pspawn, "stdout",
 			  G_CALLBACK (pk_test_stdout_cb), test);
-	g_signal_connect (*pspawn, "stderr",
-			  G_CALLBACK (pk_test_stderr_cb), test);
 }
 
 void
@@ -578,18 +547,10 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure we got the right stdout data");
-	if (stdout_count == 4) {
+	if (stdout_count == 4+11) {
 		libst_success (test, "correct stdout count");
 	} else {
 		libst_failed (test, "wrong stdout count %i", stdout_count);
-	}
-
-	/************************************************************/
-	libst_title (test, "make sure we got the right stderr data");
-	if (stderr_count == 11) {
-		libst_success (test, "correct stderr count");
-	} else {
-		libst_failed (test, "wrong stderr count %i", stderr_count);
 	}
 
 	/* get new object */

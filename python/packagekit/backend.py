@@ -57,16 +57,16 @@ class PackageKitBaseBackend:
         @param percent: Progress percentage
         '''
         if percent != None:
-            print >> sys.stderr, "percentage\t%i" % (percent)
+            print "percentage\t%i" % (percent)
         else:
-            print >> sys.stderr, "no-percentage-updates"
+            print "no-percentage-updates"
 
     def sub_percentage(self,percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
         @param percent: subprogress percentage
         '''
-        print >> sys.stderr, "subpercentage\t%i" % (percent)
+        print "subpercentage\t%i" % (percent)
 
     def error(self,err,description,exit=True):
         '''
@@ -75,7 +75,7 @@ class PackageKitBaseBackend:
         @param description: Error description
         @param exit: exit application with rc=1, if true
         '''
-        print >> sys.stderr,"error\t%s\t%s" % (err,description)
+        print "error\t%s\t%s" % (err,description)
         if exit:
             if self.isLocked():
                 self.unLock()
@@ -95,7 +95,7 @@ class PackageKitBaseBackend:
         send 'status' signal
         @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
-        print >> sys.stderr,"status\t%s" % (state)
+        print "status\t%s" % (state)
 
     def repo_detail(self,repoid,name,state):
         '''
@@ -110,7 +110,7 @@ class PackageKitBaseBackend:
         send 'data' signal:
         @param data:  The current worked on package
         '''
-        print >> sys.stderr,"data\t%s" % (data)
+        print "data\t%s" % (data)
 
     def metadata(self,typ,fname):
         '''
@@ -118,7 +118,7 @@ class PackageKitBaseBackend:
         @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
         @param fname:  The filename being downloaded
         '''
-        print >> sys.stderr,"metadata\t%s\t%s" % (typ,fname)
+        print "metadata\t%s\t%s" % (typ,fname)
 
     def description(self,id,license,group,desc,url,bytes):
         '''
@@ -159,7 +159,7 @@ class PackageKitBaseBackend:
         @param restart_type: RESTART_SYSTEM, RESTART_APPLICATION,RESTART_SESSION
         @param details: Optional details about the restart
         '''
-        print >> sys.stderr,"requirerestart\t%s\t%s" % (restart_type,details)
+        print "requirerestart\t%s\t%s" % (restart_type,details)
 
     def allow_cancel(self,allow):
         '''
@@ -170,7 +170,7 @@ class PackageKitBaseBackend:
             data = 'true'
         else:
             data = 'false'
-        print >> sys.stderr,"allow-cancel\t%s" % (data)
+        print "allow-cancel\t%s" % (data)
 
     def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''
@@ -183,7 +183,7 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param type:            Key type (GPG)
         '''
-        print >> sys.stderr,"repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+        print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
             repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
             )
 

@@ -25,7 +25,7 @@ affinityDb = client.db
 options = sys.argv[1]
 searchterms = sys.argv[2]
 
-sys.stderr.write('no-percentage-updates\n')
+sys.stdout.write('no-percentage-updates\n')
 
 try:
     localInstall = db.findTrove(None, (searchterms, None, None))
@@ -78,4 +78,4 @@ try:
         if do_print == 1:
             print "package\t%s\t%s\t%s" % (installed, package_id, summary)
 except:
-    sys.stderr.write('error\tinternal-error\tAn internal error has occurred')
+    sys.stdout.write('error\tinternal-error\tAn internal error has occurred')

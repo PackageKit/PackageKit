@@ -30,15 +30,15 @@
   </itemizedlist>
   <para>
     Backends are typically open-programmable, which means we can define a
-    standard for what goes on stdin, stdout and stderr to try and maximise
+    standard for what goes on stdin and stdout to try and maximise
     the common code between the backends.
     The following section will explain the convention used on
     <literal>backends/conary</literal> and <literal>backends/yum</literal>.
   </para>
   <para>
     If you are unable to write scripts that conform to these specifications
-    then just launch a PkSpawn object in the compiled helper with stdout and
-    stderr callbacks and then try to do screenscraping in the backend.
+    then just launch a PkSpawn object in the compiled helper with stdout
+    callbacks and then try to do screenscraping in the backend.
     This screenscraping is least popular for obvious reasons.
   </para>
   <para>
@@ -162,44 +162,36 @@
           <row>
             <entry>Method</entry>
             <entry>Data</entry>
-            <entry>File</entry>
           </row>
         </thead>
         <tbody>
           <row>
             <entry>Percentage</entry>
             <entry><literal>percentage[tab]value</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>Subpercentage</entry>
             <entry><literal>subpercentage[tab]value</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>NoPercentageUpdates</entry>
             <entry><literal>no-percentage-updates</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>Error</entry>
             <entry><literal>error[tab]enum[tab]description</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>Status</entry>
             <entry><literal>status[tab]state</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>RequireRestart</entry>
             <entry><literal>requirerestart[tab]type[tab]details</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>AllowUpdate</entry>
             <entry><literal>allow-cancel[tab]enabled</literal></entry>
-            <entry><literal>stderr</literal></entry>
           </row>
           <row>
             <entry>Package</entry>
