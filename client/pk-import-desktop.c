@@ -130,9 +130,11 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	key_array = g_key_file_get_keys (key, G_KEY_FILE_DESKTOP_GROUP, &len, NULL);
 	locale_array = g_ptr_array_new ();
 	for (i=0; i<len; i++) {
-		/* set the locale */
-		locale_temp = pk_import_get_locale (key_array[i]);
-		g_ptr_array_add (locale_array, g_strdup (locale_temp));
+		if (g_str_has_prefix (key_array[i], "Name")) {
+			/* set the locale */
+			locale_temp = pk_import_get_locale (key_array[i]);
+			g_ptr_array_add (locale_array, g_strdup (locale_temp));
+		}
 	}
 	g_strfreev (key_array);
 
