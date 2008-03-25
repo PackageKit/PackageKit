@@ -175,8 +175,8 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	g_free (name_unlocalised);
 	g_print ("]\n");
 
-	exec = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", locale, NULL);
-	icon = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", locale, NULL);
+	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
+	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
 	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
 	pk_extra_set_package_detail (extra, package_name, icon, exec);
 	g_free (icon);
