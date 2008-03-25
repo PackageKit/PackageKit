@@ -480,10 +480,19 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 
 	/* backends don't do this */
 	if (status == PK_STATUS_ENUM_WAIT) {
+		pk_warning ("backend tried to wait, only the runner should set this value");
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "backends shouldn't use STATUS_WAIT");
 
 		return FALSE;
+	}
+
+	/* do we have to enumate a running call? */
+	if (status != PK_STATUS_ENUM_SETUP &&
+	    status != PK_STATUS_ENUM_RUNNING &&
+	    backend->priv->status == PK_STATUS_ENUM_WAIT) {
+		pk_debug ("emiting status-changed running");
+		g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
 	}
 
 	/* already this? */
