@@ -202,6 +202,13 @@
             </entry>
           </row>
           <row>
+            <entry><literal>no-cache</literal></entry>
+            <entry>
+              The operation is trying to read from the cache, but the cache
+              is not present or invalid
+            </entry>
+          </row>
+          <row>
             <entry><literal>gpg-failure</literal></entry>
             <entry>There was a GPG failure in the transaction</entry>
           </row>
@@ -217,10 +224,10 @@
             </entry>
           </row>
           <row>
-            <entry><literal>no-cache</literal></entry>
+            <entry><literal>package-not-found</literal></entry>
             <entry>
-              The operation is trying to read from the cache, but the cache
-              is not present or invalid
+              The package that is trying to be removed or updated is not
+              installed
             </entry>
           </row>
           <row>
@@ -248,6 +255,12 @@
             </entry>
           </row>
           <row>
+            <entry><literal>group-not-found</literal></entry>
+            <entry>
+	      The specified software group was not found.
+            </entry>
+          </row>
+          <row>
             <entry><literal>create-thread-failed</literal></entry>
             <entry>Failed to create a thread</entry>
           </row>
@@ -256,6 +269,13 @@
             <entry>
               There was a generic transaction error, but please give more
               details in the description
+            </entry>
+          </row>
+          <row>
+            <entry><literal>transaction-cancelled</literal></entry>
+            <entry>
+              The transaction was cancelled as the result of a call
+              to Cancel()
             </entry>
           </row>
           <row>
@@ -280,6 +300,53 @@
             <entry>
               The process was forcibly killed, probably because ignored the
               quit request. This is probably due to it being cancelled
+            </entry>
+          </row>
+          <row>
+            <entry><literal>failed-config-parsing</literal></entry>
+            <entry>
+	      Configuration files could not be read or parsed.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-cancel</literal></entry>
+            <entry>
+	      The Cancel() method was called, but it is too late to
+	      cancel the current transaction.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-get-lock</literal></entry>
+            <entry>
+	      The backend could not acquire a lock on the underlying
+	      package management system.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>no-packages-to-update</literal></entry>
+            <entry>
+	      UpdateSystem() was called, but there are no packages to update.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>cannot-write-repo-config</literal></entry>
+            <entry>
+	      RepoEnable() or RepoSetData() was called, but the
+	      repository configuration file could not be written to.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>local-install-failed</literal></entry>
+            <entry>
+	      A local file could not be installed.  The file might not
+	      be readable, or it might not contain a valid package.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>bad-gpg-signature</literal></entry>
+            <entry>
+	      The package is signed with a GPG signature, but that
+	      signature is not valid in some way.
             </entry>
           </row>
         </tbody>

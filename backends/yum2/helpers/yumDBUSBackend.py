@@ -351,7 +351,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 time.sleep(2)
                 retries += 1
                 if retries > 20:
-                    self.ErrorCode(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
+                    self.ErrorCode(ERROR_CANNOT_GET_LOCK,'Yum is locked by another application')
                     self.Finished(EXIT_FAILED)
                     self.loop.quit()
 
@@ -661,7 +661,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.conf.throttle = old_throttle
             self.yumbase.conf.skip_broken = old_skip_broken
             self._unlock_yum()
-            self.ErrorCode(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self.ErrorCode(ERROR_NO_PACKAGES_TO_UPDATE,"Nothing to do")
             self.Finished(EXIT_FAILED)
             return
 
@@ -726,7 +726,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.YumBaseError, e:
             self._unlock_yum()
-            self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+            # This should be a better-defined error, but I'm not sure
+            # what the exceptions yum is likely to throw here are.
+            self.ErrorCode(ERROR_UNKNOWN,str(e))
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1210,7 +1212,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
                 self._unlock_yum()
-                self.ErrorCode(ERROR_INTERNAL_ERROR,str(e))
+                self.ErrorCode(ERROR_CANNOT_WRITE_REPO_CONFIG,str(e))
                 self.Finished(EXIT_FAILED)
                 return
         else:
@@ -1634,7 +1636,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
             self._unlock_yum()
-            self.ErrorCode(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
+            self.ErrorCode(ERROR_LOCAL_INSTALL_FAILED,'Cannot open file: %s. Skipping.' % pkg)
             self.Finished(EXIT_FAILED)
             self.Exit()
 
@@ -1737,14 +1739,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
                 self._unlock_yum()
-                self.ErrorCode(ERROR_INTERNAL_ERROR,retmsg)
+                self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,retmsg)
                 self.Finished(EXIT_FAILED)
                 return False
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
                 if not keyData:
                     self._unlock_yum()
-                    self.ErrorCode(ERROR_INTERNAL_ERROR,
+                    self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, but no GPG information received from Yum.")
                     self.Finished(EXIT_FAILED)
                     return False

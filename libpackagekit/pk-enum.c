@@ -120,10 +120,13 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
 	{PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,	"cannot-remove-system-package"},
 	{PK_ERROR_ENUM_PROCESS_KILL,		"process-kill"},
-	{PK_ERROR_ENUM_FAILED_INITIALIZATION,	"failed-initialization"},
-	{PK_ERROR_ENUM_FAILED_FINALISE,		"failed-finalise"},
 	{PK_ERROR_ENUM_FAILED_CONFIG_PARSING,	"failed-config-parsing"},
 	{PK_ERROR_ENUM_CANNOT_CANCEL,		"cannot-cancel"},
+	{PK_ERROR_ENUM_CANNOT_GET_LOCK,         "cannot-get-lock"},
+	{PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,   "no-packages-to-update"},
+	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,        "cannot-write-repo-config"},
+	{PK_ERROR_LOCAL_INSTALL_FAILED,         "local-install-failed"},
+	{PK_ERROR_BAD_GPG_SIGNATURE,            "bad-gpg-signature"},
 	{0, NULL}
 };
 
