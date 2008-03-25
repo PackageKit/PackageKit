@@ -522,6 +522,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_search = NULL;
+	client->priv->cached_package_ids = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->synchronous = FALSE;
 	client->priv->name_filter = FALSE;
