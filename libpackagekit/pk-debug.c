@@ -93,7 +93,7 @@ pk_log_line (const gchar *buffer)
 	/* open a file */
 	if (fd == -1) {
 		mkdir (PK_LOG_DIR, 0777);
-		fd = open (PK_LOG_DIR "/PackageKit", O_WRONLY|O_APPEND|O_CREAT);
+		fd = open (PK_LOG_DIR "/PackageKit", O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
 			g_error ("could not open log");
 		}
@@ -104,7 +104,10 @@ pk_log_line (const gchar *buffer)
 		g_warning ("could not write %s", buffer);
 	}
 	/* newline */
-	write (fd, "\n", 1);
+	count = write (fd, "\n", 1);
+	if (count == -1) {
+		g_warning ("could not write newline");
+	}
 }
 
 /**
