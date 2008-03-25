@@ -478,6 +478,14 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 		return FALSE;
 	}
 
+	/* backends don't do this */
+	if (status == PK_STATUS_ENUM_WAIT) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "backends shouldn't use STATUS_WAIT");
+
+		return FALSE;
+	}
+
 	/* already this? */
 	if (backend->priv->status == status) {
 		pk_debug ("already set same status");
