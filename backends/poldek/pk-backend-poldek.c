@@ -570,7 +570,10 @@ poldek_get_installed_packages (void)
 static void
 do_requires (tn_array *installed, tn_array *available, tn_array *requires, struct pkg *pkg, DepsData *data)
 {
-	gint	i;
+	tn_array	*tmp = NULL;
+	gint		i;
+
+	tmp = n_array_new (2, NULL, NULL);
 
 	if (data->filter->installed) {
 		for (i = 0; i < n_array_size (installed); i++) {
@@ -585,6 +588,10 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
         	        if (!ipkg->reqs)
 				continue;
 
+			/* package already added to the array */
+			if (poldek_pkg_in_array (ipkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
+				continue;
+
 			for (j = 0; j < n_array_size (ipkg->reqs); j++) {
 				struct capreq   *req = n_array_nth (ipkg->reqs, j);
 
@@ -595,6 +602,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 
 				if (pkg_satisfies_req (pkg, req, 1)) {
 					n_array_push (requires, pkg_link (ipkg));
+					n_array_push (tmp, pkg_link (ipkg));
                                 	break;
 				}
                 	}
@@ -612,6 +620,10 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 	                if (!apkg->reqs)
 	                        continue;
 
+			/* package already added to the array */
+			if (poldek_pkg_in_array (apkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
+				continue;
+
 	                for (j = 0; j < n_array_size (apkg->reqs); j++) {
 	                        struct capreq   *req = n_array_nth (apkg->reqs, j);
 
@@ -621,14 +633,26 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 	                                continue;
 
 	                        if (pkg_satisfies_req (pkg, req, 1)) {
-	                                if (!poldek_pkg_in_array (apkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
-	                                        n_array_push (requires, pkg_link (apkg));
-
+	                                n_array_push (requires, pkg_link (apkg));
+	                                n_array_push (tmp, pkg_link (apkg));
 	                                break;
                         	}
                 	}
         	}
         }
+
+	/* FIXME: recursive takes too much time for available packages, so don't use it */
+	if (!data->filter->not_installed) {
+		if (data->recursive && tmp && n_array_size (tmp) > 0) {
+			for (i = 0; i < n_array_size (tmp); i++) {
+				struct pkg	*p = n_array_nth (tmp, i);
+
+				do_requires (installed, available, requires, p, data);
+			}
+		}
+	}
+
+	n_array_free (tmp);
 }
 
 /**
@@ -1301,7 +1325,6 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 }
 
 /**
- * FIXME: recursive currently omited
  * backend_get_requires:
  */
 static gboolean
