@@ -313,6 +313,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_LPL,                  "LPL"},
 	{PK_LICENSE_ENUM_MECAB_IPADIC,         "mecab-ipadic"},
 	{PK_LICENSE_ENUM_MIT,                  "MIT"},
+	{PK_LICENSE_ENUM_MIT_WITH_ADVERTISING, "MIT with advertising"},
 	{PK_LICENSE_ENUM_MPLV1_DOT_0,          "MPLv1.0"},
 	{PK_LICENSE_ENUM_MPLV1_DOT_1,          "MPLv1.1"},
 	{PK_LICENSE_ENUM_NCSA,                 "NCSA"},
