@@ -479,6 +479,7 @@ backend_update_packages_update_timeout (gpointer data)
 	_package_current++;
 	len = pk_package_ids_size (_package_ids);
 	if (_package_current + 1 > len) {
+		pk_backend_set_percentage (backend, 100);
 		pk_backend_finished (backend);
 		_signal_timeout = 0;
 		return FALSE;
@@ -504,6 +505,7 @@ backend_update_packages_download_timeout (gpointer data)
 	if (_package_current + 1 > len) {
 		_package_current = 0;
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
+		pk_backend_set_percentage (backend, 50);
 		_signal_timeout = g_timeout_add (2000, backend_update_packages_update_timeout, backend);
 		return FALSE;
 	}
@@ -519,6 +521,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (backend != NULL);
 	_package_ids = package_ids;
 	_package_current = 0;
+	pk_backend_set_percentage (backend, 0);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	_signal_timeout = g_timeout_add (2000, backend_update_packages_download_timeout, backend);
 }
