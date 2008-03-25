@@ -325,6 +325,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Methods ( client -> engine -> backend )
 #
 
+    @threaded
+    @async
     def doInit(self):
         print "Now in doInit()"
         # yumbase is defined outside of this class so the sigquit handler can close the DB.
@@ -334,6 +336,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._setup_yum()
         print "yum set up"
 
+    @threaded
+    @async
     def doExit(self):
         if self.locked:
             self._unlock_yum()
@@ -1885,7 +1889,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _check_init(self):
         ''' Check if yum has setup, else call init '''
         if hasattr(self,'yumbase'):
-            pass
+            self.dnlCallback.reset()
         else:
             self.doInit()
 
@@ -1929,11 +1933,15 @@ class DownloadCallback( BaseMeter ):
         self.totSize = ""
         self.base = base
         self.showNames = showNames
+        self.reset()
+
+    def reset(self):
+        '''Reset download callback for a new transaction.'''
         self.oldName = None
         self.lastPct = 0
         self.totalPct = 0
         self.pkgs = None
-        self.numPkgs=0
+        self.numPkgs = 0
         self.bump = 0.0
 
     def setPackages(self,pkgs,startPct,numPct):
