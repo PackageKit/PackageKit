@@ -66,7 +66,6 @@ struct PkBackendSpawnPrivate
 	gchar			*name;
 	gulong			 signal_finished;
 	gulong			 signal_stdout;
-	gulong			 signal_stderr;
 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
@@ -376,7 +375,6 @@ pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
 	pk_debug ("deleting spawn %p", backend_spawn->priv->spawn);
 	g_signal_handler_disconnect (backend_spawn->priv->spawn, backend_spawn->priv->signal_finished);
 	g_signal_handler_disconnect (backend_spawn->priv->spawn, backend_spawn->priv->signal_stdout);
-	g_signal_handler_disconnect (backend_spawn->priv->spawn, backend_spawn->priv->signal_stderr);
 	g_object_unref (backend_spawn->priv->spawn);
 	backend_spawn->priv->spawn = NULL;
 	return TRUE;
@@ -426,22 +424,11 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	pk_debug ("stdout from %p = '%s'", spawn, line);
 	ret = pk_backend_spawn_parse_common_output (backend_spawn, line);
 	if (!ret) {
-		pk_warning ("failed to parse '%s'", line);
+		pk_debug ("failed to parse '%s'", line);
 	}
-}
-
-/**
- * pk_backend_spawn_stderr_cb:
- **/
-static void
-pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
-{
-	gboolean ret;
-	g_return_if_fail (backend_spawn != NULL);
-	pk_debug ("stderr from %p = '%s'", spawn, line);
 	ret = pk_backend_spawn_parse_common_error (backend_spawn, line);
 	if (!ret) {
-		pk_warning ("failed to parse '%s'", line);
+		pk_debug ("failed to parse '%s'", line);
 	}
 }
 
@@ -465,9 +452,6 @@ pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 	backend_spawn->priv->signal_stdout =
 		g_signal_connect (backend_spawn->priv->spawn, "stdout",
 				  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
-	backend_spawn->priv->signal_stderr =
-		g_signal_connect (backend_spawn->priv->spawn, "stderr",
-				  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
 	return TRUE;
 }
 

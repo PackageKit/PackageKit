@@ -123,6 +123,33 @@ enum {
 static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 
 /**
+ * pk_backend_set_internal:
+ *
+ * Designed for volatile internal state, such as the authentication prompt
+ * response, the proxy to use and that sort of thing
+ **/
+gboolean
+pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return FALSE;
+}
+
+/**
+ * pk_backend_get_internal:
+ *
+ * Must g_free() the return value. Returns NULL on error.
+ **/
+gchar *
+pk_backend_get_internal (PkBackend *backend, const gchar *key)
+{
+	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return NULL;
+}
+
+/**
  * pk_backend_build_library_path:
  **/
 static gchar *
@@ -451,11 +478,36 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 		return FALSE;
 	}
 
+	/* backends don't do this */
+	if (status == PK_STATUS_ENUM_WAIT) {
+		pk_warning ("backend tried to WAIT, only the runner should set this value");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "backends shouldn't use STATUS_WAIT");
+		return FALSE;
+	}
+
+	/* sanity check */
+	if (status == PK_STATUS_ENUM_SETUP && backend->priv->status != PK_STATUS_ENUM_WAIT) {
+		pk_warning ("backend tried to SETUP, but should be in WAIT");
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Tried to SETUP when not in WAIT");
+		return FALSE;
+	}
+
 	/* already this? */
 	if (backend->priv->status == status) {
 		pk_debug ("already set same status");
 		return TRUE;
 	}
+
+	/* do we have to enumate a running call? */
+	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
+		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
+			pk_warning ("emiting status-changed running");
+			g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
+		}
+	}
+
 	backend->priv->status = status;
 
 	pk_debug ("emiting status-changed %s", pk_status_enum_to_text (status));

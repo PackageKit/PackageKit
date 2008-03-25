@@ -630,6 +630,17 @@ pk_client_progress_changed_cb (DBusGProxy  *proxy, const gchar *tid,
 }
 
 /**
+ * pk_client_change_status:
+ */
+static void
+pk_client_change_status (PkClient *client, PkStatusEnum status)
+{
+	pk_debug ("emit status-changed %s", pk_status_enum_to_text (status));
+	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
+	client->priv->last_status = status;
+}
+
+/**
  * pk_client_status_changed_cb:
  */
 static void
@@ -646,11 +657,7 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *tid, const gchar *s
 	}
 
 	status = pk_status_enum_from_text (status_text);
-
-	pk_debug ("emit status-changed %s", status_text);
-	g_signal_emit (client , signals [PK_CLIENT_STATUS_CHANGED], 0, status);
-
-	client->priv->last_status = status;
+	pk_client_change_status (client, status);
 }
 
 /**
@@ -1311,6 +1318,10 @@ pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
 
@@ -1373,6 +1384,10 @@ pk_client_update_system (PkClient *client, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_SYSTEM;
 
@@ -1430,6 +1445,10 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
 	client->priv->cached_filter = g_strdup (filter);
@@ -1476,6 +1495,10 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
 	client->priv->cached_filter = g_strdup (filter);
@@ -1520,6 +1543,10 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
 	client->priv->cached_filter = g_strdup (filter);
@@ -1564,6 +1591,10 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
 	client->priv->cached_filter = g_strdup (filter);
@@ -1619,6 +1650,10 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -1676,6 +1711,10 @@ pk_client_get_requires (PkClient *client, const gchar *filter,
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -1729,6 +1768,10 @@ pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum p
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
 	client->priv->cached_search = g_strdup (search);
@@ -1785,6 +1828,10 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -1827,6 +1874,10 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_ROLLBACK;
 	client->priv->cached_transaction_id = g_strdup (transaction_id);
@@ -1872,6 +1923,10 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
 	client->priv->cached_filter = g_strdup (filter);
@@ -1925,6 +1980,10 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -1975,6 +2034,10 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_FILES;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -2053,6 +2116,10 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
 	client->priv->cached_allow_deps = allow_deps;
@@ -2131,6 +2198,10 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REFRESH_CACHE;
 	client->priv->cached_force = force;
@@ -2213,6 +2284,10 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
 	client->priv->cached_package_id = g_strdup (package_id);
@@ -2298,6 +2373,10 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 	client->priv->cached_package_ids = g_strdupv (package_ids);
@@ -2422,6 +2501,10 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
 	client->priv->cached_full_path = g_strdup (file);
@@ -2498,6 +2581,10 @@ pk_client_service_pack (PkClient *client, const gchar *location, gboolean enable
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SERVICE_PACK;
 	client->priv->cached_force = enabled;
@@ -2552,6 +2639,10 @@ pk_client_get_repo_list (PkClient *client, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
 
@@ -2607,6 +2698,10 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_ENABLE;
@@ -2690,6 +2785,10 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_REPO_SET_DATA;
@@ -2934,6 +3033,10 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* allow clients to respond in the status changed callback */
+	pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetOldTransactions", error,
 				 G_TYPE_STRING, client->priv->tid,
