@@ -153,7 +153,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	{
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
-		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::start(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
+		//pk_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
 			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, "TODO: Put the package summary here if possible");
@@ -163,7 +163,7 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
 	{
-		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::progress(), %s:%d\n\n", _package_id == NULL ? "unknown" : _package_id, value);
+		//pk_debug ("InstallResolvableReportReceiver::progress(), %s:%d", _package_id == NULL ? "unknown" : _package_id, value);
 		if (_package_id != NULL)
 			update_sub_percentage (value);
 		return true;
@@ -171,15 +171,15 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level)
 	{
-		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::problem()\n\n");
+		//pk_debug ("InstallResolvableReportReceiver::problem()");
 		return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level)
 	{
-		//fprintf (stderr, "\n\n----> InstallResolvableReportReceiver::finish(): %s\n\n", _package_id == NULL ? "unknown" : _package_id);
+		//pk_debug ("InstallResolvableReportReceiver::finish(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
-			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
+			//pk_backend_package (_backend, PK_INFO_ENUM_INSTALLED, _package_id, "TODO: Put the package summary here if possible");
 			clear_package_id ();
 		}
 	}

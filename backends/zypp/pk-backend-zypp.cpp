@@ -851,13 +851,12 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 0);
 
 	PkPackageId *pi = pk_package_id_new_from_string (package_id);
-        if (pi == NULL) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-                g_free (package_id);
-
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		g_free (package_id);
 		pk_backend_finished (backend);
-                return FALSE;
-        }
+		return FALSE;
+	}
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
@@ -933,6 +932,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
+	//pk_debug ("package_id=%s", package_id);
 	g_return_if_fail (backend != NULL);
 
 	// For now, don't let the user cancel the install once it's started
@@ -1772,6 +1772,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-        NULL,                                   /* service_pack */
-        backend_what_provides                   /* what_provides */
+	NULL,                                   /* service_pack */
+	backend_what_provides                   /* what_provides */
 );
