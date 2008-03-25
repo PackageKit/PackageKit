@@ -123,6 +123,33 @@ enum {
 static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 
 /**
+ * pk_backend_set_internal:
+ *
+ * Designed for volatile internal state, such as the authentication prompt
+ * response, the proxy to use and that sort of thing
+ **/
+gboolean
+pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data)
+{
+	g_return_val_if_fail (backend != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	return FALSE;
+}
+
+/**
+ * pk_backend_get_internal:
+ *
+ * Must g_free() the return value. Returns NULL on error.
+ **/
+gchar *
+pk_backend_get_internal (PkBackend *backend, const gchar *key)
+{
+	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return NULL;
+}
+
+/**
  * pk_backend_build_library_path:
  **/
 static gchar *
