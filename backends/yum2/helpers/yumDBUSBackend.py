@@ -837,24 +837,42 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         self._check_init()
         self._lock_yum()
-        self.AllowCancel(False)
+        self.AllowCancel(True)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_QUERY)
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
-        self._localInstall(inst_file)
+        po = self._localInstall(inst_file)
+
+        self.AllowCancel(False)
+        self.StatusChanged(STATUS_INSTALL)
+
         try:
-            # Added the package to the transaction set
-            if len(self.yumbase.tsInfo) > 0:
-                successful = self._runYumTransaction()
-                if not successful:
-                    return
-	    else:
-		self.StatusChanged(STATUS_CLEANUP)
+            if po.arch == 'src':
+                # Special case for source package - don't resolve deps
+                rpmDisplay = PackageKitCallback(self)
+                callback = ProcessTransPackageKitCallback(self)
+                self.yumbase._doTransaction(callback,
+                                            display=rpmDisplay)
+            else:
+                # Added the package to the transaction set
+                if len(self.yumbase.tsInfo) > 0:
+                    successful = self._runYumTransaction()
+                    if not successful:
+                        return
+                    else:
+                        self.StatusChanged(STATUS_CLEANUP)
         except yum.Errors.InstallError,e:
             msgs = '\n'.join(e)
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+            self.Finished(EXIT_FAILED)
+            return
+        except yum.Errors.YumBaseError, ye:
+            retmsg = "Could not install package:\n" + ye.value
+            self._unlock_yum()
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
             self.Finished(EXIT_FAILED)
             return
 
@@ -1640,6 +1658,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             self.Exit()
 
+        if po.arch == "src":
+            # Short circuit for srpms
+            self.yumbase.localPackages.append(po)
+            self.yumbase.install(po=po)
+
+            return po
+
         # everything installed that matches the name
         installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
         # go through each package
@@ -1690,6 +1715,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.localPackages.append(po)
             self.yumbase.tsInfo.addUpdate(po, oldpo)
 
+        return po
+
     def _check_for_reboot(self):
         md = self.updateMetadata
         for txmbr in self.yumbase.tsInfo:
@@ -1709,6 +1736,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         This will only work with yum 3.2.4 or higher
         Returns True on success, False on failure
         '''
+
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
             retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
@@ -1716,57 +1744,59 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
             self.Finished(EXIT_FAILED)
             return False
-        else:
-            self._check_for_reboot()
-            if removedeps == False:
-                if len(self.yumbase.tsInfo) > 1:
-                    retmsg = 'package could not be remove, because something depends on it'
-                    self._unlock_yum()
-                    self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
-                    self.Finished(EXIT_FAILED)
-                    return False
-            try:
-                rpmDisplay = PackageKitCallback(self)
-                callback = ProcessTransPackageKitCallback(self)
-                self.yumbase.processTransaction(callback=callback,
-                                                rpmDisplay=rpmDisplay)
-            except yum.Errors.YumDownloadError, ye:
-                retmsg = "Error in Download\n" + "\n".join(ye.value)
+
+        self._check_for_reboot()
+
+        if removedeps == False and len(self.yumbase.tsInfo) > 1:
+            retmsg = 'package could not be removed, because something depends on it'
+            self._unlock_yum()
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.Finished(EXIT_FAILED)
+            return False
+
+        try:
+            rpmDisplay = PackageKitCallback(self)
+            callback = ProcessTransPackageKitCallback(self)
+            self.yumbase.processTransaction(callback=callback,
+                                            rpmDisplay=rpmDisplay)
+        except yum.Errors.YumDownloadError, ye:
+            retmsg = "Error in Download\n" + "\n".join(ye.value)
+            self._unlock_yum()
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+            self.Finished(EXIT_FAILED)
+            return False
+        except yum.Errors.YumGPGCheckError, ye:
+            retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
+            self._unlock_yum()
+            self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,retmsg)
+            self.Finished(EXIT_FAILED)
+            return False
+        except GPGKeyNotImported, e:
+            keyData = self.yumbase.missingGPGKey
+            if not keyData:
                 self._unlock_yum()
-                self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
-                self.Finished(EXIT_FAILED)
-                return False
-            except yum.Errors.YumGPGCheckError, ye:
-                retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
-                self._unlock_yum()
-                self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,retmsg)
-                self.Finished(EXIT_FAILED)
-                return False
-            except GPGKeyNotImported, e:
-                keyData = self.yumbase.missingGPGKey
-                if not keyData:
-                    self._unlock_yum()
-                    self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,
+                self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, but no GPG information received from Yum.")
-                    self.Finished(EXIT_FAILED)
-                    return False
-                self.RepoSignatureRequired(keyData['po'].repoid,
-                                           keyData['keyurl'],
-                                           keyData['userid'],
-                                           keyData['hexkeyid'],
-                                           keyData['fingerprint'],
-                                           keyData['timestamp'],
-                                           SIGTYE_GPG)
-                self._unlock_yum()
-                self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
                 self.Finished(EXIT_FAILED)
                 return False
-            except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing\n" + ye.value
-                self._unlock_yum()
-                self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
-                self.Finished(EXIT_FAILED)
-                return False
+            self.RepoSignatureRequired(keyData['po'].repoid,
+                                       keyData['keyurl'],
+                                       keyData['userid'],
+                                       keyData['hexkeyid'],
+                                       keyData['fingerprint'],
+                                       keyData['timestamp'],
+                                       SIGTYE_GPG)
+            self._unlock_yum()
+            self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
+            self.Finished(EXIT_FAILED)
+            return False
+        except yum.Errors.YumBaseError, ye:
+            retmsg = "Error in Transaction Processing\n" + ye.value
+            self._unlock_yum()
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+            self.Finished(EXIT_FAILED)
+            return False
+
         return True
 
     def _get_status(self,notice):
