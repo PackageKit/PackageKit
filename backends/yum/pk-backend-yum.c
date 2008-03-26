@@ -378,6 +378,19 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 	pk_backend_spawn_helper (spawn, "repo-set-data.py", rid, parameter, value, NULL);
 }
 
+/**
+ * backend_what_provides:
+ */
+static void
+backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+{
+	const gchar *provides_text;
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (spawn != NULL);
+	provides_text = pk_provides_enum_to_text (provides);
+	pk_backend_spawn_helper (spawn, "what-provides.py", filter, provides_text, search, NULL);
+}
+
 PK_BACKEND_OPTIONS (
 	"YUM",					/* description */
 	"Tim Lauridsen <timlau@fedoraproject.org>",	/* author */
@@ -408,6 +421,6 @@ PK_BACKEND_OPTIONS (
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	NULL,					/* service_pack */
-	NULL					/* what_provides */
+	backend_what_provides			/* what_provides */
 );
 
