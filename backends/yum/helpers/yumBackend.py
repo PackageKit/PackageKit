@@ -1385,6 +1385,7 @@ class ProcessTransPackageKitCallback:
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
             self.base.percentage(40)
+            self.base.status(STATUS_SIG_CHECK)
             pass
         elif state == PT_TEST_TRANS:
             self.base.allow_cancel(False)
