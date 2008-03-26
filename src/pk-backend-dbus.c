@@ -1381,7 +1381,7 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 	PkBackendDbus *backend_dbus = PK_BACKEND_DBUS (libst_get_user_data (test));
 
 	/* save time */
-	libst_set_user_data (test, (gpointer) libst_elapsed (test));
+	libst_set_user_data (test, GINT_TO_POINTER (libst_elapsed (test)));
 
 	/************************************************************/
 	libst_title (test, "cancel");
@@ -1530,7 +1530,7 @@ libst_backend_dbus (LibSelfTest *test)
 	libst_loopwait (test, 5000);
 	libst_loopcheck (test);
 	libst_success (test, NULL);
-	elapsed = (guint) libst_get_user_data (test);
+	elapsed = GPOINTER_TO_UINT (libst_get_user_data (test));
 
 	/************************************************************/
 	libst_title (test, "check we waited correct time");
