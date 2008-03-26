@@ -330,7 +330,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def doInit(self):
         print "Now in doInit()"
         # yumbase is defined outside of this class so the sigquit handler can close the DB.
-        yumbase = PackageKitYumBase()
+        yumbase = PackageKitYumBase(self)
         self.yumbase = yumbase
         print "new yumbase object"
         self._setup_yum()
@@ -2124,16 +2124,38 @@ class ProcessTransPackageKitCallback:
             self.base.PercentageChanged(50)
             pass
 
+
+class DepSolveCallback(object):
+
+    # XXX takes a PackageKitBackend so we can call StatusChanged on it.
+    # That's kind of hurky.
+    def __init__(self, backend):
+        self.started = False
+        self.backend = backend
+
+    def start(self):
+       if not self.started:
+           self.backend.StatusChanged(STATUS_DEP_RESOLVE)
+
+    # Be lazy and not define the others explicitly
+    def _do_nothing(self, *args, **kwargs):
+        pass
+
+    def __getattr__(self, x):
+        return self._do_nothing
+
+
 class PackageKitYumBase(yum.YumBase):
     """
     Subclass of YumBase.  Needed so we can overload _checkSignatures
     and nab the gpg sig data
     """
 
-    def __init__(self):
+    def __init__(self, backend):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
         self.skipped_packages = []
+        self.dsCallback = DepSolveCallback(backend)
 
     # Modified searchGenerator to make sure that
     # non unicode strings read from rpmdb is converted to unicode

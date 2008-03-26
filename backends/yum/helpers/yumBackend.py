@@ -223,7 +223,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self,args,lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
-        self.yumbase = PackageKitYumBase()
+        self.yumbase = PackageKitYumBase(self)
         yumbase = self.yumbase
         self._setup_yum()
         if lock:
@@ -1397,15 +1397,37 @@ class ProcessTransPackageKitCallback:
             self.base.percentage(50)
             pass
 
+
+class DepSolveCallback(object):
+
+    # XXX takes a PackageKitBackend so we can call StatusChanged on it.
+    # That's kind of hurky.
+    def __init__(self, backend):
+        self.started = False
+        self.backend = backend
+
+    def start(self):
+       if not self.started:
+           self.backend.status(STATUS_DEP_RESOLVE)
+
+    # Be lazy and not define the others explicitly
+    def _do_nothing(self, *args, **kwargs):
+        pass
+
+    def __getattr__(self, x):
+        return self._do_nothing
+
+
 class PackageKitYumBase(yum.YumBase):
     """
     Subclass of YumBase.  Needed so we can overload _checkSignatures
     and nab the gpg sig data
     """
 
-    def __init__(self):
+    def __init__(self, backend):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
+        self.dsCallback = DepSolveCallback(backend)
 
     def _checkSignatures(self,pkgs,callback):
         ''' The the signatures of the downloaded packages '''
