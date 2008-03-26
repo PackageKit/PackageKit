@@ -1390,6 +1390,7 @@ class ProcessTransPackageKitCallback:
         elif state == PT_TEST_TRANS:
             self.base.allow_cancel(False)
             self.base.percentage(45)
+            self.base.status(STATUS_TEST_COMMIT)
             pass
         elif state == PT_TRANSACTION:
             self.base.allow_cancel(False)

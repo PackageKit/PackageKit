@@ -64,6 +64,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DEP_RESOLVE,		"dep-resolve"},
 	{PK_STATUS_ENUM_SIG_CHECK,		"sig-check"},
 	{PK_STATUS_ENUM_ROLLBACK,		"rollback"},
+	{PK_STATUS_ENUM_TEST_COMMIT,		"test-commit"},
 	{PK_STATUS_ENUM_COMMIT,			"commit"},
 	{PK_STATUS_ENUM_REQUEST,		"request"},
 	{PK_STATUS_ENUM_FINISHED,		"finished"},

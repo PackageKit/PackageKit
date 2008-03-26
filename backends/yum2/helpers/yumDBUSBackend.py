@@ -2117,6 +2117,7 @@ class ProcessTransPackageKitCallback:
         elif state == PT_TEST_TRANS:
             self.base.AllowCancel(False)
             self.base.PercentageChanged(45)
+            self.base.StatusChanged(STATUS_TEST_COMMIT)
             pass
         elif state == PT_TRANSACTION:
             self.base.AllowCancel(False)
