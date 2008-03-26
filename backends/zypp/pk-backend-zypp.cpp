@@ -664,7 +664,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_AVAILABLE,
 				    package_id,
-				    res->description ().c_str ());
+					"");
+				    // some package descriptions generate markup parse failures
+					// causing the update to show empty package lines, comment for now
+					// res->description ().c_str ());
 		g_free (package_id);
 	}
 
