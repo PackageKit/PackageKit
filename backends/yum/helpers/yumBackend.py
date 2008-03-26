@@ -696,6 +696,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init(lazy_cache=True)
         self.allow_cancel(False)
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
@@ -780,6 +781,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False)
         self.percentage(0)
+        self.status(STATUS_RUNNING)
         txmbrs = []
         for package in packages:
             pkg,inst = self._findPackage(package)
@@ -803,6 +805,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
@@ -824,6 +827,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
         txmbrs = []
         for package in packages:
             pkg,inst = self._findPackage(package)
@@ -906,6 +910,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         pkg,inst = self._findPackage( package)
         if pkg and inst:

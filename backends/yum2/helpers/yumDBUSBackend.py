@@ -639,6 +639,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
@@ -800,6 +801,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
 
         pkg,inst = self._findPackage(package)
         if pkg:
@@ -897,6 +899,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
 
         for package_id in packages:
             package, installed = self._findPackage(package_id)
@@ -942,6 +945,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(False)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
 
         pkg,inst = self._findPackage( package)
         if pkg and inst:
@@ -1259,6 +1263,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._lock_yum()
         self.AllowCancel(True)
         self.PercentageChanged(0)
+        self.StatusChanged(STATUS_RUNNING)
 
         # Go get the GPG key from the given URL
         try:
