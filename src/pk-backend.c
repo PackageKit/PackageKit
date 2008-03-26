@@ -473,7 +473,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error) {
+	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
