@@ -47,6 +47,13 @@
     A method has command line arguments seporated with tabs, and data is also
     seporated with tabs.
   </para>
+  <para>
+    It is important to flush the standard output after each output, else
+    Linux will helpfully buffer the output into more efficient size chunks.
+    If you do not flush, then there will be a long IPC delay.
+    Flushing can be achived in C using <literal>fflush</literal> or in python
+    using <literal>sys.stdout.flush()</literal>.
+  </para>
 
   <sect1 id="backends-spawn-methods">
     <title>Methods</title>
@@ -196,37 +203,30 @@
           <row>
             <entry>Package</entry>
             <entry><literal>package_id[tab]status[tab]summary</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>Description</entry>
             <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>Files</entry>
             <entry><literal>files[tab]package_id[tab]file_list</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>UpdateDetail</entry>
             <entry><literal>package_id[tab]updates[tab]obsoletes[tab]vendor_url[tab]bugzilla_url[tab]cve_url[tab]restart[tab]update_text</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>ChangeTransactionData</entry>
             <entry><literal>change-transaction-data[tab]data</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>RepoSignatureRequired</entry>
             <entry><literal>repository_name[tab]key_url[tab]key_userid[tab]key_id[tab]key_fingerprint[tab]key_timestamp[tab]type</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
           <row>
             <entry>RepoDetail</entry>
             <entry><literal>repo-detail[tab]repo_id[tab]description[tab]enabled</literal></entry>
-            <entry><literal>stdout</literal></entry>
           </row>
         </tbody>
       </tgroup>
