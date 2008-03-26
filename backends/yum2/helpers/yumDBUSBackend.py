@@ -798,6 +798,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
         '''
+        if inst_file.endswith('.src.rpm'):
+            self.ErrorCode(ERROR_INTERNAL_ERROR,'Backend will not install a src rpm file')
+            self.Finished(EXIT_FAILED)
+            return
+        
         self._check_init()
         self._lock_yum()
         self.AllowCancel(False)
