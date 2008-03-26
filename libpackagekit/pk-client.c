@@ -183,7 +183,7 @@ pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 
 	/* dumb */
 	if (error == NULL) {
-		pk_warning ("%s", buffer);
+		pk_warning ("No error set, so can't set: %s", buffer);
 		ret = FALSE;
 		goto out;
 	}
@@ -521,12 +521,10 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_full_path = NULL;
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
-	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
 	client->priv->use_buffer = FALSE;
 	client->priv->synchronous = FALSE;
 	client->priv->name_filter = FALSE;
-	client->priv->tid = NULL;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
@@ -3119,7 +3117,6 @@ pk_client_get_filters (PkClient *client)
 gboolean
 pk_client_requeue (PkClient *client, GError **error)
 {
-	PkRoleEnum role;
 	gboolean ret;
 	PkClientPrivate *priv = PK_CLIENT_GET_PRIVATE (client);
 
@@ -3132,14 +3129,15 @@ pk_client_requeue (PkClient *client, GError **error)
 		return FALSE;
 	}
 
-	/* save the role */
-	role = priv->role;
+	/* clear enough data of the client to allow us to requeue */
+	g_free (client->priv->tid);
+	client->priv->tid = NULL;
+	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->is_finished = FALSE;
 
-	/* reset this client, which doesn't clear cached data */
-	pk_client_reset (client, NULL);
-
-	/* restore the role */
-	priv->role = role;
+	/* clear hash and package list */
+	g_hash_table_remove_all (client->priv->hash);
+	pk_package_list_clear (client->priv->package_list);
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
