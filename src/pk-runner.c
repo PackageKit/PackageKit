@@ -429,7 +429,7 @@ gboolean
 pk_runner_what_provides (PkRunner *runner, const gchar *filter, PkProvidesEnum provides, const gchar *search)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
-	if (runner->priv->backend->desc->get_requires == NULL) {
+	if (runner->priv->backend->desc->what_provides == NULL) {
 		pk_debug ("Not implemented yet: WhatProvides");
 		return FALSE;
 	}
