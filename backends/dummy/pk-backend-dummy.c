@@ -110,7 +110,6 @@ backend_cancel (PkBackend *backend)
 		g_source_remove (_signal_timeout);
 
 		/* emulate that it takes us a few ms to cancel */
-		pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
 		g_timeout_add (1500, backend_cancel_timeout, backend);
 	}
 }
