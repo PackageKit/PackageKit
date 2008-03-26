@@ -95,7 +95,7 @@ pk_log_line (const gchar *buffer)
 		mkdir (PK_LOG_DIR, 0777);
 		fd = open (PK_LOG_DIR "/PackageKit", O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
-			g_error ("could not open log");
+			g_error ("could not open log: '%s'", PK_LOG_DIR "/PackageKit");
 		}
 	}
 	/* whole line */
