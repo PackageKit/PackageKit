@@ -503,7 +503,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	/* do we have to enumate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
 		if (backend->priv->status == PK_STATUS_ENUM_SETUP) {
-			pk_warning ("emiting status-changed running");
+			pk_debug ("emiting status-changed running");
 			g_signal_emit (backend, signals [PK_BACKEND_STATUS_CHANGED], 0, PK_STATUS_ENUM_RUNNING);
 		}
 	}
@@ -860,7 +860,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 }
 
 /**
- * pk_backend_finished_delay:
+ * pk_backend_error_timeout_delay_cb:
  *
  * We have to call Finished() within PK_BACKEND_FINISHED_ERROR_TIMEOUT of ErrorCode(), enforce this.
  **/
