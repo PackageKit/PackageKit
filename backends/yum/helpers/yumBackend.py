@@ -537,6 +537,34 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
 
+    def what_provides(self, filters, provides_type, search):
+        '''
+        Implement the {backend}-what-provides functionality
+        '''
+        self._check_init(lazy_cache=True)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        fltlist = filters.split(';')
+        found = {}
+        if not FILTER_NOT_INSTALLED in fltlist:
+            # Check installed for file
+            matches = self.yumbase.rpmdb.searchProvides(search)
+            for pkg in matches:
+                if not found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+                        found[str(pkg)] = 1
+        if not FILTER_INSTALLED in fltlist:
+            # Check available for file
+            matches = self.yumbase.pkgSack.searchProvides(search)
+            for pkg in matches:
+                if found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+                        found[str(pkg)] = 1
+
     def _getEVR(self,idver):
         '''
         get the e,v,r from the package id version
