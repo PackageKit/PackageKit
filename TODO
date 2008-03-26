@@ -3,17 +3,10 @@ Order of no particular importance:
 * Make installing firmware with udev possible:
   http://lists.freedesktop.org/archives/packagekit/2008-March/002430.html
 
-* Make the Update call into Updates. Big change.
-
 * Fix ServicePack to work correctly:
   http://lists.freedesktop.org/archives/packagekit/2008-March/002434.html
 
 * Find out why yum doesn't output some package status calls.
-
-* Lots of the functions are not well commented with gtk-doc. Most
-important is to get the libpackagekit/*.c annotated as it's used in
-other projects. This is probably quite a boring job but is a good way to
-work out how PackageKit is put together.
 
 * We need to make sure the html documentation is still correct and easy
 to read - does any of it sound like technobabble? Is it easy enough for
@@ -38,16 +31,8 @@ org.freedesktop.PackageKit.conf file installed in the system prefix -
 maybe we can #ifdef the daemon to run in the session bus for some
 testing.
 
-* The gnome-packagekit tools don't exactly conform the the GNOME Human
-Interface Guidelines (HIG). Someone needs to evaluate the GUI tools and
-suggest changing some control types, adding key-shortcuts and tooltips
-and changing the spacing between widgets where needed.
-
 *** write to the database for config stuff
  - Probably should move the job number too
-
-*** package->status ***
-Convert the backends to send more status calls.
 
 *** Add a way to import GPG keys ***
 In fedora, if you add a signed repo you have to agree to the GPG key.
@@ -59,17 +44,7 @@ Have different permissions for signed and unsigned repos.
 To do rollbacks sanely in PK we need a few things:
  - allow transaction data to be changed in _db
 
-*** Make resolve easier to use ***
-resolve in pkcon has to check for installed package already - and not
-display a cryptic message when already installed
-
 *** Don't display install if something is upgradable
  - Return update when we search for something that is installed, but an
    update exists for
-
-*** FIX WAF:
- - build errors
- - build enum.py
- - install the bash completion script
- - install the yum module
 
