@@ -182,7 +182,7 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (plist->priv->array, i);
 		ret = pk_package_id_equal (item->package_id, package_id);
-		if (ret == TRUE) {
+		if (ret) {
 			break;
 		}
 	}
@@ -276,7 +276,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "gnome;1.23;i386;data", "GNOME!");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -294,7 +294,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check exists");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;data");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -303,7 +303,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check exists different data");
 	ret = pk_package_list_contains (plist, "gnome;1.23;i386;fedora");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -312,7 +312,7 @@ libst_package_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add entry");
 	text = pk_package_list_get_string (plist);
-	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!") == TRUE) {
+	if (pk_strequal (text, "installed\tgnome;1.23;i386;data\tGNOME!")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "get string incorrect '%s'", text);

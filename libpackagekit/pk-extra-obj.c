@@ -149,7 +149,7 @@ libst_extra_obj (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -194,7 +194,7 @@ libst_extra_obj (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "free eobj");
 	ret = pk_extra_obj_free (eobj);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

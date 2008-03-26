@@ -217,7 +217,7 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 	}
 
 	/* have we already been marked as finished? */
-	if (runner->priv->finished == TRUE) {
+	if (runner->priv->finished) {
 		*error_text = g_strdup ("Already finished");
 		return FALSE;
 	}
@@ -325,7 +325,7 @@ pk_runner_run (PkRunner *runner)
 	g_return_val_if_fail (runner != NULL, FALSE);
 
 	ret = pk_runner_set_running (runner);
-	if (ret == TRUE) {
+	if (ret) {
 		/* we start inhibited, it's up to the backed to
 		 * release early if a shutdown is possible */
 		pk_inhibit_add (runner->priv->inhibit, runner);
@@ -942,7 +942,7 @@ pk_runner_tid_valid (PkRunner *runner)
 	}
 
 	/* have we already been marked as finished? */
-	if (runner->priv->finished == TRUE) {
+	if (runner->priv->finished) {
 		pk_debug ("Already finished, so it can't be us");
 		return FALSE;
 	}

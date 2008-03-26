@@ -120,7 +120,7 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "succeeded") == TRUE) {
+		if (pk_strequal (col, "succeeded")) {
 			ret = pk_strtouint (value, &temp);
 			if (ret == FALSE) {
 				pk_warning ("failed to convert");
@@ -134,23 +134,23 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (pk_strequal (col, "role") == TRUE) {
+		} else if (pk_strequal (col, "role")) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
 			}
-		} else if (pk_strequal (col, "transaction_id") == TRUE) {
+		} else if (pk_strequal (col, "transaction_id")) {
 			if (value != NULL) {
 				item.tid = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "timespec") == TRUE) {
+		} else if (pk_strequal (col, "timespec")) {
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "data") == TRUE) {
+		} else if (pk_strequal (col, "data")) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "duration") == TRUE) {
+		} else if (pk_strequal (col, "duration")) {
 			ret = pk_strtouint (value, &item.duration);
 			if (ret == FALSE) {
 				pk_warning ("failed to convert");
@@ -216,7 +216,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "timespec") == TRUE) {
+		if (pk_strequal (col, "timespec")) {
 			*timespec = g_strdup (value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -578,7 +578,7 @@ libst_transaction_db (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set the correct time");
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to reset value");

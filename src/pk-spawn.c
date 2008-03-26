@@ -108,7 +108,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 	guint bytes_processed;
 
 	/* ITS4: ignore, GString is always NULL terminated */
-	if (pk_strzero (string->str) == TRUE) {
+	if (pk_strzero (string->str)) {
 		return FALSE;
 	}
 
@@ -127,7 +127,7 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string, gboolean is_stdout)
 		message = g_locale_to_utf8 (lines[i], -1, NULL, NULL, NULL);
 		if (message == NULL) {
 			pk_warning ("cannot covert line to UTF8: %s", lines[i]);
-		} else if (is_stdout == TRUE) {
+		} else if (is_stdout) {
 			pk_debug ("emitting stdout %s", message);
 			g_signal_emit (spawn, signals [PK_SPAWN_STDOUT], 0, message);
 		}
@@ -152,7 +152,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	int status;
 
 	/* this shouldn't happen */
-	if (spawn->priv->finished == TRUE) {
+	if (spawn->priv->finished) {
 		pk_error ("finished twice!");
 	}
 
@@ -205,7 +205,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	gint retval;
 
 	/* check if process has already gone */
-	if (spawn->priv->finished == TRUE) {
+	if (spawn->priv->finished) {
 		pk_warning ("already finished, ignoring");
 		return FALSE;
 	}
@@ -240,7 +240,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	gint retval;
 
 	/* check if process has already gone */
-	if (spawn->priv->finished == TRUE) {
+	if (spawn->priv->finished) {
 		pk_warning ("already finished, ignoring");
 		return FALSE;
 	}
@@ -424,7 +424,7 @@ pk_test_get_data (const gchar *filename)
 	/* check to see if we are being run in the build root */
 	full = g_build_filename ("..", "data", "tests", filename, NULL);
 	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret == TRUE) {
+	if (ret) {
 		return full;
 	}
 	g_free (full);
@@ -432,7 +432,7 @@ pk_test_get_data (const gchar *filename)
 	/* check to see if we are being run in make check */
 	full = g_build_filename ("..", "..", "data", "tests", filename, NULL);
 	ret = g_file_test (full, G_FILE_TEST_EXISTS);
-	if (ret == TRUE) {
+	if (ret) {
 		return full;
 	}
 	g_free (full);
@@ -519,7 +519,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "make sure run correct helper");
 	mexit = -1;
 	ret = pk_spawn_command (spawn, path);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "ran correct file");
 	} else {
 		libst_failed (test, "did not run helper");
@@ -560,7 +560,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "make sure run correct helper, and kill it");
 	mexit = BAD_EXIT;
 	ret = pk_spawn_command (spawn, path);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not run helper");
@@ -588,7 +588,7 @@ libst_spawn (LibSelfTest *test)
 	mexit = BAD_EXIT;
 	path = pk_test_get_data ("pk-spawn-test-sigquit.sh");
 	ret = pk_spawn_command (spawn, path);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not run helper");
@@ -613,7 +613,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "run lots of data for profiling");
 	path = pk_test_get_data ("pk-spawn-test-profiling.sh");
 	ret = pk_spawn_command (spawn, path);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "did not run profiling helper");

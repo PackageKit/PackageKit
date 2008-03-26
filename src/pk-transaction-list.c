@@ -84,7 +84,7 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* we might have recently finished this, but not removed it */
-		if (item->finished == TRUE) {
+		if (item->finished) {
 			continue;
 		}
 		/* we might not have this set yet */
@@ -192,7 +192,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	}
 
 	/* transaction is already finished? */
-	if (item->finished == TRUE) {
+	if (item->finished) {
 		pk_warning ("transaction %s finished twice!", item->tid);
 		return;
 	}
@@ -217,7 +217,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE &&
+		if (item->committed &&
 		    item->running == FALSE &&
 		    item->finished == FALSE) {
 			pk_debug ("running %s", item->tid);
@@ -250,8 +250,8 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 	length = tlist->priv->array->len;
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->committed == TRUE &&
-		    item->running == TRUE &&
+		if (item->committed &&
+		    item->running &&
 		    item->finished == FALSE) {
 			count++;
 		}
@@ -317,7 +317,7 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		/* only return in the list if it worked */
-		if (item->committed == TRUE && item->finished == FALSE) {
+		if (item->committed && item->finished == FALSE) {
 			array[count] = g_strdup (item->tid);
 			count++;
 		}

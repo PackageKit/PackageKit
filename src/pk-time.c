@@ -421,7 +421,7 @@ libst_time (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure we can add data");
 	ret = pk_time_add_data (time, 10);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

@@ -219,7 +219,7 @@ libst_backend_thread (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_true, NULL);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "wait for a thread failed");
@@ -249,7 +249,7 @@ libst_backend_thread (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false");
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_false, NULL);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "wait for a thread failed");
@@ -279,7 +279,7 @@ libst_backend_thread (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");
 	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_immediate_false, NULL);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "returned false!");

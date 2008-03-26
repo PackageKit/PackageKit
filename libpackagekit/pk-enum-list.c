@@ -141,7 +141,7 @@ pk_enum_list_contains_priority (PkEnumList *elist, gint value, ...)
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	/* we must query at least one thing */
-	if (pk_enum_list_contains (elist, value) == TRUE) {
+	if (pk_enum_list_contains (elist, value)) {
 		return value;
 	}
 
@@ -150,7 +150,7 @@ pk_enum_list_contains_priority (PkEnumList *elist, gint value, ...)
 	for (i=0;; i++) {
 		value_temp = va_arg (args, gint);
 		/* do we have this one? */
-		if (pk_enum_list_contains (elist, value_temp) == TRUE) {
+		if (pk_enum_list_contains (elist, value_temp)) {
 			retval = value_temp;
 			break;
 		}
@@ -190,7 +190,7 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 	}
 
 	/* check if we have nothing */
-	if (pk_strequal (enums, "none") == TRUE) {
+	if (pk_strequal (enums, "none")) {
 		pk_debug ("no values");
 		return TRUE;
 	}
@@ -510,7 +510,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set action builder");
 	ret = pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -519,7 +519,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get empty list");
 	text = pk_enum_list_to_string (elist);
-	if (pk_strequal (text, "none") == TRUE) {
+	if (pk_strequal (text, "none")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'none'", text);
@@ -538,7 +538,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "append single");
 	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -574,7 +574,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get single list");
 	text = pk_enum_list_to_string (elist);
-	if (pk_strequal (text, "search-name") == TRUE) {
+	if (pk_strequal (text, "search-name")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'search-name'", text);
@@ -584,7 +584,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add multiple");
 	ret = pk_enum_list_append_multiple (elist, PK_ROLE_ENUM_SEARCH_DETAILS, PK_ROLE_ENUM_SEARCH_GROUP, -1);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -630,7 +630,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get multiple list");
 	text = pk_enum_list_to_string (elist);
-	if (pk_strequal (text, "search-name;search-details;search-group") == TRUE) {
+	if (pk_strequal (text, "search-name;search-details;search-group")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'search-name;search-details;search-group'", text);
@@ -640,7 +640,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "remove single");
 	ret = pk_enum_list_remove (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -680,7 +680,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get none enum list");
 	text = pk_enum_list_to_string (elist);
-	if (pk_strequal (text, "none") == TRUE) {
+	if (pk_strequal (text, "none")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid '%s', should be 'none'", text);

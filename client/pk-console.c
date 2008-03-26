@@ -67,7 +67,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	guint extra = 0;
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+	if (is_console && printed_bar && has_output == FALSE) {
 		g_print ("\r");
 	}
 
@@ -164,7 +164,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 {
 	gchar *repo;
 	repo = pk_strpad (repo_id, 28);
-	if (enabled == TRUE) {
+	if (enabled) {
 		g_print ("  enabled   %s %s\n", repo, description);
 	} else {
 		g_print ("  disabled  %s %s\n", repo, description);
@@ -247,7 +247,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	gchar *padding;
 
 	/* don't spin if we have had output */
-	if (has_output == TRUE) {
+	if (has_output) {
 		return FALSE;
 	}
 
@@ -265,7 +265,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	}
 	g_print ("]");
 
-	if (pulse_state->move_forward == TRUE) {
+	if (pulse_state->move_forward) {
 		if (pulse_state->position == progress_bar_size - 2) {
 			pulse_state->move_forward = FALSE;
 			pulse_state->position--;
@@ -302,7 +302,7 @@ pk_console_draw_pulse_bar (void)
 		return;
 	}
 	has_output = FALSE;
-	if (is_console == TRUE) {
+	if (is_console) {
 		pulse_state.position = 1;
 		pulse_state.move_forward = TRUE;
 		timer_id = g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
@@ -316,7 +316,7 @@ static void
 pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
 				guint elapsed, guint remaining, gpointer data)
 {
-	if (is_console == TRUE) {
+	if (is_console) {
 		if (percentage == PK_CLIENT_PERCENTAGE_INVALID) {
 			pk_console_draw_pulse_bar ();
 		} else {
@@ -377,7 +377,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	}
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+	if (is_console && printed_bar && has_output == FALSE) {
 		g_print ("\r");
 		blanking = g_strnfill (pk_console_get_terminal_columns (), ' ');
 		g_print ("%s", blanking);
@@ -439,7 +439,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
-	if (valid == TRUE) {
+	if (valid) {
 		return g_strdup (package);
 	}
 
@@ -536,7 +536,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 	/* pretty print */
 	g_print ("%s", question);
-	if (defaultyes == TRUE) {
+	if (defaultyes) {
 		g_print (" [Y/n] ");
 	} else {
 		g_print (" [N/y] ");
@@ -556,7 +556,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 		}
 
 		/* default choice */
-		if (answer == '\n' && defaultyes == TRUE) {
+		if (answer == '\n' && defaultyes) {
 			return TRUE;
 		}
 		if (answer == '\n' && defaultyes == FALSE) {
@@ -979,7 +979,7 @@ static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
@@ -995,7 +995,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   gulong size, gpointer data)
 {
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 	g_print (_("Package description\n"));
@@ -1017,7 +1017,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	gchar **filevector = g_strsplit (filelist, ";", 0);
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 
@@ -1152,7 +1152,7 @@ main (int argc, char *argv[])
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
 
-	if (program_version == TRUE) {
+	if (program_version) {
 		g_print (VERSION "\n");
 		return 0;
 	}

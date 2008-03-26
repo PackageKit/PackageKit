@@ -207,7 +207,7 @@ pk_desktop_process_directory (const gchar *directory)
 	while (name != NULL) {
 		/* ITS4: ignore, not used for allocation */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
-		if (match == TRUE) {
+		if (match) {
 			filename = g_build_filename (directory, name, NULL);
 
 			/* get the name */

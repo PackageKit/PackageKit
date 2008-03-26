@@ -103,7 +103,7 @@ pk_import_specspo_do_package (const gchar *package_name)
 	for (j=0; j<locale_array->len; j++) {
 		locale = g_ptr_array_index (locale_array, j);
 		set_locale = setlocale (LC_ALL, locale);
-		if (pk_strequal (set_locale, locale) == TRUE) {
+		if (pk_strequal (set_locale, locale)) {
 			/* get the translation */
 			trans = gettext (summary);
 

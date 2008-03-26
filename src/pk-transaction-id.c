@@ -175,7 +175,7 @@ libst_transaction_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "tid equal pass (same)");
 	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234def;r23");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -184,7 +184,7 @@ libst_transaction_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "tid equal pass (different)");
 	ret = pk_transaction_id_equal ("34;1234def;unknown", "34;1234def;r23");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -193,7 +193,7 @@ libst_transaction_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "tid equal fail 1");
 	ret = pk_transaction_id_equal ("34;1234def;r23", "35;1234def;r23");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -202,7 +202,7 @@ libst_transaction_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "tid equal fail 2");
 	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234dff;r23");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

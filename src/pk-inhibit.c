@@ -88,7 +88,7 @@ pk_inhibit_lock (PkInhibit *inhibit)
 		pk_warning ("not connected to HAL");
 		return FALSE;
 	}
-	if (inhibit->priv->is_locked == TRUE) {
+	if (inhibit->priv->is_locked) {
 		pk_warning ("already inhibited, not trying again");
 		return FALSE;
 	}
@@ -103,7 +103,7 @@ pk_inhibit_lock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
-	if (ret == TRUE) {
+	if (ret) {
 		inhibit->priv->is_locked = TRUE;
 		pk_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
@@ -144,7 +144,7 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 		printf ("DEBUG: ERROR: %s\n", error->message);
 		g_error_free (error);
 	}
-	if (ret == TRUE) {
+	if (ret) {
 		inhibit->priv->is_locked = FALSE;
 		pk_debug ("emit lock %i", inhibit->priv->is_locked);
 		g_signal_emit (inhibit, signals [PK_INHIBIT_LOCKED], 0, inhibit->priv->is_locked);
@@ -218,7 +218,7 @@ pk_inhibit_finalize (GObject *object)
 	inhibit = PK_INHIBIT (object);
 
 	/* force an unlock if we are inhibited */
-	if (inhibit->priv->is_locked == TRUE) {
+	if (inhibit->priv->is_locked) {
 		ret = pk_inhibit_unlock (inhibit);
 		if (!ret) {
 			pk_warning ("failed to unock on finalise!");
@@ -342,7 +342,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add 123");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (123));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "inhibited");
 	} else {
 		libst_failed (test, "could not inhibit");
@@ -351,7 +351,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we are inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "marked correctly");
 	} else {
 		libst_failed (test, "not marked correctly");
@@ -369,7 +369,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "add 456");
 	ret = pk_inhibit_add (inhibit, GUINT_TO_POINTER (456));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "inhibited");
 	} else {
 		libst_failed (test, "could not inhibit");
@@ -378,7 +378,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "remove 123");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (123));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "removed first inhibit");
 	} else {
 		libst_failed (test, "could not remove inhibit");
@@ -387,7 +387,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check we are still inhibited");
 	ret = pk_inhibit_locked (inhibit);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "marked correctly");
 	} else {
 		libst_failed (test, "not marked correctly");
@@ -396,7 +396,7 @@ libst_inhibit (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "remove 456");
 	ret = pk_inhibit_remove (inhibit, GUINT_TO_POINTER (456));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, "removed second inhibit");
 	} else {
 		libst_failed (test, "could not remove inhibit");

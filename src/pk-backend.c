@@ -240,7 +240,7 @@ pk_backend_lock (PkBackend *backend)
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
-	if (backend->priv->locked == TRUE) {
+	if (backend->priv->locked) {
 		pk_warning ("already locked");
 		/* we don't return FALSE here, as the action didn't fail */
 		return TRUE;
@@ -337,7 +337,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -407,7 +407,7 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -443,7 +443,7 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -473,7 +473,7 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -540,7 +540,7 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -604,7 +604,7 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -661,7 +661,7 @@ pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gch
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -687,7 +687,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -721,7 +721,7 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -748,7 +748,7 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -785,7 +785,7 @@ pk_backend_files (PkBackend *backend, const gchar *package_id,
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -825,7 +825,7 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -849,7 +849,7 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
@@ -872,7 +872,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	const gchar *buffer;
 
 	/* check we have not already finished */
-	if (backend->priv->finished == TRUE) {
+	if (backend->priv->finished) {
 		pk_warning ("consistency error");
 		return FALSE;
 	}
@@ -914,7 +914,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	}
 
 	/* did we set a duplicate error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "More than one error emitted! You tried to set '%s'", buffer);
 		ret = FALSE;
@@ -949,13 +949,13 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error == TRUE) {
+	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
 
 	/* remove or add the hal inhibit */
-	if (allow_cancel == TRUE) {
+	if (allow_cancel) {
 		pk_inhibit_remove (backend->priv->inhibit, backend);
 	} else {
 		pk_inhibit_add (backend->priv->inhibit, backend);
@@ -1059,14 +1059,14 @@ pk_backend_finished (PkBackend *backend)
 	pk_debug ("finished role %s", role_text);
 
 	/* are we trying to finish in init? */
-	if (backend->priv->during_initialize == TRUE) {
+	if (backend->priv->during_initialize) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "You can't call pk_backend_finished in backend_initialize!");
 		return FALSE;
 	}
 
 	/* check we have not already finished */
-	if (backend->priv->finished == TRUE) {
+	if (backend->priv->finished) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Backends cannot request Finished more than once!");
 		return FALSE;
@@ -1438,7 +1438,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "try to load a valid backend");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1456,7 +1456,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "lock an valid backend");
 	ret = pk_backend_lock (backend);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to lock");
@@ -1465,7 +1465,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "lock a backend again");
 	ret = pk_backend_lock (backend);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "locked twice should succeed");
@@ -1482,7 +1482,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get backend name");
 	text = pk_backend_get_name (backend);
-	if (pk_strequal(text, "dummy") == TRUE) {
+	if (pk_strequal(text, "dummy")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "invalid name %s", text);
@@ -1492,7 +1492,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "unlock an valid backend");
 	ret = pk_backend_unlock (backend);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to unlock");
@@ -1501,7 +1501,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "unlock an valid backend again");
 	ret = pk_backend_unlock (backend);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "unlocked twice, should succeed");
@@ -1526,7 +1526,7 @@ libst_backend (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "lock again");
 	ret = pk_backend_lock (backend);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to unlock");

@@ -226,7 +226,7 @@ libst_package_id (LibSelfTest *test)
 
 	libst_title (test, "pid equal pass (same)");
 	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -235,7 +235,7 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "pid equal pass (different)");
 	ret = pk_package_id_equal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -253,7 +253,7 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test ident freeing early");
 	ret = pk_package_id_free (ident);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -293,10 +293,10 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse package_id from string");
 	ident = pk_package_id_new_from_string ("moo;0.0.1;i386;fedora");
 	if (ident != NULL &&
-	    pk_strequal (ident->name, "moo") == TRUE &&
-	    pk_strequal (ident->arch, "i386") == TRUE &&
-	    pk_strequal (ident->data, "fedora") == TRUE &&
-	    pk_strequal (ident->version, "0.0.1") == TRUE) {
+	    pk_strequal (ident->name, "moo") &&
+	    pk_strequal (ident->arch, "i386") &&
+	    pk_strequal (ident->data, "fedora") &&
+	    pk_strequal (ident->version, "0.0.1")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -305,7 +305,7 @@ libst_package_id (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test ident building with valid data");
 	text = pk_package_id_to_string (ident);
-	if (pk_strequal (text, "moo;0.0.1;i386;fedora") == TRUE) {
+	if (pk_strequal (text, "moo;0.0.1;i386;fedora")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "package_id is '%s'", text);
@@ -317,8 +317,8 @@ libst_package_id (LibSelfTest *test)
 	libst_title (test, "parse short package_id from string");
 	ident = pk_package_id_new_from_string ("moo;0.0.1;;");
 	if (ident != NULL &&
-	    pk_strequal (ident->name, "moo") == TRUE &&
-	    pk_strequal (ident->version, "0.0.1") == TRUE &&
+	    pk_strequal (ident->name, "moo") &&
+	    pk_strequal (ident->version, "0.0.1") &&
 	    ident->data == NULL &&
 	    ident->arch == NULL) {
 		libst_success (test, NULL);

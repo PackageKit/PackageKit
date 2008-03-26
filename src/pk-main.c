@@ -208,7 +208,7 @@ main (int argc, char *argv[])
 	g_option_context_free (context);
 	pk_debug_init (verbose);
 
-	if (version == TRUE) {
+	if (version) {
 		g_print ("Version %s\n", VERSION);
 		goto exit_program;
 	}
@@ -221,7 +221,7 @@ main (int argc, char *argv[])
 	signal (SIGINT, pk_main_sigint_handler);
 
 	/* we need to daemonize before we get a system connection */
-	if (use_daemon == TRUE && daemon (0, 0)) {
+	if (use_daemon && daemon (0, 0)) {
 		g_error ("Could not daemonize: %s", g_strerror (errno));
 	}
 
@@ -280,7 +280,7 @@ main (int argc, char *argv[])
 
 	/* Only timeout and close the mainloop if we have specified it
 	 * on the command line */
-	if (timed_exit == TRUE) {
+	if (timed_exit) {
 		g_timeout_add_seconds (20, (GSourceFunc) timed_exit_cb, loop);
 	}
 
@@ -290,7 +290,7 @@ main (int argc, char *argv[])
 	}
 
 	/* immediatly exit */
-	if (immediate_exit == TRUE) {
+	if (immediate_exit) {
 		g_timeout_add (50, (GSourceFunc) timed_exit_cb, loop);
 	}
 

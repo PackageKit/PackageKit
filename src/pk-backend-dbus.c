@@ -1387,7 +1387,7 @@ pk_backend_dbus_test_cancel_cb (gpointer data)
 	libst_title (test, "cancel");
 	ret = pk_backend_dbus_cancel (backend_dbus);
 	elapsed = libst_elapsed (test);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1438,7 +1438,7 @@ libst_backend_dbus (LibSelfTest *test)
 	libst_title (test, "set the name and activate");
 	ret = pk_backend_dbus_set_name (backend_dbus, "org.freedesktop.PackageKitTestBackend");
 	elapsed = libst_elapsed (test);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1456,7 +1456,7 @@ libst_backend_dbus (LibSelfTest *test)
 	libst_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
 	elapsed = libst_elapsed (test);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1489,7 +1489,7 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search by name again");
 	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1514,7 +1514,7 @@ libst_backend_dbus (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search by name");
 	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
