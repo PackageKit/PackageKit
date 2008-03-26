@@ -1583,8 +1583,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
-
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
 		if (data)
@@ -1734,8 +1732,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	TsData	*data = g_new0 (TsData, 1);
 
 	g_return_if_fail (backend != NULL);
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
 
 	data->package_id = g_strdup (package_id);
 	data->allow_deps = allow_deps;
@@ -1918,8 +1914,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	TsData	*data = g_new0 (TsData, 1);
 
 	g_return_if_fail (backend != NULL);
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
 
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
