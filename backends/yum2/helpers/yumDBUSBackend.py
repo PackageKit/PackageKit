@@ -840,7 +840,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         if inst_file.endswith('.src.rpm'):
-            self.ErrorCode(ERROR_INTERNAL_ERROR,'Backend will not install a src rpm file')
+            self.ErrorCode(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
             self.Finished(EXIT_FAILED)
             return
         

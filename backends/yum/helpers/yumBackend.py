@@ -871,7 +871,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         if inst_file.endswith('.src.rpm'):
-            self.error(ERROR_INTERNAL_ERROR,'Backend will not install a src rpm file')
+            self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
             return
         self._check_init()
         self.allow_cancel(False);
