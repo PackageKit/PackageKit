@@ -33,6 +33,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
+from yum.packages import YumLocalPackage
 import rpmUtils
 import exceptions
 import types
@@ -790,78 +791,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No packages to instal")
 
-    def _localInstall(self, inst_file):
-        """handles installs/updates of rpms provided on the filesystem in a
-           local dir (ie: not from a repo)"""
-
-        # Slightly modified localInstall from yum's cli.py
-
-        # read in each package into a YumLocalPackage Object
-        # append it to self.yumbase.localPackages
-        # check if it can be installed or updated based on nevra versus rpmdb
-        # don't import the repos until we absolutely need them for depsolving
-
-        oldcount = len(self.yumbase.tsInfo)
-
-        installpkgs = []
-        updatepkgs = []
-
-        pkg = inst_file
-        try:
-            po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
-        except yum.Errors.MiscError:
-            self.error(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
-
-        # everything installed that matches the name
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
-        # go through each package
-        if len(installedByKey) == 0: # nothing installed by that name
-            installpkgs.append(po)
-        else:
-            for installed_pkg in installedByKey:
-                if po.EVR > installed_pkg.EVR: # we're newer - this is an update, pass to them
-                    if installed_pkg.name in self.yumbase.conf.exactarchlist:
-                        if po.arch == installed_pkg.arch:
-                            updatepkgs.append((po, installed_pkg))
-                            continue
-                        else:
-                            continue
-                    else:
-                        updatepkgs.append((po, installed_pkg))
-                        continue
-                elif po.EVR == installed_pkg.EVR:
-                    if po.arch != installed_pkg.arch and (isMultiLibArch(po.arch) or
-                              isMultiLibArch(installed_pkg.arch)):
-                        installpkgs.append(po)
-                        continue
-                    else:
-                        continue
-                else:
-                    continue
-
-        # handle excludes for a localinstall
-        toexc = []
-        if len(self.yumbase.conf.exclude) > 0:
-           exactmatch, matched, unmatched = \
-                   yum.packages.parsePackages(installpkgs + map(lambda x: x[0], updatepkgs),
-                                 self.yumbase.conf.exclude, casematch=1)
-           toexc = exactmatch + matched
-
-        # Process potential installs
-        for po in installpkgs:
-            if po in toexc:
-               continue     # Exclude package
-            # Add package to transaction for installation
-            self.yumbase.localPackages.append(po)
-            self.yumbase.install(po=po)
-        # Process potential updates
-        for (po, oldpo) in updatepkgs:
-            if po in toexc:
-               continue # Excludeing package
-            # Add Package to transaction for updating
-            self.yumbase.localPackages.append(po)
-            self.yumbase.tsInfo.addUpdate(po, oldpo)
-
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -877,7 +806,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
-        self._localInstall(inst_file)
+        txmbr = self.yumbase.installLocal(inst_file)
+        print txmbr
         try:
             # Added the package to the transaction set
             if len(self.yumbase.tsInfo) > 0:
@@ -1271,7 +1201,10 @@ class DownloadCallback( BaseMeter ):
     def _getPackage(self,name):
         if self.pkgs:
             for pkg in self.pkgs:
-                rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
+                if isinstance(pkg, YumLocalPackage):
+                    rpmfn = pkg.localPkg
+                else:
+                    rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
                 if rpmfn == name:
                     return pkg
         return None
