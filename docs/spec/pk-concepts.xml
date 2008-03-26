@@ -522,5 +522,68 @@
       <literal>45;dafeca;checkpoint32</literal>
     </para>
   </sect1>
+
+  <sect1 id="introduction-ideas-status">
+    <title>Status Values</title>
+    <para>
+      A transaction will have different status values as it it queued, prepared
+      and executed.
+      The <literal>::StatusChanged</literal> signal from PkClient allow you
+      to design user interfaces that tell the user what is happening with the
+      transaction.
+    </para>
+    <para>
+      A typical transaction will have the following states:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Queued in the active queue (<literal>PK_STATUS_ENUM_WAIT</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Transaction started, and is being prepared (<literal>PK_STATUS_ENUM_SETUP</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The transaction is running (<literal>PK_STATUS_ENUM_RUNNING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          (optional) Data is downloading (<literal>PK_STATUS_ENUM_DOWNLOADING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          (optional) Data is installing (<literal>PK_STATUS_ENUM_INSTALLING</literal>)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The transaction is finished (<literal>PK_STATUS_ENUM_FINISHED</literal>)
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      If the transaction is waiting for other jobs to finish (in the active queue)
+      then the status will be stuck at <literal>PK_STATUS_ENUM_WAIT</literal>
+      and the UI should show a message to this effect.
+    </para>
+    <para>
+      If the transaction is waiting for a package lock (when a legacy tool like
+      <literal>pirut</literal> is loaded and has the <literal>yum</literal> lock)
+      then the transaction will be stuck at <literal>PK_STATUS_ENUM_SETUP</literal>.
+    </para>
+    <para>
+      As a backend writer, you do not have to set <literal>PK_STATUS_ENUM_RUNNING</literal>
+      manually, as this will be set for you if you set any other value such as
+      <literal>PK_STATUS_ENUM_DOWNLOADING</literal> or <literal>PK_STATUS_ENUM_INFO</literal>.
+      However, you will need to avoid setting any status values until a package
+      lock is available and the transaction has started.
+    </para>
+  </sect1>
 </chapter>
 
