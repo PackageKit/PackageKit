@@ -60,6 +60,7 @@ class PackageKitBaseBackend:
             print "percentage\t%i" % (percent)
         else:
             print "no-percentage-updates"
+        sys.stdout.flush()
 
     def sub_percentage(self,percent=None):
         '''
@@ -67,6 +68,7 @@ class PackageKitBaseBackend:
         @param percent: subprogress percentage
         '''
         print "subpercentage\t%i" % (percent)
+        sys.stdout.flush()
 
     def error(self,err,description,exit=True):
         '''
@@ -76,6 +78,7 @@ class PackageKitBaseBackend:
         @param exit: exit application with rc=1, if true
         '''
         print "error\t%s\t%s" % (err,description)
+        sys.stdout.flush()
         if exit:
             if self.isLocked():
                 self.unLock()
@@ -89,6 +92,7 @@ class PackageKitBaseBackend:
         @param summary: The package Summary
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
+        sys.stdout.flush()
 
     def status(self,state):
         '''
@@ -96,6 +100,7 @@ class PackageKitBaseBackend:
         @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
         print "status\t%s" % (state)
+        sys.stdout.flush()
 
     def repo_detail(self,repoid,name,state):
         '''
@@ -104,6 +109,7 @@ class PackageKitBaseBackend:
         @param state: false is repo is disabled else true.
         '''
         print >> sys.stdout,"repo-detail\t%s\t%s\t%s" % (repoid,name,state)
+        sys.stdout.flush()
 
     def data(self,data):
         '''
@@ -111,6 +117,7 @@ class PackageKitBaseBackend:
         @param data:  The current worked on package
         '''
         print "data\t%s" % (data)
+        sys.stdout.flush()
 
     def metadata(self,typ,fname):
         '''
@@ -119,6 +126,7 @@ class PackageKitBaseBackend:
         @param fname:  The filename being downloaded
         '''
         print "metadata\t%s\t%s" % (typ,fname)
+        sys.stdout.flush()
 
     def description(self,id,license,group,desc,url,bytes):
         '''
@@ -131,6 +139,7 @@ class PackageKitBaseBackend:
         @param bytes: The size of the package, in bytes
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
+        sys.stdout.flush()
 
     def files(self, id, file_list):
         '''
@@ -138,6 +147,7 @@ class PackageKitBaseBackend:
         @param file_list: List of the files in the package, separated by ';'
         '''
         print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
+        sys.stdout.flush()
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
         '''
@@ -152,6 +162,7 @@ class PackageKitBaseBackend:
         @param update_text:
         '''
         print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
+        sys.stdout.flush()
 
     def require_restart(self,restart_type,details):
         '''
@@ -160,6 +171,7 @@ class PackageKitBaseBackend:
         @param details: Optional details about the restart
         '''
         print "requirerestart\t%s\t%s" % (restart_type,details)
+        sys.stdout.flush()
 
     def allow_cancel(self,allow):
         '''
@@ -171,6 +183,7 @@ class PackageKitBaseBackend:
         else:
             data = 'false'
         print "allow-cancel\t%s" % (data)
+        sys.stdout.flush()
 
     def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''
@@ -186,6 +199,7 @@ class PackageKitBaseBackend:
         print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
             repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
             )
+        sys.stdout.flush()
 
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)

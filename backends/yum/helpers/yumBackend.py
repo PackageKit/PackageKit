@@ -771,7 +771,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        print >> sys.stderr, "start init"
         self._check_init(lazy_cache=True)
+        print >> sys.stderr, "end init"
         self.allow_cancel(True);
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
