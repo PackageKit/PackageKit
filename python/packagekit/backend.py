@@ -83,6 +83,14 @@ class PackageKitBaseBackend:
             if self.isLocked():
                 self.unLock()
             sys.exit(1)
+    
+    def message(self,typ,msg):
+        '''
+        send 'message' signal
+        @param typ: MESSAGE_WARNING, MESSAGE_NOTICE, MESSAGE_DEAMON
+        '''
+        print "message\t%s\t" % (typ,msg)
+        sys.stdout.flush()
 
     def package(self,id,status,summary):
         '''

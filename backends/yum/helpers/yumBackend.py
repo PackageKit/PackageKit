@@ -829,7 +829,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             newest = pkgs[0]
             if newest.EVR > po.EVR:
                 #TODO Add code to send a message here
-                pass
+                self.message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
 
 
 
