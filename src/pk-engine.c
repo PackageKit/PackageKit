@@ -2701,6 +2701,7 @@ gboolean
 pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number, GError **error)
 {
 	PkTransactionItem *item;
+	const gchar *exit_text;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -2717,8 +2718,11 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	engine->priv->sync_item = item;
 
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
-	pk_debug ("emitting finished transaction:%s, '%s', %i", tid, "", 0);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, "", 0);
+
+	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", tid, exit_text, 0);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, exit_text, 0);
+
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
 	return TRUE;
 }
