@@ -823,6 +823,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No packages to instal")
 
+    def _checkForNewer(self,po):
+        pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        if pkgs:
+            newest = pkgs[0]
+            if newest.EVR > po.EVR:
+                #TODO Add code to send a message here
+                pass
+
+
+
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -840,7 +850,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
         txmbr = self.yumbase.installLocal(inst_file)
-        print txmbr
+        self._checkForNewer(txmbr.po)
         try:
             # Added the package to the transaction set
             if len(self.yumbase.tsInfo) > 0:
@@ -1132,18 +1142,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if refs:
                 for ref in refs:
                     typ = ref['type']
-		    href = ref['href']
-		    title = ref['title']
+            href = ref['href']
+            title = ref['title']
                     if typ in ('bugzilla','cve') and href != None:
-			if title == None:
-			    title = ""
+            if title == None:
+                title = ""
                         urls[typ].append("%s;%s" % (href,title))
                     else:
                         urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
                         
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-				reboot = 'system'
+                reboot = 'system'
             else:
                 reboot = 'none'
             return self._format_str(desc),urls,reboot
@@ -1315,9 +1325,9 @@ class DownloadCallback( BaseMeter ):
             self.base.sub_percentage(0)        
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
-	            self.lastPct = pct
-	            # bump the sub persentage for this package
-	            self.base.sub_percentage(pct)
+                self.lastPct = pct
+                # bump the sub persentage for this package
+                self.base.sub_percentage(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
