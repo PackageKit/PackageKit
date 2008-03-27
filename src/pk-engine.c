@@ -604,6 +604,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* find the length of time we have been running */
 	time = pk_runner_get_runtime (item->runner);
+	pk_debug ("backend was running for %i ms", time);
 
 	/* add to the database if we are going to log it */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -617,12 +618,18 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		g_free (packages);
 	}
 
-	pk_debug ("backend was running for %i ms", time);
-	pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
-
 	/* only reset the time if we succeeded */
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
 		pk_transaction_db_action_time_reset (engine->priv->transaction_db, role);
+	}
+
+	/* did we finish okay? */
+	if (exit == PK_EXIT_ENUM_SUCCESS) {
+		/* yes */
+		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
+	} else {
+		/* no */
+		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, FALSE, time);
 	}
 
 	exit_text = pk_exit_enum_to_text (exit);
