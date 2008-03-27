@@ -852,8 +852,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
-        po = self._localInstall(inst_file)
-
+        txmbr = self.yumbase.installLocal(inst_file)
+        self._checkForNewer(txmbr.po)
+        po = txmbr.po
         self.AllowCancel(False)
         self.StatusChanged(STATUS_INSTALL)
 
@@ -1547,6 +1548,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         (version,release) = tuple(idver.split('-'))
         return epoch,version,release
 
+    def _checkForNewer(self,po):
+        '''
+        Check if there is a newer version available
+        '''
+        pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        if pkgs:
+            newest = pkgs[0]
+            if newest.EVR > po.EVR:
+                #TODO Add code to send a message here
+                self.Message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
+
+
+
     def _findPackage(self,id):
         '''
         find a package based on a package id (name;version;arch;repoid)
@@ -1570,6 +1584,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
+        
+        
 
     def _installable(self, pkg, ematch=False):
 
@@ -1644,90 +1660,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             bestdeps.append(best)
 
         return (dep_resolution_errors, unique(bestdeps))
-
-    def _localInstall(self, inst_file):
-        """handles installs/updates of rpms provided on the filesystem in a
-           local dir (ie: not from a repo)"""
-
-        # Slightly modified localInstall from yum's cli.py
-
-        # read in each package into a YumLocalPackage Object
-        # append it to self.yumbase.localPackages
-        # check if it can be installed or updated based on nevra versus rpmdb
-        # don't import the repos until we absolutely need them for depsolving
-
-        oldcount = len(self.yumbase.tsInfo)
-
-        installpkgs = []
-        updatepkgs = []
-
-        pkg = inst_file
-        try:
-            po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
-        except yum.Errors.MiscError:
-            self._unlock_yum()
-            self.ErrorCode(ERROR_LOCAL_INSTALL_FAILED,'Cannot open file: %s. Skipping.' % pkg)
-            self.Finished(EXIT_FAILED)
-            self.Exit()
-
-        if po.arch == "src":
-            # Short circuit for srpms
-            self.yumbase.localPackages.append(po)
-            self.yumbase.install(po=po)
-
-            return po
-
-        # everything installed that matches the name
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
-        # go through each package
-        if len(installedByKey) == 0: # nothing installed by that name
-            installpkgs.append(po)
-        else:
-            for installed_pkg in installedByKey:
-                if po.EVR > installed_pkg.EVR: # we're newer - this is an update, pass to them
-                    if installed_pkg.name in self.yumbase.conf.exactarchlist:
-                        if po.arch == installed_pkg.arch:
-                            updatepkgs.append((po, installed_pkg))
-                            continue
-                        else:
-                            continue
-                    else:
-                        updatepkgs.append((po, installed_pkg))
-                        continue
-                elif po.EVR == installed_pkg.EVR:
-                    if po.arch != installed_pkg.arch and (isMultiLibArch(po.arch) or
-                              isMultiLibArch(installed_pkg.arch)):
-                        installpkgs.append(po)
-                        continue
-                    else:
-                        continue
-                else:
-                    continue
-
-        # handle excludes for a localinstall
-        toexc = []
-        if len(self.yumbase.conf.exclude) > 0:
-           exactmatch, matched, unmatched = \
-                   yum.packages.parsePackages(installpkgs + map(lambda x: x[0], updatepkgs),
-                                 self.yumbase.conf.exclude, casematch=1)
-           toexc = exactmatch + matched
-
-        # Process potential installs
-        for po in installpkgs:
-            if po in toexc:
-               continue     # Exclude package
-            # Add package to transaction for installation
-            self.yumbase.localPackages.append(po)
-            self.yumbase.install(po=po)
-        # Process potential updates
-        for (po, oldpo) in updatepkgs:
-            if po in toexc:
-               continue # Excludeing package
-            # Add Package to transaction for updating
-            self.yumbase.localPackages.append(po)
-            self.yumbase.tsInfo.addUpdate(po, oldpo)
-
-        return po
 
     def _check_for_reboot(self):
         md = self.updateMetadata
@@ -1872,18 +1804,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if refs:
                 for ref in refs:
                     typ = ref['type']
-		    href = ref['href']
-		    title = ref['title']
+            href = ref['href']
+            title = ref['title']
                     if typ in ('bugzilla','cve') and href != None:
-			if title == None:
-			    title = ""
+            if title == None:
+                title = ""
                         urls[typ].append("%s;%s" % (href,title))
                     else:
                         urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-				reboot = 'system'
+                reboot = 'system'
             else:
                 reboot = 'none'
             return desc,urls,reboot
@@ -2038,7 +1970,7 @@ class DownloadCallback( BaseMeter ):
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
                 self.lastPct = pct
-	        # bump the sub percentage for this package
+            # bump the sub percentage for this package
                 self.base.SubPercentageChanged(pct)
 
 class PackageKitCallback(RPMBaseCallback):
