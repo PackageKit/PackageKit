@@ -5,6 +5,10 @@ AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
+# Should we enable extra stuff automatically?
+# set no for release builds, yes for development builds
+DEVELOPMENT_RELEASE=yes
+
 # libtool versioning - this applies to libpackagekit
 #
 # See http://sources.redhat.com/autobook/autobook/autobook_91.html#SEC91 for details
@@ -162,10 +166,40 @@ AC_DEFINE_UNQUOTED(PK_BACKEND_USER,"$PK_BACKEND_USER", [Alternative user for run
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
 dnl ---------------------------------------------------------------------------
-AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),enable_tests=$enableval,enable_tests=$USE_MAINTAINER_MODE)
-AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),enable_gcov=$enableval,enable_gcov=no)
-AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support (gcc only)]),enable_gprof=$enableval,enable_gprof=no)
-AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),enable_local=$enableval,enable_local=$USE_MAINTAINER_MODE)
+AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
+	      enable_tests=$enableval,enable_tests=$DEVELOPMENT_RELEASE)
+AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
+if test x$enable_tests = xyes; then
+	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Display DAEMON messages?
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],[enable daemon debug messages]),
+	      enable_developer=$enableval,enable_developer=$DEVELOPMENT_RELEASE)
+AM_CONDITIONAL(PK_IS_DEVELOPER, test x$enable_developer = xyes)
+if test x$enable_developer = xyes; then
+	AC_DEFINE(PK_IS_DEVELOPER,1,[Build developer code])
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Able to run from a checkout?
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(local, AS_HELP_STRING([--enable-local],[enable running in local checkout]),
+	      enable_local=$enableval,enable_local=$DEVELOPMENT_RELEASE)
+AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
+if test x$enable_local = xyes; then
+	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl - Other tests
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(gcov, AS_HELP_STRING([--enable-gcov],[compile with coverage profiling instrumentation (gcc only)]),
+	      enable_gcov=$enableval,enable_gcov=no)
+AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support (gcc only)]),
+	      enable_gprof=$enableval,enable_gprof=no)
 
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
@@ -196,16 +230,6 @@ AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART ba
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
-
-AM_CONDITIONAL(PK_BUILD_TESTS, test x$enable_tests = xyes)
-if test x$enable_tests = xyes; then
-	AC_DEFINE(PK_BUILD_TESTS,1,[Build test code])
-fi
-
-AM_CONDITIONAL(PK_BUILD_LOCAL, test x$enable_local = xyes)
-if test x$enable_local = xyes; then
-	AC_DEFINE(PK_BUILD_LOCAL,1,[Build local code])
-fi
 
 if test x$enable_gcov = xyes; then
 	## so that config.h changes when you toggle gcov support
@@ -596,6 +620,7 @@ echo "
         cflags:                    ${CFLAGS}
         Building unit tests:       ${enable_tests}
         Able to run locally:       ${enable_local}
+        Developer warnings:        ${enable_developer}
         GCC coverage profiling:    ${enable_gcov}
         GCC time profiling:        ${enable_gprof}
         Security framework:        ${with_security_framework}

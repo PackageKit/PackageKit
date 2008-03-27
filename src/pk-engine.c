@@ -415,6 +415,13 @@ pk_engine_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *de
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+#ifndef PK_IS_DEVELOPER
+	if (message == PK_MESSAGE_ENUM_DAEMON) {
+		pk_warning ("ignoring message: %s", details);
+		return;
+	}
+#endif
+
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
 	if (c_tid == NULL) {
 		pk_warning ("could not get current tid from backend");
