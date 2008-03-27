@@ -892,6 +892,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _format_msgs(self,msgs):
+        if type(msgs) == type(''):
+            msgs = msgs.split('\n')
+        return ";".join(msgs)
+
     def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
@@ -899,7 +904,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution;" +";".join(msgs)
+            retmsg = "Error in Dependency Resolution;" + self._format_msgs(msgs)
             self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
             self._check_for_reboot()
@@ -915,10 +920,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.processTransaction(callback=callback,
                                       rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, ye:
-                retmsg = "Error in Download;" +";".join(ye.value)
+                retmsg = "Error in Download;" + self._format_msgs(ye.value)
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
             except yum.Errors.YumGPGCheckError, ye:
-                retmsg = "Error in Package Signatures;" +";".join(ye.value)
+                retmsg = "Error in Package Signatures;" + self._format_msgs(ye.value)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
@@ -939,7 +944,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              'GPG')
                 self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing;" +";".join(ye.value)
+                retmsg = "Error in Transaction Processing;" + self._format_msgs(ye.value)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
 
     def remove(self, allowdep, package):
