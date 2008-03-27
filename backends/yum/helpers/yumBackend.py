@@ -1144,12 +1144,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     typ = ref['type']
             href = ref['href']
             title = ref['title']
-                    if typ in ('bugzilla','cve') and href != None:
-            if title == None:
-                title = ""
-                        urls[typ].append("%s;%s" % (href,title))
-                    else:
-                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
+            if typ in ('bugzilla','cve') and href != None:
+                if title == None:
+                    title = ""
+                urls[typ].append("%s;%s" % (href,title))
+            else:
+                urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
                         
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
