@@ -31,18 +31,7 @@
     <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-file</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
-    </defaults>
-  </action>
-
-  <action id="org.freedesktop.packagekit.service-pack">
-    <_description>Update from service pack</_description>
-    <_message>System policy prevents updating from service pack</_message>
-    <icon_name>pk-package-update</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-service-pack</vendor_url>
-    <defaults>
-      <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep_always</allow_active>
     </defaults>
   </action>
 

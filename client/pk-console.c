@@ -334,7 +334,6 @@ static const gchar *summary =
 	"  search name|details|group|file data\n"
 	"  install <package_id>\n"
 	"  install-file <file>\n"
-	"  service-pack <location>\n"
 	"  remove <package_id>\n"
 	"  update <package_id>\n"
 	"  refresh\n"
@@ -824,13 +823,6 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			return FALSE;
 		} else {
 			ret = pk_client_install_file (client, value, error);
-		}
-	} else if (strcmp (mode, "service-pack") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a location to update from"));
-			return FALSE;
-		} else {
-			ret = pk_client_service_pack (client, value, TRUE, error);
 		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {

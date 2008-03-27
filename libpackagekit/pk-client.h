@@ -273,10 +273,6 @@ gboolean	 pk_client_update_packages_strv		(PkClient	*client,
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*file,
 							 GError		**error);
-gboolean	 pk_client_service_pack			(PkClient	*client,
-							 const gchar	*location,
-							 gboolean	 enabled,
-							 GError		**error);
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*package,

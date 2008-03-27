@@ -168,11 +168,6 @@ void		 pk_engine_install_file			(PkEngine	*engine,
 							 const gchar	*tid,
 							 const gchar	*full_path,
 							 DBusGMethodInvocation *context);
-void		 pk_engine_service_pack			(PkEngine	*engine,
-							 const gchar	*tid,
-							 const gchar	*location,
-							 gboolean	 enabled,
-							 DBusGMethodInvocation *context);
 void		 pk_engine_update_packages		(PkEngine	*engine,
 							 const gchar	*tid,
 							 gchar		**package_ids,
