@@ -103,6 +103,7 @@ enum {
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_MESSAGE,
 	PK_ENGINE_UPDATES_CHANGED,
+	PK_ENGINE_REPO_LIST_CHANGED,
 	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
@@ -623,6 +624,12 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 			pk_transaction_db_set_data (engine->priv->transaction_db, c_tid, packages);
 		}
 		g_free (packages);
+	}
+
+	/* the repo list will have changed */
+	if (role == PK_ROLE_ENUM_SERVICE_PACK) {
+		pk_debug ("emitting repo-list-changed tid:%s", c_tid);
+		g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0, c_tid);
 	}
 
 	/* only reset the time if we succeeded */
@@ -3029,6 +3036,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals [PK_ENGINE_REPO_LIST_CHANGED] =
+		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);

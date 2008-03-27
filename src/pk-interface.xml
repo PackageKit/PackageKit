@@ -190,6 +190,9 @@
     <signal name="UpdatesChanged">
       <arg type="s" name="tid" direction="out"/>
     </signal>
+    <signal name="RepoListChanged">
+      <arg type="s" name="tid" direction="out"/>
+    </signal>
     <signal name="Locked">
       <arg type="b" name="is_locked" direction="out"/>
     </signal>
