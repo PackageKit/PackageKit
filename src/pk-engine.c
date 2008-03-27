@@ -627,7 +627,9 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	}
 
 	/* the repo list will have changed */
-	if (role == PK_ROLE_ENUM_SERVICE_PACK) {
+	if (role == PK_ROLE_ENUM_SERVICE_PACK ||
+	    role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		pk_debug ("emitting repo-list-changed tid:%s", c_tid);
 		g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0, c_tid);
 	}
