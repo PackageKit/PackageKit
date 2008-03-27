@@ -625,10 +625,8 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* did we finish okay? */
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
-		/* yes */
 		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
 	} else {
-		/* no */
 		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, FALSE, time);
 	}
 
