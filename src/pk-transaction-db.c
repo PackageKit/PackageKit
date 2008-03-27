@@ -122,8 +122,8 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 		value = argv[i];
 		if (pk_strequal (col, "succeeded")) {
 			ret = pk_strtouint (value, &temp);
-			if (ret == FALSE) {
-				pk_warning ("failed to convert");
+			if (!ret) {
+				pk_warning ("failed to parse succeeded: %s", value);
 			}
 			if (temp == 1) {
 				item.succeeded = TRUE;
@@ -152,11 +152,12 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 			}
 		} else if (pk_strequal (col, "duration")) {
 			ret = pk_strtouint (value, &item.duration);
-			if (ret == FALSE) {
-				pk_warning ("failed to convert");
+			if (!ret) {
+				pk_warning ("failed to parse duration: %s", value);
+				item.duration = 0;
 			}
 			if (item.duration > 60*60*12) {
-				pk_warning ("insane duartion %i", item.duration);
+				pk_warning ("insane duration: %i", item.duration);
 				item.duration = 0;
 			}
 		} else {
