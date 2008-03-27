@@ -850,7 +850,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
         txmbr = self.yumbase.installLocal(inst_file)
-        self._checkForNewer(txmbr.po)
+        self._checkForNewer(txmbr[0].po)
         try:
             # Added the package to the transaction set
             if len(self.yumbase.tsInfo) > 0:

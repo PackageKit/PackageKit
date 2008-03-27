@@ -853,8 +853,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
         txmbr = self.yumbase.installLocal(inst_file)
-        self._checkForNewer(txmbr.po)
-        po = txmbr.po
+        self._checkForNewer(txmbr[0].po)
+        po = txmbr[0].po
         self.AllowCancel(False)
         self.StatusChanged(STATUS_INSTALL)
 
