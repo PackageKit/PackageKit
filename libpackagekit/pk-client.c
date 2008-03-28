@@ -474,16 +474,26 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
  * waiting for ::finished, or if we want to reuse the #PkClient without
  * unreffing and creating it again.
  *
+ * If you call pk_client_reset() on a running transaction, then it will be
+ * automatically cancelled. If the cancel fails, the reset will fail.
+ *
  * Return value: %TRUE if we reset the client
  **/
 gboolean
 pk_client_reset (PkClient *client, GError **error)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	if (client->priv->is_finished != TRUE) {
-		pk_debug ("not exit status, reset might be invalid");
+		pk_debug ("not exit status, will try to cancel");
+		/* we try to cancel the running tranaction */
+		ret = pk_client_cancel (client, error);
+		if (!ret) {
+			return FALSE;
+		}
 	}
 
 	g_free (client->priv->tid);
