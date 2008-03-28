@@ -332,6 +332,8 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 gboolean
 pk_backend_set_percentage (PkBackend *backend, guint percentage)
 {
+	guint remaining;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -374,8 +376,13 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 		pk_time_add_data (backend->priv->time, percentage);
 
 		/* lets try this and print as debug */
-		backend->priv->last_remaining = pk_time_get_remaining (backend->priv->time);
-		pk_debug ("this will now take ~%i seconds", backend->priv->last_remaining);
+		remaining = pk_time_get_remaining (backend->priv->time);
+		pk_debug ("this will now take ~%i seconds", remaining);
+
+#ifdef PK_IS_DEVELOPER
+		/* Until the predicted time is more sane... */
+		backend->priv->last_remaining = remaining;
+#endif
 	}
 
 	/* emit the progress changed signal */
