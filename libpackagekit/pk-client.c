@@ -1220,7 +1220,7 @@ pk_client_cancel (PkClient *client, GError **error)
 	/* check to see if we have an tid */
 	if (client->priv->tid == NULL) {
 		pk_debug ("Transaction ID not set, assumed never used");
-		return FALSE;
+		return TRUE;
 	}
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
