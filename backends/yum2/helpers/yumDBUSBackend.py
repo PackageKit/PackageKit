@@ -1826,6 +1826,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Other utility methods
 #
 
+    def _customTracebackHandler(self,exctype):
+        '''
+        Handle special not catched Tracebacks
+        '''
+        # Handle misc errors with loading repository metadata
+        if (issubclass(exctype, yum.Errors.RepoError) or
+            issubclass(exctype, IOError)):
+            self.ErrorCode(ERROR_NO_NETWORK, "Problem with loading repository metadata, this can be caused by network problems or repository misconfigurations")
+            self.Finished(EXIT_FAILED)
+            return True
+        else:
+            return False
+
     def _check_init(self):
         ''' Check if yum has setup, else call init '''
         if hasattr(self,'yumbase'):
