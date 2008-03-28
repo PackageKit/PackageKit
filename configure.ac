@@ -1,13 +1,13 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.1.10)
+AC_INIT(PackageKit, 0.1.11)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=no
+DEVELOPMENT_RELEASE=yes
 
 # libtool versioning - this applies to libpackagekit
 #
