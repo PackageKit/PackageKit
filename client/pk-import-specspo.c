@@ -54,12 +54,21 @@ pk_import_specspo_get_summary (const gchar *name)
 	guint size;
 	gboolean ret;
 	PkPackageItem *item;
+	GError *error = NULL;
 
-	pk_client_reset (client, NULL);
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		pk_warning ("failed to reset client: %s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_resolve (client, "none", name, NULL);
+	ret = pk_client_resolve (client, "none", name, &error);
 	if (!ret) {
+		pk_warning ("failed to resolve: %s", error->message);
+		g_error_free (error);
 		return NULL;
 	}
 

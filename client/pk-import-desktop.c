@@ -47,13 +47,22 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	PkPackageItem *item;
 	PkPackageId *pid;
 	gboolean ret;
+	GError *error = NULL;
 
 	/* use PK to find the correct package */
-	pk_client_reset (client, NULL);
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		pk_warning ("failed to reset client: %s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_search_file (client, "installed", filename, NULL);
+	ret = pk_client_search_file (client, "installed", filename, &error);
 	if (!ret) {
+		pk_warning ("failed to search file: %s", error->message);
+		g_error_free (error);
 		return NULL;
 	}
 

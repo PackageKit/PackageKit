@@ -455,7 +455,11 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
-		pk_client_reset (client_task, NULL);
+		ret = pk_client_reset (client_task, error);
+		if (ret == FALSE) {
+			pk_warning ("failed to reset client task");
+			return NULL;
+		}
 		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
@@ -596,7 +600,11 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	/* see if any packages require this one */
-	pk_client_reset (client_task, NULL);
+	ret = pk_client_reset (client_task, error);
+	if (!ret) {
+		pk_warning ("failed to reset");
+		return FALSE;
+	}
 	pk_client_set_use_buffer (client_task, TRUE, NULL);
 	pk_client_set_synchronous (client_task, TRUE, NULL);
 
@@ -1068,6 +1076,8 @@ static void
 pk_console_sigint_handler (int sig)
 {
 	PkRoleEnum role;
+	gboolean ret;
+	GError *error = NULL;
 	pk_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
@@ -1076,11 +1086,20 @@ pk_console_sigint_handler (int sig)
 	/* cancel any tasks */
 	pk_client_get_role (client, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		pk_client_cancel (client, NULL);
+		ret = pk_client_cancel (client, &error);
+		if (!ret) {
+			pk_warning ("failed to cancel normal client: %s", error->message);
+			g_error_free (error);
+			error = NULL;
+		}
 	}
 	pk_client_get_role (client_task, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		pk_client_cancel (client_task, NULL);
+		ret = pk_client_cancel (client_task, &error);
+		if (!ret) {
+			pk_warning ("failed to cancel task client: %s", error->message);
+			g_error_free (error);
+		}
 	}
 
 	/* kill ourselves */

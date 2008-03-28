@@ -3715,6 +3715,7 @@ void
 libst_client (LibSelfTest *test)
 {
 	PkClient *client;
+	gboolean ret;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
@@ -3737,7 +3738,7 @@ libst_client (LibSelfTest *test)
 	libst_title (test, "do any method");
 	/* we don't care if this fails */
 	pk_client_set_synchronous (client, TRUE, NULL);
-	pk_client_search_name (client, "none", "moooo", NULL);
+	ret = pk_client_search_name (client, "none", "moooo", NULL);
 	libst_success (test, "did something");
 
 	/************************************************************/
