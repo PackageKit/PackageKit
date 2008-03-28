@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -42,6 +43,82 @@
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-enum.h"
+
+/**
+ * pk_get_machine_type:
+ *
+ * Return value: The current machine ID, e.g. "i386"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_get_machine_type (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0) {
+		return g_strdup ("unknown");
+	}
+	return g_strdup (buf.machine);
+}
+
+/**
+ * pk_get_distro_id:
+ *
+ * Return value: The current distro-id, e.g. fedora-8-i386, or %NULL for an
+ * error or not known
+ **/
+gchar *
+pk_get_distro_id (void)
+{
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *parseable = NULL;
+	gchar *distro = NULL;
+	gchar *arch = NULL;
+	gchar **split = NULL;
+
+	/* check for fedora */
+	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Fedora release 8.92 (Rawhide) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("fedora-%s-%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for suse */
+	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
+	if (ret) {
+		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
+		parseable = g_strdelimit (contents, "()\n", ' ');
+
+		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
+		split = g_strsplit (parseable, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("suse-%s-%s", split[1], split[3]);
+		goto out;
+	}
+out:
+	g_strfreev (split);
+	g_free (parseable);
+	g_free (arch);
+	g_free (contents);
+	return distro;
+}
 
 /**
  * pk_iso8601_present:
@@ -626,6 +703,19 @@ libst_common (LibSelfTest *test)
 	}
 
 	pk_delay_yield (2.0);
+
+
+	/************************************************************
+	 ****************        test distro-id        **************
+	 ************************************************************/
+	libst_title (test, "get distro id");
+	text_safe = pk_get_distro_id ();
+	if (text_safe != NULL) {
+		libst_success (test, "distro_id=%s", text_safe);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_free (text_safe);
 
 	/************************************************************
 	 ****************        build var args        **************
