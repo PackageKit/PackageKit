@@ -106,6 +106,17 @@
               The basename is normally the original name of the source package.
             </entry>
           </row>
+          <row>
+            <entry><literal>newest</literal> or <literal>~newest</literal></entry>
+            <entry>
+              The newest filter will only return the newest package available.
+              This is useful if you are searching for <literal>gimp</literal>
+              and only <literal>gimp-2.4.5-1.fc9.i386</literal> would be returned,
+              not <literal>gimp-2.4.5-1.fc9.i386</literal>,
+              <literal>gimp-2.4.4-1.fc9.i386</literal> and
+              <literal>gimp-2.4.3-1.fc9.i386</literal>.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>
