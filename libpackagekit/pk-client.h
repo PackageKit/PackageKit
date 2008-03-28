@@ -287,6 +287,7 @@ gboolean	 pk_client_requeue			(PkClient	*client,
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
+							 const gchar	*filter,
 							 GError		**error);
 gboolean	 pk_client_repo_enable			(PkClient	*client,
 							 const gchar	*repo_id,

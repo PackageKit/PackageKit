@@ -789,10 +789,29 @@
       Return the list of repositories used in the system.
     </para>
     <para>
-      There are no arguments.
+      The arguments are:
     </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>~devel</literal>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
     <para>
-      This method typically emits
+      This method should emit
       <literal>RepoDetail</literal>.
     </para>
   </sect1>

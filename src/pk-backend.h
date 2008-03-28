@@ -151,7 +151,7 @@ typedef struct {
 	void		(*search_name)		(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*update_packages)	(PkBackend *backend, gchar **package_ids);
 	void		(*update_system)	(PkBackend *backend);
-	void		(*get_repo_list)	(PkBackend *backend);
+	void		(*get_repo_list)	(PkBackend *backend, const gchar *filter);
 	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
 	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
 	void		(*service_pack)		(PkBackend *backend, const gchar *location, gboolean enabled);

@@ -232,6 +232,7 @@ gboolean	 pk_engine_get_allow_cancel		(PkEngine	*engine,
 /* repo stuff */
 void		 pk_engine_get_repo_list		(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_repo_enable			(PkEngine	*engine,
 							 const gchar	*tid,

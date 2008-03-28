@@ -2572,7 +2572,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
-pk_client_get_repo_list (PkClient *client, GError **error)
+pk_client_get_repo_list (PkClient *client, const gchar *filter, GError **error)
 {
 	gboolean ret;
 
@@ -2587,9 +2587,11 @@ pk_client_get_repo_list (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
+	client->priv->cached_filter = g_strdup (filter);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	pk_client_error_fixup (error);
 	if (ret) {
@@ -3109,6 +3111,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_update_packages_strv (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		ret = pk_client_get_repo_list (client, priv->cached_filter, error);
 	} else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;

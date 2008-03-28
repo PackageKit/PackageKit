@@ -769,7 +769,7 @@ backend_install_file (PkBackend *backend, const gchar *path)
 }
 
 void
-backend_get_repo_list (PkBackend *backend)
+backend_get_repo_list (PkBackend *backend, const gchar *filter)
 {
   g_return_if_fail (backend != NULL);
   backend_initialize (backend);

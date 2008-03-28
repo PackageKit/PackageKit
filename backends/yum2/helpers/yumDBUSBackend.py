@@ -1167,7 +1167,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doGetRepoList(self):
+    def doGetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''

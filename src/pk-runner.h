@@ -109,7 +109,8 @@ gboolean	 pk_runner_search_name			(PkRunner	*runner,
 gboolean	 pk_runner_update_packages		(PkRunner	*runner,
 							 gchar		**package_ids);
 gboolean	 pk_runner_update_system		(PkRunner	*runner);
-gboolean	 pk_runner_get_repo_list		(PkRunner	*runner);
+gboolean	 pk_runner_get_repo_list		(PkRunner	*runner,
+							 const gchar	*filter);
 gboolean	 pk_runner_repo_enable			(PkRunner	*runner,
 							 const gchar	*repo_id,
 							 gboolean	 enabled);

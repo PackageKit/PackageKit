@@ -12,7 +12,9 @@
 import sys
 
 from yumBackend import PackageKitYumBackend
+filters = sys.argv[1]
+
 backend = PackageKitYumBackend(sys.argv[2:])
-backend.get_repo_list()
+backend.get_repo_list(filters)
 backend.unLock()
 sys.exit(0)

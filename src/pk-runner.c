@@ -306,7 +306,7 @@ pk_runner_set_running (PkRunner *runner)
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		desc->update_system (priv->backend);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		desc->get_repo_list (priv->backend);
+		desc->get_repo_list (priv->backend, priv->cached_filter);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
 		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
@@ -692,13 +692,14 @@ pk_runner_update_system (PkRunner *runner)
  * pk_runner_get_repo_list:
  */
 gboolean
-pk_runner_get_repo_list (PkRunner *runner)
+pk_runner_get_repo_list (PkRunner *runner, const gchar *filter)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->get_repo_list == NULL) {
 		pk_debug ("Not implemented yet: GetRepoList");
 		return FALSE;
 	}
+	runner->priv->cached_filter = g_strdup (filter);
 	runner->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_runner_set_role (runner, PK_ROLE_ENUM_GET_REPO_LIST);
 	return TRUE;
@@ -708,7 +709,7 @@ pk_runner_get_repo_list (PkRunner *runner)
  * pk_runner_repo_enable:
  */
 gboolean
-pk_runner_repo_enable (PkRunner *runner, const gchar	*repo_id, gboolean enabled)
+pk_runner_repo_enable (PkRunner *runner, const gchar *repo_id, gboolean enabled)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->repo_enable == NULL) {

@@ -12,7 +12,9 @@
 import sys
 
 from aptBackend import PackageKitAptBackend
+filters = sys.argv[1]
+
 backend = PackageKitAptBackend(sys.argv[2:])
-backend.get_repo_list()
+backend.get_repo_list(filters)
 backend.unLock()
 sys.exit(0)

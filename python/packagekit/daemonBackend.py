@@ -727,14 +727,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
-    def GetRepoList(self):
+    def GetRepoList(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
         pklog.info("GetRepoList()")
-        self.doGetRepoList()
+        self.doGetRepoList(filters)
 
-    def doGetRepoList(self):
+    def doGetRepoList(self, filters):
         '''
         Should be replaced in the corresponding backend sub class
         '''

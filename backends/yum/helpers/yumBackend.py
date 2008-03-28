@@ -1075,7 +1075,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
 
-    def get_repo_list(self):
+    def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''

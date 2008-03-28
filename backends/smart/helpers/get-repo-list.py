@@ -13,6 +13,8 @@
 import sys
 
 from smartBackend import PackageKitSmartBackend
+filters = sys.argv[1]
+
 backend = PackageKitSmartBackend(sys.argv[2:])
-backend.get_repo_list()
+backend.get_repo_list(filters)
 sys.exit(0)

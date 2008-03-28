@@ -1935,7 +1935,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend)
+backend_get_repo_list (PkBackend *backend, const gchar *filter
 {
 	tn_array	*sources = NULL;
 
