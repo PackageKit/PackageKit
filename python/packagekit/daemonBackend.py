@@ -868,6 +868,12 @@ class PackageKitBaseBackend(dbus.service.Object):
 
         return True
 
+    def _customTracebackHandler(self,exctype):
+        '''
+
+        '''
+        return False
+
     def _excepthook(self, exctype, excvalue, exctb):
         '''
         Handle a crash: try to submit the message to packagekitd and the logger.
@@ -876,6 +882,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         if (issubclass(exctype, KeyboardInterrupt) or
             issubclass(exctype, SystemExit)):
             return
+        if self._customTracebackHandler(exctype):
+            return
+
         tbtext = ''.join(traceback.format_exception(exctype, excvalue, exctb))
         try:
             self.ErrorCode(ERROR_INTERNAL_ERROR, tbtext)

@@ -8,6 +8,8 @@ Order of no particular importance:
 
 * Find out why yum doesn't output some package status calls.
 
+* Make PkMessages into proper erumerated types with localised descriptions
+
 * We need to make sure the html documentation is still correct and easy
 to read - does any of it sound like technobabble? Is it easy enough for
 developers to get detailed information about how to contribute?

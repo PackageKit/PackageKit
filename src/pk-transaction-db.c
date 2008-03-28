@@ -192,6 +192,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	pk_debug ("statement=%s", sql);
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
@@ -241,6 +242,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	role_text = pk_role_enum_to_text (role);
 	pk_debug ("get_time_since_action=%s", role_text);
@@ -280,6 +282,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
 	role_text = pk_role_enum_to_text (role);
@@ -449,6 +452,7 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	statement = "TRUNCATE TABLE transactions;";
 	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
@@ -468,6 +472,7 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
 	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
@@ -497,6 +502,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
+	tdb->priv->db = NULL;
 
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
@@ -504,8 +510,8 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc) {
-		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
+		pk_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		return;
 	} else {
 		if (create_file == FALSE) {

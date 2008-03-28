@@ -440,6 +440,17 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def customTracebackHandler(self,tb):
+        '''
+        Custom Traceback Handler
+        this is called by the ExceptionHandler
+        return True if the exception is handled in the method.
+        return False if to do the default action an signal an error
+        to packagekit.
+        Overload this method if you what handle special Tracebacks
+        '''
+        return False
+
 class PackagekitProgress:
     '''
     Progress class there controls the total progress of a transaction
@@ -522,18 +533,21 @@ class PackagekitProgress:
         incr = int(f*deltapct)
         self.percent = startpct + incr
 
+
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
-    etb = traceback.extract_tb(tb)
-    errmsg = 'Error Type: %s;' % str(typ)
-    errmsg += 'Error Value: %s;' % str(value)
-    for tub in etb:
-        f,l,m,c = tub # file,lineno, function, codeline
-        errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
-        errmsg += '    %s;' % c
-    # send the traceback to PackageKit
-    base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
+    # Call backend custom Traceback handler
+    if not base.customTracebackHandler(typ):
+        etb = traceback.extract_tb(tb)
+        errmsg = 'Error Type: %s;' % str(typ)
+        errmsg += 'Error Value: %s;' % str(value)
+        for tub in etb:
+            f,l,m,c = tub # file,lineno, function, codeline
+            errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+            errmsg += '    %s;' % c
+        # send the traceback to PackageKit
+        base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
 
 
 def installExceptionHandler(base):

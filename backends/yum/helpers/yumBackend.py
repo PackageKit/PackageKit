@@ -1228,6 +1228,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
 
+    def customTracebackHandler(self,tb):
+        '''
+        Custom Traceback Handler
+        this is called by the ExceptionHandler
+        return True if the exception is handled in the method.
+        return False if to do the default action an signal an error
+        to packagekit.
+        Overload this method if you what handle special Tracebacks
+        '''
+        if issubclass(tb, (yum.Errors.RepoError, IOError)):
+            # Unhandled Repo error, can be network problems
+            self.error(ERROR_NO_NETWORK,"Problem with loading repository metadata, this can be caused by network problems or repository misconfigurations")
+            return True
+        else: # Do the default stuff
+            return False
+
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
     def __init__(self,base,showNames = False):
