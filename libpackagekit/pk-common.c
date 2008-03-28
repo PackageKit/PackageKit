@@ -117,11 +117,9 @@ pk_strvalidate_char (gchar item)
 	case ']':
 	case '{':
 	case '}':
-	case '#':
 	case '\\':
 	case '<':
 	case '>':
-	case '|':
 		return FALSE;
 	}
 	return TRUE;
