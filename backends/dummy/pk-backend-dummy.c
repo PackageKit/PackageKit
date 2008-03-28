@@ -32,6 +32,10 @@ static gulong _signal_timeout = 0;
 static const gchar *_package_id;
 static gchar **_package_ids;
 static guint _package_current = 0;
+static gboolean _has_service_pack = FALSE;
+static gboolean _repo_enabled_local = FALSE;
+static gboolean _repo_enabled_fedora = TRUE;
+static gboolean _repo_enabled_livna = TRUE;
 
 /**
  * backend_initialize:
@@ -596,18 +600,14 @@ backend_get_repo_list (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	if (_has_service_pack) {
+		pk_backend_repo_detail (backend, "local",
+					"Local PackageKit volume", _repo_enabled_local);
+	}
 	pk_backend_repo_detail (backend, "development",
-				"Fedora - Development", TRUE);
-	pk_backend_repo_detail (backend, "development-debuginfo",
-				"Fedora - Development - Debug", TRUE);
-	pk_backend_repo_detail (backend, "development-source",
-				"Fedora - Development - Source", FALSE);
+				"Fedora - Development", _repo_enabled_fedora);
 	pk_backend_repo_detail (backend, "livna-development",
-				"Livna for Fedora Core 8 - i386 - Development Tree", TRUE);
-	pk_backend_repo_detail (backend, "livna-development-debuginfo",
-				"Livna for Fedora Core 8 - i386 - Development Tree - Debug", TRUE);
-	pk_backend_repo_detail (backend, "livna-development-source",
-				"Livna for Fedora Core 8 - i386 - Development Tree - Source", FALSE);
+				"Livna for Fedora Core 8 - i386 - Development Tree", _repo_enabled_livna);
 	pk_backend_finished (backend);
 }
 
@@ -619,10 +619,18 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
-	if (enabled == TRUE) {
-		pk_warning ("REPO ENABLE '%s'", rid);
+
+	if (pk_strequal (rid, "local")) {
+		pk_debug ("local repo: %i", enabled);
+		_repo_enabled_local = enabled;
+	} else if (pk_strequal (rid, "development")) {
+		pk_debug ("fedora repo: %i", enabled);
+		_repo_enabled_fedora = enabled;
+	} else if (pk_strequal (rid, "livna-development")) {
+		pk_debug ("livna repo: %i", enabled);
+		_repo_enabled_livna = enabled;
 	} else {
-		pk_warning ("REPO DISABLE '%s'", rid);
+		pk_warning ("unknown repo: %s", rid);
 	}
 	pk_backend_finished (backend);
 }
@@ -646,7 +654,20 @@ static void
 backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
 	pk_warning ("service pack %i on %s device", enabled, location);
+
+	/*
+	 * VERY IMPORTANT: THE REPO MUST BE DISABLED IF IT IS ADDED!
+	 * (else it's a security flaw, think of a user with a malicious USB key)
+	 */
+	if (enabled) {
+		_repo_enabled_local = FALSE;
+		/* we tell the daemon what the new repo is called */
+		pk_backend_repo_detail (backend, "local", NULL, FALSE);
+	}
+	_has_service_pack = enabled;
+
 	pk_backend_finished (backend);
 }
 
