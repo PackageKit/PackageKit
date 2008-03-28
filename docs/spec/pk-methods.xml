@@ -49,6 +49,12 @@
       should not be sensitive to <literal>_</literal> or <literal>-</literal>.
     </para>
     <para>
+      The search methods should return all results in all repositories.
+      This may mean that multiple versions of package are returned.
+      If this is not what is wanted by the client program, then the
+      <literal>newest</literal> filter should be used.
+    </para>
+    <para>
       This method typically emits
       <literal>Progress</literal>,
       <literal>Error</literal> and
