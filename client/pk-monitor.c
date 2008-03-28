@@ -122,6 +122,15 @@ pk_monitor_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 }
 
 /**
+ * pk_monitor_repo_list_changed_cb:
+ **/
+static void
+pk_monitor_repo_list_changed_cb (PkClient *client, gpointer data)
+{
+	g_print ("repo-list-changed\n");
+}
+
+/**
  * pk_connection_changed_cb:
  **/
 static void
@@ -197,6 +206,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_package_cb), NULL);
 	g_signal_connect (client, "allow-cancel",
 			  G_CALLBACK (pk_monitor_allow_cancel_cb), NULL);
+	g_signal_connect (client, "repo-list-changed",
+			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",
