@@ -178,9 +178,6 @@ gboolean	 pk_client_set_use_buffer		(PkClient	*client,
 gboolean	 pk_client_set_synchronous		(PkClient	*client,
 							 gboolean	 synchronous,
 							 GError		**error);
-gboolean	 pk_client_set_name_filter		(PkClient	*client,
-							 gboolean	 name_filter,
-							 GError		**error);
 gboolean	 pk_client_get_use_buffer		(PkClient	*client);
 gboolean	 pk_client_get_allow_cancel		(PkClient	*client,
 							 gboolean	*allow_cancel,
