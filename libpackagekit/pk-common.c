@@ -112,6 +112,25 @@ pk_get_distro_id (void)
 		distro = g_strdup_printf ("suse-%s-%s", split[1], split[3]);
 		goto out;
 	}
+
+	/* check for foresight */
+	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Foresight Linux 2.0.2 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("foresight-%s-%s", split[2], arch);
+		goto out;
+	}
+
 out:
 	g_strfreev (split);
 	g_free (parseable);
