@@ -573,49 +573,48 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 		return FALSE;
 	}
 
-        try {
-                PkGroupEnum group = get_enum_group (package);
+	try {
+		PkGroupEnum group = get_enum_group (package);
 
-                // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
-                if (package.isSystem ()){
+		// currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
+		if (package.isSystem ()){
+			zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
+			rpm.initDatabase();
+			zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+			rpm.getData (package.name (), package.edition (), rpmHeader);
 
-                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-                        rpm.initDatabase();
-                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-                        rpm.getData (package.name (), package.edition (), rpmHeader);
+			pk_backend_description (backend,
+				d->package_id,                          // package_id
+				rpmHeader->tag_license ().c_str (),     // const gchar *license
+				group,                                  // PkGroupEnum group
+				rpmHeader->tag_description ().c_str (), // const gchar *description
+				rpmHeader->tag_url (). c_str (),        // const gchar *url
+				(gulong)rpmHeader->tag_size ());        // gulong size
 
-	                pk_backend_description (backend,
-			                	d->package_id,                  		// package_id
-				                rpmHeader->tag_license ().c_str (),		// const gchar *license
-				                group,                                  	// PkGroupEnum group
-				                rpmHeader->tag_description ().c_str (),   	// const gchar *description
-				                rpmHeader->tag_url (). c_str (),	  	// const gchar *url
-				                (gulong)rpmHeader->tag_size ());		// gulong size
+			rpm.closeDatabase();
+		}else{
+			pk_backend_description (backend,
+				d->package_id,
+				package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
+				group,
+				package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
+				"TODO", //pkg->url ().c_str (),
+				(gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize)); //pkg->size ());
+		}
 
-                        rpm.closeDatabase();
-                }else{
-                        pk_backend_description (backend,
-                                                d->package_id,
-                                                package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
-                                                group,
-                                                package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
-                                                "TODO", //pkg->url ().c_str (),
-                                                (gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::size)); //pkg->size ());
-                }
-
-        } catch (const zypp::target::rpm::RpmException &ex) {
-	        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
-                pk_backend_finished (backend);
+	} catch (const zypp::target::rpm::RpmException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+		pk_backend_finished (backend);
 		g_free (d->package_id);
-                g_free (d);
-                return FALSE;
-        } catch (const zypp::Exception &ex) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
-                pk_backend_finished (backend);
-                g_free (d->package_id);
-                g_free (d);
-                return FALSE;
-        }
+		g_free (d);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+		pk_backend_finished (backend);
+		g_free (d->package_id);
+		g_free (d);
+		return FALSE;
+	}
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);
