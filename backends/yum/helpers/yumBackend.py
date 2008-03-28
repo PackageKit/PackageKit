@@ -1237,8 +1237,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         to packagekit.
         Overload this method if you what handle special Tracebacks
         '''
-        tbType = type(tb)
-        if tbType in [type(yum.Errors.RepoError),type(IOError)] :
+        if issubclass(tb, (yum.Errors.RepoError, IOError)):
             # Unhandled Repo error, can be network problems
             self.error(ERROR_NO_NETWORK,"Problem with loading repository metadata, this can be caused by network problems or repository misconfigurations")
             return True
