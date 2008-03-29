@@ -68,11 +68,9 @@ struct _PkClientPrivate
 	DBusGConnection		*connection;
 	DBusGProxy		*proxy;
 	GMainLoop		*loop;
-	GHashTable		*hash;
 	gboolean		 is_finished;
 	gboolean		 use_buffer;
 	gboolean		 synchronous;
-	gboolean		 name_filter;
 	gboolean		 promiscuous;
 	gchar			*tid;
 	PkPackageList		*package_list;
@@ -299,6 +297,14 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled, GError **error)
 				     "cannot set promiscuous on a tid client");
 		return FALSE;
 	}
+
+	/* are we doing this without any need? */
+	if (client->priv->promiscuous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set promiscuous!");
+		return FALSE;
+	}
+
 	client->priv->promiscuous = enabled;
 	return TRUE;
 }
@@ -362,6 +368,13 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
+	/* are we doing this without any need? */
+	if (client->priv->use_buffer) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set use_buffer!");
+		return FALSE;
+	}
+
 	client->priv->use_buffer = use_buffer;
 	return TRUE;
 }
@@ -382,27 +395,14 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
+	/* are we doing this without any need? */
+	if (client->priv->synchronous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set synchronous!");
+		return FALSE;
+	}
+
 	client->priv->synchronous = synchronous;
-	return TRUE;
-}
-
-/**
- * pk_client_set_name_filter:
- * @client: a valid #PkClient instance
- * @name_filter: if we should check for previous packages before we emit
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * A name filter lets us do client side filtering.
- *
- * Return value: %TRUE if the name_filter mode was enabled
- **/
-gboolean
-pk_client_set_name_filter (PkClient *client, gboolean name_filter, GError **error)
-{
-	g_return_val_if_fail (client != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-
-	client->priv->name_filter = name_filter;
 	return TRUE;
 }
 
@@ -496,16 +496,26 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
  * waiting for ::finished, or if we want to reuse the #PkClient without
  * unreffing and creating it again.
  *
+ * If you call pk_client_reset() on a running transaction, then it will be
+ * automatically cancelled. If the cancel fails, the reset will fail.
+ *
  * Return value: %TRUE if we reset the client
  **/
 gboolean
 pk_client_reset (PkClient *client, GError **error)
 {
+	gboolean ret;
+
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
 	if (client->priv->is_finished != TRUE) {
-		pk_debug ("not exit status, reset might be invalid");
+		pk_debug ("not exit status, will try to cancel");
+		/* we try to cancel the running tranaction */
+		ret = pk_client_cancel (client, error);
+		if (!ret) {
+			return FALSE;
+		}
 	}
 
 	g_free (client->priv->tid);
@@ -523,15 +533,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
-	client->priv->use_buffer = FALSE;
-	client->priv->synchronous = FALSE;
-	client->priv->name_filter = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
-
-	/* clear hash */
-	g_hash_table_remove_all (client->priv->hash);
 
 	pk_package_list_clear (client->priv->package_list);
 	return TRUE;
@@ -671,8 +675,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		      PkClient     *client)
 {
 	PkInfoEnum info;
-	PkPackageId *pid;
-	const gchar *data;
 
 	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -681,27 +683,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 	if (!pk_client_should_proxy (client, tid)) {
 		return;
 	}
-
-	/* filter repeat names */
-	if (client->priv->name_filter) {
-		/* get the package name */
-		pid = pk_package_id_new_from_string (package_id);
-		pk_debug ("searching hash for %s", pid->name);
-
-		/* is already in the cache? */
-		data = (const gchar *) g_hash_table_lookup (client->priv->hash, pid->name);
-		if (data != NULL) {
-			pk_package_id_free (pid);
-			pk_debug ("ignoring as name filter is on, and previous found; %s", data);
-			return;
-		}
-
-		/* add to the cache */
-		pk_debug ("adding %s into the hash", pid->name);
-		g_hash_table_insert (client->priv->hash, g_strdup (pid->name), g_strdup (pid->name));
-		pk_package_id_free (pid);
-	}
-
 
 	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
 	info = pk_info_enum_from_text (info_text);
@@ -1252,6 +1233,7 @@ gboolean
 pk_client_cancel (PkClient *client, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -1259,14 +1241,33 @@ pk_client_cancel (PkClient *client, GError **error)
 	/* check to see if we have an tid */
 	if (client->priv->tid == NULL) {
 		pk_debug ("Transaction ID not set, assumed never used");
-		return FALSE;
+		return TRUE;
 	}
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_client_error_fixup (error);
-	return ret;
+	/* no error to process */
+	if (ret) {
+		return TRUE;
+	}
+
+	/* special case - if the tid is already finished, then cancel should
+	 * return TRUE as it's what we wanted */
+	if (pk_strequal (error_local->message, "Already finished") ||
+	    g_str_has_prefix (error_local->message, "No tid")) {
+		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
+		g_error_free (error_local);
+		return TRUE;
+	}
+
+	/* if we got an error we don't recognise, just fix it up and copy it */
+	if (error != NULL) {
+		pk_client_error_fixup (&error_local);
+		*error = g_error_copy (error_local);
+		g_error_free (error_local);
+	}
+	return FALSE;
 }
 
 /******************************************************************************
@@ -3070,8 +3071,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
 
-	/* clear hash and package list */
-	g_hash_table_remove_all (client->priv->hash);
+	/* clear package list */
 	pk_package_list_clear (client->priv->package_list);
 
 	/* do the correct action with the cached parameters */
@@ -3458,10 +3458,10 @@ pk_client_init (PkClient *client)
 
 	client->priv = PK_CLIENT_GET_PRIVATE (client);
 	client->priv->tid = NULL;
-	client->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	client->priv->loop = g_main_loop_new (NULL, FALSE);
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
+	client->priv->synchronous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -3690,9 +3690,6 @@ pk_client_finalize (GObject *object)
 	}
 	g_main_loop_unref (client->priv->loop);
 
-	/* free the hash table */
-	g_hash_table_destroy (client->priv->hash);
-
 	/* disconnect signal handlers */
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
 				        G_CALLBACK (pk_client_finished_cb), client);
@@ -3773,6 +3770,11 @@ void
 libst_client (LibSelfTest *test)
 {
 	PkClient *client;
+	gboolean ret;
+	GError *error = NULL;
+	guint size;
+	guint size_new;
+	guint i;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
@@ -3791,20 +3793,65 @@ libst_client (LibSelfTest *test)
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (libst_client_finished_cb), NULL);
 
-	/************************************************************/
-	libst_title (test, "do any method");
-	/* we don't care if this fails */
+	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
-	pk_client_search_name (client, "none", "moooo", NULL);
-	libst_success (test, "did something");
+	ret = pk_client_search_name (client, "none", "power", NULL);
 
 	/************************************************************/
 	libst_title (test, "we finished?");
-	if (finished) {
+	if (ret && finished) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "get new client");
+	client = pk_client_new ();
+	if (client != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	pk_client_set_synchronous (client, TRUE, NULL);
+	pk_client_set_use_buffer (client, TRUE, NULL);
+
+	/************************************************************/
+	libst_title (test, "search for power");
+	ret = pk_client_search_name (client, "none", "power", &error);
+	if (!ret) {
+		libst_failed (test, "failed: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* get size */
+	size = pk_client_package_buffer_get_size (client);
+	if (size == 0) {
+		libst_failed (test, "failed: to get any results");
+	}
+	libst_success (test, "search name with %i entries", size);
+
+	/************************************************************/
+	libst_title (test, "do lots of loops");
+	for (i=0;i<10;i++) {
+		ret = pk_client_reset (client, &error);
+		if (!ret) {
+			libst_failed (test, "failed: to reset: %s", error->message);
+			g_error_free (error);
+		}
+		ret = pk_client_search_name (client, "none", "power", &error);
+		if (!ret) {
+			libst_failed (test, "failed to search: %s", error->message);
+			g_error_free (error);
+		}
+		/* check we got the same results */
+		size_new = pk_client_package_buffer_get_size (client);
+		if (size != size_new) {
+			libst_failed (test, "old size %i, new size %", size, size_new);
+		}
+	}
+	libst_success (test, "10 search name loops completed in %ims", libst_elapsed (test));
+	g_object_unref (client);
 
 	libst_end (test);
 }

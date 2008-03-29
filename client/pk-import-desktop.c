@@ -47,13 +47,20 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	PkPackageItem *item;
 	PkPackageId *pid;
 	gboolean ret;
+	GError *error = NULL;
 
 	/* use PK to find the correct package */
-	pk_client_reset (client, NULL);
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_search_file (client, "installed", filename, NULL);
+	ret = pk_client_reset (client, &error);
 	if (!ret) {
+		pk_warning ("failed to reset client: %s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+
+	ret = pk_client_search_file (client, "installed", filename, &error);
+	if (!ret) {
+		pk_warning ("failed to search file: %s", error->message);
+		g_error_free (error);
 		return NULL;
 	}
 
@@ -214,7 +221,11 @@ pk_desktop_process_directory (const gchar *directory)
 			package_name = pk_desktop_get_name_for_file (filename);
 
 			/* process the file */
-			pk_desktop_process_desktop (package_name, filename);
+			if (package_name != NULL) {
+				pk_desktop_process_desktop (package_name, filename);
+			} else {
+				g_print ("%s ignored, failed to get package name\n", filename);
+			}
 			g_free (package_name);
 			g_free (filename);
 		}
@@ -260,6 +271,9 @@ main (int argc, char *argv[])
 	}
 
 	client = pk_client_new ();
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, TRUE, NULL);
+
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {

@@ -12,6 +12,7 @@ SELFTEST_LIBS =						\
 	$(NULL)
 
 INCLUDES =						\
+	$(GIO_CFLAGS)					\
 	$(GLIB_CFLAGS)					\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
@@ -98,6 +99,7 @@ packagekitd_LDADD =					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
 	$(SELFTEST_LIBS)				\
+	$(GIO_LIBS)					\
 	$(NULL)
 
 if BACKEND_TYPE_BOX

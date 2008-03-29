@@ -76,7 +76,7 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 
-	pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
+	pk_debug ("adding to cache array package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
 	item = g_new0 (PkPackageItem, 1);
 	item->info = info;
 	item->package_id = g_strdup (package_id);

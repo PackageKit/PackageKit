@@ -114,6 +114,8 @@ pk_filter_set_all (PkFilter *filter, gboolean value)
 	filter->not_visible = value;
 	filter->basename = value;
 	filter->not_basename = value;
+	filter->newest = value;
+	filter->not_newest = value;
 	return TRUE;
 }
 
@@ -201,6 +203,10 @@ pk_filter_new_from_string (const gchar *filter_text)
 			filter->not_basename = FALSE;
 		} else if (pk_strequal (sections[i], "~basename")) {
 			filter->basename = FALSE;
+		} else if (pk_strequal (sections[i], "newest")) {
+			filter->not_newest = FALSE;
+		} else if (pk_strequal (sections[i], "~newest")) {
+			filter->newest = FALSE;
 		} else {
 			pk_warning ("element '%s' not recognised", sections[i]);
 			ret = FALSE;
@@ -275,6 +281,12 @@ pk_filter_to_string (PkFilter *filter)
 	}
 	if (filter->not_basename && !filter->basename) {
 		g_string_append (string, "~basename;");
+	}
+	if (filter->newest && !filter->not_newest) {
+		g_string_append (string, "newest;");
+	}
+	if (filter->not_newest && !filter->newest) {
+		g_string_append (string, "~newest;");
 	}
 
 	/* remove trailing ; */

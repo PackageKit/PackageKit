@@ -70,6 +70,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Library dependencies
 dnl ---------------------------------------------------------------------------
 GLIB_REQUIRED=2.14.0
+GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
 LIBNM_GLIB_REQUIRED=0.6.4
@@ -104,6 +105,22 @@ PKG_CHECK_MODULES(DBUS, \
  gthread-2.0)
 AC_SUBST(DBUS_CFLAGS)
 AC_SUBST(DBUS_LIBS)
+
+dnl ---------------------------------------------------------------------------
+dnl - Is GIO available?
+dnl ---------------------------------------------------------------------------
+PKG_CHECK_MODULES(GIO, gio-2.0 >= $GIO_REQUIRED, PK_BUILD_GIO="yes", PK_BUILD_GIO="no")
+if test "x$PK_BUILD_GIO" = "xyes"; then
+	with_gio="yes"
+	AC_DEFINE(PK_BUILD_GIO, 1, [define if GIO is installed])
+else
+	with_gio="no"
+	PK_BUILD_GIO=no
+fi
+
+AM_CONDITIONAL(PK_BUILD_GIO, test x$PK_BUILD_GIO = xyes)
+AC_SUBST(GIO_CFLAGS)
+AC_SUBST(GIO_LIBS)
 
 dnl ---------------------------------------------------------------------------
 dnl - Is NetworkManager available?
@@ -625,6 +642,7 @@ echo "
         GCC time profiling:        ${enable_gprof}
         Security framework:        ${with_security_framework}
         Networking stack:          ${with_networking_stack}
+        GIO support:               ${with_gio}
 
         Backends:
         ALPM backend:              ${enable_alpm}
