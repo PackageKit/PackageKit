@@ -210,15 +210,12 @@ groupMap = {
 }
 
 MetaDataMap = {
-'repomd.xml'             : "repository",
-'primary.sqlite.bz2'     : "package",
-'primary.xml.gz'         : "package",
-'filelists.sqlite.bz2'   : "filelist",
-'filelists.xml.gz'       : "filelist",
-'other.sqlite.bz2'       : "changelog",
-'other.xml.gz'           : "changelog",
-'comps.xml'              : "group",
-'updateinfo.xml.gz'      : "update"
+    'repomd'        : "repository",
+    'primary'       : "package",
+    'filelists'     : "filelist",
+    'other'         : "changelog",
+    'comps'         : "group",
+    'updateinfo'    : "update"
 }
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
@@ -1971,10 +1968,11 @@ class DownloadCallback( BaseMeter ):
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
                 else:
-                    if name in MetaDataMap:
-                        typ = MetaDataMap[name]
-                    else:
-                        typ = 'unknown'
+                    typ = 'unknown'
+                    for key in MetaDataMap.keys():
+                        if key in name:
+                            typ = MetaDataMap[key]
+                            break
                     self.base.MetaData(typ,name)
             self.base.SubPercentageChanged(0)
         else:
