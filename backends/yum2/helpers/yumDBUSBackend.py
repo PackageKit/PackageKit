@@ -1793,25 +1793,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return ""
 
     def _get_update_extras(self,pkg):
-        md = self.updateMetadata
-        notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-        urls = {'bugzilla':[], 'cve' : [], 'vendor': []}
+        urls = {'bugzilla': [], 'cve': [], 'vendor': []}
+        notice = self.updateMetadata.get_notice((pkg.name, pkg.version, pkg.release))
         if notice:
             # Update Description
             desc = notice['description']
+
             # Update References (Bugzilla,CVE ...)
-            refs = notice['references']
-            if refs:
-                for ref in refs:
-                    typ = ref['type']
-            href = ref['href']
-            title = ref['title']
-                    if typ in ('bugzilla','cve') and href != None:
-            if title == None:
-                title = ""
-                        urls[typ].append("%s;%s" % (href,title))
+            for ref in notice['references']:
+                type_ = ref['type']
+                href = ref['href']
+                title = ref['title'] or ""
+                if href:
+                    if type_ in ('bugzilla', 'cve'):
+                        urls[type_].append("%s;%s" % (href, title))
                     else:
-                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
+                        urls['vendor'].append("%s;%s" % (href, title))
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
