@@ -120,10 +120,10 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "succeeded") == TRUE) {
+		if (pk_strequal (col, "succeeded")) {
 			ret = pk_strtouint (value, &temp);
-			if (ret == FALSE) {
-				pk_warning ("failed to convert");
+			if (!ret) {
+				pk_warning ("failed to parse succeeded: %s", value);
 			}
 			if (temp == 1) {
 				item.succeeded = TRUE;
@@ -134,29 +134,30 @@ pk_transaction_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 				pk_warning ("item.succeeded %i! Resetting to 1", item.succeeded);
 				item.succeeded = 1;
 			}
-		} else if (pk_strequal (col, "role") == TRUE) {
+		} else if (pk_strequal (col, "role")) {
 			if (value != NULL) {
 				item.role = pk_role_enum_from_text (value);
 			}
-		} else if (pk_strequal (col, "transaction_id") == TRUE) {
+		} else if (pk_strequal (col, "transaction_id")) {
 			if (value != NULL) {
 				item.tid = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "timespec") == TRUE) {
+		} else if (pk_strequal (col, "timespec")) {
 			if (value != NULL) {
 				item.timespec = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "data") == TRUE) {
+		} else if (pk_strequal (col, "data")) {
 			if (value != NULL) {
 				item.data = g_strdup (value);
 			}
-		} else if (pk_strequal (col, "duration") == TRUE) {
+		} else if (pk_strequal (col, "duration")) {
 			ret = pk_strtouint (value, &item.duration);
-			if (ret == FALSE) {
-				pk_warning ("failed to convert");
+			if (!ret) {
+				pk_warning ("failed to parse duration: %s", value);
+				item.duration = 0;
 			}
 			if (item.duration > 60*60*12) {
-				pk_warning ("insane duartion %i", item.duration);
+				pk_warning ("insane duration: %i", item.duration);
 				item.duration = 0;
 			}
 		} else {
@@ -191,6 +192,7 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	pk_debug ("statement=%s", sql);
 	rc = sqlite3_exec (tdb->priv->db, sql, pk_transaction_sqlite_callback, tdb, &error_msg);
@@ -216,7 +218,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "timespec") == TRUE) {
+		if (pk_strequal (col, "timespec")) {
 			*timespec = g_strdup (value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -240,6 +242,7 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 
 	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	role_text = pk_role_enum_to_text (role);
 	pk_debug ("get_time_since_action=%s", role_text);
@@ -279,6 +282,7 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
 	role_text = pk_role_enum_to_text (role);
@@ -448,6 +452,7 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	statement = "TRUNCATE TABLE transactions;";
 	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
@@ -467,6 +472,7 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 
 	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
 	timespec = pk_iso8601_present ();
 	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
@@ -496,6 +502,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
+	tdb->priv->db = NULL;
 
 	/* if the database file was not installed (or was nuked) recreate it */
 	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
@@ -503,8 +510,8 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
 	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc) {
-		pk_warning ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
+		pk_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		return;
 	} else {
 		if (create_file == FALSE) {
@@ -578,7 +585,7 @@ libst_transaction_db (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set the correct time");
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to reset value");

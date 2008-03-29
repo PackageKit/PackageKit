@@ -95,7 +95,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 	}
 
 	/* no point doing it twice if they are the same */
-	if (pk_strequal (extra->priv->locale_base, extra->priv->locale) == TRUE) {
+	if (pk_strequal (extra->priv->locale_base, extra->priv->locale)) {
 		g_free (extra->priv->locale_base);
 		extra->priv->locale_base = NULL;
 	}
@@ -131,11 +131,11 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "summary") == TRUE) {
+		if (pk_strequal (col, "summary")) {
 			extra->priv->summary = g_strdup (value);
-		} else if (pk_strequal (col, "locale") == TRUE) {
+		} else if (pk_strequal (col, "locale")) {
 			pk_debug ("locale: %s", value);
-		} else if (pk_strequal (col, "package") == TRUE) {
+		} else if (pk_strequal (col, "package")) {
 			pk_debug ("package: %s", value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -224,9 +224,9 @@ pk_extra_detail_package_callback (void *data, gint argc, gchar **argv, gchar **c
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
-		if (pk_strequal (col, "exec") == TRUE) {
+		if (pk_strequal (col, "exec")) {
 			extra->priv->exec = g_strdup (value);
-		} else if (pk_strequal (col, "icon") == TRUE) {
+		} else if (pk_strequal (col, "icon")) {
 			extra->priv->icon = g_strdup (value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -563,7 +563,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -581,7 +581,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -590,7 +590,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
-	if (pk_strequal (text, "en") == TRUE) {
+	if (pk_strequal (text, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "locale was %s", text);
@@ -600,7 +600,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "insert localised data");
 	ret = pk_extra_set_localised_detail (extra, "gnome-power-manager",
 					     "Power manager for the GNOME's desktop");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed!");
@@ -609,7 +609,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve localised data");
 	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
-	if (ret == TRUE && summary != NULL) {
+	if (ret && summary != NULL) {
 		libst_success (test, "%s", summary);
 	} else {
 		libst_failed (test, "failed!");
@@ -618,7 +618,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -627,7 +627,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve localised data");
 	ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
-	if (ret == TRUE && summary != NULL) {
+	if (ret && summary != NULL) {
 		libst_success (test, "%s", summary);
 	} else {
 		libst_failed (test, "failed!");
@@ -636,7 +636,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "insert package data");
 	ret = pk_extra_set_package_detail (extra, "gnome-power-manager", "gpm-main.png", "gnome-power-manager");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed!");
@@ -645,9 +645,9 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve package data");
 	ret = pk_extra_get_package_detail (extra, "gnome-power-manager", &icon, &exec);
-	if (ret == TRUE &&
-	    pk_strequal (icon, "gpm-main.png") == TRUE &&
-	    pk_strequal (exec, "gnome-power-manager") == TRUE) {
+	if (ret &&
+	    pk_strequal (icon, "gpm-main.png") &&
+	    pk_strequal (exec, "gnome-power-manager")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
@@ -656,7 +656,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "insert new package data");
 	ret = pk_extra_set_package_detail (extra, "gnome-power-manager", "gpm-prefs.png", "gnome-power-preferences");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed!");
@@ -665,9 +665,9 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve new package data");
 	ret = pk_extra_get_package_detail (extra, "gnome-power-manager", &icon, &exec);
-	if (ret == TRUE &&
-	    pk_strequal (icon, "gpm-prefs.png") == TRUE &&
-	    pk_strequal (exec, "gnome-power-preferences") == TRUE) {
+	if (ret &&
+	    pk_strequal (icon, "gpm-prefs.png") &&
+	    pk_strequal (exec, "gnome-power-preferences")) {
 		libst_success (test, "%s:%s", icon, exec);
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
@@ -676,7 +676,7 @@ libst_extra (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "retrieve missing package data");
 	ret = pk_extra_get_package_detail (extra, "gnome-moo-manager", &icon, &exec);
-	if (ret == TRUE && icon == NULL && exec == NULL) {
+	if (ret && icon == NULL && exec == NULL) {
 		libst_success (test, "passed");
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);

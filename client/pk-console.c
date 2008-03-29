@@ -67,7 +67,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	guint extra = 0;
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+	if (is_console && printed_bar && has_output == FALSE) {
 		g_print ("\r");
 	}
 
@@ -164,7 +164,7 @@ pk_console_repo_detail_cb (PkClient *client, const gchar *repo_id,
 {
 	gchar *repo;
 	repo = pk_strpad (repo_id, 28);
-	if (enabled == TRUE) {
+	if (enabled) {
 		g_print ("  enabled   %s %s\n", repo, description);
 	} else {
 		g_print ("  disabled  %s %s\n", repo, description);
@@ -247,7 +247,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	gchar *padding;
 
 	/* don't spin if we have had output */
-	if (has_output == TRUE) {
+	if (has_output) {
 		return FALSE;
 	}
 
@@ -265,7 +265,7 @@ pk_console_pulse_bar (PulseState *pulse_state)
 	}
 	g_print ("]");
 
-	if (pulse_state->move_forward == TRUE) {
+	if (pulse_state->move_forward) {
 		if (pulse_state->position == progress_bar_size - 2) {
 			pulse_state->move_forward = FALSE;
 			pulse_state->position--;
@@ -302,7 +302,7 @@ pk_console_draw_pulse_bar (void)
 		return;
 	}
 	has_output = FALSE;
-	if (is_console == TRUE) {
+	if (is_console) {
 		pulse_state.position = 1;
 		pulse_state.move_forward = TRUE;
 		timer_id = g_timeout_add (40, (GSourceFunc) pk_console_pulse_bar, &pulse_state);
@@ -316,7 +316,7 @@ static void
 pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subpercentage,
 				guint elapsed, guint remaining, gpointer data)
 {
-	if (is_console == TRUE) {
+	if (is_console) {
 		if (percentage == PK_CLIENT_PERCENTAGE_INVALID) {
 			pk_console_draw_pulse_bar ();
 		} else {
@@ -334,7 +334,6 @@ static const gchar *summary =
 	"  search name|details|group|file data\n"
 	"  install <package_id>\n"
 	"  install-file <file>\n"
-	"  service-pack <location>\n"
 	"  remove <package_id>\n"
 	"  update <package_id>\n"
 	"  refresh\n"
@@ -377,7 +376,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	}
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE && has_output == FALSE) {
+	if (is_console && printed_bar && has_output == FALSE) {
 		g_print ("\r");
 		blanking = g_strnfill (pk_console_get_terminal_columns (), ' ');
 		g_print ("%s", blanking);
@@ -439,7 +438,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
-	if (valid == TRUE) {
+	if (valid) {
 		return g_strdup (package);
 	}
 
@@ -456,7 +455,11 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
-		pk_client_reset (client_task, NULL);
+		ret = pk_client_reset (client_task, error);
+		if (ret == FALSE) {
+			pk_warning ("failed to reset client task");
+			return NULL;
+		}
 		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
@@ -536,7 +539,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 
 	/* pretty print */
 	g_print ("%s", question);
-	if (defaultyes == TRUE) {
+	if (defaultyes) {
 		g_print (" [Y/n] ");
 	} else {
 		g_print (" [N/y] ");
@@ -556,7 +559,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 		}
 
 		/* default choice */
-		if (answer == '\n' && defaultyes == TRUE) {
+		if (answer == '\n' && defaultyes) {
 			return TRUE;
 		}
 		if (answer == '\n' && defaultyes == FALSE) {
@@ -597,9 +600,11 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	/* see if any packages require this one */
-	pk_client_reset (client_task, NULL);
-	pk_client_set_use_buffer (client_task, TRUE, NULL);
-	pk_client_set_synchronous (client_task, TRUE, NULL);
+	ret = pk_client_reset (client_task, error);
+	if (!ret) {
+		pk_warning ("failed to reset");
+		return FALSE;
+	}
 
 	pk_debug (_("Getting installed requires for %s"), package_id);
 	ret = pk_client_get_requires (client_task, "installed", package_id, TRUE, error);
@@ -825,13 +830,6 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 		} else {
 			ret = pk_client_install_file (client, value, error);
 		}
-	} else if (strcmp (mode, "service-pack") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a location to update from"));
-			return FALSE;
-		} else {
-			ret = pk_client_service_pack (client, value, TRUE, error);
-		}
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
 			g_set_error (error, 0, 0, _("specify a package to remove"));
@@ -979,7 +977,7 @@ static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 	g_print ("Error: %s : %s\n", pk_error_enum_to_text (error_code), details);
@@ -995,7 +993,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 			   gulong size, gpointer data)
 {
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 	g_print (_("Package description\n"));
@@ -1017,7 +1015,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	gchar **filevector = g_strsplit (filelist, ";", 0);
 
 	/* if on console, clear the progress bar line */
-	if (is_console == TRUE && printed_bar == TRUE) {
+	if (is_console && printed_bar) {
 		g_print ("\n");
 	}
 
@@ -1076,6 +1074,8 @@ static void
 pk_console_sigint_handler (int sig)
 {
 	PkRoleEnum role;
+	gboolean ret;
+	GError *error = NULL;
 	pk_debug ("Handling SIGINT");
 
 	/* restore default ASAP, as the cancels might hang */
@@ -1084,11 +1084,20 @@ pk_console_sigint_handler (int sig)
 	/* cancel any tasks */
 	pk_client_get_role (client, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		pk_client_cancel (client, NULL);
+		ret = pk_client_cancel (client, &error);
+		if (!ret) {
+			pk_warning ("failed to cancel normal client: %s", error->message);
+			g_error_free (error);
+			error = NULL;
+		}
 	}
 	pk_client_get_role (client_task, &role, NULL, NULL);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
-		pk_client_cancel (client_task, NULL);
+		ret = pk_client_cancel (client_task, &error);
+		if (!ret) {
+			pk_warning ("failed to cancel task client: %s", error->message);
+			g_error_free (error);
+		}
 	}
 
 	/* kill ourselves */
@@ -1152,7 +1161,7 @@ main (int argc, char *argv[])
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
 
-	if (program_version == TRUE) {
+	if (program_version) {
 		g_print (VERSION "\n");
 		return 0;
 	}

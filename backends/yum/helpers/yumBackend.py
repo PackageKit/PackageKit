@@ -33,6 +33,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string, unique
+from yum.packages import YumLocalPackage
 import rpmUtils
 import exceptions
 import types
@@ -222,7 +223,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self,args,lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
-        self.yumbase = PackageKitYumBase()
+        self.yumbase = PackageKitYumBase(self)
         yumbase = self.yumbase
         self._setup_yum()
         if lock:
@@ -267,8 +268,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.doLock( YUM_PID_FILE )
                 PackageKitBaseBackend.doLock(self)
             except:
-                if retries == 0:
-                    self.status(STATUS_WAIT)
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
@@ -538,6 +537,34 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
 
+    def what_provides(self, filters, provides_type, search):
+        '''
+        Implement the {backend}-what-provides functionality
+        '''
+        self._check_init(lazy_cache=True)
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        fltlist = filters.split(';')
+        found = {}
+        if not FILTER_NOT_INSTALLED in fltlist:
+            # Check installed for file
+            matches = self.yumbase.rpmdb.searchProvides(search)
+            for pkg in matches:
+                if not found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+                        found[str(pkg)] = 1
+        if not FILTER_INSTALLED in fltlist:
+            # Check available for file
+            matches = self.yumbase.pkgSack.searchProvides(search)
+            for pkg in matches:
+                if found.has_key(str(pkg)):
+                    if self._do_extra_filtering(pkg, fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+                        found[str(pkg)] = 1
+
     def _getEVR(self,idver):
         '''
         get the e,v,r from the package id version
@@ -697,6 +724,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init(lazy_cache=True)
         self.allow_cancel(False)
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         txmbr = self.yumbase.update() # Add all updates to Transaction
         if txmbr:
@@ -743,7 +771,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-resolve functionality
         '''
+        print >> sys.stderr, "start init"
         self._check_init(lazy_cache=True)
+        print >> sys.stderr, "end init"
         self.allow_cancel(True);
         self.percentage(None)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
@@ -781,6 +811,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False)
         self.percentage(0)
+        self.status(STATUS_RUNNING)
         txmbrs = []
         for package in packages:
             pkg,inst = self._findPackage(package)
@@ -792,77 +823,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"No packages to instal")
 
-    def _localInstall(self, inst_file):
-        """handles installs/updates of rpms provided on the filesystem in a
-           local dir (ie: not from a repo)"""
+    def _checkForNewer(self,po):
+        pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        if pkgs:
+            newest = pkgs[0]
+            if newest.EVR > po.EVR:
+                #TODO Add code to send a message here
+                self.message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
 
-        # Slightly modified localInstall from yum's cli.py
 
-        # read in each package into a YumLocalPackage Object
-        # append it to self.yumbase.localPackages
-        # check if it can be installed or updated based on nevra versus rpmdb
-        # don't import the repos until we absolutely need them for depsolving
-
-        oldcount = len(self.yumbase.tsInfo)
-
-        installpkgs = []
-        updatepkgs = []
-
-        pkg = inst_file
-        try:
-            po = yum.packages.YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
-        except yum.Errors.MiscError:
-            self.error(ERROR_INTERNAL_ERROR,'Cannot open file: %s. Skipping.' % pkg)
-
-        # everything installed that matches the name
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=po.name)
-        # go through each package
-        if len(installedByKey) == 0: # nothing installed by that name
-            installpkgs.append(po)
-        else:
-            for installed_pkg in installedByKey:
-                if po.EVR > installed_pkg.EVR: # we're newer - this is an update, pass to them
-                    if installed_pkg.name in self.yumbase.conf.exactarchlist:
-                        if po.arch == installed_pkg.arch:
-                            updatepkgs.append((po, installed_pkg))
-                            continue
-                        else:
-                            continue
-                    else:
-                        updatepkgs.append((po, installed_pkg))
-                        continue
-                elif po.EVR == installed_pkg.EVR:
-                    if po.arch != installed_pkg.arch and (isMultiLibArch(po.arch) or
-                              isMultiLibArch(installed_pkg.arch)):
-                        installpkgs.append(po)
-                        continue
-                    else:
-                        continue
-                else:
-                    continue
-
-        # handle excludes for a localinstall
-        toexc = []
-        if len(self.yumbase.conf.exclude) > 0:
-           exactmatch, matched, unmatched = \
-                   yum.packages.parsePackages(installpkgs + map(lambda x: x[0], updatepkgs),
-                                 self.yumbase.conf.exclude, casematch=1)
-           toexc = exactmatch + matched
-
-        # Process potential installs
-        for po in installpkgs:
-            if po in toexc:
-               continue     # Exclude package
-            # Add package to transaction for installation
-            self.yumbase.localPackages.append(po)
-            self.yumbase.install(po=po)
-        # Process potential updates
-        for (po, oldpo) in updatepkgs:
-            if po in toexc:
-               continue # Excludeing package
-            # Add Package to transaction for updating
-            self.yumbase.localPackages.append(po)
-            self.yumbase.tsInfo.addUpdate(po, oldpo)
 
     def install_file (self, inst_file):
         '''
@@ -870,13 +839,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
+        if inst_file.endswith('.src.rpm'):
+            self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
+            return
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
-        self._localInstall(inst_file)
+        txmbr = self.yumbase.installLocal(inst_file)
+        self._checkForNewer(txmbr[0].po)
         try:
             # Added the package to the transaction set
             if len(self.yumbase.tsInfo) > 0:
@@ -893,6 +867,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
         txmbrs = []
         for package in packages:
             pkg,inst = self._findPackage(package)
@@ -917,6 +892,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _format_msgs(self,msgs):
+        if type(msgs) == type(''):
+            msgs = msgs.split('\n')
+        return ";".join(msgs)
+
     def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
@@ -924,7 +904,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution;" +";".join(msgs)
+            retmsg = "Error in Dependency Resolution;" + self._format_msgs(msgs)
             self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
         else:
             self._check_for_reboot()
@@ -940,10 +920,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.yumbase.processTransaction(callback=callback,
                                       rpmDisplay=rpmDisplay)
             except yum.Errors.YumDownloadError, ye:
-                retmsg = "Error in Download;" +";".join(ye.value)
+                retmsg = "Error in Download;" + self._format_msgs(ye.value)
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
             except yum.Errors.YumGPGCheckError, ye:
-                retmsg = "Error in Package Signatures;" +";".join(ye.value)
+                retmsg = "Error in Package Signatures;" + self._format_msgs(ye.value)
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
@@ -964,7 +944,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              'GPG')
                 self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing;" +";".join(ye.value)
+                retmsg = "Error in Transaction Processing;" + self._format_msgs(ye.value)
                 self.error(ERROR_TRANSACTION_ERROR,retmsg)
 
     def remove(self, allowdep, package):
@@ -975,6 +955,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
+        self.status(STATUS_RUNNING)
 
         pkg,inst = self._findPackage( package)
         if pkg and inst:
@@ -1166,18 +1147,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if refs:
                 for ref in refs:
                     typ = ref['type']
-		    href = ref['href']
-		    title = ref['title']
-                    if typ in ('bugzilla','cve') and href != None:
-			if title == None:
-			    title = ""
-                        urls[typ].append("%s;%s" % (href,title))
-                    else:
-                        urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
+            href = ref['href']
+            title = ref['title']
+            if typ in ('bugzilla','cve') and href != None:
+                if title == None:
+                    title = ""
+                urls[typ].append("%s;%s" % (href,title))
+            else:
+                urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
                         
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
-				reboot = 'system'
+                reboot = 'system'
             else:
                 reboot = 'none'
             return self._format_str(desc),urls,reboot
@@ -1247,6 +1228,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
         self.yumbase.repos.setProgressBar( self.dnlCallback )     # Setup the download callback class
 
+    def customTracebackHandler(self,tb):
+        '''
+        Custom Traceback Handler
+        this is called by the ExceptionHandler
+        return True if the exception is handled in the method.
+        return False if to do the default action an signal an error
+        to packagekit.
+        Overload this method if you what handle special Tracebacks
+        '''
+        if issubclass(tb, (yum.Errors.RepoError, IOError)):
+            # Unhandled Repo error, can be network problems
+            self.error(ERROR_NO_NETWORK,"Problem with loading repository metadata, this can be caused by network problems or repository misconfigurations")
+            return True
+        else: # Do the default stuff
+            return False
+
 class DownloadCallback( BaseMeter ):
     """ Customized version of urlgrabber.progress.BaseMeter class """
     def __init__(self,base,showNames = False):
@@ -1270,7 +1267,10 @@ class DownloadCallback( BaseMeter ):
     def _getPackage(self,name):
         if self.pkgs:
             for pkg in self.pkgs:
-                rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
+                if isinstance(pkg, YumLocalPackage):
+                    rpmfn = pkg.localPkg
+                else:
+                    rpmfn = os.path.basename(pkg.remote_path) # get the rpm filename of the package
                 if rpmfn == name:
                     return pkg
         return None
@@ -1346,9 +1346,9 @@ class DownloadCallback( BaseMeter ):
             self.base.sub_percentage(0)        
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
-	            self.lastPct = pct
-	            # bump the sub persentage for this package
-	            self.base.sub_percentage(pct)
+                self.lastPct = pct
+                # bump the sub persentage for this package
+                self.base.sub_percentage(pct)
 
 class PackageKitCallback(RPMBaseCallback):
     def __init__(self,base):
@@ -1418,15 +1418,39 @@ class ProcessTransPackageKitCallback:
             self.base.dnlCallback.setPackages(data,10,30)
         elif state == PT_GPGCHECK:
             self.base.percentage(40)
+            self.base.status(STATUS_SIG_CHECK)
             pass
         elif state == PT_TEST_TRANS:
             self.base.allow_cancel(False)
             self.base.percentage(45)
+            self.base.status(STATUS_TEST_COMMIT)
             pass
         elif state == PT_TRANSACTION:
             self.base.allow_cancel(False)
             self.base.percentage(50)
             pass
+
+
+class DepSolveCallback(object):
+
+    # XXX takes a PackageKitBackend so we can call StatusChanged on it.
+    # That's kind of hurky.
+    def __init__(self, backend):
+        self.started = False
+        self.backend = backend
+
+    def start(self):
+       if not self.started:
+           self.backend.status(STATUS_DEP_RESOLVE)
+           self.backend.percentage(None)
+
+    # Be lazy and not define the others explicitly
+    def _do_nothing(self, *args, **kwargs):
+        pass
+
+    def __getattr__(self, x):
+        return self._do_nothing
+
 
 class PackageKitYumBase(yum.YumBase):
     """
@@ -1434,9 +1458,10 @@ class PackageKitYumBase(yum.YumBase):
     and nab the gpg sig data
     """
 
-    def __init__(self):
+    def __init__(self, backend):
         yum.YumBase.__init__(self)
         self.missingGPGKey = None
+        self.dsCallback = DepSolveCallback(backend)
 
     def _checkSignatures(self,pkgs,callback):
         ''' The the signatures of the downloaded packages '''

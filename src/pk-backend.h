@@ -110,6 +110,14 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 const gchar    *key_timestamp,
 							 PkSigTypeEnum   type);
 
+/* internal state */
+gboolean	 pk_backend_set_internal		(PkBackend	*backend,
+							 const gchar	*key,
+							 const gchar	*data);
+gchar		*pk_backend_get_internal		(PkBackend	*backend,
+							 const gchar	*key);
+
+
 /* helper functions */
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);

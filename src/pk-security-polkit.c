@@ -114,8 +114,6 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 		policy = "org.freedesktop.packagekit.install";
 	} else if (role == PK_ROLE_ENUM_INSTALL_FILE) {
 		policy = "org.freedesktop.packagekit.localinstall";
-	} else if (role == PK_ROLE_ENUM_SERVICE_PACK) {
-		policy = "org.freedesktop.packagekit.service-pack";
 	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
 		policy = "org.freedesktop.packagekit.rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
@@ -332,7 +330,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "map valid role to action");
 	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (pk_strequal (action, "org.freedesktop.packagekit.update-package") == TRUE) {
+	if (pk_strequal (action, "org.freedesktop.packagekit.update-package")) {
 		libst_success (test, NULL, error);
 	} else {
 		libst_failed (test, "did not get correct action '%s'", action);

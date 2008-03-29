@@ -125,7 +125,7 @@ pk_thread_list_wait (PkThreadList *tlist)
 	length = tlist->priv->thread_list->len;
 	for (i=0; i<length; i++) {
 		item = (PkThreadListItem *) g_ptr_array_index (tlist->priv->thread_list, i);
-		if (item->running == TRUE) {
+		if (item->running) {
 			pk_debug ("joining thread %p", item->thread);
 			g_thread_join (item->thread);
 		} else {
@@ -153,7 +153,7 @@ pk_thread_list_number_running (PkThreadList *tlist)
 	length = tlist->priv->thread_list->len;
 	for (i=0; i<length; i++) {
 		item = (PkThreadListItem *) g_ptr_array_index (tlist->priv->thread_list, i);
-		if (item->running == TRUE) {
+		if (item->running) {
 			number++;
 		}
 	}
@@ -300,7 +300,7 @@ libst_thread_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "create task 1");
 	ret = pk_thread_list_create (tlist, test_func1, GINT_TO_POINTER(0x01), GINT_TO_POINTER(0x02));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to create task1");
@@ -309,7 +309,7 @@ libst_thread_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "create task 2");
 	ret = pk_thread_list_create (tlist, test_func2, GINT_TO_POINTER(0x02), GINT_TO_POINTER(0x03));
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to create task2");
@@ -318,7 +318,7 @@ libst_thread_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "wait for finish");
 	ret = pk_thread_list_wait (tlist);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to wait for task");
@@ -326,7 +326,7 @@ libst_thread_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "ran func1 to completion");
-	if (done_func1 == TRUE) {
+	if (done_func1) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to run func1");
@@ -334,7 +334,7 @@ libst_thread_list (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "ran func2 to completion");
-	if (done_func2 == TRUE) {
+	if (done_func2) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed to run func2");

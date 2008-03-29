@@ -103,6 +103,7 @@ enum {
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_MESSAGE,
 	PK_ENGINE_UPDATES_CHANGED,
+	PK_ENGINE_REPO_LIST_CHANGED,
 	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
@@ -415,6 +416,13 @@ pk_engine_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *de
 	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
+#ifndef PK_IS_DEVELOPER
+	if (message == PK_MESSAGE_ENUM_DAEMON) {
+		pk_warning ("ignoring message: %s", details);
+		return;
+	}
+#endif
+
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
 	if (c_tid == NULL) {
 		pk_warning ("could not get current tid from backend");
@@ -604,6 +612,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 
 	/* find the length of time we have been running */
 	time = pk_runner_get_runtime (item->runner);
+	pk_debug ("backend was running for %i ms", time);
 
 	/* add to the database if we are going to log it */
 	if (role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
@@ -617,12 +626,24 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 		g_free (packages);
 	}
 
-	pk_debug ("backend was running for %i ms", time);
-	pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
+	/* the repo list will have changed */
+	if (role == PK_ROLE_ENUM_SERVICE_PACK ||
+	    role == PK_ROLE_ENUM_REPO_ENABLE ||
+	    role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		pk_debug ("emitting repo-list-changed tid:%s", c_tid);
+		g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0, c_tid);
+	}
 
 	/* only reset the time if we succeeded */
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
 		pk_transaction_db_action_time_reset (engine->priv->transaction_db, role);
+	}
+
+	/* did we finish okay? */
+	if (exit == PK_EXIT_ENUM_SUCCESS) {
+		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, TRUE, time);
+	} else {
+		pk_transaction_db_set_finished (engine->priv->transaction_db, c_tid, FALSE, time);
 	}
 
 	exit_text = pk_exit_enum_to_text (exit);
@@ -1871,7 +1892,7 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	}
 
 	/* are we already performing an update? */
-	if (pk_transaction_list_role_present (engine->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM) == TRUE) {
+	if (pk_transaction_list_role_present (engine->priv->transaction_list, PK_ROLE_ENUM_UPDATE_SYSTEM)) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
 				     "Already performing system update");
 		dbus_g_method_return_error (context, error);
@@ -2113,67 +2134,6 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
 
 	ret = pk_runner_install_file (item->runner, full_path);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "Operation not yet supported by backend");
-		pk_engine_item_delete (engine, item);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-	/* try to commit this */
-	ret = pk_engine_item_commit (engine, item);
-	if (!ret) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_COMMIT_FAILED,
-				     "Could not commit to a runner object");
-		pk_engine_item_delete (engine, item);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-	dbus_g_method_return (context);
-}
-
-/**
- * pk_engine_service_pack:
- **/
-void
-pk_engine_service_pack (PkEngine *engine, const gchar *tid, const gchar *location,
-			gboolean enabled, DBusGMethodInvocation *context)
-{
-	gboolean ret;
-	PkTransactionItem *item;
-	GError *error;
-	gchar *sender;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	pk_debug ("ServicePack method called: %s, %s, %i", tid, location, enabled);
-
-	/* find pre-requested transaction id */
-	item = pk_transaction_list_get_from_tid (engine->priv->transaction_list, tid);
-	if (item == NULL) {
-		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
-				     "transaction_id '%s' not found", tid);
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check if the action is allowed from this client - if not, set an error */
-	sender = dbus_g_method_get_sender (context);
-	ret = pk_engine_action_is_allowed (engine, sender, PK_ROLE_ENUM_SERVICE_PACK, &error);
-	g_free (sender);
-	if (!ret) {
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* create a new runner object */
-	item->runner = pk_engine_runner_new (engine);
-
-	/* set the dbus name, so we can get the disconnect */
-	pk_runner_set_dbus_name (item->runner, dbus_g_method_get_sender (context));
-
-	ret = pk_runner_service_pack (item->runner, location, enabled);
 	if (!ret) {
 		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
@@ -2701,6 +2661,7 @@ gboolean
 pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number, GError **error)
 {
 	PkTransactionItem *item;
+	const gchar *exit_text;
 
 	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
@@ -2717,8 +2678,11 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	engine->priv->sync_item = item;
 
 	pk_transaction_db_get_list (engine->priv->transaction_db, number);
-	pk_debug ("emitting finished transaction:%s, '%s', %i", tid, "", 0);
-	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, "", 0);
+
+	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+	pk_debug ("emitting finished transaction:%s, '%s', %i", tid, exit_text, 0);
+	g_signal_emit (engine, signals [PK_ENGINE_FINISHED], 0, tid, exit_text, 0);
+
 	pk_transaction_list_remove (engine->priv->transaction_list, item);
 	return TRUE;
 }
@@ -3016,6 +2980,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals [PK_ENGINE_REPO_LIST_CHANGED] =
+		g_signal_new ("repo-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3261,7 +3230,7 @@ libst_engine (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "set the backend name");
 	ret = pk_backend_set_name (backend, "dummy");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

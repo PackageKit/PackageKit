@@ -51,6 +51,7 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_STATUS_ENUM_WAIT,			"wait"},
 	{PK_STATUS_ENUM_SETUP,			"setup"},
+	{PK_STATUS_ENUM_RUNNING,		"running"},
 	{PK_STATUS_ENUM_QUERY,			"query"},
 	{PK_STATUS_ENUM_INFO,			"info"},
 	{PK_STATUS_ENUM_REFRESH_CACHE,		"refresh-cache"},
@@ -61,7 +62,9 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_CLEANUP,		"cleanup"},
 	{PK_STATUS_ENUM_OBSOLETE,		"obsolete"},
 	{PK_STATUS_ENUM_DEP_RESOLVE,		"dep-resolve"},
+	{PK_STATUS_ENUM_SIG_CHECK,		"sig-check"},
 	{PK_STATUS_ENUM_ROLLBACK,		"rollback"},
+	{PK_STATUS_ENUM_TEST_COMMIT,		"test-commit"},
 	{PK_STATUS_ENUM_COMMIT,			"commit"},
 	{PK_STATUS_ENUM_REQUEST,		"request"},
 	{PK_STATUS_ENUM_FINISHED,		"finished"},
@@ -120,10 +123,16 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
 	{PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,	"cannot-remove-system-package"},
 	{PK_ERROR_ENUM_PROCESS_KILL,		"process-kill"},
-	{PK_ERROR_ENUM_FAILED_INITIALIZATION,	"failed-initialization"},
-	{PK_ERROR_ENUM_FAILED_FINALISE,		"failed-finalise"},
+        {PK_ERROR_ENUM_FAILED_INITIALIZATION,   "failed-initialization"},
+        {PK_ERROR_ENUM_FAILED_FINALISE,         "failed-finalise"},
 	{PK_ERROR_ENUM_FAILED_CONFIG_PARSING,	"failed-config-parsing"},
 	{PK_ERROR_ENUM_CANNOT_CANCEL,		"cannot-cancel"},
+	{PK_ERROR_ENUM_CANNOT_GET_LOCK,         "cannot-get-lock"},
+	{PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,   "no-packages-to-update"},
+	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,        "cannot-write-repo-config"},
+	{PK_ERROR_LOCAL_INSTALL_FAILED,         "local-install-failed"},
+	{PK_ERROR_BAD_GPG_SIGNATURE,            "bad-gpg-signature"},
+	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,       "cannot-install-source-package"},
 	{0, NULL}
 };
 
@@ -161,6 +170,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_SUPPORTED,		"~supported"},
 	{PK_FILTER_ENUM_BASENAME,		"basename"},
 	{PK_FILTER_ENUM_NOT_BASENAME,		"~basename"},
+	{PK_FILTER_ENUM_NEWEST,			"newest"},
+	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
 	{0, NULL}
 };
 
@@ -253,6 +264,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_GLIDE,                "Glide"},
 	{PK_LICENSE_ENUM_AFL,                  "AFL"},
 	{PK_LICENSE_ENUM_AMPAS_BSD,            "AMPAS BSD"},
+	{PK_LICENSE_ENUM_AMAZON_DSL,           "ADSL"},
 	{PK_LICENSE_ENUM_ADOBE,                "Adobe"},
 	{PK_LICENSE_ENUM_AGPLV1,               "AGPLv1"},
 	{PK_LICENSE_ENUM_AGPLV3,               "AGPLv3"},
@@ -274,6 +286,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_COPYRIGHT_ONLY,       "Copyright only"},
 	{PK_LICENSE_ENUM_CRYPTIX,              "Cryptix"},
 	{PK_LICENSE_ENUM_CRYSTAL_STACKER,      "Crystal Stacker"},
+	{PK_LICENSE_ENUM_DOC,                  "DOC"},
 	{PK_LICENSE_ENUM_WTFPL,                "WTFPL"},
 	{PK_LICENSE_ENUM_EPL,                  "EPL"},
 	{PK_LICENSE_ENUM_ECOS,                 "eCos"},
@@ -306,11 +319,13 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_LPL,                  "LPL"},
 	{PK_LICENSE_ENUM_MECAB_IPADIC,         "mecab-ipadic"},
 	{PK_LICENSE_ENUM_MIT,                  "MIT"},
+	{PK_LICENSE_ENUM_MIT_WITH_ADVERTISING, "MIT with advertising"},
 	{PK_LICENSE_ENUM_MPLV1_DOT_0,          "MPLv1.0"},
 	{PK_LICENSE_ENUM_MPLV1_DOT_1,          "MPLv1.1"},
 	{PK_LICENSE_ENUM_NCSA,                 "NCSA"},
 	{PK_LICENSE_ENUM_NGPL,                 "NGPL"},
 	{PK_LICENSE_ENUM_NOSL,                 "NOSL"},
+	{PK_LICENSE_ENUM_NETCDF,               "NetCDF"},
 	{PK_LICENSE_ENUM_NETSCAPE,             "Netscape"},
 	{PK_LICENSE_ENUM_NOKIA,                "Nokia"},
 	{PK_LICENSE_ENUM_OPENLDAP,             "OpenLDAP"},
@@ -328,6 +343,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_QPL,                  "QPL"},
 	{PK_LICENSE_ENUM_RPSL,                 "RPSL"},
 	{PK_LICENSE_ENUM_RUBY,                 "Ruby"},
+	{PK_LICENSE_ENUM_SENDMAIL,             "Sendmail"},
 	{PK_LICENSE_ENUM_SLEEPYCAT,            "Sleepycat"},
 	{PK_LICENSE_ENUM_SLIB,                 "SLIB"},
 	{PK_LICENSE_ENUM_SISSL,                "SISSL"},
@@ -851,7 +867,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_enum_find_string (enum_role, PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file") == TRUE) {
+	if (pk_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -869,7 +885,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find string");
 	string = pk_role_enum_to_text (PK_ROLE_ENUM_SEARCH_FILE);
-	if (pk_strequal (string, "search-file") == TRUE) {
+	if (pk_strequal (string, "search-file")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

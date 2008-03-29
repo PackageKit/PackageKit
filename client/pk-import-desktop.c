@@ -38,7 +38,6 @@
 
 static PkClient *client = NULL;
 static PkExtra *extra = NULL;
-static GPtrArray *locale_array = NULL;
 
 static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
@@ -48,13 +47,20 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	PkPackageItem *item;
 	PkPackageId *pid;
 	gboolean ret;
+	GError *error = NULL;
 
 	/* use PK to find the correct package */
-	pk_client_reset (client, NULL);
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_search_file (client, "installed", filename, NULL);
+	ret = pk_client_reset (client, &error);
 	if (!ret) {
+		pk_warning ("failed to reset client: %s", error->message);
+		g_error_free (error);
+		return NULL;
+	}
+
+	ret = pk_client_search_file (client, "installed", filename, &error);
+	if (!ret) {
+		pk_warning ("failed to search file: %s", error->message);
+		g_error_free (error);
 		return NULL;
 	}
 
@@ -87,6 +93,22 @@ pk_desktop_get_name_for_file (const gchar *filename)
 	return name;
 }
 
+static gchar *
+pk_import_get_locale (const gchar *buffer)
+{
+	guint len;
+	gchar *locale;
+	gchar *result;
+	result = g_strrstr (buffer, "[");
+	if (result == NULL) {
+		return NULL;
+	}
+	locale = g_strdup (result+1);
+	len = strlen (locale);
+	locale[len-1] = '\0';
+	return locale;
+}
+
 static void
 pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 {
@@ -100,12 +122,28 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	gchar *comment = NULL;
 	gchar *genericname = NULL;
 	const gchar *locale = NULL;
+	gchar **key_array;
+	gsize len;
+	gchar *locale_temp;
+	static GPtrArray *locale_array = NULL;
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
 	if (ret == FALSE) {
 		pk_error ("bad!!");
 	}
+
+	/* get this specific locale list */
+	key_array = g_key_file_get_keys (key, G_KEY_FILE_DESKTOP_GROUP, &len, NULL);
+	locale_array = g_ptr_array_new ();
+	for (i=0; i<len; i++) {
+		if (g_str_has_prefix (key_array[i], "Name")) {
+			/* set the locale */
+			locale_temp = pk_import_get_locale (key_array[i]);
+			g_ptr_array_add (locale_array, g_strdup (locale_temp));
+		}
+	}
+	g_strfreev (key_array);
 
 	g_print ("PackageName:\t%s\t[", package_name);
 
@@ -142,11 +180,12 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		}
 		g_free (name);
 	}
+	g_ptr_array_free (locale_array, TRUE);
 	g_free (name_unlocalised);
 	g_print ("]\n");
 
-	exec = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", locale, NULL);
-	icon = g_key_file_get_locale_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", locale, NULL);
+	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
+	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
 	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
 	pk_extra_set_package_detail (extra, package_name, icon, exec);
 	g_free (icon);
@@ -175,14 +214,18 @@ pk_desktop_process_directory (const gchar *directory)
 	while (name != NULL) {
 		/* ITS4: ignore, not used for allocation */
 		match = g_pattern_match (pattern, strlen (name), name, NULL);
-		if (match == TRUE) {
+		if (match) {
 			filename = g_build_filename (directory, name, NULL);
 
 			/* get the name */
 			package_name = pk_desktop_get_name_for_file (filename);
 
 			/* process the file */
-			pk_desktop_process_desktop (package_name, filename);
+			if (package_name != NULL) {
+				pk_desktop_process_desktop (package_name, filename);
+			} else {
+				g_print ("%s ignored, failed to get package name\n", filename);
+			}
 			g_free (package_name);
 			g_free (filename);
 		}
@@ -222,14 +265,15 @@ main (int argc, char *argv[])
 
 	pk_debug_init (verbose);
 
-	locale_array = pk_import_get_locale_list ();
-
 	/* set defaults */
 	if (desktop_location == NULL) {
 		desktop_location = PK_IMPORT_APPLICATIONSDIR;
 	}
 
 	client = pk_client_new ();
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, TRUE, NULL);
+
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
@@ -240,7 +284,6 @@ main (int argc, char *argv[])
 	pk_desktop_process_directory (desktop_location);
 
 out:
-	g_ptr_array_free (locale_array, TRUE);
 	g_object_unref (extra);
 	g_object_unref (client);
 	return 0;

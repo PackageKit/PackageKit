@@ -285,7 +285,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "verify");
 	ret = pk_package_ids_check (package_ids);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -294,7 +294,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "first correct");
 	ret = pk_package_id_equal (package_ids[0], "foo;0.0.1;i386;fedora");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -303,7 +303,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "second correct");
 	ret = pk_package_id_equal (package_ids[1], "bar;0.1.1;noarch;livna");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -312,7 +312,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "print");
 	ret = pk_package_ids_print (package_ids);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -321,7 +321,7 @@ libst_package_ids (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "to text");
 	text = pk_package_ids_to_text (package_ids, "\t");
-	if (pk_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna") == TRUE) {
+	if (pk_strequal (text, "foo;0.0.1;i386;fedora\tbar;0.1.1;noarch;livna")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

@@ -23,6 +23,7 @@ dist_helper_DATA = 			\
 	update.py			\
 	install-file.py			\
 	refresh-cache.py		\
+	what-provides.py		\
 	update-system.py		\
 	yumBackend.py			\
 	$(NULL)

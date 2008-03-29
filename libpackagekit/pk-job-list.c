@@ -205,7 +205,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkJobLi
 {
 	pk_debug ("connected=%i", connected);
 	/* force a refresh so we have valid data*/
-	if (connected == TRUE) {
+	if (connected) {
 		pk_job_list_refresh (jlist);
 	}
 }

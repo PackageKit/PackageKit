@@ -573,49 +573,48 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 		return FALSE;
 	}
 
-        try {
-                PkGroupEnum group = get_enum_group (package);
+	try {
+		PkGroupEnum group = get_enum_group (package);
 
-                // currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
-                if (package.isSystem ()){
+		// currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
+		if (package.isSystem ()){
+			zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
+			rpm.initDatabase();
+			zypp::target::rpm::RpmHeader::constPtr rpmHeader;
+			rpm.getData (package.name (), package.edition (), rpmHeader);
 
-                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-                        rpm.initDatabase();
-                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-                        rpm.getData (package.name (), package.edition (), rpmHeader);
+			pk_backend_description (backend,
+				d->package_id,                          // package_id
+				rpmHeader->tag_license ().c_str (),     // const gchar *license
+				group,                                  // PkGroupEnum group
+				rpmHeader->tag_description ().c_str (), // const gchar *description
+				rpmHeader->tag_url (). c_str (),        // const gchar *url
+				(gulong)rpmHeader->tag_size ());        // gulong size
 
-	                pk_backend_description (backend,
-			                	d->package_id,                  		// package_id
-				                rpmHeader->tag_license ().c_str (),		// const gchar *license
-				                group,                                  	// PkGroupEnum group
-				                rpmHeader->tag_description ().c_str (),   	// const gchar *description
-				                rpmHeader->tag_url (). c_str (),	  	// const gchar *url
-				                (gulong)rpmHeader->tag_size ());		// gulong size
+			rpm.closeDatabase();
+		}else{
+			pk_backend_description (backend,
+				d->package_id,
+				package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
+				group,
+				package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
+				"TODO", //pkg->url ().c_str (),
+				(gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize)); //pkg->size ());
+		}
 
-                        rpm.closeDatabase();
-                }else{
-                        pk_backend_description (backend,
-                                                d->package_id,
-                                                package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
-                                                group,
-                                                package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
-                                                "TODO", //pkg->url ().c_str (),
-                                                (gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::size)); //pkg->size ());
-                }
-
-        } catch (const zypp::target::rpm::RpmException &ex) {
-	        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
-                pk_backend_finished (backend);
+	} catch (const zypp::target::rpm::RpmException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
+		pk_backend_finished (backend);
 		g_free (d->package_id);
-                g_free (d);
-                return FALSE;
-        } catch (const zypp::Exception &ex) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
-                pk_backend_finished (backend);
-                g_free (d->package_id);
-                g_free (d);
-                return FALSE;
-        }
+		g_free (d);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+		pk_backend_finished (backend);
+		g_free (d->package_id);
+		g_free (d);
+		return FALSE;
+	}
 
 	pk_package_id_free (pi);
 	g_free (d->package_id);
@@ -664,7 +663,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_package (backend,
 				    PK_INFO_ENUM_AVAILABLE,
 				    package_id,
-				    res->description ().c_str ());
+					"");
+				    // some package descriptions generate markup parse failures
+					// causing the update to show empty package lines, comment for now
+					// res->description ().c_str ());
 		g_free (package_id);
 	}
 
@@ -851,13 +853,12 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 0);
 
 	PkPackageId *pi = pk_package_id_new_from_string (package_id);
-        if (pi == NULL) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-                g_free (package_id);
-
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		g_free (package_id);
 		pk_backend_finished (backend);
-                return FALSE;
-        }
+		return FALSE;
+	}
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
@@ -933,6 +934,7 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
+	//pk_debug ("package_id=%s", package_id);
 	g_return_if_fail (backend != NULL);
 
 	// For now, don't let the user cancel the install once it's started
@@ -1772,6 +1774,6 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_repo_list,			/* get_repo_list */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
-        NULL,                                   /* service_pack */
-        backend_what_provides                   /* what_provides */
+	NULL,                                   /* service_pack */
+	backend_what_provides                   /* what_provides */
 );

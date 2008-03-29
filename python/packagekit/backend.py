@@ -57,16 +57,18 @@ class PackageKitBaseBackend:
         @param percent: Progress percentage
         '''
         if percent != None:
-            print >> sys.stderr, "percentage\t%i" % (percent)
+            print "percentage\t%i" % (percent)
         else:
-            print >> sys.stderr, "no-percentage-updates"
+            print "no-percentage-updates"
+        sys.stdout.flush()
 
     def sub_percentage(self,percent=None):
         '''
         send 'subpercentage' signal : subprogress percentage
         @param percent: subprogress percentage
         '''
-        print >> sys.stderr, "subpercentage\t%i" % (percent)
+        print "subpercentage\t%i" % (percent)
+        sys.stdout.flush()
 
     def error(self,err,description,exit=True):
         '''
@@ -75,11 +77,20 @@ class PackageKitBaseBackend:
         @param description: Error description
         @param exit: exit application with rc=1, if true
         '''
-        print >> sys.stderr,"error\t%s\t%s" % (err,description)
+        print "error\t%s\t%s" % (err,description)
+        sys.stdout.flush()
         if exit:
             if self.isLocked():
                 self.unLock()
             sys.exit(1)
+    
+    def message(self,typ,msg):
+        '''
+        send 'message' signal
+        @param typ: MESSAGE_WARNING, MESSAGE_NOTICE, MESSAGE_DEAMON
+        '''
+        print "message\t%s\t%s" % (typ,msg)
+        sys.stdout.flush()
 
     def package(self,id,status,summary):
         '''
@@ -89,13 +100,15 @@ class PackageKitBaseBackend:
         @param summary: The package Summary
         '''
         print >> sys.stdout,"package\t%s\t%s\t%s" % (status,id,summary)
+        sys.stdout.flush()
 
     def status(self,state):
         '''
         send 'status' signal
         @param state: STATUS_DOWNLOAD, STATUS_INSTALL, STATUS_UPDATE, STATUS_REMOVE, STATUS_WAIT
         '''
-        print >> sys.stderr,"status\t%s" % (state)
+        print "status\t%s" % (state)
+        sys.stdout.flush()
 
     def repo_detail(self,repoid,name,state):
         '''
@@ -104,13 +117,15 @@ class PackageKitBaseBackend:
         @param state: false is repo is disabled else true.
         '''
         print >> sys.stdout,"repo-detail\t%s\t%s\t%s" % (repoid,name,state)
+        sys.stdout.flush()
 
     def data(self,data):
         '''
         send 'data' signal:
         @param data:  The current worked on package
         '''
-        print >> sys.stderr,"data\t%s" % (data)
+        print "data\t%s" % (data)
+        sys.stdout.flush()
 
     def metadata(self,typ,fname):
         '''
@@ -118,7 +133,8 @@ class PackageKitBaseBackend:
         @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
         @param fname:  The filename being downloaded
         '''
-        print >> sys.stderr,"metadata\t%s\t%s" % (typ,fname)
+        print "metadata\t%s\t%s" % (typ,fname)
+        sys.stdout.flush()
 
     def description(self,id,license,group,desc,url,bytes):
         '''
@@ -131,6 +147,7 @@ class PackageKitBaseBackend:
         @param bytes: The size of the package, in bytes
         '''
         print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
+        sys.stdout.flush()
 
     def files(self, id, file_list):
         '''
@@ -138,6 +155,7 @@ class PackageKitBaseBackend:
         @param file_list: List of the files in the package, separated by ';'
         '''
         print >> sys.stdout,"files\t%s\t%s" % (id, file_list)
+        sys.stdout.flush()
 
     def update_detail(self,id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text):
         '''
@@ -152,6 +170,7 @@ class PackageKitBaseBackend:
         @param update_text:
         '''
         print >> sys.stdout,"updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (id,updates,obsoletes,vendor_url,bugzilla_url,cve_url,restart,update_text)
+        sys.stdout.flush()
 
     def require_restart(self,restart_type,details):
         '''
@@ -159,7 +178,8 @@ class PackageKitBaseBackend:
         @param restart_type: RESTART_SYSTEM, RESTART_APPLICATION,RESTART_SESSION
         @param details: Optional details about the restart
         '''
-        print >> sys.stderr,"requirerestart\t%s\t%s" % (restart_type,details)
+        print "requirerestart\t%s\t%s" % (restart_type,details)
+        sys.stdout.flush()
 
     def allow_cancel(self,allow):
         '''
@@ -170,7 +190,8 @@ class PackageKitBaseBackend:
             data = 'true'
         else:
             data = 'false'
-        print >> sys.stderr,"allow-cancel\t%s" % (data)
+        print "allow-cancel\t%s" % (data)
+        sys.stdout.flush()
 
     def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''
@@ -183,9 +204,10 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param type:            Key type (GPG)
         '''
-        print >> sys.stderr,"repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+        print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
             repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
             )
+        sys.stdout.flush()
 
     def get_package_id(self,name,version,arch,data):
         return "%s;%s;%s;%s" % (name,version,arch,data)
@@ -418,6 +440,17 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def customTracebackHandler(self,tb):
+        '''
+        Custom Traceback Handler
+        this is called by the ExceptionHandler
+        return True if the exception is handled in the method.
+        return False if to do the default action an signal an error
+        to packagekit.
+        Overload this method if you what handle special Tracebacks
+        '''
+        return False
+
 class PackagekitProgress:
     '''
     Progress class there controls the total progress of a transaction
@@ -500,18 +533,21 @@ class PackagekitProgress:
         incr = int(f*deltapct)
         self.percent = startpct + incr
 
+
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
     sys.excepthook = sys.__excepthook__
-    etb = traceback.extract_tb(tb)
-    errmsg = 'Error Type: %s;' % str(typ)
-    errmsg += 'Error Value: %s;' % str(value)
-    for tub in etb:
-        f,l,m,c = tub # file,lineno, function, codeline
-        errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
-        errmsg += '    %s;' % c
-    # send the traceback to PackageKit
-    base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
+    # Call backend custom Traceback handler
+    if not base.customTracebackHandler(typ):
+        etb = traceback.extract_tb(tb)
+        errmsg = 'Error Type: %s;' % str(typ)
+        errmsg += 'Error Value: %s;' % str(value)
+        for tub in etb:
+            f,l,m,c = tub # file,lineno, function, codeline
+            errmsg += '  File : %s , line %s, in %s;' % (f,str(l),m)
+            errmsg += '    %s;' % c
+        # send the traceback to PackageKit
+        base.error(ERROR_INTERNAL_ERROR,errmsg,exit=True)
 
 
 def installExceptionHandler(base):

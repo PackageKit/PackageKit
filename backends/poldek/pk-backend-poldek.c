@@ -86,6 +86,8 @@ typedef struct {
 	gint		filesdownload;
 
 	gint		percentage;
+	float		stepvalue;
+
 	gint		subpercentage;
 } PercentageData;
 
@@ -225,6 +227,7 @@ poldek_vf_progress_new (void *data, const gchar *label)
 
 		poclidek_rcmd_free (rcmd);
 
+		g_free (command);
 		g_free (pkgname);
 		g_free (filename);
 	}
@@ -238,35 +241,56 @@ poldek_vf_progress (void *bar, long total, long amount)
 	TsData		*td = (TsData*) bar;
 	PercentageData	*pd = td->pd;
 	PkBackend	*backend;
+	guint		percentage = 0;
 
 	backend = pk_backend_thread_get_backend (thread);
 
-	if (td->type == TS_TYPE_ENUM_REFRESH_CACHE) {
+	if (td->type == TS_TYPE_ENUM_INSTALL) {
+		float	frac = (float)amount / (float)total;
+
+		/* file already downloaded */
+		if (frac < 0) {
+			pd->bytesget += total;
+			pd->filesget++;
+
+			pd->percentage = (gint)((float)(pd->bytesget) / (float)pd->bytesdownload * 100);
+			pd->subpercentage = 100;
+		} else {
+			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
+			pd->subpercentage = (gint)(frac * 100);
+		}
+	} else if (td->type == TS_TYPE_ENUM_UPDATE) {
+		float	stepfrac = pd->stepvalue / (float)pd->filesdownload;
+
+		/* file already downloaded */
+		if ((float)amount / (float)total < 0) {
+			pd->bytesget += total;
+			pd->filesget++;
+
+			pd->subpercentage = (gint)((float)pd->bytesget / (float)pd->bytesdownload * 100);
+			percentage = (guint)(stepfrac * (float)pd->filesget);
+		} else {
+			pd->subpercentage = (gint)((float)(pd->bytesget + amount) / (float)pd->bytesdownload * 100);
+			percentage = (guint)(stepfrac * ((float)pd->filesget + ((float)pd->subpercentage / (float)100)));
+		}
+	} else if (td->type == TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->step == 0)
 			pd->percentage = 1;
 		else
 			pd->percentage = (gint)(((float)pd->step / (float)pd->nsources) * 100);
-	} else {
-		gint	tmp_subpercentage = (gint)(((float)amount / (float)total) * 100);
-
-		if (tmp_subpercentage >= pd->subpercentage) {
-			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
-			pd->subpercentage = tmp_subpercentage;
-		} else {
-			pd->bytesget += total;
-			pd->filesget++;
-			pd->subpercentage = 100;
-		}
 	}
 
-	if (td->type != TS_TYPE_ENUM_UPDATE)
+	if (td->type == TS_TYPE_ENUM_INSTALL ||
+	    td->type == TS_TYPE_ENUM_REFRESH_CACHE)
 		pk_backend_set_percentage (backend, pd->percentage);
-
-	if (td->type == TS_TYPE_ENUM_INSTALL)
-		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 	else if (td->type == TS_TYPE_ENUM_UPDATE)
-		/* UpdatePackages uses pd->percentage as sub_percentage */
-		pk_backend_set_sub_percentage (backend, pd->percentage);
+		if ((pd->percentage + percentage) > 1)
+			pk_backend_set_percentage (backend, pd->percentage + percentage);
+
+	/* RefreshCache doesn't use subpercentage */
+	if (td->type == TS_TYPE_ENUM_INSTALL ||
+	    td->type == TS_TYPE_ENUM_UPDATE)
+		pk_backend_set_sub_percentage (backend, pd->subpercentage);
 
 	if (td->type != TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->filesget == pd->filesdownload) {
@@ -546,7 +570,10 @@ poldek_get_installed_packages (void)
 static void
 do_requires (tn_array *installed, tn_array *available, tn_array *requires, struct pkg *pkg, DepsData *data)
 {
-	gint	i;
+	tn_array	*tmp = NULL;
+	gint		i;
+
+	tmp = n_array_new (2, NULL, NULL);
 
 	if (data->filter->installed) {
 		for (i = 0; i < n_array_size (installed); i++) {
@@ -561,6 +588,10 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
         	        if (!ipkg->reqs)
 				continue;
 
+			/* package already added to the array */
+			if (poldek_pkg_in_array (ipkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
+				continue;
+
 			for (j = 0; j < n_array_size (ipkg->reqs); j++) {
 				struct capreq   *req = n_array_nth (ipkg->reqs, j);
 
@@ -571,6 +602,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 
 				if (pkg_satisfies_req (pkg, req, 1)) {
 					n_array_push (requires, pkg_link (ipkg));
+					n_array_push (tmp, pkg_link (ipkg));
                                 	break;
 				}
                 	}
@@ -588,6 +620,10 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 	                if (!apkg->reqs)
 	                        continue;
 
+			/* package already added to the array */
+			if (poldek_pkg_in_array (apkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
+				continue;
+
 	                for (j = 0; j < n_array_size (apkg->reqs); j++) {
 	                        struct capreq   *req = n_array_nth (apkg->reqs, j);
 
@@ -597,14 +633,26 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 	                                continue;
 
 	                        if (pkg_satisfies_req (pkg, req, 1)) {
-	                                if (!poldek_pkg_in_array (apkg, requires, (tn_fn_cmp)pkg_cmp_name_evr_rev))
-	                                        n_array_push (requires, pkg_link (apkg));
-
+	                                n_array_push (requires, pkg_link (apkg));
+	                                n_array_push (tmp, pkg_link (apkg));
 	                                break;
                         	}
                 	}
         	}
         }
+
+	/* FIXME: recursive takes too much time for available packages, so don't use it */
+	if (!data->filter->not_installed) {
+		if (data->recursive && tmp && n_array_size (tmp) > 0) {
+			for (i = 0; i < n_array_size (tmp); i++) {
+				struct pkg	*p = n_array_nth (tmp, i);
+
+				do_requires (installed, available, requires, p, data);
+			}
+		}
+	}
+
+	n_array_free (tmp);
 }
 
 /**
@@ -1277,7 +1325,6 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 }
 
 /**
- * FIXME: recursive currently omited
  * backend_get_requires:
  */
 static gboolean
@@ -1536,8 +1583,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
-
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
 		if (data)
@@ -1688,8 +1733,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
-
 	data->package_id = g_strdup (package_id);
 	data->allow_deps = allow_deps;
 	pk_backend_thread_create (thread, backend_remove_package_thread, data);
@@ -1808,10 +1851,10 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
 
 	pk_backend_set_percentage (backend, 1);
+	td->pd->stepvalue = (float)100 / (float)g_strv_length (td->package_ids);
 
 	for (i = 0; i < g_strv_length (td->package_ids); i++) {
 		struct pkg	*pkg = NULL;
-		guint	percentage;
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -1846,10 +1889,10 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 			poldek_ts_free (ts);
 		}
 
-		percentage = (gint)(((float)(i + 1) / (float)g_strv_length (td->package_ids)) * 100);
+		td->pd->percentage = (gint)((float)(i + 1) * td->pd->stepvalue);
 
-		if (percentage > 1)
-			pk_backend_set_percentage (backend, percentage);
+		if (td->pd->percentage > 1)
+			pk_backend_set_percentage (backend, td->pd->percentage);
 
 		pkg_free (pkg);
 	}
@@ -1872,8 +1915,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	g_return_if_fail (backend != NULL);
 
-	pk_backend_set_status (backend, PK_STATUS_ENUM_SETUP);
-
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
 		if (data)
@@ -1884,7 +1925,6 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 		return;
 	}
 
-	data->package_id = NULL;
 	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;

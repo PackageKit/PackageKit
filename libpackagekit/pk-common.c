@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -42,6 +43,101 @@
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-enum.h"
+
+/**
+ * pk_get_machine_type:
+ *
+ * Return value: The current machine ID, e.g. "i386"
+ * Note: Don't use this function if you can get this data from /etc/foo
+ **/
+static gchar *
+pk_get_machine_type (void)
+{
+	gint retval;
+	struct utsname buf;
+
+	retval = uname (&buf);
+	if (retval != 0) {
+		return g_strdup ("unknown");
+	}
+	return g_strdup (buf.machine);
+}
+
+/**
+ * pk_get_distro_id:
+ *
+ * Return value: The current distro-id, e.g. fedora-8-i386, or %NULL for an
+ * error or not known
+ **/
+gchar *
+pk_get_distro_id (void)
+{
+	gboolean ret;
+	gchar *contents = NULL;
+	gchar *parseable = NULL;
+	gchar *distro = NULL;
+	gchar *arch = NULL;
+	gchar **split = NULL;
+
+	/* check for fedora */
+	ret = g_file_get_contents ("/etc/fedora-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Fedora release 8.92 (Rawhide) */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("fedora-%s-%s", split[2], arch);
+		goto out;
+	}
+
+	/* check for suse */
+	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
+	if (ret) {
+		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
+		parseable = g_strdelimit (contents, "()\n", ' ');
+
+		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
+		split = g_strsplit (parseable, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("suse-%s-%s", split[1], split[3]);
+		goto out;
+	}
+
+	/* check for foresight */
+	ret = g_file_get_contents ("/etc/distro-release", &contents, NULL, NULL);
+	if (ret) {
+		/* Foresight Linux 2.0.2 */
+		split = g_strsplit (contents, " ", 0);
+		if (split == NULL)
+			goto out;
+
+		/* we can't get arch from /etc */
+		arch = pk_get_machine_type ();
+		if (arch == NULL)
+			goto out;
+
+		/* complete! */
+		distro = g_strdup_printf ("foresight-%s-%s", split[2], arch);
+		goto out;
+	}
+
+out:
+	g_strfreev (split);
+	g_free (parseable);
+	g_free (arch);
+	g_free (contents);
+	return distro;
+}
 
 /**
  * pk_iso8601_present:
@@ -76,7 +172,7 @@ pk_iso8601_difference (const gchar *isodate)
 	gboolean ret;
 	guint time;
 
-	if (pk_strzero (isodate) == TRUE) {
+	if (pk_strzero (isodate)) {
 		return 0;
 	}
 
@@ -117,11 +213,9 @@ pk_strvalidate_char (gchar item)
 	case ']':
 	case '{':
 	case '}':
-	case '#':
 	case '\\':
 	case '<':
 	case '>':
-	case '|':
 		return FALSE;
 	}
 	return TRUE;
@@ -170,7 +264,7 @@ pk_strnumber (const gchar *text)
 	guint length;
 
 	/* check explicitly */
-	if (pk_strzero (text) == TRUE) {
+	if (pk_strzero (text)) {
 		return FALSE;
 	}
 
@@ -343,7 +437,7 @@ pk_strsplit (const gchar *id, guint parts)
 	}
 
 	/* ITS4: ignore, not used for allocation */
-	if (pk_strzero (sections[0]) == TRUE) {
+	if (pk_strzero (sections[0])) {
 		/* name has to be valid */
 		pk_warning ("ident first section is empty");
 		goto out;
@@ -558,7 +652,7 @@ pk_strbuild_va (const gchar *first_element, va_list *args)
 	GString *string;
 
 	/* shortcut */
-	if (pk_strzero (first_element) == TRUE) {
+	if (pk_strzero (first_element)) {
 		return NULL;
 	}
 
@@ -629,6 +723,19 @@ libst_common (LibSelfTest *test)
 
 	pk_delay_yield (2.0);
 
+
+	/************************************************************
+	 ****************        test distro-id        **************
+	 ************************************************************/
+	libst_title (test, "get distro id");
+	text_safe = pk_get_distro_id ();
+	if (text_safe != NULL) {
+		libst_success (test, "distro_id=%s", text_safe);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_free (text_safe);
+
 	/************************************************************
 	 ****************        build var args        **************
 	 ************************************************************/
@@ -652,7 +759,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "build_va single");
 	text_safe = pk_strbuild_test ("richard", NULL);
-	if (pk_strequal (text_safe, "richard") == TRUE) {
+	if (pk_strequal (text_safe, "richard")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "incorrect ret '%s'", text_safe);
@@ -662,7 +769,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "build_va double");
 	text_safe = pk_strbuild_test ("richard", "hughes", NULL);
-	if (pk_strequal (text_safe, "richard hughes") == TRUE) {
+	if (pk_strequal (text_safe, "richard hughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "incorrect ret '%s'", text_safe);
@@ -672,7 +779,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "build_va double with space");
 	text_safe = pk_strbuild_test ("richard", "", "hughes", NULL);
-	if (pk_strequal (text_safe, "richard hughes") == TRUE) {
+	if (pk_strequal (text_safe, "richard hughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "incorrect ret '%s'", text_safe);
@@ -682,7 +789,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "build_va triple");
 	text_safe = pk_strbuild_test ("richard", "phillip", "hughes", NULL);
-	if (pk_strequal (text_safe, "richard phillip hughes") == TRUE) {
+	if (pk_strequal (text_safe, "richard phillip hughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "incorrect ret '%s'", text_safe);
@@ -694,7 +801,7 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "validate correct char 1");
 	ret = pk_strvalidate_char ('a');
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -703,7 +810,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate correct char 2");
 	ret = pk_strvalidate_char ('~');
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -730,7 +837,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate correct text");
 	ret = pk_strvalidate ("richardhughes");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -742,7 +849,7 @@ libst_common (LibSelfTest *test)
 	temp = NULL;
 	libst_title (test, "test strzero (null)");
 	ret = pk_strzero (NULL);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed null");
@@ -751,7 +858,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test strzero (null first char)");
 	ret = pk_strzero ("");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed null");
@@ -772,7 +879,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test pass 1");
 	array = pk_strsplit ("foo", 1);
 	if (array != NULL &&
-	    pk_strequal (array[0], "foo") == TRUE) {
+	    pk_strequal (array[0], "foo")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s", array[0]);
@@ -783,8 +890,8 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test pass 2");
 	array = pk_strsplit ("foo;moo", 2);
 	if (array != NULL &&
-	    pk_strequal (array[0], "foo") == TRUE &&
-	    pk_strequal (array[1], "moo") == TRUE) {
+	    pk_strequal (array[0], "foo") &&
+	    pk_strequal (array[1], "moo")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s, %s", array[0], array[1]);
@@ -795,9 +902,9 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test pass 3");
 	array = pk_strsplit ("foo;moo;bar", 3);
 	if (array != NULL &&
-	    pk_strequal (array[0], "foo") == TRUE &&
-	    pk_strequal (array[1], "moo") == TRUE &&
-	    pk_strequal (array[2], "bar") == TRUE) {
+	    pk_strequal (array[0], "foo") &&
+	    pk_strequal (array[1], "moo") &&
+	    pk_strequal (array[2], "bar")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
@@ -808,10 +915,10 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test on real packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;", 4);
 	if (array != NULL &&
-	    pk_strequal (array[0], "kde-i18n-csb") == TRUE &&
-	    pk_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") == TRUE &&
-	    pk_strequal (array[2], "all") == TRUE &&
-	    pk_strequal (array[3], "") == TRUE) {
+	    pk_strequal (array[0], "kde-i18n-csb") &&
+	    pk_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    pk_strequal (array[2], "all") &&
+	    pk_strequal (array[3], "")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
@@ -822,10 +929,10 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "test on short packageid");
 	array = pk_strsplit ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;", 4);
 	if (array != NULL &&
-	    pk_strequal (array[0], "kde-i18n-csb") == TRUE &&
-	    pk_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") == TRUE &&
-	    pk_strequal (array[2], "") == TRUE &&
-	    pk_strequal (array[3], "") == TRUE) {
+	    pk_strequal (array[0], "kde-i18n-csb") &&
+	    pk_strequal (array[1], "4:3.5.8~pre20071001-0ubuntu1") &&
+	    pk_strequal (array[2], "") &&
+	    pk_strequal (array[3], "")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "got %s, %s, %s, %s", array[0], array[1], array[2], array[3]);
@@ -862,7 +969,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "id strcmp pass");
 	ret = pk_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -879,7 +986,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal pass (same)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 3);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -887,7 +994,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal pass (parts==match)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;fedora", 4, 4);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -895,7 +1002,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal pass (different)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.1;i386;data", 4, 3);
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -939,7 +1046,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "strlen bigger");
 	text_safe = g_strdup ("123456789");
 	length = pk_strlen (text_safe, 20);
-	if (length == 9 && pk_strequal (text_safe, "123456789") == TRUE) {
+	if (length == 9 && pk_strequal (text_safe, "123456789")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
@@ -950,7 +1057,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "strlen smaller");
 	text_safe = g_strdup ("123456789");
 	length = pk_strlen (text_safe, 5);
-	if (length == 5 && pk_strequal (text_safe, "12345") == TRUE) {
+	if (length == 5 && pk_strequal (text_safe, "12345")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the strlen %i,'%s'", length, text_safe);
@@ -962,7 +1069,7 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "pad smaller");
 	text_safe = pk_strpad ("richard", 10);
-	if (pk_strequal (text_safe, "richard   ") == TRUE) {
+	if (pk_strequal (text_safe, "richard   ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
@@ -972,7 +1079,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "pad NULL");
 	text_safe = pk_strpad (NULL, 10);
-	if (pk_strequal (text_safe, "          ") == TRUE) {
+	if (pk_strequal (text_safe, "          ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
@@ -982,7 +1089,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "pad nothing");
 	text_safe = pk_strpad ("", 10);
-	if (pk_strequal (text_safe, "          ") == TRUE) {
+	if (pk_strequal (text_safe, "          ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
@@ -992,7 +1099,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "pad over");
 	text_safe = pk_strpad ("richardhughes", 10);
-	if (pk_strequal (text_safe, "richardhughes") == TRUE) {
+	if (pk_strequal (text_safe, "richardhughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
@@ -1002,7 +1109,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "pad zero");
 	text_safe = pk_strpad ("rich", 0);
-	if (pk_strequal (text_safe, "rich") == TRUE) {
+	if (pk_strequal (text_safe, "rich")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
@@ -1015,7 +1122,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "pad smaller, no extra");
 	length = 0;
 	text_safe = pk_strpad_extra ("richard", 10, &length);
-	if (length == 0 && pk_strequal (text_safe, "richard   ") == TRUE) {
+	if (length == 0 && pk_strequal (text_safe, "richard   ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
@@ -1026,7 +1133,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "pad over, no extra");
 	length = 0;
 	text_safe = pk_strpad_extra ("richardhughes", 10, &length);
-	if (length == 3 && pk_strequal (text_safe, "richardhughes") == TRUE) {
+	if (length == 3 && pk_strequal (text_safe, "richardhughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
@@ -1037,7 +1144,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "pad smaller, 1 extra");
 	length = 1;
 	text_safe = pk_strpad_extra ("richard", 10, &length);
-	if (length == 0 && pk_strequal (text_safe, "richard  ") == TRUE) {
+	if (length == 0 && pk_strequal (text_safe, "richard  ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
@@ -1048,7 +1155,7 @@ libst_common (LibSelfTest *test)
 	libst_title (test, "pad over, 1 extra");
 	length = 1;
 	text_safe = pk_strpad_extra ("richardhughes", 10, &length);
-	if (length == 4 && pk_strequal (text_safe, "richardhughes") == TRUE) {
+	if (length == 4 && pk_strequal (text_safe, "richardhughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s', extra %i", text_safe, length);
@@ -1060,7 +1167,7 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "test replace unsafe (okay)");
 	text_safe = pk_strsafe ("Richard Hughes");
-	if (pk_strequal (text_safe, "Richard Hughes") == TRUE) {
+	if (pk_strequal (text_safe, "Richard Hughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
@@ -1070,7 +1177,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid)");
 	text_safe = pk_strsafe ("Richard\tHughes");
-	if (pk_strequal (text_safe, "Richard Hughes") == TRUE) {
+	if (pk_strequal (text_safe, "Richard Hughes")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
@@ -1080,7 +1187,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid 2)");
 	text_safe = pk_strsafe ("Richard\"Hughes\"");
-	if (pk_strequal (text_safe, "Richard Hughes ") == TRUE) {
+	if (pk_strequal (text_safe, "Richard Hughes ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
@@ -1090,7 +1197,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test replace unsafe (multiple invalid)");
 	text_safe = pk_strsafe ("'Richard\"Hughes\"");
-	if (pk_strequal (text_safe, " Richard Hughes ") == TRUE) {
+	if (pk_strequal (text_safe, " Richard Hughes ")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
@@ -1102,7 +1209,7 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "check number valid");
 	ret = pk_strnumber ("123");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1111,7 +1218,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number valid");
 	ret = pk_strnumber ("-123");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1120,7 +1227,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number zero");
 	ret = pk_strnumber ("0");
-	if (ret == TRUE) {
+	if (ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1185,7 +1292,7 @@ libst_common (LibSelfTest *test)
 	 ************************************************************/
 	libst_title (test, "convert valid number");
 	ret = pk_strtoint ("234", &value);
-	if (ret == TRUE && value == 234) {
+	if (ret && value == 234) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "value is %i", value);
@@ -1194,7 +1301,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "convert negative valid number");
 	ret = pk_strtoint ("-234", &value);
-	if (ret == TRUE && value == -234) {
+	if (ret && value == -234) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "value is %i", value);
@@ -1212,7 +1319,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "convert valid uint number");
 	ret = pk_strtouint ("234", &uvalue);
-	if (ret == TRUE && uvalue == 234) {
+	if (ret && uvalue == 234) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "value is %i", uvalue);
