@@ -511,8 +511,6 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
-	client->priv->use_buffer = FALSE;
-	client->priv->synchronous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
