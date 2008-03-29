@@ -1213,6 +1213,7 @@ gboolean
 pk_client_cancel (PkClient *client, GError **error)
 {
 	gboolean ret;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
@@ -1223,11 +1224,30 @@ pk_client_cancel (PkClient *client, GError **error)
 		return TRUE;
 	}
 
-	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
 				 G_TYPE_STRING, client->priv->tid,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	pk_client_error_fixup (error);
-	return ret;
+	/* no error to process */
+	if (ret) {
+		return TRUE;
+	}
+
+	/* special case - if the tid is already finished, then cancel should
+	 * return TRUE as it's what we wanted */
+	if (pk_strequal (error_local->message, "Already finished") ||
+	    g_str_has_prefix (error_local->message, "No tid")) {
+		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
+		g_error_free (error_local);
+		return TRUE;
+	}
+
+	/* if we got an error we don't recognise, just fix it up and copy it */
+	if (error != NULL) {
+		pk_client_error_fixup (&error_local);
+		*error = g_error_copy (error_local);
+		g_error_free (error_local);
+	}
+	return FALSE;
 }
 
 /******************************************************************************
