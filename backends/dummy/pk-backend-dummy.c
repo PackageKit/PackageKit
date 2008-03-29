@@ -571,23 +571,23 @@ backend_update_system_timeout (gpointer data)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-	if (_progress_percentage == 0) {
+	if (_progress_percentage == 0 && !_updated_powertop) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "powertop;1.8-1.fc8;i386;fedora",
 				    "Power consumption monitor");
 	}
-	if (_progress_percentage == 20) {
+	if (_progress_percentage == 20 && !_updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 	}
-	if (_progress_percentage == 30) {
+	if (_progress_percentage == 30 && !_updated_gtkhtml) {
 		pk_backend_package (backend, PK_INFO_ENUM_BLOCKED,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
 		_updated_gtkhtml = FALSE;
 	}
-	if (_progress_percentage == 40) {
+	if (_progress_percentage == 40 && !_updated_powertop) {
 		pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
@@ -595,13 +595,13 @@ backend_update_system_timeout (gpointer data)
 				    "Power consumption monitor");
 		_updated_powertop = TRUE;
 	}
-	if (_progress_percentage == 60) {
+	if (_progress_percentage == 60 && !_updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_UPDATING,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
 		_updated_kernel = TRUE;
 	}
-	if (_progress_percentage == 80) {
+	if (_progress_percentage == 80 && !_updated_kernel) {
 		pk_backend_package (backend, PK_INFO_ENUM_CLEANUP,
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 				    "The Linux kernel (the core of the Linux operating system)");
