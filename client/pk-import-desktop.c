@@ -221,7 +221,11 @@ pk_desktop_process_directory (const gchar *directory)
 			package_name = pk_desktop_get_name_for_file (filename);
 
 			/* process the file */
-			pk_desktop_process_desktop (package_name, filename);
+			if (package_name != NULL) {
+				pk_desktop_process_desktop (package_name, filename);
+			} else {
+				g_print ("%s ignored, failed to get package name\n", filename);
+			}
 			g_free (package_name);
 			g_free (filename);
 		}
