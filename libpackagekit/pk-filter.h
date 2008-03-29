@@ -44,6 +44,8 @@ typedef struct {
 	gboolean not_visible;
 	gboolean basename;
 	gboolean not_basename;
+	gboolean newest;
+	gboolean not_newest;
 } PkFilter;
 
 gboolean	 pk_filter_check			(const gchar	*filter)

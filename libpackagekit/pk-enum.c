@@ -170,8 +170,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_SUPPORTED,		"~supported"},
 	{PK_FILTER_ENUM_BASENAME,		"basename"},
 	{PK_FILTER_ENUM_NOT_BASENAME,		"~basename"},
-	{PK_FILTER_ENUM_NEWEST,			"basename"},
-	{PK_FILTER_ENUM_NOT_NEWEST,		"~basename"},
+	{PK_FILTER_ENUM_NEWEST,			"newest"},
+	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
 	{0, NULL}
 };
 
