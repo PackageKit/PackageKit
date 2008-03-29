@@ -57,8 +57,6 @@ pk_desktop_get_name_for_file (const gchar *filename)
 		return NULL;
 	}
 
-	pk_client_set_use_buffer (client, TRUE, NULL);
-	pk_client_set_synchronous (client, TRUE, NULL);
 	ret = pk_client_search_file (client, "installed", filename, &error);
 	if (!ret) {
 		pk_warning ("failed to search file: %s", error->message);
@@ -269,6 +267,9 @@ main (int argc, char *argv[])
 	}
 
 	client = pk_client_new ();
+	pk_client_set_use_buffer (client, TRUE, NULL);
+	pk_client_set_synchronous (client, TRUE, NULL);
+
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
