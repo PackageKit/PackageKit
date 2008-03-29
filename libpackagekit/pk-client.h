@@ -201,16 +201,20 @@ gboolean	 pk_client_get_package			(PkClient	*client,
 							 gchar		**package,
 							 GError		**error);
 gboolean	 pk_client_cancel			(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_updates			(PkClient	*client,
 							 const gchar	*filter,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_details		(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*search,
@@ -218,82 +222,103 @@ gboolean	 pk_client_search_details		(PkClient	*client,
 gboolean	 pk_client_search_group			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_file			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*search,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 const gchar	*package_id,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_what_provides		(PkClient	*client,
 							 const gchar	*filter,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_description		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,
 							 const gchar	*package_id,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_remove_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_refresh_cache		(PkClient	*client,
 							 gboolean	 force,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_package		(PkClient	*client,
 							 const gchar	*package_id,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_packages		(PkClient	*client,
 							 GError		**error,
-							 const gchar	*package_id, ...);
+							 const gchar	*package_id, ...)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_packages_strv		(PkClient	*client,
 							 gchar		**package_ids,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_file			(PkClient	*client,
 							 const gchar	*file,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
 							 const gchar	*filter,
 							 const gchar	*package,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_rollback			(PkClient	*client,
 							 const gchar	*transaction_id,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_cancel			(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_requeue			(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_enable			(PkClient	*client,
 							 const gchar	*repo_id,
 							 gboolean	 enabled,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 const gchar	*repo_id,
 							 const gchar	*parameter,
 							 const gchar	*value,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 /* cached stuff */
 guint		 pk_client_package_buffer_get_size	(PkClient	*client);
@@ -306,7 +331,8 @@ PkEnumList	*pk_client_get_actions			(PkClient	*client);
 PkEnumList	*pk_client_get_filters			(PkClient	*client);
 PkEnumList	*pk_client_get_groups			(PkClient	*client);
 gboolean	 pk_client_reset			(PkClient	*client,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_old_transactions		(PkClient	*client,
 							 guint		 number,
 							 GError		**error);
