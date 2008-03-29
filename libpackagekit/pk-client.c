@@ -297,6 +297,14 @@ pk_client_set_promiscuous (PkClient *client, gboolean enabled, GError **error)
 				     "cannot set promiscuous on a tid client");
 		return FALSE;
 	}
+
+	/* are we doing this without any need? */
+	if (client->priv->promiscuous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set promiscuous!");
+		return FALSE;
+	}
+
 	client->priv->promiscuous = enabled;
 	return TRUE;
 }
@@ -360,6 +368,13 @@ pk_client_set_use_buffer (PkClient *client, gboolean use_buffer, GError **error)
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
+	/* are we doing this without any need? */
+	if (client->priv->use_buffer) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set use_buffer!");
+		return FALSE;
+	}
+
 	client->priv->use_buffer = use_buffer;
 	return TRUE;
 }
@@ -379,6 +394,13 @@ pk_client_set_synchronous (PkClient *client, gboolean synchronous, GError **erro
 {
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* are we doing this without any need? */
+	if (client->priv->synchronous) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED,
+				     "already set synchronous!");
+		return FALSE;
+	}
 
 	client->priv->synchronous = synchronous;
 	return TRUE;
@@ -3435,6 +3457,7 @@ pk_client_init (PkClient *client)
 	client->priv->loop = g_main_loop_new (NULL, FALSE);
 	client->priv->use_buffer = FALSE;
 	client->priv->promiscuous = FALSE;
+	client->priv->synchronous = FALSE;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->require_restart = PK_RESTART_ENUM_NONE;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
