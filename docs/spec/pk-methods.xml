@@ -710,6 +710,7 @@
     <para>
       This function should return a list of packages that are installed and
       are upgradable.
+      It should only return the newest update for each installed package.
     </para>
     <para>
       The arguments are:
