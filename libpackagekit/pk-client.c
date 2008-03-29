@@ -3767,6 +3767,10 @@ libst_client (LibSelfTest *test)
 {
 	PkClient *client;
 	gboolean ret;
+	GError *error = NULL;
+	guint size;
+	guint size_new;
+	guint i;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
@@ -3785,20 +3789,65 @@ libst_client (LibSelfTest *test)
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (libst_client_finished_cb), NULL);
 
-	/************************************************************/
-	libst_title (test, "do any method");
-	/* we don't care if this fails */
+	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_search_name (client, "none", "moooo", NULL);
-	libst_success (test, "did something");
+	ret = pk_client_search_name (client, "none", "power", NULL);
 
 	/************************************************************/
 	libst_title (test, "we finished?");
-	if (finished) {
+	if (ret && finished) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************/
+	libst_title (test, "get new client");
+	client = pk_client_new ();
+	if (client != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	pk_client_set_synchronous (client, TRUE, NULL);
+	pk_client_set_use_buffer (client, TRUE, NULL);
+
+	/************************************************************/
+	libst_title (test, "search for power");
+	ret = pk_client_search_name (client, "none", "power", &error);
+	if (!ret) {
+		libst_failed (test, "failed: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* get size */
+	size = pk_client_package_buffer_get_size (client);
+	if (size == 0) {
+		libst_failed (test, "failed: to get any results");
+	}
+	libst_success (test, "search name with %i entries", size);
+
+	/************************************************************/
+	libst_title (test, "do lots of loops");
+	for (i=0;i<10;i++) {
+		ret = pk_client_reset (client, &error);
+		if (!ret) {
+			libst_failed (test, "failed: to reset: %s", error->message);
+			g_error_free (error);
+		}
+		ret = pk_client_search_name (client, "none", "power", &error);
+		if (!ret) {
+			libst_failed (test, "failed to search: %s", error->message);
+			g_error_free (error);
+		}
+		/* check we got the same results */
+		size_new = pk_client_package_buffer_get_size (client);
+		if (size != size_new) {
+			libst_failed (test, "old size %i, new size %", size, size_new);
+		}
+	}
+	libst_success (test, "10 search name loops completed in %ims", libst_elapsed (test));
+	g_object_unref (client);
 
 	libst_end (test);
 }
