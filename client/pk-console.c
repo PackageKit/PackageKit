@@ -605,8 +605,6 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 		pk_warning ("failed to reset");
 		return FALSE;
 	}
-	pk_client_set_use_buffer (client_task, TRUE, NULL);
-	pk_client_set_synchronous (client_task, TRUE, NULL);
 
 	pk_debug (_("Getting installed requires for %s"), package_id);
 	ret = pk_client_get_requires (client_task, "installed", package_id, TRUE, error);
