@@ -241,7 +241,7 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 	pk_backend_set_allow_cancel (runner->priv->backend, FALSE);
 
 	/* we need ::finished to not return success or failed */
-	pk_backend_set_exit_code (runner->priv->backend, PK_EXIT_ENUM_QUIT);
+	pk_backend_set_exit_code (runner->priv->backend, PK_EXIT_ENUM_CANCELLED);
 
 	/* actually run the method */
 	runner->priv->backend->desc->cancel (runner->priv->backend);

@@ -1030,7 +1030,7 @@ pk_backend_get_role (PkBackend *backend)
 /**
  * pk_backend_set_exit_code:
  *
- * Should only be used internally, or from PkRunner when setting PK_EXIT_ENUM_QUIT.
+ * Should only be used internally, or from PkRunner when setting CANCELLED.
  **/
 gboolean
 pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)

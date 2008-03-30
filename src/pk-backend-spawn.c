@@ -356,17 +356,17 @@ pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *b
 	pk_backend_spawn_helper_delete (backend_spawn);
 
 	/* if we quit the process, set an error */
-	if (exit == PK_EXIT_ENUM_QUIT) {
+	if (exit == PK_EXIT_ENUM_CANCELLED) {
 		/* we just call this failed, and set an error */
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 				       "Transaction was cancelled");
 	}
 
 	/* if we killed the process, set an error */
-	if (exit == PK_EXIT_ENUM_KILL) {
+	if (exit == PK_EXIT_ENUM_KILLED) {
 		/* we just call this failed, and set an error */
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_PROCESS_KILL,
-				       "Transaction was cancelled");
+				       "Process had to be killed to be cancelled");
 	}
 
 	if (FALSE && /*TODO: backend_spawn->priv->set_error == FALSE*/
