@@ -1442,6 +1442,7 @@ class DepSolveCallback(object):
     def start(self):
        if not self.started:
            self.backend.status(STATUS_DEP_RESOLVE)
+           self.backend.percentage(None)
 
     # Be lazy and not define the others explicitly
     def _do_nothing(self, *args, **kwargs):
