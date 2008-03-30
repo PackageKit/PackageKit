@@ -125,7 +125,7 @@ typedef enum {
 typedef enum {
 	PK_EXIT_ENUM_SUCCESS,
 	PK_EXIT_ENUM_FAILED,
-	PK_EXIT_ENUM_QUIT,
+	PK_EXIT_ENUM_QUIT, /* normal cancel */
 	PK_EXIT_ENUM_KILL,
 	PK_EXIT_ENUM_UNKNOWN
 } PkExitEnum;

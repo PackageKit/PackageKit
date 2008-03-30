@@ -46,6 +46,8 @@ gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
+gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
+							 PkExitEnum	 exit);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);

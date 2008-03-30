@@ -934,7 +934,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 							     pk_backend_error_timeout_delay_cb, backend);
 
 	/* we mark any transaction with errors as failed */
-	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+	pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
 	pk_debug ("emit error-code %i, %s", code, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
@@ -1028,6 +1028,30 @@ pk_backend_get_role (PkBackend *backend)
 }
 
 /**
+ * pk_backend_set_exit_code:
+ *
+ * Should only be used internally, or from PkRunner when setting PK_EXIT_ENUM_QUIT.
+ **/
+gboolean
+pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
+{
+	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
+		pk_warning ("already set exit status: old=%s, new=%s",
+			    pk_exit_enum_to_text (backend->priv->exit),
+			    pk_exit_enum_to_text (exit));
+		return FALSE;
+	}
+
+	/* new value */
+	backend->priv->exit = exit;
+	return TRUE;
+}
+
+/**
  * pk_backend_finished_delay:
  *
  * We can call into this function if we *know* it's safe.
@@ -1036,6 +1060,12 @@ static gboolean
 pk_backend_finished_delay (gpointer data)
 {
 	PkBackend *backend = PK_BACKEND (data);
+
+	/* this wasn't set otherwise, assume success */
+	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
+	}
+
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	return FALSE;
@@ -1135,7 +1165,6 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
-	backend->priv->exit = PK_EXIT_ENUM_FAILED;
 	pk_backend_finished_delay (backend);
 	return TRUE;
 }
@@ -1327,7 +1356,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
+	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;
