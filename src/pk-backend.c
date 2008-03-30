@@ -1132,6 +1132,9 @@ pk_backend_finished (PkBackend *backend)
 		pk_warning ("GUI will remain unchanged!");
 	}
 
+	/* make any UI insensitive */
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	/* mark as finished for the UI that might only be watching status */
 	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
 
