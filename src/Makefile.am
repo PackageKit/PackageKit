@@ -118,7 +118,8 @@ BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-interface.h					\
-	pk-interface-notify.h					\
+	pk-interface-notify.h				\
+	pk-interface-transaction.h			\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -141,6 +142,13 @@ pk-interface-notify.h: pk-interface-notify.xml
 		--mode=glib-server			\
 		--output=pk-interface-notify.h		\
 		$(srcdir)/pk-interface-notify.xml
+
+pk-interface-transaction.h: pk-interface-transaction.xml
+	$(LIBTOOL) --mode=execute dbus-binding-tool	\
+		--prefix=pk_transaction			\
+		--mode=glib-server			\
+		--output=pk-interface-transaction.h	\
+		$(srcdir)/pk-interface-transaction.xml
 
 if PK_BUILD_TESTS
 
@@ -187,6 +195,7 @@ EXTRA_DIST =						\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
 	pk-interface-notify.xml				\
+	pk-interface-transaction.xml			\
 	$(NULL)
 
 clean-local:
