@@ -285,7 +285,7 @@ gboolean	 pk_client_update_packages_strv		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_file			(PkClient	*client,
-							 const gchar	*file,
+							 const gchar	*file_rel,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,

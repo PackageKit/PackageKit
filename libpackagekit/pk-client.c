@@ -2501,6 +2501,33 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
 }
 
 /**
+ * pk_resolve_local_path:
+ *
+ * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
+ * TODO: We should use canonicalize_filename() in gio/glocalfile.c as realpath()
+ * is crap.
+ **/
+static gchar *
+pk_resolve_local_path (const gchar *rel_path)
+{
+	gchar *real = NULL;
+	gchar *temp;
+
+	/* don't trust realpath one little bit */
+	if (rel_path == NULL) {
+		return NULL;
+	}
+
+	temp = realpath (rel_path, NULL);
+	if (temp != NULL) {
+		real = g_strdup (temp);
+		/* yes, free, not g_free */
+		free (temp);
+	}
+	return real;
+}
+
+/**
  * pk_client_install_file:
  * @client: a valid #PkClient instance
  * @file: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
@@ -2512,20 +2539,25 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_file (PkClient *client, const gchar *file, GError **error)
+pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
 {
 	gboolean ret;
+	gchar *file;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (file != NULL, FALSE);
+	g_return_val_if_fail (file_rel != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* resolve to an absolute path */
+	file = pk_resolve_local_path (file_rel);
+	pk_debug ("resolved %s to %s", file_rel, file);
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
@@ -2560,6 +2592,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 		}
 	}
 
+	g_free (file);
 	return ret;
 }
 
@@ -3775,10 +3808,40 @@ libst_client (LibSelfTest *test)
 	guint size;
 	guint size_new;
 	guint i;
+	gchar *file;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/************************************************************/
+	libst_title (test, "test resolve NULL");
+	file = pk_resolve_local_path (NULL);
+	if (file == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test resolve /etc/hosts");
+	file = pk_resolve_local_path ("/etc/hosts");
+	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got: %s", file);
+	}
+	g_free (file);
+
+	/************************************************************/
+	libst_title (test, "test resolve /etc/../etc/hosts");
+	file = pk_resolve_local_path ("/etc/../etc/hosts");
+	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got: %s", file);
+	}
+	g_free (file);
 
 	/************************************************************/
 	libst_title (test, "get client");
