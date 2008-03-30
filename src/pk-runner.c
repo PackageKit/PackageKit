@@ -237,6 +237,9 @@ pk_runner_cancel (PkRunner *runner, gchar **error_text)
 	/* set the state, as cancelling might take a few seconds */
 	pk_backend_set_status (runner->priv->backend, PK_STATUS_ENUM_CANCEL);
 
+	/* we don't want to cancel twice */
+	pk_backend_set_allow_cancel (runner->priv->backend, FALSE);
+
 	/* actually run the method */
 	runner->priv->backend->desc->cancel (runner->priv->backend);
 	return TRUE;
