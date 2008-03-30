@@ -82,8 +82,6 @@ struct _PkClientClass
 	/* Signals */
 	void		(* status_changed)		(PkClient	*client,
 							 PkStatusEnum	 status);
-	void		(* updates_changed)		(PkClient	*client);
-	void		(* repo_list_changed)		(PkClient	*client);
 	void		(* progress_changed)		(PkClient	*client,
 							 guint		 percentage,
 							 guint		 subpercentage,

@@ -31,6 +31,7 @@
 #include <pk-debug.h>
 #include <pk-common.h>
 #include <pk-client.h>
+#include <pk-notify.h>
 #include <pk-task-list.h>
 #include <pk-connection.h>
 
@@ -125,9 +126,18 @@ pk_monitor_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
  * pk_monitor_repo_list_changed_cb:
  **/
 static void
-pk_monitor_repo_list_changed_cb (PkClient *client, gpointer data)
+pk_monitor_repo_list_changed_cb (PkNotify *notify, gpointer data)
 {
 	g_print ("repo-list-changed\n");
+}
+
+/**
+ * pk_monitor_updates_changed_cb:
+ **/
+static void
+pk_monitor_updates_changed_cb (PkNotify *notify, gpointer data)
+{
+	g_print ("updates-changed\n");
 }
 
 /**
@@ -147,6 +157,7 @@ main (int argc, char *argv[])
 {
 	PkTaskList *tlist;
 	PkClient *client;
+	PkNotify *notify;
 	gboolean ret;
 	GMainLoop *loop;
 	PkConnection *pconnection;
@@ -206,8 +217,12 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_package_cb), NULL);
 	g_signal_connect (client, "allow-cancel",
 			  G_CALLBACK (pk_monitor_allow_cancel_cb), NULL);
-	g_signal_connect (client, "repo-list-changed",
+
+	notify = pk_notify_new ();
+	g_signal_connect (notify, "repo-list-changed",
 			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
+	g_signal_connect (notify, "updates-changed",
+			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
 
 	tlist = pk_task_list_new ();
 	g_signal_connect (tlist, "task-list-changed",
@@ -223,6 +238,7 @@ main (int argc, char *argv[])
 	g_main_loop_run (loop);
 
 	g_object_unref (client);
+	g_object_unref (notify);
 	g_object_unref (tlist);
 	g_object_unref (pconnection);
 

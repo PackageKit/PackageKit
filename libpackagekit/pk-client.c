@@ -98,8 +98,6 @@ typedef enum {
 	PK_CLIENT_FINISHED,
 	PK_CLIENT_PACKAGE,
 	PK_CLIENT_PROGRESS_CHANGED,
-	PK_CLIENT_UPDATES_CHANGED,
-	PK_CLIENT_REPO_LIST_CHANGED,
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
@@ -693,36 +691,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
-}
-
-/**
- * pk_client_updates_changed_cb:
- */
-static void
-pk_client_updates_changed_cb (DBusGProxy *proxy, const gchar *tid, PkClient *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* we always emit, even if the tid does not match */
-	pk_debug ("emitting updates-changed");
-	g_signal_emit (client, signals [PK_CLIENT_UPDATES_CHANGED], 0);
-
-}
-
-/**
- * pk_client_repo_list_changed_cb:
- */
-static void
-pk_client_repo_list_changed_cb (DBusGProxy *proxy, const gchar *tid, PkClient *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* we always emit, even if the tid does not match */
-	pk_debug ("emitting repo-list-changed");
-	g_signal_emit (client, signals [PK_CLIENT_REPO_LIST_CHANGED], 0);
-
 }
 
 /**
@@ -3146,32 +3114,6 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	/**
-	 * PkClient::updates-changed:
-	 * @client: the #PkClient instance that emitted the signal
-	 *
-	 * The ::updates-changed signal is emitted when the update list may have
-	 * changed and the client program may have to update some UI.
-	 **/
-	signals [PK_CLIENT_UPDATES_CHANGED] =
-		g_signal_new ("updates-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, updates_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
-	/**
-	 * PkClient::repo-list-changed:
-	 * @client: the #PkClient instance that emitted the signal
-	 *
-	 * The ::repo-list-changed signal is emitted when the repo list may have
-	 * changed and the client program may have to update some UI.
-	 **/
-	signals [PK_CLIENT_REPO_LIST_CHANGED] =
-		g_signal_new ("repo-list-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, repo_list_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
-	/**
 	 * PkClient::progress-changed:
 	 * @client: the #PkClient instance that emitted the signal
 	 * @percentage: the percentage of the transaction
@@ -3593,16 +3535,6 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "UpdatesChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "UpdatesChanged",
-				     G_CALLBACK (pk_client_updates_changed_cb), client, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "RepoListChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "RepoListChanged",
-				     G_CALLBACK (pk_client_repo_list_changed_cb), client, NULL);
-
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -3697,10 +3629,6 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_progress_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
 				        G_CALLBACK (pk_client_status_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",
-				        G_CALLBACK (pk_client_updates_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoListChanged",
-				        G_CALLBACK (pk_client_repo_list_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",

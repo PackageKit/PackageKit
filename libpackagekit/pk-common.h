@@ -41,11 +41,25 @@ G_BEGIN_DECLS
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 
 /**
+ * PK_DBUS_PATH_NOTIFY:
+ *
+ * The DBUS path for the notifications (why can't we use PK_DBUS_PATH?)
+ */
+#define	PK_DBUS_PATH_NOTIFY		"/org/freedesktop/PackageKit/Notify"
+
+/**
  * PK_DBUS_INTERFACE:
  *
  * The DBUS interface
  */
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
+
+/**
+ * PK_DBUS_INTERFACE:
+ *
+ * The DBUS interface for the notifications
+ */
+#define	PK_DBUS_INTERFACE_NOTIFY	"org.freedesktop.PackageKit.Notify"
 
 guint		 pk_strlen				(gchar		*text,
 							 guint		 max_length)

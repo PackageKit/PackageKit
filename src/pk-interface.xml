@@ -181,12 +181,6 @@
       <arg type="s" name="message" direction="out"/>
       <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
     </signal>
-    <signal name="UpdatesChanged">
-      <arg type="s" name="tid" direction="out"/>
-    </signal>
-    <signal name="RepoListChanged">
-      <arg type="s" name="tid" direction="out"/>
-    </signal>
     <signal name="Locked">
       <arg type="b" name="is_locked" direction="out"/>
     </signal>

@@ -46,6 +46,7 @@ libpackagekit_include_HEADERS =					\
 	pk-common.h						\
 	pk-filter.h						\
 	pk-client.h						\
+	pk-notify.h						\
 	pk-task-list.h						\
 	pk-job-list.h						\
 	pk-polkit-client.h					\
@@ -79,6 +80,8 @@ libpackagekit_la_SOURCES =					\
 	pk-filter.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-notify.c						\
+	pk-notify.h						\
 	pk-task-list.c						\
 	pk-task-list.h						\
 	pk-job-list.c						\

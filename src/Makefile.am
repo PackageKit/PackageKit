@@ -52,6 +52,8 @@ shared_SOURCES =					\
 	pk-time.c					\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-notify.c					\
+	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
 	pk-engine.h					\
@@ -113,6 +115,7 @@ BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-interface.h					\
+	pk-interface-notify.h					\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -126,8 +129,15 @@ pk-interface.h: pk-interface.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_engine			\
 		--mode=glib-server			\
-		--output=pk-interface.h	\
+		--output=pk-interface.h			\
 		$(srcdir)/pk-interface.xml
+
+pk-interface-notify.h: pk-interface-notify.xml
+	$(LIBTOOL) --mode=execute dbus-binding-tool	\
+		--prefix=pk_notify			\
+		--mode=glib-server			\
+		--output=pk-interface-notify.h		\
+		$(srcdir)/pk-interface-notify.xml
 
 if PK_BUILD_TESTS
 
@@ -172,6 +182,7 @@ EXTRA_DIST =						\
 	pk-security-polkit.c				\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
+	pk-interface-notify.xml				\
 	$(NULL)
 
 clean-local:

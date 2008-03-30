@@ -55,7 +55,9 @@
 #include "pk-transaction-list.h"
 #include "pk-inhibit.h"
 #include "pk-marshal.h"
+#include "pk-notify.h"
 #include "pk-security.h"
+#include "pk-interface-notify.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -87,6 +89,7 @@ struct PkEnginePrivate
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
 	PkSecurity		*security;
+	PkNotify		*notify;
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
@@ -97,14 +100,12 @@ enum {
 	PK_ENGINE_TRANSACTION_LIST_CHANGED,
 	PK_ENGINE_STATUS_CHANGED,
 	PK_ENGINE_PROGRESS_CHANGED,
+	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_PACKAGE,
 	PK_ENGINE_TRANSACTION,
 	PK_ENGINE_ERROR_CODE,
 	PK_ENGINE_REQUIRE_RESTART,
 	PK_ENGINE_MESSAGE,
-	PK_ENGINE_UPDATES_CHANGED,
-	PK_ENGINE_REPO_LIST_CHANGED,
-	PK_ENGINE_REPO_SIGNATURE_REQUIRED,
 	PK_ENGINE_FINISHED,
 	PK_ENGINE_UPDATE_DETAIL,
 	PK_ENGINE_DESCRIPTION,
@@ -327,8 +328,7 @@ pk_engine_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 		pk_warning ("could not get current tid from backend");
 		return;
 	}
-	pk_debug ("emitting updates-changed tid:%s", c_tid);
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, c_tid);
+	pk_notify_updates_changed (engine->priv->notify, c_tid);
 }
 
 /**
@@ -486,25 +486,6 @@ pk_engine_files_cb (PkBackend *backend, const gchar *package_id,
 }
 
 /**
- * pk_engine_finished_updates_changed_cb:
- **/
-static gboolean
-pk_engine_finished_updates_changed_cb (gpointer data)
-{
-	const gchar *tid;
-	PkEngine *engine = PK_ENGINE (data);
-
-	g_return_val_if_fail (engine != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-
-	tid = (const gchar *) g_object_get_data (G_OBJECT (engine), "calling-tid");
-
-	pk_debug ("emitting updates-changed tid:%s", tid);
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, tid);
-	return FALSE;
-}
-
-/**
  * pk_engine_finish_invalidate_caches:
  **/
 static gboolean
@@ -562,8 +543,7 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 	    role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		/* this needs to be done after a small delay */
-		g_object_set_data (G_OBJECT (engine), "calling-tid", g_strdup (c_tid));
-		g_timeout_add (PK_ENGINE_UPDATES_CHANGED_TIMEOUT, pk_engine_finished_updates_changed_cb, engine);
+		pk_notify_wait_updates_changed (engine->priv->notify, c_tid, PK_ENGINE_UPDATES_CHANGED_TIMEOUT);
 	}
 	return TRUE;
 }
@@ -630,8 +610,7 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	if (role == PK_ROLE_ENUM_SERVICE_PACK ||
 	    role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		pk_debug ("emitting repo-list-changed tid:%s", c_tid);
-		g_signal_emit (engine, signals [PK_ENGINE_REPO_LIST_CHANGED], 0, c_tid);
+		pk_notify_repo_list_changed (engine->priv->notify, c_tid);
 	}
 
 	/* only reset the time if we succeeded */
@@ -2753,8 +2732,7 @@ pk_engine_state_changed_cb (gpointer data)
 		g_object_unref (engine->priv->updates_cache);
 		engine->priv->updates_cache = NULL;
 	}
-	pk_debug ("emitting updates-changed tid:%s", "unknown");
-	g_signal_emit (engine, signals [PK_ENGINE_UPDATES_CHANGED], 0, "unknown");
+	pk_notify_updates_changed (engine->priv->notify, "unknown");
 
 	/* reset, now valid */
 	engine->priv->signal_state_timeout = 0;
@@ -2982,16 +2960,6 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING,
 			      G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	signals [PK_ENGINE_UPDATES_CHANGED] =
-		g_signal_new ("updates-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_ENGINE_REPO_LIST_CHANGED] =
-		g_signal_new ("repo-list-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -3057,6 +3025,7 @@ pk_engine_class_init (PkEngineClass *klass)
 static void
 pk_engine_init (PkEngine *engine)
 {
+	DBusGConnection *connection;
 	PkRunner *runner;
 	gboolean ret;
 
@@ -3124,6 +3093,18 @@ pk_engine_init (PkEngine *engine)
 	/* we need an auth framework */
 	engine->priv->security = pk_security_new ();
 
+	/* get another connection */
+	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
+	if (connection == NULL) {
+		pk_error ("no connection");
+	}
+
+	/* add the interface */
+	engine->priv->notify = pk_notify_new ();
+	dbus_g_object_type_install_info (PK_TYPE_NOTIFY, &dbus_glib_pk_notify_object_info);
+	dbus_g_connection_register_g_object (connection, PK_DBUS_PATH_NOTIFY,
+					     G_OBJECT (engine->priv->notify));
+
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
 			  G_CALLBACK (pk_engine_transaction_list_changed_cb), engine);
@@ -3175,6 +3156,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
 	g_object_unref (engine->priv->security);
+	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 
 	/* optional gobjects */
