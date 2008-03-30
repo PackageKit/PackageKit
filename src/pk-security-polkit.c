@@ -51,6 +51,7 @@ struct PkSecurityPrivate
 };
 
 G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
+static gpointer pk_security_object = NULL;
 
 /**
  * pk_security_can_do_action:
@@ -279,9 +280,13 @@ pk_security_init (PkSecurity *security)
 PkSecurity *
 pk_security_new (void)
 {
-	PkSecurity *security;
-	security = g_object_new (PK_TYPE_SECURITY, NULL);
-	return PK_SECURITY (security);
+	if (pk_security_object != NULL) {
+		g_object_ref (pk_security_object);
+	} else {
+		pk_security_object = g_object_new (PK_TYPE_SECURITY, NULL);
+		g_object_add_weak_pointer (pk_security_object, &pk_security_object);
+	}
+	return PK_SECURITY (pk_security_object);
 }
 
 /***************************************************************************
