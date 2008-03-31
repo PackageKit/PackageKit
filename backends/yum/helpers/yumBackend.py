@@ -910,7 +910,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._check_for_reboot()
             if removedeps == False:
                 if len(self.yumbase.tsInfo) > 1:
-                    retmsg = 'package could not be remove, because something depends on it'
+                    retmsg = 'package could not be removed, as other packages depend on it'
                     self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
                     return
 
