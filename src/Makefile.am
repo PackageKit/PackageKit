@@ -56,6 +56,8 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
+	pk-restart.c					\
+	pk-restart.h					\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
