@@ -102,7 +102,6 @@ gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
-gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
 gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,
 							 const gchar    *repository_name,
 							 const gchar    *key_url,
