@@ -850,14 +850,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
         txmbr = self.yumbase.installLocal(inst_file)
-        self._checkForNewer(txmbr[0].po)
-        try:
-            # Added the package to the transaction set
-            if len(self.yumbase.tsInfo) > 0:
-                self._runYumTransaction()
-        except yum.Errors.InstallError,e:
-            msgs = ';'.join(e)
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+        if txmbr:
+            self._checkForNewer(txmbr[0].po)
+            try:
+                # Added the package to the transaction set
+                if len(self.yumbase.tsInfo) > 0:
+                    self._runYumTransaction()
+            except yum.Errors.InstallError,e:
+                msgs = ';'.join(e)
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+        else:
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % install_file)
+            
 
     def update(self, packages):
         '''
