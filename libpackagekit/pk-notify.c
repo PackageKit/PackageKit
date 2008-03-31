@@ -65,6 +65,7 @@ struct _PkNotifyPrivate
 };
 
 typedef enum {
+	PK_NOTIFY_RESTART_SCHEDULE,
 	PK_NOTIFY_UPDATES_CHANGED,
 	PK_NOTIFY_REPO_LIST_CHANGED,
 	PK_NOTIFY_LAST_SIGNAL
@@ -73,6 +74,20 @@ typedef enum {
 static guint signals [PK_NOTIFY_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
+
+/**
+ * pk_notify_restart_schedule_cb:
+ */
+static void
+pk_notify_restart_schedule_cb (DBusGProxy *proxy, PkNotify *notify)
+{
+	g_return_if_fail (notify != NULL);
+	g_return_if_fail (PK_IS_NOTIFY (notify));
+
+	pk_debug ("emitting restart-schedule");
+	g_signal_emit (notify, signals [PK_NOTIFY_RESTART_SCHEDULE], 0);
+
+}
 
 /**
  * pk_notify_updates_changed_cb:
@@ -138,6 +153,19 @@ pk_notify_class_init (PkNotifyClass *klass)
 			      G_STRUCT_OFFSET (PkNotifyClass, repo_list_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	/**
+	 * PkNotify::restart_schedule:
+	 * @notify: the #PkNotify instance that emitted the signal
+	 *
+	 * The ::restart_schedule signal is emitted when the service has been
+	 * restarted. Client programs should reload themselves.
+	 **/
+	signals [PK_NOTIFY_RESTART_SCHEDULE] =
+		g_signal_new ("restart-schedule",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkNotifyClass, restart_schedule),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkNotifyPrivate));
 }
@@ -176,6 +204,10 @@ pk_notify_init (PkNotify *notify)
 				 G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (notify->priv->proxy, "RepoListChanged",
 				     G_CALLBACK (pk_notify_repo_list_changed_cb), notify, NULL);
+
+	dbus_g_proxy_add_signal (notify->priv->proxy, "RestartSchedule", G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal (notify->priv->proxy, "RestartSchedule",
+				     G_CALLBACK (pk_notify_restart_schedule_cb), notify, NULL);
 }
 
 /**
@@ -195,6 +227,8 @@ pk_notify_finalize (GObject *object)
 				        G_CALLBACK (pk_notify_updates_changed_cb), notify);
 	dbus_g_proxy_disconnect_signal (notify->priv->proxy, "RepoListChanged",
 				        G_CALLBACK (pk_notify_repo_list_changed_cb), notify);
+	dbus_g_proxy_disconnect_signal (notify->priv->proxy, "RestartSchedule",
+				        G_CALLBACK (pk_notify_restart_schedule_cb), notify);
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (notify->priv->proxy));

@@ -54,6 +54,7 @@ struct _PkNotifyClass
 	/* signals */
 	void		(* updates_changed)		(PkNotify	*notify);
 	void		(* repo_list_changed)		(PkNotify	*notify);
+	void		(* restart_schedule)		(PkNotify	*notify);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
