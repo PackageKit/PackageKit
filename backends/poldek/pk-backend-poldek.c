@@ -564,6 +564,28 @@ poldek_get_installed_packages (void)
 	return arr;
 }
 
+static void
+do_newest (tn_array *pkgs)
+{
+	guint	i = 1;
+
+	if (!n_array_is_sorted (pkgs))
+		n_array_sort_ex (pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
+
+	while (i < pkgs->items) {
+		if (pkg_cmp_name (pkgs->data[i - 1], pkgs->data[i]) == 0) {
+			struct pkg	*pkg = n_array_nth (pkgs, i);
+
+			if (!poldek_pkg_is_installed (pkg)) {
+				n_array_remove_nth (pkgs, i);
+				continue;
+			}
+		}
+
+		i++;
+	}
+}
+
 /**
  * do_requires:
  */
@@ -762,8 +784,12 @@ poldek_backend_package (const struct pkg *pkg, gint status)
 
 	evr = poldek_pkg_evr (pkg);
 
-	if (!(poldek_pkg_is_installed(pkg)))
-	{
+	if (poldek_pkg_is_installed(pkg)) {
+		if (status == PK_INFO_ENUM_UNKNOWN)
+			status = PK_INFO_ENUM_INSTALLED;
+
+		poldek_dir = g_strdup ("installed");
+	} else {
 		if (status == PK_INFO_ENUM_UNKNOWN)
 			status = PK_INFO_ENUM_AVAILABLE;
 
@@ -771,11 +797,6 @@ poldek_backend_package (const struct pkg *pkg, gint status)
 			poldek_dir = g_strdup (pkg->pkgdir->name);
 		else
 			poldek_dir = g_strdup ("all-avail");
-	} else {
-		if (status == PK_INFO_ENUM_UNKNOWN)
-			status = PK_INFO_ENUM_INSTALLED;
-
-		poldek_dir = g_strdup ("installed");
 	}
 
 	package_id = pk_package_id_build (pkg->name,
@@ -949,6 +970,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			}
 
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
+
 			n_array_free (available);
 		} else if (!d->filter->installed || available) {
 			gint	i;
@@ -965,6 +987,9 @@ search_package (PkBackendThread *thread, gpointer data)
 
 		if (pkgs) {
 			gint	i;
+
+			if (d->filter->not_newest == FALSE)
+				do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
@@ -1046,8 +1071,8 @@ do_poldek_init (void) {
 
 	poldek_log_set_appender ("PackageKit", NULL, NULL, 0, (poldek_vlog_fn)poldek_backend_log);
 
-	/* unique package names */
-	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 1);
+	/* disable unique package names */
+	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 0);
 
 	/* poldek has to ask. Otherwise callbacks won't be used */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_INST, 1);
@@ -1113,10 +1138,11 @@ backend_get_filters (PkBackend *backend, PkEnumList *elist)
 	g_return_if_fail (backend != NULL);
 
 	pk_enum_list_append_multiple (elist,
+				      PK_FILTER_ENUM_DEVELOPMENT,
 				      PK_FILTER_ENUM_GUI,
 				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				    /*  PK_FILTER_ENUM_FREE,*/
+				      PK_FILTER_ENUM_NEWEST,
+				    /* PK_FILTER_ENUM_FREE, */
 				      -1);
 }
 
@@ -1493,6 +1519,9 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 			gint		i;
 
 			pkgs = poclidek_rcmd_get_packages (rcmd);
+
+			/* GetUpdates returns only the newest packages */
+			do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
@@ -1935,7 +1964,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter
+backend_get_repo_list (PkBackend *backend, const gchar *filter)
 {
 	tn_array	*sources = NULL;
 
