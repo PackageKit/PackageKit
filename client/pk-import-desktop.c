@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
 #include <pk-debug.h>
@@ -277,7 +278,8 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		pk_warning ("could not open database %s", database_location);
+		g_print (_("Could not open database: %s\n"), database_location);
+		g_print (_("You probably need to run this program as the root user\n"));
 		goto out;
 	}
 
