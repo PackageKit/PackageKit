@@ -1411,8 +1411,10 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend)
+backend_get_repo_list (PkBackend *backend, const gchar *filter)
 {
+	//Fixme - use the new param - filter
+	
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
