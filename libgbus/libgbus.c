@@ -72,13 +72,15 @@ name_owner_changed_cb (DBusGProxy     *proxy,
 	if (strcmp (name, libgbus->priv->service) == 0) {
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) != 0 && strlen (new) == 0 && libgbus->priv->connected == TRUE) {
-			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
 			libgbus->priv->connected = FALSE;
+			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, libgbus->priv->connected);
+			return;
 		}
 		/* ITS4: ignore, not used for allocation */
 		if (strlen (prev) == 0 && strlen (new) != 0 && libgbus->priv->connected == FALSE) {
-			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 			libgbus->priv->connected = TRUE;
+			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, libgbus->priv->connected);
+			return;
 		}
 	}
 }
