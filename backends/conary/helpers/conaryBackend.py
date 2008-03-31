@@ -258,6 +258,23 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache.populate_database()
 
     @ExceptionHandler
+    def update(self, packages):
+        '''
+        Implement the {backend}-update functionality
+        '''
+        self.allow_cancel(True);
+        self.percentage(0)
+        self.status(STATUS_RUNNING)
+
+        for package in packages.split(" "):
+            name, version, flavor, installed = self._findPackage(package)
+            if name:
+                self._do_package_update(name, version, flavor, apply=True)
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
+                    'No available updates')
+
+    @ExceptionHandler
     def install(self, package_id):
         '''
         Implement the {backend}-install functionality
@@ -265,7 +282,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         name, version, flavor, installed = self._findPackage(package_id)
 
         self.allow_cancel(True)
-        self.percentage(None)
+        self.percentage(0)
         self.status(STATUS_INSTALL)
 
         if name:
