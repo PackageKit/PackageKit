@@ -18,6 +18,7 @@ INCLUDES =						\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	-DBINDIR=\"$(bindir)\"			 	\
+	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
@@ -160,6 +161,7 @@ pk_self_test_LDADD =					\
 	$(LIBNM_LIBS)					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
+	$(GIO_LIBS)					\
 	$(NULL)
 
 TESTS = pk-self-test

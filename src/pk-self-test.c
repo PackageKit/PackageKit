@@ -37,6 +37,7 @@ void libst_backend (LibSelfTest *test);
 void libst_backend_spawn (LibSelfTest *test);
 void libst_backend_thread (LibSelfTest *test);
 void libst_backend_dbus (LibSelfTest *test);
+void libst_restart (LibSelfTest *test);
 void libst_engine (LibSelfTest *test);
 
 int
@@ -52,6 +53,7 @@ main (int argc, char **argv)
 	pk_debug_init (TRUE);
 
 	/* components */
+	libst_restart (&test);
 	libst_security (&test);
 	libst_time (&test);
 	libst_conf (&test);

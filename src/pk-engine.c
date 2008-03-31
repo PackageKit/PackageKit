@@ -56,6 +56,7 @@
 #include "pk-inhibit.h"
 #include "pk-marshal.h"
 #include "pk-notify.h"
+#include "pk-restart.h"
 #include "pk-security.h"
 #include "pk-interface-notify.h"
 
@@ -81,6 +82,7 @@ static void     pk_engine_finalize	(GObject       *object);
 struct PkEnginePrivate
 {
 	GTimer			*timer;
+	gboolean		 restart_schedule;
 	PkTransactionList	*transaction_list;
 	PkTransactionDb		*transaction_db;
 	PkTransactionItem	*sync_item;
@@ -90,6 +92,7 @@ struct PkEnginePrivate
 	PkNetwork		*network;
 	PkSecurity		*security;
 	PkNotify		*notify;
+	PkRestart		*restart;
 	PkEnumList		*actions;
 	PkEnumList		*groups;
 	PkEnumList		*filters;
@@ -2908,6 +2911,12 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 		return 0;
 	}
 
+	/* have we been updated? */
+	if (engine->priv->restart_schedule) {
+		pk_debug ("need to restart daemon *NOW*");
+		return G_MAXUINT;
+	}
+
 	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
 	pk_debug ("engine idle=%i", idle);
 	return idle;
@@ -3020,6 +3029,18 @@ pk_engine_class_init (PkEngineClass *klass)
 }
 
 /**
+ * pk_engine_restart_schedule_cb:
+ **/
+static void
+pk_engine_restart_schedule_cb (PkRestart *restart, PkEngine *engine)
+{
+	g_return_if_fail (engine != NULL);
+	g_return_if_fail (PK_IS_ENGINE (engine));
+	pk_debug ("setting restart_schedule TRUE");
+	engine->priv->restart_schedule = TRUE;
+}
+
+/**
  * pk_engine_init:
  **/
 static void
@@ -3030,6 +3051,7 @@ pk_engine_init (PkEngine *engine)
 	gboolean ret;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
+	engine->priv->restart_schedule = FALSE;
 
 	/* setup the backend backend */
 	engine->priv->backend = pk_backend_new ();
@@ -3104,6 +3126,11 @@ pk_engine_init (PkEngine *engine)
 	dbus_g_object_type_install_info (PK_TYPE_NOTIFY, &dbus_glib_pk_notify_object_info);
 	dbus_g_connection_register_g_object (connection, PK_DBUS_PATH_NOTIFY,
 					     G_OBJECT (engine->priv->notify));
+
+	/* add the interface */
+	engine->priv->restart = pk_restart_new ();
+	g_signal_connect (engine->priv->restart, "restart-schedule",
+			  G_CALLBACK (pk_engine_restart_schedule_cb), engine);
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",

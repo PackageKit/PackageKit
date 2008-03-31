@@ -39,16 +39,21 @@
 #include <pk-common.h>
 #include <pk-debug.h>
 #include "pk-restart.h"
+#include "pk-notify.h"
 
 static void     pk_restart_class_init	(PkRestartClass *klass);
 static void     pk_restart_init		(PkRestart      *restart);
 static void     pk_restart_finalize	(GObject       *object);
 
 #define PK_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESTART, PkRestartPrivate))
+#define	PK_RESTART_FILE_TO_WATCH	 SBINDIR "/packagekitd"
 
 struct PkRestartPrivate
 {
 	GString			*stdout_buf;
+	PkNotify		*notify;
+	GFileMonitor		*monitor;
+	GFile			*file;
 };
 
 enum {
@@ -71,12 +76,28 @@ pk_restart_class_init (PkRestartClass *klass)
 	object_class->finalize = pk_restart_finalize;
 
 	signals [PK_RESTART_SCHEDULE] =
-		g_signal_new ("schedule",
+		g_signal_new ("restart-schedule",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkRestartPrivate));
+}
+
+/**
+ * pk_restart_monitor_changed:
+ * @restart: This class instance
+ **/
+static void
+pk_restart_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_file,
+			    GFileMonitorEvent event_type, PkRestart *restart)
+{
+	if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
+		return;
+	}
+	pk_debug ("emit: restart-schedule");
+	g_signal_emit (restart, signals [PK_RESTART_SCHEDULE], 0);
+	pk_notify_restart_schedule (restart->priv->notify);
 }
 
 /**
@@ -86,7 +107,26 @@ pk_restart_class_init (PkRestartClass *klass)
 static void
 pk_restart_init (PkRestart *restart)
 {
+	GError *error = NULL;
 	restart->priv = PK_RESTART_GET_PRIVATE (restart);
+
+	/* notify from dbus to the client programs */
+	restart->priv->notify = pk_notify_new ();
+
+	/* this is the file we are interested in */
+	restart->priv->file = g_file_new_for_path (PK_RESTART_FILE_TO_WATCH);
+
+	/* watch this */
+	restart->priv->monitor = g_file_monitor_file (restart->priv->file, G_FILE_MONITOR_NONE, NULL, &error);
+	if (restart->priv->monitor == NULL) {
+		pk_warning ("failed to setup watch: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+	pk_debug ("watching for changes: %s", PK_RESTART_FILE_TO_WATCH);
+	g_file_monitor_set_rate_limit (restart->priv->monitor, 1000);
+	g_signal_connect (restart->priv->monitor, "changed",
+			  G_CALLBACK (pk_restart_monitor_changed), restart);
 }
 
 /**
@@ -103,6 +143,12 @@ pk_restart_finalize (GObject *object)
 
 	restart = PK_RESTART (object);
 	g_return_if_fail (restart->priv != NULL);
+
+	g_file_monitor_cancel (restart->priv->monitor);
+
+	g_object_unref (restart->priv->notify);
+	g_object_unref (restart->priv->file);
+	g_object_unref (restart->priv->monitor);
 
 	G_OBJECT_CLASS (pk_restart_parent_class)->finalize (object);
 }
@@ -129,9 +175,21 @@ pk_restart_new (void)
 void
 libst_restart (LibSelfTest *test)
 {
+	PkRestart *restart;
+
 	if (libst_start (test, "PkRestart", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/************************************************************/
+	libst_title (test, "get a restart");
+	restart = pk_restart_new ();
+	if (restart != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_object_unref (restart);
 
 	libst_end (test);
 }

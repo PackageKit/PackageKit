@@ -56,6 +56,7 @@ gboolean	 pk_notify_updates_changed	(PkNotify	*notify,
 gboolean	 pk_notify_wait_updates_changed	(PkNotify	*notify,
 						 const gchar	*tid,
 						 guint		 timeout);
+gboolean	 pk_notify_restart_schedule	(PkNotify	*notify);
 
 G_END_DECLS
 
