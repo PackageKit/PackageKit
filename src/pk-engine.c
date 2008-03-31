@@ -2914,6 +2914,7 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	/* have we been updated? */
 	if (engine->priv->restart_schedule) {
 		pk_debug ("need to restart daemon *NOW*");
+		pk_notify_restart_schedule (engine->priv->notify);
 		return G_MAXUINT;
 	}
 

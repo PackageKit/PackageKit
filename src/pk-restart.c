@@ -39,7 +39,6 @@
 #include <pk-common.h>
 #include <pk-debug.h>
 #include "pk-restart.h"
-#include "pk-notify.h"
 
 static void     pk_restart_class_init	(PkRestartClass *klass);
 static void     pk_restart_init		(PkRestart      *restart);
@@ -51,7 +50,6 @@ static void     pk_restart_finalize	(GObject       *object);
 struct PkRestartPrivate
 {
 	GString			*stdout_buf;
-	PkNotify		*notify;
 	GFileMonitor		*monitor;
 	GFile			*file;
 };
@@ -97,7 +95,6 @@ pk_restart_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_fil
 	}
 	pk_debug ("emit: restart-schedule");
 	g_signal_emit (restart, signals [PK_RESTART_SCHEDULE], 0);
-	pk_notify_restart_schedule (restart->priv->notify);
 }
 
 /**
@@ -109,9 +106,6 @@ pk_restart_init (PkRestart *restart)
 {
 	GError *error = NULL;
 	restart->priv = PK_RESTART_GET_PRIVATE (restart);
-
-	/* notify from dbus to the client programs */
-	restart->priv->notify = pk_notify_new ();
 
 	/* this is the file we are interested in */
 	restart->priv->file = g_file_new_for_path (PK_RESTART_FILE_TO_WATCH);
@@ -146,7 +140,6 @@ pk_restart_finalize (GObject *object)
 
 	g_file_monitor_cancel (restart->priv->monitor);
 
-	g_object_unref (restart->priv->notify);
 	g_object_unref (restart->priv->file);
 	g_object_unref (restart->priv->monitor);
 
