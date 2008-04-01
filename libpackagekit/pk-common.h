@@ -55,11 +55,18 @@ G_BEGIN_DECLS
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
 
 /**
- * PK_DBUS_INTERFACE:
+ * PK_DBUS_INTERFACE_NOTIFY:
  *
  * The DBUS interface for the notifications
  */
 #define	PK_DBUS_INTERFACE_NOTIFY	"org.freedesktop.PackageKit.Notify"
+
+/**
+ * PK_DBUS_INTERFACE_TRANSACTION:
+ *
+ * The DBUS interface for the transactions
+ */
+#define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
 
 guint		 pk_strlen				(gchar		*text,
 							 guint		 max_length)
