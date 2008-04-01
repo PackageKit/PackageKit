@@ -307,14 +307,15 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
-	if(strcmp(package_id,"signedpackage;1.0-1.fc8;i386;fedora") == 0) {
-		pk_backend_repo_signature_required(backend, "updates", "http://example.com/gpgkey",
-						   "Test Key (Fedora) fedora@example.com", "BB7576AC",
-						   "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
-						   "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+	if (pk_strequal (package_id,"vips-doc;7.12.4-2.fc8;noarch;linva")) {
+		pk_backend_repo_signature_required (backend, "updates", "http://example.com/gpgkey",
+						    "Test Key (Fedora) fedora@example.com", "BB7576AC",
+						    "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
+						    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
 				       "GPG signed package could not be verified");
 		pk_backend_finished (backend);
+		return;
 	}
 
 	pk_backend_set_allow_cancel (backend, TRUE);
