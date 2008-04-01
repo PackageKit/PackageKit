@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+  <!-- This is not used yet, but this will be the new transaction interface in
+       PackageKit 0.2.0 -->
+  <interface name="org.freedesktop.PackageKit.Transaction">
+
+    <method name="Cancel">
+    </method>
+    <method name="GetAllowCancel">
+      <arg type="b" name="allow_cancel" direction="out"/>
+    </method>
+    <method name="GetDepends">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
+    </method>
+    <method name="GetDescription">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
+    <method name="GetFiles">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
+    <method name="GetOldTransactions">
+      <arg type="u" name="number" direction="in"/>
+    </method>
+    <method name="GetPackage">
+      <arg type="s" name="package" direction="out"/>
+    </method>
+    <method name="GetProgress">
+      <arg type="u" name="percentage" direction="out"/>
+      <arg type="u" name="subpercentage" direction="out"/>
+      <arg type="u" name="elapsed" direction="out"/>
+      <arg type="u" name="remaining" direction="out"/>
+    </method>
+    <method name="GetRepoList">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+    </method>
+    <method name="GetRequires">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
+    </method>
+    <method name="GetRole">
+      <arg type="s" name="status" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+    </method>
+    <method name="GetStatus">
+      <arg type="s" name="status" direction="out"/>
+    </method>
+    <method name="GetUpdateDetail">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
+    <method name="GetUpdates">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+    </method>
+    <method name="InstallFile">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="full_path" direction="in"/>
+    </method>
+    <method name="InstallPackage">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
+    <method name="IsCallerActive">
+      <arg type="b" name="is_active" direction="out"/>
+    </method>
+    <method name="RefreshCache">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="b" name="force" direction="in"/>
+    </method>
+    <method name="RemovePackage">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+      <arg type="b" name="allow_deps" direction="in"/>
+      <arg type="b" name="autoremove" direction="in"/>
+    </method>
+    <method name="RepoEnable">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="repo_id" direction="in"/>
+      <arg type="b" name="enabled" direction="in"/>
+    </method>
+    <method name="RepoSetData">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="repo_id" direction="in"/>
+      <arg type="s" name="parameter" direction="in"/>
+      <arg type="s" name="value" direction="in"/>
+    </method>
+    <method name="Resolve">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="package" direction="in"/>
+    </method>
+    <method name="Rollback">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="transaction_id" direction="in"/>
+    </method>
+    <method name="SearchDetails">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
+    <method name="SearchFile">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
+    <method name="SearchGroup">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
+    <method name="SearchName">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
+    <method name="UpdatePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="as" name="package_ids" direction="in"/>
+    </method>
+    <method name="UpdateSystem">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+    </method>
+    <method name="WhatProvides">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
+      <arg type="s" name="type" direction="in"/>
+      <arg type="s" name="search" direction="in"/>
+    </method>
+
+    <signal name="AllowCancel">
+      <arg type="b" name="allow_cancel" direction="out"/>
+    </signal>
+    <signal name="CallerActiveChanged">
+      <arg type="b" name="is_active" direction="out"/>
+    </signal>
+    <signal name="Description">
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="license" direction="out"/>
+      <arg type="s" name="group" direction="out"/>
+      <arg type="s" name="detail" direction="out"/>
+      <arg type="s" name="url" direction="out"/>
+      <arg type="t" name="size" direction="out"/>
+    </signal>
+    <signal name="ErrorCode">
+      <arg type="s" name="code" direction="out"/>
+      <arg type="s" name="details" direction="out"/>
+    </signal>
+    <signal name="Files">
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="file_list" direction="out"/>
+    </signal>
+    <signal name="Finished">
+      <arg type="s" name="status" direction="out"/>
+      <arg type="u" name="runtime" direction="out"/>
+    </signal>
+    <signal name="Message">
+      <arg type="s" name="message" direction="out"/>
+      <arg type="s" name="details" direction="out"/>
+    </signal>
+    <signal name="Package">
+      <arg type="s" name="info" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="summary" direction="out"/>
+    </signal>
+    <signal name="ProgressChanged">
+      <arg type="u" name="percentage" direction="out"/>
+      <arg type="u" name="subpercentage" direction="out"/>
+      <arg type="u" name="elapsed" direction="out"/>
+      <arg type="u" name="remaining" direction="out"/>
+    </signal>
+    <signal name="RepoDetail">
+      <arg type="s" name="repo_id" direction="out"/>
+      <arg type="s" name="description" direction="out"/>
+      <arg type="b" name="enabled" direction="out"/>
+    </signal>
+    <signal name="RepoSignatureRequired">
+      <arg type="s" name="repository_name" direction="out"/>
+      <arg type="s" name="key_url" direction="out"/>
+      <arg type="s" name="key_userid" direction="out"/>
+      <arg type="s" name="key_id" direction="out"/>
+      <arg type="s" name="key_fingerprint" direction="out"/>
+      <arg type="s" name="key_timestamp" direction="out"/>
+      <arg type="s" name="type" direction="out"/>
+    </signal>
+    <signal name="RequireRestart">
+      <arg type="s" name="type" direction="out"/>
+      <arg type="s" name="details" direction="out"/>
+    </signal>
+    <signal name="StatusChanged">
+      <arg type="s" name="status" direction="out"/>
+    </signal>
+    <signal name="Transaction">
+      <arg type="s" name="old_tid" direction="out"/>
+      <arg type="s" name="timespec" direction="out"/>
+      <arg type="b" name="succeeded" direction="out"/>
+      <arg type="s" name="role" direction="out"/>
+      <arg type="u" name="duration" direction="out"/>
+      <arg type="s" name="data" direction="out"/>
+    </signal>
+    <signal name="UpdateDetail">
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="updates" direction="out"/>
+      <arg type="s" name="obsoletes" direction="out"/>
+      <arg type="s" name="vendor_url" direction="out"/>
+      <arg type="s" name="bugzilla_url" direction="out"/>
+      <arg type="s" name="cve_url" direction="out"/>
+      <arg type="s" name="restart" direction="out"/>
+      <arg type="s" name="update_text" direction="out"/>
+    </signal>
+
+  </interface>
+</node>
+
