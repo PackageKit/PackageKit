@@ -50,3 +50,6 @@ To do rollbacks sanely in PK we need a few things:
  - Return update when we search for something that is installed, but an
    update exists for
 
+*  Enable get_update_detail to handle arrays for 'updates' and 
+'obsoletes'.
+
