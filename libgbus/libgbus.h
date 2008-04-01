@@ -47,6 +47,7 @@ typedef struct
 	GObjectClass	parent_class;
 	void		(* connection_changed)	(LibGBus	*watch,
 						 gboolean	 connected);
+	void		(* connection_replaced)	(LibGBus	*watch);
 } LibGBusClass;
 
 typedef enum {
