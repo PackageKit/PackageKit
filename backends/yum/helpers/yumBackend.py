@@ -582,10 +582,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
-        # Split up the id
-        (n,idver,a,d) = self.get_package_from_id(id)
-        # get e,v,r from package id version
-        e,v,r = self._getEVR(idver)
+        # is this an real id or just an name
+        if len(id.split(';')) > 1:
+            # Split up the id
+            (n,idver,a,d) = self.get_package_from_id(id)
+            # get e,v,r from package id version 
+            e,v,r = self._getEVR(idver)
+        else:
+            print id
+            n = id
+            e = v = r = a = None  
         # search the rpmdb for the nevra
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
