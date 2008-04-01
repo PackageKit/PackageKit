@@ -282,6 +282,7 @@ backend_install_timeout (gpointer data)
 		return FALSE;
 	}
 	if (_progress_percentage == 30) {
+		pk_backend_set_allow_cancel (backend, FALSE);
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 				    "An HTML widget for GTK+ 2.0");
@@ -316,6 +317,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 	}
 
+	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
 	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING,
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
