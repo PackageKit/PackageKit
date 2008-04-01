@@ -337,6 +337,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             elif filter in (FILTER_FREE, FILTER_NOT_FREE):
                 if not self._do_free_filtering(filter, pkg):
                     return False
+            elif filter in (FILTER_BASENAME, FILTER_NOT_BASENAME):
+                if not self._do_basename_filtering(filter, pkg):
+                    return False
         return True
 
     def _do_gui_filtering(self,flt,pkg):
@@ -381,6 +384,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         isFree = self.check_license_field(pkg.license)
 
         return isFree == wantFree
+
+    def _do_basename_filtering(self,flt,pkg):
+        if flt == FILTER_BASENAME:
+            wantBase = True
+        else:
+            wantBase = False
+
+        isBase = self._check_basename(pkg)
+
+        return isBase == wantBase
+
+    def _check_basename(self, pkg):
+        '''
+        If a package does not have a source rpm (If that ever
+        happens), or it does have a source RPM, and the package's name
+        is the same as the source RPM's name, then we assume it is the
+        'base' package.
+        '''
+        basename = pkg.name
+
+        if pkg.sourcerpm:
+            basename = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
+
+        if basename == pkg.name:
+            return True
+
+        return False
 
     def search_name(self,filters,key):
         '''
@@ -1043,25 +1073,30 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return INFO_UNKNOWN
 
-    def get_updates(self, filter):
+    def get_updates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
+        @param filters: package types to show
         '''
         self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_INFO)
+
+        fltlist = filters.split(';')
+
         try:
             ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
             md = self.updateMetadata
             for pkg in ygl.updates:
-                # Get info about package in updates info
-                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-                if notice:
-                    status = self._get_status(notice)
-                    self._show_package(pkg,status)
-                else:
-                    self._show_package(pkg,INFO_NORMAL)
+                if self._do_extra_filtering(pkg, fltlist):
+                    # Get info about package in updates info
+                    notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+                    if notice:
+                        status = self._get_status(notice)
+                        self._show_package(pkg,status)
+                    else:
+                        self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
