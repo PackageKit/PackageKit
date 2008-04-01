@@ -806,7 +806,7 @@ pk_engine_action_is_allowed (PkEngine *engine, const gchar *dbus_sender,
 	/* use security model to get auth */
 	ret = pk_security_action_is_allowed (engine->priv->security, dbus_sender, role, &error_detail);
 	if (!ret) {
-		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, error_detail);
+		*error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		return FALSE;
 	}
 	return TRUE;
@@ -2690,7 +2690,7 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	/* try to cancel the transaction */
 	ret = pk_runner_cancel (item->runner, &error_text);
 	if (!ret) {
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, error_text);
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_NOT_SUPPORTED, "%s", error_text);
 		g_free (error_text);
 		return FALSE;
 	}

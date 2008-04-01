@@ -1167,7 +1167,7 @@ main (int argc, char *argv[])
 	}
 
 	if (argc < 2) {
-		g_print (options_help);
+		g_print ("%s", options_help);
 		return 1;
 	}
 
@@ -1219,7 +1219,7 @@ main (int argc, char *argv[])
 	if (error != NULL) {
 		g_print ("Error:\n  %s\n\n", error->message);
 		g_error_free (error);
-		g_print (options_help);
+		g_print ("%s", options_help);
 	}
 
 	g_free (options_help);

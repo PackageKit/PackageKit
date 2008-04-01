@@ -192,7 +192,7 @@ pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 	}
 
 	/* propogate */
-	g_set_error (error, PK_CLIENT_ERROR, code, buffer);
+	g_set_error (error, PK_CLIENT_ERROR, code, "%s", buffer);
 
 out:
 	g_free(buffer);
