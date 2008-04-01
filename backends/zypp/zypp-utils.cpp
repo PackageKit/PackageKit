@@ -64,7 +64,7 @@ get_zypp ()
 		        initialized = TRUE;
 	        }
         } catch (const zypp::Exception &ex) {
-                pk_error (ex.asUserString ().c_str ());
+		pk_error ("%s", ex.asUserString ().c_str ());
         }
 
 	return zypp;
