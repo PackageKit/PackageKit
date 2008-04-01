@@ -45,7 +45,7 @@ static void     pk_restart_init		(PkRestart      *restart);
 static void     pk_restart_finalize	(GObject       *object);
 
 #define PK_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESTART, PkRestartPrivate))
-#define	PK_RESTART_FILE_TO_WATCH	 SBINDIR "/packagekitd"
+#define	PK_RESTART_FILE_TO_WATCH	 SYSCONFDIR "/PackageKit/PackageKit.conf"
 
 struct PkRestartPrivate
 {
