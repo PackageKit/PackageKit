@@ -1052,6 +1052,7 @@ pk_backend_finished_delay (gpointer data)
 
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
+	backend->priv->signal_finished = 0;
 	return FALSE;
 }
 
