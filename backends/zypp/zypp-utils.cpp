@@ -50,17 +50,22 @@ zypp::ZYpp::Ptr
 get_zypp ()
 {
 	static gboolean initialized = FALSE;
-	zypp::ZYpp::Ptr zypp = NULL;
+        zypp::ZYpp::Ptr zypp = NULL;
 
-	zypp = zypp::ZYppFactory::instance ().getZYpp ();
+        try {
+
+	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
 	
-	// TODO: Make this threadsafe
-	if (initialized == FALSE) {
-		zypp::filesystem::Pathname pathname("/");
-		zypp->initializeTarget (pathname);
+	        // TODO: Make this threadsafe
+	        if (initialized == FALSE) {
+		        zypp::filesystem::Pathname pathname("/");
+		        zypp->initializeTarget (pathname);
 
-		initialized = TRUE;
-	}
+		        initialized = TRUE;
+	        }
+        } catch (const zypp::Exception &ex) {
+                pk_error (ex.asUserString ().c_str ());
+        }
 
 	return zypp;
 }
@@ -540,4 +545,20 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 	}       
         
         return TRUE;
+}
+
+gchar **
+zypp_convert_set_char (std::set<zypp::sat::Solvable> *set)
+{
+        gchar **array = new gchar* [set->size ()];
+        guint i = 0;
+
+        for (std::set<zypp::sat::Solvable>::iterator it = set->begin (); it != set->end (); it++){
+                gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+                array[i] = g_strdup(package_id);
+                i++;
+                g_free (package_id);
+        }
+
+        return array;
 }
