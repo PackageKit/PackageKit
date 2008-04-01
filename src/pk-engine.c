@@ -316,25 +316,6 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 }
 
 /**
- * pk_engine_updates_changed_cb:
- **/
-static void
-pk_engine_updates_changed_cb (PkBackend *backend, PkEngine *engine)
-{
-	const gchar *c_tid;
-
-	g_return_if_fail (engine != NULL);
-	g_return_if_fail (PK_IS_ENGINE (engine));
-
-	c_tid = pk_backend_get_current_tid (engine->priv->backend);
-	if (c_tid == NULL) {
-		pk_warning ("could not get current tid from backend");
-		return;
-	}
-	pk_notify_updates_changed (engine->priv->notify, c_tid);
-}
-
-/**
  * pk_engine_repo_signature_required_cb:
  **/
 static void
@@ -3068,8 +3049,6 @@ pk_engine_init (PkEngine *engine)
 			  G_CALLBACK (pk_engine_update_detail_cb), engine);
 	g_signal_connect (engine->priv->backend, "error-code",
 			  G_CALLBACK (pk_engine_error_code_cb), engine);
-	g_signal_connect (engine->priv->backend, "updates-changed",
-			  G_CALLBACK (pk_engine_updates_changed_cb), engine);
 	g_signal_connect (engine->priv->backend, "repo-signature-required",
 			  G_CALLBACK (pk_engine_repo_signature_required_cb), engine);
 	g_signal_connect (engine->priv->backend, "require-restart",
