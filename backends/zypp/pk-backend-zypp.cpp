@@ -378,22 +378,22 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 0);
 
 	PkPackageId *pi = pk_package_id_new_from_string (d->package_id);
-        if (pi == NULL) {
-                pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+	if (pi == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		g_free (d->package_id);
 		g_free (d);
 		pk_backend_finished (backend);
-                return FALSE;
-        }
+		return FALSE;
+	}
 
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
 
 	try
 	{
-                pk_backend_set_percentage (backend, 20);
-	        // Load resolvables from all the enabled repositories
-                zypp::ResPool pool = zypp_build_pool(true);
+		pk_backend_set_percentage (backend, 20);
+		// Load resolvables from all the enabled repositories
+		zypp::ResPool pool = zypp_build_pool(true);
 
 		zypp::PoolItem pool_item;
 		gboolean pool_item_found = FALSE;
@@ -404,12 +404,12 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
 				// This package matches the name we're looking
 				const char *edition_str = selectable->edition ().asString ().c_str();
-		                pk_backend_set_percentage (backend, 20);
 
 				if (strcmp (edition_str, pi->version) == 0) {
 					// this is the one, mark it to be installed
 					pool_item = selectable;
 					pool_item_found = TRUE;
+					pk_backend_set_percentage (backend, 20);
 					break; // Found it, get out of the for loop
 				}
 			}
@@ -422,7 +422,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 			g_free (d->package_id);
 			g_free (d);
 			pk_backend_finished (backend);
-        	        return FALSE;
+			return FALSE;
 		}
 
 		// Gather up any dependencies
@@ -430,66 +430,77 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 60);
 
-                // get dependencies
+		// get dependencies
 
-                zypp::sat::Solvable solvable = pool_item.satSolvable ();
-                zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
+		zypp::sat::Solvable solvable = pool_item.satSolvable ();
+		zypp::Capabilities req = solvable[zypp::Dep::REQUIRES];
 
-                std::map<std::string, zypp::sat::Solvable> caps;
-                std::vector<std::string> temp;
+		std::map<std::string, zypp::sat::Solvable> caps;
+		std::vector<std::string> temp;
 
-		for (zypp::Capabilities::const_iterator it = req.begin ();
-				it != req.end ();
-				++it) {
-                        zypp::sat::WhatProvides provider (*it);
-                        for (zypp::sat::WhatProvides::const_iterator it2 = provider.begin ();
-                            it2 != provider.end ();
-                            it2++) {
+		for (zypp::Capabilities::const_iterator it = req.begin (); it != req.end (); ++it) {
+			zypp::sat::WhatProvides provider (*it);
+			for (zypp::sat::WhatProvides::const_iterator it2 = provider.begin ();
+					it2 != provider.end ();
+					it2++) {
 
-                                // Adding Packages only one time
-                                std::map<std::string, zypp::sat::Solvable>::iterator mIt;
-                                mIt = caps.find(it->asString ());
-                                if ( std::find (temp.begin (), temp.end(), it2->name ()) == temp.end()){
-                                        if( mIt != caps.end()){
-                                                if(it2->isSystem ()){
-                                                        caps.erase (mIt);
-                                                        caps[it->asString ()] = *it2;
-                                                }
-                                        }else{
-                                                caps[it->asString ()] = *it2;
-                                        }
-                                        temp.push_back(it2->name ());
-                                }
+				// Adding Packages only one time
+				std::map<std::string, zypp::sat::Solvable>::iterator mIt;
+				mIt = caps.find(it->asString ());
+				if (std::find (temp.begin (), temp.end(), it2->name ()) == temp.end()) {
+					if( mIt != caps.end()){
+						if(it2->isSystem ()){
+							caps.erase (mIt);
+							caps[it->asString ()] = *it2;
+						}
+					}else{
+						caps[it->asString ()] = *it2;
+					}
+					temp.push_back(it2->name ());
+				}
+			}
+		}
 
-                        }
-                }
-                // print dependencies
+		// print dependencies
+		for (std::map<std::string, zypp::sat::Solvable>::iterator it = caps.begin ();
+				it != caps.end();
+				it++) {
 
-                for (std::map<std::string, zypp::sat::Solvable>::iterator it = caps.begin ();
-                    it != caps.end();
-                    it++) {
+			gchar *package_id;
+			const gchar *package_name;
 
-                        gchar *package_id;
-                        package_id = pk_package_id_build ( it->second.name ().c_str(),
-                                                           it->second.edition ().asString ().c_str(),
-                                                           it->second.arch ().c_str(),
-                                                           it->second.vendor ().c_str());
+			/* do not emit packages with invalid names generated above via dependencies such as "rpmlib(PayloadFilesHavePrefix) <= 4.0-1"
+			   this was causing a crash - BNC# 372429
+			   Fixme - need to find if those dependencies should actually be in the list above and if so a better way to strip them out
+			*/
+			package_name = it->second.name ().c_str();
 
-                        zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
+			if (package_name == NULL || *package_name == '\0')
+			{
+				pk_debug ("Skipping emitting a non valid package");
+				continue;
+			}
 
-                        if (it->second.isSystem ()) {
-                                pk_backend_package (backend,
-                                                    PK_INFO_ENUM_INSTALLED,
-                                                    package_id,
-                                                    item->description ().c_str());
-                        }else{
-                                pk_backend_package (backend,
-                                                    PK_INFO_ENUM_AVAILABLE,
-                                                    package_id,
-                                                    "");
-                        }
-                        g_free (package_id);
-                }
+			package_id = pk_package_id_build (it->second.name ().c_str(),
+					it->second.edition ().asString ().c_str(),
+					it->second.arch ().c_str(),
+					it->second.vendor ().c_str());
+			
+			zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
+			
+			if (it->second.isSystem ()) {
+				pk_backend_package (backend,
+						PK_INFO_ENUM_INSTALLED,
+						package_id,
+						item->description ().c_str());
+			}else{
+				pk_backend_package (backend,
+						PK_INFO_ENUM_AVAILABLE,
+						package_id,
+						"");
+			}
+			g_free (package_id);
+		}
 
 		pk_backend_set_percentage (backend, 100);
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
