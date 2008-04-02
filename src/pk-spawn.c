@@ -84,10 +84,10 @@ static gboolean
 pk_spawn_read_fd_into_buffer (gint fd, GString *string)
 {
 	gint bytes_read;
-	gchar buffer[1024];
+	gchar buffer[BUFSIZ];
 
 	/* ITS4: ignore, we manually NULL terminate and GString cannot overflow */
-	while ((bytes_read = read (fd, buffer, 1023)) > 0) {
+	while ((bytes_read = read (fd, buffer, BUFSIZ-1)) > 0) {
 		buffer[bytes_read] = '\0';
 		g_string_append (string, buffer);
 	}
