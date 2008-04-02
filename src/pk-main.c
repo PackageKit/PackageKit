@@ -224,12 +224,9 @@ main (int argc, char *argv[])
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		pk_warning ("%s", error->message);
+		g_print ("Cannot connect to the system bus: %s\n", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start "
-			   "the dbus system service.\n"
-			   "It is <b>strongly recommended</b> you reboot "
-			   "your computer after starting this service.");
+		goto exit_program;
 	}
 
 	/* we don't actually need to do this, except it rules out the
