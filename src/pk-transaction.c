@@ -977,7 +977,7 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, const gchar *dbus_
 	/* use security model to get auth */
 	ret = pk_security_action_is_allowed (transaction->priv->security, dbus_sender, role, &error_detail);
 	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, error_detail);
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		return FALSE;
 	}
 	return TRUE;
