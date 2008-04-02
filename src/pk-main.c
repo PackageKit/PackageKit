@@ -213,10 +213,6 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-	if (!g_thread_supported ())
-		g_thread_init (NULL);
-	dbus_g_thread_init ();
-
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_main_sigint_handler);
 
