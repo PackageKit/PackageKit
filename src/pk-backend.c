@@ -186,40 +186,45 @@ gboolean
 pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 {
 	GModule *handle;
-	gchar *path;
+	gchar *path = NULL;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* have we already been set? */
 	if (backend->priv->name != NULL) {
 		pk_warning ("pk_backend_set_name called multiple times");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
-	/* save the backend name */
-	backend->priv->name = g_strdup (backend_name);
-
+	/* can we load it? */
 	pk_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
-		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
-		g_free (path);
-		/* we free the name, as we might be trying to find one that passes */
-		g_free (backend->priv->name);
-		backend->priv->name = NULL;
-		return FALSE;
+		pk_warning ("opening module %s failed : %s", backend_name, g_module_error ());
+		ret = FALSE;
+		goto out;
 	}
-	g_free (path);
 
+	/* is is correctly formed? */
+	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc)) {
+		g_module_close (handle);
+		pk_warning ("could not find description in plugin %s, not loading", backend_name);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* save the backend name and handle */
+	g_free (backend->priv->name);
+	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
 
-	if (g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc) == FALSE) {
-		g_module_close (handle);
-		pk_error ("could not find description in plugin %s, not loading", backend_name);
-	}
-
-	return TRUE;
+out:
+	g_free (path);
+	return ret;
 }
 
 /**
