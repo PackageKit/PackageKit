@@ -2482,7 +2482,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("UpdatePackage method called: %s", package_ids[0]);
+	pk_debug ("UpdatePackages method called: %s", package_ids[0]);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->update_packages == NULL) {
