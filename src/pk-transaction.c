@@ -318,7 +318,7 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 		return FALSE;
 	}
 	transaction->priv->dbus_name = g_strdup (dbus_name);
-	pk_debug ("assiging %s to %p", dbus_name, transaction);
+	pk_debug ("assigning %s to %p", dbus_name, transaction);
 	libgbus_assign (transaction->priv->libgbus, LIBGBUS_SYSTEM, dbus_name);
 	return TRUE;
 }
