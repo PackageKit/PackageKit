@@ -896,7 +896,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 msgs = ';'.join(e)
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % install_file)
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
             
 
     def update(self, packages):
