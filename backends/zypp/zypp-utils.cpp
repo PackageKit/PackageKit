@@ -317,12 +317,12 @@ zypp_get_package_by_id (const gchar *package_id)
 	pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
 		// TODO: Do we need to do something more for this error?
-		return zypp::sat::Solvable::nosolvable;
+		return zypp::sat::Solvable::noSolvable;
 	}
 
 	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, TRUE);
 	if (v == NULL)
-		return zypp::sat::Solvable::nosolvable;
+		return zypp::sat::Solvable::noSolvable;
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();

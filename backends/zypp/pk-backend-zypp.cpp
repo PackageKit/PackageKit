@@ -221,7 +221,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 
         }else{
 
-                if (solvable == zypp::sat::Solvable::nosolvable) {
+                if (solvable == zypp::sat::Solvable::noSolvable) {
                         pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Package couldn't be found");
                         pk_package_id_free (pi);
                         g_free (d->package_id);
@@ -1178,7 +1178,7 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		const char *version = it->edition ().asString ().c_str ();
-		if (package == zypp::sat::Solvable::nosolvable) {
+		if (package == zypp::sat::Solvable::noSolvable) {
 			package = *it;
 		} else if (g_ascii_strcasecmp (version, package.edition ().asString ().c_str ()) > 0) {
 			package = *it;
