@@ -55,7 +55,7 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
-	g_return_val_if_fail (key != NULL, NULLs);
+	g_return_val_if_fail (key != NULL, NULL);
 
 	value = g_key_file_get_string (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
