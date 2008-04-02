@@ -152,19 +152,19 @@ pk_backend_get_internal (PkBackend *backend, const gchar *key)
  * pk_backend_build_library_path:
  **/
 static gchar *
-pk_backend_build_library_path (PkBackend *backend)
+pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
 	gchar *filename;
 
 	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->name != NULL, NULL);
+	g_return_val_if_fail (name != NULL, NULL);
 
-	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
+	filename = g_strdup_printf ("libpk_backend_%s.so", name);
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
-	path = g_build_filename ("..", "backends", backend->priv->name, ".libs", filename, NULL);
+	path = g_build_filename ("..", "backends", name, ".libs", filename, NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 		pk_debug ("local backend not found '%s'", path);
 		g_free (path);
@@ -201,7 +201,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 
 	/* can we load it? */
 	pk_debug ("Trying to load : %s", backend_name);
-	path = pk_backend_build_library_path (backend);
+	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		pk_warning ("opening module %s failed : %s", backend_name, g_module_error ());
