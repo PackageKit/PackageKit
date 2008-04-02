@@ -478,6 +478,12 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* already this? */
+	if (backend->priv->status == status) {
+		pk_debug ("already set same status");
+		return TRUE;
+	}
+
 	/* have we already set an error? */
 	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
 		pk_warning ("already set error, cannot process");
@@ -498,12 +504,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Tried to SETUP when not in WAIT");
 		return FALSE;
-	}
-
-	/* already this? */
-	if (backend->priv->status == status) {
-		pk_debug ("already set same status");
-		return TRUE;
 	}
 
 	/* do we have to enumate a running call? */
