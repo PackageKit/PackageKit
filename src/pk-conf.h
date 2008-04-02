@@ -52,6 +52,7 @@ typedef struct
 GType		 pk_conf_get_type		(void) G_GNUC_CONST;
 PkConf		*pk_conf_new			(void);
 
+gchar		*pk_conf_get_filename		(void);
 gchar		*pk_conf_get_string		(PkConf		*conf,
 						 const gchar	*key)
 						 G_GNUC_WARN_UNUSED_RESULT;

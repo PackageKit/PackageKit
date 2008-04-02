@@ -38,6 +38,7 @@
 #include <gio/gio.h>
 #include <pk-common.h>
 #include <pk-debug.h>
+#include "pk-conf.h"
 #include "pk-restart.h"
 
 static void     pk_restart_class_init	(PkRestartClass *klass);
@@ -45,7 +46,6 @@ static void     pk_restart_init		(PkRestart      *restart);
 static void     pk_restart_finalize	(GObject       *object);
 
 #define PK_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESTART, PkRestartPrivate))
-#define	PK_RESTART_FILE_TO_WATCH	 SYSCONFDIR "/PackageKit/PackageKit.conf"
 
 struct PkRestartPrivate
 {
@@ -105,22 +105,32 @@ static void
 pk_restart_init (PkRestart *restart)
 {
 	GError *error = NULL;
+	gchar *filename;
 	restart->priv = PK_RESTART_GET_PRIVATE (restart);
 
 	/* this is the file we are interested in */
-	restart->priv->file = g_file_new_for_path (PK_RESTART_FILE_TO_WATCH);
+	filename = pk_conf_get_filename ();
+	if (filename == NULL) {
+		pk_warning ("can't get config file");
+		goto out;
+	}
+	restart->priv->file = g_file_new_for_path (filename);
 
 	/* watch this */
 	restart->priv->monitor = g_file_monitor_file (restart->priv->file, G_FILE_MONITOR_NONE, NULL, &error);
 	if (restart->priv->monitor == NULL) {
 		pk_warning ("failed to setup watch: %s", error->message);
 		g_error_free (error);
-		return;
+		goto out;
 	}
-	pk_debug ("watching for changes: %s", PK_RESTART_FILE_TO_WATCH);
+
+	/* we should get notified of changes */
+	pk_debug ("watching for changes: %s", filename);
 	g_file_monitor_set_rate_limit (restart->priv->monitor, 1000);
 	g_signal_connect (restart->priv->monitor, "changed",
 			  G_CALLBACK (pk_restart_monitor_changed), restart);
+out:
+	g_free (filename);
 }
 
 /**
