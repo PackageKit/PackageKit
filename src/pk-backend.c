@@ -186,40 +186,45 @@ gboolean
 pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 {
 	GModule *handle;
-	gchar *path;
+	gchar *path = NULL;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* have we already been set? */
 	if (backend->priv->name != NULL) {
 		pk_warning ("pk_backend_set_name called multiple times");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
-	/* save the backend name */
-	backend->priv->name = g_strdup (backend_name);
-
+	/* can we load it? */
 	pk_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
-		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
-		g_free (path);
-		/* we free the name, as we might be trying to find one that passes */
-		g_free (backend->priv->name);
-		backend->priv->name = NULL;
-		return FALSE;
+		pk_warning ("opening module %s failed : %s", backend_name, g_module_error ());
+		ret = FALSE;
+		goto out;
 	}
-	g_free (path);
 
+	/* is is correctly formed? */
+	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc)) {
+		g_module_close (handle);
+		pk_warning ("could not find description in plugin %s, not loading", backend_name);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* save the backend name and handle */
+	g_free (backend->priv->name);
+	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
 
-	if (g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc) == FALSE) {
-		g_module_close (handle);
-		pk_error ("could not find description in plugin %s, not loading", backend_name);
-	}
-
-	return TRUE;
+out:
+	g_free (path);
+	return ret;
 }
 
 /**
@@ -527,9 +532,9 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 PkStatusEnum
 pk_backend_get_status (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend != NULL, PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
 	return backend->priv->status;
 }
 
@@ -576,23 +581,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 }
 
 /**
- * pk_backend_check_newlines:
- *
- * Check if we've used wrong chars, or other common mistakes
- **/
-static gboolean
-pk_backend_check_newlines (PkBackend *backend, const gchar *text)
-{
-	/* old paragraph seporator */
-	if (strstr (text, ";;") != NULL) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "backend error: text contains a double semicolon");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * pk_backend_update_detail:
  **/
 gboolean
@@ -603,7 +591,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -612,13 +599,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, update_text);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", update_text);
 		return FALSE;
 	}
 
@@ -686,7 +666,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 {
 	va_list args;
 	gchar *buffer;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -701,13 +680,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, buffer);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", buffer);
-		return FALSE;
-	}
 
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -747,7 +719,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			gulong size)
 {
 	gchar *description_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -756,13 +727,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, description);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", description);
 		return FALSE;
 	}
 
@@ -835,6 +799,8 @@ gboolean
 pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 			const gchar *description, gboolean enabled)
 {
+	gchar *description_safe;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -845,8 +811,12 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 		return FALSE;
 	}
 
-	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	/* replace unsafe chars */
+	description_safe = pk_strsafe (description);
+
+	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description_safe, enabled);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_free (description_safe);
 	return TRUE;
 }
 
@@ -1007,7 +977,7 @@ pk_backend_get_role (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 	return backend->priv->role;
 }
 
