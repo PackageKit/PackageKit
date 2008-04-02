@@ -799,6 +799,8 @@ gboolean
 pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 			const gchar *description, gboolean enabled)
 {
+	gchar *description_safe;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -809,8 +811,12 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 		return FALSE;
 	}
 
-	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	/* replace unsafe chars */
+	description_safe = pk_strsafe (description);
+
+	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description_safe, enabled);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_free (description_safe);
 	return TRUE;
 }
 
