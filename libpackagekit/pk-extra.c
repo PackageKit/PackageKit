@@ -136,10 +136,6 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 		value = argv[i];
 		if (pk_strequal (col, "summary")) {
 			extra->priv->summary = g_strdup (value);
-		} else if (pk_strequal (col, "locale")) {
-			pk_debug ("locale: %s", value);
-		} else if (pk_strequal (col, "package")) {
-			pk_debug ("package: %s", value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
 		}
@@ -162,7 +158,7 @@ pk_extra_get_localised_detail_try (PkExtra *extra, const gchar *package, const g
 	gchar *error_msg = NULL;
 	gint rc;
 
-	statement = g_strdup_printf ("SELECT package, summary, locale FROM localised "
+	statement = g_strdup_printf ("SELECT summary FROM localised "
 				     "WHERE package = '%s' AND locale = '%s'",
 				     package, locale);
 	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_detail_localised_callback, extra, &error_msg);
@@ -179,7 +175,7 @@ pk_extra_get_localised_detail_try (PkExtra *extra, const gchar *package, const g
  * pk_extra_get_localised_detail:
  * @extra: a valid #PkExtra instance
  *
- * Return value: the current locale
+ * Return value: if we managed to get data
  **/
 gboolean
 pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **summary)
@@ -187,6 +183,7 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **sum
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
+	g_return_val_if_fail (summary != NULL, FALSE);
 
 	/* do we have a connection */
 	if (extra->priv->db == NULL) {
@@ -202,13 +199,13 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **sum
 		pk_extra_get_localised_detail_try (extra, package, extra->priv->locale_base);
 	}
 
-	if (summary != NULL) {
+	/* don't copy and g_free, just re-assign */
+	if (extra->priv->summary != NULL) {
 		*summary = extra->priv->summary;
-	} else {
-		g_free (extra->priv->summary);
+		extra->priv->summary = NULL;
+		return TRUE;
 	}
-	extra->priv->summary = NULL;
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -544,6 +541,7 @@ libst_extra (LibSelfTest *test)
 	gchar *icon;
 	gchar *exec;
 	gchar *summary;
+	guint i;
 
 	if (libst_start (test, "PkExtra", CLASS_AUTO) == FALSE) {
 		return;
@@ -614,6 +612,7 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed!");
 	}
+	g_free (summary);
 
 	/************************************************************/
 	libst_title (test, "set locale implicit en_GB");
@@ -632,6 +631,7 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "failed!");
 	}
+	g_free (summary);
 
 	/************************************************************/
 	libst_title (test, "insert package data");
@@ -652,6 +652,8 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
 	}
+	g_free (icon);
+	g_free (exec);
 
 	/************************************************************/
 	libst_title (test, "insert new package data");
@@ -672,6 +674,8 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
 	}
+	g_free (icon);
+	g_free (exec);
 
 	/************************************************************/
 	libst_title (test, "retrieve missing package data");
@@ -681,6 +685,34 @@ libst_extra (LibSelfTest *test)
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
 	}
+
+	/************************************************************/
+	libst_title (test, "do lots of loops");
+	for (i=0;i<80;i++) {
+		ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
+		if (!ret || summary == NULL) {
+			libst_failed (test, "failed to get good!");
+		}
+		g_free (summary);
+		summary = NULL;
+		ret = pk_extra_get_localised_detail (extra, "gnome-moo-manager", &summary);
+		if (ret || summary != NULL) {
+			libst_failed (test, "failed to not get bad 1, %i, %s!", ret, summary);
+		}
+		ret = pk_extra_get_localised_detail (extra, "gnome-moo-manager", &summary);
+		if (ret || summary != NULL) {
+			libst_failed (test, "failed to not get bad 2!");
+		}
+		ret = pk_extra_get_localised_detail (extra, "gnome-moo-manager", &summary);
+		if (ret || summary != NULL) {
+			libst_failed (test, "failed to not get bad 3!");
+		}
+		ret = pk_extra_get_localised_detail (extra, "gnome-moo-manager", &summary);
+		if (ret || summary != NULL) {
+			libst_failed (test, "failed to not get bad 4!");
+		}
+	}
+	libst_success (test, "%i get_localised_detail loops completed in %ims", i*5, libst_elapsed (test));
 
 	g_object_unref (extra);
 
