@@ -669,7 +669,7 @@ pk_runner_update_packages (PkRunner *runner, gchar **package_ids)
 {
 	g_return_val_if_fail (runner != NULL, FALSE);
 	if (runner->priv->backend->desc->update_packages == NULL) {
-		pk_debug ("Not implemented yet: UpdatePackage");
+		pk_debug ("Not implemented yet: UpdatePackages");
 		return FALSE;
 	}
 	runner->priv->cached_package_ids = g_strdupv (package_ids);
