@@ -902,7 +902,7 @@ pk_runner_set_dbus_name (PkRunner *runner, const gchar *dbus_name)
 		return FALSE;
 	}
 	runner->priv->dbus_name = g_strdup (dbus_name);
-	pk_debug ("assiging %s to %p", dbus_name, runner);
+	pk_debug ("assigning %s to %p", dbus_name, runner);
 	libgbus_assign (runner->priv->libgbus, LIBGBUS_SYSTEM, dbus_name);
 	return TRUE;
 }
