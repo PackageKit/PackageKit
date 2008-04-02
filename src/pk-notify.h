@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkNotifyClass;
 
-GType		 pk_notify_get_type		(void);
+GType		 pk_notify_get_type		(void) G_GNUC_CONST;
 PkNotify	*pk_notify_new			(void);
 
 gboolean	 pk_notify_repo_list_changed	(PkNotify	*notify,

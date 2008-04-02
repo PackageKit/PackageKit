@@ -51,7 +51,7 @@ typedef struct
 } PkBackendThreadClass;
 
 /* general */
-GType		 pk_backend_thread_get_type		(void);
+GType		 pk_backend_thread_get_type		(void) G_GNUC_CONST;
 PkBackendThread	*pk_backend_thread_new			(void);
 typedef gboolean (*PkBackendThreadFunc)			(PkBackendThread	*backend_thread,
 							 gpointer		 data);

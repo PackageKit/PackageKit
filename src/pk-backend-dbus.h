@@ -62,7 +62,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkBackendDbusClass;
 
-GType		 pk_backend_dbus_get_type		(void);
+GType		 pk_backend_dbus_get_type		(void) G_GNUC_CONST;
 PkBackendDbus	*pk_backend_dbus_new			(void);
 gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus	*backend_dbus,
 							 gboolean	 force);

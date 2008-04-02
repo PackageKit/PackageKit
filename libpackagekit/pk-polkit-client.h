@@ -48,7 +48,7 @@ struct _PkPolkitClientClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_polkit_client_get_type		(void);
+GType		 pk_polkit_client_get_type		(void) G_GNUC_CONST;
 PkPolkitClient	*pk_polkit_client_new			(void);
 
 gboolean	 pk_polkit_client_gain_privilege	(PkPolkitClient	*pclient,

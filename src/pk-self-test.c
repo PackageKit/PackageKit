@@ -53,12 +53,15 @@ main (int argc, char **argv)
 	pk_debug_init (TRUE);
 
 	/* components */
+#if 0
 	libst_restart (&test);
 	libst_security (&test);
 	libst_time (&test);
 	libst_conf (&test);
 	libst_inhibit (&test);
+#endif
 	libst_spawn (&test);
+#if 0
 	libst_thread_list (&test);
 	libst_transaction_list (&test);
 	libst_transaction_db (&test);
@@ -71,6 +74,7 @@ main (int argc, char **argv)
 
 	/* system */
 	libst_engine (&test);
+#endif
 
 	return (libst_finish (&test));
 }

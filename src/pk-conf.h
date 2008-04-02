@@ -49,7 +49,7 @@ typedef struct
 #define PK_CONF_VALUE_INT_MISSING	-1
 #define PK_CONF_VALUE_STRING_MISSING	NULL
 
-GType		 pk_conf_get_type		(void);
+GType		 pk_conf_get_type		(void) G_GNUC_CONST;
 PkConf		*pk_conf_new			(void);
 
 gchar		*pk_conf_get_string		(PkConf		*conf,

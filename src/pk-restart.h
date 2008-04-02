@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkRestartClass;
 
-GType		 pk_restart_get_type		  	(void);
+GType		 pk_restart_get_type		  	(void) G_GNUC_CONST;
 PkRestart	*pk_restart_new				(void);
 
 G_END_DECLS

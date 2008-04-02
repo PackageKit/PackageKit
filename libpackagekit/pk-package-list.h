@@ -61,7 +61,7 @@ typedef struct
 	gchar			*summary;
 } PkPackageItem;
 
-GType		 pk_package_list_get_type		(void);
+GType		 pk_package_list_get_type		(void) G_GNUC_CONST;
 PkPackageList	*pk_package_list_new			(void);
 gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 PkInfoEnum		 info,

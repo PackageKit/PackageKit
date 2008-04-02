@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkInhibitClass;
 
-GType		 pk_inhibit_get_type		(void);
+GType		 pk_inhibit_get_type		(void) G_GNUC_CONST;
 PkInhibit	*pk_inhibit_new			(void);
 
 gboolean	 pk_inhibit_locked		(PkInhibit	*inhibit)

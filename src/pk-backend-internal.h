@@ -50,7 +50,7 @@ struct _PkBackendClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_backend_get_type			(void);
+GType		 pk_backend_get_type			(void) G_GNUC_CONST;
 PkBackend	*pk_backend_new				(void);
 gboolean	 pk_backend_lock			(PkBackend	*backend)
 							 G_GNUC_WARN_UNUSED_RESULT;

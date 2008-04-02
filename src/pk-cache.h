@@ -47,7 +47,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkCacheClass;
 
-GType		 pk_cache_get_type		(void);
+GType		 pk_cache_get_type		(void) G_GNUC_CONST;
 PkCache		*pk_cache_new			(void);
 
 PkPackageList	*pk_cache_get_updates		(PkCache	*cache);

@@ -159,7 +159,7 @@ GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_error_get_type		(void);
 gboolean	 pk_client_error_print			(GError		**error);
 
-GType		 pk_client_get_type			(void);
+GType		 pk_client_get_type			(void) G_GNUC_CONST;
 PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,

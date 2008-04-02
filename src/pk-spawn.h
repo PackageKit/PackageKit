@@ -48,7 +48,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSpawnClass;
 
-GType		 pk_spawn_get_type		  	(void);
+GType		 pk_spawn_get_type		  	(void) G_GNUC_CONST;
 PkSpawn		*pk_spawn_new				(void);
 
 gboolean	 pk_spawn_command			(PkSpawn	*spawn,

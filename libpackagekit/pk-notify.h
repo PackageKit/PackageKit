@@ -64,7 +64,7 @@ struct _PkNotifyClass
 };
 
 GType		 pk_notify_error_get_type		(void);
-GType		 pk_notify_get_type			(void);
+GType		 pk_notify_get_type			(void) G_GNUC_CONST;
 PkNotify	*pk_notify_new				(void);
 
 G_END_DECLS

@@ -48,7 +48,7 @@ struct _PkJobListClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_job_list_get_type			(void);
+GType		 pk_job_list_get_type			(void) G_GNUC_CONST;
 PkJobList	*pk_job_list_new			(void);
 
 gboolean	 pk_job_list_refresh			(PkJobList	*jlist);

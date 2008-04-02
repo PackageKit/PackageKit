@@ -46,7 +46,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkThreadListClass;
 
-GType		 pk_thread_list_get_type	  	(void);
+GType		 pk_thread_list_get_type	  	(void) G_GNUC_CONST;
 PkThreadList	*pk_thread_list_new			(void);
 
 typedef gboolean (*PkThreadFunc)			(PkThreadList	*tlist,
