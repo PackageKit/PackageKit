@@ -532,9 +532,9 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 PkStatusEnum
 pk_backend_get_status (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend != NULL, PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
 	return backend->priv->status;
 }
 
@@ -1012,7 +1012,7 @@ pk_backend_get_role (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 	return backend->priv->role;
 }
 
