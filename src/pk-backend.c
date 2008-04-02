@@ -581,23 +581,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 }
 
 /**
- * pk_backend_check_newlines:
- *
- * Check if we've used wrong chars, or other common mistakes
- **/
-static gboolean
-pk_backend_check_newlines (PkBackend *backend, const gchar *text)
-{
-	/* old paragraph seporator */
-	if (strstr (text, ";;") != NULL) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "backend error: text contains a double semicolon");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * pk_backend_update_detail:
  **/
 gboolean
@@ -608,7 +591,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -617,13 +599,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, update_text);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", update_text);
 		return FALSE;
 	}
 
@@ -691,7 +666,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 {
 	va_list args;
 	gchar *buffer;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -706,13 +680,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, buffer);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", buffer);
-		return FALSE;
-	}
 
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -752,7 +719,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			gulong size)
 {
 	gchar *description_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -761,13 +727,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, description);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", description);
 		return FALSE;
 	}
 
