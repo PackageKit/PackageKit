@@ -154,7 +154,7 @@ pk_conf_get_filename (void)
 #endif
 	/* check the prefix path */
 	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-	if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
 		goto out;
 	}
 
