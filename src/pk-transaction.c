@@ -997,19 +997,6 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 	return transaction->priv->role;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * pk_transaction_cancel:
  **/
