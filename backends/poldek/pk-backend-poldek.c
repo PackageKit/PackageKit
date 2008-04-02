@@ -1325,8 +1325,7 @@ backend_get_files_thread (PkBackendThread *thread, gchar *package_id)
 
 		pk_backend_files (backend, package_id, result);
 
-		if (result)
-			g_free (result);
+		g_free (result);
 
 		pkg_free (pkg);
 	}
@@ -1614,8 +1613,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
-		if (data)
-			g_free (data);
+		g_free (data);
 
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
 		pk_backend_finished (backend);
@@ -1946,8 +1944,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	if (pk_network_is_online (network) == FALSE) {
 		/* free allocated memory */
-		if (data)
-			g_free (data);
+		g_free (data);
 
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
 		pk_backend_finished (backend);
