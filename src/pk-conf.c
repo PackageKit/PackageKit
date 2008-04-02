@@ -182,7 +182,7 @@ pk_conf_init (PkConf *conf)
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
 	path = pk_conf_get_filename ();
 	if (path == NULL) {
-		pk_error ("config file not found '%s'", path);
+		pk_error ("config file not found");
 	}
 	pk_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();
