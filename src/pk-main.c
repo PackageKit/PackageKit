@@ -46,7 +46,7 @@ static PkBackend *backend = NULL;
  * @connection: What we want to register to
  * @object: The GObject we want to register
  *
- * Register org.freedesktop.PowerManagement on the session bus.
+ * Register org.freedesktop.PackageKit on the system bus.
  * This function MUST be called before DBUS service will work.
  *
  * Return value: success
