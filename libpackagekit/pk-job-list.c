@@ -85,7 +85,6 @@ pk_job_list_print (PkJobList *jlist)
 	gchar *tid;
 	guint length;
 
-	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
 
 	length = g_strv_length (jlist->priv->array);
@@ -112,7 +111,6 @@ pk_job_list_refresh (PkJobList *jlist)
 	gboolean ret;
 	GError *error;
 
-	g_return_val_if_fail (jlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_JOB_LIST (jlist), FALSE);
 
 	/* clear old data */

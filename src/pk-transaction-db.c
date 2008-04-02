@@ -190,7 +190,6 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	gchar *error_msg = NULL;
 	gint rc;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
@@ -240,9 +239,8 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	gchar *timespec = NULL;
 	guint time;
 
-	g_return_val_if_fail (tdb != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), 0);
-	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, 0);
 
 	role_text = pk_role_enum_to_text (role);
 	pk_debug ("get_time_since_action=%s", role_text);
@@ -280,7 +278,6 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	gchar *statement;
 	gchar *timespec;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
@@ -311,7 +308,6 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 {
 	gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	if (limit == 0) {
@@ -336,7 +332,6 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 	gchar *timespec;
 	gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	pk_debug ("adding transaction %s", tid);
@@ -360,7 +355,6 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 	gchar *statement;
 	const gchar *role_text;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	role_text = pk_role_enum_to_text (role);
@@ -378,7 +372,6 @@ pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar 
 {
 	gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	/* TODO: we have to be careful of SQL injection attacks */
@@ -397,7 +390,6 @@ pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean
 {
 	gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	statement = g_strdup_printf ("UPDATE transactions SET succeeded = %i, duration = %i WHERE transaction_id = '%s'",
@@ -415,7 +407,6 @@ pk_transaction_db_print (PkTransactionDb *tdb)
 {
 	const gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 
 	statement = "SELECT transaction_id, timespec, succeeded, duration, role FROM transactions";
@@ -450,7 +441,6 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 {
 	const gchar *statement;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
@@ -470,7 +460,6 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 	gchar *timespec;
 	guint i;
 
-	g_return_val_if_fail (tdb != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
 	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
 
@@ -498,7 +487,6 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	const gchar *statement;
 	gint rc;
 
-	g_return_if_fail (tdb != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_DB (tdb));
 
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
@@ -539,7 +527,6 @@ static void
 pk_transaction_db_finalize (GObject *object)
 {
 	PkTransactionDb *tdb;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_DB (object));
 	tdb = PK_TRANSACTION_DB (object);
 	g_return_if_fail (tdb->priv != NULL);

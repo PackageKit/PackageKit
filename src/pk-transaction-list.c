@@ -76,7 +76,6 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 	PkRoleEnum role_temp;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
 
 	/* check for existing transaction doing an update */
@@ -107,7 +106,6 @@ pk_transaction_list_create (PkTransactionList *tlist)
 {
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* add to the array */
@@ -129,8 +127,8 @@ pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
 {
 	gboolean ret;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* valid item */
 	ret = g_ptr_array_remove (tlist->priv->array, item);
@@ -177,7 +175,6 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 	PkTransactionFinished *finished;
 	const gchar *c_tid;
 
-	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
 	c_tid = pk_backend_get_current_tid (backend);
@@ -243,7 +240,6 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
 	guint length;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 
 	/* find all the transactions in progress */
@@ -267,8 +263,8 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
 {
 	gboolean ret;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
 
 	pk_debug ("marking transaction %s as committed", item->tid);
 	item->committed = TRUE;
@@ -304,7 +300,6 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 	gchar **array;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* find all the transactions in progress */
@@ -331,7 +326,6 @@ pk_transaction_list_get_array (PkTransactionList *tlist)
 guint
 pk_transaction_list_get_size (PkTransactionList *tlist)
 {
-	g_return_val_if_fail (tlist != NULL, 0);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 	return tlist->priv->array->len;
 }
@@ -346,7 +340,6 @@ pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
 	guint length;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* find the runner with the transaction ID */
@@ -370,7 +363,6 @@ pk_transaction_list_get_from_runner (PkTransactionList *tlist, PkRunner *runner)
 	guint length;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
 	/* find the runner with the transaction ID */
@@ -427,7 +419,6 @@ pk_transaction_list_finalize (GObject *object)
 {
 	PkTransactionList *tlist;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (object));
 
 	tlist = PK_TRANSACTION_LIST (object);

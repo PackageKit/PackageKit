@@ -53,6 +53,10 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 {
 	gchar *value = NULL;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
+	g_return_val_if_fail (key != NULL, NULLs);
+
 	value = g_key_file_get_string (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		/* set to missing value */
@@ -71,6 +75,10 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 {
 	gint value;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
 	value = g_key_file_get_integer (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		/* set to missing value */
@@ -84,11 +92,15 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 /**
  * pk_conf_get_bool:
  **/
-gint
+gboolean
 pk_conf_get_bool (PkConf *conf, const gchar *key)
 {
 	gboolean value;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
 	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		pk_debug ("%s read error: %s", key, error->message);
@@ -104,7 +116,6 @@ static void
 pk_conf_finalize (GObject *object)
 {
 	PkConf *conf;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_CONF (object));
 	conf = PK_CONF (object);
 

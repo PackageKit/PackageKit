@@ -384,7 +384,6 @@ static PkEnumMatch enum_free_licenses[] = {
 	{0, NULL}
 };
 
-
 /**
  * pk_enum_find_value:
  * @table: A #PkEnumMatch enum table of values

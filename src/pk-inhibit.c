@@ -66,7 +66,6 @@ G_DEFINE_TYPE (PkInhibit, pk_inhibit, G_TYPE_OBJECT)
 gboolean
 pk_inhibit_locked (PkInhibit *inhibit)
 {
-	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 	return inhibit->priv->is_locked;
 }
@@ -80,7 +79,6 @@ pk_inhibit_lock (PkInhibit *inhibit)
 	GError *error = NULL;
 	gboolean ret;
 
-	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	pk_debug ("Trying to AcquireInterfaceLock");
@@ -121,7 +119,6 @@ pk_inhibit_unlock (PkInhibit *inhibit)
 	GError *error = NULL;
 	gboolean ret;
 
-	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	pk_debug ("Trying to ReleaseInterfaceLock");
@@ -162,7 +159,6 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 	guint i;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	for (i=0; i<inhibit->priv->array->len; i++) {
@@ -188,7 +184,6 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 	guint i;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (inhibit != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_INHIBIT (inhibit), FALSE);
 
 	for (i=0; i<inhibit->priv->array->len; i++) {
@@ -213,7 +208,6 @@ pk_inhibit_finalize (GObject *object)
 	PkInhibit *inhibit;
 	gboolean ret;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_INHIBIT (object));
 	inhibit = PK_INHIBIT (object);
 

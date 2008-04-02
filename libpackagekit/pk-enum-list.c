@@ -79,7 +79,6 @@ G_DEFINE_TYPE (PkEnumList, pk_enum_list, G_TYPE_OBJECT)
 gboolean
 pk_enum_list_set_type (PkEnumList *elist, PkEnumListType type)
 {
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 	elist->priv->type = type;
 	return TRUE;
@@ -102,7 +101,6 @@ pk_enum_list_append_multiple (PkEnumList *elist, gint value, ...)
 	guint i;
 	guint value_temp;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	/* create a new list. A list must have at least one entry */
@@ -137,7 +135,6 @@ pk_enum_list_contains_priority (PkEnumList *elist, gint value, ...)
 	guint value_temp;
 	gint retval = -1;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	/* we must query at least one thing */
@@ -181,7 +178,6 @@ pk_enum_list_from_string (PkEnumList *elist, const gchar *enums)
 	guint i;
 	guint value_temp = 0;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	if (enums == NULL) {
@@ -223,7 +219,6 @@ pk_enum_list_get_item_text (PkEnumList *elist, guint value)
 {
 	const gchar *text = NULL;
 
-	g_return_val_if_fail (elist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), NULL);
 
 	if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
@@ -258,7 +253,6 @@ pk_enum_list_to_string (PkEnumList *elist)
 	guint length;
 	const gchar *text = NULL;
 
-	g_return_val_if_fail (elist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), NULL);
 
 	length = elist->priv->data->len;
@@ -295,7 +289,6 @@ pk_enum_list_print (PkEnumList *elist)
 	guint value;
 	const gchar *text = NULL;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	if (elist->priv->type == PK_ENUM_LIST_TYPE_ROLE) {
@@ -325,7 +318,6 @@ pk_enum_list_print (PkEnumList *elist)
 guint
 pk_enum_list_size (PkEnumList *elist)
 {
-	g_return_val_if_fail (elist != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), 0);
 	return elist->priv->data->len;
 }
@@ -340,7 +332,6 @@ pk_enum_list_size (PkEnumList *elist)
 guint
 pk_enum_list_get_item (PkEnumList *elist, guint item)
 {
-	g_return_val_if_fail (elist != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), 0);
 	if (item >= elist->priv->data->len) {
 		pk_warning ("getting item over length");
@@ -363,7 +354,6 @@ pk_enum_list_append (PkEnumList *elist, guint value)
 {
 	guint i;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	for (i=0; i<elist->priv->data->len; i++) {
@@ -390,7 +380,6 @@ pk_enum_list_remove (PkEnumList *elist, guint value)
 {
 	guint i;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	for (i=0; i<elist->priv->data->len; i++) {
@@ -417,7 +406,6 @@ pk_enum_list_contains (PkEnumList *elist, guint value)
 {
 	guint i;
 
-	g_return_val_if_fail (elist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENUM_LIST (elist), FALSE);
 
 	for (i=0; i<elist->priv->data->len; i++) {
@@ -547,7 +535,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "append duplicate");
 	ret = pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -649,7 +637,7 @@ libst_enum_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "remove duplicate single");
 	ret = pk_enum_list_remove (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

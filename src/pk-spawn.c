@@ -239,6 +239,8 @@ pk_spawn_kill (PkSpawn *spawn)
 {
 	gint retval;
 
+	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+
 	/* check if process has already gone */
 	if (spawn->priv->finished) {
 		pk_warning ("already finished, ignoring");
@@ -273,8 +275,8 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 	gboolean ret;
 	gchar **argv;
 
-	g_return_val_if_fail (spawn != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
+	g_return_val_if_fail (command != NULL, FALSE);
 
 	if (command == NULL) {
 		pk_warning ("command NULL");

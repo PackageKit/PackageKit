@@ -85,8 +85,8 @@ pk_thread_list_create (PkThreadList *tlist, PkThreadFunc func, gpointer param, g
 {
 	PkThreadListItem *item;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
 
 	item = g_new0 (PkThreadListItem, 1);
 
@@ -118,7 +118,6 @@ pk_thread_list_wait (PkThreadList *tlist)
 	guint length;
 	PkThreadListItem *item;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
 
 	/* wait for all the threads to finish */
@@ -146,7 +145,6 @@ pk_thread_list_number_running (PkThreadList *tlist)
 	PkThreadListItem *item;
 	guint number = 0;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
 
 	/* find all the running threads */
@@ -193,7 +191,6 @@ pk_thread_free_data (PkThreadList *tlist)
 	guint length;
 	PkThreadListItem *item;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
 
 	length = tlist->priv->thread_list->len;

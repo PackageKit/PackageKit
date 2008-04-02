@@ -81,7 +81,6 @@ G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
 static void
 pk_notify_restart_schedule_cb (DBusGProxy *proxy, PkNotify *notify)
 {
-	g_return_if_fail (notify != NULL);
 	g_return_if_fail (PK_IS_NOTIFY (notify));
 
 	pk_debug ("emitting restart-schedule");
@@ -95,7 +94,6 @@ pk_notify_restart_schedule_cb (DBusGProxy *proxy, PkNotify *notify)
 static void
 pk_notify_updates_changed_cb (DBusGProxy *proxy, const gchar *tid, PkNotify *notify)
 {
-	g_return_if_fail (notify != NULL);
 	g_return_if_fail (PK_IS_NOTIFY (notify));
 
 	pk_debug ("emitting updates-changed");
@@ -109,7 +107,6 @@ pk_notify_updates_changed_cb (DBusGProxy *proxy, const gchar *tid, PkNotify *not
 static void
 pk_notify_repo_list_changed_cb (DBusGProxy *proxy, const gchar *tid, PkNotify *notify)
 {
-	g_return_if_fail (notify != NULL);
 	g_return_if_fail (PK_IS_NOTIFY (notify));
 
 	pk_debug ("emitting repo-list-changed");

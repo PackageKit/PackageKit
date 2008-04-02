@@ -83,8 +83,8 @@ pk_polkit_client_gain_privilege (PkPolkitClient *pclient, const gchar *pk_action
 	GError *error = NULL;
 	gboolean gained_privilege;
 
-	g_return_val_if_fail (pclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_POLKIT_CLIENT (pclient), FALSE);
+	g_return_val_if_fail (pk_action != NULL, FALSE);
 
 	/* Use PolicyKit-gnome to bring up an auth dialog (we
 	 * don't have any windows so set the XID to "null") */
@@ -124,8 +124,8 @@ pk_polkit_client_gain_privilege_str (PkPolkitClient *pclient, const gchar *error
 	gboolean ret;
 	gchar **tokens;
 
-	g_return_val_if_fail (pclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_POLKIT_CLIENT (pclient), FALSE);
+	g_return_val_if_fail (error_str != NULL, FALSE);
 
 	tokens = g_strsplit (error_str, " ", 0);
 	if (tokens == NULL) {

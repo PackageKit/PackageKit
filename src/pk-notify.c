@@ -64,7 +64,6 @@ G_DEFINE_TYPE (PkNotify, pk_notify, G_TYPE_OBJECT)
 gboolean
 pk_notify_restart_schedule (PkNotify *notify)
 {
-	g_return_val_if_fail (notify != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
 
 	pk_debug ("emitting restart-schedule");
@@ -78,8 +77,8 @@ pk_notify_restart_schedule (PkNotify *notify)
 gboolean
 pk_notify_repo_list_changed (PkNotify *notify, const gchar *tid)
 {
-	g_return_val_if_fail (notify != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
 	pk_debug ("emitting repo-list-changed tid:%s", tid);
 	g_signal_emit (notify, signals [PK_NOTIFY_REPO_LIST_CHANGED], 0, tid);
@@ -92,8 +91,8 @@ pk_notify_repo_list_changed (PkNotify *notify, const gchar *tid)
 gboolean
 pk_notify_updates_changed (PkNotify *notify, const gchar *tid)
 {
-	g_return_val_if_fail (notify != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
 	pk_debug ("emitting updates-changed tid:%s", tid);
 	g_signal_emit (notify, signals [PK_NOTIFY_UPDATES_CHANGED], 0, tid);
@@ -119,8 +118,8 @@ pk_notify_finished_updates_changed_cb (gpointer data)
 gboolean
 pk_notify_wait_updates_changed (PkNotify *notify, const gchar *tid, guint timeout)
 {
-	g_return_val_if_fail (notify != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
 	/* check if we did this more than once */
 	if (notify->priv->timeout_id != 0) {

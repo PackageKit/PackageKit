@@ -142,7 +142,6 @@ pk_restart_finalize (GObject *object)
 {
 	PkRestart *restart;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_RESTART (object));
 
 	restart = PK_RESTART (object);

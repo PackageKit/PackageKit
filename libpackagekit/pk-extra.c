@@ -81,6 +81,9 @@ gboolean
 pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 {
 	guint i;
+
+	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+
 	g_free (extra->priv->locale);
 	extra->priv->locale = g_strdup (locale);
 	extra->priv->locale_base = g_strdup (locale);
@@ -111,6 +114,7 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 const gchar *
 pk_extra_get_locale (PkExtra *extra)
 {
+	g_return_val_if_fail (PK_IS_EXTRA (extra), NULL);
 	return extra->priv->locale;
 }
 
@@ -125,7 +129,6 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 	gchar *col;
 	gchar *value;
 
-	g_return_val_if_fail (extra != NULL, 0);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
 
 	for (i=0; i<argc; i++) {
@@ -181,7 +184,6 @@ pk_extra_get_localised_detail_try (PkExtra *extra, const gchar *package, const g
 gboolean
 pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **summary)
 {
-	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
@@ -220,7 +222,6 @@ pk_extra_detail_package_callback (void *data, gint argc, gchar **argv, gchar **c
 	gchar *col;
 	gchar *value;
 
-	g_return_val_if_fail (extra != NULL, 0);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
 
 	for (i=0; i<argc; i++) {
@@ -250,7 +251,6 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	gchar *error_msg = NULL;
 	gint rc;
 
-	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
@@ -300,7 +300,6 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	sqlite3_stmt *sql_statement = NULL;
 	gint rc;
 
-	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
@@ -358,7 +357,6 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 	sqlite3_stmt *sql_statement = NULL;
 	gint rc;
 
-	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
@@ -414,8 +412,8 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	gint rc;
 	gchar *error_msg = NULL;
 
-	g_return_val_if_fail (extra != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
 
 	if (extra->priv->database != NULL) {
 		pk_warning ("cannot assign extra than once");

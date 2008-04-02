@@ -108,7 +108,6 @@ static guint signals [PK_RUNNER_LAST_SIGNAL] = { 0 };
 PkPackageList *
 pk_runner_get_package_list (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, NULL);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 	return runner->priv->package_list;
 }
@@ -120,7 +119,6 @@ pk_runner_get_package_list (PkRunner *runner)
 gboolean
 pk_runner_set_role (PkRunner *runner, PkRoleEnum role)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	/* save this */
@@ -134,7 +132,6 @@ pk_runner_set_role (PkRunner *runner, PkRoleEnum role)
 gboolean
 pk_runner_get_package (PkRunner *runner, gchar **package_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	if (runner->priv->last_package == NULL) {
@@ -150,7 +147,6 @@ pk_runner_get_package (PkRunner *runner, gchar **package_id)
 gboolean
 pk_runner_get_allow_cancel (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 	return runner->priv->allow_cancel;
 }
@@ -163,7 +159,6 @@ pk_runner_get_allow_cancel (PkRunner *runner)
 PkStatusEnum
 pk_runner_get_status (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), PK_ROLE_ENUM_UNKNOWN);
 	return runner->priv->status;
 }
@@ -174,7 +169,6 @@ pk_runner_get_status (PkRunner *runner)
 PkRoleEnum
 pk_runner_get_role (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	/* check to see if we have an action */
@@ -187,7 +181,6 @@ pk_runner_get_role (PkRunner *runner)
 const gchar *
 pk_runner_get_text (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, NULL);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 
 	if (runner->priv->cached_package_id != NULL) {
@@ -207,7 +200,7 @@ pk_runner_get_text (PkRunner *runner)
 gboolean
 pk_runner_cancel (PkRunner *runner, gchar **error_text)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 	g_return_val_if_fail (error_text != NULL, FALSE);
 
 	/* not implemented yet */
@@ -256,7 +249,6 @@ pk_runner_set_running (PkRunner *runner)
 {
 	PkBackendDesc *desc;
 	PkRunnerPrivate *priv = PK_RUNNER_GET_PRIVATE (runner);
-	g_return_val_if_fail (runner != NULL, FALSE);
 
 	/* assign */
 	pk_backend_set_current_tid (priv->backend, priv->tid);
@@ -331,7 +323,8 @@ gboolean
 pk_runner_run (PkRunner *runner)
 {
 	gboolean ret;
-	g_return_val_if_fail (runner != NULL, FALSE);
+
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	ret = pk_runner_set_running (runner);
 	if (ret) {
@@ -348,7 +341,8 @@ pk_runner_run (PkRunner *runner)
 gboolean
 pk_runner_get_depends (PkRunner *runner, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_depends == NULL) {
 		pk_debug ("Not implemented yet: GetDepends");
 		return FALSE;
@@ -367,7 +361,8 @@ pk_runner_get_depends (PkRunner *runner, const gchar *filter, const gchar *packa
 gboolean
 pk_runner_get_update_detail (PkRunner *runner, const gchar *package_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_update_detail == NULL) {
 		pk_debug ("Not implemented yet: GetUpdateDetail");
 		return FALSE;
@@ -384,7 +379,8 @@ pk_runner_get_update_detail (PkRunner *runner, const gchar *package_id)
 gboolean
 pk_runner_get_description (PkRunner *runner, const gchar *package_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_description == NULL) {
 		pk_debug ("Not implemented yet: GetDescription");
 		return FALSE;
@@ -401,7 +397,8 @@ pk_runner_get_description (PkRunner *runner, const gchar *package_id)
 gboolean
 pk_runner_get_files (PkRunner *runner, const gchar *package_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_files == NULL) {
 		pk_debug ("Not implemented yet: GetFiles");
 		return FALSE;
@@ -418,7 +415,8 @@ pk_runner_get_files (PkRunner *runner, const gchar *package_id)
 gboolean
 pk_runner_get_requires (PkRunner *runner, const gchar *filter, const gchar *package_id, gboolean recursive)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_requires == NULL) {
 		pk_debug ("Not implemented yet: GetRequires");
 		return FALSE;
@@ -437,7 +435,8 @@ pk_runner_get_requires (PkRunner *runner, const gchar *filter, const gchar *pack
 gboolean
 pk_runner_what_provides (PkRunner *runner, const gchar *filter, PkProvidesEnum provides, const gchar *search)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->what_provides == NULL) {
 		pk_debug ("Not implemented yet: WhatProvides");
 		return FALSE;
@@ -456,7 +455,8 @@ pk_runner_what_provides (PkRunner *runner, const gchar *filter, PkProvidesEnum p
 gboolean
 pk_runner_get_updates (PkRunner *runner, const gchar *filter)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_updates == NULL) {
 		pk_debug ("Not implemented yet: GetUpdates");
 		return FALSE;
@@ -473,7 +473,8 @@ pk_runner_get_updates (PkRunner *runner, const gchar *filter)
 gboolean
 pk_runner_install_package (PkRunner *runner, const gchar *package_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->install_package == NULL) {
 		pk_debug ("Not implemented yet: InstallPackage");
 		return FALSE;
@@ -490,7 +491,8 @@ pk_runner_install_package (PkRunner *runner, const gchar *package_id)
 gboolean
 pk_runner_install_file (PkRunner *runner, const gchar *full_path)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->install_file == NULL) {
 		pk_debug ("Not implemented yet: InstallFile");
 		return FALSE;
@@ -507,7 +509,8 @@ pk_runner_install_file (PkRunner *runner, const gchar *full_path)
 gboolean
 pk_runner_service_pack (PkRunner *runner, const gchar *location, gboolean enabled)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->service_pack == NULL) {
 		pk_debug ("Not implemented yet: ServicePack");
 		return FALSE;
@@ -525,7 +528,8 @@ pk_runner_service_pack (PkRunner *runner, const gchar *location, gboolean enable
 gboolean
 pk_runner_refresh_cache (PkRunner *runner, gboolean force)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->refresh_cache == NULL) {
 		pk_debug ("Not implemented yet: RefreshCache");
 		return FALSE;
@@ -542,7 +546,8 @@ pk_runner_refresh_cache (PkRunner *runner, gboolean force)
 gboolean
 pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->remove_package == NULL) {
 		pk_debug ("Not implemented yet: RemovePackage");
 		return FALSE;
@@ -560,7 +565,8 @@ pk_runner_remove_package (PkRunner *runner, const gchar *package_id, gboolean al
 gboolean
 pk_runner_resolve (PkRunner *runner, const gchar *filter, const gchar *package)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->resolve == NULL) {
 		pk_debug ("Not implemented yet: Resolve");
 		return FALSE;
@@ -578,7 +584,8 @@ pk_runner_resolve (PkRunner *runner, const gchar *filter, const gchar *package)
 gboolean
 pk_runner_rollback (PkRunner *runner, const gchar *transaction_id)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->rollback == NULL) {
 		pk_debug ("Not implemented yet: Rollback");
 		return FALSE;
@@ -595,7 +602,8 @@ pk_runner_rollback (PkRunner *runner, const gchar *transaction_id)
 gboolean
 pk_runner_search_details (PkRunner *runner, const gchar *filter, const gchar *search)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->search_details == NULL) {
 		pk_debug ("Not implemented yet: SearchDetails");
 		return FALSE;
@@ -613,7 +621,8 @@ pk_runner_search_details (PkRunner *runner, const gchar *filter, const gchar *se
 gboolean
 pk_runner_search_file (PkRunner *runner, const gchar *filter, const gchar *search)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->search_file == NULL) {
 		pk_debug ("Not implemented yet: SearchFile");
 		return FALSE;
@@ -631,7 +640,8 @@ pk_runner_search_file (PkRunner *runner, const gchar *filter, const gchar *searc
 gboolean
 pk_runner_search_group (PkRunner *runner, const gchar *filter, const gchar *search)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->search_group == NULL) {
 		pk_debug ("Not implemented yet: SearchGroup");
 		return FALSE;
@@ -649,7 +659,8 @@ pk_runner_search_group (PkRunner *runner, const gchar *filter, const gchar *sear
 gboolean
 pk_runner_search_name (PkRunner *runner, const gchar *filter, const gchar *search)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->search_name == NULL) {
 		pk_debug ("Not implemented yet: SearchName");
 		return FALSE;
@@ -667,7 +678,8 @@ pk_runner_search_name (PkRunner *runner, const gchar *filter, const gchar *searc
 gboolean
 pk_runner_update_packages (PkRunner *runner, gchar **package_ids)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->update_packages == NULL) {
 		pk_debug ("Not implemented yet: UpdatePackages");
 		return FALSE;
@@ -684,7 +696,8 @@ pk_runner_update_packages (PkRunner *runner, gchar **package_ids)
 gboolean
 pk_runner_update_system (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->update_system == NULL) {
 		pk_debug ("Not implemented yet: UpdateSystem");
 		return FALSE;
@@ -700,7 +713,8 @@ pk_runner_update_system (PkRunner *runner)
 gboolean
 pk_runner_get_repo_list (PkRunner *runner, const gchar *filter)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->get_repo_list == NULL) {
 		pk_debug ("Not implemented yet: GetRepoList");
 		return FALSE;
@@ -717,7 +731,8 @@ pk_runner_get_repo_list (PkRunner *runner, const gchar *filter)
 gboolean
 pk_runner_repo_enable (PkRunner *runner, const gchar *repo_id, gboolean enabled)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->repo_enable == NULL) {
 		pk_debug ("Not implemented yet: RepoEnable");
 		return FALSE;
@@ -735,7 +750,8 @@ pk_runner_repo_enable (PkRunner *runner, const gchar *repo_id, gboolean enabled)
 gboolean
 pk_runner_repo_set_data (PkRunner *runner, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
+
 	if (runner->priv->backend->desc->repo_set_data == NULL) {
 		pk_debug ("Not implemented yet: RepoSetData");
 		return FALSE;
@@ -759,7 +775,7 @@ pk_runner_get_actions (PkRunner *runner)
 	PkEnumList *elist;
 	PkBackendDesc *desc;
 
-	g_return_val_if_fail (runner != NULL, NULL);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 
 	/* lets reduce pointer dereferences... */
 	desc = runner->priv->backend->desc;
@@ -848,7 +864,7 @@ pk_runner_get_groups (PkRunner *runner)
 {
 	PkEnumList *elist;
 
-	g_return_val_if_fail (runner != NULL, NULL);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
@@ -868,7 +884,7 @@ pk_runner_get_filters (PkRunner *runner)
 {
 	PkEnumList *elist;
 
-	g_return_val_if_fail (runner != NULL, NULL);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 
 	elist = pk_enum_list_new ();
 	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
@@ -886,7 +902,7 @@ pk_runner_get_filters (PkRunner *runner)
 guint
 pk_runner_get_runtime (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, 0);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), 0);
 	return pk_backend_get_runtime (runner->priv->backend);
 }
 
@@ -896,7 +912,7 @@ pk_runner_get_runtime (PkRunner *runner)
 gboolean
 pk_runner_set_dbus_name (PkRunner *runner, const gchar *dbus_name)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 	if (runner->priv->dbus_name != NULL) {
 		pk_warning ("you can't assign more than once!");
 		return FALSE;
@@ -913,7 +929,7 @@ pk_runner_set_dbus_name (PkRunner *runner, const gchar *dbus_name)
 gboolean
 pk_runner_is_caller_active (PkRunner *runner, gboolean *is_active)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 	*is_active = libgbus_is_connected (runner->priv->libgbus);
 	return TRUE;
 }
@@ -924,7 +940,6 @@ pk_runner_is_caller_active (PkRunner *runner, gboolean *is_active)
 static void
 pk_runner_connection_changed_cb (LibGBus *libgbus, gboolean connected, PkRunner *runner)
 {
-	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
 	if (connected == FALSE) {
 		pk_debug ("client disconnected....");
@@ -941,7 +956,6 @@ pk_runner_tid_valid (PkRunner *runner)
 	const gchar *c_tid;
 	gboolean valid;
 
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	/* get currently running */
@@ -977,7 +991,6 @@ pk_runner_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	const gchar *info_text;
 	gboolean valid;
 
-	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
 
 	/* are we still talking about the same backend instance */
@@ -1014,7 +1027,6 @@ pk_runner_finished_cb (PkBackend *backend, PkExitEnum exit, PkRunner *runner)
 {
 	gboolean valid;
 
-	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
 
 	/* are we still talking about the same backend instance */
@@ -1035,7 +1047,6 @@ pk_runner_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkRunner *
 {
 	gboolean valid;
 
-	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
 
 	/* are we still talking about the same backend instance */
@@ -1054,7 +1065,6 @@ pk_runner_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkRunner *
 static void
 pk_runner_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkRunner *runner)
 {
-	g_return_if_fail (runner != NULL);
 	g_return_if_fail (PK_IS_RUNNER (runner));
 	g_return_if_fail (runner->priv->backend->desc->cancel != NULL);
 
@@ -1068,7 +1078,6 @@ pk_runner_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkRunner *
 const gchar *
 pk_runner_get_tid (PkRunner *runner)
 {
-	g_return_val_if_fail (runner != NULL, NULL);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), NULL);
 	return runner->priv->tid;
 }
@@ -1079,7 +1088,6 @@ pk_runner_get_tid (PkRunner *runner)
 gboolean
 pk_runner_set_tid (PkRunner *runner, const gchar *tid)
 {
-	g_return_val_if_fail (runner != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_RUNNER (runner), FALSE);
 
 	if (runner->priv->tid != NULL) {

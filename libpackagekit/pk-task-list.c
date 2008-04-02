@@ -84,7 +84,6 @@ pk_task_list_print (PkTaskList *tlist)
 	PkTaskListItem *item;
 	guint length;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
@@ -110,7 +109,6 @@ pk_task_list_contains_role (PkTaskList *tlist, PkRoleEnum role)
 	PkTaskListItem *item;
 	guint length;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
@@ -153,7 +151,6 @@ pk_task_list_job_status_changed_cb (PkClient *client, PkStatusEnum status, PkTas
 	gchar *tid;
 	PkTaskListItem *item;
 
-	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
 	tid = pk_client_get_tid (client);
@@ -182,7 +179,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 	const gchar *tid;
 	const gchar **array;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	/* get the latest job list */
@@ -242,7 +238,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 guint
 pk_task_list_get_size (PkTaskList *tlist)
 {
-	g_return_val_if_fail (tlist != NULL, 0);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), 0);
 	return tlist->priv->task_list->len;
 }
@@ -253,7 +248,6 @@ pk_task_list_get_size (PkTaskList *tlist)
 PkTaskListItem *
 pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
 		pk_debug ("item too large!");

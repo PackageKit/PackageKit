@@ -172,13 +172,11 @@ pk_iso8601_difference (const gchar *isodate)
 	gboolean ret;
 	guint time;
 
-	if (pk_strzero (isodate)) {
-		return 0;
-	}
+	g_return_val_if_fail (isodate != NULL, 0);
 
 	/* convert date */
 	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
-	if (ret == FALSE) {
+	if (!ret) {
 		pk_warning ("failed to parse '%s'", isodate);
 		return 0;
 	}
@@ -299,7 +297,7 @@ pk_strtoint (const gchar *text, gint *value)
 {
 	gboolean ret;
 	ret = pk_strnumber (text);
-	if (ret == FALSE) {
+	if (!ret) {
 		*value = 0;
 		return FALSE;
 	}
@@ -819,7 +817,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate incorrect char");
 	ret = pk_strvalidate_char ('$');
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -828,7 +826,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate incorrect text");
 	ret = pk_strvalidate ("richard$hughes");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -867,7 +865,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test strzero (long string)");
 	ret = pk_strzero ("Richard");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "zero length word!");
@@ -978,7 +976,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
 	ret = pk_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1010,7 +1008,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail1");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1018,7 +1016,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail2");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1026,7 +1024,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail3");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1034,7 +1032,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail (match too high)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1236,7 +1234,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number oversize");
 	ret = pk_strnumber ("123456891234");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1245,7 +1243,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number NULL");
 	ret = pk_strnumber (NULL);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1254,7 +1252,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number blank");
 	ret = pk_strnumber ("");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1263,7 +1261,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number not negative");
 	ret = pk_strnumber ("503-");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1272,7 +1270,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number positive");
 	ret = pk_strnumber ("+503");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1281,7 +1279,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number random chars");
 	ret = pk_strnumber ("dave");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

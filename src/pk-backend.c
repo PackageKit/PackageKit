@@ -130,7 +130,6 @@ static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 gboolean
 pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	return FALSE;
 }
@@ -143,7 +142,6 @@ pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data
 gchar *
 pk_backend_get_internal (PkBackend *backend, const gchar *key)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	return NULL;
 }
@@ -157,7 +155,6 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 	gchar *path;
 	gchar *filename;
 
-	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 
@@ -189,8 +186,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	gchar *path = NULL;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend_name != NULL, FALSE);
 
 	/* have we already been set? */
 	if (backend->priv->name != NULL) {
@@ -240,9 +237,8 @@ out:
 gboolean
 pk_backend_lock (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	if (backend->priv->locked) {
 		pk_warning ("already locked");
@@ -270,7 +266,6 @@ pk_backend_lock (PkBackend *backend)
 gboolean
 pk_backend_unlock (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	if (backend->priv->locked == FALSE) {
@@ -295,7 +290,7 @@ pk_backend_unlock (PkBackend *backend)
 gchar *
 pk_backend_get_name (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	return g_strdup (backend->priv->name);
 }
 
@@ -310,7 +305,6 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 	guint elapsed;
 	guint remaining;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	percentage = backend->priv->last_percentage;
@@ -338,7 +332,6 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 {
 	guint remaining;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -402,7 +395,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 guint
 pk_backend_get_runtime (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, 0);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
 	g_return_val_if_fail (backend->priv->locked != FALSE, 0);
 	return pk_time_get_elapsed (backend->priv->time);
 }
@@ -413,7 +406,6 @@ pk_backend_get_runtime (PkBackend *backend)
 gboolean
 pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -449,7 +441,6 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 gboolean
 pk_backend_no_percentage_updates (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -479,7 +470,6 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 gboolean
 pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -532,7 +522,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 PkStatusEnum
 pk_backend_get_status (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_STATUS_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
 	return backend->priv->status;
@@ -542,12 +531,12 @@ pk_backend_get_status (PkBackend *backend)
  * pk_backend_package:
  **/
 gboolean
-pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, const gchar *summary)
+pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -574,8 +563,8 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
+	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package_id, summary_safe);
 	g_free (summary_safe);
 	return TRUE;
 }
@@ -592,8 +581,8 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 {
 	gchar *update_text_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -621,7 +610,6 @@ pk_backend_get_progress (PkBackend *backend,
 			 guint *percentage, guint *subpercentage,
 			 guint *elapsed, guint *remaining)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -642,7 +630,6 @@ pk_backend_get_progress (PkBackend *backend,
 gboolean
 pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -667,7 +654,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_list args;
 	gchar *buffer;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -694,7 +680,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 gboolean
 pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -720,8 +705,8 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 {
 	gchar *description_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -747,11 +732,11 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
  * pk_backend_files:
  **/
 gboolean
-pk_backend_files (PkBackend *backend, const gchar *package_id,
-		  const gchar *filelist)
+pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -775,8 +760,8 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				    const gchar *key_timestamp, PkSigTypeEnum type)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (repository_name != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -801,8 +786,8 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 {
 	gchar *description_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (repo_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -860,7 +845,6 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	gchar *buffer;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	va_start (args, format);
@@ -904,7 +888,6 @@ out:
 gboolean
 pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -937,7 +920,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 gboolean
 pk_backend_get_allow_cancel (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->allow_cancel;
@@ -949,7 +931,6 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 gboolean
 pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -975,7 +956,6 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 PkRoleEnum
 pk_backend_get_role (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 	return backend->priv->role;
@@ -989,7 +969,6 @@ pk_backend_get_role (PkBackend *backend)
 gboolean
 pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 {
-	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -1034,7 +1013,6 @@ pk_backend_finished (PkBackend *backend)
 {
 	const gchar *role_text;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* check we are not doing Init() */
@@ -1112,8 +1090,8 @@ pk_backend_finished (PkBackend *backend)
 gboolean
 pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (method != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* this function is only valid when we have a running transaction */
@@ -1133,7 +1111,6 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 gboolean
 pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1153,7 +1130,6 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 const gchar *
 pk_backend_get_current_tid (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return backend->priv->c_tid;
@@ -1165,7 +1141,6 @@ pk_backend_get_current_tid (PkBackend *backend)
 gboolean
 pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -1182,7 +1157,6 @@ static void
 pk_backend_finalize (GObject *object)
 {
 	PkBackend *backend;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
 
@@ -1302,7 +1276,6 @@ pk_backend_class_init (PkBackendClass *klass)
 gboolean
 pk_backend_reset (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	backend->priv->set_error = FALSE;

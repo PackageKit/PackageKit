@@ -82,7 +82,6 @@ pk_network_is_online (PkNetwork *network)
 	libnm_glib_state state;
 	gboolean ret;
 
-	g_return_val_if_fail (network != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
 
 	state = libnm_glib_get_network_state (network->priv->ctx);
@@ -105,7 +104,6 @@ pk_network_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
 	gboolean ret;
 	PkNetwork *network = (PkNetwork *) data;
 
-	g_return_if_fail (network != NULL);
 	g_return_if_fail (PK_IS_NETWORK (network));
 
 	ret = pk_network_is_online (network);
@@ -189,3 +187,4 @@ pk_network_new (void)
 	}
 	return PK_NETWORK (pk_network_object);
 }
+

@@ -141,8 +141,8 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 	PolKitResult pk_result;
 	const gchar *policy;
 
-	g_return_val_if_fail (security != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+	g_return_val_if_fail (dbus_sender != NULL, FALSE);
 
 	/* map the roles to policykit rules */
 	policy = pk_security_role_to_action (security, role);
@@ -165,7 +165,6 @@ static void
 pk_security_finalize (GObject *object)
 {
 	PkSecurity *security;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_SECURITY (object));
 	security = PK_SECURITY (object);
 

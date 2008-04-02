@@ -71,7 +71,7 @@ G_DEFINE_TYPE (PkBackendThread, pk_backend_thread, G_TYPE_OBJECT)
 gboolean
 pk_backend_thread_create (PkBackendThread *backend_thread, PkBackendThreadFunc func, gpointer data)
 {
-	g_return_val_if_fail (backend_thread != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_THREAD (backend_thread), FALSE);
 	return pk_thread_list_create (backend_thread->priv->thread_list, (PkThreadFunc) func, backend_thread, data);
 }
 
@@ -82,7 +82,7 @@ pk_backend_thread_create (PkBackendThread *backend_thread, PkBackendThreadFunc f
 PkBackend *
 pk_backend_thread_get_backend (PkBackendThread *backend_thread)
 {
-	g_return_val_if_fail (backend_thread != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND_THREAD (backend_thread), NULL);
 	return backend_thread->priv->backend;
 }
 
@@ -93,7 +93,6 @@ static void
 pk_backend_thread_finalize (GObject *object)
 {
 	PkBackendThread *backend_thread;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_THREAD (object));
 
 	backend_thread = PK_BACKEND_THREAD (object);

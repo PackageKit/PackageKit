@@ -192,7 +192,6 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 {
 	gchar **transaction_list;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	transaction_list = pk_transaction_list_get_array (engine->priv->transaction_list);
@@ -208,7 +207,6 @@ pk_engine_transaction_list_changed_cb (PkTransactionList *tlist, PkEngine *engin
 static void
 pk_engine_inhibit_locked_cb (PkInhibit *inhibit, gboolean is_locked, PkEngine *engine)
 {
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	pk_debug ("emitting locked %i", is_locked);
 	g_signal_emit (engine, signals [PK_ENGINE_LOCKED], 0, is_locked);
@@ -223,7 +221,6 @@ pk_engine_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkEngine *
 	const gchar *status_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -247,7 +244,6 @@ pk_engine_progress_changed_cb (PkBackend *backend, guint percentage, guint subpe
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -271,7 +267,6 @@ pk_engine_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *package_
 	const gchar *info_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -299,7 +294,6 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
 	const gchar *c_tid;
 	const gchar *restart_text;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -326,7 +320,6 @@ pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repositor
 	const gchar *type_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -351,7 +344,6 @@ pk_engine_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *
 	const gchar *code_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -374,7 +366,6 @@ pk_engine_require_restart_cb (PkBackend *backend, PkRestartEnum restart, const g
 	const gchar *restart_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -397,7 +388,6 @@ pk_engine_message_cb (PkBackend *backend, PkMessageEnum message, const gchar *de
 	const gchar *message_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 #ifndef PK_IS_DEVELOPER
@@ -429,7 +419,6 @@ pk_engine_description_cb (PkBackend *backend, const gchar *package_id, const gch
 	const gchar *group_text;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -454,7 +443,6 @@ pk_engine_files_cb (PkBackend *backend, const gchar *package_id,
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -477,7 +465,6 @@ pk_engine_finish_invalidate_caches (PkEngine *engine, PkTransactionItem *item, P
 {
 	const gchar *c_tid;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -545,7 +532,6 @@ pk_engine_finished_cb (PkBackend *backend, PkExitEnum exit, PkEngine *engine)
 	gchar *packages;
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -625,7 +611,6 @@ pk_engine_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkEngine *
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -646,7 +631,6 @@ pk_engine_caller_active_changed_cb (PkRunner *runner, gboolean is_active, PkEngi
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_runner_get_tid (runner);
@@ -668,7 +652,6 @@ pk_engine_change_transaction_data_cb (PkBackend *backend, gchar *data, PkEngine 
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -690,7 +673,6 @@ pk_engine_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 {
 	const gchar *c_tid;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	c_tid = pk_backend_get_current_tid (engine->priv->backend);
@@ -712,7 +694,6 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 	gboolean ret;
 	PkRoleEnum role;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	/* we might not have this set yet */
@@ -752,7 +733,6 @@ pk_engine_item_commit (PkEngine *engine, PkTransactionItem *item)
 static gboolean
 pk_engine_item_delete (PkEngine *engine, PkTransactionItem *item)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("removing backend %p as it failed", item->runner);
@@ -771,7 +751,6 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 {
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetTid method called");
@@ -820,7 +799,6 @@ pk_engine_runner_new (PkEngine *engine)
 {
 	PkRunner *runner;
 
-	g_return_val_if_fail (engine != NULL, NULL);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), NULL);
 
 	runner = pk_runner_new ();
@@ -844,7 +822,6 @@ pk_engine_refresh_cache (PkEngine *engine, const gchar *tid, gboolean force, DBu
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("RefreshCache method called: %s, %i", tid, force);
@@ -916,7 +893,6 @@ pk_engine_get_updates (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetUpdates method called: %s", tid);
@@ -1088,7 +1064,6 @@ pk_engine_search_name (PkEngine *engine, const gchar *tid, const gchar *filter,
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("SearchName method called: %s, %s, %s", tid, filter, search);
@@ -1152,7 +1127,6 @@ pk_engine_search_details (PkEngine *engine, const gchar *tid, const gchar *filte
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("SearchDetails method called: %s, %s, %s", tid, filter, search);
@@ -1216,7 +1190,6 @@ pk_engine_search_group (PkEngine *engine, const gchar *tid, const gchar *filter,
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("SearchGroup method called: %s, %s, %s", tid, filter, search);
@@ -1280,7 +1253,6 @@ pk_engine_search_file (PkEngine *engine, const gchar *tid, const gchar *filter,
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("SearchFile method called: %s, %s, %s", tid, filter, search);
@@ -1344,7 +1316,6 @@ pk_engine_resolve (PkEngine *engine, const gchar *tid, const gchar *filter,
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("Resolve method called: %s, %s, %s", tid, filter, package);
@@ -1410,7 +1381,6 @@ pk_engine_get_depends (PkEngine *engine, const gchar *tid, const gchar *filter, 
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetDepends method called: %s, %s, %i", tid, package_id, recursive);
@@ -1485,7 +1455,6 @@ pk_engine_get_requires (PkEngine *engine, const gchar *tid, const gchar *filter,
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetRequires method called: %s, %s, %i", tid, package_id, recursive);
@@ -1561,7 +1530,6 @@ pk_engine_what_provides (PkEngine *engine, const gchar *tid, const gchar *filter
 	PkProvidesEnum provides;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("WhatProvides method called: %s, %s, %s", tid, type, search);
@@ -1627,7 +1595,6 @@ pk_engine_get_update_detail (PkEngine *engine, const gchar *tid, const gchar *pa
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetUpdateDetail method called: %s, %s", tid, package_id);
@@ -1695,7 +1662,6 @@ pk_engine_get_description (PkEngine *engine, const gchar *tid, const gchar *pack
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetDescription method called: %s, %s", tid, package_id);
@@ -1763,7 +1729,6 @@ pk_engine_get_files (PkEngine *engine, const gchar *tid, const gchar *package_id
 	PkTransactionItem *item;
 	GError *error;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetFiles method called: %s, %s", tid, package_id);
@@ -1831,7 +1796,6 @@ pk_engine_update_system (PkEngine *engine, const gchar *tid, DBusGMethodInvocati
 	PkTransactionItem *item;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("UpdateSystem method called: %s", tid);
@@ -1900,7 +1864,6 @@ pk_engine_remove_package (PkEngine *engine, const gchar *tid, const gchar *packa
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("RemovePackage method called: %s, %s, %i, %i", tid, package_id, allow_deps, autoremove);
@@ -1979,7 +1942,6 @@ pk_engine_install_package (PkEngine *engine, const gchar *tid, const gchar *pack
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("method called: %s, %s", tid, package_id);
@@ -2058,7 +2020,6 @@ pk_engine_install_file (PkEngine *engine, const gchar *tid, const gchar *full_pa
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("InstallFile method called: %s, %s", tid, full_path);
@@ -2128,7 +2089,6 @@ pk_engine_rollback (PkEngine *engine, const gchar *tid, const gchar *transaction
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("Rollback method called: %s, %s", tid, transaction_id);
@@ -2198,7 +2158,6 @@ pk_engine_update_packages (PkEngine *engine, const gchar *tid, gchar **package_i
 	gchar *sender;
 	gchar *package_id_temp;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("UpdatePackage method called: %s, %s", tid, package_ids[0]);
@@ -2268,7 +2227,6 @@ pk_engine_get_repo_list (PkEngine *engine, const gchar *tid, const gchar *filter
 	GError *error;
 	PkTransactionItem *item;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("GetRepoList method called: %s", tid);
@@ -2326,7 +2284,6 @@ pk_engine_repo_enable (PkEngine *engine, const gchar *tid, const gchar *repo_id,
 	gchar *sender;
 	PkTransactionItem *item;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("RepoEnable method called: %s, %s, %i", tid, repo_id, enabled);
@@ -2398,7 +2355,6 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 	gchar *sender;
 	PkTransactionItem *item;
 
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	pk_debug ("RepoSetData method called: %s, %s, %s, %s", tid, repo_id, parameter, value);
@@ -2462,7 +2418,6 @@ pk_engine_repo_set_data (PkEngine *engine, const gchar *tid, const gchar *repo_i
 gboolean
 pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetTransactionList method called");
@@ -2481,7 +2436,6 @@ pk_engine_get_status (PkEngine *engine, const gchar *tid,
 	PkStatusEnum status_enum;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetStatus method called: %s", tid);
@@ -2510,7 +2464,6 @@ pk_engine_get_role (PkEngine *engine, const gchar *tid,
 	PkTransactionItem *item;
 	const gchar *text;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetRole method called: %s", tid);
@@ -2549,7 +2502,6 @@ pk_engine_get_progress (PkEngine *engine, const gchar *tid,
 	gboolean ret;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetProgress method called: %s", tid);
@@ -2579,7 +2531,6 @@ pk_engine_get_package (PkEngine *engine, const gchar *tid, gchar **package, GErr
 	gboolean ret;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetPackage method called: %s", tid);
@@ -2608,7 +2559,6 @@ pk_engine_get_allow_cancel (PkEngine *engine, const gchar *tid, gboolean *allow_
 {
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetAllowCancel method called: %s", tid);
@@ -2633,7 +2583,6 @@ pk_engine_get_old_transactions (PkEngine *engine, const gchar *tid, guint number
 	PkTransactionItem *item;
 	const gchar *exit_text;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetOldTransactions method called: %s", tid);
@@ -2667,7 +2616,6 @@ pk_engine_cancel (PkEngine *engine, const gchar *tid, GError **error)
 	gchar *error_text = NULL;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("Cancel method called: %s", tid);
@@ -2708,7 +2656,6 @@ pk_engine_state_changed_cb (gpointer data)
 {
 	PkEngine *engine = PK_ENGINE (data);
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	if (engine->priv->updates_cache != NULL) {
@@ -2733,7 +2680,6 @@ pk_engine_state_changed_cb (gpointer data)
 gboolean
 pk_engine_state_has_changed (PkEngine *engine, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	if (engine->priv->signal_state_timeout != 0) {
@@ -2759,7 +2705,6 @@ pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_act
 	gboolean ret;
 	PkTransactionItem *item;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("is caller active: %s", tid);
@@ -2788,7 +2733,6 @@ pk_engine_is_caller_active (PkEngine *engine, const gchar *tid, gboolean *is_act
 gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 	*actions = pk_enum_list_to_string (engine->priv->actions);
 	return TRUE;
@@ -2800,7 +2744,6 @@ pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 gboolean
 pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 	*groups = pk_enum_list_to_string (engine->priv->groups);
 	return TRUE;
@@ -2812,7 +2755,6 @@ pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 gboolean
 pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 	*filters = pk_enum_list_to_string (engine->priv->filters);
 	return TRUE;
@@ -2824,7 +2766,6 @@ pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 gboolean
 pk_engine_get_backend_detail (PkEngine *engine, gchar **name, gchar **author, GError **error)
 {
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	pk_debug ("GetBackendDetail method called");
@@ -2842,7 +2783,6 @@ pk_engine_get_time_since_action	(PkEngine *engine, const gchar *role_text, guint
 {
 	PkRoleEnum role;
 
-	g_return_val_if_fail (engine != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
 	role = pk_role_enum_from_text (role_text);
@@ -2881,7 +2821,6 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	guint idle;
 	guint size;
 
-	g_return_val_if_fail (engine != NULL, 0);
 	g_return_val_if_fail (PK_IS_ENGINE (engine), 0);
 
 	/* check for transactions running - a transaction that takes a *long* time might not
@@ -3016,7 +2955,6 @@ pk_engine_class_init (PkEngineClass *klass)
 static void
 pk_engine_restart_schedule_cb (PkRestart *restart, PkEngine *engine)
 {
-	g_return_if_fail (engine != NULL);
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	pk_debug ("setting restart_schedule TRUE");
 	engine->priv->restart_schedule = TRUE;

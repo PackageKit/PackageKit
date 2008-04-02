@@ -83,7 +83,6 @@ G_DEFINE_TYPE (PkTime, pk_time, G_TYPE_OBJECT)
 gboolean
 pk_time_set_average_limits (PkTime *time, guint average_min, guint average_max)
 {
-	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 	time->priv->average_min = average_min;
 	time->priv->average_max = average_max;
@@ -101,7 +100,6 @@ pk_time_set_average_limits (PkTime *time, guint average_min, guint average_max)
 gboolean
 pk_time_set_value_limits (PkTime *time, guint value_min, guint value_max)
 {
-	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 	time->priv->value_min = value_min;
 	time->priv->value_max = value_max;
@@ -118,7 +116,6 @@ pk_time_get_elapsed (PkTime *time)
 {
 	gdouble elapsed;
 
-	g_return_val_if_fail (time != NULL, 0);
 	g_return_val_if_fail (PK_IS_TIME (time), 0);
 
 	elapsed = g_timer_elapsed (time->priv->timer, NULL);
@@ -160,7 +157,6 @@ pk_time_get_remaining (PkTime *time)
 	PkTimeItem *item;
 	PkTimeItem *item_prev;
 
-	g_return_val_if_fail (time != NULL, 0);
 	g_return_val_if_fail (PK_IS_TIME (time), 0);
 
 	length = time->priv->array->len;
@@ -227,7 +223,6 @@ pk_time_add_data (PkTime *time, guint percentage)
 	PkTimeItem *item;
 	guint elapsed;
 
-	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 
 	/* check we are going up */
@@ -261,7 +256,6 @@ pk_time_free_data (PkTime *time)
 	guint length;
 	gpointer mem;
 
-	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 
 	length = time->priv->array->len;
@@ -279,7 +273,6 @@ pk_time_free_data (PkTime *time)
 gboolean
 pk_time_reset (PkTime *time)
 {
-	g_return_val_if_fail (time != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TIME (time), FALSE);
 
 	time->priv->time_offset = 0;
@@ -328,7 +321,6 @@ pk_time_finalize (GObject *object)
 {
 	PkTime *time;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TIME (object));
 
 	time = PK_TIME (object);

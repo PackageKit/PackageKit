@@ -200,7 +200,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 {
 	PkBackendDesc *desc;
 	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	/* assign */
@@ -279,7 +279,7 @@ gboolean
 pk_transaction_run (PkTransaction *transaction)
 {
 	gboolean ret;
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	ret = pk_transaction_set_running (transaction);
@@ -299,8 +299,8 @@ pk_transaction_run (PkTransaction *transaction)
 guint
 pk_transaction_get_runtime (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, 0);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), 0);
+	g_return_val_if_fail (transaction->priv->tid != NULL, 0);
 	return pk_backend_get_runtime (transaction->priv->backend);
 }
 
@@ -310,7 +310,7 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 gboolean
 pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	if (transaction->priv->dbus_name != NULL) {
@@ -330,7 +330,6 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 static gboolean
 pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -345,9 +344,8 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 PkPackageList *
 pk_transaction_get_package_list (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	return transaction->priv->package_list;
 }
@@ -358,9 +356,8 @@ pk_transaction_get_package_list (PkTransaction *transaction)
 const gchar *
 pk_transaction_get_text (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	if (transaction->priv->cached_package_id != NULL) {
 		return transaction->priv->cached_package_id;
@@ -381,7 +378,6 @@ pk_transaction_tid_valid (PkTransaction *transaction)
 {
 	const gchar *c_tid;
 
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -409,7 +405,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
 	const gchar *c_tid;
 
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
 	c_tid = pk_backend_get_current_tid (transaction->priv->backend);
@@ -457,8 +452,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 static void
 pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTransaction *transaction)
 {
-
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -475,7 +468,6 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 static void
 pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, PkTransaction *transaction)
 {
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -495,7 +487,6 @@ pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, cons
 {
 	const gchar *group_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -511,11 +502,11 @@ pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, cons
  * pk_transaction_error_code_cb:
  **/
 static void
-pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gchar *details, PkTransaction *transaction)
+pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
+			      const gchar *details, PkTransaction *transaction)
 {
 	const gchar *code_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -529,10 +520,8 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code, const gc
  **/
 static void
 pk_transaction_files_cb (PkBackend *backend, const gchar *package_id,
-		    const gchar *filelist, PkTransaction *transaction)
+			 const gchar *filelist, PkTransaction *transaction)
 {
-
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -551,7 +540,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	guint time;
 	gchar *packages;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -620,7 +608,6 @@ pk_transaction_message_cb (PkBackend *backend, PkMessageEnum message, const gcha
 {
 	const gchar *message_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -646,7 +633,6 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 	const gchar *info_text;
 	gboolean valid;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -685,8 +671,6 @@ static void
 pk_transaction_progress_changed_cb (PkBackend *backend, guint percentage, guint subpercentage,
 				    guint elapsed, guint remaining, PkTransaction *transaction)
 {
-
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -703,8 +687,6 @@ static void
 pk_transaction_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
 			       const gchar *description, gboolean enabled, PkTransaction *transaction)
 {
-
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -722,7 +704,6 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *repo
 {
 	const gchar *type_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -742,7 +723,6 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 {
 	const gchar *restart_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -760,7 +740,6 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 	gboolean valid;
 	const gchar *status_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -787,7 +766,6 @@ pk_transaction_transaction_cb (PkTransactionDb *tdb, const gchar *old_tid, const
 {
 	const gchar *role_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -808,7 +786,6 @@ pk_transaction_update_detail_cb (PkBackend *backend, const gchar *package_id,
 {
 	const gchar *restart_text;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -825,9 +802,8 @@ pk_transaction_update_detail_cb (PkBackend *backend, const gchar *package_id,
 const gchar *
 pk_transaction_get_tid (PkTransaction *transaction)
 {
-	g_return_val_if_fail (transaction != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
 
 	return transaction->priv->tid;
 }
@@ -838,7 +814,6 @@ pk_transaction_get_tid (PkTransaction *transaction)
 gboolean
 pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
 	g_return_val_if_fail (transaction->priv->tid == NULL, FALSE);
@@ -859,7 +834,6 @@ pk_transaction_commit (PkTransaction *transaction)
 {
 	gboolean ret;
 
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1003,7 +977,6 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 gboolean
 pk_transaction_cancel (PkTransaction *transaction, GError **error)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1056,7 +1029,6 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 gboolean
 pk_transaction_get_allow_cancel (PkTransaction *transaction, gboolean *allow_cancel, GError **error)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1075,7 +1047,6 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1143,12 +1114,11 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
  **/
 void
 pk_transaction_get_description (PkTransaction *transaction, const gchar *package_id,
-			   DBusGMethodInvocation *context)
+				DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1207,12 +1177,11 @@ pk_transaction_get_description (PkTransaction *transaction, const gchar *package
  **/
 void
 pk_transaction_get_files (PkTransaction *transaction, const gchar *package_id,
-		     DBusGMethodInvocation *context)
+			  DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1274,7 +1243,6 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 {
 	const gchar *exit_text;
 
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1296,7 +1264,6 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 gboolean
 pk_transaction_get_package (PkTransaction *transaction, gchar **package_id, GError **error)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1316,11 +1283,11 @@ pk_transaction_get_package (PkTransaction *transaction, gchar **package_id, GErr
  **/
 gboolean
 pk_transaction_get_progress (PkTransaction *transaction,
-			guint *percentage, guint *subpercentage,
-			guint *elapsed, guint *remaining, GError **error)
+			     guint *percentage, guint *subpercentage,
+			     guint *elapsed, guint *remaining, GError **error)
 {
 	gboolean ret;
-	g_return_val_if_fail (transaction != NULL, FALSE);
+
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1343,7 +1310,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 {
 	gboolean ret;
 	GError *error;
-	g_return_if_fail (transaction != NULL);
+
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1396,7 +1363,6 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, co
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1468,7 +1434,6 @@ pk_transaction_get_role (PkTransaction *transaction,
 {
 	const gchar *text;
 
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 
 	pk_debug ("GetRole method called");
@@ -1492,7 +1457,6 @@ gboolean
 pk_transaction_get_status (PkTransaction *transaction,
 			   const gchar **status, GError **error)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1512,7 +1476,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction, const gchar *packa
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1576,7 +1539,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	GError *error;
 	PkPackageList *updates_cache;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1655,13 +1617,12 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
  **/
 void
 pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
-			DBusGMethodInvocation *context)
+			     DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1720,13 +1681,12 @@ pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
  **/
 void
 pk_transaction_install_package (PkTransaction *transaction, const gchar *package_id,
-			   DBusGMethodInvocation *context)
+				DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1795,7 +1755,6 @@ pk_transaction_install_package (PkTransaction *transaction, const gchar *package
 gboolean
 pk_transaction_is_caller_active (PkTransaction *transaction, gboolean *is_active, GError **error)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
@@ -1815,7 +1774,6 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1867,14 +1825,14 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
  * pk_transaction_remove_package:
  **/
 void
-pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_id, gboolean allow_deps, gboolean autoremove,
-			  DBusGMethodInvocation *context)
+pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_id,
+			       gboolean allow_deps, gboolean autoremove,
+			       DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -1943,13 +1901,12 @@ pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_
  **/
 void
 pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gboolean enabled,
-		       DBusGMethodInvocation *context)
+			    DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2010,14 +1967,13 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
  **/
 void
 pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
-			 const gchar *parameter, const gchar *value,
-		         DBusGMethodInvocation *context)
+			      const gchar *parameter, const gchar *value,
+		              DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2078,12 +2034,11 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
  **/
 void
 pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
-		   const gchar *package, DBusGMethodInvocation *context)
+			const gchar *package, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2141,13 +2096,12 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id,
-		    DBusGMethodInvocation *context)
+			 DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2206,12 +2160,11 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
  **/
 void
 pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
-			  const gchar *search, DBusGMethodInvocation *context)
+			       const gchar *search, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2267,12 +2220,11 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
-		       const gchar *search, DBusGMethodInvocation *context)
+		   	    const gchar *search, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2328,12 +2280,11 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
-			const gchar *search, DBusGMethodInvocation *context)
+			     const gchar *search, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2389,12 +2340,11 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
  **/
 void
 pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
-		       const gchar *search, DBusGMethodInvocation *context)
+		  	    const gchar *search, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2451,7 +2401,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 gboolean
 pk_transaction_service_pack (PkTransaction *transaction, const gchar *location, gboolean enabled)
 {
-	g_return_val_if_fail (transaction != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	/* not implemented yet */
@@ -2478,7 +2428,6 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	gchar *sender;
 	gchar *package_id_temp;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2544,7 +2493,6 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 	GError *error;
 	gchar *sender;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2606,7 +2554,6 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	PkProvidesEnum provides;
 	GError *error;
 
-	g_return_if_fail (transaction != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
@@ -2844,7 +2791,6 @@ pk_transaction_finalize (GObject *object)
 {
 	PkTransaction *transaction;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_TRANSACTION (object));
 
 	transaction = PK_TRANSACTION (object);

@@ -94,7 +94,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* check if output line */
 	if (line == NULL)
@@ -331,7 +331,7 @@ out:
 static gboolean
 pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	if (backend_spawn->priv->spawn == NULL) {
 		pk_warning ("spawn object not in use");
 		return FALSE;
@@ -350,7 +350,7 @@ pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
-	g_return_if_fail (backend_spawn != NULL);
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	pk_debug ("deleting spawn %p, exit %s", backend_spawn, pk_exit_enum_to_text (exit));
 	pk_backend_spawn_helper_delete (backend_spawn);
@@ -377,7 +377,8 @@ static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	g_return_if_fail (backend_spawn != NULL);
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+
 	pk_debug ("stdout from %p = '%s'", spawn, line);
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, line);
 	if (!ret) {
@@ -391,7 +392,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 static gboolean
 pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	if (backend_spawn->priv->spawn != NULL) {
 		pk_warning ("spawn object already in use");
@@ -418,7 +419,7 @@ pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *sc
 	gchar *filename;
 	gchar *command;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
@@ -457,7 +458,7 @@ pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *sc
 const gchar *
 pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
 	return backend_spawn->priv->name;
 }
 
@@ -467,7 +468,8 @@ pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 gboolean
 pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
 
 	g_free (backend_spawn->priv->name);
 	backend_spawn->priv->name = g_strdup (name);
@@ -480,7 +482,7 @@ pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	if (backend_spawn->priv->spawn == NULL) {
 		pk_warning ("cannot kill missing process");
@@ -500,7 +502,7 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *script, con
 	va_list args;
 	gchar *arguments;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
 
 	/* get the argument list */
@@ -521,7 +523,6 @@ pk_backend_spawn_finalize (GObject *object)
 {
 	PkBackendSpawn *backend_spawn;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (object));
 
 	backend_spawn = PK_BACKEND_SPAWN (object);
