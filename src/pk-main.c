@@ -215,7 +215,8 @@ main (int argc, char *argv[])
 
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon && daemon (0, 0)) {
-		g_error ("Could not daemonize: %s", g_strerror (errno));
+		g_print ("Could not daemonize: %s\n", g_strerror (errno));
+		goto exit_program;
 	}
 
 	/* check dbus connections, exit if not valid */
