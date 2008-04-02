@@ -73,7 +73,7 @@ typedef enum
 } PkEngineError;
 
 GQuark		 pk_engine_error_quark			(void);
-GType		 pk_engine_error_get_type		(void);
+GType		 pk_engine_error_get_type		(void) G_GNUC_CONST;
 GType		 pk_engine_get_type		  	(void);
 PkEngine	*pk_engine_new				(void);
 
@@ -232,6 +232,7 @@ gboolean	 pk_engine_get_allow_cancel		(PkEngine	*engine,
 /* repo stuff */
 void		 pk_engine_get_repo_list		(PkEngine	*engine,
 							 const gchar	*tid,
+							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
 void		 pk_engine_repo_enable			(PkEngine	*engine,
 							 const gchar	*tid,

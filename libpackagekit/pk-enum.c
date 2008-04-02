@@ -42,8 +42,8 @@ static PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
-	{PK_EXIT_ENUM_QUIT,			"quit"},
-	{PK_EXIT_ENUM_KILL,			"kill"},
+	{PK_EXIT_ENUM_CANCELLED,		"cancelled"},
+	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{0, NULL}
 };
 

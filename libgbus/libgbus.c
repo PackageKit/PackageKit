@@ -42,11 +42,12 @@ struct LibGBusPrivate
 	gchar			*service;
 	DBusGProxy		*proxy;
 	DBusGConnection		*connection;
-	gboolean		 connected;
+	const gchar		*unique_name;
 };
 
 enum {
 	CONNECTION_CHANGED,
+	CONNECTION_REPLACED,
 	LAST_SIGNAL
 };
 
@@ -64,22 +65,43 @@ name_owner_changed_cb (DBusGProxy     *proxy,
 		       const gchar    *new,
 		       LibGBus	      *libgbus)
 {
+	guint new_len;
+	guint prev_len;
+
 	g_return_if_fail (IS_LIBGBUS (libgbus));
 	if (libgbus->priv->proxy == NULL) {
 		return;
 	}
 
-	if (strcmp (name, libgbus->priv->service) == 0) {
-		/* ITS4: ignore, not used for allocation */
-		if (strlen (prev) != 0 && strlen (new) == 0 && libgbus->priv->connected == TRUE) {
-			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
-			libgbus->priv->connected = FALSE;
+	/* not us */
+	if (strcmp (name, libgbus->priv->service) != 0) {
+		return;
+	}
+
+	/* ITS4: ignore, not used for allocation */
+	new_len = strlen (new);
+	/* ITS4: ignore, not used for allocation */
+	prev_len = strlen (prev);
+
+	/* something --> nothing */
+	if (prev_len != 0 && new_len == 0) {
+		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, FALSE);
+		return;
+	}
+
+	/* nothing --> something */
+	if (prev_len == 0 && new_len != 0) {
+		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
+		return;
+	}
+
+	/* something --> something (we've replaced the old process) */
+	if (prev_len != 0 && new_len != 0) {
+		/* only send this to the prev client */
+		if (strcmp (libgbus->priv->unique_name, prev) == 0) {
+			g_signal_emit (libgbus, signals [CONNECTION_REPLACED], 0);
 		}
-		/* ITS4: ignore, not used for allocation */
-		if (strlen (prev) == 0 && strlen (new) != 0 && libgbus->priv->connected == FALSE) {
-			g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
-			libgbus->priv->connected = TRUE;
-		}
+		return;
 	}
 }
 
@@ -99,6 +121,8 @@ libgbus_assign (LibGBus      *libgbus,
 		const gchar  *service)
 {
 	GError *error = NULL;
+	gboolean connected;
+	DBusConnection *conn;
 
 	g_return_val_if_fail (IS_LIBGBUS (libgbus), FALSE);
 	g_return_val_if_fail (service != NULL, FALSE);
@@ -139,10 +163,14 @@ libgbus_assign (LibGBus      *libgbus,
 				     libgbus, NULL);
 
 	/* coldplug */
-	libgbus->priv->connected = libgbus_is_connected (libgbus);
-	if (libgbus->priv->connected == TRUE) {
+	connected = libgbus_is_connected (libgbus);
+	if (connected == TRUE) {
 		g_signal_emit (libgbus, signals [CONNECTION_CHANGED], 0, TRUE);
 	}
+
+	/* save this for the replaced check */
+	conn = dbus_g_connection_get_connection (libgbus->priv->connection);
+	libgbus->priv->unique_name = dbus_bus_get_unique_name (conn);
 	return TRUE;
 }
 
@@ -184,13 +212,16 @@ libgbus_class_init (LibGBusClass *klass)
 
 	signals [CONNECTION_CHANGED] =
 		g_signal_new ("connection-changed",
-			      G_TYPE_FROM_CLASS (object_class),
-			      G_SIGNAL_RUN_LAST,
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (LibGBusClass, connection_changed),
-			      NULL,
-			      NULL,
-			      g_cclosure_marshal_VOID__BOOLEAN,
+			      NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+	signals [CONNECTION_REPLACED] =
+		g_signal_new ("connection-replaced",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (LibGBusClass, connection_replaced),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 }
 
 /**

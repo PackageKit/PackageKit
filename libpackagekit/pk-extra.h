@@ -58,7 +58,7 @@ struct _PkExtraClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_extra_get_type			(void);
+GType		 pk_extra_get_type			(void) G_GNUC_CONST;
 PkExtra		*pk_extra_new				(void);
 
 gboolean	 pk_extra_set_locale			(PkExtra	*extra,

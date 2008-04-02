@@ -18,6 +18,7 @@ INCLUDES =						\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
 	-DBINDIR=\"$(bindir)\"			 	\
+	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
 	-DPREFIX=\""$(prefix)"\" 			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\" 		\
@@ -52,8 +53,14 @@ shared_SOURCES =					\
 	pk-time.c					\
 	pk-conf.c					\
 	pk-conf.h					\
+	pk-cache.c					\
+	pk-cache.h					\
+	pk-notify.c					\
+	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
+	pk-restart.c					\
+	pk-restart.h					\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
@@ -113,6 +120,8 @@ BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-interface.h					\
+	pk-interface-notify.h				\
+	pk-interface-transaction.h			\
 	$(NULL)
 
 pk-marshal.c: pk-marshal.list
@@ -126,8 +135,22 @@ pk-interface.h: pk-interface.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
 		--prefix=pk_engine			\
 		--mode=glib-server			\
-		--output=pk-interface.h	\
+		--output=pk-interface.h			\
 		$(srcdir)/pk-interface.xml
+
+pk-interface-notify.h: pk-interface-notify.xml
+	$(LIBTOOL) --mode=execute dbus-binding-tool	\
+		--prefix=pk_notify			\
+		--mode=glib-server			\
+		--output=pk-interface-notify.h		\
+		$(srcdir)/pk-interface-notify.xml
+
+pk-interface-transaction.h: pk-interface-transaction.xml
+	$(LIBTOOL) --mode=execute dbus-binding-tool	\
+		--prefix=pk_transaction			\
+		--mode=glib-server			\
+		--output=pk-interface-transaction.h	\
+		$(srcdir)/pk-interface-transaction.xml
 
 if PK_BUILD_TESTS
 
@@ -148,6 +171,7 @@ pk_self_test_LDADD =					\
 	$(LIBNM_LIBS)					\
 	$(PK_LIBS)					\
 	$(POLKIT_LIBS)					\
+	$(GIO_LIBS)					\
 	$(NULL)
 
 TESTS = pk-self-test
@@ -172,11 +196,14 @@ EXTRA_DIST =						\
 	pk-security-polkit.c				\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
+	pk-interface-notify.xml				\
+	pk-interface-transaction.xml			\
 	$(NULL)
 
 clean-local:
 	rm -f *~
 	rm -f *.out
+	rm -f *.gcda
 	rm -f *.gcno
 	rm -f gcov.txt
 	rm -f gprof.txt

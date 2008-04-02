@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+  <interface name="org.freedesktop.PackageKit.Notify">
+    <signal name="RestartSchedule">
+    </signal>
+    <signal name="RepoListChanged">
+      <arg type="s" name="tid" direction="out"/>
+    </signal>
+    <signal name="UpdatesChanged">
+      <arg type="s" name="tid" direction="out"/>
+    </signal>
+  </interface>
+</node>
+

@@ -60,7 +60,7 @@ struct _PkTaskListClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_task_list_get_type			(void);
+GType		 pk_task_list_get_type			(void) G_GNUC_CONST;
 PkTaskList	*pk_task_list_new			(void);
 
 gboolean	 pk_task_list_refresh			(PkTaskList	*tlist);

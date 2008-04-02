@@ -58,7 +58,7 @@ typedef struct {
 	gchar			*tid;
 } PkTransactionItem;
 
-GType		 pk_transaction_list_get_type	  	(void);
+GType		 pk_transaction_list_get_type	  	(void) G_GNUC_CONST;
 PkTransactionList *pk_transaction_list_new		(void);
 
 PkTransactionItem *pk_transaction_list_create		(PkTransactionList	*tlist);

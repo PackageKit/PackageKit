@@ -148,6 +148,8 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
  * pk_extra_get_localised_detail_try:
  * @extra: a valid #PkExtra instance
  *
+ * TODO: This function is HOT in the profile chart
+ *
  * Return value: the current locale
  **/
 static gboolean

@@ -46,15 +46,13 @@ static PkBackend *backend = NULL;
  * @connection: What we want to register to
  * @object: The GObject we want to register
  *
- * Register org.freedesktop.PowerManagement on the session bus.
+ * Register org.freedesktop.PackageKit on the system bus.
  * This function MUST be called before DBUS service will work.
  *
  * Return value: success
  **/
 G_GNUC_WARN_UNUSED_RESULT static gboolean
-pk_object_register (DBusGConnection *connection,
-		    GObject	     *object,
-		    GError **error)
+pk_object_register (DBusGConnection *connection, GObject *object, GError **error)
 {
 	DBusGProxy *bus_proxy = NULL;
 	guint request_name_result;
@@ -71,14 +69,15 @@ pk_object_register (DBusGConnection *connection,
 				 G_TYPE_INVALID,
 				 G_TYPE_UINT, &request_name_result,
 				 G_TYPE_INVALID);
-	if (error && *error) {
-		pk_debug ("ERROR: %s", (*error)->message);
-	}
-	if (ret == FALSE) {
-		/* abort as the DBUS method failed */
+
+	/* free the bus_proxy */
+	g_object_unref (G_OBJECT (bus_proxy));
+
+	/* abort as the DBUS method failed */
+	if (!ret) {
 		pk_warning ("RequestName failed!");
-		g_clear_error(error);
-		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
+		g_clear_error (error);
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
 			    _("Acquiring D-Bus name %s failed due to security policies on this machine\n"
 			      "This can happen for two reasons:\n"
 			      "* The correct user is not launching the executable (usually root)\n"
@@ -87,12 +86,10 @@ pk_object_register (DBusGConnection *connection,
 		return FALSE;
 	}
 
-	/* free the bus_proxy */
-	g_object_unref (G_OBJECT (bus_proxy));
-
 	/* already running */
  	if (request_name_result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-		g_set_error(error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, "Already running on this machine");
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
+			     "Already running on this machine");
 		return FALSE;
 	}
 
@@ -213,27 +210,21 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
-	if (!g_thread_supported ())
-		g_thread_init (NULL);
-	dbus_g_thread_init ();
-
 	/* do stuff on ctrl-c */
 	signal (SIGINT, pk_main_sigint_handler);
 
 	/* we need to daemonize before we get a system connection */
 	if (use_daemon && daemon (0, 0)) {
-		g_error ("Could not daemonize: %s", g_strerror (errno));
+		g_print ("Could not daemonize: %s\n", g_strerror (errno));
+		goto exit_program;
 	}
 
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		pk_warning ("%s", error->message);
+		g_print ("Cannot connect to the system bus: %s\n", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start "
-			   "the dbus system service.\n"
-			   "It is <b>strongly recommended</b> you reboot "
-			   "your computer after starting this service.");
+		goto exit_program;
 	}
 
 	/* we don't actually need to do this, except it rules out the
@@ -263,7 +254,7 @@ main (int argc, char *argv[])
 	g_free (backend_name);
 
 	/* all okay? */
-	if (ret == FALSE) {
+	if (!ret) {
 		pk_error ("cannot continue, backend invalid");
 	}
 

@@ -56,7 +56,7 @@ typedef enum {
 	PK_ENUM_LIST_TYPE_UNKNOWN
 } PkEnumListType;
 
-GType		 pk_enum_list_get_type			(void);
+GType		 pk_enum_list_get_type			(void) G_GNUC_CONST;
 PkEnumList	*pk_enum_list_new			(void);
 
 gboolean	 pk_enum_list_set_type			(PkEnumList	*elist,

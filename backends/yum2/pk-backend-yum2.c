@@ -329,11 +329,11 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_i
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend)
+backend_get_repo_list (PkBackend *backend, const gchar *filter)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_repo_list (dbus);
+	pk_backend_dbus_get_repo_list (dbus, filter);
 }
 
 /**

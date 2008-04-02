@@ -98,8 +98,6 @@ typedef enum {
 	PK_CLIENT_FINISHED,
 	PK_CLIENT_PACKAGE,
 	PK_CLIENT_PROGRESS_CHANGED,
-	PK_CLIENT_UPDATES_CHANGED,
-	PK_CLIENT_REPO_LIST_CHANGED,
 	PK_CLIENT_REQUIRE_RESTART,
 	PK_CLIENT_MESSAGE,
 	PK_CLIENT_TRANSACTION,
@@ -194,7 +192,7 @@ pk_client_error_set (GError **error, gint code, const gchar *format, ...)
 	}
 
 	/* propogate */
-	g_set_error (error, PK_CLIENT_ERROR, code, buffer);
+	g_set_error (error, PK_CLIENT_ERROR, code, "%s", buffer);
 
 out:
 	g_free(buffer);
@@ -693,36 +691,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
-}
-
-/**
- * pk_client_updates_changed_cb:
- */
-static void
-pk_client_updates_changed_cb (DBusGProxy *proxy, const gchar *tid, PkClient *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* we always emit, even if the tid does not match */
-	pk_debug ("emitting updates-changed");
-	g_signal_emit (client, signals [PK_CLIENT_UPDATES_CHANGED], 0);
-
-}
-
-/**
- * pk_client_repo_list_changed_cb:
- */
-static void
-pk_client_repo_list_changed_cb (DBusGProxy *proxy, const gchar *tid, PkClient *client)
-{
-	g_return_if_fail (client != NULL);
-	g_return_if_fail (PK_IS_CLIENT (client));
-
-	/* we always emit, even if the tid does not match */
-	pk_debug ("emitting repo-list-changed");
-	g_signal_emit (client, signals [PK_CLIENT_REPO_LIST_CHANGED], 0);
-
 }
 
 /**
@@ -2501,6 +2469,33 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
 }
 
 /**
+ * pk_resolve_local_path:
+ *
+ * Resolves paths like ../../Desktop/bar.rpm to /home/hughsie/Desktop/bar.rpm
+ * TODO: We should use canonicalize_filename() in gio/glocalfile.c as realpath()
+ * is crap.
+ **/
+static gchar *
+pk_resolve_local_path (const gchar *rel_path)
+{
+	gchar *real = NULL;
+	gchar *temp;
+
+	/* don't trust realpath one little bit */
+	if (rel_path == NULL) {
+		return NULL;
+	}
+
+	temp = realpath (rel_path, NULL);
+	if (temp != NULL) {
+		real = g_strdup (temp);
+		/* yes, free, not g_free */
+		free (temp);
+	}
+	return real;
+}
+
+/**
  * pk_client_install_file:
  * @client: a valid #PkClient instance
  * @file: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
@@ -2512,20 +2507,25 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_file (PkClient *client, const gchar *file, GError **error)
+pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
 {
 	gboolean ret;
+	gchar *file;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (client != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (file != NULL, FALSE);
+	g_return_val_if_fail (file_rel != NULL, FALSE);
 
 	/* check to see if we already have a transaction */
 	ret = pk_client_allocate_transaction_id (client, error);
 	if (!ret) {
 		return FALSE;
 	}
+
+	/* resolve to an absolute path */
+	file = pk_resolve_local_path (file_rel);
+	pk_debug ("resolved %s to %s", file_rel, file);
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
@@ -2560,6 +2560,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
 		}
 	}
 
+	g_free (file);
 	return ret;
 }
 
@@ -2573,7 +2574,7 @@ pk_client_install_file (PkClient *client, const gchar *file, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
-pk_client_get_repo_list (PkClient *client, GError **error)
+pk_client_get_repo_list (PkClient *client, const gchar *filter, GError **error)
 {
 	gboolean ret;
 
@@ -2588,9 +2589,11 @@ pk_client_get_repo_list (PkClient *client, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
+	client->priv->cached_filter = g_strdup (filter);
 
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
 				 G_TYPE_STRING, client->priv->tid,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	pk_client_error_fixup (error);
 	if (ret) {
@@ -3109,6 +3112,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_update_packages_strv (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		ret = pk_client_get_repo_list (client, priv->cached_filter, error);
 	} else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
@@ -3141,32 +3146,6 @@ pk_client_class_init (PkClientClass *klass)
 			      G_STRUCT_OFFSET (PkClientClass, status_changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__UINT,
 			      G_TYPE_NONE, 1, G_TYPE_UINT);
-	/**
-	 * PkClient::updates-changed:
-	 * @client: the #PkClient instance that emitted the signal
-	 *
-	 * The ::updates-changed signal is emitted when the update list may have
-	 * changed and the client program may have to update some UI.
-	 **/
-	signals [PK_CLIENT_UPDATES_CHANGED] =
-		g_signal_new ("updates-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, updates_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
-	/**
-	 * PkClient::repo-list-changed:
-	 * @client: the #PkClient instance that emitted the signal
-	 *
-	 * The ::repo-list-changed signal is emitted when the repo list may have
-	 * changed and the client program may have to update some UI.
-	 **/
-	signals [PK_CLIENT_REPO_LIST_CHANGED] =
-		g_signal_new ("repo-list-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, repo_list_changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
 	/**
 	 * PkClient::progress-changed:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3589,16 +3568,6 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_connect_signal (proxy, "Transaction",
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 
-	dbus_g_proxy_add_signal (proxy, "UpdatesChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "UpdatesChanged",
-				     G_CALLBACK (pk_client_updates_changed_cb), client, NULL);
-
-	dbus_g_proxy_add_signal (proxy, "RepoListChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal (proxy, "RepoListChanged",
-				     G_CALLBACK (pk_client_repo_list_changed_cb), client, NULL);
-
 	dbus_g_proxy_add_signal (proxy, "UpdateDetail",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
@@ -3693,10 +3662,6 @@ pk_client_finalize (GObject *object)
 				        G_CALLBACK (pk_client_progress_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
 				        G_CALLBACK (pk_client_status_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "UpdatesChanged",
-				        G_CALLBACK (pk_client_updates_changed_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoListChanged",
-				        G_CALLBACK (pk_client_repo_list_changed_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
@@ -3771,10 +3736,40 @@ libst_client (LibSelfTest *test)
 	guint size;
 	guint size_new;
 	guint i;
+	gchar *file;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/************************************************************/
+	libst_title (test, "test resolve NULL");
+	file = pk_resolve_local_path (NULL);
+	if (file == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "test resolve /etc/hosts");
+	file = pk_resolve_local_path ("/etc/hosts");
+	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got: %s", file);
+	}
+	g_free (file);
+
+	/************************************************************/
+	libst_title (test, "test resolve /etc/../etc/hosts");
+	file = pk_resolve_local_path ("/etc/../etc/hosts");
+	if (file != NULL && pk_strequal (file, "/etc/hosts")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got: %s", file);
+	}
+	g_free (file);
 
 	/************************************************************/
 	libst_title (test, "get client");

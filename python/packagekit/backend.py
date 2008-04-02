@@ -433,7 +433,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_repo_list(self):
+    def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class

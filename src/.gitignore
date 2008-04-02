@@ -3,7 +3,7 @@
 *.o
 pk-marshal.h
 pk-marshal.c
-pk-interface.h
+pk-interface*.h
 packagekitd
 pk-self-test
 debug.log

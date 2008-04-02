@@ -53,7 +53,7 @@ static void     pk_spawn_init		(PkSpawn      *spawn);
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SPAWN, PkSpawnPrivate))
-#define PK_SPAWN_POLL_DELAY	10 /* ms */
+#define PK_SPAWN_POLL_DELAY	50 /* ms */
 #define PK_SPAWN_SIGKILL_DELAY	500 /* ms */
 
 struct PkSpawnPrivate
@@ -211,7 +211,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_EXIT_ENUM_KILL;
+	spawn->priv->exit = PK_EXIT_ENUM_KILLED;
 
 	pk_warning ("sending SIGKILL %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGKILL);
@@ -246,7 +246,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	}
 
 	/* we won't overwrite this if not unknown */
-	spawn->priv->exit = PK_EXIT_ENUM_QUIT;
+	spawn->priv->exit = PK_EXIT_ENUM_CANCELLED;
 
 	pk_debug ("sending SIGQUIT %i", spawn->priv->child_pid);
 	retval = kill (spawn->priv->child_pid, SIGQUIT);
@@ -573,7 +573,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGKILL");
-	if (mexit == PK_EXIT_ENUM_KILL) {
+	if (mexit == PK_EXIT_ENUM_KILLED) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish %i!", mexit);
@@ -601,7 +601,7 @@ libst_spawn (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "make sure finished in SIGQUIT");
-	if (mexit == PK_EXIT_ENUM_QUIT) {
+	if (mexit == PK_EXIT_ENUM_CANCELLED) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "finish %i!", mexit);

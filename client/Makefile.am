@@ -29,6 +29,9 @@ PK_LIBS =						\
 bin_PROGRAMS =						\
 	pkcon						\
 	pkmon						\
+	$(NULL)
+
+libexec_PROGRAMS =					\
 	pk-import-desktop				\
 	pk-import-specspo				\
 	$(NULL)

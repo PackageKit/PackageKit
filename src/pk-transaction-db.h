@@ -47,7 +47,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionDbClass;
 
-GType		 pk_transaction_db_get_type		(void);
+GType		 pk_transaction_db_get_type		(void) G_GNUC_CONST;
 PkTransactionDb	*pk_transaction_db_new			(void);
 gboolean	 pk_transaction_db_empty		(PkTransactionDb	*tdb);
 gboolean	 pk_transaction_db_add			(PkTransactionDb	*tdb,

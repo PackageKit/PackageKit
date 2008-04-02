@@ -259,7 +259,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in providers.keys():
             self._show_package(package)
 
-    def get_repo_list(self):
+    def get_repo_list(self, filters):
         channels = smart.sysconf.get("channels", ())
         for alias in channels:
             channel = smart.sysconf.get(("channels", alias))

@@ -537,7 +537,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
  * pk_backend_dbus_get_repo_list:
  **/
 gboolean
-pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
+pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, const gchar *filter)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -548,6 +548,7 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus)
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRepoList", &error,
+				 G_TYPE_STRING, filter,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);

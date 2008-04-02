@@ -109,7 +109,6 @@ enum {
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
-	PK_BACKEND_UPDATES_CHANGED,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
 	PK_BACKEND_MESSAGE,
@@ -187,40 +186,45 @@ gboolean
 pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 {
 	GModule *handle;
-	gchar *path;
+	gchar *path = NULL;
+	gboolean ret = TRUE;
 
 	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* have we already been set? */
 	if (backend->priv->name != NULL) {
 		pk_warning ("pk_backend_set_name called multiple times");
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
-	/* save the backend name */
-	backend->priv->name = g_strdup (backend_name);
-
+	/* can we load it? */
 	pk_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
-		pk_debug ("opening module %s failed : %s", backend_name, g_module_error ());
-		g_free (path);
-		/* we free the name, as we might be trying to find one that passes */
-		g_free (backend->priv->name);
-		backend->priv->name = NULL;
-		return FALSE;
+		pk_warning ("opening module %s failed : %s", backend_name, g_module_error ());
+		ret = FALSE;
+		goto out;
 	}
-	g_free (path);
 
+	/* is is correctly formed? */
+	if (!g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc)) {
+		g_module_close (handle);
+		pk_warning ("could not find description in plugin %s, not loading", backend_name);
+		ret = FALSE;
+		goto out;
+	}
+
+	/* save the backend name and handle */
+	g_free (backend->priv->name);
+	backend->priv->name = g_strdup (backend_name);
 	backend->priv->handle = handle;
 
-	if (g_module_symbol (handle, "pk_backend_desc", (gpointer) &backend->desc) == FALSE) {
-		g_module_close (handle);
-		pk_error ("could not find description in plugin %s, not loading", backend_name);
-	}
-
-	return TRUE;
+out:
+	g_free (path);
+	return ret;
 }
 
 /**
@@ -479,6 +483,12 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
+	/* already this? */
+	if (backend->priv->status == status) {
+		pk_debug ("already set same status");
+		return TRUE;
+	}
+
 	/* have we already set an error? */
 	if (backend->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
 		pk_warning ("already set error, cannot process");
@@ -499,12 +509,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Tried to SETUP when not in WAIT");
 		return FALSE;
-	}
-
-	/* already this? */
-	if (backend->priv->status == status) {
-		pk_debug ("already set same status");
-		return TRUE;
 	}
 
 	/* do we have to enumate a running call? */
@@ -528,9 +532,9 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 PkStatusEnum
 pk_backend_get_status (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend != NULL, PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
 	return backend->priv->status;
 }
 
@@ -577,23 +581,6 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 }
 
 /**
- * pk_backend_check_newlines:
- *
- * Check if we've used wrong chars, or other common mistakes
- **/
-static gboolean
-pk_backend_check_newlines (PkBackend *backend, const gchar *text)
-{
-	/* old paragraph seporator */
-	if (strstr (text, ";;") != NULL) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "backend error: text contains a double semicolon");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
  * pk_backend_update_detail:
  **/
 gboolean
@@ -604,7 +591,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 			  const gchar *update_text)
 {
 	gchar *update_text_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -613,13 +599,6 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, update_text);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", update_text);
 		return FALSE;
 	}
 
@@ -687,7 +666,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 {
 	va_list args;
 	gchar *buffer;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -702,13 +680,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_start (args, format);
 	g_vasprintf (&buffer, format, args);
 	va_end (args);
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, buffer);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", buffer);
-		return FALSE;
-	}
 
 	pk_debug ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
@@ -748,7 +719,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 			gulong size)
 {
 	gchar *description_safe;
-	gboolean ret;
 
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
@@ -757,13 +727,6 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
 		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* check for common mistakes */
-	ret = pk_backend_check_newlines (backend, description);
-	if (!ret) {
-		pk_debug ("failed common checks: %s", description);
 		return FALSE;
 	}
 
@@ -805,21 +768,6 @@ pk_backend_files (PkBackend *backend, const gchar *package_id,
 }
 
 /**
- * pk_backend_updates_changed:
- **/
-gboolean
-pk_backend_updates_changed (PkBackend *backend)
-{
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	pk_debug ("emit updates-changed");
-	g_signal_emit (backend, signals [PK_BACKEND_UPDATES_CHANGED], 0);
-	return TRUE;
-}
-
-/**
  * pk_backend_repo_signature_required:
  **/
 gboolean
@@ -851,6 +799,8 @@ gboolean
 pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 			const gchar *description, gboolean enabled)
 {
+	gchar *description_safe;
+
 	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -861,8 +811,12 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 		return FALSE;
 	}
 
-	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
+	/* replace unsafe chars */
+	description_safe = pk_strsafe (description);
+
+	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description_safe, enabled);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_DETAIL], 0, repo_id, description, enabled);
+	g_free (description_safe);
 	return TRUE;
 }
 
@@ -934,7 +888,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 							     pk_backend_error_timeout_delay_cb, backend);
 
 	/* we mark any transaction with errors as failed */
-	backend->priv->exit = PK_EXIT_ENUM_FAILED;
+	pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
 	pk_debug ("emit error-code %i, %s", code, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
@@ -1023,8 +977,32 @@ pk_backend_get_role (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 	return backend->priv->role;
+}
+
+/**
+ * pk_backend_set_exit_code:
+ *
+ * Should only be used internally, or from PkRunner when setting CANCELLED.
+ **/
+gboolean
+pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
+{
+	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	if (backend->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
+		pk_warning ("already set exit status: old=%s, new=%s",
+			    pk_exit_enum_to_text (backend->priv->exit),
+			    pk_exit_enum_to_text (exit));
+		return FALSE;
+	}
+
+	/* new value */
+	backend->priv->exit = exit;
+	return TRUE;
 }
 
 /**
@@ -1036,8 +1014,15 @@ static gboolean
 pk_backend_finished_delay (gpointer data)
 {
 	PkBackend *backend = PK_BACKEND (data);
+
+	/* this wasn't set otherwise, assume success */
+	if (backend->priv->exit == PK_EXIT_ENUM_UNKNOWN) {
+		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
+	}
+
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
+	backend->priv->signal_finished = 0;
 	return FALSE;
 }
 
@@ -1102,6 +1087,9 @@ pk_backend_finished (PkBackend *backend)
 		pk_warning ("GUI will remain unchanged!");
 	}
 
+	/* make any UI insensitive */
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	/* mark as finished for the UI that might only be watching status */
 	pk_backend_set_status (backend, PK_STATUS_ENUM_FINISHED);
 
@@ -1135,7 +1123,6 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	}
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "the method '%s' is not implemented yet", method);
 	/* don't wait, do this now */
-	backend->priv->exit = PK_EXIT_ENUM_FAILED;
 	pk_backend_finished_delay (backend);
 	return TRUE;
 }
@@ -1285,11 +1272,6 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__UINT_STRING,
 			      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
-	signals [PK_BACKEND_UPDATES_CHANGED] =
-		g_signal_new ("updates-changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
 	signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1327,7 +1309,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	backend->priv->exit = PK_EXIT_ENUM_SUCCESS;
+	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	backend->priv->last_remaining = 0;
 	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_DEFAULT;

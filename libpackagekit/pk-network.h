@@ -57,7 +57,7 @@ struct _PkNetworkClass
 	GObjectClass	parent_class;
 };
 
-GType		 pk_network_get_type		  	(void);
+GType		 pk_network_get_type		  	(void) G_GNUC_CONST;
 PkNetwork	*pk_network_new				(void);
 gboolean	 pk_network_is_online			(PkNetwork	*network);
 

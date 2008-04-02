@@ -1,52 +1,45 @@
-Order of no particular importance:
+*** Timeframe: 0.1.11 ***
 
-* Make installing firmware with udev possible:
+* Make PkMessages into proper enumerated types with localised descriptions
+
+* Add a way to import GPG keys for unsigned packages
+  In fedora, if you add a signed repo you have to agree to the GPG key.
+
+*** Timeframe: 0.2.0 ***
+
+* Make the dbus interface sane
+  Preview available in src/pk-interface-transaction.xml
+
+* Make installing firmware with udev possible
   http://lists.freedesktop.org/archives/packagekit/2008-March/002430.html
+
+* Enable GetUpdateDetail to handle arrays for 'updates' and 'obsoletes'
+  Until then, use a space to delimit package_id's
+
+* Add the GetPackages(filter) method to get the complete package list
+  Then add a group menu item for this in pk-application
+
+* Make one-click installs work
+
+* We need more unit tests.
+  Where we can actually simulate _using_ packagekit, probably using an
+  enhanced dummy backend and libpackagekit.
+  This is a tricky one as we can't assume we have the
+  org.freedesktop.PackageKit.conf file installed in the system prefix -
+  maybe we can #ifdef the daemon to run in the session bus for some
+  testing.
+
+*** Timeframe: Sometime in the future ***
+
+* Split up PolicyKit install into different types
+  Have different permissions for signed and unsigned repos.
 
 * Fix ServicePack to work correctly:
   http://lists.freedesktop.org/archives/packagekit/2008-March/002434.html
 
-* Find out why yum doesn't output some package status calls.
+* Handle rollbacks for select backends, i.e. allow transaction data to be changed
 
-* Make PkMessages into proper erumerated types with localised descriptions
-
-* We need to make sure the html documentation is still correct and easy
-to read - does any of it sound like technobabble? Is it easy enough for
-developers to get detailed information about how to contribute?
-
-* We need to audit all the strings in gnome-packagekit so that they are
-easily localisable and don't contain markup. This is one for you if you
-are also a translator.
-
-* We need some yelp documentation for the gnome-packagekit tools. This
-will mean getting screenshots and generally explaining how to use the
-tools.
-
-* We need a proper security audit of the packagekitd daemon. We are
-running as root, so we need to make sure we are not doing anything
-insane that would mean we could crash and do bad things.
-
-* We need more unit tests where we can actually simulate _using_
-packagekit, probably using an enhanced dummy backend and libpackagekit.
-This is a tricky one as we can't assume we have the
-org.freedesktop.PackageKit.conf file installed in the system prefix -
-maybe we can #ifdef the daemon to run in the session bus for some
-testing.
-
-*** write to the database for config stuff
- - Probably should move the job number too
-
-*** Add a way to import GPG keys ***
-In fedora, if you add a signed repo you have to agree to the GPG key.
-
-*** Split up PolicyKit install into different types ***
-Have different permissions for signed and unsigned repos.
-
-*** Handle rollbacks for select backends ***
-To do rollbacks sanely in PK we need a few things:
- - allow transaction data to be changed in _db
-
-*** Don't display install if something is upgradable
- - Return update when we search for something that is installed, but an
-   update exists for
+* Don't display install if something is upgradable
+  Return update when we search for something that is installed, but an
+  update exists for
 

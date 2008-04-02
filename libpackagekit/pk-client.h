@@ -82,8 +82,6 @@ struct _PkClientClass
 	/* Signals */
 	void		(* status_changed)		(PkClient	*client,
 							 PkStatusEnum	 status);
-	void		(* updates_changed)		(PkClient	*client);
-	void		(* repo_list_changed)		(PkClient	*client);
 	void		(* progress_changed)		(PkClient	*client,
 							 guint		 percentage,
 							 guint		 subpercentage,
@@ -161,7 +159,7 @@ GQuark		 pk_client_error_quark			(void);
 GType		 pk_client_error_get_type		(void);
 gboolean	 pk_client_error_print			(GError		**error);
 
-GType		 pk_client_get_type			(void);
+GType		 pk_client_get_type			(void) G_GNUC_CONST;
 PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,
@@ -285,7 +283,7 @@ gboolean	 pk_client_update_packages_strv		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_install_file			(PkClient	*client,
-							 const gchar	*file,
+							 const gchar	*file_rel,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
@@ -306,6 +304,7 @@ gboolean	 pk_client_requeue			(PkClient	*client,
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
+							 const gchar	*filter,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_enable			(PkClient	*client,

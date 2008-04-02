@@ -47,7 +47,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkSecurityClass;
 
-GType		 pk_security_get_type		(void);
+GType		 pk_security_get_type		(void) G_GNUC_CONST;
 PkSecurity	*pk_security_new		(void);
 
 gboolean	 pk_security_action_is_allowed	(PkSecurity	*security,

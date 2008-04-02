@@ -62,7 +62,7 @@ typedef struct
 	GObjectClass	parent_class;
 } PkBackendDbusClass;
 
-GType		 pk_backend_dbus_get_type		(void);
+GType		 pk_backend_dbus_get_type		(void) G_GNUC_CONST;
 PkBackendDbus	*pk_backend_dbus_new			(void);
 gboolean	 pk_backend_dbus_refresh_cache		(PkBackendDbus	*backend_dbus,
 							 gboolean	 force);
@@ -123,7 +123,8 @@ gboolean	 pk_backend_dbus_repo_set_data		(PkBackendDbus	*backend_dbus,
 							 const gchar	*rid,
 							 const gchar	*parameter,
 							 const gchar	*value);
-gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus);
+gboolean	 pk_backend_dbus_get_repo_list		(PkBackendDbus	*backend_dbus,
+							 const gchar	*filter);
 gboolean	 pk_backend_dbus_cancel			(PkBackendDbus	*backend_dbus);
 gboolean	 pk_backend_dbus_get_updates		(PkBackendDbus	*backend_dbus,
 							 const gchar	*filter);

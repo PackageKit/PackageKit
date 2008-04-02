@@ -46,6 +46,8 @@ gboolean	 pk_backend_set_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
+gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
+							 PkExitEnum	 exit);
 gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
@@ -100,7 +102,6 @@ gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
-gboolean	 pk_backend_updates_changed		(PkBackend	*backend);
 gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,
 							 const gchar    *repository_name,
 							 const gchar    *key_url,
@@ -151,7 +152,7 @@ typedef struct {
 	void		(*search_name)		(PkBackend *backend, const gchar *filter, const gchar *search);
 	void		(*update_packages)	(PkBackend *backend, gchar **package_ids);
 	void		(*update_system)	(PkBackend *backend);
-	void		(*get_repo_list)	(PkBackend *backend);
+	void		(*get_repo_list)	(PkBackend *backend, const gchar *filter);
 	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
 	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
 	void		(*service_pack)		(PkBackend *backend, const gchar *location, gboolean enabled);

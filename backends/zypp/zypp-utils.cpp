@@ -50,17 +50,22 @@ zypp::ZYpp::Ptr
 get_zypp ()
 {
 	static gboolean initialized = FALSE;
-	zypp::ZYpp::Ptr zypp = NULL;
+        zypp::ZYpp::Ptr zypp = NULL;
 
-	zypp = zypp::ZYppFactory::instance ().getZYpp ();
+        try {
+
+	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
 	
-	// TODO: Make this threadsafe
-	if (initialized == FALSE) {
-		zypp::filesystem::Pathname pathname("/");
-		zypp->initializeTarget (pathname);
+	        // TODO: Make this threadsafe
+	        if (initialized == FALSE) {
+		        zypp::filesystem::Pathname pathname("/");
+		        zypp->initializeTarget (pathname);
 
-		initialized = TRUE;
-	}
+		        initialized = TRUE;
+	        }
+        } catch (const zypp::Exception &ex) {
+		pk_error ("%s", ex.asUserString ().c_str ());
+        }
 
 	return zypp;
 }
@@ -312,12 +317,12 @@ zypp_get_package_by_id (const gchar *package_id)
 	pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
 		// TODO: Do we need to do something more for this error?
-		return zypp::sat::Solvable::nosolvable;
+		return zypp::sat::Solvable::noSolvable;
 	}
 
 	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, TRUE);
 	if (v == NULL)
-		return zypp::sat::Solvable::nosolvable;
+		return zypp::sat::Solvable::noSolvable;
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -473,7 +478,7 @@ zypp_get_patches ()
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
-                if((*it)->candidatePoolItem ().status ().isNeeded())
+                if((*it)->candidatePoolItem ().isBroken())
                         patches->insert (*it);
 
         }
@@ -540,4 +545,20 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 	}       
         
         return TRUE;
+}
+
+gchar **
+zypp_convert_set_char (std::set<zypp::sat::Solvable> *set)
+{
+        gchar **array = new gchar* [set->size ()];
+        guint i = 0;
+
+        for (std::set<zypp::sat::Solvable>::iterator it = set->begin (); it != set->end (); it++){
+                gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+                array[i] = g_strdup(package_id);
+                i++;
+                g_free (package_id);
+        }
+
+        return array;
 }

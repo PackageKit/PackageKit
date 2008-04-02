@@ -395,7 +395,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 repo[name] = {"entry":entry}
         return repo
 
-    def get_repo_list(self):
+    def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''

@@ -795,7 +795,7 @@ backend_update_system (PkBackend *backend)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend)
+backend_get_repo_list (PkBackend *backend, const gchar *filter)
 {
 	GList *list;
 	GList *li;
