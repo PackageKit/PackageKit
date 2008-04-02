@@ -70,14 +70,14 @@ static void     pk_engine_finalize	(GObject       *object);
 /**
  * PK_ENGINE_STATE_CHANGED_TIMEOUT:
  *
- * The timeout in ms to wait when we get the StateHasChanged method.
+ * The timeout in seconds to wait when we get the StateHasChanged method.
  * We don't want to queue these transactions if one is already in progress.
  *
  * We probably also need to wait for NetworkManager to come back up if we are
  * resuming, and we probably don't want to be doing this at a busy time after
  * a yum tramsaction.
  */
-#define PK_ENGINE_STATE_CHANGED_TIMEOUT		5000 /* ms */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT		5 /* seconds */
 
 struct PkEnginePrivate
 {
@@ -2738,14 +2738,14 @@ pk_engine_state_has_changed (PkEngine *engine, GError **error)
 
 	if (engine->priv->signal_state_timeout != 0) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "Already asked to refresh state less than %ims ago",
+			     "Already asked to refresh state less than %i seconds ago",
 			     PK_ENGINE_STATE_CHANGED_TIMEOUT);
 		return FALSE;
 	}
 
 	/* wait a little delay in case we get multiple requests */
-	engine->priv->signal_state_timeout = g_timeout_add (PK_ENGINE_STATE_CHANGED_TIMEOUT,
-							    pk_engine_state_changed_cb, engine);
+	engine->priv->signal_state_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT,
+								    pk_engine_state_changed_cb, engine);
 
 	return TRUE;
 }
