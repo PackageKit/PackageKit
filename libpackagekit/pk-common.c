@@ -74,7 +74,6 @@ pk_get_distro_id (void)
 {
 	gboolean ret;
 	gchar *contents = NULL;
-	gchar *parseable = NULL;
 	gchar *distro = NULL;
 	gchar *arch = NULL;
 	gchar **split = NULL;
@@ -101,10 +100,10 @@ pk_get_distro_id (void)
 	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
 	if (ret) {
 		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
-		parseable = g_strdelimit (contents, "()\n", ' ');
+		g_strdelimit (contents, "()\n", ' ');
 
 		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
-		split = g_strsplit (parseable, " ", 0);
+		split = g_strsplit (contents, " ", 0);
 		if (split == NULL)
 			goto out;
 
@@ -133,7 +132,6 @@ pk_get_distro_id (void)
 
 out:
 	g_strfreev (split);
-	g_free (parseable);
 	g_free (arch);
 	g_free (contents);
 	return distro;
