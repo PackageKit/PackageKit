@@ -73,10 +73,10 @@ G_DEFINE_TYPE (PkExtra, pk_extra, G_TYPE_OBJECT)
 static gpointer pk_extra_object = NULL;
 
 /**
- * pk_extra_populate_cache_callback:
+ * pk_extra_populate_locale_cache_callback:
  **/
 static gint
-pk_extra_populate_cache_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, gchar **col_name)
 {
 	PkExtra *extra = PK_EXTRA (data);
 	gint i;
@@ -88,10 +88,41 @@ pk_extra_populate_cache_callback (void *data, gint argc, gchar **argv, gchar **c
 	for (i=0; i<argc; i++) {
 		col = col_name[i];
 		value = argv[i];
+		/* just insert it, as we match on the package */
 		if (pk_strequal (col, "package") && value != NULL) {
+			pk_debug ("package=%s", value);
 			g_hash_table_insert (extra->priv->hash_package, g_strdup (value), GUINT_TO_POINTER (1));
+		} else {
+			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
+		}
+	}
+	return 0;
+}
+
+/**
+ * pk_extra_populate_locale_cache_callback:
+ **/
+static gint
+pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkExtra *extra = PK_EXTRA (data);
+	gint i;
+	gchar *col;
+	gchar *value;
+	gchar *package = NULL; /* no g_free, just a copy */
+
+	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
+
+	for (i=0; i<argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		/* save the package name, and use it is the key */
+		if (pk_strequal (col, "package") && value != NULL) {
+			pk_debug ("package=%s", value);
+			package = value;
 		} else if (pk_strequal (col, "summary") && value != NULL) {
-			g_hash_table_insert (extra->priv->hash_locale, g_strdup (value), GUINT_TO_POINTER (1));
+			pk_debug ("package=%s, summary=%s", package, value);
+			g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), GUINT_TO_POINTER (1));
 		} else {
 			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
 		}
@@ -117,8 +148,8 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
 	/* get summary packages */
-	statement = "SELECT summary FROM localised";
-	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_cache_callback, extra, &error_msg);
+	statement = "SELECT package, summary FROM localised";
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_locale_cache_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
 		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
@@ -145,7 +176,7 @@ pk_extra_populate_package_cache (PkExtra *extra)
 
 	/* get packages */
 	statement = "SELECT package FROM data";
-	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_cache_callback, extra, &error_msg);
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_package_cache_callback, extra, &error_msg);
 	if (rc != SQLITE_OK) {
 		pk_warning ("SQL error: %s\n", error_msg);
 		sqlite3_free (error_msg);
