@@ -141,7 +141,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		if (g_str_has_prefix (key_array[i], "Name")) {
 			/* set the locale */
 			locale_temp = pk_import_get_locale (key_array[i]);
-			g_ptr_array_add (locale_array, g_strdup (locale_temp));
+			if (locale_temp != NULL) {
+				g_ptr_array_add (locale_array, g_strdup (locale_temp));
+			}
 		}
 	}
 	g_strfreev (key_array);
