@@ -288,6 +288,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             ver = "%s-%s" % (po.version,po.release)
         return ver
 
+    def _get_nevra(self,pkg):
+        ''' gets the NEVRA for a pkg '''
+        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
+
     def _do_search(self,searchlist,filters,key):
         '''
         Search for yum packages
@@ -299,35 +303,32 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             res = self.yumbase.searchGenerator(searchlist, [key])
             fltlist = filters.split(';')
+            installed_nevra = [] # yum returns packages as available even when installed
+            pkg_list = [] # only do the second iteration on not installed pkgs
 
-            available = []
-            count = 1
             for (pkg,values) in res:
-                # are we installed?
                 if pkg.repo.id == 'installed':
-                    if FILTER_NOT_INSTALLED not in fltlist:
-                        if self._do_extra_filtering(pkg,fltlist):
-                            count+=1
-                            if count > 100:
-                                break
-                            self._show_package(pkg, INFO_INSTALLED)
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_INSTALLED)
+                        installed_nevra.append(self._get_nevra(pkg))
                 else:
-                    available.append(pkg)
+                    pkg_list.append(pkg)
+            for pkg in pkg_list:
+                nevra = self._get_nevra(pkg)
+                if nevra not in installed_nevra:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        self._show_package(pkg, INFO_AVAILABLE)
+
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
-
-        # Now show available packages.
-        if FILTER_INSTALLED not in fltlist:
-            for pkg in available:
-                if self._do_extra_filtering(pkg,fltlist):
-                    self._show_package(pkg, INFO_AVAILABLE)
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
         for filter in filterList:
             if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
-                continue
+                if not self._do_installed_filtering(filter, pkg):
+                    return False
             elif filter in (FILTER_GUI, FILTER_NOT_GUI):
                 if not self._do_gui_filtering(filter, pkg):
                     return False
@@ -341,6 +342,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not self._do_basename_filtering(filter, pkg):
                     return False
         return True
+
+    def _do_installed_filtering(self,flt,pkg):
+        isInstalled = False
+        if flt == FILTER_INSTALLED:
+            wantInstalled = True
+        else:
+            wantInstalled = False
+        isInstalled = pkg.repo.id == 'installed'
+        return isInstalled == wantInstalled
 
     def _do_gui_filtering(self,flt,pkg):
         isGUI = False
@@ -469,7 +479,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             pkgGroupDict = self._buildGroupDict()
             self.yumbase.conf.cache = 1 # Only look in cache.
             fltlist = filters.split(';')
-            found = {}
+            installed_nevra = [] # yum returns packages as available even when installed
 
             if not FILTER_NOT_INSTALLED in fltlist:
                 # Check installed for group
@@ -482,17 +492,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
                             self._show_package(pkg, INFO_INSTALLED)
+                    installed_nevra.append(self._get_nevra(pkg))
+
             if not FILTER_INSTALLED in fltlist:
                 # Check available for group
                 for pkg in self.yumbase.pkgSack:
-                    group = GROUP_OTHER
-                    if pkgGroupDict.has_key(pkg.name):
-                        cg = pkgGroupDict[pkg.name]
-                        if groupMap.has_key(cg):
-                            group = groupMap[cg]
-                    if group == key:
-                        if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_AVAILABLE)
+                    nevra = self._get_nevra(pkg)
+                    if nevra not in installed_nevra:
+                        group = GROUP_OTHER
+                        if pkgGroupDict.has_key(pkg.name):
+                            cg = pkgGroupDict[pkg.name]
+                            if groupMap.has_key(cg):
+                                group = groupMap[cg]
+                        if group == key:
+                            if self._do_extra_filtering(pkg, fltlist):
+                                self._show_package(pkg, INFO_AVAILABLE)
+
         except yum.Errors.GroupsError,e:
             self.error(ERROR_GROUP_NOT_FOUND,e)
         except yum.Errors.RepoError,e:
