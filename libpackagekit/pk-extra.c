@@ -65,10 +65,94 @@ struct _PkExtraPrivate
 	gchar			*exec;
 	gchar			*summary;
 	sqlite3			*db;
+	GHashTable		*hash_locale;
+	GHashTable		*hash_package;
 };
 
 G_DEFINE_TYPE (PkExtra, pk_extra, G_TYPE_OBJECT)
 static gpointer pk_extra_object = NULL;
+
+/**
+ * pk_extra_populate_cache_callback:
+ **/
+static gint
+pk_extra_populate_cache_callback (void *data, gint argc, gchar **argv, gchar **col_name)
+{
+	PkExtra *extra = PK_EXTRA (data);
+	gint i;
+	gchar *col;
+	gchar *value;
+
+	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
+
+	for (i=0; i<argc; i++) {
+		col = col_name[i];
+		value = argv[i];
+		if (pk_strequal (col, "package") && value != NULL) {
+			g_hash_table_insert (extra->priv->hash_package, g_strdup (value), GUINT_TO_POINTER (1));
+		} else if (pk_strequal (col, "summary") && value != NULL) {
+			g_hash_table_insert (extra->priv->hash_locale, g_strdup (value), GUINT_TO_POINTER (1));
+		} else {
+			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
+		}
+	}
+	return 0;
+}
+
+/**
+ * pk_extra_populate_locale_cache:
+ * @extra: a valid #PkExtra instance
+ *
+ * Return value: %TRUE if set correctly
+ **/
+static gboolean
+pk_extra_populate_locale_cache (PkExtra *extra)
+{
+	const gchar *statement = NULL;
+	gchar *error_msg = NULL;
+	gint rc;
+
+	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* get summary packages */
+	statement = "SELECT summary FROM localised";
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_cache_callback, extra, &error_msg);
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_extra_populate_package_cache:
+ * @extra: a valid #PkExtra instance
+ *
+ * Return value: %TRUE if set correctly
+ **/
+static gboolean
+pk_extra_populate_package_cache (PkExtra *extra)
+{
+	const gchar *statement = NULL;
+	gchar *error_msg = NULL;
+	gint rc;
+
+	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* get packages */
+	statement = "SELECT package FROM data";
+	rc = sqlite3_exec (extra->priv->db, statement, pk_extra_populate_cache_callback, extra, &error_msg);
+	if (rc != SQLITE_OK) {
+		pk_warning ("SQL error: %s\n", error_msg);
+		sqlite3_free (error_msg);
+		return FALSE;
+	}
+	return TRUE;
+}
 
 /**
  * pk_extra_set_locale:
@@ -81,15 +165,22 @@ gboolean
 pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 {
 	guint i;
+	guint len;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
+	g_return_val_if_fail (locale != NULL, FALSE);
 
 	g_free (extra->priv->locale);
 	extra->priv->locale = g_strdup (locale);
 	extra->priv->locale_base = g_strdup (locale);
 
 	/* we only want the first section to compare */
-	for (i=0; i<10; i++) {
+	len = strlen (locale);
+	if (len > 10) {
+		pk_warning ("locale really long (%i), truncating to 10", len);
+		len = 10;
+	}
+	for (i=0; i<len; i++) {
 		if (extra->priv->locale_base[i] == '_') {
 			extra->priv->locale_base[i] = '\0';
 			pk_debug ("locale_base is '%s'", extra->priv->locale_base);
@@ -102,6 +193,10 @@ pk_extra_set_locale (PkExtra *extra, const gchar *locale)
 		g_free (extra->priv->locale_base);
 		extra->priv->locale_base = NULL;
 	}
+
+	/* try to populate a working cache */
+	pk_extra_populate_locale_cache (extra);
+
 	return TRUE;
 }
 
@@ -135,6 +230,7 @@ pk_extra_detail_localised_callback (void *data, gint argc, gchar **argv, gchar *
 		col = col_name[i];
 		value = argv[i];
 		if (pk_strequal (col, "summary")) {
+			g_free (extra->priv->summary);
 			extra->priv->summary = g_strdup (value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -180,14 +276,17 @@ pk_extra_get_localised_detail_try (PkExtra *extra, const gchar *package, const g
 gboolean
 pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **summary)
 {
+	gpointer value;
+
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (summary != NULL, FALSE);
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
-	/* do we have a connection */
-	if (extra->priv->db == NULL) {
-		pk_debug ("no database connection");
+	/* can we optimize the call */
+	value = g_hash_table_lookup (extra->priv->hash_locale, package);
+	if (value == NULL) {
 		return FALSE;
 	}
 
@@ -225,8 +324,10 @@ pk_extra_detail_package_callback (void *data, gint argc, gchar **argv, gchar **c
 		col = col_name[i];
 		value = argv[i];
 		if (pk_strequal (col, "exec")) {
+			g_free (extra->priv->exec);
 			extra->priv->exec = g_strdup (value);
 		} else if (pk_strequal (col, "icon")) {
+			g_free (extra->priv->icon);
 			extra->priv->icon = g_strdup (value);
 		} else {
 			pk_warning ("%s = %s\n", col, value);
@@ -247,14 +348,15 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	gchar *statement;
 	gchar *error_msg = NULL;
 	gint rc;
+	gpointer value;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
-	/* do we have a connection */
-	if (extra->priv->db == NULL) {
-		pk_debug ("no database connection");
+	/* can we optimize the call */
+	value = g_hash_table_lookup (extra->priv->hash_locale, package);
+	if (value == NULL) {
 		return FALSE;
 	}
 
@@ -265,6 +367,7 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 		sqlite3_free (error_msg);
 		return FALSE;
 	}
+	g_free (statement);
 
 	/* report back */
 	if (icon != NULL) {
@@ -277,9 +380,16 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	} else {
 		g_free (extra->priv->exec);
 	}
+
+	/* did we fail to get both? */
+	if (extra->priv->icon == NULL &&
+	    extra->priv->exec == NULL) {
+		return FALSE;
+	}
+
+	/* reset */
 	extra->priv->icon = NULL;
 	extra->priv->exec = NULL;
-	g_free (statement);
 	return TRUE;
 }
 
@@ -299,13 +409,9 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
-
-	/* do we have a connection */
-	if (extra->priv->db == NULL) {
-		pk_debug ("no database connection");
-		return FALSE;
-	}
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (summary != NULL, FALSE);
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM localised WHERE "
@@ -337,6 +443,10 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 		return FALSE;
 	}
 
+	/* add to cache */
+	pk_debug ("adding summary:%s", package);
+	g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), GUINT_TO_POINTER (1));
+
 	return TRUE;
 }
 
@@ -356,13 +466,9 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->database != NULL, FALSE);
-
-	/* do we have a connection */
-	if (extra->priv->db == NULL) {
-		pk_debug ("no database connection");
-		return FALSE;
-	}
+	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+	g_return_val_if_fail (package != NULL, FALSE);
+	g_return_val_if_fail (icon != NULL || exec != NULL, FALSE);
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM data WHERE package = '%s'", package);
@@ -391,6 +497,10 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 		return FALSE;
 	}
 
+	/* add to cache */
+	pk_debug ("adding package:%s", package);
+	g_hash_table_insert (extra->priv->hash_package, g_strdup (package), GUINT_TO_POINTER (1));
+
 	return TRUE;
 }
 
@@ -410,7 +520,6 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 	gchar *error_msg = NULL;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (filename != NULL, FALSE);
 
 	if (extra->priv->database != NULL) {
 		pk_warning ("cannot assign extra than once");
@@ -459,6 +568,10 @@ pk_extra_set_database (PkExtra *extra, const gchar *filename)
 			}
 		}
 	}
+
+	/* try to populate a working cache */
+	pk_extra_populate_package_cache (extra);
+
 	return TRUE;
 }
 
@@ -481,11 +594,14 @@ pk_extra_init (PkExtra *extra)
 {
 	extra->priv = PK_EXTRA_GET_PRIVATE (extra);
 	extra->priv->database = NULL;
+	extra->priv->db = NULL;
 	extra->priv->locale = NULL;
 	extra->priv->locale_base = NULL;
 	extra->priv->icon = NULL;
 	extra->priv->exec = NULL;
 	extra->priv->summary = NULL;
+	extra->priv->hash_package = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	extra->priv->hash_locale = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 /**
@@ -506,6 +622,8 @@ pk_extra_finalize (GObject *object)
 	g_free (extra->priv->locale);
 	g_free (extra->priv->locale_base);
 	sqlite3_close (extra->priv->db);
+	g_hash_table_destroy (extra->priv->hash_package);
+	g_hash_table_destroy (extra->priv->hash_locale);
 
 	G_OBJECT_CLASS (pk_extra_parent_class)->finalize (object);
 }
@@ -538,9 +656,9 @@ libst_extra (LibSelfTest *test)
 	PkExtra *extra;
 	const gchar *text;
 	gboolean ret;
-	gchar *icon;
-	gchar *exec;
-	gchar *summary;
+	gchar *icon = NULL;
+	gchar *exec = NULL;
+	gchar *summary = NULL;
 	guint i;
 
 	if (libst_start (test, "PkExtra", CLASS_AUTO) == FALSE) {
@@ -562,7 +680,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "set database");
 	ret = pk_extra_set_database (extra, "extra.db");
 	if (ret) {
-		libst_success (test, NULL);
+		libst_success (test, "%ims", libst_elapsed (test));
 	} else {
 		libst_failed (test, NULL);
 	}
@@ -571,7 +689,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "set database (again)");
 	ret = pk_extra_set_database (extra, "angry.db");
 	if (ret == FALSE) {
-		libst_success (test, NULL);
+		libst_success (test, "%ims", libst_elapsed (test));
 	} else {
 		libst_failed (test, NULL);
 	}
@@ -580,7 +698,7 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "set locale explicit en");
 	ret = pk_extra_set_locale (extra, "en");
 	if (ret) {
-		libst_success (test, NULL);
+		libst_success (test, "%ims", libst_elapsed (test));
 	} else {
 		libst_failed (test, NULL);
 	}
@@ -613,6 +731,7 @@ libst_extra (LibSelfTest *test)
 		libst_failed (test, "failed!");
 	}
 	g_free (summary);
+	summary = NULL;
 
 	/************************************************************/
 	libst_title (test, "set locale implicit en_GB");
@@ -632,6 +751,7 @@ libst_extra (LibSelfTest *test)
 		libst_failed (test, "failed!");
 	}
 	g_free (summary);
+	summary = NULL;
 
 	/************************************************************/
 	libst_title (test, "insert package data");
@@ -654,6 +774,8 @@ libst_extra (LibSelfTest *test)
 	}
 	g_free (icon);
 	g_free (exec);
+	icon = NULL;
+	exec = NULL;
 
 	/************************************************************/
 	libst_title (test, "insert new package data");
@@ -676,11 +798,13 @@ libst_extra (LibSelfTest *test)
 	}
 	g_free (icon);
 	g_free (exec);
+	icon = NULL;
+	exec = NULL;
 
 	/************************************************************/
 	libst_title (test, "retrieve missing package data");
 	ret = pk_extra_get_package_detail (extra, "gnome-moo-manager", &icon, &exec);
-	if (ret && icon == NULL && exec == NULL) {
+	if (!ret && icon == NULL && exec == NULL) {
 		libst_success (test, "passed");
 	} else {
 		libst_failed (test, "%s:%s", icon, exec);
@@ -688,7 +812,7 @@ libst_extra (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "do lots of loops");
-	for (i=0;i<80;i++) {
+	for (i=0;i<250;i++) {
 		ret = pk_extra_get_localised_detail (extra, "gnome-power-manager", &summary);
 		if (!ret || summary == NULL) {
 			libst_failed (test, "failed to get good!");
