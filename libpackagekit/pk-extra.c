@@ -73,7 +73,7 @@ G_DEFINE_TYPE (PkExtra, pk_extra, G_TYPE_OBJECT)
 static gpointer pk_extra_object = NULL;
 
 /**
- * pk_extra_populate_locale_cache_callback:
+ * pk_extra_populate_package_cache_callback:
  **/
 static gint
 pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, gchar **col_name)
@@ -91,8 +91,6 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		/* just insert it, as we match on the package */
 		if (pk_strequal (col, "package") && value != NULL) {
 			g_hash_table_insert (extra->priv->hash_package, g_strdup (value), GUINT_TO_POINTER (1));
-		} else {
-			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
 		}
 	}
 	return 0;
@@ -108,7 +106,8 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 	gint i;
 	gchar *col;
 	gchar *value;
-	gchar *package = NULL; /* no g_free, just a copy */
+	gchar **package = NULL;
+	gchar **summary = NULL;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), 0);
 
@@ -117,16 +116,17 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 		value = argv[i];
 		/* save the package name, and use it is the key */
 		if (pk_strequal (col, "package") && value != NULL) {
-			pk_debug ("package=%s", value);
-			package = value;
+			package = &argv[i];
 		} else if (pk_strequal (col, "summary") && value != NULL) {
-			pk_debug ("package=%s, summary=%s", package, value);
-			g_return_val_if_fail (package != NULL, 0);
-			g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), GUINT_TO_POINTER (1));
-		} else {
-			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
+			summary = &argv[i];
 		}
 	}
+
+	/* only when both non-NULL */
+	if (package != NULL && summary != NULL) {
+		g_hash_table_insert (extra->priv->hash_locale, g_strdup (*package), GUINT_TO_POINTER (1));
+	}
+
 	return 0;
 }
 
