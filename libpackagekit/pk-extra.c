@@ -90,7 +90,6 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		value = argv[i];
 		/* just insert it, as we match on the package */
 		if (pk_strequal (col, "package") && value != NULL) {
-			pk_debug ("package=%s", value);
 			g_hash_table_insert (extra->priv->hash_package, g_strdup (value), GUINT_TO_POINTER (1));
 		} else {
 			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
@@ -122,6 +121,7 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 			package = value;
 		} else if (pk_strequal (col, "summary") && value != NULL) {
 			pk_debug ("package=%s, summary=%s", package, value);
+			g_return_val_if_fail (package != NULL, 0);
 			g_hash_table_insert (extra->priv->hash_locale, g_strdup (package), GUINT_TO_POINTER (1));
 		} else {
 			pk_warning ("%s=%s, this shouldn't happen!\n", col, value);
