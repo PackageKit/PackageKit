@@ -132,6 +132,7 @@ pk_extra_obj_free (PkExtraObj *eobj)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#include <glib/gstdio.h>
 
 void
 libst_extra_obj (LibSelfTest *test)
@@ -238,6 +239,8 @@ libst_extra_obj (LibSelfTest *test)
 		libst_failed (test, "got %s", eobj->summary);
 	}
 	pk_extra_obj_free (eobj);
+
+	g_unlink ("extra.db");
 
 	libst_end (test);
 }
