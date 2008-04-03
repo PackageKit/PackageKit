@@ -36,7 +36,6 @@ G_BEGIN_DECLS
 #define PK_IS_NOTIFY_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_NOTIFY))
 #define PK_NOTIFY_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_NOTIFY, PkNotifyClass))
 #define PK_NOTIFY_ERROR	 	(pk_notify_error_quark ())
-#define PK_NOTIFY_TYPE_ERROR	(pk_notify_error_get_type ())
 
 typedef struct _PkNotifyPrivate		PkNotifyPrivate;
 typedef struct _PkNotify		PkNotify;
@@ -63,7 +62,6 @@ struct _PkNotifyClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_notify_error_get_type		(void);
 GType		 pk_notify_get_type			(void) G_GNUC_CONST;
 PkNotify	*pk_notify_new				(void);
 
