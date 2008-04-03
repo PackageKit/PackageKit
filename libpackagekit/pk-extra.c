@@ -704,6 +704,14 @@ libst_extra (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "check locale base");
+	if (extra->priv->locale_base == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "get locale");
 	text = pk_extra_get_locale (extra);
 	if (pk_strequal (text, "en")) {
@@ -737,6 +745,14 @@ libst_extra (LibSelfTest *test)
 	libst_title (test, "set locale implicit en_GB");
 	ret = pk_extra_set_locale (extra, "en_GB");
 	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "check locale base");
+	if (pk_strequal (extra->priv->locale_base, "en")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
