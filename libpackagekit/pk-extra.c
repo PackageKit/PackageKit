@@ -355,7 +355,7 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 
 	/* can we optimize the call */
-	value = g_hash_table_lookup (extra->priv->hash_locale, package);
+	value = g_hash_table_lookup (extra->priv->hash_package, package);
 	if (value == NULL) {
 		return FALSE;
 	}
