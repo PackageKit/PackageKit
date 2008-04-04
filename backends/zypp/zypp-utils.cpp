@@ -11,6 +11,7 @@
 #include <zypp/RepoManager.h>
 #include <zypp/RepoInfo.h>
 #include <zypp/repo/RepoException.h>
+#include <zypp/target/rpm/RpmException.h>
 #include <zypp/parser/ParseException.h>
 #include <zypp/base/Algorithm.h>
 #include <zypp/Pathname.h>
@@ -555,6 +556,10 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return FALSE;
+	} catch (const zypp::target::rpm::RpmException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
 		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
