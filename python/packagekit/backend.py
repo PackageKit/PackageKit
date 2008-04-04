@@ -193,9 +193,10 @@ class PackageKitBaseBackend:
         print "allow-cancel\t%s" % (data)
         sys.stdout.flush()
 
-    def repo_signature_required(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
+    def repo_signature_required(self,id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type):
         '''
         send 'repo-signature-required' signal:
+        @param id:           Id of the package needing a signature
         @param repo_name:       Name of the repository
         @param key_url:         URL which the user can use to verify the key
         @param key_userid:      Key userid
@@ -204,8 +205,8 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param type:            Key type (GPG)
         '''
-        print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
-            repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
+        print "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+            id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,type
             )
         sys.stdout.flush()
 
@@ -436,6 +437,13 @@ class PackageKitBaseBackend:
     def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
+    def repo_signature_install(self,package):        
+        '''
+        Implement the {backend}-repo-signature-install functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

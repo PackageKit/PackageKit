@@ -1005,6 +1005,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
+                print "debug :",keyData
                 if not keyData:
                     self.error(ERROR_INTERNAL_ERROR,
                                "GPG key not imported, but no GPG information received from Yum.")
@@ -1013,13 +1014,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
 # to have fingerprint and timestamp available here
 # the above change is now in the latest yum for Fedor arawhide (yum-3.2.6-5.fc8)
-                self.repo_signature_required(keyData['po'].repoid,
+                id = self._pkg_to_id(keyData['po'])
+                print id
+                self.repo_signature_required(id,
+                                             keyData['po'].repoid,
                                              keyData['keyurl'],
                                              keyData['userid'],
                                              keyData['hexkeyid'],
                                              keyData['fingerprint'],
                                              keyData['timestamp'],
                                              'GPG')
+                print "post"                                             
                 self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing;" + self._format_msgs(ye.value)
@@ -1280,6 +1285,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_INTERNAL_ERROR,str(e))
         else:
             self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
+
+    def repo_signature_install(self,package):
+        self._check_init()
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+        pkg,inst = self._findPackage(package)
+        if pkg:
+            try:
+                self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
+            except yum.Errors.YumBaseError, e:
+                self.error(ERROR_INTERNAL_ERROR,str(e))
+            except:
+                self.error(ERROR_INTERNAL_ERROR,"Error importing GPG Key for %s" % pkg)
 
     def _check_init(self,lazy_cache=False):
         '''Just does the caching tweaks'''
@@ -1559,7 +1578,6 @@ class PackageKitYumBase(yum.YumBase):
                 self.getKeyForPackage(po, fullaskcb=self._fullAskForGPGKeyImport)
             else:
                 raise yum.Errors.YumGPGCheckError, errmsg
-
         return 0
 
     def _fullAskForGPGKeyImport(self, data):
