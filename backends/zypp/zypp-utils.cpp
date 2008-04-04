@@ -348,8 +348,6 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 					  resolvable.edition ().asString ().c_str (),
 					  resolvable.arch ().asString ().c_str (),
 					  resolvable.repository (). name().c_str ());
-	// TODO: Figure out how to check if resolvable is really a ResObject and then cast it to a ResObject and pull of the repository alias for our "data" part in the package id
-//					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
 
 	return package_id;
 }
@@ -506,7 +504,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			zypp::ResolverProblemList problems = zypp->resolver ()->problems ();
 
 			for (zypp::ResolverProblemList::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, (*it)->description ().c_str ());
+				pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, (*it)->description ().c_str ());
 			}
 
                         pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
@@ -532,7 +530,23 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 
                 if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
-                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "There are packages which couldn't be installed");
+			
+			zypp::ZYppCommitResult::PoolItemList errors = result._errors;
+			for (zypp::ZYppCommitResult::PoolItemList::iterator it = errors.begin (); it != errors.end (); it++){
+				pk_backend_error_code (backend, PK_ERROR_LOCAL_INSTALL_FAILED, "While installing %s an error appeared", (*it)->name ().c_str ());
+			}
+			
+			zypp::ZYppCommitResult::PoolItemList remaining = result._remaining;
+			for (zypp::ZYppCommitResult::PoolItemList::iterator it = remaining.begin (); it != remaining.end (); it++){
+				pk_backend_error_code (backend, PK_ERROR_LOCAL_INSTALL_FAILED, "%s could not be installed", (*it)->name ().c_str ());
+			}
+			
+			zypp::ZYppCommitResult::PoolItemList srcremaining = result._srcremaining;
+			for (zypp::ZYppCommitResult::PoolItemList::iterator it = srcremaining.begin (); it != srcremaining.end (); it++){
+				pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE, "%s was not installed", (*it)->name ().c_str ());
+			}
+
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Transaction could not be completed");
                         pk_backend_finished (backend);
                         return FALSE;
                 }
@@ -540,7 +554,6 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 zypp->resolver ()->setForceResolve (FALSE);
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
-                // TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 		pk_backend_finished (backend);
 		return FALSE;
