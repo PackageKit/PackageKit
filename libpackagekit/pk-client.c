@@ -2541,6 +2541,11 @@ pk_client_get_repo_list (PkClient *client, const gchar *filter, GError **error)
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
 	}
 	return ret;
 }
