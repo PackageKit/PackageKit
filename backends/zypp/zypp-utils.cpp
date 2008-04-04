@@ -347,7 +347,7 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
 					  resolvable.arch ().asString ().c_str (),
-					  resolvable.vendor ().c_str ());
+					  resolvable.repository (). name().c_str ());
 	// TODO: Figure out how to check if resolvable is really a ResObject and then cast it to a ResObject and pull of the repository alias for our "data" part in the package id
 //					  ((zypp::ResObject::constPtr)resolvable)->repository ().info ().alias ().c_str ());
 
@@ -502,6 +502,12 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                        // Manual intervention required to resolve dependencies
                        // TODO: Figure out what we need to do with PackageKit
                        // to pull off interactive problem solving.
+
+			zypp::ResolverProblemList problems = zypp->resolver ()->problems ();
+
+			for (zypp::ResolverProblemList::iterator it = problems.begin (); it != problems.end (); it++){
+				pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, (*it)->description ().c_str ());
+			}
 
                         pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
                         pk_backend_finished (backend);
