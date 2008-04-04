@@ -971,7 +971,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 break
 
     def _format_msgs(self,msgs):
-        if type(msgs) == type(''):
+        if isinstance(msgs, basestring):        
             msgs = msgs.split('\n')
         return ";".join(msgs)
 
