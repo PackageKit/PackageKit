@@ -287,7 +287,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         package_id = pk_package_id_build ( it->resolvable ()->name ().c_str(),
                                         it->resolvable ()->edition ().asString ().c_str(),
                                         it->resolvable ()->arch ().c_str(),
-                                        it->resolvable ()->vendor ().c_str ());
+                                        it->resolvable ()->repoInfo().alias ().c_str ());
 
                         pk_backend_package (backend,
                                         status,
@@ -484,7 +484,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 			package_id = pk_package_id_build (it->second.name ().c_str(),
 					it->second.edition ().asString ().c_str(),
 					it->second.arch ().c_str(),
-					it->second.vendor ().c_str());
+					it->second.repository ().name ().c_str());
 			
 			zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
 			
@@ -705,7 +705,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
                 package_id = pk_package_id_build ((*it)->name ().c_str (),
                                                   candidate->edition ().c_str (),
                                                   candidate->arch ().c_str (),
-                                                  candidate->vendor ().c_str ());
+                                                  candidate->repoInfo ().alias ().c_str ());
 
                 pk_backend_package (backend,
                                     infoEnum,
