@@ -1732,7 +1732,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Error in Transaction Processing\n" + ye.value
+            retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
             self._unlock_yum()
             self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
             self.Finished(EXIT_FAILED)
