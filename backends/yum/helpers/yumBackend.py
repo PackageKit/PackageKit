@@ -634,7 +634,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # get e,v,r from package id version 
             e,v,r = self._getEVR(idver)
         else:
-            print id
             n = id
             e = v = r = a = None  
         # search the rpmdb for the nevra
@@ -650,6 +649,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return None,False
 
+    def _get_pkg_requirements(self,pkg,reqlist=[] ):
+        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
+        print 
+        reqlist.extend(pkgs)
+        print "DEBUG: ", reqlist
+        if pkgs:
+            for po in pkgs:
+                self._get_pkg_requirements(po,reqlist)
+        else:
+            return reqlist
+        
+        
+            
     def get_requires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
@@ -659,12 +671,23 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
         pkg,inst = self._findPackage(package)
-        pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
-        for pkg in pkgs:
-            if inst:
-                self._show_package(pkg,INFO_INSTALLED)
-            else:
-                self._show_package(pkg,INFO_AVAILABLE)
+        # FIXME: This is a hack, it simulates a removal of the
+        # package and return the transaction
+        if inst and pkg:
+            txmbrs = self.yumbase.remove(name=pkg.name)
+            if txmbrs:
+                rc,msgs =  self.yumbase.buildTransaction()
+                if rc !=2:
+                    retmsg = "Error in Dependency Resolution;" + self._format_msgs(msgs)
+                    self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+                else:
+                    for txmbr in self.yumbase.tsInfo:
+                        if txmbr.po.name != pkg.name:
+                            self._show_package(txmbr.po,INFO_INSTALLED)
+        else:
+            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                        
+                                
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
