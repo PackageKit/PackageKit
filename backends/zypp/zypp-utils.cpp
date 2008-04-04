@@ -305,7 +305,7 @@ zypp_get_packages_by_file (const gchar *search_file)
 		}
 	}
 
-        return v;
+	return v;
 }
 
 zypp::sat::Solvable
@@ -326,8 +326,8 @@ zypp_get_package_by_id (const gchar *package_id)
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 		const char *version = it->edition ().asString ().c_str ();
-                const char *arch = it->arch ().c_str ();
-		if (strcmp (pi->version, version) == 0 || strcmp (pi->arch, arch) == 0) {
+		const char *arch = it->arch ().c_str ();
+		if (strcmp (pi->version, version) == 0 && strcmp (pi->arch, arch) == 0) {
 			package = *it;
 			break;
 		}
