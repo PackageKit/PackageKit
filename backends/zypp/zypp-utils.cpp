@@ -496,22 +496,31 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                         zypp->resolver ()->setForceResolve (force);
 
                 // Gather up any dependencies
-                pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-                if (zypp->resolver ()->resolvePool () == FALSE) {
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		if (zypp->resolver ()->resolvePool () == FALSE) {
                        // Manual intervention required to resolve dependencies
                        // TODO: Figure out what we need to do with PackageKit
                        // to pull off interactive problem solving.
 
 			zypp::ResolverProblemList problems = zypp->resolver ()->problems ();
+			gchar * emsg = NULL, * tempmsg = NULL;
 
 			for (zypp::ResolverProblemList::iterator it = problems.begin (); it != problems.end (); it++){
-				pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, (*it)->description ().c_str ());
+				if (emsg == NULL) {
+					emsg = g_strdup ((*it)->description ().c_str ());
+				}
+				else {
+					tempmsg = emsg;
+					emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
+					g_free (tempmsg);
+				}
 			}
 
-                        pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Couldn't resolve the package dependencies.");
-                        pk_backend_finished (backend);
-                        return FALSE;
-                }
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
+			pk_backend_finished (backend);
+			g_free (emsg);
+			return FALSE;
+		}
         
                 switch (type) {
                         case INSTALL:
