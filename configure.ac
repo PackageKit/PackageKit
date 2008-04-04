@@ -560,6 +560,7 @@ if test x$enable_zypp = xyes; then
 fi
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
+AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")

@@ -45,6 +45,12 @@
       running the transaction.
     </para>
     <para>
+      If the backend includes <literal>installed</literal> and
+      <literal>available</literal> versions of the same package when searching
+      then the <literal>available</literal> version will have to be filtered
+      in the backend.
+    </para>
+    <para>
       The search query in the backend should not be case sensitive, and
       should not be sensitive to <literal>_</literal> or <literal>-</literal>.
     </para>
