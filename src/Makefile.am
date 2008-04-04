@@ -59,7 +59,6 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
-	pk-restart.c					\
 	pk-restart.h					\
 	pk-engine.h					\
 	pk-engine.c					\
@@ -80,6 +79,16 @@ shared_SOURCES =					\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
+
+if PK_BUILD_GIO
+shared_SOURCES +=					\
+	pk-restart-gio.c				\
+	$(NULL)
+else
+shared_SOURCES +=					\
+	pk-restart-dummy.c				\
+	$(NULL)
+endif
 
 if SECURITY_TYPE_POLKIT
 shared_SOURCES += pk-security-polkit.c
