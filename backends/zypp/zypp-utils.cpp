@@ -357,6 +357,7 @@ gboolean
 zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 {
         gboolean ok = pk_backend_repo_signature_required (backend,
+                        "dummy;0.0.1;i386;data",
                         "TODO: Repo-Name",
                         key.path ().c_str (),
                         key.id ().c_str (),
@@ -372,6 +373,7 @@ gboolean
 zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id)
 {
         gboolean ok = pk_backend_repo_signature_required (backend,
+                        "dummy;0.0.1;i386;data",
                         "TODO: Repo-Name",
                         file.c_str (),
                         id.c_str (),
@@ -387,6 +389,7 @@ gboolean
 zypp_signature_required (PkBackend *backend, const std::string &file)
 {
         gboolean ok = pk_backend_repo_signature_required (backend,
+                        "dummy;0.0.1;i386;data",
                         "TODO: Repo-Name",
                         file.c_str (),
                         "UNKNOWN",
