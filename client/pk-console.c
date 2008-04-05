@@ -1055,6 +1055,10 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	g_print ("Fingerprint: %s\n", key_fingerprint);
 	g_print ("Timestamp:   %s\n", key_timestamp);
 
+	/* it didn't quite cut it for the release */
+	g_debug ("Importing keys is not supported yet. We're working on it!");
+	return;
+
 	/* get user input */
 	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
 	if (!import) {
