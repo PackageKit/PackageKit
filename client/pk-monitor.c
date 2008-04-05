@@ -121,8 +121,8 @@ pk_monitor_repo_signature_required_cb (PkClient *client, const gchar *package_id
 				       PkSigTypeEnum type, gpointer data)
 {
 	gchar *tid = pk_client_get_tid (client);
-	g_print ("emitting RepoSignatureRequired package_id=%s, tid:%s, %s, %s, %s, %s, %s, %s, %s\n",
-		 package_id, tid, repository_name, key_url, key_userid, key_id,
+	g_print ("RepoSignatureRequired tid:%s, package_id=%s, %s, %s, %s, %s, %s, %s, %s\n",
+		 tid, package_id, repository_name, key_url, key_userid, key_id,
 		 key_fingerprint, key_timestamp, pk_sig_type_enum_to_text (type));
 	g_free (tid);
 }

@@ -1039,19 +1039,29 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
  * pk_console_repo_signature_required_cb:
  **/
 static void
-pk_console_repo_signature_required_cb (PkClient *client, const gchar *repository_name, const gchar *key_url,
-				       const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
-				       const gchar *key_timestamp, PkSigTypeEnum type, gpointer data)
+pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id, const gchar *repository_name,
+				       const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+				       const gchar *key_fingerprint, const gchar *key_timestamp,
+				       PkSigTypeEnum type, gpointer data)
 {
-	g_print (_("Signature Required\n"));
-	g_print ("  repo name:       '%s'\n", repository_name);
-	g_print ("  key url:         '%s'\n", key_url);
-	g_print ("  key userid:      '%s'\n", key_userid);
-	g_print ("  key id:          '%s'\n", key_id);
-	g_print ("  key fingerprint: '%s'\n", key_fingerprint);
-	g_print ("  key timestamp:   '%s'\n", key_timestamp);
-	g_print ("  key type:        '%s'\n", pk_sig_type_enum_to_text (type));
+	gboolean import;
 
+	g_print ("Repository Signature Required\n");
+	g_print ("Package:     %s\n", package_id);
+	g_print ("Name:        %s\n", repository_name);
+	g_print ("URL:         %s\n", key_url);
+	g_print ("User:        %s\n", key_userid);
+	g_print ("ID:          %s\n", key_id);
+	g_print ("Fingerprint: %s\n", key_fingerprint);
+	g_print ("Timestamp:   %s\n", key_timestamp);
+
+	/* get user input */
+	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
+	if (!import) {
+		g_print ("%s\n", _("Did not import key, task will fail"));
+		return;
+	}
+	g_print ("TODO: import key\n");
 }
 
 /**

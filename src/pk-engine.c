@@ -330,11 +330,11 @@ pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *package_i
 	}
 	type_text = pk_sig_type_enum_to_text (type);
 
-	pk_debug ("emitting repo_signature_required package_id=%s, tid:%s, %s, %s, %s, %s, %s, %s, %s",
-		  package_id, c_tid, repository_name, key_url, key_userid, key_id,
+	pk_debug ("emitting repo_signature_required tid:%s, package_id=%s, %s, %s, %s, %s, %s, %s, %s",
+		  c_tid, package_id, repository_name, key_url, key_userid, key_id,
 		  key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (engine, signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED], 0,
-		       package_id, c_tid, repository_name, key_url, key_userid, key_id,
+		       c_tid, package_id, repository_name, key_url, key_userid, key_id,
 		       key_fingerprint, key_timestamp, type_text);
 }
 
