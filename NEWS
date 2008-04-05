@@ -1,3 +1,57 @@
+Version 0.1.11
+~~~~~~~~~~~~~~
+Released: 2008-04-05
+
+* Backends:
+ - conary: Added update (Ken VanDine)
+ - poldek: Implement 'newest' filter (Marcin Banasiak)
+ - yum: Don't mention yum so much in the detailed error text. rh#440701
+ - yum: Fix YumBaseError message handling in _runYumTransaction (Luke Macken)
+ - yum: Extended repo_signature_required and implemented new signature-install method (Tim Lauridsen)
+ - yum: Fix one char at a line messages (Tim Lauridsen)
+ - yum: Make get-requires pkg return the packages there need to removed if pkg is removed (Tim Lauridsen)
+ - yum: Rewrite the yum search functions so that we filter out available packages. rh#440122 (Richard Hughes)
+ - yum: Copy the basename filtering from yum2 into yum. rh#440066 (Richard Hughes)
+ - yum: Replace unicode decoding errors with question marks. rh#439764 (Luke Macken)
+ - yum: Fixed traceback in install_file. rhbz #439728 (Tim Lauridsen)
+ - yum: Fix 'No package to instal' typo, fixes rh#439778 (Richard Hughes)
+ - yum: Correct some grammar pointed out in rh#439780 (Richard Hughes)
+ - yum2: Remove file extensions from the MetaDataMap (Luke Macken)
+ - yum2: Set NoPercentageUpdates when doing a dep resolve (Richard Hughes)
+ - zypp: Added rpm-exceptions (Stefan Haas)
+ - zypp: Make more verbose if resolution failed (Stefan Haas)
+ - zypp: Changes for libzypp 4.7.0 (Stefan Haas)
+ - zypp: Check for valid package names before emitting. BNC#372429. (Scott Reeves)
+
+* New features:
+ - Add a hash table into PkExtra so we can see if the query is likely to succeed
+   - This reduces the profile time from 340ms to 69ms on my machine (Richard Hughes)
+ - Make libgbus send a signal when something is replaced on the bus (Richard Hughes)
+ - The daemon will quit when the conf file is changed (Richard Hughes)
+ - Add a new DBUS interface org.freedesktop.PackageKit.Notify so we can get system wide
+   notifications from PackageKit, without having to bodge PkClient to do this for us. (Richard Hughes)
+ - Add the NEWEST filter (Richard Hughes)
+ - Change the API of GetRepoList(void) to GetRepoList(filter) (Richard Hughes)
+
+* Bugfixes:
+ - Use BUFSIZ chunks of memory in PkSpawn to use the entire page of memory (Richard Hughes)
+ - Make PkRestart and PkConf use the same config file logic (Richard Hughes)
+ - Correct some problems after Matthias' daemon review (Richard Hughes)
+ - Constify *_get_type, it's top of the profile and could be unrolled (Richard Hughes)
+ - Fix 'No package to instal' typo. rh#439778 (Richard Hughes)
+ - Install pk-import-* into libexec as they are not meant to be run by users (Richard Hughes)
+ - Display why the pk-import-* tools fail to open the PkExtra database. rh#439738 (Richard Hughes)
+ - Resolve the path before passing it to the backend. rh#439692 (Richard Hughes)
+ - When the backend has finished, manually set the allow cancel to FALSE (Richard Hughes)
+ - Set the backend exit code to canceled when we cancel the transaction (Richard Hughes)
+ - When asked to cancel, send ::set-allow-cancel(false) to update UI elements (Richard Hughes)
+ - Warn when we are doing PkClient actions when we don't need to (Richard Hughes)
+ - Update the dummy backend to be able to test the client tools (Richard Hughes)
+ - Ignore some errors like 'Already finished' when we try to cancel (Richard Hughes)
+ - Cancel a running client transaction if we try to reset it (Richard Hughes)
+ - Be more paranoid about sqlite status (Richard Hughes)
+ - Fix 'pkcon get repos' by actually waiting for the return value (Klaus Kämpf)
+
 Version 0.1.10
 ~~~~~~~~~~~~~~
 Released: 2008-03-28
