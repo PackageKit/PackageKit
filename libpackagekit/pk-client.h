@@ -118,6 +118,7 @@ struct _PkClientClass
 							 const gchar	*package_id,
 							 const gchar	*filelist);
 	void		(* repo_signature_required)	(PkClient	*client,
+							 const gchar	*package_id,
 							 const gchar	*repository_name,
 							 const gchar	*key_url,
 							 const gchar	*key_userid,

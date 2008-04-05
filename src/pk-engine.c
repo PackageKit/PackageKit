@@ -313,9 +313,10 @@ pk_engine_update_detail_cb (PkBackend *backend, const gchar *package_id,
  * pk_engine_repo_signature_required_cb:
  **/
 static void
-pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repository_name, const gchar *key_url,
-				      const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
-				      const gchar *key_timestamp, PkSigTypeEnum type, PkEngine *engine)
+pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *package_id, const gchar *repository_name,
+				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+				      const gchar *key_fingerprint, const gchar *key_timestamp,
+				      PkSigTypeEnum type, PkEngine *engine)
 {
 	const gchar *type_text;
 	const gchar *c_tid;
@@ -329,10 +330,12 @@ pk_engine_repo_signature_required_cb (PkBackend *backend, const gchar *repositor
 	}
 	type_text = pk_sig_type_enum_to_text (type);
 
-	pk_debug ("emitting repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
-		  c_tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+	pk_debug ("emitting repo_signature_required package_id=%s, tid:%s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, c_tid, repository_name, key_url, key_userid, key_id,
+		  key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (engine, signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED], 0,
-		       c_tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+		       package_id, c_tid, repository_name, key_url, key_userid, key_id,
+		       key_fingerprint, key_timestamp, type_text);
 }
 
 /**
@@ -2893,8 +2896,8 @@ pk_engine_class_init (PkEngineClass *klass)
 	signals [PK_ENGINE_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 9, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_ENGINE_DESCRIPTION] =
 		g_signal_new ("description",

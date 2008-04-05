@@ -756,7 +756,8 @@ pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *file
  * pk_backend_repo_signature_required:
  **/
 gboolean
-pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_name, const gchar *key_url,
+pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
+				    const gchar *repository_name, const gchar *key_url,
 				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				    const gchar *key_timestamp, PkSigTypeEnum type)
 {
@@ -770,10 +771,12 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 		return FALSE;
 	}
 
-	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %i",
-		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %i",
+		  package_id, repository_name, key_url, key_userid, key_id,
+		  key_fingerprint, key_timestamp, type);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED], 0,
-		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
+		       package_id, repository_name, key_url, key_userid, key_id,
+		       key_fingerprint, key_timestamp, type);
 	return TRUE;
 }
 
@@ -1249,9 +1252,9 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

@@ -112,6 +112,22 @@ pk_monitor_allow_cancel_cb (PkClient *client, gboolean allow_cancel, gpointer da
 }
 
 /**
+ * pk_monitor_repo_signature_required_cb:
+ **/
+static void
+pk_monitor_repo_signature_required_cb (PkClient *client, const gchar *package_id, const gchar *repository_name,
+				       const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+				       const gchar *key_fingerprint, const gchar *key_timestamp,
+				       PkSigTypeEnum type, gpointer data)
+{
+	gchar *tid = pk_client_get_tid (client);
+	g_print ("emitting RepoSignatureRequired package_id=%s, tid:%s, %s, %s, %s, %s, %s, %s, %s\n",
+		 package_id, tid, repository_name, key_url, key_userid, key_id,
+		 key_fingerprint, key_timestamp, pk_sig_type_enum_to_text (type));
+	g_free (tid);
+}
+
+/**
  * pk_monitor_finished_cb:
  **/
 static void
@@ -217,6 +233,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_package_cb), NULL);
 	g_signal_connect (client, "allow-cancel",
 			  G_CALLBACK (pk_monitor_allow_cancel_cb), NULL);
+	g_signal_connect (client, "repo-signature-required",
+			  G_CALLBACK (pk_monitor_repo_signature_required_cb), NULL);
 
 	notify = pk_notify_new ();
 	g_signal_connect (notify, "repo-list-changed",

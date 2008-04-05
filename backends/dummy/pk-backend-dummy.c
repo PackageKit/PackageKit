@@ -307,8 +307,8 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
-	if (pk_strequal (package_id,"vips-doc;7.12.4-2.fc8;noarch;linva")) {
-		pk_backend_repo_signature_required (backend, "updates", "http://example.com/gpgkey",
+	if (pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+		pk_backend_repo_signature_required (backend, package_id, "updates", "http://example.com/gpgkey",
 						    "Test Key (Fedora) fedora@example.com", "BB7576AC",
 						    "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
 						    "2007-10-04", PK_SIGTYPE_ENUM_GPG);

@@ -698,9 +698,11 @@ pk_transaction_repo_detail_cb (PkBackend *backend, const gchar *repo_id,
  * pk_transaction_repo_signature_required_cb:
  **/
 static void
-pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *repository_name, const gchar *key_url,
-					   const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
-					   const gchar *key_timestamp, PkSigTypeEnum type, PkTransaction *transaction)
+pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *package_id,
+					   const gchar *repository_name, const gchar *key_url,
+					   const gchar *key_userid, const gchar *key_id,
+					   const gchar *key_fingerprint, const gchar *key_timestamp,
+					   PkSigTypeEnum type, PkTransaction *transaction)
 {
 	const gchar *type_text;
 
@@ -709,10 +711,12 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *repo
 
 	type_text = pk_sig_type_enum_to_text (type);
 
-	pk_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s",
-		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+	pk_debug ("emitting repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+		  package_id, repository_name, key_url, key_userid, key_id,
+		  key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REPO_SIGNATURE_REQUIRED], 0,
-		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+		       package_id, repository_name, key_url, key_userid, key_id,
+		       key_fingerprint, key_timestamp, type_text);
 }
 
 /**
@@ -2671,8 +2675,8 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	signals [PK_TRANSACTION_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",

@@ -93,6 +93,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkStatusEnum status_enum;
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
+	PkSigTypeEnum sig_type;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
@@ -315,7 +316,37 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		pk_backend_no_percentage_updates (backend_spawn->priv->backend);
 	} else if (pk_strequal (command, "repo-signature-required")) {
-		ret = FALSE;
+
+		if (size != 9+99) {
+			pk_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+
+		sig_type = pk_sig_type_enum_from_text (sections[8]);
+		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
+			ret = FALSE;
+			goto out;
+		}
+		if (pk_strzero (sections[1])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "package_id blank, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+		if (pk_strzero (sections[2])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "repository name blank, and hence ignored: '%s'", sections[2]);
+			ret = FALSE;
+			goto out;
+		}
+
+		/* pass _all_ of the data */
+		ret = pk_backend_repo_signature_required (backend_spawn->priv->backend, sections[1],
+							  sections[2], sections[3], sections[4],
+							  sections[5], sections[6], sections[7], sig_type);
 		goto out;
 	} else {
 		pk_warning ("invalid command '%s'", command);

@@ -242,13 +242,14 @@ pk_backend_dbus_message_cb (DBusGProxy *proxy, PkMessageEnum message,
  * pk_backend_dbus_repo_signature_required_cb:
  **/
 static void
-pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *repository_name,
-					    const gchar *key_url, const gchar *key_userid,
-					    const gchar *key_id, const gchar *key_fingerprint,
-					    const gchar *key_timestamp, PkSigTypeEnum type, PkBackendDbus *backend_dbus)
+pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id,
+					    const gchar *repository_name, const gchar *key_url,
+					    const gchar *key_userid, const gchar *key_id,
+					    const gchar *key_fingerprint, const gchar *key_timestamp,
+					    PkSigTypeEnum type, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_repo_signature_required (backend_dbus->priv->backend, repository_name,
+	pk_backend_repo_signature_required (backend_dbus->priv->backend, package_id, repository_name,
 					    key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
 }
 

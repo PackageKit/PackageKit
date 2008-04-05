@@ -800,8 +800,9 @@ pk_client_files_cb (DBusGProxy  *proxy,
  * pk_client_repo_signature_required_cb:
  **/
 static void
-pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const gchar *repository_name,
-				      const gchar *key_url, const gchar *key_userid, const gchar *key_id,
+pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const gchar *package_id,
+				      const gchar *repository_name, const gchar *key_url,
+				      const gchar *key_userid, const gchar *key_id,
 				      const gchar *key_fingerprint, const gchar *key_timestamp,
 				      const gchar *type_text, PkClient *client)
 {
@@ -813,10 +814,10 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *tid, const
 		return;
 	}
 
-	pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s",
-		  tid, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+	pk_debug ("emit repo_signature_required tid:%s, %s, %s, %s, %s, %s, %s, %s, %s",
+		  tid, package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
-		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+		       package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
 }
 
 /**
@@ -3202,9 +3203,9 @@ pk_client_class_init (PkClientClass *klass)
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkClientClass, repo_signature_required),
-			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
 	/**
 	 * PkClient::repo-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3520,7 +3521,7 @@ pk_client_init (PkClient *client)
 	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
 

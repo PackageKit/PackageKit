@@ -182,6 +182,7 @@
       <arg type="b" name="enabled" direction="out"/>
     </signal>
     <signal name="RepoSignatureRequired">
+      <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="repository_name" direction="out"/>
       <arg type="s" name="key_url" direction="out"/>
       <arg type="s" name="key_userid" direction="out"/>
