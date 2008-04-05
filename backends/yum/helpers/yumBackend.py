@@ -208,7 +208,7 @@ class GPGKeyNotImported(exceptions.Exception):
 def sigquit(signum, frame):
     print >> sys.stderr, "Quit signal sent - exiting immediately"
     if yumbase:
-        print >> sys.stderr, "unlocking Yum"
+        print >> sys.stderr, "unlocking backend"
         yumbase.closeRpmDB()
         yumbase.doUnlock(YUM_PID_FILE)
     sys.exit(1)
@@ -321,7 +321,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -371,7 +371,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
@@ -512,7 +512,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_GROUP_NOT_FOUND,e)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
     def get_packages(self,filters,showdesc='no'):
         '''
@@ -549,7 +549,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_description(pkg)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
     
     def search_file(self,filters,key):
@@ -875,7 +875,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             break
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
             
     def install(self, packages):
         '''
@@ -1008,7 +1008,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 print "debug :",keyData
                 if not keyData:
                     self.error(ERROR_INTERNAL_ERROR,
-                               "GPG key not imported, but no GPG information received from Yum.")
+                               "GPG key not imported, and no GPG information was found.")
 
 # We need a yum with this change:
 # http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
@@ -1142,7 +1142,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg,INFO_NORMAL)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Yum cache was invalid and has been rebuilt.")
+            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
                 
 
     def repo_enable(self, repoid, enable):
