@@ -145,7 +145,12 @@ pk_extra_populate_locale_cache (PkExtra *extra)
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* get summary packages */
 	statement = "SELECT package, summary FROM localised";
@@ -172,7 +177,12 @@ pk_extra_populate_package_cache (PkExtra *extra)
 	gint rc;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* get packages */
 	statement = "SELECT package FROM data";
@@ -313,7 +323,12 @@ pk_extra_get_localised_detail (PkExtra *extra, const gchar *package, gchar **sum
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (summary != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* can we optimize the call */
 	value = g_hash_table_lookup (extra->priv->hash_locale, package);
@@ -383,7 +398,12 @@ pk_extra_get_package_detail (PkExtra *extra, const gchar *package, gchar **icon,
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
 	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* can we optimize the call */
 	value = g_hash_table_lookup (extra->priv->hash_package, package);
@@ -439,10 +459,15 @@ pk_extra_set_localised_detail (PkExtra *extra, const gchar *package, const gchar
 	gint rc;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (summary != NULL, FALSE);
+	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM localised WHERE "
@@ -496,10 +521,15 @@ pk_extra_set_package_detail (PkExtra *extra, const gchar *package, const gchar *
 	gint rc;
 
 	g_return_val_if_fail (PK_IS_EXTRA (extra), FALSE);
-	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
-	g_return_val_if_fail (extra->priv->db != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 	g_return_val_if_fail (icon != NULL || exec != NULL, FALSE);
+	g_return_val_if_fail (extra->priv->locale != NULL, FALSE);
+
+	/* we failed to open */
+	if (extra->priv->db == NULL) {
+		pk_debug ("no database");
+		return FALSE;
+	}
 
 	/* the row might already exist */
 	statement = g_strdup_printf ("DELETE FROM data WHERE package = '%s'", package);
