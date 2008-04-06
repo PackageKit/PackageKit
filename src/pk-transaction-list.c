@@ -61,6 +61,7 @@ enum {
 static guint signals [PK_TRANSACTION_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
+static gpointer pk_transaction_list_object = NULL;
 
 /**
  * pk_transaction_list_role_present:
@@ -439,9 +440,13 @@ pk_transaction_list_finalize (GObject *object)
 PkTransactionList *
 pk_transaction_list_new (void)
 {
-	PkTransactionList *tlist;
-	tlist = g_object_new (PK_TYPE_TRANSACTION_LIST, NULL);
-	return PK_TRANSACTION_LIST (tlist);
+	if (pk_transaction_list_object != NULL) {
+		g_object_ref (pk_transaction_list_object);
+	} else {
+		pk_transaction_list_object = g_object_new (PK_TYPE_TRANSACTION_LIST, NULL);
+		g_object_add_weak_pointer (pk_transaction_list_object, &pk_transaction_list_object);
+	}
+	return PK_TRANSACTION_LIST (pk_transaction_list_object);
 }
 
 /***************************************************************************
