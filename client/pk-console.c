@@ -1231,9 +1231,14 @@ main (int argc, char *argv[])
 		g_print (_("Command failed\n"));
 	}
 	if (error != NULL) {
-		g_print ("Error:\n  %s\n\n", error->message);
-		g_error_free (error);
-		g_print ("%s", options_help);
+		if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
+			g_print (_("You don't have the necessary privileges for this operation\n"));
+		}
+		else {
+			g_print ("Error:\n  %s\n\n", error->message);
+			g_error_free (error);
+			g_print ("%s", options_help);
+		}
 	}
 
 	g_free (options_help);
