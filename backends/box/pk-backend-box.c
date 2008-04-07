@@ -861,25 +861,26 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
+	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
 	backend_install_file,			/* install_file */
+	backend_install_package,		/* install_package */
+	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	backend_repo_enable,			/* repo_enable */
+	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
+	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	NULL,					/* service_pack */
 	NULL					/* what_provides */
 );
 

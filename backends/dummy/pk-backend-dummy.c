@@ -39,6 +39,7 @@ static gboolean _repo_enabled_livna = TRUE;
 static gboolean _updated_gtkhtml = FALSE;
 static gboolean _updated_kernel = FALSE;
 static gboolean _updated_powertop = FALSE;
+static gboolean _has_signature = FALSE;
 
 /**
  * backend_initialize:
@@ -307,7 +308,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 
-	if (pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+	if (!_has_signature && pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
 		pk_backend_repo_signature_required (backend, package_id, "updates", "http://example.com/gpgkey",
 						    "Test Key (Fedora) fedora@example.com", "BB7576AC",
 						    "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
@@ -324,6 +325,25 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 			    "gtkhtml2;2.19.1-4.fc8;i386;fedora",
 			    "An HTML widget for GTK+ 2.0");
 	_signal_timeout = g_timeout_add (1000, backend_install_timeout, backend);
+}
+
+/**
+ * backend_install_signature:
+ */
+static void
+backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+			   const gchar *key_id, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	if (type == PK_SIGTYPE_ENUM_GPG &&
+	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
+	    pk_strequal (key_id, "BB7576AC")) {
+		_has_signature = TRUE;
+	} else {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+				       "GPG key %s not recognised for package_id %s", key_id, package_id);
+	}
+	pk_backend_finished (backend);
 }
 
 /**
@@ -731,25 +751,26 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
+	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
 	backend_install_file,			/* install_file */
+	backend_install_package,		/* install_package */
+	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	backend_repo_enable,			/* repo_enable */
+	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	backend_rollback,			/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
+	backend_service_pack,			/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_service_pack,			/* service_pack */
 	backend_what_provides			/* what_provides */
 );
 
