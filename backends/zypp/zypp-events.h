@@ -5,6 +5,7 @@
 #include <glib.h>
 #include <pk-backend.h>
 #include <zypp/ZYppCallbacks.h>
+#include <zypp/Digest.h>
 
 #include "zypp-utils.h"
 
@@ -324,6 +325,40 @@ struct KeyRingReportReceiver : public zypp::callback::ReceiveReport<zypp::KeyRin
                 return ok;
         }
 
+	virtual bool askUserToAcceptVerificationFailed (const std::string &file, const zypp::PublicKey &key)
+	{
+		gboolean ok = zypp_signature_required(_backend, key);
+
+		return ok;
+	}
+
+};
+
+struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestReport>, ZyppBackendReceiver
+{
+	virtual bool askUserToAcceptNoDigest (const zypp::Pathname &file)
+	{
+		gboolean ok = zypp_signature_required(_backend, file);
+
+		return ok;
+	}
+
+	virtual bool askUserToAccepUnknownDigest (const zypp::Pathname &file, const std::string &name)
+	{
+		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo: %s Digest: %s", file.c_str (), name.c_str ());
+		gboolean ok = zypp_signature_required(_backend, file);
+
+		return ok;
+	}
+
+	virtual bool askUserToAcceptWrongDigest (const zypp::Pathname &file, const std::string &requested, const std::string &found)
+	{
+		pk_backend_error_code(_backend, PK_ERROR_ENUM_GPG_FAILURE, "For repo %s %s is requested but %s was found!",
+				file.c_str (), requested.c_str (), found.c_str ());
+		gboolean ok = zypp_signature_required(_backend, file);
+
+		return ok;	
+	}
 };
 
 struct MediaChangeReportReceiver : public zypp::callback::ReceiveReport<zypp::media::MediaChangeReport>, ZyppBackendReceiver
@@ -342,7 +377,6 @@ struct ProgressReportReceiver : public zypp::callback::ReceiveReport<zypp::Progr
 {
         virtual void start (const zypp::ProgressData &progress)
         {
-		pk_debug ("__________________________ProgressReportReceiver____________________________");
                 reset_sub_percentage ();
         }
 
@@ -371,6 +405,7 @@ class EventDirector
 		ZyppBackend::RemoveResolvableReportReceiver _removeResolvableReport;
 		ZyppBackend::DownloadProgressReportReceiver _downloadProgressReport;
                 ZyppBackend::KeyRingReportReceiver _keyRingReport;
+		ZyppBackend::DigestReportReceiver _digestReport;
                 ZyppBackend::MediaChangeReportReceiver _mediaChangeReport;
                 ZyppBackend::ProgressReportReceiver _progressReport;
 
@@ -395,6 +430,9 @@ class EventDirector
                         _keyRingReport.initWithBackend (backend);
                         _keyRingReport.connect ();
 
+			_digestReport.initWithBackend (backend);
+			_digestReport.connect ();
+
                         _mediaChangeReport.initWithBackend (backend);
                         _mediaChangeReport.connect ();
 
@@ -410,6 +448,7 @@ class EventDirector
 			_removeResolvableReport.disconnect ();
 			_downloadProgressReport.disconnect ();
                         _keyRingReport.disconnect ();
+			_digestReport.disconnect ();
                         _mediaChangeReport.disconnect ();
                         _progressReport.disconnect ();
 		}
