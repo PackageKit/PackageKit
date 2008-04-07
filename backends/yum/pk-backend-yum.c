@@ -223,6 +223,21 @@ backend_install_file (PkBackend *backend, const gchar *full_path)
 }
 
 /**
+ * backend_install_signature:
+ */
+static void
+backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+			   const gchar *key_id, const gchar *package_id)
+{
+	const gchar *type_text;
+	g_return_if_fail (backend != NULL);
+	g_return_if_fail (spawn != NULL);
+
+	type_text = pk_sig_type_enum_to_text (type);
+	pk_backend_spawn_helper (spawn, "install-signature.py", type_text, key_id, package_id, NULL);
+}
+
+/**
  * backend_refresh_cache:
  */
 static void
@@ -409,7 +424,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	backend_install_file,			/* install_file */
 	backend_install_package,		/* install_package */
-	NULL,					/* install_signature */
+	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_repo_enable,			/* repo_enable */
