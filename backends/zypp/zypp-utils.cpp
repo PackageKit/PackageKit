@@ -520,7 +520,6 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 			}
 
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
-			pk_backend_finished (backend);
 			g_free (emsg);
 			return FALSE;
 		}
@@ -584,7 +583,6 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					emsg);
 
 			g_free (emsg);
-                        pk_backend_finished (backend);
                         return FALSE;
                 }
 
@@ -592,19 +590,15 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
-		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::target::rpm::RpmException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str () );
-		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		pk_backend_finished (backend);
 		return FALSE;
 	}       
         
-	pk_backend_finished (backend);
         return TRUE;
 }
 

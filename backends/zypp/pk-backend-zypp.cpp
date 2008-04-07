@@ -916,7 +916,6 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
 
-                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't perform the installation.");
                         g_free (package_id);
                         pk_backend_finished (backend);
                         return FALSE;
