@@ -600,7 +600,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 				group,                                  // PkGroupEnum group
 				rpmHeader->tag_description ().c_str (), // const gchar *description
 				rpmHeader->tag_url (). c_str (),        // const gchar *url
-				(gulong)rpmHeader->tag_size ());        // gulong size
+				(gulong)rpmHeader->tag_archivesize ());        // gulong size
 
 			rpm.closeDatabase();
 		}else{
@@ -610,7 +610,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 				group,
 				package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
 				"TODO", //pkg->url ().c_str (),
-				(gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize)); //pkg->size ());
+				((gulong)package.lookupNumAttribute (zypp::sat::SolvAttr::downloadsize) * 1024)); //pkg->size ());
 		}
 
 	} catch (const zypp::target::rpm::RpmException &ex) {
@@ -1361,6 +1361,7 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 		return FALSE;
 	}
 
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
         zypp::ResPool pool = zypp_build_pool(true);
