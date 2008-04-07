@@ -1764,8 +1764,8 @@ extern "C" PK_BACKEND_OPTIONS (
 	"Boyd Timothy <btimothy@gmail.com>, Scott Reeves <sreeves@novell.com>, Stefan Haas <shaas@suse.de>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
-	backend_get_filters,			/* get_filters */
 	backend_get_groups,			/* get_groups */
+	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
@@ -1774,9 +1774,9 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install signature */
-	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
+	backend_install_package,		/* install_package */
+	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_repo_enable,			/* repo_enable */
