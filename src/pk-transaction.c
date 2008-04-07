@@ -100,6 +100,7 @@ struct PkTransactionPrivate
 	gchar			*cached_filter;
 	gchar			*cached_search;
 	gchar			*cached_repo_id;
+	gchar			*cached_key_id;
 	gchar			*cached_parameter;
 	gchar			*cached_value;
 	PkProvidesEnum		 cached_provides;
@@ -249,6 +250,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->install_package (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
 		desc->install_file (priv->backend, priv->cached_full_path);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
 		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
@@ -1754,6 +1757,81 @@ pk_transaction_install_package (PkTransaction *transaction, const gchar *package
 }
 
 /**
+ * pk_transaction_install_signature:
+ **/
+void
+pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_type,
+				  const gchar *key_id, const gchar *package_id,
+				  DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *sender;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("method called: %s, %s", key_id, package_id);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->install_signature == NULL) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check for sanity */
+	ret = pk_strvalidate (key_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check package_id */
+	ret = pk_package_id_check (package_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+				     "The package id '%s' is not valid", package_id);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
+	g_free (sender);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+
+	/* save so we can run later */
+	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_key_id = g_strdup (key_id);
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_SIGNATURE);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_transaction_is_caller_active:
  **/
 gboolean
@@ -2717,6 +2795,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->allow_cancel = FALSE;
 	transaction->priv->dbus_name = NULL;
 	transaction->priv->cached_enabled = FALSE;
+	transaction->priv->cached_key_id = NULL;
 	transaction->priv->cached_package_id = NULL;
 	transaction->priv->cached_package_ids = NULL;
 	transaction->priv->cached_transaction_id = NULL;
@@ -2818,6 +2897,7 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->last_package);
 	g_free (transaction->priv->dbus_name);
 	g_free (transaction->priv->cached_package_id);
+	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);
 	g_free (transaction->priv->cached_transaction_id);
 	g_free (transaction->priv->cached_filter);
