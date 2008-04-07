@@ -21,6 +21,8 @@
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 
+#include <zypp/base/Logger.h>
+
 #include <pk-backend.h>
 
 #include "zypp-utils.h"
