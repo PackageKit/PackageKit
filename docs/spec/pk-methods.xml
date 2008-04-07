@@ -295,6 +295,44 @@
     </para>
   </sect1>
 
+  <sect1 id="methods-install-signature">
+    <title>Install Signature</title>
+    <para>
+      Sometimes we need to install new security keys to allow an install to continue.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>sig_type</literal></entry>
+            <entry>A key type, e.g. <literal>gpg</literal></entry>
+          </row>
+          <row>
+            <entry><literal>key_id</literal></entry>
+            <entry>A key ID, e.g. <literal>BB7576AC</literal></entry>
+          </row>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A PackageID for the package that the user is trying to install</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Error</literal> and
+    </para>
+  </sect1>
+
   <sect1 id="methods-remove">
     <title>Remove Package</title>
     <para>
