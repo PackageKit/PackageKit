@@ -863,8 +863,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 
 	/* did we set a duplicate error? */
 	if (backend->priv->set_error) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "More than one error emitted! You tried to set '%s'", buffer);
+		pk_warning ("More than one error emitted! You tried to set '%s'", buffer);
 		ret = FALSE;
 		goto out;
 	}
