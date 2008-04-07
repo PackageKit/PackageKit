@@ -219,6 +219,9 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
+	/* don't let GIO start it's own session bus: http://bugzilla.gnome.org/show_bug.cgi?id=526454 */
+	setenv ("GIO_USE_VFS", "local", 1);
+
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
