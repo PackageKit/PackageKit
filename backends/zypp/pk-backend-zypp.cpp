@@ -137,7 +137,7 @@ static PkBackendThread *thread;
 static void
 backend_initialize (PkBackend *backend)
 {
-        zypp::base::LogControl::instance ().logfile("/tmp/zypplog");
+        zypp::base::LogControl::instance ().logfile("/var/log/pk_backend_zypp");
 	g_return_if_fail (backend != NULL);
 	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);

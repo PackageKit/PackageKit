@@ -1,6 +1,9 @@
 #ifndef _ZYPP_UTILS_H_
 #define _ZYPP_UTILS_H_
 
+#undef ZYPP_BASE_LOGGER_LOGGROUP
+#define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
+
 #include <stdlib.h>
 #include <glib.h>
 #include <zypp/RepoManager.h>
