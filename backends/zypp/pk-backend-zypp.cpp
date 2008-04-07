@@ -1626,6 +1626,8 @@ backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
         backend = pk_backend_thread_get_backend (thread);
 	RepoData *d = (RepoData*) data;
 
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
         zypp::RepoManager manager;
 	zypp::RepoInfo repo;
 
@@ -1660,8 +1662,41 @@ backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
                         }
 
                         manager.modifyRepository (d->repo_id, repo);
+		}else if (g_ascii_strcasecmp (d->parameter, "prio") == 0) {
+                        repo = manager.getRepositoryInfo (d->repo_id);
+			gint prio = 0;
+			gint length = strlen (d->value);
+			
+			if (length > 2) {
+				pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be between 1 (highest) and 99");
+				bReturn = false;
+			}else{
+				for (gint i = 0; i < length; i++) {
+					gint tmp = g_ascii_digit_value (d->value[i]);
+
+					if (tmp == -1) {
+						pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Priorities has to be a number between 1 (highest) and 99");
+						bReturn = FALSE;
+						prio = 0;
+						break;
+					}else{
+
+						if (length == 2 && i == 0) {
+							prio = tmp * 10;
+						}else{
+							prio = prio + tmp;
+						}
+					}
+				}	
+
+				if (prio != 0) {
+					repo.setPriority (prio);
+					manager.modifyRepository (d->repo_id, repo);
+				}
+			}
+
                 }else{
-                        pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Valid parameters for set_repo_data are remove/add/refresh");
+                        pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Valid parameters for set_repo_data are remove/add/refresh/prio");
                         bReturn = FALSE;
                 }
 
