@@ -545,21 +545,45 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){
 			
 			zypp::ZYppCommitResult::PoolItemList errors = result._errors;
+			gchar *emsg = NULL, *tmpmsg = NULL;
+
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = errors.begin (); it != errors.end (); it++){
-				pk_backend_error_code (backend, PK_ERROR_LOCAL_INSTALL_FAILED, "While installing %s an error appeared", (*it)->name ().c_str ());
+				if (emsg == NULL) {
+					emsg = g_strdup ((*it)->name ().c_str ());
+				}else{
+					tmpmsg = emsg;
+					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
+					g_free (tmpmsg);
+				}
 			}
 			
 			zypp::ZYppCommitResult::PoolItemList remaining = result._remaining;
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = remaining.begin (); it != remaining.end (); it++){
-				pk_backend_error_code (backend, PK_ERROR_LOCAL_INSTALL_FAILED, "%s could not be installed", (*it)->name ().c_str ());
+				if (emsg == NULL) {
+					emsg = g_strdup ((*it)->name ().c_str ());
+				}else{
+					tmpmsg = emsg;
+					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
+					g_free (tmpmsg);
+				}
 			}
 			
 			zypp::ZYppCommitResult::PoolItemList srcremaining = result._srcremaining;
 			for (zypp::ZYppCommitResult::PoolItemList::iterator it = srcremaining.begin (); it != srcremaining.end (); it++){
-				pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE, "%s was not installed", (*it)->name ().c_str ());
+				if (emsg == NULL) {
+					emsg = g_strdup ((*it)->name ().c_str ());
+				}else{
+					tmpmsg = emsg;
+					emsg = g_strconcat (emsg, "\n", (*it)->name ().c_str (), NULL);
+					g_free (tmpmsg);
+				}
 			}
 
-                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Transaction could not be completed");
+                        pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR,
+					"Transaction could not be completed.\n Theses packages could not be installed: %s",
+					emsg);
+
+			g_free (emsg);
                         pk_backend_finished (backend);
                         return FALSE;
                 }
@@ -580,6 +604,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		return FALSE;
 	}       
         
+	pk_backend_finished (backend);
         return TRUE;
 }
 
