@@ -7,7 +7,7 @@ AM_CONFIG_HEADER(config.h)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=no
+DEVELOPMENT_RELEASE=yes
 
 # libtool versioning - this applies to libpackagekit
 #
