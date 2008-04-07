@@ -90,6 +90,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
 	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
 	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
+	{PK_ROLE_ENUM_INSTALL_SIGNATURE,	"install-signature"},
 	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
 	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-package"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
