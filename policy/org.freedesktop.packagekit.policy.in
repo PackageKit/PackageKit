@@ -17,7 +17,7 @@
     <_description>Install package</_description>
     <_message>System policy prevents installing package</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-package</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-package</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -28,7 +28,18 @@
     <_description>Install local file</_description>
     <_message>System policy prevents installing file</_message>
     <icon_name>pk-package-add</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-install-file</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.install-signature">
+    <_description>Install security signature</_description>
+    <_message>System policy prevents installing security signature</_message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-signature</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -39,7 +50,7 @@
     <_description>Update package</_description>
     <_message>System policy prevents updating package</_message>
     <icon_name>pk-package-update</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -50,7 +61,7 @@
     <_description>Remove package</_description>
     <_message>System policy prevents removing package</_message>
     <icon_name>pk-package-delete</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-remove</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-remove</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -61,7 +72,7 @@
     <_description>Update all packages on system</_description>
     <_message>System policy prevents updating system</_message>
     <icon_name>pk-package-update</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-update-system</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update-system</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -72,7 +83,7 @@
     <_description>Rollback to a previous transaction</_description>
     <_message>System policy prevents rollback</_message>
     <icon_name>pk-rollback</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-rollback</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-rollback</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -83,7 +94,7 @@
     <_description>Change repository parameters</_description>
     <_message>System policy prevents changing repository parameters</_message>
     <icon_name>pk-package-info</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-repo-enable</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-repo-enable</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>auth_admin_keep_always</allow_active>
@@ -94,7 +105,7 @@
     <_description>Refresh package cache</_description>
     <_message>System policy prevents refresh package cache</_message>
     <icon_name>pk-refresh-cache</icon_name>
-    <vendor_url>http://www.packagekit.org/pk-reference.html#api-refresh-cache</vendor_url>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-refresh-cache</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
       <allow_active>yes</allow_active>

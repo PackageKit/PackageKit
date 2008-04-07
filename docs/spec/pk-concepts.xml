@@ -519,7 +519,7 @@
     </para>
     <para>
       The <literal>transaction_id</literal> must be of the format
-      <literal>job;identifier;data</literal> where the daemon controls
+      <literal>/job_identifier_data</literal> where the daemon controls
       all parameters.
       <literal>job</literal> is a monotonically updating number and is
       retained over reboots.
@@ -530,7 +530,7 @@
       for any other purpose.
       It is designed to make the life of a backend writer a little bit easier.
       An example <literal>transaction_id</literal> would be
-      <literal>45;dafeca;checkpoint32</literal>
+      <literal>/45_dafeca_checkpoint32</literal>
     </para>
   </sect1>
 

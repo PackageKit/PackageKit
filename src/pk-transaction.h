@@ -150,6 +150,11 @@ void		 pk_transaction_install_file		(PkTransaction	*transaction,
 void		 pk_transaction_install_package		(PkTransaction	*transaction,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context);
+void		 pk_transaction_install_signature	(PkTransaction	*transaction,
+							 const gchar	*sig_type,
+							 const gchar	*key_id,
+							 const gchar	*package_id,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_is_caller_active	(PkTransaction	*transaction,
 							 gboolean	*is_active,
 							 GError		**error);

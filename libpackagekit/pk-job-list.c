@@ -225,7 +225,7 @@ pk_job_list_init (PkJobList *jlist)
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
+		g_error ("Could not connect to system DBUS.");
 	}
 
 	/* we maintain a local copy */

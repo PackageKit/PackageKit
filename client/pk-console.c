@@ -1164,7 +1164,7 @@ main (int argc, char *argv[])
 	if (error) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
-		g_error (_("This program cannot start until you start the dbus system service."));
+		g_error (_("Could not connect to system DBUS."));
 	}
 
 	context = g_option_context_new ("PackageKit Console Program");

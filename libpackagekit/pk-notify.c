@@ -181,7 +181,7 @@ pk_notify_init (PkNotify *notify)
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
+		g_error ("Could not connect to system DBUS.");
 	}
 
 	/* get a connection */

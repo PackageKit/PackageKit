@@ -68,6 +68,12 @@
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
+    <method name="InstallSignature">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="sig_type" direction="in"/>
+      <arg type="s" name="key_id" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
     <method name="IsCallerActive">
       <arg type="b" name="is_active" direction="out"/>
     </method>

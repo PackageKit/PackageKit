@@ -152,6 +152,17 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_install_signature:
+ */
+static void
+backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
+			   const gchar *key_id, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_install_file:
  */
 static void
@@ -336,25 +347,26 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
+	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
 	backend_install_file,			/* install_file */
+	backend_install_package,		/* install_package */
+	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	backend_repo_enable,			/* repo_enable */
+	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */
 	backend_rollback,			/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
+	backend_service_pack,			/* service_pack */
 	backend_update_packages,		/* update_packages */
 	backend_update_system,			/* update_system */
-	backend_get_repo_list,			/* get_repo_list */
-	backend_repo_enable,			/* repo_enable */
-	backend_repo_set_data,			/* repo_set_data */
-	backend_service_pack,			/* service_pack */
 	backend_what_provides			/* what_provides */
 );
 

@@ -1286,7 +1286,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
 
-    def repo_signature_install(self,package):
+    def install_signature(self,sigtype,key_id,package):
         self._check_init()
         self.allow_cancel(True)
         self.percentage(None)
@@ -1298,7 +1298,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.YumBaseError, e:
                 self.error(ERROR_INTERNAL_ERROR,str(e))
             except:
-                self.error(ERROR_INTERNAL_ERROR,"Error importing GPG Key for %s" % pkg)
+                self.error(ERROR_GPG_FAILURE,"Error importing GPG Key for %s" % pkg)
 
     def _check_init(self,lazy_cache=False):
         '''Just does the caching tweaks'''
