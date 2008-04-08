@@ -43,8 +43,8 @@ pkbackendinclude_HEADERS =				\
 shared_SOURCES =					\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-runner.c					\
-	pk-runner.h					\
+	pk-transaction.c				\
+	pk-transaction.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
