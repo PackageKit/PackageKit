@@ -3525,10 +3525,12 @@ libst_client (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "we finished?");
-	if (ret && finished) {
-		libst_success (test, NULL);
+	if (!ret) {
+		libst_failed (test, "not correct return value");
+	} else if (!finished) {
+		libst_failed (test, "not finished");
 	} else {
-		libst_failed (test, NULL);
+		libst_success (test, NULL);
 	}
 
 	/************************************************************/
