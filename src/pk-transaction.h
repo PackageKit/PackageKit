@@ -76,6 +76,7 @@ typedef enum
 } PkTransactionError;
 
 GQuark		 pk_transaction_error_quark		(void);
+GType		 pk_transaction_error_get_type		(void) G_GNUC_CONST;
 GType		 pk_transaction_get_type		(void) G_GNUC_CONST;
 PkTransaction	*pk_transaction_new			(void);
 

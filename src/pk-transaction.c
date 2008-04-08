@@ -61,7 +61,7 @@
 
 static void     pk_transaction_class_init	(PkTransactionClass *klass);
 static void     pk_transaction_init		(PkTransaction      *transaction);
-static void     pk_transaction_finalize		(GObject     *object);
+static void     pk_transaction_finalize		(GObject	    *object);
 
 #define PK_TRANSACTION_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION, PkTransactionPrivate))
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
@@ -73,6 +73,7 @@ struct PkTransactionPrivate
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 allow_cancel;
+	gboolean		 emit_key_required;
 	LibGBus			*libgbus;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -443,7 +444,6 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	    transaction->priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		/* this needs to be done after a small delay */
 		pk_notify_wait_updates_changed (transaction->priv->notify,
-						transaction->priv->tid,
 						PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT);
 	}
 	return TRUE;
@@ -558,6 +558,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* mark not running */
 	transaction->priv->running = FALSE;
 
+	/* if we did ::repo-signature-required, change the error code */
+	if (transaction->priv->emit_key_required) {
+		exit = PK_EXIT_ENUM_KEY_REQUIRED;
+	}
+
 	/* invalidate some caches if we succeeded*/
 	if (exit == PK_EXIT_ENUM_SUCCESS) {
 		pk_transaction_finish_invalidate_caches (transaction);
@@ -583,7 +588,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	if (transaction->priv->role == PK_ROLE_ENUM_SERVICE_PACK ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		pk_notify_repo_list_changed (transaction->priv->notify, transaction->priv->tid);
+		pk_notify_repo_list_changed (transaction->priv->notify);
 	}
 
 	/* only reset the time if we succeeded */
@@ -720,6 +725,9 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *pack
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id,
 		       key_fingerprint, key_timestamp, type_text);
+
+	/* we should mark this transaction so that we finish with a special code */
+	transaction->priv->emit_key_required = TRUE;
 }
 
 /**
@@ -965,7 +973,7 @@ pk_transaction_action_is_allowed (PkTransaction *transaction, const gchar *dbus_
 }
 
 /**
- * pk_transaction_action_is_allowed:
+ * pk_transaction_priv_get_role:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
  * when not async.
@@ -2793,6 +2801,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
 	transaction->priv->allow_cancel = FALSE;
+	transaction->priv->emit_key_required = FALSE;
 	transaction->priv->dbus_name = NULL;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_key_id = NULL;

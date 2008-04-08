@@ -84,6 +84,7 @@ struct _PkBackendPrivate
 	gchar			*c_tid;
 	gboolean		 locked;
 	gboolean		 set_error;
+	gboolean		 set_signature;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -771,6 +772,13 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 		return FALSE;
 	}
 
+	/* check we don't do this more than once */
+	if (backend->priv->set_signature) {
+		pk_warning ("already asked for a signature, cannot process");
+		return FALSE;
+	}
+	backend->priv->set_signature = TRUE;
+
 	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %i",
 		  package_id, repository_name, key_url, key_userid, key_id,
 		  key_fingerprint, key_timestamp, type);
@@ -1281,6 +1289,7 @@ pk_backend_reset (PkBackend *backend)
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	backend->priv->set_error = FALSE;
+	backend->priv->set_signature = FALSE;
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;

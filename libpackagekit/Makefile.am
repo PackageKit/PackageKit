@@ -47,8 +47,8 @@ libpackagekit_include_HEADERS =					\
 	pk-filter.h						\
 	pk-client.h						\
 	pk-notify.h						\
+	pk-control.h						\
 	pk-task-list.h						\
-	pk-job-list.h						\
 	pk-polkit-client.h					\
 	$(NULL)
 
@@ -82,10 +82,10 @@ libpackagekit_la_SOURCES =					\
 	pk-client.h						\
 	pk-notify.c						\
 	pk-notify.h						\
+	pk-control.c						\
+	pk-control.h						\
 	pk-task-list.c						\
 	pk-task-list.h						\
-	pk-job-list.c						\
-	pk-job-list.h						\
 	pk-polkit-client.c					\
 	pk-polkit-client.h					\
 	$(NULL)
