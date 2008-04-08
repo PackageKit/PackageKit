@@ -30,8 +30,7 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
-#include <pk-client.h>
-#include <pk-notify.h>
+#include <pk-control.h>
 #include <pk-task-list.h>
 #include <pk-connection.h>
 
@@ -45,104 +44,10 @@ pk_monitor_task_list_changed_cb (PkTaskList *tlist, gpointer data)
 }
 
 /**
- * pk_monitor_error_code_cb:
- **/
-static void
-pk_monitor_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tError: %s, %s\n", tid, pk_error_enum_to_text (error_code), details);
-	g_free (tid);
-}
-
-/**
- * pk_monitor_message_cb:
- **/
-static void
-pk_monitor_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tMessage: %s, %s\n", tid, pk_message_enum_to_text (message), details);
-	g_free (tid);
-}
-
-/**
- * pk_monitor_require_restart_cb:
- **/
-static void
-pk_monitor_require_restart_cb (PkClient *client, PkRestartEnum restart, const gchar *details, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tRequireRestart: %s, %s\n", tid, pk_restart_enum_to_text (restart), details);
-	g_free (tid);
-}
-
-/**
- * pk_monitor_status_changed_cb:
- **/
-static void
-pk_monitor_status_changed_cb (PkClient *client, PkStatusEnum status, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tStatus: %s\n", tid, pk_status_enum_to_text (status));
-	g_free (tid);
-}
-
-/**
- * pk_monitor_package_cb:
- **/
-static void
-pk_monitor_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id,
-		       const gchar *summary, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tPackage: %s\t%s\t%s\n", tid, pk_info_enum_to_text (info), package_id, summary);
-	g_free (tid);
-}
-
-/**
- * pk_monitor_allow_cancel_cb:
- **/
-static void
-pk_monitor_allow_cancel_cb (PkClient *client, gboolean allow_cancel, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tAllow Cancel: %i\n", tid, allow_cancel);
-	g_free (tid);
-}
-
-/**
- * pk_monitor_repo_signature_required_cb:
- **/
-static void
-pk_monitor_repo_signature_required_cb (PkClient *client, const gchar *package_id, const gchar *repository_name,
-				       const gchar *key_url, const gchar *key_userid, const gchar *key_id,
-				       const gchar *key_fingerprint, const gchar *key_timestamp,
-				       PkSigTypeEnum type, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("RepoSignatureRequired tid:%s, package_id=%s, %s, %s, %s, %s, %s, %s, %s\n",
-		 tid, package_id, repository_name, key_url, key_userid, key_id,
-		 key_fingerprint, key_timestamp, pk_sig_type_enum_to_text (type));
-	g_free (tid);
-}
-
-/**
- * pk_monitor_finished_cb:
- **/
-static void
-pk_monitor_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
-{
-	gchar *tid = pk_client_get_tid (client);
-	g_print ("%s\tFinished: %s, %ims\n", tid, pk_exit_enum_to_text (exit), runtime);
-	g_free (tid);
-}
-
-/**
  * pk_monitor_repo_list_changed_cb:
  **/
 static void
-pk_monitor_repo_list_changed_cb (PkNotify *notify, gpointer data)
+pk_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 {
 	g_print ("repo-list-changed\n");
 }
@@ -151,7 +56,7 @@ pk_monitor_repo_list_changed_cb (PkNotify *notify, gpointer data)
  * pk_monitor_updates_changed_cb:
  **/
 static void
-pk_monitor_updates_changed_cb (PkNotify *notify, gpointer data)
+pk_monitor_updates_changed_cb (PkControl *control, gpointer data)
 {
 	g_print ("updates-changed\n");
 }
@@ -166,14 +71,22 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 }
 
 /**
+ * pk_monitor_locked_cb:
+ **/
+static void
+pk_monitor_locked_cb (PkControl *control, gpointer data)
+{
+	g_print ("locked\n");
+}
+
+/**
  * main:
  **/
 int
 main (int argc, char *argv[])
 {
 	PkTaskList *tlist;
-	PkClient *client;
-	PkNotify *notify;
+	PkControl *control;
 	gboolean ret;
 	GMainLoop *loop;
 	PkConnection *pconnection;
@@ -217,29 +130,12 @@ main (int argc, char *argv[])
 	connected = pk_connection_valid (pconnection);
 	pk_debug ("connected=%i", connected);
 
-	client = pk_client_new ();
-	pk_client_set_promiscuous (client, TRUE, NULL);
-	g_signal_connect (client, "finished",
-			  G_CALLBACK (pk_monitor_finished_cb), NULL);
-	g_signal_connect (client, "error-code",
-			  G_CALLBACK (pk_monitor_error_code_cb), NULL);
-	g_signal_connect (client, "message",
-			  G_CALLBACK (pk_monitor_message_cb), NULL);
-	g_signal_connect (client, "require-restart",
-			  G_CALLBACK (pk_monitor_require_restart_cb), NULL);
-	g_signal_connect (client, "status-changed",
-			  G_CALLBACK (pk_monitor_status_changed_cb), NULL);
-	g_signal_connect (client, "package",
-			  G_CALLBACK (pk_monitor_package_cb), NULL);
-	g_signal_connect (client, "allow-cancel",
-			  G_CALLBACK (pk_monitor_allow_cancel_cb), NULL);
-	g_signal_connect (client, "repo-signature-required",
-			  G_CALLBACK (pk_monitor_repo_signature_required_cb), NULL);
-
-	notify = pk_notify_new ();
-	g_signal_connect (notify, "repo-list-changed",
+	control = pk_control_new ();
+	g_signal_connect (control, "locked",
+			  G_CALLBACK (pk_monitor_locked_cb), NULL);
+	g_signal_connect (control, "repo-list-changed",
 			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
-	g_signal_connect (notify, "updates-changed",
+	g_signal_connect (control, "updates-changed",
 			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
 
 	tlist = pk_task_list_new ();
@@ -255,8 +151,7 @@ main (int argc, char *argv[])
 
 	g_main_loop_run (loop);
 
-	g_object_unref (client);
-	g_object_unref (notify);
+	g_object_unref (control);
 	g_object_unref (tlist);
 	g_object_unref (pconnection);
 
