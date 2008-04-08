@@ -435,6 +435,21 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOXED,
 			      G_TYPE_NONE, 1, G_TYPE_STRV);
+	signals [PK_ENGINE_RESTART_SCHEDULE] =
+		g_signal_new ("restart-schedule",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals [PK_ENGINE_REPO_LIST_CHANGED] =
+		g_signal_new ("repo-list-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	signals [PK_ENGINE_UPDATES_CHANGED] =
+		g_signal_new ("updates-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }

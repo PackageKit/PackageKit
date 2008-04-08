@@ -625,7 +625,7 @@ pk_control_class_init (PkControlClass *klass)
 	 *
 	 * The ::locked signal is emitted when TODO
 	 **/
-	signals [PK_CONTROL_LIST_CHANGED] =
+	signals [PK_CONTROL_LOCKED] =
 		g_signal_new ("locked",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (PkControlClass, locked),
