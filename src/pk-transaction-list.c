@@ -35,10 +35,15 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include "pk-debug.h"
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+
+#include <pk-debug.h>
+#include <pk-common.h>
 #include "pk-backend-internal.h"
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
+#include "pk-interface-transaction.h"
 
 static void     pk_transaction_list_class_init	(PkTransactionListClass *klass);
 static void     pk_transaction_list_init	(PkTransactionList      *tlist);
@@ -53,6 +58,14 @@ struct PkTransactionListPrivate
 	PkBackend		*backend;
 };
 
+typedef struct {
+	gboolean		 committed;
+	gboolean		 running;
+	gboolean		 finished;
+	PkTransaction		*transaction;
+	gchar			*tid;
+} PkTransactionItem;
+
 enum {
 	PK_TRANSACTION_LIST_CHANGED,
 	PK_TRANSACTION_LIST_LAST_SIGNAL
@@ -62,6 +75,55 @@ static guint signals [PK_TRANSACTION_LIST_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 static gpointer pk_transaction_list_object = NULL;
+
+/**
+ * pk_transaction_list_get_from_transaction:
+ **/
+static PkTransactionItem *
+pk_transaction_list_get_from_transaction (PkTransactionList *tlist, PkTransaction *transaction)
+{
+	guint i;
+	guint length;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
+
+	/* find the runner with the transaction ID */
+	length = tlist->priv->array->len;
+	pk_debug ("length = %i", length);
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (item->transaction == transaction) {
+			return item;
+		}
+	}
+	return NULL;
+}
+
+/**
+ * pk_transaction_list_get_from_tid:
+ **/
+static PkTransactionItem *
+pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
+{
+	guint i;
+	guint length;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (tlist != NULL, NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
+
+	/* find the runner with the transaction ID */
+	length = tlist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
+		if (pk_transaction_id_equal (item->tid, tid)) {
+			return item;
+		}
+	}
+	return NULL;
+}
 
 /**
  * pk_transaction_list_role_present:
@@ -88,10 +150,10 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 			continue;
 		}
 		/* we might not have this set yet */
-		if (item->runner == NULL) {
+		if (item->transaction == NULL) {
 			continue;
 		}
-		role_temp = pk_runner_get_role (item->runner);
+		role_temp = pk_transaction_priv_get_role (item->transaction);
 		if (role_temp == role) {
 			return TRUE;
 		}
@@ -102,40 +164,64 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 /**
  * pk_transaction_list_create:
  **/
-PkTransactionItem *
-pk_transaction_list_create (PkTransactionList *tlist)
+gboolean
+pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 {
 	PkTransactionItem *item;
+	DBusGConnection *connection;
 
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
 	/* add to the array */
 	item = g_new0 (PkTransactionItem, 1);
 	item->committed = FALSE;
 	item->running = FALSE;
 	item->finished = FALSE;
-	item->runner = NULL;
-	item->tid = pk_transaction_id_generate ();
+	item->transaction = NULL;
+	item->tid = g_strdup (tid);
+
+	/* get another connection */
+	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
+	if (connection == NULL) {
+		pk_error ("no connection");
+	}
+
+	item->transaction = pk_transaction_new ();
+	pk_transaction_set_tid (item->transaction, item->tid);
+	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
+	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
+
+	pk_debug ("adding transaction %p, item %p", item->transaction, item);
 	g_ptr_array_add (tlist->priv->array, item);
-	return item;
+	return TRUE;
 }
 
 /**
  * pk_transaction_list_remove:
  **/
 gboolean
-pk_transaction_list_remove (PkTransactionList *tlist, PkTransactionItem *item)
+pk_transaction_list_remove (PkTransactionList *tlist, PkTransaction *transaction)
 {
 	gboolean ret;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
+	g_return_val_if_fail (transaction != NULL, FALSE);
 
+	item = pk_transaction_list_get_from_transaction (tlist, transaction);
+	if (item == NULL) {
+		pk_warning ("could not get item");
+		return FALSE;
+	}
 	/* valid item */
+	pk_debug ("remove transaction %p, item %p", item->transaction, item);
 	ret = g_ptr_array_remove (tlist->priv->array, item);
 	if (ret == FALSE) {
 		pk_warning ("could not remove %p as not present in list", item);
+		return FALSE;
 	}
+	g_object_unref (item->transaction);
 	g_free (item->tid);
 	g_free (item);
 
@@ -157,8 +243,7 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 	PkTransactionFinished *finished = (PkTransactionFinished *) data;
 
 	pk_debug ("transaction %s completed, removing", finished->item->tid);
-	g_object_unref (finished->item->runner);
-	pk_transaction_list_remove (finished->tlist, finished->item);
+	pk_transaction_list_remove (finished->tlist, finished->item->transaction);
 	g_free (finished);
 	return FALSE;
 }
@@ -220,8 +305,7 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 		    item->finished == FALSE) {
 			pk_debug ("running %s", item->tid);
 			item->running = TRUE;
-			pk_runner_set_tid (item->runner, item->tid);
-			ret = pk_runner_run (item->runner);
+			ret = pk_transaction_run (item->transaction);
 			/* only stop lookng if we run the job */
 			if (ret) {
 				break;
@@ -260,12 +344,19 @@ pk_transaction_list_number_running (PkTransactionList *tlist)
  * pk_transaction_list_commit:
  **/
 gboolean
-pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
+pk_transaction_list_commit (PkTransactionList *tlist, PkTransaction *transaction)
 {
 	gboolean ret;
+	PkTransactionItem *item;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
+	g_return_val_if_fail (transaction != NULL, FALSE);
+
+	item = pk_transaction_list_get_from_transaction (tlist, transaction);
+	if (item == NULL) {
+		pk_warning ("could not get transaction: %p", transaction);
+		return FALSE;
+	}
 
 	pk_debug ("marking transaction %s as committed", item->tid);
 	item->committed = TRUE;
@@ -278,8 +369,7 @@ pk_transaction_list_commit (PkTransactionList *tlist, PkTransactionItem *item)
 	if (pk_transaction_list_number_running (tlist) == 0) {
 		pk_debug ("running %s", item->tid);
 		item->running = TRUE;
-		pk_runner_set_tid (item->runner, item->tid);
-		ret = pk_runner_run (item->runner);
+		ret = pk_transaction_run (item->transaction);
 		if (!ret) {
 			pk_warning ("unable to start first job");
 			return FALSE;
@@ -329,52 +419,6 @@ pk_transaction_list_get_size (PkTransactionList *tlist)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), 0);
 	return tlist->priv->array->len;
-}
-
-/**
- * pk_transaction_list_get_from_tid:
- **/
-PkTransactionItem *
-pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
-{
-	guint i;
-	guint length;
-	PkTransactionItem *item;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
-
-	/* find the runner with the transaction ID */
-	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (pk_transaction_id_equal (item->tid, tid)) {
-			return item;
-		}
-	}
-	return NULL;
-}
-
-/**
- * pk_transaction_list_get_from_runner:
- **/
-PkTransactionItem *
-pk_transaction_list_get_from_runner (PkTransactionList *tlist, PkRunner *runner)
-{
-	guint i;
-	guint length;
-	PkTransactionItem *item;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
-
-	/* find the runner with the transaction ID */
-	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (item->runner == runner) {
-			return item;
-		}
-	}
-	return NULL;
 }
 
 /**
