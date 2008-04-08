@@ -999,7 +999,8 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* special case - if the tid is already finished, then cancel should
 	 * return TRUE as it's what we wanted */
-	if (pk_strequal (error_local->message, "cancelling a non-running transaction")) {
+	if (pk_strequal (error_local->message, "cancelling a non-running transaction") ||
+	    g_str_has_suffix (error_local->message, " doesn't exist")) {
 		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
