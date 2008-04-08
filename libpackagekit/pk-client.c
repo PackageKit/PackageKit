@@ -985,11 +985,11 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	/* check to see if we have a valid proxy */
+	/* we don't need to cancel, so return TRUE */
 	if (client->priv->proxy == NULL) {
-		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
-		return FALSE;
+		return TRUE;
 	}
+
 	ret = dbus_g_proxy_call (client->priv->proxy, "Cancel", &error_local,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	/* no error to process */
@@ -999,8 +999,7 @@ pk_client_cancel (PkClient *client, GError **error)
 
 	/* special case - if the tid is already finished, then cancel should
 	 * return TRUE as it's what we wanted */
-	if (pk_strequal (error_local->message, "Already finished") ||
-	    g_str_has_prefix (error_local->message, "No tid")) {
+	if (pk_strequal (error_local->message, "cancelling a non-running transaction")) {
 		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
