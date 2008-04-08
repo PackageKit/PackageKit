@@ -140,19 +140,18 @@ zypp::ResPool
 zypp_build_local_pool ()
 {
         zypp::sat::Pool pool = zypp::sat::Pool::instance ();
+	zypp::ZYpp::Ptr zypp = get_zypp ();
 
-        for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
-                if (! pool.reposEmpty ())
-                        pool.reposErase(it->name ());
-        }
+	try {
 
-        zypp::ZYpp::Ptr zypp = get_zypp ();
-        if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::Repository::noRepository)
-        {
-                // Add local resolvables
-                zypp::Target_Ptr target = zypp->target ();
-                target->load ();
-        }
+		for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
+			if (! it->isSystemRepo ())
+				pool.reposErase(it->name ());
+		}
+
+	} catch (const zypp::Exception &ex) {
+		pk_error ("%s", ex.asUserString ().c_str ());
+	}
 
         return zypp->pool ();
 
