@@ -33,7 +33,6 @@ import dbus.glib
 import dbus.service
 import dbus.mainloop.glib
 import gobject
-import xapian
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded
 from packagekit.enums import *
@@ -45,10 +44,6 @@ PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
 XAPIANDB = XAPIANDBPATH + "/index"
 XAPIANDBVALUES = XAPIANDBPATH + "/values"
-DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
-                        xapian.QueryParser.FLAG_PHRASE |
-                        xapian.QueryParser.FLAG_LOVEHATE |
-                        xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
 # Required for daemon mode
 os.putenv("PATH",
@@ -184,10 +179,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
-        self._xapian = None
         self._canceled = threading.Event()
         self._canceled.clear()
         self._locked = threading.Lock()
+        # Check for xapian support
+        self._use_xapian = False
+        try:
+            import xapian
+        except ImportError:
+            pass
+        else:
+            if os.access(XAPIANDB, os.R_OK):
+                self._use_xapian = True
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -243,12 +246,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         results = []
 
-        if os.access(XAPIANDB, os.R_OK):
+        if self._use_xapian == True:
+            search_flags = (xapian.QueryParser.FLAG_BOOLEAN |
+                            xapian.QueryParser.FLAG_PHRASE |
+                            xapian.QueryParser.FLAG_LOVEHATE |
+                            xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
             pklog.debug("Performing xapian db based search")
             db = xapian.Database(XAPIANDB)
             parser = xapian.QueryParser()
             query = parser.parse_query(unicode(search),
-                                       DEFAULT_SEARCH_FLAGS)
+                                       search_flags)
             enquire = xapian.Enquire(db)
             enquire.set_query(query)
             matches = enquire.get_mset(0, 1000)
