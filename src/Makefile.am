@@ -129,7 +129,6 @@ BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-interface.h					\
-	pk-interface-notify.h				\
 	pk-interface-transaction.h			\
 	$(NULL)
 
@@ -146,13 +145,6 @@ pk-interface.h: pk-interface.xml
 		--mode=glib-server			\
 		--output=pk-interface.h			\
 		$(srcdir)/pk-interface.xml
-
-pk-interface-notify.h: pk-interface-notify.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool	\
-		--prefix=pk_notify			\
-		--mode=glib-server			\
-		--output=pk-interface-notify.h		\
-		$(srcdir)/pk-interface-notify.xml
 
 pk-interface-transaction.h: pk-interface-transaction.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
@@ -205,7 +197,6 @@ EXTRA_DIST =						\
 	pk-security-polkit.c				\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
-	pk-interface-notify.xml				\
 	pk-interface-transaction.xml			\
 	$(NULL)
 
