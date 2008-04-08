@@ -168,7 +168,7 @@ pk_polkit_client_error_denied_by_policy (GError *error)
 
 	/* not a dbus error */
 	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
-		pk_warning ("not a remote exception, is this sane?");
+		pk_warning ("not a remote exception: %s", error->message);
 		return FALSE;
 	}
 

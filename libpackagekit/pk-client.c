@@ -1035,11 +1035,16 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 	/* get and set a new ID */
 	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, error);
 	if (!ret) {
+		pk_warning ("failed to get a TID: %s", (*error)->message);
 		return FALSE;
 	}
 	ret = pk_client_set_tid (client, tid, error);
 	g_free (tid);
-	return ret;
+	if (!ret) {
+		pk_warning ("failed to set TID: %s", (*error)->message);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 /**
