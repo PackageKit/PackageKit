@@ -148,6 +148,13 @@ zypp_build_local_pool ()
 			if (! it->isSystemRepo ())
 				pool.reposErase(it->name ());
 		}
+		
+		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ).solvablesEmpty ())
+                {
+		        // Add local resolvables
+		        zypp::Target_Ptr target = zypp->target ();
+		        target->load ();
+                }
 
 	} catch (const zypp::Exception &ex) {
 		pk_error ("%s", ex.asUserString ().c_str ());
@@ -284,28 +291,19 @@ zypp_get_packages_by_file (const gchar *search_file)
 {
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-        zypp::ResPool pool = zypp_build_local_pool ();
+        zypp::ResPool pool = zypp_build_pool (TRUE);
 
         std::string file (search_file);
 
-        zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp::Target_Ptr target = zypp->target ();
+	zypp::target::rpm::librpmDb::db_const_iterator it;
+	zypp::target::rpm::RpmHeader::constPtr result = new zypp::target::rpm::RpmHeader ();
 
-        zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
-        rpm.initDatabase ();
-        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-
-        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package);
-                        it != pool.byKindEnd (zypp::ResKind::package); it++) {
-                rpm.getData ((*it)->name (), (*it)->edition (), rpmHeader);
-                std::list<std::string> files = rpmHeader->tag_filenames ();
-
-                if (std::find(files.begin(), files.end(), file) != files.end()) {
-                        v->push_back ((*it)->satSolvable ());
-                        break;
-                }
-
-        }
+	for (it.findByFile (search_file); *it; ++it) {
+		for (zypp::ResPool::byName_iterator it2 = pool.byNameBegin (it->tag_name ()); it2 != pool.byNameEnd (it->tag_name ()); it2++) {
+			if ((*it2)->isSystem ())
+				v->push_back ((*it2)->satSolvable ());
+		}
+	}
 
         return v;
 }
