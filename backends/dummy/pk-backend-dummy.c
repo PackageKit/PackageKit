@@ -335,9 +335,11 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
 	    pk_strequal (key_id, "BB7576AC")) {
+		pk_debug ("installed signature %s for %s", key_id, package_id);
 		_has_signature = TRUE;
 	} else {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
@@ -394,12 +396,18 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "glib2;2.14.0;i386;fedora", "The GLib library");
+	if (pk_strequal (package, "vips-doc")) {
+		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+				    "vips-doc;7.12.4-2.fc8;noarch;linva",
+				    "The vips documentation package.");
+	} else if (pk_strequal (package, "glib2")) {
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
+				    "glib2;2.14.0;i386;fedora", "The GLib library");
+	}
 	pk_backend_finished (backend);
 }
 
@@ -734,6 +742,7 @@ static void
 backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "update1;2.19.1-4.fc8;i386;fedora",
 			    "The first update");
