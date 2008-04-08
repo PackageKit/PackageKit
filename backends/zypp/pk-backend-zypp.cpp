@@ -292,7 +292,9 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         pk_backend_package (backend,
                                         status,
                                         package_id,
-                                        it->resolvable ()->description ().c_str ());
+                                        "");
+					// FIXME There is something in our descriptions which let crash pk
+                                        //it->resolvable ()->description ().c_str ());
 
                         g_free (package_id);
                 }
