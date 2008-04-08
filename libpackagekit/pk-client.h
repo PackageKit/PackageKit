@@ -160,7 +160,8 @@ PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,
 							 const gchar	*tid,
-							 GError		**error);
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gchar		*pk_client_get_tid			(PkClient	*client);
 
 gboolean	 pk_client_set_use_buffer		(PkClient	*client,
