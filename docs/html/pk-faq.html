@@ -23,13 +23,14 @@
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
 <li><a href="#selinux">Why doesn't PackageKit work with SELinux?</a></li>
+<li><a href="#tray-icons">What do the tray icons mean?</a></li>
 <li><a href="#no-percentage-updates">What if we don't support percentage updates?</a></li>
 <li><a href="#remaining-times">Why are the remaining times sometimes wildly wrong?</a></li>
 <li><a href="#different-options">How will PackageKit support all the different options?</a></li>
 <li><a href="#error-codes">Error codes are different on each backend?</a></li>
 <li><a href="#user-interaction">Installation an application that needs user interaction?</a></li>
 <li><a href="#up2date">Does PackageKit replace up2date?</a></li>
-<li><a href="#system=daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
+<li><a href="#system-daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
 <li><a href="#dependencies">How does PackageKit handle dependencies?</a></li>
 <li><a href="#rcd">Does PackageKit replace the Red Carpet service?</a></li>
 <li><a href="#how-fast">How fast is PackageKit?</a></li>
@@ -529,6 +530,24 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
 </tr>
 </table>
+
+<hr>
+<h3><a name="tray-icons">What do the tray icons mean?</a></h3>
+<table>
+<tr><td><img src="img/pk-update-bugfix.png"/></td><td>Bugfix update</td></tr>
+<tr><td><img src="img/pk-update-enhancement.png"/></td><td>Enhancement update</td></tr>
+<tr><td><img src="img/pk-update-high.png"/></td><td>High priority update</td></tr>
+<tr><td><img src="img/pk-update-low.png"/></td><td>Low priority update</td></tr>
+<tr><td><img src="img/pk-update-normal.png"/></td><td>Normal update</td></tr>
+<tr><td><img src="img/pk-update-security.png"/></td><td>Security update</td></tr>
+</table>
+<p>
+<b>NOTE:</b>Not all the icons may show for some backends.
+</p>
+<p>
+If you are using Fedora rawhide then only the bugfix icon will be show due to missing metadata.
+In the released versions of Fedora metadata is added to updates and the type of update can be found.
+</p>
 
 <hr>
 <h3><a name="selinux">Why doesn't PackageKit work with SELinux?</a></h3>
