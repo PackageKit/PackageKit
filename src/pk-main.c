@@ -34,6 +34,7 @@
 #include <pk-debug.h>
 #include "pk-conf.h"
 #include "pk-engine.h"
+#include "pk-transaction.h"
 #include "pk-backend-internal.h"
 #include "pk-interface.h"
 
@@ -95,6 +96,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 
 	dbus_g_object_type_install_info (PK_TYPE_ENGINE, &dbus_glib_pk_engine_object_info);
 	dbus_g_error_domain_register (PK_ENGINE_ERROR, NULL, PK_ENGINE_TYPE_ERROR);
+	dbus_g_error_domain_register (PK_TRANSACTION_ERROR, NULL, PK_TRANSACTION_TYPE_ERROR);
 	dbus_g_connection_register_g_object (connection, PK_DBUS_PATH, object);
 
 	return TRUE;
