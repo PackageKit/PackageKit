@@ -22,7 +22,6 @@
     <xi:include href="xml/pk-polkit-client.xml"/>
     <xi:include href="xml/pk-extra.xml"/>
     <xi:include href="xml/pk-client.xml"/>
-    <xi:include href="xml/pk-notify.xml"/>
     <xi:include href="xml/pk-network.xml"/>
     <xi:include href="xml/pk-package-list.xml"/>
     <xi:include href="xml/pk-control.xml"/>
