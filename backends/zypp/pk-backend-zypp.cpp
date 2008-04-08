@@ -587,12 +587,8 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	try {
 		PkGroupEnum group = get_enum_group (package);
 
-		// currently it is necessary to access the rpmDB directly to get infos like size for already installed packages
 		if (package.isSystem ()){
-			zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-			rpm.initDatabase();
-			zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-			rpm.getData (package.name (), package.edition (), rpmHeader);
+			zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
 
 			pk_backend_description (backend,
 				d->package_id,                          // package_id
@@ -602,7 +598,6 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 				rpmHeader->tag_url (). c_str (),        // const gchar *url
 				(gulong)rpmHeader->tag_archivesize ());        // gulong size
 
-			rpm.closeDatabase();
 		}else{
 			pk_backend_description (backend,
 				d->package_id,
@@ -1369,15 +1364,11 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-        rpm.initDatabase ();
-
         for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-                  if (g_strrstr (zypp_get_group ((*it)->satSolvable (), rpm), d->pkGroup))
+                  if (g_strrstr (zypp_get_group ((*it)->satSolvable ()), d->pkGroup))
                           v->push_back((*it)->satSolvable ());
         }
 
-        rpm.closeDatabase ();
 	pk_backend_set_percentage (backend, 70);
 
         zypp_emit_packages_in_list (backend ,v);
@@ -1532,17 +1523,14 @@ backend_get_files_thread (PkBackendThread *thread, gpointer data) {
         if (package.isSystem ()){
 
                 try {
-                        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-                        rpm.initDatabase();
-                        zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-                        rpm.getData (package.name (), package.edition (), rpmHeader);
+                        zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
                         std::list<std::string> files = rpmHeader->tag_filenames ();
 
                         for (std::list<std::string>::iterator it = files.begin (); it != files.end (); it++) {
                                 temp.append (*it);
                                 temp.append (";");
                         }
-                        rpm.closeDatabase();
+
                 } catch (const zypp::target::rpm::RpmException &ex) {
 		        pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't open rpm-database");
                         pk_backend_finished (backend);

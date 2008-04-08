@@ -20,6 +20,7 @@
 #include <zypp/sat/Pool.h>
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
+#include <zypp/target/rpm/librpmDb.h>
 
 #include <zypp/base/Logger.h>
 
@@ -96,7 +97,7 @@ zypp_build_pool (gboolean include_local)
 
 	if (include_local == TRUE) {
                 //FIXME have to wait for fix in zypp (repeated loading of target)
-                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ) == zypp::Repository::noRepository)
+                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ).solvablesEmpty ())
                 {
 		        // Add local resolvables
 		        zypp::Target_Ptr target = zypp->target ();
@@ -157,26 +158,28 @@ zypp_build_local_pool ()
 
 }
 
-zypp::target::rpm::RpmDb&
-zypp_get_rpmDb()
+zypp::target::rpm::RpmHeader::constPtr
+zypp_get_rpmHeader (std::string name, zypp::Edition edition)
 {
-        zypp::ZYpp::Ptr zypp = get_zypp ();
-        zypp::Target_Ptr target = zypp->target ();
+	zypp::target::rpm::librpmDb::db_const_iterator it;
+	zypp::target::rpm::RpmHeader::constPtr result = new zypp::target::rpm::RpmHeader ();
 
-        zypp::target::rpm::RpmDb &rpm = target->rpmDb ();
+	for (it.findPackage (name, edition); *it; ++it) {
+		result = *it;
+	}
 
-        return rpm;
+	return result;
 }
+		
 
 gchar*
-zypp_get_group (zypp::sat::Solvable item, zypp::target::rpm::RpmDb &rpm)
+zypp_get_group (zypp::sat::Solvable item)
 {
         std::string group;
 
         if (item.isSystem ()) {
 
-                zypp::target::rpm::RpmHeader::constPtr rpmHeader;
-                rpm.getData (item.name (), item.edition (), rpmHeader);
+                zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (item.name (), item.edition ());
                 group = rpmHeader->tag_group ();
 
         }else{
@@ -190,12 +193,7 @@ PkGroupEnum
 get_enum_group (zypp::sat::Solvable item)
 {
         
-        zypp::target::rpm::RpmDb &rpm = zypp_get_rpmDb ();
-        rpm.initDatabase ();
-
-        std::string group (zypp_get_group (item, rpm));
-
-        rpm.closeDatabase ();
+        std::string group (zypp_get_group (item));
 
         PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
         // TODO Look for a faster and nice way to do this conversion
@@ -541,6 +539,7 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                 // Perform the installation
                 zypp::ZYppCommitPolicy policy;
                 policy.restrictToMedia (0);	// 0 - install all packages regardless to media
+
                 zypp::ZYppCommitResult result = zypp->commit (policy);
 
                 if(!result._errors.empty () || !result._remaining.empty () || !result._srcremaining.empty ()){

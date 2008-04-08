@@ -49,14 +49,14 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 zypp::ResPool zypp_build_local_pool ();
 
 /**
-  * Return the rpm-Database
+  * Return the rpmHeader of a package
   */
-zypp::target::rpm::RpmDb& zypp_get_rpmDb();
+zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (std::string name, zypp::Edition edition);
 
 /**
-  * Return the gchar of the given PoolItem.
+  * Return the group of the given PoolItem.
   */
-gchar* zypp_get_group (zypp::sat::Solvable item, zypp::target::rpm::RpmDb &rpm);
+gchar* zypp_get_group (zypp::sat::Solvable item);
 
 /**
   * Return the PkEnumGroup of the given PoolItem.
