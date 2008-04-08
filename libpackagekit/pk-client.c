@@ -400,76 +400,13 @@ pk_client_package_buffer_get_item (PkClient *client, guint item)
 }
 
 /**
- * pk_client_reset:
- * @client: a valid #PkClient instance
- * @error: a %GError to put the error code and message in, or %NULL
- *
- * Resetting the client way be needed if we canceled the request without
- * waiting for ::finished, or if we want to reuse the #PkClient without
- * unreffing and creating it again.
- *
- * If you call pk_client_reset() on a running transaction, then it will be
- * automatically cancelled. If the cancel fails, the reset will fail.
- *
- * Return value: %TRUE if we reset the client
- **/
-gboolean
-pk_client_reset (PkClient *client, GError **error)
-{
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-
-	if (client->priv->is_finished != TRUE) {
-		pk_debug ("not exit status, will try to cancel");
-		/* we try to cancel the running tranaction */
-		ret = pk_client_cancel (client, error);
-		if (!ret) {
-			return FALSE;
-		}
-	}
-
-	g_free (client->priv->tid);
-	g_free (client->priv->cached_package_id);
-	g_free (client->priv->cached_key_id);
-	g_free (client->priv->cached_transaction_id);
-	g_free (client->priv->cached_full_path);
-	g_free (client->priv->cached_filter);
-	g_free (client->priv->cached_search);
-	g_strfreev (client->priv->cached_package_ids);
-
-	client->priv->tid = NULL;
-	client->priv->cached_package_id = NULL;
-	client->priv->cached_key_id = NULL;
-	client->priv->cached_transaction_id = NULL;
-	client->priv->cached_full_path = NULL;
-	client->priv->cached_filter = NULL;
-	client->priv->cached_search = NULL;
-	client->priv->cached_package_ids = NULL;
-	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
-	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
-	client->priv->is_finished = FALSE;
-
-	pk_package_list_clear (client->priv->package_list);
-	return TRUE;
-}
-
-/******************************************************************************
- *                    SIGNALS
- ******************************************************************************/
-
-/**
  * pk_client_finished_cb:
  */
 static void
-pk_client_finished_cb (DBusGProxy  *proxy,
-		       const gchar *exit_text,
-		       guint        runtime,
-		       PkClient    *client)
+pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime, PkClient *client)
 {
 	PkExitEnum exit;
 
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	exit = pk_exit_enum_from_text (exit_text);
@@ -496,11 +433,9 @@ pk_client_finished_cb (DBusGProxy  *proxy,
  * pk_client_progress_changed_cb:
  */
 static void
-pk_client_progress_changed_cb (DBusGProxy  *proxy,
-			       guint percentage, guint subpercentage,
+pk_client_progress_changed_cb (DBusGProxy *proxy, guint percentage, guint subpercentage,
 			       guint elapsed, guint remaining, PkClient *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit progress-changed %i, %i, %i, %i", percentage, subpercentage, elapsed, remaining);
@@ -527,7 +462,6 @@ pk_client_status_changed_cb (DBusGProxy *proxy, const gchar *status_text, PkClie
 {
 	PkStatusEnum status;
 
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	status = pk_status_enum_from_text (status_text);
@@ -546,7 +480,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 {
 	PkInfoEnum info;
 
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit package %s, %s, %s", info_text, package_id, summary);
@@ -569,7 +502,6 @@ pk_client_transaction_cb (DBusGProxy *proxy, const gchar *old_tid, const gchar *
 			  const gchar *data, PkClient *client)
 {
 	PkRoleEnum role;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	role = pk_role_enum_from_text (role_text);
@@ -595,7 +527,6 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 			    PkClient    *client)
 {
 	PkRestartEnum restart;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit update-detail %s, %s, %s, %s, %s, %s, %s, %s",
@@ -619,7 +550,6 @@ pk_client_description_cb (DBusGProxy  *proxy,
 			  PkClient    *client)
 {
 	PkGroupEnum group;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
@@ -638,7 +568,6 @@ pk_client_files_cb (DBusGProxy  *proxy,
 		    const gchar *filelist,
 		    PkClient    *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit files %s, %s", package_id, filelist);
@@ -655,7 +584,6 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 				      const gchar *key_fingerprint, const gchar *key_timestamp,
 				      const gchar *type_text, PkClient *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
@@ -673,7 +601,6 @@ static void
 pk_client_repo_detail_cb (DBusGProxy *proxy, const gchar *repo_id,
 			  const gchar *description, gboolean enabled, PkClient *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit repo-detail %s, %s, %i", repo_id, description, enabled);
@@ -690,7 +617,6 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 			 PkClient    *client)
 {
 	PkErrorCodeEnum code;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	code = pk_error_enum_from_text (code_text);
@@ -704,7 +630,6 @@ pk_client_error_code_cb (DBusGProxy  *proxy,
 static void
 pk_client_allow_cancel_cb (DBusGProxy *proxy, gboolean allow_cancel, PkClient *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit allow-cancel %i", allow_cancel);
@@ -752,7 +677,6 @@ pk_client_caller_active_changed_cb (DBusGProxy  *proxy,
 				    gboolean     is_active,
 				    PkClient    *client)
 {
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	pk_debug ("emit caller-active-changed %i", is_active);
@@ -769,7 +693,6 @@ pk_client_require_restart_cb (DBusGProxy  *proxy,
 			      PkClient    *client)
 {
 	PkRestartEnum restart;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	restart = pk_restart_enum_from_text (restart_text);
@@ -788,17 +711,12 @@ static void
 pk_client_message_cb (DBusGProxy  *proxy, const gchar *message_text, const gchar *details, PkClient *client)
 {
 	PkMessageEnum message;
-	g_return_if_fail (client != NULL);
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	message = pk_message_enum_from_text (message_text);
 	pk_debug ("emit message %i, %s", message, details);
 	g_signal_emit (client , signals [PK_CLIENT_MESSAGE], 0, message, details);
 }
-
-/******************************************************************************
- *                    TRANSACTION ID USING METHODS
- ******************************************************************************/
 
 /**
  * pk_client_get_status:
@@ -3257,6 +3175,104 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, PkClien
 }
 
 /**
+ * pk_client_disconnect_proxy:
+ **/
+static gboolean
+pk_client_disconnect_proxy (PkClient *client)
+{
+	if (client->priv->proxy == NULL) {
+		return FALSE;
+	}
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
+				        G_CALLBACK (pk_client_finished_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
+				        G_CALLBACK (pk_client_progress_changed_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
+				        G_CALLBACK (pk_client_status_changed_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
+				        G_CALLBACK (pk_client_package_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
+				        G_CALLBACK (pk_client_transaction_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Description",
+				        G_CALLBACK (pk_client_description_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
+				        G_CALLBACK (pk_client_files_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
+				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
+				        G_CALLBACK (pk_client_error_code_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
+				        G_CALLBACK (pk_client_require_restart_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Message",
+				        G_CALLBACK (pk_client_message_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
+					G_CALLBACK (pk_client_caller_active_changed_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
+				        G_CALLBACK (pk_client_allow_cancel_cb), client);
+	g_object_unref (G_OBJECT (client->priv->proxy));
+	client->priv->proxy = NULL;
+	return TRUE;
+}
+
+/**
+ * pk_client_reset:
+ * @client: a valid #PkClient instance
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Resetting the client way be needed if we canceled the request without
+ * waiting for ::finished, or if we want to reuse the #PkClient without
+ * unreffing and creating it again.
+ *
+ * If you call pk_client_reset() on a running transaction, then it will be
+ * automatically cancelled. If the cancel fails, the reset will fail.
+ *
+ * Return value: %TRUE if we reset the client
+ **/
+gboolean
+pk_client_reset (PkClient *client, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	if (client->priv->is_finished != TRUE) {
+		pk_debug ("not exit status, will try to cancel");
+		/* we try to cancel the running tranaction */
+		ret = pk_client_cancel (client, error);
+		if (!ret) {
+			return FALSE;
+		}
+	}
+
+	g_free (client->priv->tid);
+	g_free (client->priv->cached_package_id);
+	g_free (client->priv->cached_key_id);
+	g_free (client->priv->cached_transaction_id);
+	g_free (client->priv->cached_full_path);
+	g_free (client->priv->cached_filter);
+	g_free (client->priv->cached_search);
+	g_strfreev (client->priv->cached_package_ids);
+
+	/* we need to do this now we have multiple paths */
+	pk_client_disconnect_proxy (client);
+
+	client->priv->tid = NULL;
+	client->priv->cached_package_id = NULL;
+	client->priv->cached_key_id = NULL;
+	client->priv->cached_transaction_id = NULL;
+	client->priv->cached_full_path = NULL;
+	client->priv->cached_filter = NULL;
+	client->priv->cached_search = NULL;
+	client->priv->cached_package_ids = NULL;
+	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
+	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
+	client->priv->is_finished = FALSE;
+
+	pk_package_list_clear (client->priv->package_list);
+	return TRUE;
+}
+
+/**
  * pk_client_init:
  **/
 static void
@@ -3397,35 +3413,7 @@ pk_client_finalize (GObject *object)
 	g_main_loop_unref (client->priv->loop);
 
 	/* disconnect signal handlers */
-	if (client->priv->proxy != NULL) {
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Finished",
-					        G_CALLBACK (pk_client_finished_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "ProgressChanged",
-					        G_CALLBACK (pk_client_progress_changed_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "StatusChanged",
-					        G_CALLBACK (pk_client_status_changed_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Package",
-					        G_CALLBACK (pk_client_package_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
-					        G_CALLBACK (pk_client_transaction_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Description",
-					        G_CALLBACK (pk_client_description_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
-					        G_CALLBACK (pk_client_files_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
-					        G_CALLBACK (pk_client_repo_signature_required_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
-					        G_CALLBACK (pk_client_error_code_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
-					        G_CALLBACK (pk_client_require_restart_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "Message",
-					        G_CALLBACK (pk_client_message_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "CallerActiveChanged",
-						G_CALLBACK (pk_client_caller_active_changed_cb), client);
-		dbus_g_proxy_disconnect_signal (client->priv->proxy, "AllowCancel",
-					        G_CALLBACK (pk_client_allow_cancel_cb), client);
-		g_object_unref (G_OBJECT (client->priv->proxy));
-	}
+	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
 	g_object_unref (client->priv->polkit);
 	g_object_unref (client->priv->package_list);
@@ -3458,21 +3446,36 @@ pk_client_new (void)
 #include <glib/gstdio.h>
 
 static gboolean finished = FALSE;
+static guint clone_packages = 0;
 
 static void
-libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpointer data)
+libst_client_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
 {
 	finished = TRUE;
 	/* this is actually quite common */
 	g_object_unref (client);
 }
 
+static void
+libst_client_copy_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+{
+	libst_loopquit (test);
+}
+
+static void
+libst_client_copy_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_id, const gchar *summary, LibSelfTest *test)
+{
+	clone_packages++;
+}
+
 void
 libst_client (LibSelfTest *test)
 {
 	PkClient *client;
+	PkClient *client_copy;
 	gboolean ret;
 	GError *error = NULL;
+	gchar *tid;
 	guint size;
 	guint size_new;
 	guint i;
@@ -3522,7 +3525,7 @@ libst_client (LibSelfTest *test)
 
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
-			  G_CALLBACK (libst_client_finished_cb), NULL);
+			  G_CALLBACK (libst_client_finished_cb), test);
 
 	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
@@ -3566,7 +3569,7 @@ libst_client (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "do lots of loops");
-	for (i=0;i<10;i++) {
+	for (i=0;i<5;i++) {
 		ret = pk_client_reset (client, &error);
 		if (!ret) {
 			libst_failed (test, "failed: to reset: %s", error->message);
@@ -3583,8 +3586,49 @@ libst_client (LibSelfTest *test)
 			libst_failed (test, "old size %i, new size %", size, size_new);
 		}
 	}
-	libst_success (test, "10 search name loops completed in %ims", libst_elapsed (test));
+	libst_success (test, "%i search name loops completed in %ims", i, libst_elapsed (test));
 	g_object_unref (client);
+
+	/************************************************************/
+	libst_title (test, "try to clone");
+
+	/* set up the source */
+	client = pk_client_new ();
+	g_signal_connect (client, "finished",
+			  G_CALLBACK (libst_client_copy_finished_cb), test);
+	/* set up the copy */
+	client_copy = pk_client_new ();
+	g_signal_connect (client_copy, "package",
+			  G_CALLBACK (libst_client_copy_package_cb), test);
+
+	/* search with the source */
+	ret = pk_client_search_name (client, "none", "power", &error);
+	if (!ret) {
+		libst_failed (test, "failed: %s", error->message);
+		g_error_free (error);
+	}
+
+	/* get the tid */
+	tid = pk_client_get_tid (client);
+	if (tid == NULL) {
+		libst_failed (test, "failed to get tid");
+	}
+
+	/* set the tid on the copy */
+	ret = pk_client_set_tid (client_copy, tid, &error);
+	if (!ret) {
+		libst_failed (test, "failed to set tid: %s", error->message);
+		g_error_free (error);
+	}
+
+	libst_loopwait (test, 5000);
+	if (clone_packages != 4) {
+		libst_failed (test, "failed to get correct number of packages: %i", clone_packages);
+	}
+	libst_success (test, "cloned in %i", libst_elapsed (test));
+
+	g_object_unref (client);
+	g_object_unref (client_copy);
 
 	libst_end (test);
 }
