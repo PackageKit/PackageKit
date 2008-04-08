@@ -102,30 +102,6 @@ pk_transaction_list_get_from_transaction (PkTransactionList *tlist, PkTransactio
 }
 
 /**
- * pk_transaction_list_get_from_tid:
- **/
-static PkTransactionItem *
-pk_transaction_list_get_from_tid (PkTransactionList *tlist, const gchar *tid)
-{
-	guint i;
-	guint length;
-	PkTransactionItem *item;
-
-	g_return_val_if_fail (tlist != NULL, NULL);
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
-
-	/* find the runner with the transaction ID */
-	length = tlist->priv->array->len;
-	for (i=0; i<length; i++) {
-		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		if (pk_transaction_id_equal (item->tid, tid)) {
-			return item;
-		}
-	}
-	return NULL;
-}
-
-/**
  * pk_transaction_list_role_present:
  *
  * if there is a queued transaction with this role, useful to avoid having
@@ -159,42 +135,6 @@ pk_transaction_list_role_present (PkTransactionList *tlist, PkRoleEnum role)
 		}
 	}
 	return FALSE;
-}
-
-/**
- * pk_transaction_list_create:
- **/
-gboolean
-pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
-{
-	PkTransactionItem *item;
-	DBusGConnection *connection;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
-
-	/* add to the array */
-	item = g_new0 (PkTransactionItem, 1);
-	item->committed = FALSE;
-	item->running = FALSE;
-	item->finished = FALSE;
-	item->transaction = NULL;
-	item->tid = g_strdup (tid);
-
-	/* get another connection */
-	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
-	if (connection == NULL) {
-		pk_error ("no connection");
-	}
-
-	item->transaction = pk_transaction_new ();
-	pk_transaction_set_tid (item->transaction, item->tid);
-	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
-	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
-
-	pk_debug ("adding transaction %p, item %p", item->transaction, item);
-	g_ptr_array_add (tlist->priv->array, item);
-	return TRUE;
 }
 
 /**
@@ -249,29 +189,22 @@ pk_transaction_list_remove_item_timeout (gpointer data)
 }
 
 /**
- * pk_transaction_list_backend_finished_cb:
+ * pk_transaction_list_transaction_finished_cb:
  **/
 static void
-pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransactionList *tlist)
+pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, PkTransactionList *tlist)
 {
 	guint i;
 	guint length;
 	gboolean ret;
 	PkTransactionItem *item;
 	PkTransactionFinished *finished;
-	const gchar *c_tid;
 
 	g_return_if_fail (PK_IS_TRANSACTION_LIST (tlist));
 
-	c_tid = pk_backend_get_current_tid (backend);
-	if (c_tid == NULL) {
-		pk_warning ("could not get current tid");
-		return;
-	}
-
-	item = pk_transaction_list_get_from_tid (tlist, c_tid);
+	item = pk_transaction_list_get_from_transaction (tlist, transaction);
 	if (item == NULL) {
-		pk_error ("no transaction list found!");
+		pk_error ("no transaction list item found!");
 	}
 
 	/* transaction is already finished? */
@@ -312,6 +245,44 @@ pk_transaction_list_backend_finished_cb (PkBackend *backend, PkExitEnum exit, Pk
 			}
 		}
 	}
+}
+
+/**
+ * pk_transaction_list_create:
+ **/
+gboolean
+pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
+{
+	PkTransactionItem *item;
+	DBusGConnection *connection;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
+
+	/* add to the array */
+	item = g_new0 (PkTransactionItem, 1);
+	item->committed = FALSE;
+	item->running = FALSE;
+	item->finished = FALSE;
+	item->transaction = NULL;
+	item->tid = g_strdup (tid);
+
+	/* get another connection */
+	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
+	if (connection == NULL) {
+		pk_error ("no connection");
+	}
+
+	item->transaction = pk_transaction_new ();
+	g_signal_connect (item->transaction, "finished",
+			  G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
+	pk_transaction_set_tid (item->transaction, item->tid);
+	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
+	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
+
+	pk_debug ("adding transaction %p, item %p", item->transaction, item);
+	g_ptr_array_add (tlist->priv->array, item);
+	return TRUE;
 }
 
 /**
@@ -451,8 +422,6 @@ pk_transaction_list_init (PkTransactionList *tlist)
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
 	tlist->priv->array = g_ptr_array_new ();
 	tlist->priv->backend = pk_backend_new ();
-	g_signal_connect (tlist->priv->backend, "finished",
-			  G_CALLBACK (pk_transaction_list_backend_finished_cb), tlist);
 }
 
 /**
