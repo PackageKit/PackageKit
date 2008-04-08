@@ -58,6 +58,18 @@ struct _PkTaskList
 struct _PkTaskListClass
 {
 	GObjectClass	parent_class;
+	void		(* message)			(PkTaskList	*tlist,
+							 PkClient	*client,
+							 PkMessageEnum	 message,
+							 const gchar	*details);
+	void		(* finished)			(PkTaskList	*tlist,
+							 PkClient	*client,
+							 PkExitEnum	 exit,
+							 guint		 runtime);
+	void		(* error_code)			(PkTaskList	*tlist,
+							 PkClient	*client,
+							 PkErrorCodeEnum code,
+							 const gchar	*details);
 };
 
 GType		 pk_task_list_get_type			(void) G_GNUC_CONST;

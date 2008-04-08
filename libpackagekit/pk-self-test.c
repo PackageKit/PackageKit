@@ -38,6 +38,7 @@ void libst_extra (LibSelfTest *test);
 void libst_extra_obj (LibSelfTest *test);
 void libst_client (LibSelfTest *test);
 void libst_control (LibSelfTest *test);
+void libst_task_list (LibSelfTest *test);
 
 int
 main (int argc, char **argv)
@@ -60,6 +61,7 @@ main (int argc, char **argv)
 	libst_extra_obj (&test);
 	libst_client (&test);
 	libst_control (&test);
+	libst_task_list (&test);
 
 	return (libst_finish (&test));
 }
