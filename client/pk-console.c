@@ -33,6 +33,7 @@
 
 #include <pk-debug.h>
 #include <pk-client.h>
+#include <pk-control.h>
 #include <pk-package-id.h>
 #include <pk-enum-list.h>
 #include <pk-common.h>
@@ -47,6 +48,7 @@ static gboolean is_console = FALSE;
 static gboolean has_output = FALSE;
 static gboolean printed_bar = FALSE;
 static guint timer_id = 0;
+static PkControl *control = NULL;
 static PkClient *client = NULL;
 static PkClient *client_task = NULL;
 
@@ -889,7 +891,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				g_set_error (error, 0, 0, _("specify a correct role"));
 				return FALSE;
 			}
-			ret = pk_client_get_time_since_action (client, role, &time, error);
+			ret = pk_control_get_time_since_action (control, role, &time, error);
 			if (ret == FALSE) {
 				g_set_error (error, 0, 0, _("failed to get last time"));
 				return FALSE;
@@ -940,17 +942,17 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 		} else if (strcmp (value, "updates") == 0) {
 			ret = pk_client_get_updates (client, "basename", error);
 		} else if (strcmp (value, "actions") == 0) {
-			elist = pk_client_get_actions (client);
+			elist = pk_control_get_actions (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 		} else if (strcmp (value, "filters") == 0) {
-			elist = pk_client_get_filters (client);
+			elist = pk_control_get_filters (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 		} else if (strcmp (value, "repos") == 0) {
 			ret = pk_client_get_repo_list (client, "none", error);
 		} else if (strcmp (value, "groups") == 0) {
-			elist = pk_client_get_groups (client);
+			elist = pk_control_get_groups (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
 		} else if (strcmp (value, "transactions") == 0) {
@@ -1222,7 +1224,8 @@ main (int argc, char *argv[])
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
-	role_list = pk_client_get_actions (client);
+	control = pk_control_new ();
+	role_list = pk_control_get_actions (control);
 	pk_debug ("actions=%s", pk_enum_list_to_string (role_list));
 
 	/* run the commands */
@@ -1242,6 +1245,7 @@ main (int argc, char *argv[])
 	}
 
 	g_free (options_help);
+	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
 
