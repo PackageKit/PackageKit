@@ -1596,7 +1596,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 			package = pk_package_list_get_item (updates_cache, i);
 			info_text = pk_info_enum_to_text (package->info);
 			g_signal_emit (transaction, signals [PK_TRANSACTION_PACKAGE], 0,
-				       transaction->priv->tid, info_text, package->package_id, package->summary);
+				       info_text, package->package_id, package->summary);
 		}
 
 		/* we are done */
