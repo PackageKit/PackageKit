@@ -42,7 +42,6 @@
 struct PkNotifyPrivate
 {
 	gboolean		 dummy;
-	gchar			*tid;
 	guint			 timeout_id;
 };
 
@@ -75,13 +74,12 @@ pk_notify_restart_schedule (PkNotify *notify)
  * pk_notify_repo_list_changed:
  **/
 gboolean
-pk_notify_repo_list_changed (PkNotify *notify, const gchar *tid)
+pk_notify_repo_list_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
 
-	pk_debug ("emitting repo-list-changed tid:%s", tid);
-	g_signal_emit (notify, signals [PK_NOTIFY_REPO_LIST_CHANGED], 0, tid);
+	pk_debug ("emitting repo-list-changed");
+	g_signal_emit (notify, signals [PK_NOTIFY_REPO_LIST_CHANGED], 0);
 	return TRUE;
 }
 
@@ -89,13 +87,12 @@ pk_notify_repo_list_changed (PkNotify *notify, const gchar *tid)
  * pk_notify_updates_changed:
  **/
 gboolean
-pk_notify_updates_changed (PkNotify *notify, const gchar *tid)
+pk_notify_updates_changed (PkNotify *notify)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
 
-	pk_debug ("emitting updates-changed tid:%s", tid);
-	g_signal_emit (notify, signals [PK_NOTIFY_UPDATES_CHANGED], 0, tid);
+	pk_debug ("emitting updates-changed");
+	g_signal_emit (notify, signals [PK_NOTIFY_UPDATES_CHANGED], 0);
 	return TRUE;
 }
 
@@ -106,7 +103,7 @@ static gboolean
 pk_notify_finished_updates_changed_cb (gpointer data)
 {
 	PkNotify *notify = PK_NOTIFY (data);
-	pk_notify_updates_changed (notify, notify->priv->tid);
+	pk_notify_updates_changed (notify);
 	notify->priv->timeout_id = 0;
 	return FALSE;
 }
@@ -116,20 +113,15 @@ pk_notify_finished_updates_changed_cb (gpointer data)
  * pk_notify_wait_updates_changed:
  **/
 gboolean
-pk_notify_wait_updates_changed (PkNotify *notify, const gchar *tid, guint timeout)
+pk_notify_wait_updates_changed (PkNotify *notify, guint timeout)
 {
 	g_return_val_if_fail (PK_IS_NOTIFY (notify), FALSE);
-	g_return_val_if_fail (tid != NULL, FALSE);
 
 	/* check if we did this more than once */
 	if (notify->priv->timeout_id != 0) {
 		pk_warning ("already scheduled");
 		return FALSE;
 	}
-
-	/* save */
-	g_free (notify->priv->tid);
-	notify->priv->tid = g_strdup (tid);
 
 	/* schedule */
 	notify->priv->timeout_id = g_timeout_add (timeout, pk_notify_finished_updates_changed_cb, notify);
@@ -153,7 +145,6 @@ pk_notify_finalize (GObject *object)
 		g_source_remove (notify->priv->timeout_id);
 	}
 
-	g_free (notify->priv->tid);
 	G_OBJECT_CLASS (pk_notify_parent_class)->finalize (object);
 }
 
@@ -174,13 +165,13 @@ pk_notify_class_init (PkNotifyClass *klass)
 	signals [PK_NOTIFY_REPO_LIST_CHANGED] =
 		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	signals [PK_NOTIFY_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 
 	g_type_class_add_private (klass, sizeof (PkNotifyPrivate));
 }
@@ -196,7 +187,6 @@ static void
 pk_notify_init (PkNotify *notify)
 {
 	notify->priv = PK_NOTIFY_GET_PRIVATE (notify);
-	notify->priv->tid = NULL;
 	notify->priv->timeout_id = 0;
 }
 
