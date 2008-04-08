@@ -46,7 +46,7 @@
 #include "pk-client.h"
 #include "pk-common.h"
 #include "pk-task-list.h"
-#include "pk-job-list.h"
+#include "pk-control.h"
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
 static void     pk_task_list_init		(PkTaskList      *task_list);
@@ -62,7 +62,7 @@ static void     pk_task_list_finalize		(GObject         *object);
 struct _PkTaskListPrivate
 {
 	GPtrArray		*task_list;
-	PkJobList		*job_list;
+	PkControl		*control;
 };
 
 typedef enum {
@@ -183,7 +183,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	/* get the latest job list */
-	array = pk_job_list_get_latest (tlist->priv->job_list);
+	array = pk_control_transaction_list_get (tlist->priv->control);
 
 	/* mark previous tasks as non-valid */
 	length = tlist->priv->task_list->len;
@@ -261,7 +261,7 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
  * pk_task_list_transaction_list_changed_cb:
  **/
 static void
-pk_task_list_transaction_list_changed_cb (PkJobList *jlist, PkTaskList *tlist)
+pk_task_list_transaction_list_changed_cb (PkControl *jlist, PkTaskList *tlist)
 {
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
@@ -297,8 +297,8 @@ pk_task_list_init (PkTaskList *tlist)
 	tlist->priv = PK_TASK_LIST_GET_PRIVATE (tlist);
 
 	/* get the changing job list */
-	tlist->priv->job_list = pk_job_list_new ();
-	g_signal_connect (tlist->priv->job_list, "transaction-list-changed",
+	tlist->priv->control = pk_control_new ();
+	g_signal_connect (tlist->priv->control, "transaction-list-changed",
 			  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
 
 	/* we maintain a local copy */
@@ -334,7 +334,7 @@ pk_task_list_finalize (GObject *object)
 	}
 
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
-	g_object_unref (tlist->priv->job_list);
+	g_object_unref (tlist->priv->control);
 
 	G_OBJECT_CLASS (pk_task_list_parent_class)->finalize (object);
 }
