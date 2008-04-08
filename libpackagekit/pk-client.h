@@ -24,7 +24,6 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
-#include "pk-enum-list.h"
 #include "pk-package-list.h"
 
 G_BEGIN_DECLS
@@ -51,7 +50,6 @@ G_BEGIN_DECLS
  * @PK_CLIENT_ERROR_NO_TID: the transaction id was not pre-allocated (internal error)
  * @PK_CLIENT_ERROR_ALREADY_TID: the transaction id has already been used (internal error)
  * @PK_CLIENT_ERROR_ROLE_UNKNOWN: the role was not set (internal error)
- * @PK_CLIENT_ERROR_PROMISCUOUS: we are in a promiscuous mode where we have no transaction ID
  * @PK_CLIENT_ERROR_INVALID_PACKAGEID: the package_id is invalid
  *
  * Errors that can be thrown
@@ -62,7 +60,6 @@ typedef enum
 	PK_CLIENT_ERROR_NO_TID,
 	PK_CLIENT_ERROR_ALREADY_TID,
 	PK_CLIENT_ERROR_ROLE_UNKNOWN,
-	PK_CLIENT_ERROR_PROMISCUOUS,
 	PK_CLIENT_ERROR_INVALID_PACKAGEID
 } PkClientError;
 
@@ -141,8 +138,6 @@ struct _PkClientClass
 							 const gchar	*details);
 	void		(* allow_cancel)		(PkClient	*client,
 							 gboolean	 allow_cancel);
-	void		(* locked)			(PkClient	*client,
-							 gboolean	 is_locked);
 	void		(* caller_active_changed)	(PkClient	*client,
 							 gboolean	 is_active);
 	void		(* finished)			(PkClient	*client,
@@ -165,9 +160,6 @@ PkClient	*pk_client_new				(void);
 
 gboolean	 pk_client_set_tid			(PkClient	*client,
 							 const gchar	*tid,
-							 GError		**error);
-gboolean	 pk_client_set_promiscuous		(PkClient	*client,
-							 gboolean	 enabled,
 							 GError		**error);
 gchar		*pk_client_get_tid			(PkClient	*client);
 
@@ -271,6 +263,12 @@ gboolean	 pk_client_install_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_install_signature		(PkClient	*client,
+							 PkSigTypeEnum	 type,
+							 const gchar	*key_id,
+							 const gchar	*package_id,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_package		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error)
@@ -327,22 +325,11 @@ PkPackageItem	*pk_client_package_buffer_get_item	(PkClient	*client,
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 
 /* not job specific */
-PkEnumList	*pk_client_get_actions			(PkClient	*client);
-PkEnumList	*pk_client_get_filters			(PkClient	*client);
-PkEnumList	*pk_client_get_groups			(PkClient	*client);
 gboolean	 pk_client_reset			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_old_transactions		(PkClient	*client,
 							 guint		 number,
-							 GError		**error);
-gboolean	 pk_client_get_backend_detail		(PkClient	*client,
-							 gchar		**name,
-							 gchar		**author,
-							 GError		**error);
-gboolean	 pk_client_get_time_since_action	(PkClient	*client,
-							 PkRoleEnum	 role,
-							 guint		*seconds,
 							 GError		**error);
 gboolean	 pk_client_is_caller_active		(PkClient	*client,
 							 gboolean	*is_active,
