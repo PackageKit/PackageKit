@@ -274,8 +274,8 @@ pk_transaction_list_create (PkTransactionList *tlist, const gchar *tid)
 	}
 
 	item->transaction = pk_transaction_new ();
-	g_signal_connect (item->transaction, "finished",
-			  G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
+	g_signal_connect_after (item->transaction, "finished",
+				G_CALLBACK (pk_transaction_list_transaction_finished_cb), tlist);
 	pk_transaction_set_tid (item->transaction, item->tid);
 	dbus_g_object_type_install_info (PK_TYPE_TRANSACTION, &dbus_glib_pk_transaction_object_info);
 	dbus_g_connection_register_g_object (connection, item->tid, G_OBJECT (item->transaction));
