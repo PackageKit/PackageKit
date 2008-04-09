@@ -1366,10 +1366,14 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
-        for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-                  if (g_strrstr (zypp_get_group ((*it)->satSolvable ()), d->pkGroup))
-                          v->push_back((*it)->satSolvable ());
-        }
+	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
+
+	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
+		std::string group = it.asString ();
+		std::transform (group.begin (), group.end (), group.begin (), tolower);
+		if (g_strrstr (group.c_str (), d->pkGroup))
+			v->push_back (it.inSolvable ());
+	}
 
 	pk_backend_set_percentage (backend, 70);
 
