@@ -363,6 +363,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_ZPLV2_DOT_0,          "ZPLv2.0"},
 	{PK_LICENSE_ENUM_ZPLV2_DOT_1,          "ZPLv2.1"},
 	{PK_LICENSE_ENUM_ZLIB,                 "zlib"},
+	{PK_LICENSE_ENUM_ZLIB_WITH_ACK,        "zlib with acknowledgement"},
 	{PK_LICENSE_ENUM_CDL,                  "CDL"},
 	{PK_LICENSE_ENUM_FBSDDL,               "FBSDDL"},
 	{PK_LICENSE_ENUM_GFDL,                 "GFDL"},
