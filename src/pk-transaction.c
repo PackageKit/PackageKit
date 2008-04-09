@@ -1574,7 +1574,6 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 		pk_debug ("emitting finished '%s'", exit_text);
 		g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 
-		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 		dbus_g_method_return (context);
 		return;
 	}
