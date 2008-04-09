@@ -889,8 +889,8 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 
                 // Choose the PoolItem with the right architecture and version
                 zypp::PoolItem item;
-                for (zypp::ui::Selectable::availablePoolItem_iterator it = selectable->availablePoolItemBegin ();
-                                it != selectable->availablePoolItemEnd (); it++) {
+                for (zypp::ui::Selectable::available_iterator it = selectable->availableBegin ();
+                                it != selectable->availableEnd (); it++) {
                         if (strcmp ((*it)->edition ().asString ().c_str (), pi->version) == 0
                                         && strcmp ((*it)->arch ().c_str (), pi->arch) == 0 ) {
                                 hit = true;
@@ -1073,7 +1073,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 			zypp::ui::Selectable::Ptr selectable = *it;
 			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
 				if (selectable->status () == zypp::ui::S_KeepInstalled) {
-					selectable->set_status (zypp::ui::S_Del);
+					selectable->setStatus (zypp::ui::S_Del);
 					break;
 				}
 			}

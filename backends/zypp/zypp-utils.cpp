@@ -477,7 +477,7 @@ zypp_get_patches ()
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
-                if((*it)->candidatePoolItem ().isBroken())
+                if((*it)->candidateObj ().isBroken())
                         patches->insert (*it);
 
         }

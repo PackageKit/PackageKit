@@ -47,10 +47,13 @@ static PkEnumList *role_list = NULL;
 static gboolean is_console = FALSE;
 static gboolean has_output = FALSE;
 static gboolean printed_bar = FALSE;
+static gboolean need_requeue = FALSE;
+static gboolean nowait = FALSE;
 static guint timer_id = 0;
 static PkControl *control = NULL;
 static PkClient *client = NULL;
 static PkClient *client_task = NULL;
+static PkClient *client_signature = NULL;
 
 typedef struct {
 	gint position;
@@ -336,6 +339,7 @@ static const gchar *summary =
 	"  search name|details|group|file data\n"
 	"  install <package_id>\n"
 	"  install-file <file>\n"
+	"  install-signature <type> <key_id> <package_id>\n"
 	"  remove <package_id>\n"
 	"  update <package_id>\n"
 	"  refresh\n"
@@ -361,6 +365,24 @@ static const gchar *summary =
 	"  package_id is typically gimp;2:2.4.0-0.rc1.1.fc8;i386;development";
 
 /**
+ * pk_console_signature_finished_cb:
+ **/
+static void
+pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	pk_debug ("trying to requeue");
+	ret = pk_client_requeue (client, &error);
+	if (!ret) {
+		pk_warning ("failed to requeue action: %s", error->message);
+		g_error_free (error);
+		g_main_loop_quit (loop);
+	}
+}
+
+/**
  * pk_console_finished_cb:
  **/
 static void
@@ -371,6 +393,8 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	const gchar *role_text;
 	gfloat time;
 	PkRestartEnum restart;
+
+	pk_client_get_role (client, &role, NULL, NULL);
 
 	/* cancel the spinning */
 	if (timer_id != 0) {
@@ -386,7 +410,6 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("\r");
 	}
 
-	pk_client_get_role (client, &role, NULL, NULL);
 	role_text = pk_role_enum_to_text (role);
 	time = (gfloat) runtime / 1000.0;
 	g_print ("%s runtime was %.1f seconds\n", role_text, time);
@@ -396,6 +419,14 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	if (restart != PK_RESTART_ENUM_NONE) {
 		g_print (_("Requires restart: %s\n"), pk_restart_enum_to_text (restart));
 	}
+
+	/* have we failed to install, and the gpg key is now installed */
+	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
+		return;
+	}
+
+	/* close the loop */
+	g_main_loop_quit (loop);
 }
 
 /**
@@ -416,13 +447,11 @@ pk_console_get_number (const gchar *question, guint maxnum)
 
 		/* positive */
 		if (retval == 1 && answer > 0 && answer <= maxnum) {
-			return answer;
+			break;
 		}
 		g_print (_("Please enter a number from 1 to %i: "), maxnum);
 	} while (TRUE);
-
-	/* keep GCC happy */
-	return 0;
+	return answer;
 }
 
 /**
@@ -771,6 +800,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 	const gchar *parameter = NULL;
 	PkEnumList *elist;
 	gboolean ret = FALSE;
+	gboolean maybe_sync = TRUE;
 
 	mode = argv[1];
 	if (argc > 2) {
@@ -824,6 +854,13 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			return FALSE;
 		} else {
 			ret = pk_console_install_package (client, value, error);
+		}
+	} else if (strcmp (mode, "install-signature") == 0) {
+		if (value == NULL || details == NULL || parameter == NULL) {
+			g_set_error (error, 0, 0, _("specify a type, key_id and package_id"));
+			return FALSE;
+		} else {
+			ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, details, parameter, error);
 		}
 	} else if (strcmp (mode, "install-file") == 0) {
 		if (value == NULL) {
@@ -897,6 +934,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				return FALSE;
 			}
 			g_print ("time since %s is %is\n", details, time);
+			maybe_sync = FALSE;
 		} else if (strcmp (value, "depends") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, _("specify a search term"));
@@ -945,16 +983,19 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			elist = pk_control_get_actions (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
+			maybe_sync = FALSE;
 		} else if (strcmp (value, "filters") == 0) {
 			elist = pk_control_get_filters (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
+			maybe_sync = FALSE;
 		} else if (strcmp (value, "repos") == 0) {
 			ret = pk_client_get_repo_list (client, "none", error);
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_control_get_groups (control);
 			pk_enum_list_print (elist);
 			g_object_unref (elist);
+			maybe_sync = FALSE;
 		} else if (strcmp (value, "transactions") == 0) {
 			ret = pk_client_get_old_transactions (client, 10, error);
 		} else {
@@ -969,6 +1010,12 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 	} else {
 		g_set_error (error, 0, 0, _("option not yet supported"));
 	}
+
+	/* do we wait for the method? */
+	if (maybe_sync && !nowait && ret) {
+		g_main_loop_run (loop);
+	}
+
 	return ret;
 }
 
@@ -978,6 +1025,12 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
+	/* handled */
+	if (need_requeue && error_code == PK_ERROR_ENUM_GPG_FAILURE) {
+		pk_debug ("ignoring GPG error as handled");
+		return;
+	}
+
 	/* if on console, clear the progress bar line */
 	if (is_console && printed_bar) {
 		g_print ("\n");
@@ -1047,6 +1100,8 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 				       PkSigTypeEnum type, gpointer data)
 {
 	gboolean import;
+	gboolean ret;
+	GError *error = NULL;
 
 	g_print ("Repository Signature Required\n");
 	g_print ("Package:     %s\n", package_id);
@@ -1057,17 +1112,26 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	g_print ("Fingerprint: %s\n", key_fingerprint);
 	g_print ("Timestamp:   %s\n", key_timestamp);
 
-	/* it didn't quite cut it for the release */
-	g_debug ("Importing keys is not supported yet. We're working on it!");
-	return;
-
 	/* get user input */
 	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
 	if (!import) {
 		g_print ("%s\n", _("Did not import key, task will fail"));
 		return;
 	}
-	g_print ("TODO: import key\n");
+
+	/* install signature */
+	pk_debug ("install signature %s", key_id);
+	ret = pk_client_install_signature (client_signature, PK_SIGTYPE_ENUM_GPG,
+					   key_id, package_id, &error);
+	/* we succeeded, so wait for the requeue */
+	if (!ret) {
+		pk_warning ("failed to install signature: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* we imported a signature */
+	need_requeue = TRUE;
 }
 
 /**
@@ -1132,7 +1196,6 @@ main (int argc, char *argv[])
 	PkConnection *pconnection;
 	gboolean verbose = FALSE;
 	gboolean program_version = FALSE;
-	gboolean nowait = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
 	gboolean ret;
@@ -1196,7 +1259,6 @@ main (int argc, char *argv[])
 
 	client = pk_client_new ();
 	pk_client_set_use_buffer (client, TRUE, NULL);
-	pk_client_set_synchronous (client, !nowait, NULL);
 	g_signal_connect (client, "package",
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
@@ -1224,6 +1286,11 @@ main (int argc, char *argv[])
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
+	client_signature = pk_client_new ();
+	pk_client_set_synchronous (client_signature, FALSE, NULL);
+	g_signal_connect (client_signature, "finished",
+			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
+
 	control = pk_control_new ();
 	role_list = pk_control_get_actions (control);
 	pk_debug ("actions=%s", pk_enum_list_to_string (role_list));
@@ -1248,6 +1315,7 @@ main (int argc, char *argv[])
 	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
+	g_object_unref (client_signature);
 
 	return 0;
 }
