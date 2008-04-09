@@ -41,12 +41,13 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
-#include "pk-marshal.h"
-#include "pk-client.h"
-#include "pk-common.h"
-#include "pk-task-list.h"
-#include "pk-control.h"
+#include <pk-debug.h>
+#include <pk-client.h>
+#include <pk-common.h>
+#include <pk-task-list.h>
+#include <pk-control.h>
+#include <pk-connection.h>
+#include <pk-marshal.h>
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
 static void     pk_task_list_init		(PkTaskList      *task_list);
@@ -63,6 +64,7 @@ struct _PkTaskListPrivate
 {
 	GPtrArray		*task_list;
 	PkControl		*control;
+	PkConnection		*connection;
 };
 
 typedef enum {
@@ -312,10 +314,25 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
 static void
 pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 {
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
 	pk_debug ("emit task-list-changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+}
+
+/**
+ * pk_task_list_connection_changed_cb:
+ **/
+static void
+pk_task_list_connection_changed_cb (PkConnection *connection, gboolean connected, PkTaskList *tlist)
+{
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	pk_debug ("connected=%i", connected);
+	if (connected) {
+		/* force a refresh so we have valid data*/
+		pk_task_list_refresh (tlist);
+	}
 }
 
 /**
@@ -403,6 +420,10 @@ pk_task_list_init (PkTaskList *tlist)
 
 	/* we maintain a local copy */
 	tlist->priv->task_list = g_ptr_array_new ();
+
+	tlist->priv->connection = pk_connection_new ();
+	g_signal_connect (tlist->priv->connection, "connection-changed",
+			  G_CALLBACK (pk_task_list_connection_changed_cb), tlist);
 
 	/* force a refresh so we have valid data*/
 	pk_task_list_refresh (tlist);
