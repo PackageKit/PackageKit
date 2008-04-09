@@ -1239,7 +1239,6 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 	pk_debug ("emitting finished transaction '%s', %i", exit_text, 0);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
 
-	pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
 	return TRUE;
 }
 
