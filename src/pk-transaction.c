@@ -581,6 +581,21 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	exit_text = pk_exit_enum_to_text (exit);
 	pk_debug ("emitting finished '%s', %i", exit_text, time);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
+
+	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_description);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 }
 
 /**
@@ -2858,21 +2873,6 @@ pk_transaction_finalize (GObject *object)
 
 	transaction = PK_TRANSACTION (object);
 	g_return_if_fail (transaction->priv != NULL);
-
-	/* housekeeping */
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_description);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_message);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_package);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
 
 	g_free (transaction->priv->last_package);
 	g_free (transaction->priv->dbus_name);
