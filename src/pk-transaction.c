@@ -375,33 +375,6 @@ pk_transaction_get_text (PkTransaction *transaction)
 }
 
 /**
- * pk_transaction_tid_valid:
- **/
-static gboolean
-pk_transaction_tid_valid (PkTransaction *transaction)
-{
-	const gchar *c_tid;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* have we already been marked as finished? */
-	if (transaction->priv->finished) {
-		pk_debug ("Already finished, so it can't be us");
-		return FALSE;
-	}
-
-	/* get currently running */
-	c_tid = pk_backend_get_current_tid (transaction->priv->backend);
-	if (c_tid == NULL) {
-		pk_warning ("could not get current tid");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-/**
  * pk_transaction_finish_invalidate_caches:
  **/
 static gboolean
@@ -538,7 +511,6 @@ pk_transaction_files_cb (PkBackend *backend, const gchar *package_id,
 static void
 pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *transaction)
 {
-	gboolean valid;
 	const gchar *exit_text;
 	guint time;
 	gchar *packages;
@@ -546,9 +518,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	/* are we still talking about the same backend instance */
-	valid = pk_transaction_tid_valid (transaction);
-	if (valid == FALSE) {
+	/* have we already been marked as finished? */
+	if (transaction->priv->finished) {
+		pk_warning ("Already finished");
 		return;
 	}
 
@@ -639,14 +611,13 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 			   const gchar *summary, PkTransaction *transaction)
 {
 	const gchar *info_text;
-	gboolean valid;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	/* are we still talking about the same backend instance */
-	valid = pk_transaction_tid_valid (transaction);
-	if (valid == FALSE) {
+	/* have we already been marked as finished? */
+	if (transaction->priv->finished) {
+		pk_warning ("Already finished");
 		return;
 	}
 
@@ -752,15 +723,14 @@ pk_transaction_require_restart_cb (PkBackend *backend, PkRestartEnum restart, co
 static void
 pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTransaction *transaction)
 {
-	gboolean valid;
 	const gchar *status_text;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	/* are we still talking about the same backend instance */
-	valid = pk_transaction_tid_valid (transaction);
-	if (valid == FALSE) {
+	/* have we already been marked as finished? */
+	if (transaction->priv->finished) {
+		pk_warning ("Already finished");
 		return;
 	}
 
