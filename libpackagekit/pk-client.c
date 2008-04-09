@@ -3622,7 +3622,7 @@ libst_client (LibSelfTest *test)
 	}
 
 	libst_loopwait (test, 5000);
-	if (clone_packages != 4) {
+	if (clone_packages != size_new) {
 		libst_failed (test, "failed to get correct number of packages: %i", clone_packages);
 	}
 	libst_success (test, "cloned in %i", libst_elapsed (test));
