@@ -40,7 +40,6 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
-#include "pk-backend-internal.h"
 #include "pk-transaction-id.h"
 #include "pk-transaction-list.h"
 #include "pk-interface-transaction.h"
@@ -55,7 +54,6 @@ struct PkTransactionListPrivate
 {
 	GPtrArray		*array;
 	gchar			*current_tid;
-	PkBackend		*backend;
 };
 
 typedef struct {
@@ -225,9 +223,6 @@ pk_transaction_list_transaction_finished_cb (PkTransaction *transaction, const g
 	finished->tlist = tlist;
 	finished->item = item;
 	g_timeout_add_seconds (5, pk_transaction_list_remove_item_timeout, finished);
-
-	/* reset the backend  -- is this the correct place to do this? */
-	pk_backend_reset (tlist->priv->backend);
 
 	/* do the next transaction now if we have another queued */
 	length = tlist->priv->array->len;
@@ -421,7 +416,6 @@ pk_transaction_list_init (PkTransactionList *tlist)
 {
 	tlist->priv = PK_TRANSACTION_LIST_GET_PRIVATE (tlist);
 	tlist->priv->array = g_ptr_array_new ();
-	tlist->priv->backend = pk_backend_new ();
 }
 
 /**
@@ -440,7 +434,6 @@ pk_transaction_list_finalize (GObject *object)
 	g_return_if_fail (tlist->priv != NULL);
 
 	g_ptr_array_free (tlist->priv->array, TRUE);
-	g_object_unref (tlist->priv->backend);
 
 	G_OBJECT_CLASS (pk_transaction_list_parent_class)->finalize (object);
 }

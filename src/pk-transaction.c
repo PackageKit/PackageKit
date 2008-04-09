@@ -286,6 +286,9 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
+	/* prepare for use; the transaction list ensures this is safe */
+	pk_backend_reset (transaction->priv->backend);
+
 	ret = pk_transaction_set_running (transaction);
 	if (ret) {
 		/* we start inhibited, it's up to the backed to
@@ -730,7 +733,7 @@ pk_transaction_status_changed_cb (PkBackend *backend, PkStatusEnum status, PkTra
 
 	/* have we already been marked as finished? */
 	if (transaction->priv->finished) {
-		pk_warning ("Already finished");
+		pk_warning ("Already finished, so can't proxy status %s", pk_status_enum_to_text (status));
 		return;
 	}
 
