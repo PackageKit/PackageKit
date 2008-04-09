@@ -1287,7 +1287,6 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
 	client_signature = pk_client_new ();
-	pk_client_set_synchronous (client_signature, FALSE, NULL);
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
