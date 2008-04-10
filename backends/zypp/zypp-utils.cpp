@@ -252,13 +252,13 @@ get_enum_group (zypp::sat::Solvable item)
 }
 
 std::vector<zypp::sat::Solvable> *
-zypp_get_packages_by_name (const gchar *package_name, gboolean include_local)
+zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local)
 {
 	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
 
 	zypp::ResPool pool = zypp_build_pool (include_local);
 
-        zypp::Capability cap (package_name, zypp::ResKind::package, zypp::Capability::PARSED);
+        zypp::Capability cap (package_name, kind, zypp::Capability::PARSED);
         zypp::sat::WhatProvides provs (cap);
 
         for (zypp::sat::WhatProvides::const_iterator it = provs.begin ();
@@ -318,7 +318,11 @@ zypp_get_package_by_id (const gchar *package_id)
 		return zypp::sat::Solvable::noSolvable;
 	}
 
-	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, TRUE);
+	std::vector<zypp::sat::Solvable> *v = zypp_get_packages_by_name (pi->name, zypp::ResKind::package, TRUE);
+	std::vector<zypp::sat::Solvable> *v2 = zypp_get_packages_by_name (pi->name, zypp::ResKind::patch, TRUE);
+
+	v->insert (v->end (), v2->begin (), v2->end ());
+	
 	if (v == NULL)
 		return zypp::sat::Solvable::noSolvable;
 
@@ -337,6 +341,7 @@ zypp_get_package_by_id (const gchar *package_id)
 	}
 
 	delete (v);
+	delete (v2);
 	return package;
 }
 
@@ -469,10 +474,10 @@ zypp_get_updates ()
         return pks;
 }
 
-std::set<zypp::ui::Selectable::Ptr> *
+std::set<zypp::PoolItem> *
 zypp_get_patches ()
 {
-        std::set<zypp::ui::Selectable::Ptr> *patches = new std::set<zypp::ui::Selectable::Ptr> ();
+        std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
 
         zypp::ZYpp::Ptr zypp;
         zypp = get_zypp ();
@@ -481,7 +486,7 @@ zypp_get_patches ()
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
                 if((*it)->candidateObj ().isBroken())
-                        patches->insert (*it);
+                        patches->insert ((*it)->candidateObj ());
 
         }
 

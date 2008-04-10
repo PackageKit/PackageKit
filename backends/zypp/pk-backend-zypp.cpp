@@ -563,7 +563,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
-	v = zypp_get_packages_by_name ((const gchar *)pi->name, TRUE);
+	v = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::package, TRUE);
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -658,8 +658,11 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 40);
 
 
-        // get all Packages for Update
-        std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
+        // get all Packages and Patches for Update
+        std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
+	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
+
+	candidates->insert (candidates2->begin (), candidates2->end ());
 
 	pk_backend_set_percentage (backend, 80);
         std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
@@ -667,9 +670,15 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 		zypp::ResObject::constPtr res = ci->resolvable();
 
 		// Emit the package
+
+		PkInfoEnum infoEnum = PK_INFO_ENUM_AVAILABLE;
+
+		if (zypp::isKind<zypp::Patch>(res))
+			infoEnum = PK_INFO_ENUM_SECURITY;
+
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
 		pk_backend_package (backend,
-				    PK_INFO_ENUM_AVAILABLE,
+				    infoEnum,
 				    package_id,
 					"");
 				    // some package descriptions generate markup parse failures
@@ -679,40 +688,9 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	delete (candidates);
+	delete (candidates2);
 
-        //get all Patches for Update
-
-        std::set<zypp::ui::Selectable::Ptr> *patches = zypp_get_patches ();
-
-        for (std::set<zypp::ui::Selectable::Ptr>::iterator it = patches->begin (); it != patches->end (); it++) {
-                gchar *package_id;
-
-                zypp::ResObject::constPtr candidate = (*it)->candidateObj ();
-                zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(candidate);
-
-                PkInfoEnum infoEnum = PK_INFO_ENUM_SECURITY;
-
-                /* This is usesless ATM, because category isn't implemented yet
-                if(patch->category () == "security") {
-                        infoEnum = PK_INFO_ENUM_SECURITY;
-                }else if(patch->category () == "recommended") {
-                        infoEnum = PK_INFO_ENUM_IMPORTANT;
-                }*/
-
-                package_id = pk_package_id_build ((*it)->name ().c_str (),
-                                                  candidate->edition ().c_str (),
-                                                  candidate->arch ().c_str (),
-                                                  candidate->repoInfo ().alias ().c_str ());
-
-                pk_backend_package (backend,
-                                    infoEnum,
-                                    package_id,
-                                    candidate->description ().c_str ());
-                g_free (package_id);
-        }
-
-        delete (patches);
-        pk_backend_set_percentage (backend, 100);
+ 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1167,7 +1145,7 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
-	v = zypp_get_packages_by_name ((const gchar *)rdata->name, TRUE);
+	v = zypp_get_packages_by_name ((const gchar *)rdata->name, zypp::ResKind::package, TRUE);
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -1242,7 +1220,7 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
-			v = zypp_get_packages_by_name (search, TRUE);
+			v = zypp_get_packages_by_name (search, zypp::ResKind::package, TRUE);
 			break;
 
                 case SEARCH_TYPE_DETAILS:
@@ -1501,7 +1479,7 @@ backend_get_files_thread (PkBackendThread *thread, gpointer data) {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
-	v = zypp_get_packages_by_name ((const gchar *)pi->name, TRUE);
+	v = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::package, TRUE);
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();

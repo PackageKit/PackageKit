@@ -66,7 +66,7 @@ PkGroupEnum get_enum_group (zypp::sat::Solvable item);
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local);
 
 /**
  * Returns a list of packages that match the specified term in its name or description.
@@ -117,7 +117,7 @@ std::set<zypp::PoolItem> * zypp_get_updates ();
 /**
   * Returns a set of all patches the could be installed
   */
-std::set<zypp::ui::Selectable::Ptr> * zypp_get_patches ();
+std::set<zypp::PoolItem> * zypp_get_patches ();
 
 /**
   * perform changes in pool to the system
