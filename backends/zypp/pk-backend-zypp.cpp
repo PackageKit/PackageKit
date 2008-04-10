@@ -795,6 +795,12 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 
         // get all Packages for Update
         std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
+	//get all Patches for Update
+	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
+
+	//concatenate these sets
+
+	candidates->insert (candidates->begin (), candidates->end ());
 
 	pk_backend_set_percentage (backend, 80);
         std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
@@ -810,6 +816,7 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
                 return FALSE;
         }
 
+	delete (candidates2);
         delete (candidates);
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -1438,6 +1445,8 @@ static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
 	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	zypp::RepoManager manager;
 	zypp::RepoInfo repo;
