@@ -813,6 +813,38 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 }
 
 /**
+ * pk_filter_enums_to_text:
+ * @filters: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available;~gui"
+ **/
+gchar *
+pk_filter_enums_to_text (PkFilterEnum filters)
+{
+	GString *string;
+	guint i;
+
+	string = g_string_new ("");
+	for (i=1; i<PK_FILTER_ENUM_UNKNOWN; i*=2) {
+		if ((filters & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
+	}
+	/* do we have a 'none' filter? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_license_enum_from_text:
  * @license: Text describing the enumerated type
  *
@@ -852,6 +884,7 @@ libst_enum (LibSelfTest *test)
 	const gchar *string;
 	PkRoleEnum value;
 	guint i;
+	gchar *text;
 
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
@@ -1024,6 +1057,26 @@ libst_enum (LibSelfTest *test)
 		}
 	}
 	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (single)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	if (pk_strequal (text, "~devel")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (plural)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST);
+	if (pk_strequal (text, "~devel;gui;newest")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
 
 	libst_end (test);
 }
