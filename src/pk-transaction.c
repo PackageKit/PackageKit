@@ -489,6 +489,12 @@ pk_transaction_error_code_cb (PkBackend *backend, PkErrorCodeEnum code,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
+	if (code == PK_ERROR_ENUM_UNKNOWN) {
+		pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+				    "backend emitted 'unknown error' rather than a specific error "
+				    "- this is a backend problem and should be fixed!");
+	}
+
 	code_text = pk_error_enum_to_text (code);
 	pk_debug ("emitting error-code %s, '%s'", code_text, details);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ERROR_CODE], 0, code_text, details);
