@@ -760,8 +760,7 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	zypp::ZYpp::Ptr zypp = get_zypp ();
-	zypp::ResObject::constPtr item = zypp->pool ().find (solvable).resolvable ();
+	zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
@@ -780,7 +779,7 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 				  "",
 				  "",
 				  restart,
-				  item->description ().c_str ());
+				  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
 	g_free (obsoletes);
 	pk_package_id_free (pi);
