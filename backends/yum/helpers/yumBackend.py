@@ -1156,17 +1156,32 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_FOUND, "repo %s is not found" % repoid)
 
+    def _is_development_repo(self, repo):
+        if repo.endswith('-debuginfo'):
+            return True
+        if repo.endswith('-testing'):
+            return True
+        if repo.endswith('-debug'):
+            return True
+        if repo.endswith('-development'):
+            return True
+        if repo.endswith('-source'):
+            return True
+        return False
+
     def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         '''
         self._check_init()
         self.status(STATUS_INFO)
+
         for repo in self.yumbase.repos.repos.values():
-            if repo.isEnabled():
-                self.repo_detail(repo.id,repo.name,'true')
-            else:
-                self.repo_detail(repo.id,repo.name,'false')
+            if filters != FILTER_NOT_DEVELOPMENT or not self._is_development_repo(repo.id):
+                if repo.isEnabled():
+                    self.repo_detail(repo.id,repo.name,'true')
+                else:
+                    self.repo_detail(repo.id,repo.name,'false')
 
     def _get_obsoleted(self,name):
         obsoletes = self.yumbase.up.getObsoletesTuples( newest=1 )
