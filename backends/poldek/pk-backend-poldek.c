@@ -1867,6 +1867,7 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	struct poclidek_rcmd	*rcmd;
 	struct vf_progress	vf_progress;
 	guint			i;
+	gboolean		update_cancelled = FALSE;
 
 	setup_vf_progress (&vf_progress, td);
 
@@ -1905,6 +1906,7 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 				error = g_strdup_printf ("Cannot update %s", nvra);
 
 				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
+				update_cancelled = TRUE;
 
 				g_free (error);
 			}
@@ -1914,6 +1916,9 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 
 			poclidek_rcmd_free (rcmd);
 			poldek_ts_free (ts);
+
+			if (update_cancelled)
+				break;
 		}
 
 		td->pd->percentage = (gint)((float)(i + 1) * td->pd->stepvalue);
@@ -1924,7 +1929,8 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 		pkg_free (pkg);
 	}
 
-	pk_backend_set_percentage (backend, 100);
+	if (!update_cancelled)
+		pk_backend_set_percentage (backend, 100);
 
 	g_free (td->pd);
 	g_strfreev (td->package_ids);
