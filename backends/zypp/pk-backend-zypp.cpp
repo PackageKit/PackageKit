@@ -1612,9 +1612,9 @@ backend_update_packages(PkBackend *backend, gchar **package_ids)
 }
 
 static gboolean
-backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
-
-        PkBackend *backend;
+backend_repo_set_data_thread (PkBackendThread *thread, gpointer data)
+{
+	PkBackend *backend;
 
         /* get current backend */
         backend = pk_backend_thread_get_backend (thread);
@@ -1690,9 +1690,9 @@ backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
 			}
 
                 }else{
-                        pk_backend_message (backend, PK_MESSAGE_ENUM_NOTICE, "Valid parameters for set_repo_data are remove/add/refresh/prio");
-                        bReturn = FALSE;
-                }
+			pk_backend_error_code (backend, PK_ERROR_ENUM_NOT_SUPPORTED, "Valid parameters for set_repo_data are remove/add/refresh/prio");
+			bReturn = FALSE;
+		}
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
@@ -1708,13 +1708,7 @@ backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
                 bReturn = FALSE;
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asString ().c_str ());
-                g_free (d->repo_id);
-                g_free (d->parameter);
-                g_free (d->value);
-                g_free (d);
-                pk_backend_finished (backend);
-
-                return FALSE;
+		bReturn = FALSE;
 	}
 
         g_free (d->repo_id);
@@ -1723,7 +1717,7 @@ backend_repo_set_data_thread (PkBackendThread *thread, gpointer data) {
         g_free (d);
 	pk_backend_finished (backend);
 
-        return bReturn;
+	return bReturn;
 }
 
 /**

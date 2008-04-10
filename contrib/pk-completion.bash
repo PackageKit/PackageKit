@@ -24,7 +24,6 @@ __pkcon_commandlist="
     refresh
     resolve
     force-refresh
-    update-system
     get
     enable-repo
     disable-repo
@@ -74,7 +73,7 @@ _pkcon_get ()
 	while [ $c -lt $COMP_CWORD ]; do
 		i="${COMP_WORDS[c]}"
 		case "$i" in
-            updates|depends|requires|description|updatedetail|actions|groups|filters|transactions|repos)
+            updates|depends|requires|provides|description|updatedetail|actions|groups|filters|transactions|repos)
 			command="$i"
 			break
 			;;
@@ -87,6 +86,7 @@ _pkcon_get ()
             updates
             depends
             requires
+            provides
             description
             files
             updatedetail
