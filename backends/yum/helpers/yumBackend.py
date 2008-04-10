@@ -271,7 +271,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 time.sleep(2)
                 retries += 1
                 if retries > 100:
-                    self.error(ERROR_INTERNAL_ERROR,'Yum is locked by another application')
+                    self.error(ERROR_CANNOT_GET_LOCK,'Yum is locked by another application')
 
     def unLock(self):
         ''' Unlock Yum'''
@@ -804,7 +804,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if txmbr:
             self._runYumTransaction()
         else:
-            self.error(ERROR_INTERNAL_ERROR,"Nothing to do")
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE,"Nothing to do")
 
     def refresh_cache(self):
         '''
@@ -839,7 +839,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.percentage(100)
 
         except yum.Errors.YumBaseError, e:
-            self.error(ERROR_INTERNAL_ERROR,str(e))
+            self.error(ERROR_UNKNOWN,str(e))
 
     def resolve(self, filters, name):
         '''
@@ -1002,20 +1002,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
             except yum.Errors.YumGPGCheckError, ye:
                 retmsg = "Error in Package Signatures;" + self._format_msgs(ye.value)
-                self.error(ERROR_INTERNAL_ERROR,retmsg)
+                self.error(ERROR_BAD_GPG_SIGNATURE,retmsg)
             except GPGKeyNotImported, e:
                 keyData = self.yumbase.missingGPGKey
-                print "debug :",keyData
                 if not keyData:
-                    self.error(ERROR_INTERNAL_ERROR,
+                    self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
 
-# We need a yum with this change:
-# http://devel.linux.duke.edu/gitweb/?p=yum.git;a=commit;h=09640c743fb6a7ade5711183dc7d5964e1bd3221
-# to have fingerprint and timestamp available here
-# the above change is now in the latest yum for Fedor arawhide (yum-3.2.6-5.fc8)
                 id = self._pkg_to_id(keyData['po'])
-                print id
                 self.repo_signature_required(id,
                                              keyData['po'].repoid,
                                              keyData['keyurl'],
@@ -1024,7 +1018,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['fingerprint'],
                                              keyData['timestamp'],
                                              'GPG')
-                print "post"                                             
                 self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
                 retmsg = "Error in Transaction Processing;" + self._format_msgs(ye.value)
@@ -1066,7 +1059,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if pkg:
             self._show_description(pkg)
         else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 
     def _show_description(self,pkg):        
         pkgver = self._get_package_ver(pkg)
@@ -1093,7 +1086,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             self.files(package, file_list)
         else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 
     def _pkg_to_id(self,pkg):
         pkgver = self._get_package_ver(pkg)
@@ -1282,7 +1275,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 repo.cfg.write(file(repo.repofile, 'w'))
             except IOError, e:
-                self.error(ERROR_INTERNAL_ERROR,str(e))
+                self.error(ERROR_CANNOT_WRITE_REPO_CONFIG,str(e))
         else:
             self.error(ERROR_REPO_NOT_FOUND,'repo %s not found' % repoid)
 
@@ -1296,7 +1289,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 self.yumbase.getKeyForPackage(pkg, askcb = lambda x, y, z: True)
             except yum.Errors.YumBaseError, e:
-                self.error(ERROR_INTERNAL_ERROR,str(e))
+                self.error(ERROR_UNKNOWN,str(e))
             except:
                 self.error(ERROR_GPG_FAILURE,"Error importing GPG Key for %s" % pkg)
 

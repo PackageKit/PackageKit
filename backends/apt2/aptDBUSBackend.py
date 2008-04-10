@@ -124,7 +124,7 @@ class PackageKitFetchProgress(apt.progress.FetchProgress):
 
     def mediaChange(self, medium, drive):
         #FIXME: use the Message method to notify the user
-        self._backend.error(ERROR_INTERNAL_ERROR,
+        self._backend.error(ERROR_UNKNOWN,
                             "Medium change needed")
 
 class PackageKitInstallProgress(apt.progress.InstallProgress):
@@ -366,7 +366,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         except:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "System update failed")
+            self.ErrorCode(ERROR_UNKNOWN, "System update failed")
             self.Finished(EXIT_FAILED)
             return
         self.PercentageChanged(100)
@@ -402,7 +402,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                PackageKitInstallProgress(self, prange=(10,90)))
         except:
             self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Removal failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Removal failed")
             self.Finished(EXIT_FAILED)
             return
         self._open_cache(prange=(90,100))
@@ -410,7 +410,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if not self._cache.has_key(name) or not self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Package is still installed")
+            self.ErrorCode(ERROR_UNKNOWN, "Package is still installed")
             self.Finished(EXIT_FAILED)
 
     @threaded
@@ -443,7 +443,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                                PackageKitInstallProgress(self, prange=(50,90)))
         except:
             self._open_cache(prange=(90,100))
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
             self.Finished(EXIT_FAILED)
             return
         self._open_cache(prange=(90,100))
@@ -451,7 +451,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         if self._cache.has_key(name) and self._cache[name].isInstalled:
             self.Finished(EXIT_SUCCESS)
         else:
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Installation failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
             self.Finished(EXIT_FAILED)
 
     @threaded
@@ -479,7 +479,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         except:
             self._open_cache(prange=(95,100))
-            self.ErrorCode(ERROR_INTERNAL_ERROR, "Refreshing cache failed")
+            self.ErrorCode(ERROR_UNKNOWN, "Refreshing cache failed")
             self.Finished(EXIT_FAILED)
             return
         self.PercentageChanged(100)
@@ -502,7 +502,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self.Exit()
             return
         if self._cache._depcache.BrokenCount > 0:
-            self.ErrorCode(ERROR_INTERNAL_ERROR,
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,
                            "Not all dependecies can be satisfied")
             self.Finished(EXIT_FAILED)
             self.Exit()

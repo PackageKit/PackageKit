@@ -37,9 +37,9 @@ def ExceptionHandler(func):
             self.error(ERROR_DEP_RESOLUTION_FAILED, display(e), exit=True)
         except conaryclient.UpdateError, e:
             # FIXME: Need a enum for UpdateError
-            self.error(ERROR_INTERNAL_ERROR, display(e), exit=True)
+            self.error(ERROR_UNKNOWN, display(e), exit=True)
         except Exception, e:
-            self.error(ERROR_INTERNAL_ERROR, display(e), exit=True)
+            self.error(ERROR_UNKNOWN, display(e), exit=True)
     return wrapper
 
 class PackageKitConaryBackend(PackageKitBaseBackend):
@@ -429,7 +429,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             # Package size goes here, but I don't know how to find that for conary packages.
             self.description(shortDesc, id, categories, longDesc, url, 0)
         else:
-            self.error(ERROR_INTERNAL_ERROR,'Package was not found')
+            self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 
     def _show_package(self,name, version, flavor, status):
         '''  Show info about package'''
