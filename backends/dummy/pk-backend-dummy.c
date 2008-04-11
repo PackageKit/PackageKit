@@ -122,7 +122,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -169,7 +169,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -261,7 +261,7 @@ backend_get_updates_timeout (gpointer data)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 
@@ -393,7 +393,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -434,7 +434,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -449,7 +449,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -464,7 +464,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -505,7 +505,7 @@ backend_search_name_timeout (gpointer data)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
@@ -657,7 +657,7 @@ backend_update_system (PkBackend *backend)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -736,7 +736,7 @@ backend_service_pack (PkBackend *backend, const gchar *location, gboolean enable
  * backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
@@ -750,7 +750,7 @@ backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum p
  * backend_get_packages:
  */
 static void
-backend_get_packages (PkBackend *backend, const gchar *filter)
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);

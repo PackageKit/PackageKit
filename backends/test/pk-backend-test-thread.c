@@ -78,7 +78,7 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_search_group_thread, NULL);
@@ -125,7 +125,7 @@ backend_search_name_thread (PkBackendThread *thread, gpointer data)
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_search_name_thread, NULL);

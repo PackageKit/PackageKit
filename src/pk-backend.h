@@ -135,7 +135,7 @@ typedef struct {
 	PkFilterEnum	(*get_filters)		(PkBackend *backend);
 	void		(*cancel)		(PkBackend *backend);
 	void		(*get_depends)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *package_id,
 						 gboolean recursive);
 	void		(*get_description)	(PkBackend *backend,
@@ -143,17 +143,17 @@ typedef struct {
 	void		(*get_files)	        (PkBackend *backend,
 						 const gchar *package_id);
 	void		(*get_packages)	        (PkBackend *backend,
-						 const gchar *filter);
+						 PkFilterEnum filters);
 	void		(*get_repo_list)	(PkBackend *backend,
-						 const gchar *filter);
+						 PkFilterEnum filters);
 	void		(*get_requires)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *package_id,
 						 gboolean recursive);
 	void		(*get_update_detail)	(PkBackend *backend,
 						 const gchar *package_id);
 	void		(*get_updates)		(PkBackend *backend,
-						 const gchar *filter);
+						 PkFilterEnum filters);
 	void		(*install_file)		(PkBackend *backend,
 						 const gchar *full_path);
 	void		(*install_package)	(PkBackend *backend,
@@ -176,21 +176,21 @@ typedef struct {
 						 const gchar *parameter,
 						 const gchar *value);
 	void		(*resolve)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *package);
 	void		(*rollback)		(PkBackend *backend,
 						 const gchar *transaction_id);
 	void		(*search_details)	(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *search);
 	void		(*search_file)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *search);
 	void		(*search_group)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *search);
 	void		(*search_name)		(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 const gchar *search);
 	void		(*service_pack)		(PkBackend *backend,
 						 const gchar *location,
@@ -199,7 +199,7 @@ typedef struct {
 						 gchar **package_ids);
 	void		(*update_system)	(PkBackend *backend);
 	void		(*what_provides)	(PkBackend *backend,
-						 const gchar *filter,
+						 PkFilterEnum filters,
 						 PkProvidesEnum provide,
 						 const gchar *search);
 	gpointer	padding[10];

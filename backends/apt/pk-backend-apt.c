@@ -108,22 +108,28 @@ pk_backend_bool_to_text (gboolean value)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
+	gchar *filters_text;
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-depends.py", filter, package_id, pk_backend_bool_to_text (recursive), NULL);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-depends.py", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
 }
 
 /**
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
+	gchar *filters_text;
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-updates.py", filter, NULL);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-updates.py", filters_text, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -220,22 +226,28 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
 {
+	gchar *filters_text;
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "resolve.py", filter, package_id, NULL);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "resolve.py", filters_text, package_id, NULL);
+	g_free (filters_text);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
+	gchar *filters_text;
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-repo-list.py", filter, NULL);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-repo-list.py", filters_text, NULL);
+	g_free (filters_text);
 }
 
 PK_BACKEND_OPTIONS (

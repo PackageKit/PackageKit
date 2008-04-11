@@ -21,8 +21,6 @@
 
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
 #define ALPM_PROGRESS_UPDATE_INTERVAL 400
-#define ALPM_FILTER_INSTALLED "installed"
-#define ALPM_FILTER_NINSTALLED "~installed"
 
 #include <gmodule.h>
 #include <glib.h>
@@ -644,31 +642,15 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	alpm_list_t *result = NULL;
 	alpm_list_t *localresult = NULL;
 	alpm_list_t *dbs = NULL;
-	gchar **sections = NULL;
-	gboolean installed = TRUE, ninstalled = TRUE;
 
-
-	sections = g_strsplit (filter, ";", 0);
-	int i = 0;
-	while (sections[i]) {
-	  if (strcmp(sections[i], ALPM_FILTER_INSTALLED) == 0)
-	    {
-	      installed = FALSE;
-	    }
-	  if (strcmp(sections[i], ALPM_FILTER_NINSTALLED) == 0)
-	    {
-	      ninstalled = FALSE;
-	    }
-
-	  i++;
-	}
-	g_strfreev (sections);
+	installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	ninstalled = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	pk_debug ("alpm: searching for \"%s\" - searching in installed: %i, ~installed: %i",
 		  search, installed, ninstalled);
@@ -761,7 +743,7 @@ backend_install_file (PkBackend *backend, const gchar *path)
 }
 
 void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
   g_return_if_fail (backend != NULL);
   backend_initialize (backend);

@@ -89,37 +89,14 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * pk_backend_bool_to_text:
- *
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
-} */
-
-/**
- * backend_get_depends:
- *
-static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
-} */
-
-/**
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_updates (dbus, filter);
+	pk_backend_dbus_get_updates (dbus, filters);
 }
 
 /**
@@ -189,22 +166,22 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
  *  * pk_backend_search_details:
  *   */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
         g_return_if_fail (backend != NULL);
         g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_details (dbus, filter, search);
+        pk_backend_dbus_search_details (dbus, filters, search);
 }
 
 /**
  *  * pk_backend_search_name:
  *   */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
         g_return_if_fail (backend != NULL);
         g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_name (dbus, filter, search);
+        pk_backend_dbus_search_name (dbus, filters, search);
 }
 
 /**

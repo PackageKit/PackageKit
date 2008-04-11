@@ -644,6 +644,12 @@ libst_backend_spawn (LibSelfTest *test)
 		return;
 	}
 
+	/* don't do these when doing make distcheck */
+#ifndef PK_IS_DEVELOPER
+	libst_end (test);
+	return;
+#endif
+
 	/************************************************************/
 	libst_title (test, "get an backend_spawn");
 	backend_spawn = pk_backend_spawn_new ();

@@ -84,7 +84,7 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -114,7 +114,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -134,7 +134,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -184,7 +184,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -204,7 +204,7 @@ backend_rollback (PkBackend *backend, const gchar *package_id)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -214,7 +214,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -228,7 +228,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
@@ -238,7 +238,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,

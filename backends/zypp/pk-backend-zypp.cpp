@@ -25,7 +25,6 @@
 #include <pk-backend-thread.h>
 #include <unistd.h>
 #include <pk-debug.h>
-#include <pk-filter.h>
 #include <string>
 #include <set>
 
@@ -78,18 +77,18 @@ enum DepsBehavior {
 
 typedef struct {
 	gchar *search;
-	gchar *filter;
+	PkFilterEnum filters;
 	gint mode;
 } FindData;
 
 typedef struct {
 	gchar *pkGroup;
-	gchar *filter;
+	PkFilterEnum filters;
 } GroupData;
 
 typedef struct {
 	gchar *name;
-	gchar *filter;
+	PkFilterEnum filters;
 } ResolveData;
 
 typedef struct {
@@ -99,7 +98,7 @@ typedef struct {
 
 typedef struct {
         gchar *package_id;
-        gchar *filter;
+        PkFilterEnum filters;
         gint type;
 } FilterData;
 
@@ -182,8 +181,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_package_id_free (pi);
 		g_free (d->package_id);
-                g_free (d->filter);
-		g_free (d);
+        		g_free (d);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -210,8 +208,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Package is not installed");
                         pk_package_id_free (pi);
                         g_free (d->package_id);
-                        g_free (d->filter);
-                        g_free (d);
+                                        g_free (d);
                         pk_backend_finished (backend);
                         return FALSE;
                 }
@@ -225,8 +222,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
                         pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Package couldn't be found");
                         pk_package_id_free (pi);
                         g_free (d->package_id);
-                        g_free (d->filter);
-                        g_free (d);
+                                        g_free (d);
                         pk_backend_finished (backend);
                         return FALSE;
                 }
@@ -317,13 +313,14 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
   * backend_get_requires:
   */
 static void
-backend_get_requires(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive) {
+backend_get_requires(PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+{
         g_return_if_fail (backend != NULL);
 
         FilterData *data = g_new0(FilterData, 1);
         data->package_id = g_strdup(package_id);
         data->type = recursive;
-        data->filter = g_strdup(filter);
+        data->filters = filters;
         pk_backend_thread_create (thread, backend_get_requires_thread, data);
 }
 
@@ -531,7 +528,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	ThreadData *data = g_new0(ThreadData, 1);
@@ -697,7 +694,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
  * backend_get_updates
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
@@ -1167,7 +1164,6 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
 	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
 		g_free (rdata->name);
-		g_free (rdata->filter);
 		g_free (rdata);
 		pk_backend_finished (backend);
 		return FALSE;
@@ -1181,7 +1177,6 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
 			    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
 	g_free (rdata->name);
-	g_free (rdata->filter);
 	g_free (rdata);
 	g_free (package_id);
 	pk_backend_finished (backend);
@@ -1192,31 +1187,24 @@ backend_resolve_thread (PkBackendThread *thread, gpointer data)
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	//printf("Enter backend_resolve - filter:%s, package_id:%s\n", filter, package_id);
 	ResolveData *data = g_new0(ResolveData, 1);
 	data->name = g_strdup (package_id);
-	data->filter = g_strdup (filter);
+	data->filters = filters;
 	pk_backend_thread_create (thread, backend_resolve_thread, data);
 }
 
 static void
-find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter_text, gint mode)
+find_packages_real (PkBackend *backend, const gchar *search, PkFilterEnum filters, gint mode)
 {
 	//GList *list = NULL;
-	PkFilter *filter;
 
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	/* parse */
-	filter = pk_filter_new_from_string (filter_text);
-	if (filter == NULL) {
-		pk_error ("filter invalid, daemon broken");
-	}
 
 	pk_backend_no_percentage_updates (backend);
 
@@ -1237,36 +1225,6 @@ find_packages_real (PkBackend *backend, const gchar *search, const gchar *filter
 
 	zypp_emit_packages_in_list (backend, v);
 	delete (v);
-/*
-	if (mode == SEARCH_TYPE_FILE) {
-		if (filter->installed == FALSE && filter->not_installed == FALSE) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-		} else	{
-			list = box_db_repos_search_file_with_filter (db, search, search_filter);
-			add_packages_from_list (backend, list, FALSE);
-			box_db_repos_package_list_free (list);
-		}
-	} else if (mode == SEARCH_TYPE_RESOLVE) {
-		list = box_db_repos_packages_search_one (db, (gchar *)search);
-		add_packages_from_list (backend, list, FALSE);
-		box_db_repos_package_list_free (list);
-	} else {
-		if (filter->installed == FALSE && filter->not_installed == FALSE) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-		} else	{
-			if (filter->installed == TRUE && filter->not_installed == TRUE) {
-				list = box_db_repos_packages_search_all(db, (gchar *)search, search_filter);
-			} else if (filter->installed == TRUE) {
-				list = box_db_repos_packages_search_installed(db, (gchar *)search, search_filter);
-			} else if (filter->not_installed == TRUE) {
-				list = box_db_repos_packages_search_available(db, (gchar *)search, search_filter);
-			}
-			add_packages_from_list (backend, list, FALSE);
-			box_db_repos_package_list_free (list);
-		}
-	}
-*/
-	pk_filter_free (filter);
 }
 
 static gboolean
@@ -1278,10 +1236,9 @@ backend_find_packages_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
-	find_packages_real (backend, d->search, d->filter, d->mode);
+	find_packages_real (backend, d->search, d->filters, d->mode);
 
 	g_free(d->search);
-	g_free(d->filter);
 	g_free(d);
 	pk_backend_finished (backend);
 
@@ -1289,14 +1246,14 @@ backend_find_packages_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gint mode)
+find_packages (PkBackend *backend, const gchar *search, PkFilterEnum filters, gint mode)
 {
 	FindData *data = g_new0(FindData, 1);
 
 	g_return_if_fail (backend != NULL);
 
 	data->search = g_strdup(search);
-	data->filter = g_strdup(filter);
+	data->filters = filters;
 	data->mode = mode;
 	pk_backend_thread_create (thread, backend_find_packages_thread, data);
 }
@@ -1305,20 +1262,20 @@ find_packages (PkBackend *backend, const gchar *search, const gchar *filter, gin
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	find_packages (backend, search, filter, SEARCH_TYPE_NAME);
+	find_packages (backend, search, filters, SEARCH_TYPE_NAME);
 }
 
 /**
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	find_packages (backend, search, filter, SEARCH_TYPE_DETAILS);
+	find_packages (backend, search, filters, SEARCH_TYPE_DETAILS);
 }
 
 static gboolean
@@ -1331,7 +1288,6 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
 	if (d->pkGroup == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
-		g_free (d->filter);
                 g_free (d->pkGroup);
 		g_free (d);
 		pk_backend_finished (backend);
@@ -1364,7 +1320,6 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
 	pk_backend_set_percentage (backend, 100);
 
-        g_free (d->filter);
         g_free (d->pkGroup);
         g_free (d);
 	pk_backend_finished (backend);
@@ -1376,13 +1331,13 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *pkGroup)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkGroup)
 {
         g_return_if_fail (backend != NULL);
 
         GroupData *data = g_new0(GroupData, 1);
         data->pkGroup = g_strdup(pkGroup);
-        data->filter = g_strdup(filter);
+        data->filters = filters;
         pk_backend_thread_create (thread, backend_search_group_thread, data);
 }
 
@@ -1390,17 +1345,17 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *pkGr
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
-	find_packages (backend, search, filter, SEARCH_TYPE_FILE);
+	find_packages (backend, search, filters, SEARCH_TYPE_FILE);
 }
 
 /**
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
 	//Fixme - use the new param - filter
 	
@@ -1796,7 +1751,6 @@ backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
                 pk_backend_package (backend, info, package_id, it->lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
         }
 
-	g_free (d->filter);
         g_free (d->name);
         g_free (d);
 	pk_backend_finished (backend);
@@ -1808,13 +1762,13 @@ backend_what_provides_thread (PkBackendThread *thread, gpointer data) {
   * backend_what_provides
   */
 static void
-backend_what_provides(PkBackend *backend, const gchar *filter, PkProvidesEnum provide, const gchar *search)
+backend_what_provides(PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provide, const gchar *search)
 {
         g_return_if_fail (backend != NULL);
 
         ResolveData *data = g_new0(ResolveData, 1);
         data->name = g_strdup(search);
-        data->filter = g_strdup(filter);
+        data->filters = filters;
         pk_backend_thread_create (thread, backend_what_provides_thread, data);
 }
 

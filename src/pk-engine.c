@@ -42,7 +42,6 @@
 
 #include <pk-debug.h>
 #include <pk-common.h>
-#include <pk-filter.h>
 #include <pk-network.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>
@@ -608,6 +607,12 @@ libst_engine (LibSelfTest *test)
 	if (libst_start (test, "PkEngine", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/* don't do these when doing make distcheck */
+#ifndef PK_IS_DEVELOPER
+	libst_end (test);
+	return;
+#endif
 
 	/************************************************************/
 	libst_title (test, "get a backend instance");
