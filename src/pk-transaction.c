@@ -320,6 +320,7 @@ pk_transaction_set_dbus_name (PkTransaction *transaction, const gchar *dbus_name
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+	g_return_val_if_fail (dbus_name != NULL, FALSE);
 
 	if (transaction->priv->dbus_name != NULL) {
 		pk_warning ("you can't assign more than once!");
@@ -1284,7 +1285,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	pk_debug ("GetPackages method called: %s", filter);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->search_name == NULL) {
+	if (transaction->priv->backend->desc->get_packages == NULL) {
 		pk_debug ("Not implemented yet: GetPackages");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
