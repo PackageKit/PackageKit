@@ -88,9 +88,9 @@ struct _PkClientPrivate
 	gchar			*cached_transaction_id;
 	gchar			*cached_key_id;
 	gchar			*cached_full_path;
-	gchar			*cached_filter;
 	gchar			*cached_search;
 	PkProvidesEnum		 cached_provides;
+	PkFilterEnum		 cached_filters;
 };
 
 typedef enum {
@@ -968,7 +968,7 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 /**
  * pk_client_get_updates:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Get a list of all the packages that can be updated for all repositories.
@@ -976,12 +976,13 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
  * Return value: %TRUE if we got told the daemon to get the update list
  **/
 gboolean
-pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
+pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -991,15 +992,18 @@ pk_client_get_updates (PkClient *client, const gchar *filter, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_UPDATES;
+	client->priv->cached_filters = filters;
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdates", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1099,7 +1103,7 @@ pk_client_update_system (PkClient *client, GError **error)
 /**
  * pk_client_search_name:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1109,9 +1113,10 @@ pk_client_update_system (PkClient *client, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_name (PkClient *client, const gchar *filter, const gchar *search, GError **error)
+pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -1123,7 +1128,7 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_NAME;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_search = g_strdup (search);
 
 	/* check to see if we have a valid proxy */
@@ -1131,10 +1136,12 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchName", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1151,7 +1158,7 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
 /**
  * pk_client_search_details:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: free text to search for, for instance, "power"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1162,9 +1169,10 @@ pk_client_search_name (PkClient *client, const gchar *filter, const gchar *searc
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_details (PkClient *client, const gchar *filter, const gchar *search, GError **error)
+pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -1176,7 +1184,7 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_DETAILS;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_search = g_strdup (search);
 
 	/* check to see if we have a valid proxy */
@@ -1184,10 +1192,12 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchDetails", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1204,7 +1214,7 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
 /**
  * pk_client_search_group:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: a group enum to search for, for instance, "system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1213,9 +1223,10 @@ pk_client_search_details (PkClient *client, const gchar *filter, const gchar *se
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_group (PkClient *client, const gchar *filter, const gchar *search, GError **error)
+pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -1227,7 +1238,7 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_GROUP;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_search = g_strdup (search);
 
 	/* check to see if we have a valid proxy */
@@ -1235,10 +1246,12 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchGroup", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1255,7 +1268,7 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
 /**
  * pk_client_search_file:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @search: file to search for, for instance, "/sbin/service"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1264,9 +1277,10 @@ pk_client_search_group (PkClient *client, const gchar *filter, const gchar *sear
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_search_file (PkClient *client, const gchar *filter, const gchar *search, GError **error)
+pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *search, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -1278,7 +1292,7 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_SEARCH_FILE;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_search = g_strdup (search);
 
 	/* check to see if we have a valid proxy */
@@ -1286,10 +1300,12 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "SearchFile", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1306,7 +1322,7 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
 /**
  * pk_client_get_depends:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for depends
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1316,12 +1332,13 @@ pk_client_search_file (PkClient *client, const gchar *filter, const gchar *searc
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1340,6 +1357,7 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_DEPENDS;
+	client->priv->cached_filters = filters;
 	client->priv->cached_package_id = g_strdup (package_id);
 	client->priv->cached_force = recursive;
 
@@ -1348,11 +1366,13 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDepends", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1369,7 +1389,7 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
 /**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @recursive: If we should search recursively for requires
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1379,13 +1399,13 @@ pk_client_get_depends (PkClient *client, const gchar *filter, const gchar *packa
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_requires (PkClient *client, const gchar *filter,
-			const gchar *package_id, gboolean recursive, GError **error)
+pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *package_id, gboolean recursive, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1404,6 +1424,7 @@ pk_client_get_requires (PkClient *client, const gchar *filter,
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REQUIRES;
+	client->priv->cached_filters = filters;
 	client->priv->cached_package_id = g_strdup (package_id);
 	client->priv->cached_force = recursive;
 
@@ -1412,11 +1433,13 @@ pk_client_get_requires (PkClient *client, const gchar *filter,
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRequires", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1433,7 +1456,7 @@ pk_client_get_requires (PkClient *client, const gchar *filter,
 /**
  * pk_client_what_provides:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @provides: a #PkProvidesEnum value such as PK_PROVIDES_ENUM_CODEC
  * @search: a search term such as "sound/mp3"
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1445,14 +1468,15 @@ pk_client_get_requires (PkClient *client, const gchar *filter,
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum provides,
+pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum provides,
 			 const gchar *search, GError **error)
 {
 	gboolean ret;
 	const gchar *provides_text;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -1465,7 +1489,7 @@ pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum p
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_WHAT_PROVIDES;
 	client->priv->cached_search = g_strdup (search);
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_provides = provides;
 
 	provides_text = pk_provides_enum_to_text (provides);
@@ -1475,11 +1499,13 @@ pk_client_what_provides (PkClient *client, const gchar *filter, PkProvidesEnum p
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "WhatProvides", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, provides_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -1603,7 +1629,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 /**
  * pk_client_resolve:
  * @client: a valid #PkClient instance
- * @filter: a filter enum such as "basename;~development" or "none"
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package: the package name to resolve, e.g. "gnome-system-tools"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -1614,12 +1640,13 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, GError **error)
+pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 
 	/* get and set a new ID */
@@ -1630,7 +1657,7 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_RESOLVE;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 	client->priv->cached_package_id = g_strdup (package);
 
 	/* check to see if we have a valid proxy */
@@ -1638,10 +1665,12 @@ pk_client_resolve (PkClient *client, const gchar *filter, const gchar *package, 
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "Resolve", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
@@ -2416,12 +2445,13 @@ pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
  * Return value: %TRUE if the daemon queued the transaction
  */
 gboolean
-pk_client_get_repo_list (PkClient *client, const gchar *filter, GError **error)
+pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 {
 	gboolean ret;
+	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2431,16 +2461,18 @@ pk_client_get_repo_list (PkClient *client, const gchar *filter, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_GET_REPO_LIST;
-	client->priv->cached_filter = g_strdup (filter);
+	client->priv->cached_filters = filters;
 
 	/* check to see if we have a valid proxy */
 	if (client->priv->proxy == NULL) {
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
+	filter_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetRepoList", error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
 	pk_client_error_fixup (error);
 	if (ret) {
 		/* allow clients to respond in the status changed callback */
@@ -2742,11 +2774,11 @@ pk_client_requeue (PkClient *client, GError **error)
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		ret = pk_client_get_depends (client, priv->cached_filter, priv->cached_package_id, priv->cached_force, error);
+		ret = pk_client_get_depends (client, priv->cached_filters, priv->cached_package_id, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		ret = pk_client_get_update_detail (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
-		ret = pk_client_resolve (client, priv->cached_filter, priv->cached_package_id, error);
+		ret = pk_client_resolve (client, priv->cached_filters, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		ret = pk_client_rollback (client, priv->cached_transaction_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
@@ -2754,17 +2786,17 @@ pk_client_requeue (PkClient *client, GError **error)
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		ret = pk_client_get_files (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		ret = pk_client_get_requires (client, priv->cached_filter, priv->cached_package_id, priv->cached_force, error);
+		ret = pk_client_get_requires (client, priv->cached_filters, priv->cached_package_id, priv->cached_force, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		ret = pk_client_get_updates (client, priv->cached_filter, error);
+		ret = pk_client_get_updates (client, priv->cached_filters, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		ret = pk_client_search_details (client, priv->cached_filter, priv->cached_search, error);
+		ret = pk_client_search_details (client, priv->cached_filters, priv->cached_search, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		ret = pk_client_search_file (client, priv->cached_filter, priv->cached_search, error);
+		ret = pk_client_search_file (client, priv->cached_filters, priv->cached_search, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		ret = pk_client_search_group (client, priv->cached_filter, priv->cached_search, error);
+		ret = pk_client_search_group (client, priv->cached_filters, priv->cached_search, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		ret = pk_client_search_name (client, priv->cached_filter, priv->cached_search, error);
+		ret = pk_client_search_name (client, priv->cached_filters, priv->cached_search, error);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		ret = pk_client_install_package (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
@@ -2780,7 +2812,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		ret = pk_client_get_repo_list (client, priv->cached_filter, error);
+		ret = pk_client_get_repo_list (client, priv->cached_filters, error);
 	} else {
 		pk_client_error_set (error, PK_CLIENT_ERROR_ROLE_UNKNOWN, "role unknown for reque");
 		return FALSE;
@@ -3249,7 +3281,6 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_key_id);
 	g_free (client->priv->cached_transaction_id);
 	g_free (client->priv->cached_full_path);
-	g_free (client->priv->cached_filter);
 	g_free (client->priv->cached_search);
 	g_strfreev (client->priv->cached_package_ids);
 
@@ -3261,9 +3292,9 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_key_id = NULL;
 	client->priv->cached_transaction_id = NULL;
 	client->priv->cached_full_path = NULL;
-	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
+	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
 	client->priv->last_status = PK_STATUS_ENUM_UNKNOWN;
 	client->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	client->priv->is_finished = FALSE;
@@ -3295,9 +3326,9 @@ pk_client_init (PkClient *client)
 	client->priv->cached_transaction_id = NULL;
 	client->priv->cached_key_id = NULL;
 	client->priv->cached_full_path = NULL;
-	client->priv->cached_filter = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
+	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
 	client->priv->proxy = NULL;
 
 	/* check dbus connections, exit if not valid */
@@ -3401,7 +3432,6 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->cached_key_id);
 	g_free (client->priv->cached_transaction_id);
 	g_free (client->priv->cached_full_path);
-	g_free (client->priv->cached_filter);
 	g_free (client->priv->cached_search);
 	g_free (client->priv->tid);
 	g_strfreev (client->priv->cached_package_ids);
@@ -3529,7 +3559,7 @@ libst_client (LibSelfTest *test)
 
 	/* run the method */
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_search_name (client, "none", "power", NULL);
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", NULL);
 
 	/************************************************************/
 	libst_title (test, "we finished?");
@@ -3554,7 +3584,7 @@ libst_client (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search for power");
-	ret = pk_client_search_name (client, "none", "power", &error);
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		libst_failed (test, "failed: %s", error->message);
 		g_error_free (error);
@@ -3575,7 +3605,7 @@ libst_client (LibSelfTest *test)
 			libst_failed (test, "failed: to reset: %s", error->message);
 			g_error_free (error);
 		}
-		ret = pk_client_search_name (client, "none", "power", &error);
+		ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 		if (!ret) {
 			libst_failed (test, "failed to search: %s", error->message);
 			g_error_free (error);
@@ -3602,7 +3632,7 @@ libst_client (LibSelfTest *test)
 			  G_CALLBACK (libst_client_copy_package_cb), test);
 
 	/* search with the source */
-	ret = pk_client_search_name (client, "none", "power", &error);
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		libst_failed (test, "failed: %s", error->message);
 		g_error_free (error);

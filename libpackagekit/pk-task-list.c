@@ -514,7 +514,7 @@ libst_task_list (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "search for power");
 	client = pk_client_new ();
-	ret = pk_client_search_name (client, "none", "power", &error);
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
 		libst_failed (test, "failed: %s", error->message);
 		g_error_free (error);

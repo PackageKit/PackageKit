@@ -66,7 +66,7 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_resolve (client, "none", name, &error);
+	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, name, &error);
 	if (!ret) {
 		pk_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);

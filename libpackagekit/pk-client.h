@@ -196,33 +196,33 @@ gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_updates			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_update_system		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_name			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_details		(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*search,
 							 GError		**error);
 gboolean	 pk_client_search_group			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_search_file			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_depends			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error)
@@ -232,13 +232,13 @@ gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_requires			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_what_provides		(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 PkProvidesEnum	 provides,
 							 const gchar	*search,
 							 GError		**error)
@@ -287,7 +287,7 @@ gboolean	 pk_client_install_file			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_resolve			(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 const gchar	*package,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
@@ -304,7 +304,7 @@ gboolean	 pk_client_requeue			(PkClient	*client,
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,
-							 const gchar	*filter,
+							 PkFilterEnum	 filters,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_repo_enable			(PkClient	*client,

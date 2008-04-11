@@ -471,7 +471,6 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 {
 	gboolean ret;
 	gboolean valid;
-	const gchar *filter_text;
 	guint i;
 	guint length;
 	PkPackageItem *item;
@@ -483,8 +482,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* we need to resolve it */
-	filter_text = pk_filter_enum_to_text (filter);
-	ret = pk_client_resolve (client_task, filter_text, package, error);
+	ret = pk_client_resolve (client_task, filter, package, error);
 	if (ret == FALSE) {
 		pk_warning (_("Resolve is not supported in this backend"));
 		return NULL;
@@ -500,7 +498,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 			pk_warning ("failed to reset client task");
 			return NULL;
 		}
-		ret = pk_client_what_provides (client_task, filter_text, PK_PROVIDES_ENUM_ANY, package, error);
+		ret = pk_client_what_provides (client_task, filter, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
 			pk_warning (_("WhatProvides is not supported in this backend"));
 			return NULL;
@@ -649,7 +647,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	pk_debug (_("Getting installed requires for %s"), package_id);
-	ret = pk_client_get_requires (client_task, "installed", package_id, TRUE, error);
+	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_id, TRUE, error);
 	if (!ret) {
 		return FALSE;
 	}
@@ -725,7 +723,7 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 		g_print (_("Could not find a package with that name to get requires\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_requires (client, "none", package_id, TRUE, error);
+	ret = pk_client_get_requires (client, PK_FILTER_ENUM_NONE, package_id, TRUE, error);
 	g_free (package_id);
 	return ret;
 }
@@ -743,7 +741,7 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 		g_print (_("Could not find a package with that name to get depends\n"));
 		return FALSE;
 	}
-	ret = pk_client_get_depends (client, "none", package_id, FALSE, error);
+	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_id, FALSE, error);
 	g_free (package_id);
 	return ret;
 }
@@ -836,28 +834,28 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_name (client, "none", details, error);
+				ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, details, error);
 			}
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_details (client, "none", details, error);
+				ret = pk_client_search_details (client, PK_FILTER_ENUM_NONE, details, error);
 			}
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_group (client, "none", details, error);
+				ret = pk_client_search_group (client, PK_FILTER_ENUM_NONE, details, error);
 			}
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
 				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_search_file (client, "none", details, error);
+				ret = pk_client_search_file (client, PK_FILTER_ENUM_NONE, details, error);
 			}
 		} else {
 			g_set_error (error, 0, 0, _("invalid search type"));
@@ -902,7 +900,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_set_error (error, 0, 0, _("specify a package name to resolve"));
 			return FALSE;
 		} else {
-			ret = pk_client_resolve (client, "none", value, error);
+			ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, value, error);
 		}
 	} else if (strcmp (mode, "enable-repo") == 0) {
 		if (value == NULL) {
@@ -975,7 +973,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				g_set_error (error, 0, 0, _("specify a search term"));
 				return FALSE;
 			} else {
-				ret = pk_client_what_provides (client, "none", PK_PROVIDES_ENUM_CODEC, details, error);
+				ret = pk_client_what_provides (client, PK_FILTER_ENUM_NONE, PK_PROVIDES_ENUM_CODEC, details, error);
 			}
 		} else if (strcmp (value, "description") == 0) {
 			if (details == NULL) {
@@ -992,7 +990,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 				ret = pk_console_get_files (client, details, error);
 			}
 		} else if (strcmp (value, "updates") == 0) {
-			ret = pk_client_get_updates (client, "basename", error);
+			ret = pk_client_get_updates (client, PK_FILTER_ENUM_BASENAME, error);
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_control_get_actions (control);
 			pk_enum_list_print (elist);
@@ -1004,7 +1002,7 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			g_object_unref (elist);
 			maybe_sync = FALSE;
 		} else if (strcmp (value, "repos") == 0) {
-			ret = pk_client_get_repo_list (client, "none", error);
+			ret = pk_client_get_repo_list (client, PK_FILTER_ENUM_NONE, error);
 		} else if (strcmp (value, "groups") == 0) {
 			elist = pk_control_get_groups (control);
 			pk_enum_list_print (elist);

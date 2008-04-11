@@ -58,7 +58,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 		return NULL;
 	}
 
-	ret = pk_client_search_file (client, "installed", filename, &error);
+	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
 	if (!ret) {
 		pk_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
