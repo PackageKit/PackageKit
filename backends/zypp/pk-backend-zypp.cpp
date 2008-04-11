@@ -361,7 +361,8 @@ static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
-	return PK_FILTER_ENUM_INSTALLED;
+	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
+			PK_FILTER_ENUM_NOT_INSTALLED);
 }
 
 static gboolean
@@ -1554,6 +1555,60 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
+backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
+	PkBackend *backend;
+
+	/*get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+	gchar *filter = (gchar*) data;
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+
+	if (g_ascii_strcasecmp (filter, "installed")) {
+		zypp_build_local_pool ();
+	}else{
+		zypp_build_pool (TRUE);
+	}
+  
+	zypp::ResPool pool = zypp::ResPool::instance ();
+
+	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
+		if ((*it)->isSystem ()) {
+			info = PK_INFO_ENUM_INSTALLED;
+			if (g_ascii_strcasecmp (filter, "not_installed"))
+			       continue;
+		}	
+
+		gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
+		pk_backend_package (backend,
+				info,
+				package_id,
+				(*it)->description ().c_str ());
+		g_free (package_id);
+	}
+
+
+	g_free (filter);
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+/**
+  * backend_get_packages:
+  */
+static void
+backend_get_packages (PkBackend *backend, const gchar *filter)
+{
+        g_return_if_fail (backend != NULL);
+
+        gchar *data = g_new0(gchar, 1);
+        data = g_strdup(filter);
+        pk_backend_thread_create (thread, backend_get_packages_thread, data);
+}
+
+static gboolean
 backend_update_packages_thread (PkBackendThread *thread, gpointer data) {
 
         PkBackend *backend;
@@ -1774,7 +1829,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
-	NULL,					/* get_packages */
+	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
