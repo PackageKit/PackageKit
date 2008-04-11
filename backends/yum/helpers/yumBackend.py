@@ -577,7 +577,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.repos.populateSack(mdtype='filelists')
             matches = self.yumbase.pkgSack.searchFiles(key)
             for pkg in matches:
-                if found.has_key(str(pkg)):
+                if not found.has_key(str(pkg)):
                     if self._do_extra_filtering(pkg, fltlist):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
