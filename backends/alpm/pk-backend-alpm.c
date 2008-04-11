@@ -711,19 +711,11 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_finished (backend);
 }
 
-static PkGroupEnum
-backend_get_groups (PkBackend *backend)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-  list = pk_enum_list_new ();
-  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_GROUP);
-}
-
-static void
-backend_get_filters (PkBackend *backend, PkEnumList *list)
-{
-  list = pk_enum_list_new ();
-  pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_FILTER);
-  pk_enum_list_append (list, PK_FILTER_ENUM_INSTALLED);
+	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
+	return PK_FILTER_ENUM_INSTALLED;
 }
 
 static void
@@ -793,7 +785,6 @@ PK_BACKEND_OPTIONS (
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
-	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
  	NULL,						/* get_depends */
