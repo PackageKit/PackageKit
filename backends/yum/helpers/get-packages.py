@@ -12,13 +12,9 @@
 
 import sys
 
-options = sys.argv[1]
-if len(sys.argv) > 2:
-    show_desc = sys.argv[2]
-else:
-    show_desc = 'no'
 from yumBackend import PackageKitYumBackend
+filters = sys.argv[1]
 
 backend = PackageKitYumBackend(sys.argv[1:],lock=False)
-backend.get_packages(options,show_desc)
+backend.get_packages(filters)
 sys.exit(0)
