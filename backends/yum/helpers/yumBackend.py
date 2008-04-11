@@ -521,6 +521,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
+        self.status(STATUS_QUERY)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
         try:

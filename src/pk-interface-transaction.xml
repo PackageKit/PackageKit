@@ -30,6 +30,7 @@
       <arg type="s" name="package" direction="out"/>
     </method>
     <method name="GetPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="filter" direction="in"/>
     </method>
     <method name="GetProgress">

@@ -145,6 +145,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	    role == PK_ROLE_ENUM_SEARCH_GROUP ||
 	    role == PK_ROLE_ENUM_SEARCH_FILE ||
 	    role == PK_ROLE_ENUM_SEARCH_DETAILS ||
+	    role == PK_ROLE_ENUM_GET_PACKAGES ||
 	    role == PK_ROLE_ENUM_GET_DEPENDS ||
 	    role == PK_ROLE_ENUM_GET_REQUIRES ||
 	    role == PK_ROLE_ENUM_GET_UPDATES) {
