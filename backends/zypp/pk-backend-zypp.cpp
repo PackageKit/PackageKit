@@ -1515,13 +1515,13 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
 
 	/*get current backend */
 	backend = pk_backend_thread_get_backend (thread);
-	gchar *filter = (gchar*) data;
+	PkFilterEnum* filter = (PkFilterEnum*) data;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
 
-	if (g_ascii_strcasecmp (filter, "installed")) {
+	if (*filter == PK_FILTER_ENUM_INSTALLED) {
 		zypp_build_local_pool ();
 	}else{
 		zypp_build_pool (TRUE);
@@ -1532,7 +1532,7 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
 		if ((*it)->isSystem ()) {
 			info = PK_INFO_ENUM_INSTALLED;
-			if (g_ascii_strcasecmp (filter, "not_installed"))
+			if (*filter == PK_FILTER_ENUM_NOT_INSTALLED)
 			       continue;
 		}	
 
@@ -1554,13 +1554,12 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
   * backend_get_packages:
   */
 static void
-backend_get_packages (PkBackend *backend, const gchar *filter)
+backend_get_packages (PkBackend *backend, PkFilterEnum filter)
 {
-        g_return_if_fail (backend != NULL);
+	g_return_if_fail (backend != NULL);
+	PkFilterEnum *data = g_new0(PkFilterEnum, 1);
 
-        gchar *data = g_new0(gchar, 1);
-        data = g_strdup(filter);
-        pk_backend_thread_create (thread, backend_get_packages_thread, data);
+	pk_backend_thread_create (thread, backend_get_packages_thread, data);
 }
 
 static gboolean
