@@ -650,6 +650,37 @@ pk_role_enums_to_text (PkRoleEnum roles)
 }
 
 /**
+ * pk_role_enums_from_text:
+ * @roles: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkRoleEnum
+pk_role_enums_from_text (const gchar *roles)
+{
+	PkRoleEnum roles_enum = 0;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (roles, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		roles_enum += pk_role_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return roles_enum;
+}
+
+/**
  * pk_error_enum_from_text:
  * @code: Text describing the enumerated type
  *
@@ -763,7 +794,7 @@ pk_group_enum_to_text (PkGroupEnum group)
 
 /**
  * pk_groups_enums_to_text:
- * @filters: The enumerated type values
+ * @groups: The enumerated type values
  *
  * Converts a enumerated type bitfield to its text representation
  *
@@ -791,6 +822,37 @@ pk_group_enums_to_text (PkGroupEnum groups)
 		g_string_set_size (string, string->len - 1);
 	}
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_group_enums_from_text:
+ * @groups: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkGroupEnum
+pk_group_enums_from_text (const gchar *groups)
+{
+	PkGroupEnum groups_enum = 0;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (groups, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		groups_enum += pk_group_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return groups_enum;
 }
 
 /**
@@ -912,6 +974,37 @@ pk_filter_enums_to_text (PkFilterEnum filters)
 		g_string_set_size (string, string->len - 1);
 	}
 	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_filter_enums_from_text:
+ * @filters: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkFilterEnum
+pk_filter_enums_from_text (const gchar *filters)
+{
+	PkFilterEnum filters_enum = PK_FILTER_ENUM_NONE;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (filters, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		filters_enum += pk_filter_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return filters_enum;
 }
 
 /**
@@ -1158,6 +1251,33 @@ libst_enum (LibSelfTest *test)
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (none)");
+	filter = pk_filter_enums_from_text ("none");
+	if (filter == PK_FILTER_ENUM_NONE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (single)");
+	filter = pk_filter_enums_from_text ("~devel");
+	if (filter == PK_FILTER_ENUM_NOT_DEVELOPMENT) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (plural)");
+	filter = pk_filter_enums_from_text ("~devel;gui;newest");
+	if (filter == (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
 
 	/************************************************************/
 	libst_title (test, "check we can add / remove enums");
