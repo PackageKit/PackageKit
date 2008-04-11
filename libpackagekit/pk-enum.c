@@ -450,6 +450,47 @@ pk_enum_find_string (PkEnumMatch *table, guint value)
 }
 
 /**
+ * pk_enums_contain_priority:
+ * @values: a valid enums instance
+ * @value: the values we are searching for
+ *
+ * Finds elements in a list, but with priority going to the preceeding entry
+ *
+ * Return value: The return enumerated type, or -1 if none are found
+ **/
+gint
+pk_enums_contain_priority (guint values, gint value, ...)
+{
+	va_list args;
+	guint i;
+	guint value_temp;
+	gint retval = -1;
+
+	/* we must query at least one thing */
+	if (pk_enums_contain (values, value)) {
+		return value;
+	}
+
+	/* process the valist */
+	va_start (args, value);
+	for (i=0;; i++) {
+		value_temp = va_arg (args, gint);
+		/* do we have this one? */
+		if (pk_enums_contain (values, value_temp)) {
+			retval = value_temp;
+			break;
+		}
+		/* end of the list */
+		if (value_temp == -1) {
+			break;
+		}
+	}
+	va_end (args);
+
+	return retval;
+}
+
+/**
  * pk_sig_type_enum_from_text:
  * @sig_type: Text describing the enumerated type
  *
@@ -1045,18 +1086,20 @@ void
 libst_enum (LibSelfTest *test)
 {
 	const gchar *string;
-	PkRoleEnum value;
+	PkRoleEnum role_value;
 	guint i;
 	gchar *text;
 	PkFilterEnum filter;
+	guint value;
+	guint values;
 
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
-	libst_title (test, "find value");
-	value = pk_enum_find_value (enum_role, "search-file");
+	libst_title (test, "find role_value");
+	role_value = pk_enum_find_value (enum_role, "search-file");
 	if (PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
@@ -1074,7 +1117,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "find value");
-	value = pk_role_enum_from_text ("search-file");
+	role_value = pk_role_enum_from_text ("search-file");
 	if (PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
@@ -1318,6 +1361,34 @@ libst_enum (LibSelfTest *test)
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "priority check missing");
+	values = PK_ROLE_ENUM_SEARCH_DETAILS | PK_ROLE_ENUM_SEARCH_GROUP;
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
+	if (value == -1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned priority %i when should be missing", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check first");
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check second, correct");
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
+	}
 
 	libst_end (test);
 }

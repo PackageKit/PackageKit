@@ -469,6 +469,8 @@ guint		 pk_enum_find_value			(PkEnumMatch	*table,
 const gchar	*pk_enum_find_string			(PkEnumMatch	*table,
 							 guint		 value)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gint		 pk_enums_contain_priority		(guint		 values,
+							 gint		 value, ...);
 
 PkSigTypeEnum    pk_sig_type_enum_from_text             (const gchar    *sig_type);
 const gchar     *pk_sig_type_enum_to_text               (PkSigTypeEnum   sig_type);
