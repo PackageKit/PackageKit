@@ -885,6 +885,7 @@ libst_enum (LibSelfTest *test)
 	PkRoleEnum value;
 	guint i;
 	gchar *text;
+	PkFilterEnum filter;
 
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
@@ -1072,6 +1073,19 @@ libst_enum (LibSelfTest *test)
 	libst_title (test, "check we can convert filter enums to text (plural)");
 	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST);
 	if (pk_strequal (text, "~devel;gui;newest")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can add / remove enums");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
+	pk_enums_add (filter, PK_FILTER_ENUM_NOT_FREE);
+	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	text = pk_filter_enums_to_text (filter);
+	if (pk_strequal (text, "gui;~free;newest")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
