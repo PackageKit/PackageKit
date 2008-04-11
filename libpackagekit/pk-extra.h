@@ -24,7 +24,6 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
-#include "pk-enum-list.h"
 #include "pk-package-list.h"
 
 G_BEGIN_DECLS

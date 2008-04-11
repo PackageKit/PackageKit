@@ -18,7 +18,6 @@
   <chapter>
     <title>libpackagekit</title>
     <xi:include href="xml/pk-connection.xml"/>
-    <xi:include href="xml/pk-enum-list.xml"/>
     <xi:include href="xml/pk-polkit-client.xml"/>
     <xi:include href="xml/pk-extra.xml"/>
     <xi:include href="xml/pk-client.xml"/>

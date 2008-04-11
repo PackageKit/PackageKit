@@ -23,7 +23,6 @@
 #define __PK_BACKEND_THREAD_H
 
 #include <glib-object.h>
-#include <pk-enum-list.h>
 
 #include "pk-backend-internal.h"
 #include "pk-backend-thread.h"

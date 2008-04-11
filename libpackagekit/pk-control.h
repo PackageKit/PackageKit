@@ -29,7 +29,6 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
-#include "pk-enum-list.h"
 
 G_BEGIN_DECLS
 
@@ -88,9 +87,9 @@ PkControl	*pk_control_new				(void);
 gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
 							 gchar		**tid,
 							 GError		**error);
-PkEnumList	*pk_control_get_actions			(PkControl	*control);
-PkEnumList	*pk_control_get_filters			(PkControl	*control);
-PkEnumList	*pk_control_get_groups			(PkControl	*control);
+PkRoleEnum	 pk_control_get_actions			(PkControl	*control);
+PkFilterEnum	 pk_control_get_filters			(PkControl	*control);
+PkGroupEnum	 pk_control_get_groups			(PkControl	*control);
 gboolean	 pk_control_get_backend_detail		(PkControl	*control,
 							 gchar		**name,
 							 gchar		**author,

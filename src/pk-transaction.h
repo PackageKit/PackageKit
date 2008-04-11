@@ -25,7 +25,6 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-enum-list.h>
 #include <pk-enum.h>
 #include <pk-package-list.h>
 

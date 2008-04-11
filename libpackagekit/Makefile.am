@@ -41,7 +41,6 @@ libpackagekit_include_HEADERS =					\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-list.h					\
-	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-filter.h						\
@@ -69,8 +68,6 @@ libpackagekit_la_SOURCES =					\
 	pk-package-ids.h					\
 	pk-package-list.c					\
 	pk-package-list.h					\
-	pk-enum-list.c						\
-	pk-enum-list.h						\
 	pk-enum.h						\
 	pk-enum.c						\
 	pk-common.c						\

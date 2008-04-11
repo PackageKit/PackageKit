@@ -163,23 +163,20 @@ pk_control_error_fixup (GError **error)
  *
  * Return value: an enumerated list of the actions the backend supports
  **/
-PkEnumList *
+PkRoleEnum
 pk_control_get_actions (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *actions;
-	PkEnumList *elist;
+	PkRoleEnum roles_enum = PK_GROUP_ENUM_UNKNOWN;
 
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
 		pk_warning ("No proxy for manager");
-		return FALSE;
+		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetActions", &error,
 				 G_TYPE_INVALID,
@@ -189,13 +186,14 @@ pk_control_get_actions (PkControl *control)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetActions failed :%s", error->message);
 		g_error_free (error);
-		return elist;
+		goto out;
 	}
 
 	/* convert to enumerated types */
-	pk_enum_list_from_string (elist, actions);
+	roles_enum = pk_role_enums_from_text (actions);
 	g_free (actions);
-	return elist;
+out:
+	return roles_enum;
 }
 
 /**
@@ -208,24 +206,20 @@ pk_control_get_actions (PkControl *control)
  *
  * Return value: an enumerated list of the groups the backend supports
  **/
-PkEnumList *
+PkGroupEnum
 pk_control_get_groups (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *groups;
-	PkEnumList *elist;
+	PkGroupEnum groups_enum = PK_GROUP_ENUM_UNKNOWN;
 
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
 		pk_warning ("No proxy for manager");
-		return FALSE;
-		return FALSE;
+		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetGroups", &error,
 				 G_TYPE_INVALID,
@@ -235,13 +229,14 @@ pk_control_get_groups (PkControl *control)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetGroups failed :%s", error->message);
 		g_error_free (error);
-		return elist;
+		goto out;
 	}
 
 	/* convert to enumerated types */
-	pk_enum_list_from_string (elist, groups);
+	groups_enum = pk_group_enums_from_text (groups);
 	g_free (groups);
-	return elist;
+out:
+	return groups_enum;
 }
 
 /**
@@ -252,24 +247,20 @@ pk_control_get_groups (PkControl *control)
  *
  * Return value: an enumerated list of the filters the backend supports
  **/
-PkEnumList *
+PkFilterEnum
 pk_control_get_filters (PkControl *control)
 {
 	gboolean ret;
 	GError *error = NULL;
 	gchar *filters;
-	PkEnumList *elist;
+	PkFilterEnum filters_enum = PK_FILTER_ENUM_UNKNOWN;
 
-	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_FILTER_ENUM_UNKNOWN);
 
 	/* check to see if we have a valid proxy */
 	if (control->priv->proxy == NULL) {
 		pk_warning ("No proxy for manager");
-		return FALSE;
-		return FALSE;
+		goto out;
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetFilters", &error,
 				 G_TYPE_INVALID,
@@ -279,13 +270,14 @@ pk_control_get_filters (PkControl *control)
 		/* abort as the DBUS method failed */
 		pk_warning ("GetFilters failed :%s", error->message);
 		g_error_free (error);
-		return elist;
+		goto out;
 	}
 
 	/* convert to enumerated types */
-	pk_enum_list_from_string (elist, filters);
+	filters_enum = pk_filter_enums_from_text (filters);
 	g_free (filters);
-	return elist;
+out:
+	return filters_enum;
 }
 
 /**

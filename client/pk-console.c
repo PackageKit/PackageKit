@@ -35,14 +35,13 @@
 #include <pk-client.h>
 #include <pk-control.h>
 #include <pk-package-id.h>
-#include <pk-enum-list.h>
 #include <pk-common.h>
 #include <pk-connection.h>
 
 #define PROGRESS_BAR_SIZE 15
 
 static GMainLoop *loop = NULL;
-static PkEnumList *role_list = NULL;
+static PkRoleEnum roles;
 static gboolean is_console = FALSE;
 static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
@@ -632,7 +631,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 
 	/* are we dumb and can't check for requires? */
-	if (pk_enum_list_contains (role_list, PK_ROLE_ENUM_GET_REQUIRES) == FALSE) {
+	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		/* no, just try to remove it without deps */
 		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
 		g_free (package_id);
@@ -810,7 +809,10 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-	PkEnumList *elist;
+	PkRoleEnum roles;
+	PkGroupEnum groups;
+	PkFilterEnum filters;
+	gchar *text;
 	gboolean ret = FALSE;
 	gboolean maybe_sync = TRUE;
 
@@ -994,21 +996,24 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 		} else if (strcmp (value, "packages") == 0) {
 			ret = pk_client_get_packages (client, PK_FILTER_ENUM_INSTALLED, error);
 		} else if (strcmp (value, "actions") == 0) {
-			elist = pk_control_get_actions (control);
-			pk_enum_list_print (elist);
-			g_object_unref (elist);
+			roles = pk_control_get_actions (control);
+			text = pk_role_enums_to_text (roles);
+			g_print ("roles=%s", text);
+			g_free (text);
 			maybe_sync = FALSE;
 		} else if (strcmp (value, "filters") == 0) {
-			elist = pk_control_get_filters (control);
-			pk_enum_list_print (elist);
-			g_object_unref (elist);
+			filters = pk_control_get_filters (control);
+			text = pk_filter_enums_to_text (filters);
+			g_print ("filters=%s", text);
+			g_free (text);
 			maybe_sync = FALSE;
 		} else if (strcmp (value, "repos") == 0) {
 			ret = pk_client_get_repo_list (client, PK_FILTER_ENUM_NONE, error);
 		} else if (strcmp (value, "groups") == 0) {
-			elist = pk_control_get_groups (control);
-			pk_enum_list_print (elist);
-			g_object_unref (elist);
+			groups = pk_control_get_groups (control);
+			text = pk_group_enums_to_text (groups);
+			g_print ("groups=%s", text);
+			g_free (text);
 			maybe_sync = FALSE;
 		} else if (strcmp (value, "transactions") == 0) {
 			ret = pk_client_get_old_transactions (client, 10, error);
@@ -1303,8 +1308,7 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
 	control = pk_control_new ();
-	role_list = pk_control_get_actions (control);
-	pk_debug ("actions=%s", pk_enum_list_to_string (role_list));
+	roles = pk_control_get_actions (control);
 
 	/* run the commands */
 	ret = pk_console_process_commands (client, argc, argv, &error);
