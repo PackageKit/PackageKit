@@ -1191,7 +1191,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the info enums");
-	for (i=0; i<=PK_INFO_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i*=2) {
 		string = pk_info_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
