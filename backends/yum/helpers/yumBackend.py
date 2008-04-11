@@ -773,6 +773,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
 
+        fltlist = filters.split(';')
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         results = {}
@@ -785,10 +786,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
 
-                if self._is_inst(pkg):
+                if self._is_inst(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
-                    if self._installable(pkg):
+                    if self._installable(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                         self.package(id, INFO_AVAILABLE, pkg.summary)
 
     def update_system(self):
