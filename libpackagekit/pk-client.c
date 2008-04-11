@@ -982,7 +982,6 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1338,7 +1337,6 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *pack
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1403,7 +1401,6 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -1457,7 +1454,6 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pac
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* check the PackageID here to avoid a round trip if invalid */
@@ -1528,7 +1524,6 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
@@ -1698,7 +1693,6 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 
 	/* get and set a new ID */
@@ -2503,7 +2497,6 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 	gchar *filter_text;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (filters != 0, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
