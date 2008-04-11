@@ -466,7 +466,7 @@ pk_transaction_db_create_table_last_action (PkTransactionDb *tdb)
 	timespec = pk_iso8601_present ();
 	statement = "CREATE TABLE last_action (role TEXT primary key, timespec TEXT);";
 	sqlite3_exec (tdb->priv->db, statement, NULL, NULL, NULL);
-	for (i=0; i<PK_ROLE_ENUM_UNKNOWN; i++) {
+	for (i=1; i<PK_ROLE_ENUM_UNKNOWN; i*=2) {
 		role_text = pk_role_enum_to_text (i);
 		/* reset to now if the role does not exist */
 		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
@@ -496,10 +496,10 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
-	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
+	rc = sqlite3_open_v2 (PK_TRANSACTION_DB_FILE, &tdb->priv->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 	if (rc) {
-		sqlite3_close (tdb->priv->db);
 		pk_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
+		sqlite3_close (tdb->priv->db);
 		return;
 	} else {
 		if (create_file == FALSE) {
