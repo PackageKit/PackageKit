@@ -826,6 +826,11 @@ pk_filter_enums_to_text (PkFilterEnum filters)
 	GString *string;
 	guint i;
 
+	/* shortcut */
+	if (filters == PK_FILTER_ENUM_NONE) {
+		return g_strdup (pk_filter_enum_to_text (filters));
+	}
+
 	string = g_string_new ("");
 	for (i=1; i<PK_FILTER_ENUM_UNKNOWN; i*=2) {
 		if ((filters & i) == 0) {
@@ -1060,6 +1065,16 @@ libst_enum (LibSelfTest *test)
 	libst_success (test, NULL);
 
 	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (none)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NONE);
+	if (pk_strequal (text, "none")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
 	libst_title (test, "check we can convert filter enums to text (single)");
 	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	if (pk_strequal (text, "~devel")) {
@@ -1086,6 +1101,18 @@ libst_enum (LibSelfTest *test)
 	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_enums_to_text (filter);
 	if (pk_strequal (text, "gui;~free;newest")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can add / remove enums to nothing");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT;
+	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	text = pk_filter_enums_to_text (filter);
+	if (pk_strequal (text, "none")) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "text was %s", text);
