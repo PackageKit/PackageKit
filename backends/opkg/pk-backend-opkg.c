@@ -753,15 +753,13 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 /**
  * backend_get_filters:
  */
-static void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				      PK_FILTER_ENUM_GUI,
-				      -1);
+	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
+	return (PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT |
+		PK_FILTER_ENUM_GUI);
 }
 
 
@@ -1035,20 +1033,17 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 /**
  * backend_get_groups:
  */
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_COMMUNICATION,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_REPOS,
-				      PK_GROUP_ENUM_MAPS,
-				      -1
-			);
+	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return (PK_GROUP_ENUM_COMMUNICATION |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_INTERNET |
+		PK_GROUP_ENUM_REPOS |
+		PK_GROUP_ENUM_MAPS);
 }
 
 

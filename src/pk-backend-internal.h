@@ -65,6 +65,9 @@ gchar		*pk_backend_get_name			(PkBackend	*backend)
 gboolean	 pk_backend_get_backend_detail		(PkBackend	*backend,
 							 gchar		**name,
 							 gchar		**author);
+PkGroupEnum	 pk_backend_get_groups			(PkBackend	*backend);
+PkFilterEnum	 pk_backend_get_filters			(PkBackend	*backend);
+PkRoleEnum	 pk_backend_get_actions			(PkBackend	*backend);
 
 G_END_DECLS
 

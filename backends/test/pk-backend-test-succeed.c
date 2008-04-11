@@ -45,30 +45,26 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSIBILITY,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_SYSTEM,
-				      -1);
+	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return (PK_GROUP_ENUM_ACCESSIBILITY |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_SYSTEM);
 }
 
 /**
  * backend_get_filters:
  */
-static void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
-				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				      PK_FILTER_ENUM_FREE,
-				      -1);
+	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT |
+		PK_FILTER_ENUM_FREE);
 }
 
 /**

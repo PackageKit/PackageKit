@@ -132,10 +132,8 @@ typedef struct {
 	const char	*author;
 	void		(*initialize)		(PkBackend *backend);
 	void		(*destroy)		(PkBackend *backend);
-	void		(*get_groups)		(PkBackend *backend,
-						 PkEnumList *elist);
-	void		(*get_filters)		(PkBackend *backend,
-						 PkEnumList *elist);
+	PkGroupEnum	(*get_groups)		(PkBackend *backend);
+	PkFilterEnum	(*get_filters)		(PkBackend *backend);
 	void		(*cancel)		(PkBackend *backend);
 	void		(*get_depends)		(PkBackend *backend,
 						 const gchar *filter,

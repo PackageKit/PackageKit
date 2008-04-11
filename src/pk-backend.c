@@ -123,6 +123,119 @@ enum {
 static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 
 /**
+ * pk_backend_get_groups:
+ **/
+PkGroupEnum
+pk_backend_get_groups (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->desc->get_groups != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return backend->desc->get_groups (backend);
+}
+
+/**
+ * pk_backend_get_filters:
+ **/
+PkFilterEnum
+pk_backend_get_filters (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_FILTER_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->desc->get_filters != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return backend->desc->get_filters (backend);
+}
+
+/**
+ * pk_backend_get_actions:
+ **/
+PkRoleEnum
+pk_backend_get_actions (PkBackend *backend)
+{
+	PkRoleEnum roles = 0;
+	PkBackendDesc *desc;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
+
+	/* lets reduce pointer dereferences... */
+	desc = backend->desc;
+	if (desc->cancel != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_CANCEL);
+	}
+	if (desc->get_depends != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
+	}
+	if (desc->get_description != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DESCRIPTION);
+	}
+	if (desc->get_files != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_FILES);
+	}
+	if (desc->get_requires != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_REQUIRES);
+	}
+	if (desc->get_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
+	}
+	if (desc->what_provides != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
+	}
+	if (desc->get_updates != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATES);
+	}
+	if (desc->get_update_detail != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+	}
+	if (desc->install_package != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGE);
+	}
+	if (desc->install_file != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILE);
+	}
+	if (desc->refresh_cache != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
+	}
+	if (desc->remove_package != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	}
+	if (desc->resolve != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
+	}
+	if (desc->rollback != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_ROLLBACK);
+	}
+	if (desc->search_details != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
+	}
+	if (desc->search_file != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
+	}
+	if (desc->search_group != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
+	}
+	if (desc->search_name != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
+	}
+	if (desc->update_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	}
+	if (desc->update_system != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
+	}
+	if (desc->get_repo_list != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
+	}
+	if (desc->repo_enable != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
+	}
+	if (desc->repo_set_data != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
+	}
+	return roles;
+}
+
+/**
  * pk_backend_set_internal:
  *
  * Designed for volatile internal state, such as the authentication prompt

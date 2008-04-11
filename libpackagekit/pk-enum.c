@@ -618,6 +618,38 @@ pk_role_enum_to_text (PkRoleEnum role)
 }
 
 /**
+ * pk_roles_enums_to_text:
+ * @filters: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "install-file;update-system"
+ **/
+gchar *
+pk_role_enums_to_text (PkRoleEnum roles)
+{
+	GString *string;
+	guint i;
+
+	string = g_string_new ("");
+	for (i=1; i<PK_ROLE_ENUM_UNKNOWN; i*=2) {
+		if ((roles & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
+	}
+	/* do we have a no enums? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
  * pk_error_enum_from_text:
  * @code: Text describing the enumerated type
  *
@@ -727,6 +759,38 @@ const gchar *
 pk_group_enum_to_text (PkGroupEnum group)
 {
 	return pk_enum_find_string (enum_group, group);
+}
+
+/**
+ * pk_groups_enums_to_text:
+ * @filters: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "gnome;kde"
+ **/
+gchar *
+pk_group_enums_to_text (PkGroupEnum groups)
+{
+	GString *string;
+	guint i;
+
+	string = g_string_new ("");
+	for (i=1; i<PK_GROUP_ENUM_UNKNOWN; i*=2) {
+		if ((groups & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
+	}
+	/* do we have a no enums? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_group_enum_to_text (PK_GROUP_ENUM_UNKNOWN));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
 }
 
 /**

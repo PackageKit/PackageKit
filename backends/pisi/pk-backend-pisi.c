@@ -59,50 +59,41 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				         /* PK_GROUP_ENUM_ACCESSIBILITY, */
-				         PK_GROUP_ENUM_ACCESSORIES,
-				         PK_GROUP_ENUM_EDUCATION,
-				         PK_GROUP_ENUM_GAMES,
-				         /* PK_GROUP_ENUM_GRAPHICS, */
-				         PK_GROUP_ENUM_INTERNET,
-				         /* PK_GROUP_ENUM_OFFICE, */
-				         PK_GROUP_ENUM_OTHER,
-				         PK_GROUP_ENUM_PROGRAMMING,
-				         PK_GROUP_ENUM_MULTIMEDIA,
-				         PK_GROUP_ENUM_SYSTEM,
-				         PK_GROUP_ENUM_DESKTOP_GNOME,
-				         PK_GROUP_ENUM_DESKTOP_KDE,
-				         PK_GROUP_ENUM_DESKTOP_OTHER,
-				         PK_GROUP_ENUM_PUBLISHING,
-				         PK_GROUP_ENUM_SERVERS,
-				         PK_GROUP_ENUM_FONTS,
-				         PK_GROUP_ENUM_ADMIN_TOOLS,
-				         /* PK_GROUP_ENUM_LEGACY, */
-				         PK_GROUP_ENUM_LOCALIZATION,
-				         PK_GROUP_ENUM_VIRTUALIZATION,
-				         PK_GROUP_ENUM_SECURITY,
-				         PK_GROUP_ENUM_POWER_MANAGEMENT,
-				         PK_GROUP_ENUM_UNKNOWN,
-				         -1);
+	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
+	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_EDUCATION |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_INTERNET |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_SYSTEM |
+		PK_GROUP_ENUM_DESKTOP_GNOME |
+		PK_GROUP_ENUM_DESKTOP_KDE |
+		PK_GROUP_ENUM_DESKTOP_OTHER |
+		PK_GROUP_ENUM_PUBLISHING |
+		PK_GROUP_ENUM_SERVERS |
+		PK_GROUP_ENUM_FONTS |
+		PK_GROUP_ENUM_ADMIN_TOOLS |
+		PK_GROUP_ENUM_LOCALIZATION |
+		PK_GROUP_ENUM_VIRTUALIZATION |
+		PK_GROUP_ENUM_SECURITY |
+		PK_GROUP_ENUM_POWER_MANAGEMENT |
+		PK_GROUP_ENUM_UNKNOWN);
 }
 
 /**
  * backend_get_filters:
  */
-static void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
-				      PK_FILTER_ENUM_INSTALLED,
-				      /* PK_FILTER_ENUM_DEVELOPMENT, */
-				      -1);
+	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED);
 }
 
 /**

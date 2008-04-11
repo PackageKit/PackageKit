@@ -489,6 +489,7 @@ const gchar	*pk_status_enum_to_text			(PkStatusEnum	 status);
 
 PkRoleEnum	 pk_role_enum_from_text			(const gchar	*role);
 const gchar	*pk_role_enum_to_text			(PkRoleEnum	 role);
+gchar		*pk_role_enums_to_text			(PkRoleEnum	 roles);
 
 PkErrorCodeEnum	 pk_error_enum_from_text		(const gchar	*code);
 const gchar	*pk_error_enum_to_text			(PkErrorCodeEnum code);
@@ -501,6 +502,7 @@ const gchar	*pk_message_enum_to_text		(PkMessageEnum	 message);
 
 PkGroupEnum	 pk_group_enum_from_text		(const gchar	*group);
 const gchar	*pk_group_enum_to_text			(PkGroupEnum	 group);
+gchar		*pk_group_enums_to_text			(PkGroupEnum	 groups);
 
 PkFilterEnum	 pk_filter_enum_from_text		(const gchar	*filter);
 const gchar	*pk_filter_enum_to_text			(PkFilterEnum	 filter);

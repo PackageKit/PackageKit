@@ -46,7 +46,6 @@
 #include <pk-network.h>
 #include <pk-package-list.h>
 #include <pk-enum.h>
-#include <pk-enum-list.h>
 
 #include "pk-cache.h"
 #include "pk-backend.h"
@@ -91,9 +90,9 @@ struct PkEnginePrivate
 	PkNetwork		*network;
 	PkNotify		*notify;
 	PkRestart		*restart;
-	PkEnumList		*actions;
-	PkEnumList		*groups;
-	PkEnumList		*filters;
+	PkRoleEnum		 actions;
+	PkGroupEnum		 groups;
+	PkFilterEnum		 filters;
 	gboolean		 signal_state_timeout; /* don't queue StateHasChanged */
 };
 
@@ -325,7 +324,7 @@ gboolean
 pk_engine_get_actions (PkEngine *engine, gchar **actions, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*actions = pk_enum_list_to_string (engine->priv->actions);
+	*actions = pk_role_enums_to_text (engine->priv->actions);
 	return TRUE;
 }
 
@@ -336,7 +335,7 @@ gboolean
 pk_engine_get_groups (PkEngine *engine, gchar **groups, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*groups = pk_enum_list_to_string (engine->priv->groups);
+	*groups = pk_group_enums_to_text (engine->priv->groups);
 	return TRUE;
 }
 
@@ -347,7 +346,7 @@ gboolean
 pk_engine_get_filters (PkEngine *engine, gchar **filters, GError **error)
 {
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	*filters = pk_enum_list_to_string (engine->priv->filters);
+	*filters = pk_filter_enums_to_text (engine->priv->filters);
 	return TRUE;
 }
 
@@ -466,139 +465,6 @@ pk_engine_restart_schedule_cb (PkRestart *restart, PkEngine *engine)
 }
 
 /**
- * pk_engine_get_actions_internal:
- *
- * You need to g_object_unref the returned object
- */
-static PkEnumList *
-pk_engine_get_actions_internal (PkEngine *engine)
-{
-	PkEnumList *elist;
-	PkBackendDesc *desc;
-
-	g_return_val_if_fail (engine != NULL, NULL);
-
-	/* lets reduce pointer dereferences... */
-	desc = engine->priv->backend->desc;
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_ROLE);
-	if (desc->cancel != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_CANCEL);
-	}
-	if (desc->get_depends != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_DEPENDS);
-	}
-	if (desc->get_description != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_DESCRIPTION);
-	}
-	if (desc->get_files != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_FILES);
-	}
-	if (desc->get_requires != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REQUIRES);
-	}
-	if (desc->get_packages != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_PACKAGES);
-	}
-	if (desc->what_provides != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_WHAT_PROVIDES);
-	}
-	if (desc->get_updates != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATES);
-	}
-	if (desc->get_update_detail != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
-	}
-	if (desc->install_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_INSTALL_PACKAGE);
-	}
-	if (desc->install_file != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_INSTALL_FILE);
-	}
-	if (desc->refresh_cache != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_REFRESH_CACHE);
-	}
-	if (desc->remove_package != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_REMOVE_PACKAGE);
-	}
-	if (desc->resolve != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_RESOLVE);
-	}
-	if (desc->rollback != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_ROLLBACK);
-	}
-	if (desc->search_details != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_DETAILS);
-	}
-	if (desc->search_file != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_FILE);
-	}
-	if (desc->search_group != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_GROUP);
-	}
-	if (desc->search_name != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_SEARCH_NAME);
-	}
-	if (desc->update_packages != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	}
-	if (desc->update_system != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_UPDATE_SYSTEM);
-	}
-	if (desc->get_repo_list != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REPO_LIST);
-	}
-	if (desc->repo_enable != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_REPO_ENABLE);
-	}
-	if (desc->repo_set_data != NULL) {
-		pk_enum_list_append (elist, PK_ROLE_ENUM_REPO_SET_DATA);
-	}
-	return elist;
-}
-
-/**
- * pk_engine_get_groups_internal:
- *
- * You need to g_object_unref the returned object
- */
-static PkEnumList *
-pk_engine_get_groups_internal (PkEngine *engine)
-{
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, NULL);
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_GROUP);
-	if (engine->priv->backend->desc->get_groups != NULL) {
-		engine->priv->backend->desc->get_groups (engine->priv->backend, elist);
-	}
-	return elist;
-}
-
-/**
- * pk_engine_get_filters_internal:
- *
- * You need to g_object_unref the returned object
- */
-static PkEnumList *
-pk_engine_get_filters_internal (PkEngine *engine)
-{
-	PkEnumList *elist;
-
-	g_return_val_if_fail (engine != NULL, NULL);
-
-	elist = pk_enum_list_new ();
-	pk_enum_list_set_type (elist, PK_ENUM_LIST_TYPE_FILTER);
-	if (engine->priv->backend->desc->get_filters != NULL) {
-		engine->priv->backend->desc->get_filters (engine->priv->backend, elist);
-	}
-	return elist;
-}
-
-/**
  * pk_engine_init:
  **/
 static void
@@ -625,9 +491,9 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->network = pk_network_new ();
 
 	/* create a new backend so we can get the static stuff */
-	engine->priv->actions = pk_engine_get_actions_internal (engine);
-	engine->priv->groups = pk_engine_get_groups_internal (engine);
-	engine->priv->filters = pk_engine_get_filters_internal (engine);
+	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
+	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
+	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
 
 	engine->priv->timer = g_timer_new ();
 
@@ -709,17 +575,6 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
-
-	/* optional gobjects */
-	if (engine->priv->actions != NULL) {
-		g_object_unref (engine->priv->actions);
-	}
-	if (engine->priv->groups != NULL) {
-		g_object_unref (engine->priv->groups);
-	}
-	if (engine->priv->filters != NULL) {
-		g_object_unref (engine->priv->filters);
-	}
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }

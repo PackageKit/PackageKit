@@ -711,8 +711,8 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_finished (backend);
 }
 
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *list)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
   list = pk_enum_list_new ();
   pk_enum_list_set_type (list, PK_ENUM_LIST_TYPE_GROUP);
