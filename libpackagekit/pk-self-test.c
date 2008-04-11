@@ -56,7 +56,6 @@ main (int argc, char **argv)
 	libst_package_ids (&test);
 	libst_package_list (&test);
 	libst_enum (&test);
-	libst_enum_list (&test);
 	libst_extra (&test);
 	libst_extra_obj (&test);
 	libst_client (&test);

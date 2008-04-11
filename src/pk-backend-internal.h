@@ -23,7 +23,6 @@
 #define __PK_BACKEND_INTERNAL_H
 
 #include <glib-object.h>
-#include <pk-enum-list.h>
 #include "pk-backend.h"
 
 G_BEGIN_DECLS
