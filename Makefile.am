@@ -93,5 +93,5 @@ EXTRA_DIST =						\
         intltool-update.in				\
 	$(NULL)
 
-DISTCHECK_CONFIGURE_FLAGS = --disable-gcov --enable-gtk-doc --with-security-framework=dummy
+DISTCHECK_CONFIGURE_FLAGS = --disable-gcov --enable-gtk-doc --with-security-framework=dummy --disable-developer
 

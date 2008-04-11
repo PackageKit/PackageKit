@@ -28,7 +28,6 @@
 #include <pk-debug.h>
 #include <pk-package-ids.h>
 
-
 #define OPKG_LIB
 #include <libopkg.h>
 
@@ -36,16 +35,6 @@ static PkBackendThread *thread;
 
 /* this is implemented in libopkg.a */
 int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);
-
-
-enum filters {
-	PKG_INSTALLED = 1,
-	PKG_NOT_INSTALLED = 2,
-	PKG_DEVEL = 4,
-	PKG_NOT_DEVEL = 8,
-	PKG_GUI = 16,
-	PKG_NOT_GUI = 32
-};
 
 enum {
 	SEARCH_NAME,
@@ -57,7 +46,7 @@ enum {
 typedef struct {
 	gint search_type;
 	gchar *needle;
-	gint filter;
+	PkFilterEnum filters;
 } SearchParams;
 
 /* global config structures */
@@ -234,39 +223,6 @@ opkg_check_tag (pkg_t *pkg, gchar *tag)
 	else
 		return FALSE;
 }
-
-/**
- * parse_filter:
- */
-static int
-parse_filter (const gchar *filter)
-{
-	gchar **sections = NULL;
-	gint i = 0;
-	gint retval = 0;
-
-	sections = g_strsplit (filter, ";", 0);
-	while (sections[i]) {
-		if (strcmp(sections[i], "installed") == 0)
-			retval = retval | PKG_INSTALLED;
-		if (strcmp(sections[i], "~installed") == 0)
-			retval = retval | PKG_NOT_INSTALLED;
-		if (strcmp(sections[i], "devel") == 0)
-			retval = retval | PKG_DEVEL;
-		if (strcmp(sections[i], "~devel") == 0)
-			retval = retval | PKG_NOT_DEVEL;
-		if (strcmp(sections[i], "gui") == 0)
-			retval = retval | PKG_GUI;
-		if (strcmp(sections[i], "~gui") == 0)
-			retval = retval | PKG_NOT_GUI;
-		i++;
-	}
-	g_strfreev (sections);
-
-	return retval;
-}
-
-
 
 /**
  * backend_initialize:
@@ -493,7 +449,7 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 	pkg_vec_t *available;
 	pkg_t *pkg;
 	gchar *search;
-	gint filter;
+	PkFilterEnum filters;
 	PkBackend *backend;
 
 	if (!params->needle)
@@ -506,7 +462,7 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 	backend = pk_backend_thread_get_backend (thread);
 
 	search = params->needle;
-	filter = params->filter;
+	filters = params->filters;
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
@@ -547,17 +503,17 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 				(!pkg->tags || !g_strrstr (pkg->tags, search)))
 			continue;
 
-		if ((filter & PKG_DEVEL) && !opkg_is_devel_pkg (pkg))
+		if ((filters & PK_FILTER_ENUM_DEVEL) && !opkg_is_devel_pkg (pkg))
 			continue;
-		if ((filter & PKG_NOT_DEVEL) && opkg_is_devel_pkg (pkg))
+		if ((filters & PK_FILTER_ENUM_NOT_DEVEL) && opkg_is_devel_pkg (pkg))
 			continue;
-		if ((filter & PKG_GUI) && !opkg_is_gui_pkg (pkg))
+		if ((filters & PK_FILTER_ENUM_GUI) && !opkg_is_gui_pkg (pkg))
 			continue;
-		if ((filter & PKG_NOT_GUI) && opkg_is_gui_pkg (pkg))
+		if ((filters & PK_FILTER_ENUM_NOT_GUI) && opkg_is_gui_pkg (pkg))
 			continue;
-		if ((filter & PKG_INSTALLED) && (pkg->state_status == SS_NOT_INSTALLED))
+		if ((filters & PK_FILTER_ENUM_INSTALLED) && (pkg->state_status == SS_NOT_INSTALLED))
 			continue;
-		if ((filter & PKG_NOT_INSTALLED) && (pkg->state_status != SS_NOT_INSTALLED))
+		if ((filters & PK_FILTER_ENUM_NOT_INSTALLED) && (pkg->state_status != SS_NOT_INSTALLED))
 			continue;
 
 		version = pkg_version_str_alloc (pkg);
@@ -582,7 +538,7 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 }
 
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -592,7 +548,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_no_percentage_updates (backend);
 
 	params = g_new0 (SearchParams, 1);
-	params->filter = parse_filter (filter);
+	params->filters = filters;
 	params->search_type = SEARCH_NAME;
 	params->needle = g_strdup (search);
 
@@ -603,7 +559,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
  * backend_search_description:
  */
 static void
-backend_search_description (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -613,7 +569,7 @@ backend_search_description (PkBackend *backend, const gchar *filter, const gchar
 	pk_backend_no_percentage_updates (backend);
 
 	params = g_new0 (SearchParams, 1);
-	params->filter = parse_filter (filter);
+	params->filters = filters;
 	params->search_type = SEARCH_DESCRIPTION;
 	params->needle = g_strdup (search);
 
@@ -621,7 +577,7 @@ backend_search_description (PkBackend *backend, const gchar *filter, const gchar
 }
 
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchParams *params;
 
@@ -631,7 +587,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_no_percentage_updates (backend);
 
 	params = g_new0 (SearchParams, 1);
-	params->filter = parse_filter (filter);
+	params->filters = filters;
 	params->search_type = SEARCH_TAG;
 	params->needle = g_strdup_printf ("group::%s", search);
 
@@ -894,7 +850,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 }
 
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	/* TODO: revursive is ignored */
 	g_return_if_fail (backend != NULL);
@@ -1018,7 +974,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 

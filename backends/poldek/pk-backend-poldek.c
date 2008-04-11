@@ -21,7 +21,6 @@
 
 #include <pk-backend.h>
 #include <pk-backend-thread.h>
-#include <pk-filter.h>
 #include <pk-network.h>
 #include <pk-package-ids.h>
 
@@ -57,14 +56,14 @@ enum {
 
 typedef struct {
 	gint		mode;
-	PkFilter	*filter;
+	PkFilterEnum	filters;
 	gchar		*search;
 } SearchData;
 
 /* used by GetDepends and GetRequires */
 typedef struct {
 	gchar		*package_id;
-	PkFilter	*filter;
+	PkFilterEnum	filters;
 	gboolean	recursive;
 } DepsData;
 
@@ -597,7 +596,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 
 	tmp = n_array_new (2, NULL, NULL);
 
-	if (data->filter->installed) {
+	if (pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
 		for (i = 0; i < n_array_size (installed); i++) {
 			struct pkg      *ipkg = n_array_nth (installed, i);
 			int j;
@@ -630,7 +629,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
                 	}
                 }
         }
-        if (data->filter->not_installed) {
+        if (pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 	        for (i = 0; i < n_array_size (available); i++) {
         	        struct pkg      *apkg = n_array_nth (available, i);
 	                int j;
@@ -664,7 +663,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
         }
 
 	/* FIXME: recursive takes too much time for available packages, so don't use it */
-	if (!data->filter->not_installed) {
+	if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		if (data->recursive && tmp && n_array_size (tmp) > 0) {
 			for (i = 0; i < n_array_size (tmp); i++) {
 				struct pkg	*p = n_array_nth (tmp, i);
@@ -727,7 +726,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* first check in installed packages */
-		if (data->filter->installed) {
+		if (pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
 			for (j = 0; j < n_array_size (installed); j++) {
 				struct pkg	*p = n_array_nth (installed, j);
 
@@ -744,7 +743,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* ... now available */
-		if (data->filter->not_installed) {
+		if (pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			for (j = 0; j < n_array_size (available); j++) {
 				struct pkg	*p = n_array_nth (available, j);
 
@@ -925,7 +924,7 @@ search_package (PkBackendThread *thread, gpointer data)
 		gchar		*command = NULL;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
-		if (d->filter->installed)
+		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED))
 		{
 			command = g_strdup_printf ("cd /installed; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command)) {
@@ -943,7 +942,7 @@ search_package (PkBackendThread *thread, gpointer data)
 
 			g_free (command);
 		}
-		if (d->filter->not_installed)
+		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED))
 		{
 			command = g_strdup_printf ("cd /all-avail; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command))
@@ -952,7 +951,9 @@ search_package (PkBackendThread *thread, gpointer data)
 			g_free (command);
 		}
 
-		if (d->filter->installed && d->filter->not_installed && installed && available) {
+		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) &&
+		    pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+		    installed && available) {
 			gint	i;
 
 			pkgs = installed;
@@ -972,7 +973,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 			n_array_free (available);
-		} else if (!d->filter->installed || available) {
+		} else if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) || available) {
 			gint	i;
 
 			pkgs = available;
@@ -982,37 +983,39 @@ search_package (PkBackendThread *thread, gpointer data)
 
 				poldek_pkg_set_installed (pkg, FALSE);
 			}
-		} else if (!d->filter->not_installed || installed)
+		} else if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) || installed)
 			pkgs = installed;
 
 		if (pkgs) {
 			gint	i;
 
-			if (d->filter->not_newest == FALSE)
+			if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_NEWEST) == FALSE)
 				do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
 				/* development filter */
-				if (!d->filter->devel || !d->filter->not_devel) {
+				if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) ||
+				    !pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 					/* devel in filter */
-					if (d->filter->devel && !poldek_pkg_is_devel (pkg))
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) && !poldek_pkg_is_devel (pkg))
 						continue;
 
 					/* ~devel in filter */
-					if (d->filter->not_devel && poldek_pkg_is_devel (pkg))
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && poldek_pkg_is_devel (pkg))
 						continue;
 				}
 
 				/* gui filter */
-				if (!d->filter->gui || !d->filter->not_gui) {
+				if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI) ||
+				    !pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_GUI)) {
 					/* gui in filter */
-					if (d->filter->gui && !poldek_pkg_is_gui (pkg))
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI) && !poldek_pkg_is_gui (pkg))
 						continue;
 
 					/* ~gui in filter */
-					if (d->filter->not_gui && poldek_pkg_is_gui (pkg))
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_GUI) && poldek_pkg_is_gui (pkg))
 						continue;
 				}
 
@@ -1028,7 +1031,6 @@ search_package (PkBackendThread *thread, gpointer data)
 		poclidek_rcmd_free (cmd);
 	}
 
-	pk_filter_free (d->filter);
 	g_free (d->search);
 	g_free (d);
 
@@ -1182,7 +1184,6 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 	n_array_free (installed);
 
 	g_free (d->package_id);
-	pk_filter_free (d->filter);
 	g_free (d);
 
 	pk_backend_finished (backend);
@@ -1191,7 +1192,7 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	DepsData	*data = g_new0 (DepsData, 1);
 
@@ -1200,7 +1201,7 @@ backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *packa
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->package_id = g_strdup (package_id);
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->recursive = recursive;
 	pk_backend_thread_create (thread, backend_get_depends_thread, data);
 }
@@ -1383,7 +1384,6 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 	n_array_free (available);
 
 	g_free (d->package_id);
-	pk_filter_free (d->filter);
 	g_free (d);
 
 	pk_backend_finished (backend);
@@ -1392,7 +1392,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	DepsData	*data = g_new0 (DepsData, 1);
 
@@ -1401,7 +1401,7 @@ backend_get_requires (PkBackend	*backend, const gchar *filter, const gchar *pack
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->package_id = g_strdup (package_id);
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->recursive = recursive;
 	pk_backend_thread_create (thread, backend_get_requires_thread, data);
 }
@@ -1539,7 +1539,7 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 }
 
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 
@@ -1765,7 +1765,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 {
 	SearchData	*data = g_new0 (SearchData, 1);
 
@@ -1774,7 +1774,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->mode = SEARCH_ENUM_NAME;
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->search = g_strdup (package);
 	pk_backend_thread_create (thread, search_package, data);
 }
@@ -1783,7 +1783,7 @@ backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package)
  * backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchData	*data = g_new0 (SearchData, 1);
 
@@ -1792,7 +1792,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->mode = SEARCH_ENUM_DETAILS;
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->search = g_strdup (search);
 	pk_backend_thread_create (thread, search_package, data);
 }
@@ -1801,7 +1801,7 @@ backend_search_details (PkBackend *backend, const gchar *filter, const gchar *se
  * backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchData	*data = g_new0 (SearchData, 1);
 
@@ -1810,7 +1810,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->mode = SEARCH_ENUM_FILE;
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->search = g_strdup (search);
 	pk_backend_thread_create (thread, search_package, data);
 }
@@ -1819,7 +1819,7 @@ backend_search_file (PkBackend *backend, const gchar *filter, const gchar *searc
  * backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchData	*data = g_new0 (SearchData, 1);
 
@@ -1828,7 +1828,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->mode = SEARCH_ENUM_GROUP;
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->search = g_strdup (search);
 	pk_backend_thread_create (thread, search_package, data);
 }
@@ -1837,7 +1837,7 @@ backend_search_group (PkBackend *backend, const gchar *filter, const gchar *sear
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	SearchData	*data = g_new0 (SearchData, 1);
 
@@ -1846,7 +1846,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	data->mode = SEARCH_ENUM_NAME;
-	data->filter = pk_filter_new_from_string (filter);
+	data->filters = filters;
 	data->search = g_strdup (search);
 	pk_backend_thread_create (thread, search_package, data);
 }
@@ -1963,7 +1963,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  * backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
 	tn_array	*sources = NULL;
 

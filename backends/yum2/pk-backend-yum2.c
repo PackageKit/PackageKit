@@ -114,11 +114,11 @@ backend_cancel (PkBackend *backend)
  * backend_get_depends:
  */
 static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_depends (dbus, filter, package_id, recursive);
+	pk_backend_dbus_get_depends (dbus, filters, package_id, recursive);
 }
 
 /**
@@ -147,22 +147,22 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
  * backend_get_requires:
  */
 static void
-backend_get_requires (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_requires (dbus, filter, package_id, recursive);
+	pk_backend_dbus_get_requires (dbus, filters, package_id, recursive);
 }
 
 /**
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_updates (dbus, filter);
+	pk_backend_dbus_get_updates (dbus, filters);
 }
 
 /**
@@ -240,44 +240,44 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
  * pk_backend_search_details:
  */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_search_details (dbus, filter, search);
+	pk_backend_dbus_search_details (dbus, filters, search);
 }
 
 /**
  * pk_backend_search_file:
  */
 static void
-backend_search_file (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_search_file (dbus, filter, search);
+	pk_backend_dbus_search_file (dbus, filters, search);
 }
 
 /**
  * pk_backend_search_group:
  */
 static void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_search_group (dbus, filter, search);
+	pk_backend_dbus_search_group (dbus, filters, search);
 }
 
 /**
  * pk_backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_search_name (dbus, filter, search);
+	pk_backend_dbus_search_name (dbus, filters, search);
 }
 
 /**
@@ -314,22 +314,22 @@ backend_update_system (PkBackend *backend)
  * pk_backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, const gchar *filter, const gchar *package_id)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_resolve (dbus, filter, package_id);
+	pk_backend_dbus_resolve (dbus, filters, package_id);
 }
 
 /**
  * pk_backend_get_repo_list:
  */
 static void
-backend_get_repo_list (PkBackend *backend, const gchar *filter)
+backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_repo_list (dbus, filter);
+	pk_backend_dbus_get_repo_list (dbus, filters);
 }
 
 /**
@@ -358,11 +358,11 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
  * pk_backend_what_provides:
  */
 static void
-backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum provides, const gchar *search)
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_what_provides (dbus, filter, provides, search);
+	pk_backend_dbus_what_provides (dbus, filters, provides, search);
 }
 
 PK_BACKEND_OPTIONS (

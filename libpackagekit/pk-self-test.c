@@ -32,7 +32,6 @@ void libst_package_ids (LibSelfTest *test);
 void libst_package_list (LibSelfTest *test);
 void libst_enum (LibSelfTest *test);
 void libst_common (LibSelfTest *test);
-void libst_filter (LibSelfTest *test);
 void libst_enum_list (LibSelfTest *test);
 void libst_extra (LibSelfTest *test);
 void libst_extra_obj (LibSelfTest *test);
@@ -51,7 +50,6 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	libst_common (&test);
-	libst_filter (&test);
 	libst_package_id (&test);
 	libst_package_ids (&test);
 	libst_package_list (&test);

@@ -567,6 +567,12 @@ libst_transaction_db (LibSelfTest *test)
 		return;
 	}
 
+	/* don't do these when doing make distcheck */
+#ifndef PK_IS_DEVELOPER
+	libst_end (test);
+	return;
+#endif
+
 	db = pk_transaction_db_new ();
 
 	/************************************************************/

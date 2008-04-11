@@ -54,7 +54,6 @@
 #include "pk-backend.h"
 #include "pk-backend-internal.h"
 #include "pk-inhibit.h"
-#include "pk-filter.h"
 #include "pk-cache.h"
 #include "pk-notify.h"
 #include "pk-security.h"
@@ -98,7 +97,7 @@ struct PkTransactionPrivate
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
-	gchar			*cached_filter;
+	PkFilterEnum		 cached_filters;
 	gchar			*cached_search;
 	gchar			*cached_repo_id;
 	gchar			*cached_key_id;
@@ -222,11 +221,11 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* do the correct action with the cached parameters */
 	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		desc->get_depends (priv->backend, priv->cached_filter, priv->cached_package_id, priv->cached_force);
+		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
 		desc->get_update_detail (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
-		desc->resolve (priv->backend, priv->cached_filter, priv->cached_package_id);
+		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		desc->rollback (priv->backend, priv->cached_transaction_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
@@ -234,21 +233,21 @@ pk_transaction_set_running (PkTransaction *transaction)
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		desc->get_files (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		desc->get_requires (priv->backend, priv->cached_filter, priv->cached_package_id, priv->cached_force);
+		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
 	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		desc->what_provides (priv->backend, priv->cached_filter, priv->cached_provides, priv->cached_search);
+		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		desc->get_updates (priv->backend, priv->cached_filter);
+		desc->get_updates (priv->backend, priv->cached_filters);
 	} else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES) {
-		desc->get_packages (priv->backend, priv->cached_filter);
+		desc->get_packages (priv->backend, priv->cached_filters);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		desc->search_details (priv->backend, priv->cached_filter, priv->cached_search);
+		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		desc->search_file (priv->backend,priv->cached_filter,priv->cached_search);
+		desc->search_file (priv->backend,priv->cached_filters,priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		desc->search_group (priv->backend, priv->cached_filter, priv->cached_search);
+		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		desc->search_name (priv->backend,priv->cached_filter,priv->cached_search);
+		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		desc->install_package (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
@@ -266,7 +265,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		desc->update_system (priv->backend);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		desc->get_repo_list (priv->backend, priv->cached_filter);
+		desc->get_repo_list (priv->backend, priv->cached_filters);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
 		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
@@ -926,24 +925,48 @@ pk_transaction_search_check (const gchar *search, GError **error)
 gboolean
 pk_transaction_filter_check (const gchar *filter, GError **error)
 {
-	gboolean ret;
+	gchar **sections;
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (error != NULL, FALSE);
+
+	/* is zero? */
+	if (pk_strzero (filter)) {
+		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "filter zero length");
+		return FALSE;
+	}
 
 	/* check for invalid input */
 	ret = pk_strvalidate (filter);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid filter term");
+				     "Invalid filter term: %s", filter);
 		return FALSE;
 	}
 
-	/* check for invalid filter */
-	ret = pk_filter_check (filter);
-	if (!ret) {
-		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_FILTER_INVALID,
-				     "Filter '%s' is invalid", filter);
-		return FALSE;
+	/* split by delimeter ';' */
+	sections = g_strsplit (filter, ";", 0);
+	length = g_strv_length (sections);
+	for (i=0; i<length; i++) {
+		/* only one wrong part is enough to fail the filter */
+		if (pk_strzero (sections[i])) {
+			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+					     "Single empty section of filter: %s", filter);
+			goto out;
+		}
+		if (pk_filter_enum_from_text (sections[i]) == PK_FILTER_ENUM_UNKNOWN) {
+			*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+					     "Unknown filter part: %s", sections[i]);
+			goto out;
+		}
 	}
-	return TRUE;
+	ret = TRUE;
+out:
+	g_strfreev (sections);
+	return ret;
 }
 
 /**
@@ -1101,7 +1124,7 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -1280,7 +1303,7 @@ pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DB
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
 
@@ -1397,7 +1420,7 @@ pk_transaction_get_repo_list (PkTransaction *transaction, const gchar *filter, D
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_REPO_LIST);
 
@@ -1467,7 +1490,7 @@ pk_transaction_get_requires (PkTransaction *transaction, const gchar *filter, co
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->cached_force = recursive;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -1655,7 +1678,7 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 	}
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_UPDATES);
 
@@ -2209,7 +2232,7 @@ pk_transaction_resolve (PkTransaction *transaction, const gchar *filter,
 
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package);
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_RESOLVE);
 
@@ -2332,7 +2355,7 @@ pk_transaction_search_details (PkTransaction *transaction, const gchar *filter,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_DETAILS);
@@ -2392,7 +2415,7 @@ pk_transaction_search_file (PkTransaction *transaction, const gchar *filter,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_FILE);
@@ -2452,7 +2475,7 @@ pk_transaction_search_group (PkTransaction *transaction, const gchar *filter,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_GROUP);
@@ -2512,7 +2535,7 @@ pk_transaction_search_name (PkTransaction *transaction, const gchar *filter,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_SEARCH_NAME);
@@ -2722,7 +2745,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->cached_filters = pk_filter_enums_from_text (filter);
 	transaction->priv->cached_search = g_strdup (search);
 	transaction->priv->cached_provides = provides;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
@@ -2854,7 +2877,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_package_ids = NULL;
 	transaction->priv->cached_transaction_id = NULL;
 	transaction->priv->cached_full_path = NULL;
-	transaction->priv->cached_filter = NULL;
+	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
 	transaction->priv->cached_search = NULL;
 	transaction->priv->cached_repo_id = NULL;
 	transaction->priv->cached_parameter = NULL;
@@ -2939,7 +2962,6 @@ pk_transaction_finalize (GObject *object)
 	g_free (transaction->priv->cached_key_id);
 	g_strfreev (transaction->priv->cached_package_ids);
 	g_free (transaction->priv->cached_transaction_id);
-	g_free (transaction->priv->cached_filter);
 	g_free (transaction->priv->cached_search);
 	g_free (transaction->priv->cached_repo_id);
 	g_free (transaction->priv->cached_parameter);
@@ -2984,6 +3006,9 @@ void
 libst_transaction (LibSelfTest *test)
 {
 	PkTransaction *transaction = NULL;
+	gboolean ret;
+	const gchar *temp;
+	GError *error = NULL;
 
 	if (libst_start (test, "PkTransaction", CLASS_AUTO) == FALSE) {
 		return;
@@ -2997,6 +3022,118 @@ libst_transaction (LibSelfTest *test)
 	} else {
 		libst_failed (test, NULL);
 	}
+
+	/************************************************************
+	 ****************          FILTERS         ******************
+	 ************************************************************/
+	temp = NULL;
+	libst_title (test, "test a fail filter (null)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "";
+	libst_title (test, "test a fail filter ()");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = ";";
+	libst_title (test, "test a fail filter (;)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "moo";
+	libst_title (test, "test a fail filter (invalid)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "moo;foo";
+	libst_title (test, "test a fail filter (invalid, multiple)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "gui;;";
+	libst_title (test, "test a fail filter (valid then zero length)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret == FALSE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "passed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "none";
+	libst_title (test, "test a pass filter (none)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "gui";
+	libst_title (test, "test a pass filter (single)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "devel;~gui";
+	libst_title (test, "test a pass filter (multiple)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
+
+	/************************************************************/
+	temp = "~gui;~installed";
+	libst_title (test, "test a pass filter (multiple2)");
+	ret = pk_transaction_filter_check (temp, &error);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the filter '%s'", temp);
+	}
+	g_clear_error (&error);
 
 	g_object_unref (transaction);
 
