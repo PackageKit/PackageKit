@@ -7,6 +7,42 @@
     Methods used by the backends are as follows:
   </para>
 
+  <sect1 id="methods-get-packages">
+    <title>Get Packages</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
   <sect1 id="methods-search-name">
     <title>Search Name</title>
     <para>
@@ -39,7 +75,7 @@
       Do not refresh the package cache. This should be fast.
     </para>
     <para>
-      Always emit <literal>installed</literal> before
+      Try to emit <literal>installed</literal> before
       <literal>available</literal> packages first, as it allows the client
       program to perform the GUI filtering and matching whilst the daemon is
       running the transaction.

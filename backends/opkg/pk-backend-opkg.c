@@ -1063,6 +1063,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	NULL,					/* get_files */
+	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */

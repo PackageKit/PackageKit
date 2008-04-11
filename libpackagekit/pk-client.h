@@ -227,6 +227,10 @@ gboolean	 pk_client_get_depends			(PkClient	*client,
 							 gboolean	 recursive,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_get_packages			(PkClient	*client,
+							 PkFilterEnum	 filters,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_get_update_detail		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error)

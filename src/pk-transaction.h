@@ -115,9 +115,12 @@ void		 pk_transaction_get_files		(PkTransaction	*transaction,
 gboolean	 pk_transaction_get_old_transactions	(PkTransaction	*transaction,
 							 guint		 number,
 							 GError		**error);
-gboolean	 pk_transaction_get_package		(PkTransaction	*transaction,
+gboolean	 pk_transaction_get_package_last	(PkTransaction	*transaction,
 							 gchar		**package,
 							 GError		**error);
+void		 pk_transaction_get_packages		(PkTransaction	*transaction,
+							 const gchar	*filter,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_progress		(PkTransaction	*transaction,
 							 guint		*percentage,
 							 guint		*subpercentage,

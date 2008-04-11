@@ -239,6 +239,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->what_provides (priv->backend, priv->cached_filter, priv->cached_provides, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
 		desc->get_updates (priv->backend, priv->cached_filter);
+	} else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES) {
+		desc->get_packages (priv->backend, priv->cached_filter);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
 		desc->search_details (priv->backend, priv->cached_filter, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
@@ -1245,6 +1247,57 @@ pk_transaction_get_files (PkTransaction *transaction, const gchar *package_id,
 }
 
 /**
+ * pk_transaction_get_packages:
+ **/
+void
+pk_transaction_get_packages (PkTransaction *transaction, const gchar *filter, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("GetPackages method called: %s", filter);
+
+	/* not implemented yet */
+	if (transaction->priv->backend->desc->search_name == NULL) {
+		pk_debug ("Not implemented yet: GetPackages");
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     "Operation not yet supported by backend");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check the filter */
+	ret = pk_transaction_filter_check (filter, &error);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* set the dbus name, so we can get the disconnect */
+	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
+
+	/* save so we can run later */
+	transaction->priv->cached_filter = g_strdup (filter);
+	transaction->priv->status = PK_STATUS_ENUM_WAIT;
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_PACKAGES);
+
+	/* try to commit this */
+	ret = pk_transaction_commit (transaction);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_COMMIT_FAILED,
+				     "Could not commit to a transaction object");
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_transaction_get_old_transactions:
  **/
 gboolean
@@ -1267,15 +1320,15 @@ pk_transaction_get_old_transactions (PkTransaction *transaction, guint number, G
 }
 
 /**
- * pk_transaction_get_package:
+ * pk_transaction_get_package_last:
  **/
 gboolean
-pk_transaction_get_package (PkTransaction *transaction, gchar **package_id, GError **error)
+pk_transaction_get_package_last (PkTransaction *transaction, gchar **package_id, GError **error)
 {
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
-	pk_debug ("GetPackage method called");
+	pk_debug ("GetPackageLast method called");
 
 	if (transaction->priv->last_package == NULL) {
 		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_STATE,

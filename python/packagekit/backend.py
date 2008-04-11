@@ -327,6 +327,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
+    def get_packages(self,filters):
+        '''
+        Implement the {backend}-get-packages functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
+
     def get_requires(self,filters,package,recursive):
         '''
         Implement the {backend}-get-requires functionality

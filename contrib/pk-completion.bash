@@ -87,6 +87,7 @@ _pkcon_get ()
             depends
             requires
             provides
+            packages
             description
             files
             updatedetail

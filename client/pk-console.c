@@ -991,6 +991,8 @@ pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **
 			}
 		} else if (strcmp (value, "updates") == 0) {
 			ret = pk_client_get_updates (client, PK_FILTER_ENUM_BASENAME, error);
+		} else if (strcmp (value, "packages") == 0) {
+			ret = pk_client_get_packages (client, PK_FILTER_ENUM_INSTALLED, error);
 		} else if (strcmp (value, "actions") == 0) {
 			elist = pk_control_get_actions (control);
 			pk_enum_list_print (elist);

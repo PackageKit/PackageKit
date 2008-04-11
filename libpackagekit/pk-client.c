@@ -1387,6 +1387,58 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *pack
 }
 
 /**
+ * pk_client_get_packages:
+ * @client: a valid #PkClient instance
+ * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Get the list of packages from the backend
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
+{
+	gboolean ret;
+	gchar *filter_text;
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (filters != 0, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_GET_PACKAGES;
+	client->priv->cached_filters = filters;
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	filter_text = pk_filter_enums_to_text (filters);
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackages", error,
+				 G_TYPE_STRING, filter_text,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	g_free (filter_text);
+	if (ret) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+	pk_client_error_fixup (error);
+	return ret;
+}
+
+/**
  * pk_client_get_requires:
  * @client: a valid #PkClient instance
  * @filters: a %PkFilterEnum such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE

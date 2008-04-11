@@ -26,8 +26,11 @@
     <method name="GetOldTransactions">
       <arg type="u" name="number" direction="in"/>
     </method>
-    <method name="GetPackage">
+    <method name="GetPackageLast">
       <arg type="s" name="package" direction="out"/>
+    </method>
+    <method name="GetPackages">
+      <arg type="s" name="filter" direction="in"/>
     </method>
     <method name="GetProgress">
       <arg type="u" name="percentage" direction="out"/>

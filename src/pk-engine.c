@@ -498,6 +498,9 @@ pk_engine_get_actions_internal (PkEngine *engine)
 	if (desc->get_requires != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_REQUIRES);
 	}
+	if (desc->get_packages != NULL) {
+		pk_enum_list_append (elist, PK_ROLE_ENUM_GET_PACKAGES);
+	}
 	if (desc->what_provides != NULL) {
 		pk_enum_list_append (elist, PK_ROLE_ENUM_WHAT_PROVIDES);
 	}

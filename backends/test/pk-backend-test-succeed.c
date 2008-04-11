@@ -336,6 +336,16 @@ backend_what_provides (PkBackend *backend, const gchar *filter, PkProvidesEnum p
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, const gchar *filter)
+{
+	g_return_if_fail (backend != NULL);
+	pk_backend_finished (backend);
+}
+
 PK_BACKEND_OPTIONS (
 	"Test Succeed",				/* description */
 	"Richard Hughes <richard@hughsie.com>",	/* author */
@@ -347,6 +357,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_description,		/* get_description */
 	backend_get_files,			/* get_files */
+	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */

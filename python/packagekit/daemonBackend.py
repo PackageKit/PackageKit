@@ -400,6 +400,23 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetPackages(self, filters):
+        '''
+        Implement the {backend}-get-packages functionality
+        '''
+        pklog.info("GetPackages()")
+        self.doGetPackages(filters)
+
+    def doGetPackages(self, filters):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Cancel(self):
         pklog.info("Cancel()")
