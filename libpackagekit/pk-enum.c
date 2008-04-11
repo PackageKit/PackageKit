@@ -1092,7 +1092,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the role enums");
-	for (i=0; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i*=2) {
 		string = pk_role_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -1158,7 +1158,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the group enums");
-	for (i=0; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i*=2) {
 		string = pk_group_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -1291,6 +1291,21 @@ libst_enum (LibSelfTest *test)
 		libst_failed (test, "text was %s", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can test enum presence");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
+	if (pk_enums_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong boolean");
+	}
+	libst_title (test, "check we can test enum false-presence");
+	if (!pk_enums_contain (filter, PK_FILTER_ENUM_FREE)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong boolean");
+	}
 
 	/************************************************************/
 	libst_title (test, "check we can add / remove enums to nothing");

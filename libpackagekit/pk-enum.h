@@ -40,6 +40,7 @@ typedef struct {
 /* convenience functions as it's easy to forget the bitwise operators */
 #define pk_enums_add(enums,enum)	do { ((enums) |= (enum)); } while (0)
 #define pk_enums_remove(enums,enum)	do { ((enums) &= ~(enum)); } while (0)
+#define pk_enums_contain(enums,enum)	(((enums) & (enum)) > 0)
 
 /**
  * PkRoleEnum:
