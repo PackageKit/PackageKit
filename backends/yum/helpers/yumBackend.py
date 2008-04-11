@@ -796,7 +796,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Implement the {backend}-update-system functionality
         '''
         self._check_init(lazy_cache=True)
-        self.allow_cancel(False)
+        self.allow_cancel(True)
         self.percentage(0)
         self.status(STATUS_RUNNING)
 
