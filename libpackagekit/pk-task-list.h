@@ -58,6 +58,8 @@ struct _PkTaskList
 struct _PkTaskListClass
 {
 	GObjectClass	parent_class;
+	void		(* changed)			(PkTaskList	*tlist);
+	void		(* status_changed)		(PkTaskList	*tlist);
 	void		(* message)			(PkTaskList	*tlist,
 							 PkClient	*client,
 							 PkMessageEnum	 message,

@@ -69,6 +69,7 @@ struct _PkTaskListPrivate
 
 typedef enum {
 	PK_TASK_LIST_CHANGED,
+	PK_TASK_LIST_STATUS_CHANGED,
 	PK_TASK_LIST_MESSAGE,
 	PK_TASK_LIST_FINISHED,
 	PK_TASK_LIST_ERROR_CODE,
@@ -167,8 +168,8 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	item->status = status;
 	g_free (tid);
 
-	pk_debug ("emit task-list-changed");
-	g_signal_emit (tlist, signals [PK_TASK_LIST_CHANGED], 0);
+	pk_debug ("emit status-changed");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
 }
 
 /**
@@ -317,7 +318,7 @@ pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
-	pk_debug ("emit task-list-changed");
+	pk_debug ("emit changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
 }
 
@@ -346,14 +347,27 @@ pk_task_list_class_init (PkTaskListClass *klass)
 	object_class->finalize = pk_task_list_finalize;
 
 	/**
-	 * PkTaskList::task-list-changed:
+	 * PkTaskList::changed:
 	 *
-	 * The ::task-list-changed signal is emitted when the transaction list has changed
+	 * The ::changed signal is emitted when the transaction list has changed
 	 **/
 	signals [PK_TASK_LIST_CHANGED] =
-		g_signal_new ("task-list-changed",
+		g_signal_new ("changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_STRUCT_OFFSET (PkTaskListClass, changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkTaskList::status-changed:
+	 *
+	 * The ::status-changed signal is emitted when one of the status' of the transaction list
+	 * clients has changed
+	 **/
+	signals [PK_TASK_LIST_STATUS_CHANGED] =
+		g_signal_new ("status-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
 	/**
 	 * PkTaskList::message:

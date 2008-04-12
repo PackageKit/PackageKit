@@ -139,7 +139,9 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
 
 	tlist = pk_task_list_new ();
-	g_signal_connect (tlist, "task-list-changed",
+	g_signal_connect (tlist, "changed",
+			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
+	g_signal_connect (tlist, "status-changed",
 			  G_CALLBACK (pk_monitor_task_list_changed_cb), NULL);
 
 	pk_debug ("refreshing task list");
