@@ -310,20 +310,33 @@ poldek_vf_progress_reset (void *bar)
 	td->pd->subpercentage = 0;
 }
 
-static gboolean
-poldek_pkg_in_array (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp_fn) {
-	gint		i;
+/**
+ * poldek_pkg_in_array_idx:
+ *
+ * Returns index of the first matching package. If not found, -1 will be returned.
+ **/
+static gint
+poldek_pkg_in_array_idx (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp_fn) {
+	gint	i;
 
 	if (array) {
 		for (i = 0; i < n_array_size (array); i++) {
 			struct pkg	*p = n_array_nth (array, i);
 
 			if (cmp_fn (pkg, p) == 0)
-				return TRUE;
+				return i;
 		}
 	}
 
-	return FALSE;
+	return -1;
+}
+
+static gboolean
+poldek_pkg_in_array (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp_fn) {
+	if (poldek_pkg_in_array_idx (pkg, array, cmp_fn) == -1)
+		return FALSE;
+	else
+		return TRUE;
 }
 
 /**
@@ -750,6 +763,25 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 				struct pkg	*p = n_array_nth (available, j);
 
 				if (pkg_satisfies_req (p, req, 1)) {
+					/* If only available packages are queried,
+					 * don't return these, which are installed.
+					 * Can be used to tell the user which packages
+					 * will be additionaly installed. */
+					if (pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+						gint	ret;
+
+						ret = poldek_pkg_in_array_idx (p, installed, (tn_fn_cmp)pkg_cmp_name);
+
+						if (ret >= 0) {
+							struct pkg	*ipkg = NULL;
+
+							ipkg = n_array_nth (installed, ret);
+
+							if (pkg_satisfies_req (ipkg, req, 1))
+								break;
+						}
+					}
+
 					n_array_push (depends, pkg_link (p));
 					n_array_push (tmp, pkg_link (p));
 					break;
