@@ -780,7 +780,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if self._is_inst(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
-                    if self._installable(pkg) and FILTER_NOT_INSTALLED not in fltlist:
+                    if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
                         self.package(id, INFO_AVAILABLE, pkg.summary)
 
     def update_system(self):
