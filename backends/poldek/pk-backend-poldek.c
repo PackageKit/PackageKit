@@ -596,7 +596,8 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
 
 	tmp = n_array_new (2, NULL, NULL);
 
-	if (pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
+	/* if ~installed doesn't exists in filters, we can query installed */
+	if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		for (i = 0; i < n_array_size (installed); i++) {
 			struct pkg      *ipkg = n_array_nth (installed, i);
 			int j;
@@ -629,7 +630,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
                 	}
                 }
         }
-        if (pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+        if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
 	        for (i = 0; i < n_array_size (available); i++) {
         	        struct pkg      *apkg = n_array_nth (available, i);
 	                int j;
@@ -663,7 +664,7 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires, struc
         }
 
 	/* FIXME: recursive takes too much time for available packages, so don't use it */
-	if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+	if (pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
 		if (data->recursive && tmp && n_array_size (tmp) > 0) {
 			for (i = 0; i < n_array_size (tmp); i++) {
 				struct pkg	*p = n_array_nth (tmp, i);
@@ -726,7 +727,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* first check in installed packages */
-		if (pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
+		if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			for (j = 0; j < n_array_size (installed); j++) {
 				struct pkg	*p = n_array_nth (installed, j);
 
@@ -743,7 +744,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
 			continue;
 
 		/* ... now available */
-		if (pk_enums_contain (data->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		if (!pk_enums_contain (data->filters, PK_FILTER_ENUM_INSTALLED)) {
 			for (j = 0; j < n_array_size (available); j++) {
 				struct pkg	*p = n_array_nth (available, j);
 
@@ -924,8 +925,7 @@ search_package (PkBackendThread *thread, gpointer data)
 		gchar		*command = NULL;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
-		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED))
-		{
+		if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 			command = g_strdup_printf ("cd /installed; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command)) {
 				gint	i;
@@ -942,8 +942,7 @@ search_package (PkBackendThread *thread, gpointer data)
 
 			g_free (command);
 		}
-		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED))
-		{
+		if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED)) {
 			command = g_strdup_printf ("cd /all-avail; %s *%s*", search_inst, d->search);
 			if (poclidek_rcmd_execline (cmd, command))
 				available = poclidek_rcmd_get_packages (cmd);
@@ -951,8 +950,8 @@ search_package (PkBackendThread *thread, gpointer data)
 			g_free (command);
 		}
 
-		if (pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) &&
-		    pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+		if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) &&
+		    !pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 		    installed && available) {
 			gint	i;
 
@@ -973,7 +972,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			n_array_sort_ex(pkgs, (tn_fn_cmp)pkg_cmp_name_evr_rev_recno);
 
 			n_array_free (available);
-		} else if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) || available) {
+		} else if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) || available) {
 			gint	i;
 
 			pkgs = available;
@@ -983,40 +982,46 @@ search_package (PkBackendThread *thread, gpointer data)
 
 				poldek_pkg_set_installed (pkg, FALSE);
 			}
-		} else if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED) || installed)
+		} else if (pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED) || installed)
 			pkgs = installed;
 
 		if (pkgs) {
 			gint	i;
 
-			if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_NEWEST) == FALSE)
+			if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NEWEST))
 				do_newest (pkgs);
 
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
-				/* development filter */
-				if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) ||
-				    !pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-					/* devel in filter */
-					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) && !poldek_pkg_is_devel (pkg))
-						continue;
-
-					/* ~devel in filter */
-					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && poldek_pkg_is_devel (pkg))
-						continue;
+				/* check if we have to do development filtering
+				 * (devel or ~devel in filters) */
+				if (pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) ||
+				    pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT)) {
+						/* devel in filters */
+						if (!poldek_pkg_is_devel (pkg))
+							continue;
+					} else {
+						/* ~devel in filters */
+						if (poldek_pkg_is_devel (pkg))
+							continue;
+					}
 				}
 
-				/* gui filter */
-				if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI) ||
-				    !pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_GUI)) {
-					/* gui in filter */
-					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI) && !poldek_pkg_is_gui (pkg))
-						continue;
-
-					/* ~gui in filter */
-					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_GUI) && poldek_pkg_is_gui (pkg))
-						continue;
+				/* check if we have to do gui filtering
+				 * (gui or ~gui in filters) */
+				if (pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI) ||
+				    pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_GUI)) {
+					if (pk_enums_contain (d->filters, PK_FILTER_ENUM_GUI)) {
+						/* gui in filters */
+						if (!poldek_pkg_is_gui (pkg))
+							continue;
+					} else {
+						/* ~gui in filters */
+						if (poldek_pkg_is_gui (pkg))
+							continue;
+					}
 				}
 
 				poldek_backend_package (pkg, PK_INFO_ENUM_UNKNOWN);
