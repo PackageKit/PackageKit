@@ -522,6 +522,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param key: key to seach for
         '''
         self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
         try:
