@@ -48,6 +48,7 @@ typedef enum {
 } TsType;
 
 enum {
+	SEARCH_ENUM_NONE,
 	SEARCH_ENUM_NAME,
 	SEARCH_ENUM_GROUP,
 	SEARCH_ENUM_DETAILS,
@@ -891,7 +892,7 @@ static gboolean
 search_package (PkBackendThread *thread, gpointer data)
 {
 	SearchData	 	*d = (SearchData*) data;
-	gchar			*search_inst = NULL;
+	gchar			*search_cmd = NULL;
 	struct poclidek_rcmd	*cmd = NULL;
 	PkBackend *backend;
 
@@ -901,32 +902,39 @@ search_package (PkBackendThread *thread, gpointer data)
 
 	cmd = poclidek_rcmd_new (cctx, NULL);
 
-	switch (d->mode)
-	{
+	switch (d->mode) {
+		/* GetPackages */
+		case SEARCH_ENUM_NONE:
+			search_cmd = g_strdup ("ls -q");
+			break;
+		/* SearchName */
 		case SEARCH_ENUM_NAME:
-			search_inst = g_strdup ("ls -q");
+			search_cmd = g_strdup_printf ("ls -q *%s*", d->search);
 			break;
+		/* SearchGroup */
 		case SEARCH_ENUM_GROUP:
-			search_inst = g_strdup ("search -qg");
+			search_cmd = g_strdup_printf ("search -qg *%s*", d->search);
 			break;
+		/* SearchDetails */
 		case SEARCH_ENUM_DETAILS:
-			search_inst = g_strdup ("search -dsq");
+			search_cmd = g_strdup_printf ("search -dsq *%s*", d->search);
 			break;
+		/* SearchFile */
 		case SEARCH_ENUM_FILE:
-			search_inst = g_strdup ("search -qlf");
+			search_cmd = g_strdup_printf ("search -qlf *%s*", d->search);
 			break;
 		default:
 			/* Error */
 			break;
 	}
 
-	if (cmd != NULL && search_inst)
+	if (cmd != NULL && search_cmd)
 	{
-		gchar		*command = NULL;
+		gchar		*command;
 		tn_array	*pkgs = NULL, *installed = NULL, *available = NULL;
 
 		if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-			command = g_strdup_printf ("cd /installed; %s *%s*", search_inst, d->search);
+			command = g_strdup_printf ("cd /installed; %s", search_cmd);
 			if (poclidek_rcmd_execline (cmd, command)) {
 				gint	i;
 
@@ -943,7 +951,7 @@ search_package (PkBackendThread *thread, gpointer data)
 			g_free (command);
 		}
 		if (!pk_enums_contain (d->filters, PK_FILTER_ENUM_INSTALLED)) {
-			command = g_strdup_printf ("cd /all-avail; %s *%s*", search_inst, d->search);
+			command = g_strdup_printf ("cd /all-avail; %s", search_cmd);
 			if (poclidek_rcmd_execline (cmd, command))
 				available = poclidek_rcmd_get_packages (cmd);
 
@@ -1030,12 +1038,10 @@ search_package (PkBackendThread *thread, gpointer data)
 		} else {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Package not found");
 		}
-
-		g_free (search_inst);
-
 		poclidek_rcmd_free (cmd);
 	}
 
+	g_free (search_cmd);
 	g_free (d->search);
 	g_free (d);
 
@@ -1349,6 +1355,23 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_files_thread,
 				  g_strdup (package_id));
+}
+
+/**
+ * backend_get_packages:
+ **/
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	SearchData	*data = g_new0 (SearchData, 1);
+
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	data->mode = SEARCH_ENUM_NONE;
+	data->filters = filters;
+	pk_backend_thread_create (thread, search_package, data);
 }
 
 /**
@@ -2008,7 +2031,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
 	backend_get_files,				/* get_files */
-	NULL,						/* get_packages */
+	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
 	backend_get_requires,				/* get_requires */
 	backend_get_update_detail,			/* get_update_detail */
