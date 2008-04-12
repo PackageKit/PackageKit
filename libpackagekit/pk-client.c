@@ -119,8 +119,6 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 /**
  * pk_client_error_quark:
  *
- * We are a clever GObject that sets errors
- *
  * Return value: Our personal error quark.
  **/
 GQuark

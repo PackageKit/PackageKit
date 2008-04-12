@@ -348,6 +348,7 @@ pk_task_list_class_init (PkTaskListClass *klass)
 
 	/**
 	 * PkTaskList::changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
 	 *
 	 * The ::changed signal is emitted when the transaction list has changed
 	 **/
@@ -359,6 +360,7 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 0);
 	/**
 	 * PkTaskList::status-changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
 	 *
 	 * The ::status-changed signal is emitted when one of the status' of the transaction list
 	 * clients has changed
@@ -371,7 +373,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 0);
 	/**
 	 * PkTaskList::message:
-	 * @client: the #PkTaskList instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
 	 * @details: the non-localised message details
 	 *
@@ -386,7 +389,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
 	/**
 	 * PkTaskList::finished:
-	 * @client: the #PkTaskList instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @exit: the #PkExitEnum status value, e.g. PK_EXIT_ENUM_SUCCESS
 	 * @runtime: the time in seconds the transaction has been running
 	 *
@@ -400,7 +404,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_UINT);
 	/**
 	 * PkClient::error-code:
-	 * @client: the #PkClient instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @code: the #PkErrorCodeEnum of the error, e.g. PK_ERROR_ENUM_DEP_RESOLUTION_FAILED
 	 * @details: the non-locaised details about the error
 	 *
