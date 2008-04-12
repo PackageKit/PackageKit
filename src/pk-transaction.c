@@ -194,112 +194,6 @@ pk_transaction_error_get_type (void)
 }
 
 /**
- * pk_transaction_set_running:
- */
-G_GNUC_WARN_UNUSED_RESULT static gboolean
-pk_transaction_set_running (PkTransaction *transaction)
-{
-	PkBackendDesc *desc;
-	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* assign */
-	pk_backend_set_current_tid (priv->backend, priv->tid);
-
-	/* i don't think we actually need to do this */
-	pk_backend_set_role (priv->backend, priv->role);
-
-	/* we are no longer waiting, we are setting up */
-	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
-
-	/* mark running */
-	transaction->priv->running = TRUE;
-
-	/* lets reduce pointer dereferences... */
-	desc = priv->backend->desc;
-
-	/* do the correct action with the cached parameters */
-	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
-		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		desc->get_update_detail (priv->backend, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
-		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
-		desc->rollback (priv->backend, priv->cached_transaction_id);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		desc->get_description (priv->backend, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
-		desc->get_files (priv->backend, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
-		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		desc->get_updates (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES) {
-		desc->get_packages (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		desc->search_file (priv->backend,priv->cached_filters,priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		desc->install_package (priv->backend, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		desc->install_file (priv->backend, priv->cached_full_path);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
-		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
-		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
-	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		desc->refresh_cache (priv->backend,  priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		desc->remove_package (priv->backend, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		desc->update_packages (priv->backend, priv->cached_package_ids);
-	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
-		desc->update_system (priv->backend);
-	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		desc->get_repo_list (priv->backend, priv->cached_filters);
-	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
-		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
-	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
-		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
-	} else {
-		pk_error ("failed to run as role not assigned");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/**
- * pk_transaction_run:
- */
-gboolean
-pk_transaction_run (PkTransaction *transaction)
-{
-	gboolean ret;
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
-	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
-
-	/* prepare for use; the transaction list ensures this is safe */
-	pk_backend_reset (transaction->priv->backend);
-
-	ret = pk_transaction_set_running (transaction);
-	if (ret) {
-		/* we start inhibited, it's up to the backed to
-		 * release early if a shutdown is possible */
-		pk_inhibit_add (transaction->priv->inhibit, transaction);
-	}
-	return ret;
-}
-
-/**
  * pk_transaction_get_runtime:
  *
  * Returns time running in ms
@@ -586,10 +480,6 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time);
 	}
 
-	exit_text = pk_exit_enum_to_text (exit);
-	pk_debug ("emitting finished '%s', %i", exit_text, time);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
-
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_description);
@@ -604,6 +494,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
+
+	/* we emit last, as other backends will be running very soon after us, and we don't want to be notified */
+	exit_text = pk_exit_enum_to_text (exit);
+	pk_debug ("emitting finished '%s', %i", exit_text, time);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, time);
 }
 
 /**
@@ -805,6 +700,154 @@ pk_transaction_update_detail_cb (PkBackend *backend, const gchar *package_id,
 		  package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_UPDATE_DETAIL], 0,
 		       package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart_text, update_text);
+}
+
+
+/**
+ * pk_transaction_set_running:
+ */
+G_GNUC_WARN_UNUSED_RESULT static gboolean
+pk_transaction_set_running (PkTransaction *transaction)
+{
+	PkBackendDesc *desc;
+	PkTransactionPrivate *priv = PK_TRANSACTION_GET_PRIVATE (transaction);
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	/* prepare for use; the transaction list ensures this is safe */
+	pk_backend_reset (transaction->priv->backend);
+
+	/* assign */
+	pk_backend_set_current_tid (priv->backend, priv->tid);
+
+	/* set the role */
+	pk_backend_set_role (priv->backend, priv->role);
+
+	/* we are no longer waiting, we are setting up */
+	pk_backend_set_status (priv->backend, PK_STATUS_ENUM_SETUP);
+
+	/* connect up the signals */
+	transaction->priv->signal_allow_cancel =
+		g_signal_connect (transaction->priv->backend, "allow-cancel",
+				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
+	transaction->priv->signal_description =
+		g_signal_connect (transaction->priv->backend, "description",
+				  G_CALLBACK (pk_transaction_description_cb), transaction);
+	transaction->priv->signal_error_code =
+		g_signal_connect (transaction->priv->backend, "error-code",
+				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
+	transaction->priv->signal_files =
+		g_signal_connect (transaction->priv->backend, "files",
+				  G_CALLBACK (pk_transaction_files_cb), transaction);
+	transaction->priv->signal_finished =
+		g_signal_connect (transaction->priv->backend, "finished",
+				  G_CALLBACK (pk_transaction_finished_cb), transaction);
+	transaction->priv->signal_message =
+		g_signal_connect (transaction->priv->backend, "message",
+				  G_CALLBACK (pk_transaction_message_cb), transaction);
+	transaction->priv->signal_package =
+		g_signal_connect (transaction->priv->backend, "package",
+				  G_CALLBACK (pk_transaction_package_cb), transaction);
+	transaction->priv->signal_progress_changed =
+		g_signal_connect (transaction->priv->backend, "progress-changed",
+				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
+	transaction->priv->signal_repo_detail =
+		g_signal_connect (transaction->priv->backend, "repo-detail",
+				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
+	transaction->priv->signal_repo_signature_required =
+		g_signal_connect (transaction->priv->backend, "repo-signature-required",
+				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
+	transaction->priv->signal_require_restart =
+		g_signal_connect (transaction->priv->backend, "require-restart",
+				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
+	transaction->priv->signal_status_changed =
+		g_signal_connect (transaction->priv->backend, "status-changed",
+				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
+	transaction->priv->signal_update_detail =
+		g_signal_connect (transaction->priv->backend, "update-detail",
+				  G_CALLBACK (pk_transaction_update_detail_cb), transaction);
+
+	/* mark running */
+	transaction->priv->running = TRUE;
+
+	/* lets reduce pointer dereferences... */
+	desc = priv->backend->desc;
+
+	/* do the correct action with the cached parameters */
+	if (priv->role == PK_ROLE_ENUM_GET_DEPENDS) {
+		desc->get_depends (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
+		desc->get_update_detail (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_RESOLVE) {
+		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
+		desc->rollback (priv->backend, priv->cached_transaction_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
+		desc->get_description (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
+		desc->get_files (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
+		desc->get_requires (priv->backend, priv->cached_filters, priv->cached_package_id, priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
+		desc->what_provides (priv->backend, priv->cached_filters, priv->cached_provides, priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_GET_UPDATES) {
+		desc->get_updates (priv->backend, priv->cached_filters);
+	} else if (priv->role == PK_ROLE_ENUM_GET_PACKAGES) {
+		desc->get_packages (priv->backend, priv->cached_filters);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
+		desc->search_details (priv->backend, priv->cached_filters, priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_FILE) {
+		desc->search_file (priv->backend,priv->cached_filters,priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_GROUP) {
+		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
+		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+		desc->install_package (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
+		desc->install_file (priv->backend, priv->cached_full_path);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
+		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
+	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		desc->refresh_cache (priv->backend,  priv->cached_force);
+	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		desc->remove_package (priv->backend, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		desc->update_packages (priv->backend, priv->cached_package_ids);
+	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		desc->update_system (priv->backend);
+	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
+		desc->get_repo_list (priv->backend, priv->cached_filters);
+	} else if (priv->role == PK_ROLE_ENUM_REPO_ENABLE) {
+		desc->repo_enable (priv->backend, priv->cached_repo_id, priv->cached_enabled);
+	} else if (priv->role == PK_ROLE_ENUM_REPO_SET_DATA) {
+		desc->repo_set_data (priv->backend, priv->cached_repo_id, priv->cached_parameter, priv->cached_value);
+	} else {
+		pk_error ("failed to run as role not assigned");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * pk_transaction_run:
+ */
+gboolean
+pk_transaction_run (PkTransaction *transaction)
+{
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
+
+	ret = pk_transaction_set_running (transaction);
+	if (ret) {
+		/* we start inhibited, it's up to the backed to
+		 * release early if a shutdown is possible */
+		pk_inhibit_add (transaction->priv->inhibit, transaction);
+	}
+	return ret;
 }
 
 /**
@@ -2888,46 +2931,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 
 	transaction->priv->backend = pk_backend_new ();
-	transaction->priv->signal_allow_cancel =
-		g_signal_connect (transaction->priv->backend, "allow-cancel",
-				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
-	transaction->priv->signal_description =
-		g_signal_connect (transaction->priv->backend, "description",
-				  G_CALLBACK (pk_transaction_description_cb), transaction);
-	transaction->priv->signal_error_code =
-		g_signal_connect (transaction->priv->backend, "error-code",
-				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
-	transaction->priv->signal_files =
-		g_signal_connect (transaction->priv->backend, "files",
-				  G_CALLBACK (pk_transaction_files_cb), transaction);
-	transaction->priv->signal_finished =
-		g_signal_connect (transaction->priv->backend, "finished",
-				  G_CALLBACK (pk_transaction_finished_cb), transaction);
-	transaction->priv->signal_message =
-		g_signal_connect (transaction->priv->backend, "message",
-				  G_CALLBACK (pk_transaction_message_cb), transaction);
-	transaction->priv->signal_package =
-		g_signal_connect (transaction->priv->backend, "package",
-				  G_CALLBACK (pk_transaction_package_cb), transaction);
-	transaction->priv->signal_progress_changed =
-		g_signal_connect (transaction->priv->backend, "progress-changed",
-				  G_CALLBACK (pk_transaction_progress_changed_cb), transaction);
-	transaction->priv->signal_repo_detail =
-		g_signal_connect (transaction->priv->backend, "repo-detail",
-				  G_CALLBACK (pk_transaction_repo_detail_cb), transaction);
-	transaction->priv->signal_repo_signature_required =
-		g_signal_connect (transaction->priv->backend, "repo-signature-required",
-				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
-	transaction->priv->signal_require_restart =
-		g_signal_connect (transaction->priv->backend, "require-restart",
-				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
-	transaction->priv->signal_status_changed =
-		g_signal_connect (transaction->priv->backend, "status-changed",
-				  G_CALLBACK (pk_transaction_status_changed_cb), transaction);
-	transaction->priv->signal_update_detail =
-		g_signal_connect (transaction->priv->backend, "update-detail",
-				  G_CALLBACK (pk_transaction_update_detail_cb), transaction);
-
 	transaction->priv->security = pk_security_new ();
 	transaction->priv->cache = pk_cache_new ();
 	transaction->priv->notify = pk_notify_new ();
