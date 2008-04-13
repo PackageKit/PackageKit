@@ -383,7 +383,7 @@ backend_initialize (PkBackend *backend)
 	alpm_option_set_root("/");
 	alpm_option_set_dbpath("/var/lib/pacman");
 	alpm_option_add_cachedir("/var/cache/pacman/pkg");
-	alpm_option_set_logfile("/var/log/pacman.log");	
+	alpm_option_set_logfile("/var/log/pacman.log");
 
 	if (alpm_db_register_local () == NULL)
 	  {
