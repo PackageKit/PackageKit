@@ -916,7 +916,7 @@ pk_client_cancel (PkClient *client, GError **error)
 	/* special case - if the tid is already finished, then cancel should
 	 * return TRUE as it's what we wanted */
 	if (pk_strequal (error_local->message, "cancelling a non-running transaction") ||
-	    g_str_has_suffix (error_local->message, " doesn't exist")) {
+	    g_str_has_suffix (error_local->message, " doesn't exist\n")) {
 		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
@@ -3692,6 +3692,7 @@ libst_client (LibSelfTest *test)
 	if (!ret) {
 		libst_failed (test, "failed to set tid: %s", error->message);
 		g_error_free (error);
+		error = NULL;
 	}
 
 	libst_loopwait (test, 5000);
@@ -3700,8 +3701,57 @@ libst_client (LibSelfTest *test)
 	}
 	libst_success (test, "cloned in %i", libst_elapsed (test));
 
+	/************************************************************/
+	libst_title (test, "cancel a finished task");
+	ret = pk_client_cancel (client, &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, "did not cancel finished task");
+	} else {
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+	}
+
 	g_object_unref (client);
 	g_object_unref (client_copy);
+
+	/************************************************************/
+	libst_title (test, "set a made up TID");
+	client = pk_client_new ();
+	ret = pk_client_set_tid (client, "/made_up_tid", &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, NULL);
+	} else {
+		if (error == NULL) {
+			libst_failed (test, "error not set and retval false");
+		}
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+
+	/************************************************************/
+	libst_title (test, "cancel a non running task");
+	ret = pk_client_cancel (client, &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, "did not cancel non running task");
+	} else {
+		if (error == NULL) {
+			libst_failed (test, "error not set and retval false");
+		}
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+	g_object_unref (client);
 
 	libst_end (test);
 }
