@@ -366,6 +366,7 @@ backend_initialize (PkBackend *backend)
 	    //return;
 	  }
 
+/*
 	if (alpm_parse_config ("/etc/pacman.conf", NULL, "") != 0)
 	  {
 	    pk_backend_error_code (backend,
@@ -375,9 +376,16 @@ backend_initialize (PkBackend *backend)
 	    backend_destroy (backend);
 	    return;
 	  }
+*/
 
+	// These are defaults
+	// TODO: Get real options from /etc/pacman.conf
+	alpm_option_set_root("/");
+	alpm_option_set_dbpath("/var/lib/pacman");
+	alpm_option_add_cachedir("/var/cache/pacman/pkg");
+	alpm_option_set_logfile("/var/log/pacman.log");	
 
-	if (alpm_db_register ("local") == NULL)
+	if (alpm_db_register_local () == NULL)
 	  {
 	    pk_backend_error_code (backend,
 				 PK_ERROR_ENUM_FAILED_CONFIG_PARSING,
