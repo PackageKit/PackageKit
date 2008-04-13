@@ -344,35 +344,6 @@ pk_console_progress_changed_cb (PkClient *client, guint percentage, guint subper
 	}
 }
 
-static const gchar *summary =
-	"PackageKit Console Interface\n"
-	"\n"
-	"Subcommands:\n"
-	"  search name|details|group|file data\n"
-	"  install <package>\n"
-	"  install-file <file>\n"
-	"  install-signature <type> <key_id> <package_id>\n"
-	"  remove <package>\n"
-	"  update <package>\n"
-	"  refresh\n"
-	"  resolve\n"
-	"  update-system\n"
-	"  get updates\n"
-	"  get depends <package>\n"
-	"  get requires <package>\n"
-	"  provides <search>\n"
-	"  get description <package>\n"
-	"  get files <package>\n"
-	"  get updatedetail <package>\n"
-	"  get actions\n"
-	"  get groups\n"
-	"  get filters\n"
-	"  get transactions\n"
-	"  get repos\n"
-	"  enable-repo <repo_id>\n"
-	"  disable-repo <repo_id>\n"
-	"  set-repo-data <repo_id> <parameter> <value>\n";
-
 /**
  * pk_console_signature_finished_cb:
  **/
@@ -801,241 +772,6 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 }
 
 /**
- * pk_console_process_commands:
- **/
-static gboolean
-pk_console_process_commands (PkClient *client, int argc, char *argv[], GError **error)
-{
-	const gchar *mode;
-	const gchar *value = NULL;
-	const gchar *details = NULL;
-	const gchar *parameter = NULL;
-	PkRoleEnum roles;
-	PkGroupEnum groups;
-	PkFilterEnum filters;
-	gchar *text;
-	gboolean ret = FALSE;
-	gboolean maybe_sync = TRUE;
-
-	mode = argv[1];
-	if (argc > 2) {
-		value = argv[2];
-	}
-	if (argc > 3) {
-		details = argv[3];
-	}
-	if (argc > 4) {
-		parameter = argv[4];
-	}
-
-	if (strcmp (mode, "search") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a search type"));
-			return FALSE;
-		} else if (strcmp (value, "name") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, details, error);
-			}
-		} else if (strcmp (value, "details") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_client_search_details (client, PK_FILTER_ENUM_NONE, details, error);
-			}
-		} else if (strcmp (value, "group") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_client_search_group (client, PK_FILTER_ENUM_NONE, details, error);
-			}
-		} else if (strcmp (value, "file") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_client_search_file (client, PK_FILTER_ENUM_NONE, details, error);
-			}
-		} else {
-			g_set_error (error, 0, 0, _("invalid search type"));
-		}
-	} else if (strcmp (mode, "install") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a package to install"));
-			return FALSE;
-		} else {
-			ret = pk_console_install_package (client, value, error);
-		}
-	} else if (strcmp (mode, "install-signature") == 0) {
-		if (value == NULL || details == NULL || parameter == NULL) {
-			g_set_error (error, 0, 0, _("specify a type, key_id and package_id"));
-			return FALSE;
-		} else {
-			ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, details, parameter, error);
-		}
-	} else if (strcmp (mode, "install-file") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a package to install"));
-			return FALSE;
-		} else {
-			ret = pk_client_install_file (client, value, error);
-		}
-	} else if (strcmp (mode, "remove") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a package to remove"));
-			return FALSE;
-		} else {
-			ret = pk_console_remove_package (client, value, error);
-		}
-	} else if (strcmp (mode, "update") == 0) {
-		if (value == NULL) {
-			/* do the system update */
-			ret = pk_client_update_system (client, error);
-		} else {
-			ret = pk_console_update_package (client, value, error);
-		}
-	} else if (strcmp (mode, "resolve") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a package name to resolve"));
-			return FALSE;
-		} else {
-			ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, value, error);
-		}
-	} else if (strcmp (mode, "enable-repo") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a repo name"));
-			return FALSE;
-		} else {
-			ret = pk_client_repo_enable (client, value, TRUE, error);
-		}
-	} else if (strcmp (mode, "disable-repo") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a repo name"));
-			return FALSE;
-		} else {
-			ret = pk_client_repo_enable (client, value, FALSE, error);
-		}
-	} else if (strcmp (mode, "set-repo-data") == 0) {
-		if (value == NULL || details == NULL || parameter == NULL) {
-			g_set_error (error, 0, 0, _("specify a repo name/parameter and value"));
-			return FALSE;
-		} else {
-			ret = pk_client_repo_set_data (client, value, details, parameter, error);
-		}
-	} else if (strcmp (mode, "get") == 0) {
-		if (value == NULL) {
-			g_set_error (error, 0, 0, _("specify a get type"));
-			return FALSE;
-		} else if (strcmp (value, "time") == 0) {
-			PkRoleEnum role;
-			guint time;
-			gboolean ret;
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			}
-			role = pk_role_enum_from_text (details);
-			if (role == PK_ROLE_ENUM_UNKNOWN) {
-				g_set_error (error, 0, 0, _("specify a correct role"));
-				return FALSE;
-			}
-			ret = pk_control_get_time_since_action (control, role, &time, error);
-			if (ret == FALSE) {
-				g_set_error (error, 0, 0, _("failed to get last time"));
-				return FALSE;
-			}
-			g_print ("time since %s is %is\n", details, time);
-			maybe_sync = FALSE;
-		} else if (strcmp (value, "depends") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_console_get_depends (client, details, error);
-			}
-		} else if (strcmp (value, "updatedetail") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_console_get_update_detail (client, details, error);
-			}
-		} else if (strcmp (value, "requires") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_console_get_requires (client, details, error);
-			}
-		} else if (strcmp (value, "provides") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a search term"));
-				return FALSE;
-			} else {
-				ret = pk_client_what_provides (client, PK_FILTER_ENUM_NONE, PK_PROVIDES_ENUM_CODEC, details, error);
-			}
-		} else if (strcmp (value, "description") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a package to find the description for"));
-				return FALSE;
-			} else {
-				ret = pk_console_get_description (client, details, error);
-			}
-		} else if (strcmp (value, "files") == 0) {
-			if (details == NULL) {
-				g_set_error (error, 0, 0, _("specify a package to find the files for"));
-				return FALSE;
-			} else {
-				ret = pk_console_get_files (client, details, error);
-			}
-		} else if (strcmp (value, "updates") == 0) {
-			ret = pk_client_get_updates (client, PK_FILTER_ENUM_BASENAME, error);
-		} else if (strcmp (value, "packages") == 0) {
-			ret = pk_client_get_packages (client, PK_FILTER_ENUM_INSTALLED, error);
-		} else if (strcmp (value, "actions") == 0) {
-			roles = pk_control_get_actions (control);
-			text = pk_role_enums_to_text (roles);
-			g_print ("roles=%s", text);
-			g_free (text);
-			maybe_sync = FALSE;
-		} else if (strcmp (value, "filters") == 0) {
-			filters = pk_control_get_filters (control);
-			text = pk_filter_enums_to_text (filters);
-			g_print ("filters=%s", text);
-			g_free (text);
-			maybe_sync = FALSE;
-		} else if (strcmp (value, "repos") == 0) {
-			ret = pk_client_get_repo_list (client, PK_FILTER_ENUM_NONE, error);
-		} else if (strcmp (value, "groups") == 0) {
-			groups = pk_control_get_groups (control);
-			text = pk_group_enums_to_text (groups);
-			g_print ("groups=%s", text);
-			g_free (text);
-			maybe_sync = FALSE;
-		} else if (strcmp (value, "transactions") == 0) {
-			ret = pk_client_get_old_transactions (client, 10, error);
-		} else {
-			g_set_error (error, 0, 0, _("invalid get type"));
-		}
-	} else if (strcmp (mode, "refresh") == 0) {
-		ret = pk_client_refresh_cache (client, FALSE, error);
-	} else {
-		g_set_error (error, 0, 0, _("option not yet supported"));
-	}
-
-	/* do we wait for the method? */
-	if (maybe_sync && !nowait && ret) {
-		g_main_loop_run (loop);
-	}
-
-	return ret;
-}
-
-/**
  * pk_console_error_code_cb:
  **/
 static void
@@ -1204,6 +940,88 @@ pk_console_sigint_handler (int sig)
 }
 
 /**
+ * pk_console_get_summary:
+ **/
+static gchar *
+pk_console_get_summary (PkRoleEnum roles)
+{
+	GString *string;
+	string = g_string_new ("");
+
+	/* header */
+	g_string_append_printf (string, "%s\n\n%s\n", _("PackageKit Console Interface"), _("Subcommands:"));
+
+	/* always */
+	g_string_append_printf (string, "  %s\n", "get-actions");
+	g_string_append_printf (string, "  %s\n", "get-groups");
+	g_string_append_printf (string, "  %s\n", "get-filter");
+	g_string_append_printf (string, "  %s\n", "get-transactions");
+	g_string_append_printf (string, "  %s\n", "get-time");
+
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_NAME) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
+		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGE) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILE)) {
+		g_string_append_printf (string, "  %s\n", "install [package|file]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
+		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGE)) {
+		g_string_append_printf (string, "  %s\n", "remove [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+		g_string_append_printf (string, "  %s\n", "update <package>");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_REFRESH_CACHE)) {
+		g_string_append_printf (string, "  %s\n", "refresh");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_RESOLVE)) {
+		g_string_append_printf (string, "  %s\n", "resolve [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATES)) {
+		g_string_append_printf (string, "  %s\n", "get-updates");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DEPENDS)) {
+		g_string_append_printf (string, "  %s\n", "get-depends [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
+		g_string_append_printf (string, "  %s\n", "get-requires [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DESCRIPTION)) {
+		g_string_append_printf (string, "  %s\n", "get-description [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
+		g_string_append_printf (string, "  %s\n", "get-files [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL)) {
+		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_PACKAGES)) {
+		g_string_append_printf (string, "  %s\n", "get-packages");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REPO_LIST)) {
+		g_string_append_printf (string, "  %s\n", "repo-list");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_ENABLE)) {
+		g_string_append_printf (string, "  %s\n", "repo-enable [repo_id]");
+		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_REPO_SET_DATA)) {
+		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value];");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
+		g_string_append_printf (string, "  %s\n", "what-provides [search]");
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
  * main:
  **/
 int
@@ -1216,13 +1034,26 @@ main (int argc, char *argv[])
 	gboolean program_version = FALSE;
 	GOptionContext *context;
 	gchar *options_help;
+	gchar *filter = NULL;
+	gchar *summary;
 	gboolean ret;
+	const gchar *mode;
+	const gchar *value = NULL;
+	const gchar *details = NULL;
+	const gchar *parameter = NULL;
+	PkRoleEnum roles;
+	PkGroupEnum groups;
+	gchar *text;
+	ret = FALSE;
+	gboolean maybe_sync = TRUE;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			_("Show extra debugging information"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			_("Show the program version and exit"), NULL},
+		{ "filter", '\0', 0, G_OPTION_ARG_STRING, &filter,
+			_("Set the filter, e.g. installed"), NULL},
 		{ "nowait", 'n', 0, G_OPTION_ARG_NONE, &nowait,
 			_("Exit without waiting for actions to complete"), NULL},
 		{ NULL}
@@ -1250,6 +1081,11 @@ main (int argc, char *argv[])
 		g_error (_("Could not connect to system DBUS."));
 	}
 
+	/* we need the roles early, as we only show the user only what they can do */
+	control = pk_control_new ();
+	roles = pk_control_get_actions (control);
+	summary = pk_console_get_summary (roles);
+
 	context = g_option_context_new ("PackageKit Console Program");
 	g_option_context_set_summary (context, summary) ;
 	g_option_context_add_main_entries (context, options, NULL);
@@ -1268,7 +1104,6 @@ main (int argc, char *argv[])
 		return 1;
 	}
 
-	pk_debug_init (verbose);
 	loop = g_main_loop_new (NULL, FALSE);
 
 	pconnection = pk_connection_new ();
@@ -1308,19 +1143,237 @@ main (int argc, char *argv[])
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
-	control = pk_control_new ();
-	roles = pk_control_get_actions (control);
+	PkFilterEnum filters = 0;
+	if (filter != NULL) {
+		filters = pk_filter_enums_from_text (filter);
+	}
 
-	/* run the commands */
-	ret = pk_console_process_commands (client, argc, argv, &error);
+	mode = argv[1];
+	if (argc > 2) {
+		value = argv[2];
+	}
+	if (argc > 3) {
+		details = argv[3];
+	}
+	if (argc > 4) {
+		parameter = argv[4];
+	}
+
+	/* parse the big list */
+	if (strcmp (mode, "search") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a search type"));
+			goto out;
+
+		} else if (strcmp (value, "name") == 0) {
+			if (details == NULL) {
+				g_print (_("You need to specify a search term"));
+				goto out;
+			}
+			ret = pk_client_search_name (client, filters, details, &error);
+
+		} else if (strcmp (value, "details") == 0) {
+			if (details == NULL) {
+				g_print (_("You need to specify a search term"));
+				goto out;
+			}
+			ret = pk_client_search_details (client, filters, details, &error);
+
+		} else if (strcmp (value, "group") == 0) {
+			if (details == NULL) {
+				g_print (_("You need to specify a search term"));
+				goto out;
+			}
+			ret = pk_client_search_group (client, filters, details, &error);
+
+		} else if (strcmp (value, "file") == 0) {
+			if (details == NULL) {
+				g_print (_("You need to specify a search term"));
+				goto out;
+			}
+			ret = pk_client_search_file (client, filters, details, &error);
+		} else {
+			g_print (_("Invalid search type"));
+		}
+
+	} else if (strcmp (mode, "install") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a package or file to install"));
+			goto out;
+		}
+		/* is it a local file? */
+		ret = g_file_test (value, G_FILE_TEST_EXISTS);
+		if (ret) {
+			ret = pk_client_install_file (client, value, &error);
+		} else {
+			ret = pk_console_install_package (client, value, &error);
+		}
+
+	} else if (strcmp (mode, "install-sig") == 0) {
+		if (value == NULL || details == NULL || parameter == NULL) {
+			g_print (_("You need to specify a type, key_id and package_id"));
+			goto out;
+		}
+		ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, details, parameter, &error);
+
+	} else if (strcmp (mode, "remove") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a package to remove"));
+			goto out;
+		}
+		ret = pk_console_remove_package (client, value, &error);
+
+	} else if (strcmp (mode, "update") == 0) {
+		if (value == NULL) {
+			/* do the system update */
+			ret = pk_client_update_system (client, &error);
+		}
+		ret = pk_console_update_package (client, value, &error);
+
+	} else if (strcmp (mode, "resolve") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a package name to resolve"));
+			goto out;
+		}
+		ret = pk_client_resolve (client, filters, value, &error);
+
+	} else if (strcmp (mode, "repo-enable") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a repo name"));
+			goto out;
+		}
+		ret = pk_client_repo_enable (client, value, TRUE, &error);
+
+	} else if (strcmp (mode, "repo-disable") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a repo name"));
+			goto out;
+		}
+		ret = pk_client_repo_enable (client, value, FALSE, &error);
+
+	} else if (strcmp (mode, "repo-set-data") == 0) {
+		if (value == NULL || details == NULL || parameter == NULL) {
+			g_print (_("You need to specify a repo name/parameter and value"));
+			goto out;
+		}
+		ret = pk_client_repo_set_data (client, value, details, parameter, &error);
+
+	} else if (strcmp (mode, "repo-list") == 0) {
+		ret = pk_client_get_repo_list (client, filters, &error);
+
+	} else if (strcmp (mode, "get-time") == 0) {
+		PkRoleEnum role;
+		guint time;
+		gboolean ret;
+		if (value == NULL) {
+			g_print (_("You need to specify a time term"));
+			goto out;
+		}
+		role = pk_role_enum_from_text (value);
+		if (role == PK_ROLE_ENUM_UNKNOWN) {
+			g_print (_("You need to specify a correct role"));
+			goto out;
+		}
+		ret = pk_control_get_time_since_action (control, role, &time, &error);
+		if (ret == FALSE) {
+			g_print (_("Failed to get last time"));
+			goto out;
+		}
+		g_print ("time since %s is %is\n", value, time);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "get-depends") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a search term"));
+			goto out;
+		}
+		ret = pk_console_get_depends (client, value, &error);
+
+	} else if (strcmp (mode, "get-update-detail") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a search term"));
+			goto out;
+		}
+		ret = pk_console_get_update_detail (client, value, &error);
+
+	} else if (strcmp (mode, "get-requires") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a search term"));
+			goto out;
+		}
+		ret = pk_console_get_requires (client, value, &error);
+
+	} else if (strcmp (mode, "what-provides") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a search term"));
+			goto out;
+		}
+		ret = pk_client_what_provides (client, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
+
+	} else if (strcmp (mode, "get-description") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a package to find the description for"));
+			goto out;
+		}
+		ret = pk_console_get_description (client, value, &error);
+
+	} else if (strcmp (mode, "get-files") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a package to find the files for"));
+			goto out;
+		}
+		ret = pk_console_get_files (client, value, &error);
+
+	} else if (strcmp (mode, "get-updates") == 0) {
+		ret = pk_client_get_updates (client, filters, &error);
+
+	} else if (strcmp (mode, "get-packages") == 0) {
+		ret = pk_client_get_packages (client, filters, &error);
+
+	} else if (strcmp (mode, "get-actions") == 0) {
+		roles = pk_control_get_actions (control);
+		text = pk_role_enums_to_text (roles);
+		g_print ("roles=%s\n", text);
+		g_free (text);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "get-filters") == 0) {
+		filters = pk_control_get_filters (control);
+		text = pk_filter_enums_to_text (filters);
+		g_print ("filters=%s\n", text);
+		g_free (text);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "get-groups") == 0) {
+		groups = pk_control_get_groups (control);
+		text = pk_group_enums_to_text (groups);
+		g_print ("groups=%s\n", text);
+		g_free (text);
+		maybe_sync = FALSE;
+
+	} else if (strcmp (mode, "get-transactions") == 0) {
+		ret = pk_client_get_old_transactions (client, 10, &error);
+
+	} else if (strcmp (mode, "refresh") == 0) {
+		ret = pk_client_refresh_cache (client, FALSE, &error);
+
+	} else {
+		g_print (_("Option '%s' not supported\n"), mode);
+	}
+
+	/* do we wait for the method? */
+	if (maybe_sync && !nowait && ret) {
+		g_main_loop_run (loop);
+	}
+
+out:
 	if (ret == FALSE) {
 		g_print (_("Command failed\n"));
 	}
 	if (error != NULL) {
 		if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
 			g_print (_("You don't have the necessary privileges for this operation\n"));
-		}
-		else {
+		} else {
 			g_print ("Error:\n  %s\n\n", error->message);
 			g_error_free (error);
 			g_print ("%s", options_help);
@@ -1328,6 +1381,8 @@ main (int argc, char *argv[])
 	}
 
 	g_free (options_help);
+	g_free (filter);
+	g_free (summary);
 	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
