@@ -675,10 +675,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     for txmbr in self.yumbase.tsInfo:
                         if txmbr.po.name != pkg.name:
                             self._show_package(txmbr.po,INFO_INSTALLED)
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-                        
-                                
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
