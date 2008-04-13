@@ -383,7 +383,7 @@ backend_initialize (PkBackend *backend)
 	alpm_option_set_root("/");
 	alpm_option_set_dbpath("/var/lib/pacman");
 	alpm_option_add_cachedir("/var/cache/pacman/pkg");
-	alpm_option_set_logfile("/var/log/pacman.log");	
+	alpm_option_set_logfile("/var/log/pacman.log");
 
 	if (alpm_db_register_local () == NULL)
 	  {
@@ -402,7 +402,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-  pk_debug ("hello %i", (int)backend);
+  pk_debug ("hello %i", GPOINTER_TO_INT (backend));
   g_return_if_fail (backend != NULL);
   //alpm_list_t *syncdbs = alpm_option_get_syncdbs ();
   alpm_list_t *result = NULL;
