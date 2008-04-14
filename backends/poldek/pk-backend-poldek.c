@@ -480,6 +480,8 @@ setup_vf_progress (struct vf_progress *vf_progress, TsData *td)
 	vf_progress->free = NULL;
 
 	vfile_configure (VFILE_CONF_VERBOSE, &verbose);
+	vfile_configure (VFILE_CONF_STUBBORN_NRETRIES, 5);
+
 	poldek_configure (ctx, POLDEK_CONF_VFILEPROGRESS, vf_progress);
 }
 
@@ -1089,7 +1091,12 @@ poldek_backend_log (void *data, int pri, char *message)
 	PkBackend	*backend;
 
 	backend = pk_backend_thread_get_backend (thread);
-	if (msg) {
+
+	/* catch vfff messages */
+	if (g_str_has_prefix (message, "vfff: ")) {
+		// 'vfff: unable to connect to ftp.pld-linux.org:21: Connection refused'
+		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, "%s", message);
+	} else if (msg) {
 
 		if (strcmp (msg+(2*sizeof(char)), "equal version installed, skipped\n") == 0)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, "Package already installed");
