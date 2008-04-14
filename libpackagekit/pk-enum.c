@@ -387,6 +387,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_MPLUS,                "mplus"},
 	{PK_LICENSE_ENUM_STIX,                 "STIX"},
 	{PK_LICENSE_ENUM_XANO,                 "XANO"},
+	{PK_LICENSE_ENUM_VOSTROM,              "VOSTROM"},
 	{0, NULL}
 };
 
