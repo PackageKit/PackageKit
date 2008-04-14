@@ -21,7 +21,7 @@ __pkcon_commandlist="
     get-depends
     get-description
     get-files
-    get-filter
+    get-filters
     get-groups
     get-packages
     get-requires

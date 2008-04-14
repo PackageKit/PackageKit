@@ -85,6 +85,7 @@ struct _PkBackendPrivate
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
+	gboolean		 set_eula;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -111,6 +112,7 @@ enum {
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
+	PK_BACKEND_EULA_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
 	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
@@ -902,6 +904,42 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 }
 
 /**
+ * pk_backend_eula_required:
+ **/
+gboolean
+pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
+			  const gchar *vendor_name, const gchar *license_agreement)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (vendor_name != NULL, FALSE);
+	g_return_val_if_fail (license_agreement != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
+	/* check we don't do this more than once */
+	if (backend->priv->set_eula) {
+		pk_warning ("already asked for a signature, cannot process");
+		return FALSE;
+	}
+	backend->priv->set_eula = TRUE;
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (backend, signals [PK_BACKEND_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_repo_detail:
  **/
 gboolean
@@ -1375,6 +1413,12 @@ pk_backend_class_init (PkBackendClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_BACKEND_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1403,6 +1447,7 @@ pk_backend_reset (PkBackend *backend)
 
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
+	backend->priv->set_eula = FALSE;
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
