@@ -133,8 +133,8 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_GET_LOCK,         "cannot-get-lock"},
 	{PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,   "no-packages-to-update"},
 	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,        "cannot-write-repo-config"},
-	{PK_ERROR_LOCAL_INSTALL_FAILED,         "local-install-failed"},
-	{PK_ERROR_BAD_GPG_SIGNATURE,            "bad-gpg-signature"},
+	{PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,    "local-install-failed"},
+	{PK_ERROR_ENUM_BAD_GPG_SIGNATURE,       "bad-gpg-signature"},
 	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,   "cannot-install-source-package"},
 	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,        "repo-configuration-error"},
 	{0, NULL}
