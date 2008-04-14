@@ -31,7 +31,7 @@
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin_keep_always</allow_active>
+      <allow_active>auth_admin</allow_active>
     </defaults>
   </action>
 
