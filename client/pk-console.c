@@ -1382,7 +1382,6 @@ out:
 		} else {
 			g_print ("Error:\n  %s\n\n", error->message);
 			g_error_free (error);
-			g_print ("%s", options_help);
 		}
 	}
 
