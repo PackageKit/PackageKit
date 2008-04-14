@@ -954,7 +954,7 @@ pk_console_get_summary (PkRoleEnum roles)
 	/* always */
 	g_string_append_printf (string, "  %s\n", "get-actions");
 	g_string_append_printf (string, "  %s\n", "get-groups");
-	g_string_append_printf (string, "  %s\n", "get-filter");
+	g_string_append_printf (string, "  %s\n", "get-filters");
 	g_string_append_printf (string, "  %s\n", "get-transactions");
 	g_string_append_printf (string, "  %s\n", "get-time");
 
@@ -1336,6 +1336,8 @@ main (int argc, char *argv[])
 		g_print ("roles=%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
+		/* these can never fail */
+		ret = TRUE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
 		filters = pk_control_get_filters (control);
@@ -1343,6 +1345,8 @@ main (int argc, char *argv[])
 		g_print ("filters=%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
+		/* these can never fail */
+		ret = TRUE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
 		groups = pk_control_get_groups (control);
@@ -1350,6 +1354,8 @@ main (int argc, char *argv[])
 		g_print ("groups=%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
+		/* these can never fail */
+		ret = TRUE;
 
 	} else if (strcmp (mode, "get-transactions") == 0) {
 		ret = pk_client_get_old_transactions (client, 10, &error);
