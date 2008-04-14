@@ -886,6 +886,33 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 }
 
 /**
+ * pk_console_eula_required_cb:
+ **/
+static void
+pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar *package_id,
+			     const gchar *vendor_name, const gchar *license_agreement, gpointer data)
+{
+	gboolean import;
+
+	if (awaiting_space) {
+		g_print ("\n");
+	}
+	g_print ("Eula Required\n");
+	g_print ("Eula:        %s\n", eula_id);
+	g_print ("Package:     %s\n", package_id);
+	g_print ("Vendor:      %s\n", vendor_name);
+	g_print ("Agreement:   %s\n", license_agreement);
+
+	/* get user input */
+	import = pk_console_get_prompt (_("Do you agree?"), FALSE);
+	if (!import) {
+		g_print ("%s\n", _("Did not agree to licence, task will fail"));
+		return;
+	}
+	g_print ("Importing licences is not yet supported!\n");
+}
+
+/**
  * pk_connection_changed_cb:
  **/
 static void
@@ -1122,6 +1149,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_files_cb), NULL);
 	g_signal_connect (client, "repo-signature-required",
 			  G_CALLBACK (pk_console_repo_signature_required_cb), NULL);
+	g_signal_connect (client, "eula-required",
+			  G_CALLBACK (pk_console_eula_required_cb), NULL);
 	g_signal_connect (client, "update-detail",
 			  G_CALLBACK (pk_console_update_detail_cb), NULL);
 	g_signal_connect (client, "repo-detail",

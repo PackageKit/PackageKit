@@ -135,7 +135,8 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,        "cannot-write-repo-config"},
 	{PK_ERROR_LOCAL_INSTALL_FAILED,         "local-install-failed"},
 	{PK_ERROR_BAD_GPG_SIGNATURE,            "bad-gpg-signature"},
-	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,       "cannot-install-source-package"},
+	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,	"cannot-install-source-package"},
+	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
 	{0, NULL}
 };
 

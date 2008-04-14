@@ -661,11 +661,10 @@ The reasons for this are as follows:
 </p>
 <p>
 EULAs or other agreements will have to be agreed to <b>before</b> the
-transaction is processed.
-EULAs are legally questionable (because the files are already installed) and
-only the user that installing the software is ever shown them.
-If EULAs are required, they should be shown per-user - i.e. the first time an
-application is run.
+transaction is processed using the <code>EulaRequired</code> signal.
+</p>
+<p>
+EULAs should preferably be shown per-user - i.e. the first time an application is run.
 </p>
 <p>
 PackageKit will not install packages with broken maintainer scripts that

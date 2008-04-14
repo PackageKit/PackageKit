@@ -106,6 +106,7 @@ typedef enum {
 	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_EULA_REQUIRED,
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
@@ -584,12 +585,28 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
 	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+}
+
+/**
+ * pk_client_eula_required_cb:
+ **/
+static void
+pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+			    const gchar *vendor_name, const gchar *license_agreement, PkClient *client)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
 }
 
 /**
@@ -2921,6 +2938,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RepoDetail", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -2946,6 +2965,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_files_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_client_eula_required_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
 				     G_CALLBACK (pk_client_repo_detail_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
@@ -3098,6 +3119,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::repo-signature-required:
 	 * @client: the #PkClient instance that emitted the signal
+	 * @package_id: the package_id of the package
 	 * @repository_name: the name of the repository
 	 * @key_url: the URL of the repository
 	 * @key_userid: the user signing the repository
@@ -3116,6 +3138,22 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	/**
+	 * PkClient::eula-required:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @eula_id: the EULA id, e.g. <literal>vmware5_single_user</literal>
+	 * @package_id: the package_id of the package
+	 * @vendor_name: the Vendor name, e.g. Acme Corp.
+	 * @license_agreement: the text of the license agreement
+	 *
+	 * The ::eula signal is emitted when the transaction needs to fail for a EULA prompt.
+	 **/
+	signals [PK_CLIENT_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, eula_required),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	/**
 	 * PkClient::repo-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3274,6 +3312,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
 				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "EulaRequired",
+				        G_CALLBACK (pk_client_eula_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
@@ -3426,6 +3466,11 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_INVALID);
+
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Files */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,

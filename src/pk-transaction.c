@@ -115,6 +115,7 @@ struct PkTransactionPrivate
 	guint			 signal_progress_changed;
 	guint			 signal_repo_detail;
 	guint			 signal_repo_signature_required;
+	guint			 signal_eula_required;
 	guint			 signal_require_restart;
 	guint			 signal_status_changed;
 	guint			 signal_update_detail;
@@ -132,6 +133,7 @@ enum {
 	PK_TRANSACTION_PROGRESS_CHANGED,
 	PK_TRANSACTION_REPO_DETAIL,
 	PK_TRANSACTION_REPO_SIGNATURE_REQUIRED,
+	PK_TRANSACTION_EULA_REQUIRED,
 	PK_TRANSACTION_REQUIRE_RESTART,
 	PK_TRANSACTION_STATUS_CHANGED,
 	PK_TRANSACTION_TRANSACTION,
@@ -491,6 +493,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
@@ -617,6 +620,26 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *pack
 	g_signal_emit (transaction, signals [PK_TRANSACTION_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id,
 		       key_fingerprint, key_timestamp, type_text);
+
+	/* we should mark this transaction so that we finish with a special code */
+	transaction->priv->emit_key_required = TRUE;
+}
+
+/**
+ * pk_transaction_eula_required_cb:
+ **/
+static void
+pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
+				 const gchar *vendor_name, const gchar *license_agreement,
+				 PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("emitting eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
 
 	/* we should mark this transaction so that we finish with a special code */
 	transaction->priv->emit_key_required = TRUE;
@@ -757,6 +780,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_repo_signature_required =
 		g_signal_connect (transaction->priv->backend, "repo-signature-required",
 				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
+	transaction->priv->signal_eula_required =
+		g_signal_connect (transaction->priv->backend, "eula-required",
+				  G_CALLBACK (pk_transaction_eula_required_cb), transaction);
 	transaction->priv->signal_require_restart =
 		g_signal_connect (transaction->priv->backend, "require-restart",
 				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
@@ -2876,6 +2902,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TRANSACTION_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
