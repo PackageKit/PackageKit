@@ -54,9 +54,9 @@ G_BEGIN_DECLS
 #define pk_warning(...) pk_warning_real (__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 #define pk_error(...) pk_error_real (__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 #else
-#define pk_debug
-#define pk_warning
-#define pk_error
+#define pk_debug(...)
+#define pk_warning(...)
+#define pk_error(...)
 #endif
 
 void		pk_debug_init			(gboolean	 debug);
