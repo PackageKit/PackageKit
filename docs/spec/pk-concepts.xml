@@ -294,6 +294,10 @@
             <entry>The repository name could not be found</entry>
           </row>
           <row>
+            <entry><literal>repo-configuration-error</literal></entry>
+            <entry>One of the enabled repositories has invalid configuration</entry>
+          </row>
+          <row>
             <entry><literal>cannot-remove-system-package</literal></entry>
             <entry>
               Could not remove a protected system package that is needed for
