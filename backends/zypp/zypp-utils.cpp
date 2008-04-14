@@ -258,12 +258,9 @@ zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, 
 
 	zypp::ResPool pool = zypp_build_pool (include_local);
 
-        zypp::Capability cap (package_name, kind, zypp::Capability::PARSED);
-        zypp::sat::WhatProvides provs (cap);
-
-        for (zypp::sat::WhatProvides::const_iterator it = provs.begin ();
-                        it != provs.end (); it++) {
-                v->push_back (*it);
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
+                        it != pool.byIdentEnd (kind, package_name); it++) {
+                v->push_back (it->satSolvable ());
         }
 
 	return v;
@@ -482,6 +479,8 @@ zypp_get_patches ()
         zypp::ZYpp::Ptr zypp;
         zypp = get_zypp ();
 
+	zypp->resolver ()->resolvePool ();
+
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
@@ -622,4 +621,20 @@ zypp_convert_set_char (std::set<zypp::sat::Solvable> *set)
         }
 
         return array;
+}
+
+gchar *
+zypp_build_package_id_capabilities (zypp::Capabilities caps)
+{
+	gchar * package_ids = new gchar ();
+
+	zypp::sat::WhatProvides provs (caps);
+
+	for (zypp::sat::WhatProvides::const_iterator it = provs.begin (); it != provs.end (); it++) {
+		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+		package_ids = g_strconcat (package_ids, package_id, " ", (gchar *)NULL);
+		g_free (package_id);
+	}
+
+	return package_ids;
 }

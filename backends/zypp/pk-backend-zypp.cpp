@@ -665,10 +665,21 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 
 		// Emit the package
 
-		PkInfoEnum infoEnum = PK_INFO_ENUM_AVAILABLE;
+		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
 
-		if (zypp::isKind<zypp::Patch>(res))
-			infoEnum = PK_INFO_ENUM_SECURITY;
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			if (patch->category () == "recommended") {
+				infoEnum = PK_INFO_ENUM_IMPORTANT;
+			}else if (patch->category () == "optional") {
+				infoEnum = PK_INFO_ENUM_LOW;
+			}else if (patch->category () == "security") {
+				infoEnum = PK_INFO_ENUM_SECURITY;
+			}else{
+				infoEnum = PK_INFO_ENUM_NORMAL;
+			}
+		}
+		
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
 		pk_backend_package (backend,
@@ -722,17 +733,16 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 	zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
 
 	zypp::Capabilities obs = solvable.obsoletes ();
+	zypp::Capabilities upd = solvable.freshens ();
 
-	gchar *obsoletes = new gchar ();
-
-	for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
-		g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
-		g_strlcat(obsoletes, ";", (strlen (obsoletes) + 2));
-	}
+	gchar *obsoletes = zypp_build_package_id_capabilities (obs);
+	gchar *updates = zypp_build_package_id_capabilities (upd);
 
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
 	zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
+	
+	gchar *bugzilla = new gchar ();
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
@@ -741,19 +751,33 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 		}else if (patch->affects_pkg_manager ()) {
 			restart = PK_RESTART_ENUM_SESSION;
 		}
+
+		zypp::Patch::ReferenceIterator it = patch->referencesBegin ();
+
+		if ( it != patch->referencesEnd ())
+			bugzilla = g_strdup(it.href ().c_str ());
+		
+		zypp::sat::SolvableSet content = patch->contents ();
+
+		for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
+			obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), " ", (gchar *)NULL);
+			updates = g_strconcat (updates, zypp_build_package_id_capabilities (it->freshens ()), " ", (gchar *)NULL);
+		}
 	}
 
 	pk_backend_update_detail (backend,
 				  d->package_id,
-				  "",
-				  "", // CURRENTLY CAUSES SEGFAULT obsoletes,
-				  "", // CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
-				  "",
-				  "",
+				  updates, 	// updates
+				  obsoletes, 	// CURRENTLY CAUSES SEGFAULT obsoletes,
+				  "", 		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
+				  bugzilla, 	// bugzilla
+				  "", 		// cve
 				  restart,
 				  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
+	g_free (bugzilla);
 	g_free (obsoletes);
+	g_free (updates);
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
