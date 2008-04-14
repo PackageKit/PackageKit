@@ -540,6 +540,22 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                                 break;
                 };
 
+		// look for licenses to confirm
+
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+			if (it->status () == zypp::ResStatus::toBeInstalled && !((*it)->licenseToConfirm ().empty ())) {
+				gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
+				pk_backend_eula_required (backend,
+						"",	//eula_id
+						package_id,
+						(*it)->vendor ().c_str (),
+						(*it)->licenseToConfirm ().c_str ()); 
+				pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
+				g_free (package_id);
+			}
+		}
+
                 // Perform the installation
                 zypp::ZYppCommitPolicy policy;
                 policy.restrictToMedia (0);	// 0 - install all packages regardless to media
