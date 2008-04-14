@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <sys/prctl.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -3554,6 +3555,20 @@ pk_client_new (void)
 	PkClient *client;
 	client = g_object_new (PK_TYPE_CLIENT, NULL);
 	return PK_CLIENT (client);
+}
+
+/**
+ * init:
+ *
+ * Library constructor: Disable ptrace() and core dumping for applications
+ * which use this library, so that local trojans cannot silently abuse PackageKit
+ * privileges.
+ */
+__attribute__ ((constructor))
+void init()
+{
+	/* this is a bandaid */
+	prctl (PR_SET_DUMPABLE, 0);
 }
 
 /***************************************************************************
