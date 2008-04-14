@@ -90,9 +90,6 @@ static void
 pk_restart_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_file,
 			    GFileMonitorEvent event_type, PkRestart *restart)
 {
-	if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT) {
-		return;
-	}
 	pk_debug ("emit: restart-schedule");
 	g_signal_emit (restart, signals [PK_RESTART_SCHEDULE], 0);
 }

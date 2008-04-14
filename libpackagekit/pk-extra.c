@@ -916,6 +916,7 @@ libst_extra (LibSelfTest *test)
 	libst_success (test, "%i get_localised_detail loops completed in %ims", i*5, libst_elapsed (test));
 
 	g_object_unref (extra);
+	g_unlink ("extra.db");
 
 	libst_end (test);
 }

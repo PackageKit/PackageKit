@@ -137,6 +137,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_BAD_GPG_SIGNATURE,       "bad-gpg-signature"},
 	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,   "cannot-install-source-package"},
 	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,        "repo-configuration-error"},
+	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
 	{0, NULL}
 };
 

@@ -123,6 +123,11 @@ struct _PkClientClass
 							 const gchar	*key_fingerprint,
 							 const gchar	*key_timestamp,
 							 PkSigTypeEnum	 type);
+	void		(* eula_required)		(PkClient	*client,
+							 const gchar	*eula_id,
+							 const gchar	*package_id,
+							 const gchar	*vendor_name,
+							 const gchar	*license_agreement);
 	void		(* repo_detail)			(PkClient	*client,
 							 const gchar	*repo_id,
 							 const gchar	*description,

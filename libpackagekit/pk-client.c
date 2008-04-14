@@ -106,6 +106,7 @@ typedef enum {
 	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_EULA_REQUIRED,
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
@@ -118,8 +119,6 @@ G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
 /**
  * pk_client_error_quark:
- *
- * We are a clever GObject that sets errors
  *
  * Return value: Our personal error quark.
  **/
@@ -586,12 +585,28 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
 	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+}
+
+/**
+ * pk_client_eula_required_cb:
+ **/
+static void
+pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+			    const gchar *vendor_name, const gchar *license_agreement, PkClient *client)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
 }
 
 /**
@@ -918,7 +933,7 @@ pk_client_cancel (PkClient *client, GError **error)
 	/* special case - if the tid is already finished, then cancel should
 	 * return TRUE as it's what we wanted */
 	if (pk_strequal (error_local->message, "cancelling a non-running transaction") ||
-	    g_str_has_suffix (error_local->message, " doesn't exist")) {
+	    g_str_has_suffix (error_local->message, " doesn't exist\n")) {
 		pk_debug ("error ignored '%s' as we are trying to cancel", error_local->message);
 		g_error_free (error_local);
 		return TRUE;
@@ -2923,6 +2938,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RepoDetail", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -2948,6 +2965,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_files_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_client_eula_required_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
 				     G_CALLBACK (pk_client_repo_detail_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
@@ -3100,6 +3119,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::repo-signature-required:
 	 * @client: the #PkClient instance that emitted the signal
+	 * @package_id: the package_id of the package
 	 * @repository_name: the name of the repository
 	 * @key_url: the URL of the repository
 	 * @key_userid: the user signing the repository
@@ -3118,6 +3138,22 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	/**
+	 * PkClient::eula-required:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @eula_id: the EULA id, e.g. <literal>vmware5_single_user</literal>
+	 * @package_id: the package_id of the package
+	 * @vendor_name: the Vendor name, e.g. Acme Corp.
+	 * @license_agreement: the text of the license agreement
+	 *
+	 * The ::eula signal is emitted when the transaction needs to fail for a EULA prompt.
+	 **/
+	signals [PK_CLIENT_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, eula_required),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	/**
 	 * PkClient::repo-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3276,6 +3312,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
 				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "EulaRequired",
+				        G_CALLBACK (pk_client_eula_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
@@ -3428,6 +3466,11 @@ pk_client_init (PkClient *client)
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_INVALID);
+
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Files */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
@@ -3694,6 +3737,7 @@ libst_client (LibSelfTest *test)
 	if (!ret) {
 		libst_failed (test, "failed to set tid: %s", error->message);
 		g_error_free (error);
+		error = NULL;
 	}
 
 	libst_loopwait (test, 5000);
@@ -3702,8 +3746,57 @@ libst_client (LibSelfTest *test)
 	}
 	libst_success (test, "cloned in %i", libst_elapsed (test));
 
+	/************************************************************/
+	libst_title (test, "cancel a finished task");
+	ret = pk_client_cancel (client, &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, "did not cancel finished task");
+	} else {
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+	}
+
 	g_object_unref (client);
 	g_object_unref (client_copy);
+
+	/************************************************************/
+	libst_title (test, "set a made up TID");
+	client = pk_client_new ();
+	ret = pk_client_set_tid (client, "/made_up_tid", &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, NULL);
+	} else {
+		if (error == NULL) {
+			libst_failed (test, "error not set and retval false");
+		}
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+
+	/************************************************************/
+	libst_title (test, "cancel a non running task");
+	ret = pk_client_cancel (client, &error);
+	if (ret) {
+		if (error != NULL) {
+			libst_failed (test, "error set and retval true");
+		}
+		libst_success (test, "did not cancel non running task");
+	} else {
+		if (error == NULL) {
+			libst_failed (test, "error not set and retval false");
+		}
+		libst_failed (test, "error %s", error->message);
+		g_error_free (error);
+		error = NULL;
+	}
+	g_object_unref (client);
 
 	libst_end (test);
 }

@@ -69,6 +69,7 @@ struct _PkTaskListPrivate
 
 typedef enum {
 	PK_TASK_LIST_CHANGED,
+	PK_TASK_LIST_STATUS_CHANGED,
 	PK_TASK_LIST_MESSAGE,
 	PK_TASK_LIST_FINISHED,
 	PK_TASK_LIST_ERROR_CODE,
@@ -167,8 +168,8 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	item->status = status;
 	g_free (tid);
 
-	pk_debug ("emit task-list-changed");
-	g_signal_emit (tlist, signals [PK_TASK_LIST_CHANGED], 0);
+	pk_debug ("emit status-changed");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
 }
 
 /**
@@ -317,7 +318,7 @@ pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
-	pk_debug ("emit task-list-changed");
+	pk_debug ("emit changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
 }
 
@@ -346,18 +347,34 @@ pk_task_list_class_init (PkTaskListClass *klass)
 	object_class->finalize = pk_task_list_finalize;
 
 	/**
-	 * PkTaskList::task-list-changed:
+	 * PkTaskList::changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
 	 *
-	 * The ::task-list-changed signal is emitted when the transaction list has changed
+	 * The ::changed signal is emitted when the transaction list has changed
 	 **/
 	signals [PK_TASK_LIST_CHANGED] =
-		g_signal_new ("task-list-changed",
+		g_signal_new ("changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_STRUCT_OFFSET (PkTaskListClass, changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkTaskList::status-changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 *
+	 * The ::status-changed signal is emitted when one of the status' of the transaction list
+	 * clients has changed
+	 **/
+	signals [PK_TASK_LIST_STATUS_CHANGED] =
+		g_signal_new ("status-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
 	/**
 	 * PkTaskList::message:
-	 * @client: the #PkTaskList instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
 	 * @details: the non-localised message details
 	 *
@@ -372,7 +389,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
 	/**
 	 * PkTaskList::finished:
-	 * @client: the #PkTaskList instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @exit: the #PkExitEnum status value, e.g. PK_EXIT_ENUM_SUCCESS
 	 * @runtime: the time in seconds the transaction has been running
 	 *
@@ -386,7 +404,8 @@ pk_task_list_class_init (PkTaskListClass *klass)
 			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_UINT);
 	/**
 	 * PkClient::error-code:
-	 * @client: the #PkClient instance that emitted the signal
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
 	 * @code: the #PkErrorCodeEnum of the error, e.g. PK_ERROR_ENUM_DEP_RESOLUTION_FAILED
 	 * @details: the non-locaised details about the error
 	 *

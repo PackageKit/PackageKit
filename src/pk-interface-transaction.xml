@@ -30,6 +30,7 @@
       <arg type="s" name="package" direction="out"/>
     </method>
     <method name="GetPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="filter" direction="in"/>
     </method>
     <method name="GetProgress">
@@ -199,6 +200,12 @@
       <arg type="s" name="key_fingerprint" direction="out"/>
       <arg type="s" name="key_timestamp" direction="out"/>
       <arg type="s" name="type" direction="out"/>
+    </signal>
+    <signal name="EulaRequired">
+      <arg type="s" name="eula_id" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="vendor_name" direction="out"/>
+      <arg type="s" name="license_agreement" direction="out"/>
     </signal>
     <signal name="RequireRestart">
       <arg type="s" name="type" direction="out"/>

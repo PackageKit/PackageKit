@@ -1175,10 +1175,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
 
         for repo in self.yumbase.repos.repos.values():
-            if repo.isEnabled():
-                self.RepoDetail(repo.id,repo.name,True)
-            else:
-                self.RepoDetail(repo.id,repo.name,False)
+            if filters != FILTER_NOT_DEVELOPMENT or not self._is_development_repo(repo.id):
+                if repo.isEnabled():
+                    self.RepoDetail(repo.id,repo.name,True)
+                else:
+                    self.RepoDetail(repo.id,repo.name,False)
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
@@ -1501,6 +1502,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if basename == pkg.name:
             return True
 
+        return False
+
+    def _is_development_repo(self, repo):
+        if repo.endswith('-debuginfo'):
+            return True
+        if repo.endswith('-testing'):
+            return True
+        if repo.endswith('-debug'):
+            return True
+        if repo.endswith('-development'):
+            return True
+        if repo.endswith('-source'):
+            return True
         return False
 
     def _buildGroupDict(self):

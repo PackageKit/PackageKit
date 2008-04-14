@@ -514,18 +514,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
-    def get_packages(self,filters,showdesc='no'):
+    def get_packages(self,filters):
         '''
         Search for yum packages
         @param searchlist: The yum package fields to search in
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
-        showDesc = (showdesc == 'yes' or showdesc == 'only' )
-        showPkg = (showdesc != 'only')
-        print showDesc,showPkg
         try:
             fltlist = filters.split(';')
             available = []
@@ -533,24 +532,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in self.yumbase.rpmdb:
                     if self._do_extra_filtering(pkg,fltlist):
-                        if showPkg:
-                            self._show_package(pkg, INFO_INSTALLED)
-                        if showDesc:
-                            self._show_description(pkg)
-                        
+                        self._show_package(pkg, INFO_INSTALLED)
 
-        # Now show available packages.
+            # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
                     if self._do_extra_filtering(pkg,fltlist):
-                        if showPkg:
-                            self._show_package(pkg, INFO_AVAILABLE)
-                        if showDesc:
-                            self._show_description(pkg)
+                        self._show_package(pkg, INFO_AVAILABLE)
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
-
     
     def search_file(self,filters,key):
         '''
@@ -577,7 +568,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.repos.populateSack(mdtype='filelists')
             matches = self.yumbase.pkgSack.searchFiles(key)
             for pkg in matches:
-                if found.has_key(str(pkg)):
+                if not found.has_key(str(pkg)):
                     if self._do_extra_filtering(pkg, fltlist):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
@@ -684,10 +675,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     for txmbr in self.yumbase.tsInfo:
                         if txmbr.po.name != pkg.name:
                             self._show_package(txmbr.po,INFO_INSTALLED)
-        else:
-            self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
-                        
-                                
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
@@ -773,6 +760,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.percentage(None)
         self.status(STATUS_INFO)
 
+        fltlist = filters.split(';')
         name = package.split(';')[0]
         pkg,inst = self._findPackage(package)
         results = {}
@@ -785,10 +773,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repoid)
 
-                if self._is_inst(pkg):
+                if self._is_inst(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                     self.package(id, INFO_INSTALLED, pkg.summary)
                 else:
-                    if self._installable(pkg):
+                    if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
                         self.package(id, INFO_AVAILABLE, pkg.summary)
 
     def update_system(self):
