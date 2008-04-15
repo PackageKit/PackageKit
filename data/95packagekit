@@ -7,8 +7,6 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-. /usr/lib/pm-utils/functions
-
 case "$1" in
 	thaw|resume)
 		# get PackageKit to invalidate its caches and get new updates

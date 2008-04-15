@@ -480,6 +480,8 @@ setup_vf_progress (struct vf_progress *vf_progress, TsData *td)
 	vf_progress->free = NULL;
 
 	vfile_configure (VFILE_CONF_VERBOSE, &verbose);
+	vfile_configure (VFILE_CONF_STUBBORN_NRETRIES, 5);
+
 	poldek_configure (ctx, POLDEK_CONF_VFILEPROGRESS, vf_progress);
 }
 
@@ -1089,7 +1091,12 @@ poldek_backend_log (void *data, int pri, char *message)
 	PkBackend	*backend;
 
 	backend = pk_backend_thread_get_backend (thread);
-	if (msg) {
+
+	/* catch vfff messages */
+	if (g_str_has_prefix (message, "vfff: ")) {
+		// 'vfff: unable to connect to ftp.pld-linux.org:21: Connection refused'
+		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, "%s", message);
+	} else if (msg) {
 
 		if (strcmp (msg+(2*sizeof(char)), "equal version installed, skipped\n") == 0)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, "Package already installed");
@@ -2020,6 +2027,133 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * backend_update_system:
+ **/
+static gboolean
+backend_update_system_thread (PkBackendThread *thread, gpointer data)
+{
+	TsData			*td = (TsData *)data;
+	PkBackend		*backend;
+	struct vf_progress	vf_progress;
+	struct poldek_ts	*ts;
+	struct poclidek_rcmd	*rcmd;
+	tn_array		*upkgs;
+	gint			i;
+	gboolean		update_cancelled = FALSE;
+
+	setup_vf_progress (&vf_progress, td);
+
+	/* get current backend */
+	backend = pk_backend_thread_get_backend (thread);
+	g_return_val_if_fail (backend != NULL, FALSE);
+
+	/* setup callbacks */
+	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
+
+	/* get packages to update */
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	rcmd = poclidek_rcmd_new (cctx, NULL);
+
+	if (poclidek_rcmd_execline (rcmd, "cd /all-avail; ls -q -u")) {
+		upkgs = poclidek_rcmd_get_packages (rcmd);
+
+		/* return only the newest packages */
+		do_newest (upkgs);
+
+		/* remove from array packages marked as blocked */
+		i = 0;
+
+		while (i < n_array_size (upkgs)) {
+			struct pkg	*pkg = n_array_nth (upkgs, i);
+
+			if (pkg->flags & PKG_HELD) {
+				n_array_remove_nth (upkgs, i);
+				continue;
+			}
+
+			i++;
+		}
+
+		poclidek_rcmd_free (rcmd);
+
+		/* start */
+		pk_backend_set_percentage (backend, 1);
+		td->pd->stepvalue = (float)100 / (float)n_array_size (upkgs);
+
+		for (i = 0; i < n_array_size (upkgs); i++) {
+			struct pkg	*pkg = n_array_nth (upkgs, i);
+			gchar		*command;
+
+			pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+
+			pk_backend_set_sub_percentage (backend, 0);
+
+			ts = poldek_ts_new (ctx, 0);
+			rcmd = poclidek_rcmd_new (cctx, ts);
+
+			command = g_strdup_printf ("upgrade %s-%s-%s.%s", pkg->name, pkg->ver, pkg->rel, pkg_arch (pkg));
+
+			if (!poclidek_rcmd_execline (rcmd, command)) {
+				gchar	*error;
+
+				error = g_strdup_printf ("Cannot update %s-%s-%s.%s", pkg->name, pkg->ver, pkg->rel, pkg_arch (pkg));
+
+				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
+				update_cancelled = TRUE;
+
+				g_free (error);
+			}
+
+			g_free (command);
+
+			poclidek_rcmd_free (rcmd);
+			poldek_ts_free (ts);
+
+			if (update_cancelled)
+				break;
+		}
+
+		td->pd->percentage = (gint)((float)(i + 1) * td->pd->stepvalue);
+
+		if (td->pd->percentage > 1)
+			pk_backend_set_percentage (backend, td->pd->percentage);
+	}
+
+	if (!update_cancelled)
+		pk_backend_set_percentage (backend, 100);
+
+	g_free (td->pd);
+	g_free (td);
+
+	pk_backend_finished (backend);
+
+	return TRUE;
+}
+
+static void
+backend_update_system (PkBackend *backend)
+{
+	TsData	*data = g_new0 (TsData, 1);
+
+	g_return_if_fail (backend != NULL);
+
+	if (pk_network_is_online (network) == FALSE) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update system when offline!");
+		pk_backend_finished (backend);
+
+		g_free (data);
+
+		return;
+	}
+
+	data->pd = g_new0 (PercentageData, 1);
+	data->type = TS_TYPE_ENUM_UPDATE;
+
+	pk_backend_thread_create (thread, backend_update_system_thread, data);
+}
+
+/**
  * backend_get_repo_list:
  */
 static void
@@ -2083,7 +2217,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,				/* search_name */
 	NULL,						/* service pack */
 	backend_update_packages,			/* update_packages */
-	NULL,						/* update_system */
+	backend_update_system,				/* update_system */
 	NULL						/* what_provides */
 );
 
