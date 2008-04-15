@@ -297,6 +297,13 @@
             <entry><literal>repo-configuration-error</literal></entry>
             <entry>One of the enabled repositories has invalid configuration</entry>
           </row>
+	  <row>
+	    <entry><literal>repo-not-available</literal></entry>
+	    <entry>
+	      There was a (possibly transient) problem connecting to a
+	      repository
+	    </entry>
+	  </row>
           <row>
             <entry><literal>cannot-remove-system-package</literal></entry>
             <entry>

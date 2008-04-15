@@ -1393,7 +1393,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         if issubclass(tb, (yum.Errors.RepoError, IOError)):
             # Unhandled Repo error, can be network problems
-            self.error(ERROR_NO_NETWORK,"Problem with loading repository metadata, this can be caused by network problems or repository misconfigurations")
+            self.error(ERROR_REPO_NOT_AVAILABLE, "Problem connecting to repository, this can be caused by network problems or a misconfigured repository")
             return True
         else: # Do the default stuff
             return False
