@@ -1073,6 +1073,7 @@ main (int argc, char *argv[])
 	gchar *text;
 	ret = FALSE;
 	gboolean maybe_sync = TRUE;
+	PkFilterEnum filters = 0;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -1120,6 +1121,8 @@ main (int argc, char *argv[])
 	/* Save the usage string in case command parsing fails. */
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 	g_option_context_free (context);
+
+	pk_debug_init (verbose);
 
 	if (program_version) {
 		g_print (VERSION "\n");
@@ -1172,10 +1175,10 @@ main (int argc, char *argv[])
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
 
-	PkFilterEnum filters = 0;
 	if (filter != NULL) {
 		filters = pk_filter_enums_from_text (filter);
 	}
+	pk_debug ("filter=%s, filters=%i", filter, filters);
 
 	mode = argv[1];
 	if (argc > 2) {
