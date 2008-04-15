@@ -544,13 +544,13 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
 		zypp::ResPool pool = zypp::ResPool::instance ();
 		for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
-			if (it->status () == zypp::ResStatus::toBeInstalled && !((*it)->licenseToConfirm ().empty ())) {
+			if (it->status ().isToBeInstalled () && !(it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).empty ())) {
 				gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
 				pk_backend_eula_required (backend,
 						"",	//eula_id
 						package_id,
 						(*it)->vendor ().c_str (),
-						(*it)->licenseToConfirm ().c_str ()); 
+						it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ()); 
 				pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 				g_free (package_id);
 			}
