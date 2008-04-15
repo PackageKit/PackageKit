@@ -743,6 +743,7 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 	zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
 	
 	gchar *bugzilla = new gchar ();
+	gchar *cve = new gchar ();
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
@@ -752,10 +753,22 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 			restart = PK_RESTART_ENUM_SESSION;
 		}
 
-		zypp::Patch::ReferenceIterator it = patch->referencesBegin ();
-
-		if ( it != patch->referencesEnd ())
-			bugzilla = g_strdup(it.href ().c_str ());
+		// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
+		for (zypp::Patch::ReferenceIterator it = patch->referencesBegin (); it != patch->referencesEnd (); it ++) {
+			if (it.type () == "bugzilla") {
+				if (strlen (bugzilla) == 0) {
+					bugzilla = g_strconcat (it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}else{
+					bugzilla = g_strconcat (bugzilla, ";", it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}
+			}else{
+				if (strlen (cve) == 0) {
+					cve = g_strconcat (it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}else{
+					cve = g_strconcat (cve, it.href ().c_str (), ";", it.title ().c_str (), ";", (gchar *)NULL);
+				}
+			}
+		}
 		
 		zypp::sat::SolvableSet content = patch->contents ();
 
@@ -771,11 +784,12 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 				  obsoletes, 	// CURRENTLY CAUSES SEGFAULT obsoletes,
 				  "", 		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
 				  bugzilla, 	// bugzilla
-				  "", 		// cve
+				  cve, 		// cve
 				  restart,
 				  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
 	g_free (bugzilla);
+	g_free (cve);
 	g_free (obsoletes);
 	g_free (updates);
 	pk_package_id_free (pi);
