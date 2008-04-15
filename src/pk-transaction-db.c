@@ -496,7 +496,7 @@ pk_transaction_db_init (PkTransactionDb *tdb)
 	create_file = g_file_test (PK_TRANSACTION_DB_FILE, G_FILE_TEST_EXISTS);
 
 	pk_debug ("trying to open database '%s'", PK_TRANSACTION_DB_FILE);
-	rc = sqlite3_open_v2 (PK_TRANSACTION_DB_FILE, &tdb->priv->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	rc = sqlite3_open (PK_TRANSACTION_DB_FILE, &tdb->priv->db);
 	if (rc) {
 		pk_error ("Can't open database: %s\n", sqlite3_errmsg (tdb->priv->db));
 		sqlite3_close (tdb->priv->db);
