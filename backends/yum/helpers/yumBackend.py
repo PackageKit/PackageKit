@@ -1005,8 +1005,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              'GPG')
                 self.error(ERROR_GPG_FAILURE,"GPG key not imported.")
             except yum.Errors.YumBaseError, ye:
-                retmsg = "Error in Transaction Processing;" + self._format_msgs(ye.value)
-                self.error(ERROR_TRANSACTION_ERROR,retmsg)
+                message = self._format_msgs(ye.value)
+                if message.find ("conflicts with file") != -1:
+                    self.error(ERROR_FILE_CONFLICTS,message)
+                else:
+                    self.error(ERROR_TRANSACTION_ERROR,message)
 
     def remove(self, allowdep, package):
         '''
