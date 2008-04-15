@@ -220,6 +220,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
               "kernel-xen0", "kernel-xenU", "kernel-xen", "kernel-xen-guest",
               "glibc", "hal", "dbus", "xen")
 
+    def handle_repo_error(func):
+        def wrapper(*args, **kwargs):
+            self = args[0]
+
+            try:
+                func(*args, **kwargs)
+            except yum.Errors.RepoError,e:
+                self._refresh_yum_cache()
+            
+                try:
+                    func(*args, **kwargs)
+                except yum.Errors.RepoError, e:
+                    self.error(ERROR_NO_CACHE,"Package cache is invalid and could not be rebuilt .")
+
+        return wrapper
+
     def __init__(self,args,lock=True):
         signal.signal(signal.SIGQUIT, sigquit)
         PackageKitBaseBackend.__init__(self,args)
@@ -292,6 +308,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         ''' gets the NEVRA for a pkg '''
         return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
 
+    @handle_repo_error
     def _do_search(self,searchlist,filters,key):
         '''
         Search for yum packages
@@ -299,29 +316,24 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         @param filters: package types to search (all,installed,available)
         @param key: key to seach for
         '''
-        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
-        try:
-            res = self.yumbase.searchGenerator(searchlist, [key])
-            fltlist = filters.split(';')
-            installed_nevra = [] # yum returns packages as available even when installed
-            pkg_list = [] # only do the second iteration on not installed pkgs
+        res = self.yumbase.searchGenerator(searchlist, [key])
+        fltlist = filters.split(';')
+        installed_nevra = [] # yum returns packages as available even when installed
+        pkg_list = [] # only do the second iteration on not installed pkgs
 
-            for (pkg,values) in res:
-                if pkg.repo.id == 'installed':
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
-                        installed_nevra.append(self._get_nevra(pkg))
-                else:
-                    pkg_list.append(pkg)
-            for pkg in pkg_list:
-                nevra = self._get_nevra(pkg)
-                if nevra not in installed_nevra:
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+        for (pkg,values) in res:
+            if pkg.repo.id == 'installed':
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_INSTALLED)
+                    installed_nevra.append(self._get_nevra(pkg))
+            else:
+                pkg_list.append(pkg)
+        for pkg in pkg_list:
+            nevra = self._get_nevra(pkg)
+            if nevra not in installed_nevra:
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_AVAILABLE)
 
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -363,15 +375,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _check_for_gui(self,pkg):
         '''  Check if the GUI_KEYS regex matches any package requirements'''
-        try:
-            for req in pkg.requires:
-                reqname = req[0]
-                if GUI_KEYS.search(reqname):
-                    return True
-            return False
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
+        for req in pkg.requires:
+            reqname = req[0]
+            if GUI_KEYS.search(reqname):
+                return True
+        return False
 
     def _do_devel_filtering(self,flt,pkg):
         isDevel = False
@@ -432,7 +440,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         searchlist = ['name']
         self.status(STATUS_QUERY)
-        self._do_search(searchlist, filters, key)
+        self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
+
+        try:
+            self._do_search(searchlist, filters, key)
+        except RefreshYumCacheFailed, e:
+            return
 
     def search_details(self,filters,key):
         '''
@@ -444,7 +457,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         searchlist = ['name', 'summary', 'description', 'group']
         self.status(STATUS_QUERY)
-        self._do_search(searchlist, filters, key)
+
+        try:
+            self._do_search(searchlist, filters, key)
+        except RefreshYumCacheFailed, e:
+            return
 
     def _buildGroupDict(self):
         pkgGroups= {}
@@ -464,6 +481,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
 
+    @handle_repo_error
     def search_group(self,filters,key):
         '''
         Implement the {backend}-search-group functionality
@@ -510,10 +528,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         except yum.Errors.GroupsError,e:
             self.error(ERROR_GROUP_NOT_FOUND,e)
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
 
+    @handle_repo_error
     def get_packages(self,filters):
         '''
         Search for yum packages
@@ -525,24 +541,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
-        try:
-            fltlist = filters.split(';')
-            available = []
-            count = 1
-            if FILTER_NOT_INSTALLED not in fltlist:
-                for pkg in self.yumbase.rpmdb:
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
 
-            # Now show available packages.
-            if FILTER_INSTALLED not in fltlist:
-                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                    if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
-    
+        fltlist = filters.split(';')
+        available = []
+        count = 1
+        if FILTER_NOT_INSTALLED not in fltlist:
+            for pkg in self.yumbase.rpmdb:
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_INSTALLED)
+
+        # Now show available packages.
+        if FILTER_INSTALLED not in fltlist:
+            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                if self._do_extra_filtering(pkg,fltlist):
+                    self._show_package(pkg, INFO_AVAILABLE)
+
+    @handle_repo_error
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
@@ -573,6 +587,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self._show_package(pkg, INFO_AVAILABLE)
                         found[str(pkg)] = 1
 
+    @handle_repo_error
     def what_provides(self, filters, provides_type, search):
         '''
         Implement the {backend}-what-provides functionality
@@ -651,8 +666,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return reqlist
         
-        
-            
     def get_requires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
@@ -831,6 +844,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         except yum.Errors.YumBaseError, e:
             self.error(ERROR_UNKNOWN,str(e))
 
+    @handle_repo_error
     def resolve(self, filters, name):
         '''
         Implement the {backend}-resolve functionality
@@ -843,28 +857,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_QUERY)
 
         fltlist = filters.split(';')
-        try:
-            # Get installed packages
-            installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
-            if FILTER_NOT_INSTALLED not in fltlist:
-                for pkg in installedByKey:
-                    self._show_package(pkg,INFO_INSTALLED)
-            # Get available packages
-            if FILTER_INSTALLED not in fltlist:
-                for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
-                    if pkg.name == name:
-                        show = True
-                        for instpo in installedByKey:
-                            # Check if package have a smaller & equal EVR to a inst pkg
-                            if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
-                                show = False
-                        if show:
-                            self._show_package(pkg,INFO_AVAILABLE)
-                            break
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
-            
+        # Get installed packages
+        installedByKey = self.yumbase.rpmdb.searchNevra(name=name)
+        if FILTER_NOT_INSTALLED not in fltlist:
+            for pkg in installedByKey:
+                self._show_package(pkg,INFO_INSTALLED)
+        # Get available packages
+        if FILTER_INSTALLED not in fltlist:
+            for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
+                if pkg.name == name:
+                    show = True
+                    for instpo in installedByKey:
+                        # Check if package have a smaller & equal EVR to a inst pkg
+                        if pkg.EVR < instpo.EVR or pkg.EVR == instpo.EVR:
+                            show = False
+                    if show:
+                        self._show_package(pkg,INFO_AVAILABLE)
+                        break
+
+    @handle_repo_error
     def install(self, packages):
         '''
         Implement the {backend}-install functionality
@@ -1097,6 +1108,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return INFO_UNKNOWN
 
+    @handle_repo_error
     def get_updates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
@@ -1109,22 +1121,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         fltlist = filters.split(';')
 
-        try:
-            ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
-            md = self.updateMetadata
-            for pkg in ygl.updates:
-                if self._do_extra_filtering(pkg, fltlist):
-                    # Get info about package in updates info
-                    notice = md.get_notice((pkg.name, pkg.version, pkg.release))
-                    if notice:
-                        status = self._get_status(notice)
-                        self._show_package(pkg,status)
-                    else:
-                        self._show_package(pkg,INFO_NORMAL)
-        except yum.Errors.RepoError,e:
-            self._refresh_yum_cache()
-            self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
-                
+        ygl = self.yumbase.doPackageLists(pkgnarrow='updates')
+        md = self.updateMetadata
+        for pkg in ygl.updates:
+            if self._do_extra_filtering(pkg, fltlist):
+                # Get info about package in updates info
+                notice = md.get_notice((pkg.name, pkg.version, pkg.release))
+                if notice:
+                    status = self._get_status(notice)
+                    self._show_package(pkg,status)
+                else:
+                    self._show_package(pkg,INFO_NORMAL)
 
     def repo_enable(self, repoid, enable):
         '''
