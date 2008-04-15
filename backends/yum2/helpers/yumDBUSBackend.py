@@ -374,7 +374,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._cancelled.clear()
             return True
         return False
-        
+
     @threaded
     @async
     def doSearchName(self, filters, search):
@@ -840,7 +840,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
             self.Finished(EXIT_FAILED)
             return
-        
+
         self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
@@ -1344,7 +1344,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
-        
+
         fltlist = filters.split(';')
 
         if not FILTER_NOT_INSTALLED in fltlist:
@@ -1356,7 +1356,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
                 if self._do_extra_filtering(result, fltlist):
                     self._show_package(result,INFO_AVAILABLE)
-                
+
         if not FILTER_INSTALLED in fltlist:
             results = self.yumbase.rpmdb.searchProvides(search)
             for result in results:
@@ -1595,8 +1595,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
-        
-        
+
+
 
     def _installable(self, pkg, ematch=False):
 
