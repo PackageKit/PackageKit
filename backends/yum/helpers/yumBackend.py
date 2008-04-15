@@ -228,7 +228,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 func(*args, **kwargs)
             except yum.Errors.RepoError,e:
                 self._refresh_yum_cache()
-            
+
                 try:
                     func(*args, **kwargs)
                 except yum.Errors.RepoError, e:
@@ -633,11 +633,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if len(id.split(';')) > 1:
             # Split up the id
             (n,idver,a,d) = self.get_package_from_id(id)
-            # get e,v,r from package id version 
+            # get e,v,r from package id version
             e,v,r = self._getEVR(idver)
         else:
             n = id
-            e = v = r = a = None  
+            e = v = r = a = None
         # search the rpmdb for the nevra
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
         # if the package is found, then return it
@@ -653,15 +653,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _get_pkg_requirements(self,pkg,reqlist=[] ):
         pkgs = self.yumbase.rpmdb.searchRequires(pkg.name)
-        print 
         reqlist.extend(pkgs)
-        print "DEBUG: ", reqlist
         if pkgs:
             for po in pkgs:
                 self._get_pkg_requirements(po,reqlist)
         else:
             return reqlist
-        
+
     def get_requires(self,filters,package,recursive):
         '''
         Print a list of requires for a given package
@@ -906,8 +904,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 #TODO Add code to send a message here
                 self.message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
 
-
-
     def install_file (self, inst_file):
         '''
         Implement the {backend}-install_file functionality
@@ -936,7 +932,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
-            
 
     def update(self, packages):
         '''
@@ -972,7 +967,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 break
 
     def _format_msgs(self,msgs):
-        if isinstance(msgs, basestring):        
+        if isinstance(msgs, basestring):
             msgs = msgs.split('\n')
         return ";".join(msgs)
 
@@ -1065,7 +1060,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
 
-    def _show_description(self,pkg):        
+    def _show_description(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self.get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
@@ -1255,7 +1250,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     _updateMetadata = None
     updateMetadata = property(fget=_get_update_metadata)
-    
+
     def _format_str(self,str):
         """
         Convert a multi line string to a list separated by ';'
@@ -1295,7 +1290,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 urls[typ].append("%s;%s" % (href,title))
             else:
                 urls['vendor'].append("%s;%s" % (ref['href'],ref['title']))
-                        
+
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
                 reboot = 'system'
@@ -1417,7 +1412,7 @@ class DownloadCallback( BaseMeter ):
         self.numPkgs = float(len(self.pkgs))
         self.bump = numPct/self.numPkgs
         self.totalPct = startPct
-        
+
     def _getPackage(self,name):
         if self.pkgs:
             for pkg in self.pkgs:
@@ -1497,7 +1492,7 @@ class DownloadCallback( BaseMeter ):
                     else:
                         typ = 'unknown'
                     self.base.metadata(typ,name)
-            self.base.sub_percentage(0)        
+            self.base.sub_percentage(0)
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:
                 self.lastPct = pct
@@ -1584,7 +1579,6 @@ class ProcessTransPackageKitCallback:
             self.base.percentage(50)
             pass
 
-
 class DepSolveCallback(object):
 
     # XXX takes a PackageKitBackend so we can call StatusChanged on it.
@@ -1604,7 +1598,6 @@ class DepSolveCallback(object):
 
     def __getattr__(self, x):
         return self._do_nothing
-
 
 class PackageKitYumBase(yum.YumBase):
     """
