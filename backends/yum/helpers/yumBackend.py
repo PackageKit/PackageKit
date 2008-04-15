@@ -513,24 +513,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)# Setup Yum Config
         self.yumbase.conf.cache = 1 # Only look in cache.
+        package_list = [] #we can't do emitting as found if we are post-processing
+        fltlist = filters.split(';')
+
         try:
-            fltlist = filters.split(';')
-            available = []
-            count = 1
+            # Now show installed packages.
             if FILTER_NOT_INSTALLED not in fltlist:
                 for pkg in self.yumbase.rpmdb:
                     if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_INSTALLED)
+                        package_list.append((pkg,INFO_INSTALLED))
 
             # Now show available packages.
             if FILTER_INSTALLED not in fltlist:
                 for pkg in self.yumbase.pkgSack.returnNewestByNameArch():
                     if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+                        package_list.append((pkg,INFO_AVAILABLE))
         except yum.Errors.RepoError,e:
             self._refresh_yum_cache()
             self.error(ERROR_NO_CACHE,"Package cache was invalid and has been rebuilt.")
-    
+
+        # basename filter if specified
+        if FILTER_BASENAME in fltlist:
+            for (pkg,status) in self._basename_filter(package_list):
+                self._show_package(pkg,status)
+        else:
+            for (pkg,status) in package_list:
+                self._show_package(pkg,status)
+
     def search_file(self,filters,key):
         '''
         Implement the {backend}-search-file functionality
