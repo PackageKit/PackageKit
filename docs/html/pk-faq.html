@@ -28,7 +28,7 @@
 <li><a href="#remaining-times">Why are the remaining times sometimes wildly wrong?</a></li>
 <li><a href="#different-options">How will PackageKit support all the different options?</a></li>
 <li><a href="#error-codes">Error codes are different on each backend?</a></li>
-<li><a href="#user-interaction">Installation an application that needs user interaction?</a></li>
+<li><a href="#user-interaction">Installing packages needs user interaction!</a></li>
 <li><a href="#up2date">Does PackageKit replace up2date?</a></li>
 <li><a href="#system-daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
 <li><a href="#dependencies">How does PackageKit handle dependencies?</a></li>
@@ -669,6 +669,8 @@ EULAs should preferably be shown per-user - i.e. the first time an application i
 <p>
 PackageKit will not install packages with broken maintainer scripts that
 require a stdin.
+<a href="http://www.debian.org/doc/debian-policy/ch-binary.html#s-maintscriptprompt">Debian</a>
+policy clearly says that prompting on <code>stdin</code> instead of using debconf is deprecated.
 If this is attempted the backend should detect this and error out of the
 transaction with <code>PK_ERROR_ENUM_BROKEN_PACKAGE</code>.
 <b>We cannot and will not ask the user for random standard input.</b>
