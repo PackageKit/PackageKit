@@ -232,7 +232,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 try:
                     func(*args, **kwargs)
                 except yum.Errors.RepoError, e:
-                    self.error(ERROR_NO_CACHE,"Package cache is invalid and could not be rebuilt .")
+                    self.error(ERROR_NO_CACHE,"Package cache is invalid and could not be rebuilt.")
 
         return wrapper
 
@@ -1386,9 +1386,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         to packagekit.
         Overload this method if you what handle special Tracebacks
         '''
-        if issubclass(tb, (yum.Errors.RepoError, IOError)):
+        if issubclass(tb, yum.Errors.RepoError):
             # Unhandled Repo error, can be network problems
-            self.error(ERROR_REPO_NOT_AVAILABLE, "Problem connecting to repository, this can be caused by network problems or a misconfigured repository")
+            
+            self.error(ERROR_REPO_NOT_AVAILABLE, "Problem connecting to software source.  This can be caused by network problems or a misconfiguration.")
             return True
         else: # Do the default stuff
             return False
