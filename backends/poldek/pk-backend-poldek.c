@@ -35,6 +35,7 @@
 #include <pkgmisc.h>
 #include <pm/pm.h>
 #include <vfile/vfile.h>
+#include <sigint/sigint.h>
 
 static gchar* poldek_pkg_evr (const struct pkg *pkg);
 static void poldek_backend_package (const struct pkg *pkg, gint status);
@@ -1036,6 +1037,9 @@ search_package (PkBackendThread *thread, gpointer data)
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
+				if (sigint_reached ())
+					break;
+
 				/* check if we have to do development filtering
 				 * (devel or ~devel in filters) */
 				if (pk_enums_contain (d->filters, PK_FILTER_ENUM_DEVELOPMENT) ||
@@ -1075,6 +1079,19 @@ search_package (PkBackendThread *thread, gpointer data)
 		poclidek_rcmd_free (cmd);
 	}
 
+	if (sigint_reached ()) {
+		switch (d->mode) {
+			case SEARCH_ENUM_NAME:
+			case SEARCH_ENUM_GROUP:
+			case SEARCH_ENUM_DETAILS:
+			case SEARCH_ENUM_FILE:
+				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Search cancelled.");
+				break;
+			default:
+				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Transaction cancelled.");
+		}
+	}
+
 	g_free (search_cmd);
 	g_free (d->search);
 	g_free (d);
@@ -1106,6 +1123,17 @@ poldek_backend_log (void *data, int pri, char *message)
 }
 
 static void
+poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset)
+{
+	g_return_if_fail (backend != NULL);
+
+	if (reset)
+		sigint_reset ();
+
+	pk_backend_set_allow_cancel (backend, allow_cancel);
+}
+
+static void
 do_poldek_init (void) {
 	poldeklib_init ();
 	
@@ -1131,10 +1159,18 @@ do_poldek_init (void) {
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
+
+	/* load information about installed and available packages */
+	poclidek_load_packages (cctx, POCLIDEK_LOAD_ALL);
+
+	sigint_init ();
 }
 
 static void
-do_poldek_destroy (void) {
+do_poldek_destroy (void)
+{
+	sigint_destroy ();
+
 	poclidek_free (cctx);
 	poldek_free (ctx);
 
@@ -1188,10 +1224,24 @@ static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
+
 	return (PK_FILTER_ENUM_NEWEST |
 		PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
+}
+
+/**
+ * backend_get_cancel:
+ **/
+static void
+backend_get_cancel (PkBackend *backend)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+
+	sigint_emit ();
 }
 
 /**
@@ -1249,6 +1299,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
@@ -1312,6 +1363,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_description_thread,
@@ -1390,6 +1442,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_files_thread,
@@ -1407,6 +1460,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_NONE;
 	data->filters = filters;
@@ -1466,6 +1520,7 @@ backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *pac
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
@@ -1554,6 +1609,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_update_detail_thread,
@@ -1588,6 +1644,9 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 			for (i = 0; i < n_array_size (pkgs); i++) {
 				struct pkg	*pkg = n_array_nth (pkgs, i);
 
+				if (sigint_reached ())
+					break;
+
 				/* mark held packages as blocked */
 				if (pkg->flags & PKG_HELD)
 					poldek_backend_package (pkg, PK_INFO_ENUM_BLOCKED);
@@ -1600,6 +1659,9 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 
 	poclidek_rcmd_free (rcmd);
 
+	if (sigint_reached ())
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
+
 	pk_backend_finished (backend);
 
 	return TRUE;
@@ -1611,6 +1673,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
 }
@@ -1682,6 +1745,8 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		pk_backend_finished (backend);
 		return;
 	}
+
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	data->package_id = g_strdup (package_id);
 	data->pd = g_new0 (PercentageData, 1);
@@ -1758,6 +1823,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
@@ -1800,8 +1866,6 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "Package can't be removed!");
 	}
 
-	poclidek_load_packages (cctx, POCLIDEK_LOAD_RELOAD);
-
 	g_free (nvra);
 	g_free (command);
 
@@ -1823,6 +1887,8 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 	g_return_if_fail (backend != NULL);
 
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+
 	data->package_id = g_strdup (package_id);
 	data->allow_deps = allow_deps;
 	pk_backend_thread_create (thread, backend_remove_package_thread, data);
@@ -1839,6 +1905,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_NAME;
 	data->filters = filters;
@@ -1857,6 +1924,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_DETAILS;
 	data->filters = filters;
@@ -1875,6 +1943,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_FILE;
 	data->filters = filters;
@@ -1893,6 +1962,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_GROUP;
 	data->filters = filters;
@@ -1911,6 +1981,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 
 	data->mode = SEARCH_ENUM_NAME;
 	data->filters = filters;
@@ -2019,6 +2090,8 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 		pk_backend_finished (backend);
 		return;
 	}
+
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
@@ -2147,6 +2220,8 @@ backend_update_system (PkBackend *backend)
 		return;
 	}
 
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;
 
@@ -2164,6 +2239,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 
 	sources = poldek_get_sources (ctx);
 
@@ -2193,7 +2269,7 @@ PK_BACKEND_OPTIONS (
 	backend_destroy,				/* destroy */
 	NULL,						/* get_groups */
 	backend_get_filters,				/* get_filters */
-	NULL,						/* cancel */
+	backend_get_cancel,				/* cancel */
 	backend_get_depends,				/* get_depends */
 	backend_get_description,			/* get_description */
 	backend_get_files,				/* get_files */
