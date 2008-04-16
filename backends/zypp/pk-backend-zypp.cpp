@@ -192,7 +192,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         zypp::PoolItem package;
 
         if (solvable.isSystem ()) {
-                zypp::ResPool pool = zypp_build_local_pool ();
+                zypp::ResPool pool = zypp_build_pool (true);
 
                 gboolean found = FALSE;
 
