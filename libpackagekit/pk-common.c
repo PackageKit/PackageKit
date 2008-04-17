@@ -231,9 +231,17 @@ gchar *
 pk_strsafe (const gchar *text)
 {
 	gchar *text_safe;
+	gboolean ret;
 	const gchar *delimiters;
 
 	if (text == NULL) {
+		return NULL;
+	}
+
+	/* is valid UTF8? */
+	ret = g_utf8_validate (text, -1, NULL);
+	if (!ret) {
+		pk_warning ("text '%s' was not valid UTF8!", text);
 		return NULL;
 	}
 
