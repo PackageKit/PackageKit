@@ -44,6 +44,7 @@ static PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_FAILED,			"failed"},
 	{PK_EXIT_ENUM_CANCELLED,		"cancelled"},
 	{PK_EXIT_ENUM_KEY_REQUIRED,		"key-required"},
+	{PK_EXIT_ENUM_EULA_REQUIRED,		"eula-required"},
 	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{0, NULL}
 };

@@ -72,7 +72,8 @@ struct PkTransactionPrivate
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 allow_cancel;
-	gboolean		 emit_key_required;
+	gboolean		 emit_eula_required;
+	gboolean		 emit_signature_required;
 	LibGBus			*libgbus;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -437,9 +438,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* mark not running */
 	transaction->priv->running = FALSE;
 
-	/* if we did ::repo-signature-required, change the error code */
-	if (transaction->priv->emit_key_required) {
+	/* if we did ::repo-signature-required or ::eula-required, change the error code */
+	if (transaction->priv->emit_signature_required) {
 		exit = PK_EXIT_ENUM_KEY_REQUIRED;
+	} else if (transaction->priv->emit_eula_required) {
+		exit = PK_EXIT_ENUM_EULA_REQUIRED;
 	}
 
 	/* invalidate some caches if we succeeded*/
@@ -622,7 +625,7 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *pack
 		       key_fingerprint, key_timestamp, type_text);
 
 	/* we should mark this transaction so that we finish with a special code */
-	transaction->priv->emit_key_required = TRUE;
+	transaction->priv->emit_signature_required = TRUE;
 }
 
 /**
@@ -642,7 +645,7 @@ pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const
 		       eula_id, package_id, vendor_name, license_agreement);
 
 	/* we should mark this transaction so that we finish with a special code */
-	transaction->priv->emit_key_required = TRUE;
+	transaction->priv->emit_eula_required = TRUE;
 }
 
 /**
@@ -2944,7 +2947,8 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
 	transaction->priv->allow_cancel = FALSE;
-	transaction->priv->emit_key_required = FALSE;
+	transaction->priv->emit_eula_required = FALSE;
+	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->dbus_name = NULL;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_key_id = NULL;
