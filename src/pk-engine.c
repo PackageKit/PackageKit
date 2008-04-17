@@ -58,6 +58,7 @@
 #include "pk-marshal.h"
 #include "pk-notify.h"
 #include "pk-restart.h"
+#include "pk-security.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -87,6 +88,7 @@ struct PkEnginePrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
+	PkSecurity		*security;
 	PkNotify		*notify;
 	PkRestart		*restart;
 	PkRoleEnum		 actions;
@@ -488,6 +490,7 @@ pk_engine_init (PkEngine *engine)
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->network = pk_network_new ();
+	engine->priv->security = pk_security_new ();
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
@@ -571,6 +574,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
+	g_object_unref (engine->priv->security);
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
