@@ -87,7 +87,7 @@ Headers and libraries for PackageKit.
 %setup -q
 
 %build
-%configure --enable-yum --enable-yum2 --with-default-backend=yum
+%configure --enable-yum --enable-yum2 --with-default-backend=yum --disable-local
 
 make %{?_smp_mflags}
 
