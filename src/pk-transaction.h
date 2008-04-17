@@ -201,7 +201,7 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_service_pack			(PkTransaction	*transaction,
+gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,
