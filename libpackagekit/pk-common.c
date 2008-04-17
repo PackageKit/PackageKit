@@ -1171,6 +1171,16 @@ libst_common (LibSelfTest *test)
 	g_free (text_safe);
 
 	/************************************************************/
+	libst_title (test, "test replace UTF8 unsafe (okay)");
+	text_safe = pk_strsafe ("Gölas");
+	if (pk_strequal (text_safe, "Richard Hughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid)");
 	text_safe = pk_strsafe ("Richard\tHughes");
 	if (pk_strequal (text_safe, "Richard Hughes")) {
