@@ -562,11 +562,15 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		const char *version = it->edition ().asString ().c_str ();
-		if (strcmp (pi->version, version) == 0) {
+		gchar *version = g_strdup (it->edition ().asString ().c_str ());
+		gchar *arch = g_strdup (it->arch ().c_str ());
+
+		if (strcmp (pi->version, version) == 0 && strcmp (pi->arch, arch) == 0) {
 			package = *it;
 			break;
 		}
+		g_free (version);
+		g_free (arch);
 	}
 
 	delete (v);
@@ -590,7 +594,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 				d->package_id,                          // package_id
 				rpmHeader->tag_license ().c_str (),     // const gchar *license
 				group,                                  // PkGroupEnum group
-				rpmHeader->tag_description ().c_str (), // const gchar *description
+				package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
 				rpmHeader->tag_url (). c_str (),        // const gchar *url
 				(gulong)rpmHeader->tag_archivesize ());        // gulong size
 
