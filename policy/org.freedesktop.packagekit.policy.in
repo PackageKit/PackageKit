@@ -46,6 +46,17 @@
     </defaults>
   </action>
 
+  <action id="org.freedesktop.packagekit.accept-eula">
+    <_description>Accept EULA</_description>
+    <_message>System policy prevents accepting EULA</_message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-accept-eula</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep_always</allow_active>
+    </defaults>
+  </action>
+
   <action id="org.freedesktop.packagekit.update-package">
     <_description>Update package</_description>
     <_message>System policy prevents updating package</_message>
