@@ -95,6 +95,9 @@ gboolean	 pk_transaction_set_tid			(PkTransaction	*transaction,
 							 const gchar	*tid);
 
 /* dbus methods */
+void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
+							 const gchar	*eula_id,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,

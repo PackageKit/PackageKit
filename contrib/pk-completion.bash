@@ -17,6 +17,7 @@
 
 
 __pkcon_commandlist="
+    accept-eula
     get-actions
     get-depends
     get-description

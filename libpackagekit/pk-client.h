@@ -310,6 +310,10 @@ gboolean	 pk_client_cancel			(PkClient	*client,
 gboolean	 pk_client_requeue			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_accept_eula			(PkClient	*client,
+							 const gchar	*eula_id,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
 
 /* repo stuff */
 gboolean	 pk_client_get_repo_list		(PkClient	*client,

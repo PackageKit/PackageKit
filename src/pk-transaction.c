@@ -1079,6 +1079,56 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 }
 
 /**
+ * pk_transaction_accept_eula:
+ *
+ * This should be called when a eula_id needs to be added into an internal db.
+ **/
+void
+pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	const gchar *exit_text;
+	gchar *sender;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* check for sanity */
+	ret = pk_strvalidate (eula_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_ACCEPT_EULA, &error);
+	g_free (sender);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	pk_debug ("AcceptEula method called: %s", eula_id);
+	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "EULA failed to be added");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+	pk_debug ("emitting finished transaction '%s', %i", exit_text, 0);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+
+	dbus_g_method_return (context);
+}
+
+/**
  * pk_transaction_cancel:
  **/
 gboolean

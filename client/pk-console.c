@@ -402,6 +402,13 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 
 	/* have we failed to install, and the gpg key is now installed */
 	if (exit == PK_EXIT_ENUM_KEY_REQUIRED && need_requeue) {
+		pk_debug ("key now installed");
+		return;
+	}
+
+	/* have we failed to install, and the eula key is now installed */
+	if (exit == PK_EXIT_ENUM_EULA_REQUIRED && need_requeue) {
+		pk_debug ("eula now agreed");
 		return;
 	}
 
@@ -778,9 +785,13 @@ static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
 	/* handled */
-	if (need_requeue && error_code == PK_ERROR_ENUM_GPG_FAILURE) {
-		pk_debug ("ignoring GPG error as handled");
-		return;
+	if (need_requeue) {
+		if (error_code == PK_ERROR_ENUM_GPG_FAILURE ||
+		    error_code == PK_ERROR_ENUM_NO_LICENSE_AGREEMENT) {
+			pk_debug ("ignoring %s error as handled", pk_error_enum_to_text (error_code));
+			return;
+		}
+		pk_warning ("set requeue, but did not handle error");
 	}
 	if (awaiting_space) {
 		g_print ("\n");
@@ -866,6 +877,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	/* get user input */
 	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
 	if (!import) {
+		need_requeue = FALSE;
 		g_print ("%s\n", _("Did not import key, task will fail"));
 		return;
 	}
@@ -893,6 +905,8 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 			     const gchar *vendor_name, const gchar *license_agreement, gpointer data)
 {
 	gboolean import;
+	gboolean ret;
+	GError *error = NULL;
 
 	if (awaiting_space) {
 		g_print ("\n");
@@ -906,10 +920,23 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 	/* get user input */
 	import = pk_console_get_prompt (_("Do you agree?"), FALSE);
 	if (!import) {
+		need_requeue = FALSE;
 		g_print ("%s\n", _("Did not agree to licence, task will fail"));
 		return;
 	}
-	g_print ("Importing licences is not yet supported!\n");
+
+	/* accept eula */
+	pk_debug ("accept eula %s", eula_id);
+	ret = pk_client_accept_eula (client_signature, eula_id, &error);
+	/* we succeeded, so wait for the requeue */
+	if (!ret) {
+		pk_warning ("failed to accept eula: %s", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* we accepted eula */
+	need_requeue = TRUE;
 }
 
 /**
@@ -1044,6 +1071,9 @@ pk_console_get_summary (PkRoleEnum roles)
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_WHAT_PROVIDES)) {
 		g_string_append_printf (string, "  %s\n", "what-provides [search]");
+	}
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_ACCEPT_EULA)) {
+		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
 	}
 	return g_string_free (string, FALSE);
 }
@@ -1254,6 +1284,14 @@ main (int argc, char *argv[])
 			goto out;
 		}
 		ret = pk_console_remove_package (client, value, &error);
+
+	} else if (strcmp (mode, "accept-eula") == 0) {
+		if (value == NULL) {
+			g_print (_("You need to specify a eula-id"));
+			goto out;
+		}
+		ret = pk_client_accept_eula (client, value, &error);
+		maybe_sync = FALSE;
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {

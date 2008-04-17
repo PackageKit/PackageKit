@@ -4,6 +4,10 @@
        PackageKit 0.2.0 -->
   <interface name="org.freedesktop.PackageKit.Transaction">
 
+    <method name="AcceptEula">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="eula_id" direction="in"/>
+    </method>
     <method name="Cancel">
     </method>
     <method name="GetAllowCancel">

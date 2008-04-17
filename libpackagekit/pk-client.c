@@ -2432,7 +2432,7 @@ pk_resolve_local_path (const gchar *rel_path)
 /**
  * pk_client_install_file:
  * @client: a valid #PkClient instance
- * @file: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @file_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a file locally, and get the deps from the repositories.
@@ -2548,6 +2548,88 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 }
 
 /**
+ * pk_client_accept_eula_action:
+ **/
+static gboolean
+pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "AcceptEula", error,
+				 G_TYPE_STRING, eula_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
+ * pk_client_accept_eula:
+ * @client: a valid #PkClient instance
+ * @eula_id: the <literal>eula_id</literal> we are agreeing to
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We may want to agree to a EULA dialog if one is presented.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ */
+gboolean
+pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
+{
+	gboolean ret;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
+
+	/* hopefully do the operation first time */
+	ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
+	}
+
+	if (ret) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+
+	return ret;
+}
+
+/**
  * pk_client_repo_enable_action:
  **/
 static gboolean
@@ -2630,6 +2712,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	return ret;
 }
+
+
 
 /**
  * pk_client_repo_set_data_action:
