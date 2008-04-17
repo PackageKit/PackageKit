@@ -1108,6 +1108,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             return INFO_UNKNOWN
 
+    def _is_main_package(self, repo):
+        if repo.endswith('-debuginfo'):
+            return False
+        if repo.endswith('-devel'):
+            return False
+        if repo.endswith('-libs'):
+            return False
+        return True
+
     def _basename_filter(self, package_list):
         '''
         Filter the list so that the number of packages are reduced.
@@ -1137,7 +1146,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 output_list.append((pkg,status))
                 base_list_already_got.append ((base,version))
 
-        #for all the already added output lists, remove the same basename from base_list
+        #for all the ones not yet got, can we match against a non devel match?
+        for (pkg,status,base,version) in base_list:
+            if (base,version) not in base_list_already_got:
+                if self._is_main_package(pkg.name):
+                    output_list.append((pkg,status))
+                    base_list_already_got.append ((base,version))
+
+        #add the remainder of the packages, which should just be the single debuginfo's
         for (pkg,status,base,version) in base_list:
             if (base,version) not in base_list_already_got:
                 output_list.append((pkg,status))
