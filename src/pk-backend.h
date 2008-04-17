@@ -35,6 +35,10 @@ typedef struct _PkBackend PkBackend;
 /* set the state */
 gboolean	 pk_backend_set_current_tid		(PkBackend	*backend,
 							 const gchar	*tid);
+gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
+							 const gchar	*eula_id);
+gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
+							 const gchar	*eula_id);
 gboolean	 pk_backend_set_role			(PkBackend	*backend,
 							 PkRoleEnum	 role);
 gboolean	 pk_backend_set_status			(PkBackend	*backend,

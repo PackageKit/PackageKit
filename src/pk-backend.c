@@ -80,6 +80,7 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	PkTime			*time;
+	GHashTable		*eulas;
 	gchar			*name;
 	gchar			*c_tid;
 	gboolean		 locked;
@@ -1312,6 +1313,45 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 }
 
 /**
+ * pk_backend_accept_eula:
+ */
+gboolean
+pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	pk_debug ("eula_id %s", eula_id);
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		pk_debug ("already added %s to accepted list", eula_id);
+		return FALSE;
+	}
+	g_hash_table_insert (backend->priv->eulas, g_strdup (eula_id), GINT_TO_POINTER (1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_is_eula_valid:
+ */
+gboolean
+pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
  * pk_backend_finalize:
  **/
 static void
@@ -1325,6 +1365,7 @@ pk_backend_finalize (GObject *object)
 
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_hash_table_destroy (backend->priv->eulas);
 
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
@@ -1477,6 +1518,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
+	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	pk_backend_reset (backend);
 }
 
@@ -1546,6 +1588,42 @@ libst_backend (LibSelfTest *test)
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
+
+	/************************************************************/
+	libst_title (test, "get eula that does not exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was not accepted");
+	}
+
+	/************************************************************/
+	libst_title (test, "get eula that does exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula (again)");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was accepted twice");
+	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");
