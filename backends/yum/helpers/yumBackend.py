@@ -897,12 +897,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This package could not be installed as it is already installed")
 
     def _checkForNewer(self,po):
-        pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
-        if pkgs:
-            newest = pkgs[0]
-            if newest.EVR > po.EVR:
-                #TODO Add code to send a message here
-                self.message(MESSAGE_WARNING,"Newer version of %s, exist in the repositories " % po.name)
+        try:
+            pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+            if pkgs:
+                newest = pkgs[0]
+                if newest.EVR > po.EVR:
+                    #TODO Add code to send a message here
+                    self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
+        except (yum.Errors.RepoError, yum.Errors.PackageSackError):
+            # We might not be able to connect to the internet to get
+            # repository metadata, or the package might not exist.
+            pass
 
     def install_file (self, inst_file):
         '''
