@@ -545,14 +545,22 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 		zypp::ResPool pool = zypp::ResPool::instance ();
 		for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
 			if (it->status ().isToBeInstalled () && !(it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).empty ())) {
-				gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-				pk_backend_eula_required (backend,
-						"",	//eula_id
-						package_id,
-						(*it)->vendor ().c_str (),
-						it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ()); 
-				pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
-				g_free (package_id);
+				gchar *eula_id = g_strdup ((*it)->name ().c_str ());
+				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
+				if (!has_eula) {
+					gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
+					pk_backend_eula_required (backend,
+							eula_id,
+							package_id,
+							(*it)->vendor ().c_str (),
+							it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ()); 
+					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
+					g_free (package_id);
+					g_free (eula_id);
+					pk_backend_finished (backend);
+					return FALSE;
+				}
+				g_free (eula_id);
 			}
 		}
 
