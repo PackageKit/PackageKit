@@ -15,7 +15,7 @@
 
   <action id="org.freedesktop.packagekit.install">
     <_description>Install package</_description>
-    <_message>System policy prevents installing package</_message>
+    <_message>Authentication is required to install a package</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-package</vendor_url>
     <defaults>
@@ -26,7 +26,7 @@
 
   <action id="org.freedesktop.packagekit.localinstall">
     <_description>Install local file</_description>
-    <_message>System policy prevents installing file</_message>
+    <_message>Authentication is required to install a local file</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
@@ -37,7 +37,7 @@
 
   <action id="org.freedesktop.packagekit.install-signature">
     <_description>Install security signature</_description>
-    <_message>System policy prevents installing security signature</_message>
+    <_message>Authentication is required to install a security signature</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-signature</vendor_url>
     <defaults>
@@ -48,7 +48,7 @@
 
   <action id="org.freedesktop.packagekit.accept-eula">
     <_description>Accept EULA</_description>
-    <_message>System policy prevents accepting EULA</_message>
+    <_message>Authentication is required to accept a EULA</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-accept-eula</vendor_url>
     <defaults>
@@ -59,7 +59,7 @@
 
   <action id="org.freedesktop.packagekit.update-package">
     <_description>Update package</_description>
-    <_message>System policy prevents updating package</_message>
+    <_message>Authentication is required to update packages</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update</vendor_url>
     <defaults>
@@ -70,7 +70,7 @@
 
   <action id="org.freedesktop.packagekit.remove">
     <_description>Remove package</_description>
-    <_message>System policy prevents removing package</_message>
+    <_message>Authentication is required to remove packages</_message>
     <icon_name>pk-package-delete</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-remove</vendor_url>
     <defaults>
@@ -80,8 +80,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.update-system">
-    <_description>Update all packages on system</_description>
-    <_message>System policy prevents updating system</_message>
+    <_description>Update all packages</_description>
+    <_message>Authentication is required to update all packages</_message>
     <icon_name>pk-package-update</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-update-system</vendor_url>
     <defaults>
@@ -92,7 +92,7 @@
 
   <action id="org.freedesktop.packagekit.rollback">
     <_description>Rollback to a previous transaction</_description>
-    <_message>System policy prevents rollback</_message>
+    <_message>Authentication is required to rollback a transaction</_message>
     <icon_name>pk-rollback</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-rollback</vendor_url>
     <defaults>
@@ -102,8 +102,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.repo-change">
-    <_description>Change repository parameters</_description>
-    <_message>System policy prevents changing repository parameters</_message>
+    <_description>Change software source parameters</_description>
+    <_message>Authentication is required to change software source parameters</_message>
     <icon_name>pk-package-info</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-repo-enable</vendor_url>
     <defaults>
@@ -113,8 +113,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.refresh-cache">
-    <_description>Refresh package cache</_description>
-    <_message>System policy prevents refresh package cache</_message>
+    <_description>Refresh package lists</_description>
+    <_message>Authentication is required to refresh the package lists</_message>
     <icon_name>pk-refresh-cache</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-refresh-cache</vendor_url>
     <defaults>

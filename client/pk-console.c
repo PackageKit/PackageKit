@@ -110,7 +110,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	/* split */
 	ident = pk_package_id_new_from_string (package_id);
 	if (ident == NULL) {
-		pk_warning (_("Could not get valid ident from %s"), package_id);
+		pk_warning ("Could not get valid ident from %s", package_id);
 		return;
 	}
 
@@ -205,7 +205,7 @@ pk_console_update_detail_cb (PkClient *client, const gchar *package_id,
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print (_("Update detail\n"));
+	g_print ("%s\n", _("Update detail"));
 	g_print ("  package:    '%s'\n", package_id);
 	if (pk_strzero (updates) == FALSE) {
 		g_print ("  updates:    '%s'\n", updates);
@@ -396,8 +396,12 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
-	if (restart != PK_RESTART_ENUM_NONE) {
-		g_print (_("Requires restart: %s\n"), pk_restart_enum_to_text (restart));
+	if (restart == PK_RESTART_ENUM_SYSTEM) {
+		g_print ("%s\n", _("A system restart is required"));
+	} else if (restart == PK_RESTART_ENUM_SESSION) {
+		g_print ("%s\n", _("A logout and login is required"));
+	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
+		g_print ("%s\n", _("An application restart is required"));
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
@@ -462,7 +466,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	/* we need to resolve it */
 	ret = pk_client_resolve (client_task, filter, package, error);
 	if (ret == FALSE) {
-		pk_warning (_("Resolve is not supported in this backend"));
+		pk_warning ("Resolve is not supported in this backend");
 		return NULL;
 	}
 
@@ -478,7 +482,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 		}
 		ret = pk_client_what_provides (client_task, filter, PK_PROVIDES_ENUM_ANY, package, error);
 		if (ret == FALSE) {
-			pk_warning (_("WhatProvides is not supported in this backend"));
+			pk_warning ("WhatProvides is not supported in this backend");
 			return NULL;
 		}
 	}
@@ -500,7 +504,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print (_("There are multiple matches\n"));
+	g_print ("%s\n", _("There are multiple package matches"));
 	for (i=0; i<length; i++) {
 		item = pk_client_package_buffer_get_item (client_task, i);
 		g_print ("%i. %s\n", i+1, item->package_id);
@@ -523,7 +527,7 @@ pk_console_install_package (PkClient *client, const gchar *package, GError **err
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to install, or package already installed\n"));
+		g_print ("%s\n", _("Could not find a package with that name to install, or package already installed"));
 		return FALSE;
 	}
 	ret = pk_client_install_package (client, package_id, error);
@@ -605,7 +609,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to remove\n"));
+		g_print ("%s\n", _("Could not find a package with that name to remove"));
 		return FALSE;
 	}
 
@@ -624,7 +628,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 		return FALSE;
 	}
 
-	pk_debug (_("Getting installed requires for %s"), package_id);
+	pk_debug ("Getting installed requires for %s", package_id);
 	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_id, TRUE, error);
 	if (!ret) {
 		return FALSE;
@@ -645,7 +649,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print (_("The following packages have to be removed:\n"));
+	g_print ("%s:\n", _("The following packages have to be removed"));
 	for (i=0; i<length; i++) {
 		item = pk_client_package_buffer_get_item (client_task, i);
 		ident = pk_package_id_new_from_string (item->package_id);
@@ -658,7 +662,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 
 	/* we chickened out */
 	if (remove == FALSE) {
-		g_print ("Cancelled!\n");
+		g_print ("%s\n", _("Cancelled!"));
 		g_free (package_id);
 		return FALSE;
 	}
@@ -680,7 +684,7 @@ pk_console_update_package (PkClient *client, const gchar *package, GError **erro
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to update\n"));
+		g_print ("%s\n", _("Could not find a package with that name to update"));
 		return FALSE;
 	}
 	ret = pk_client_update_package (client, package_id, error);
@@ -698,7 +702,7 @@ pk_console_get_requires (PkClient *client, const gchar *package, GError **error)
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to get requires\n"));
+		g_print ("%s\n", _("Could not find what packages require this package"));
 		return FALSE;
 	}
 	ret = pk_client_get_requires (client, PK_FILTER_ENUM_NONE, package_id, TRUE, error);
@@ -716,7 +720,7 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to get depends\n"));
+		g_print ("%s\n", _("Could not get dependencies for this package"));
 		return FALSE;
 	}
 	ret = pk_client_get_depends (client, PK_FILTER_ENUM_NONE, package_id, FALSE, error);
@@ -734,7 +738,7 @@ pk_console_get_description (PkClient *client, const gchar *package, GError **err
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to get description\n"));
+		g_print ("%s\n", _("Could not find a description for this package"));
 		return FALSE;
 	}
 	ret = pk_client_get_description (client, package_id, error);
@@ -752,7 +756,7 @@ pk_console_get_files (PkClient *client, const gchar *package, GError **error)
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print (_("Could not find a package with that name to get files\n"));
+		g_print (_("Could not find the files for this package"));
 		return FALSE;
 	}
 	ret = pk_client_get_files (client, package_id, error);
@@ -770,7 +774,7 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
 	if (package_id == NULL) {
-		g_print ("Could not find a package with that name to get update details\n");
+		g_print ("%s\n", "Could not find the update details for this package");
 		return FALSE;
 	}
 	ret = pk_client_get_update_detail (client, package_id, error);
@@ -812,7 +816,7 @@ pk_console_description_cb (PkClient *client, const gchar *package_id,
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print (_("Package description\n"));
+	g_print ("%s\n", _("Package description"));
 	g_print ("  package:     '%s'\n", package_id);
 	g_print ("  license:     '%s'\n", license);
 	g_print ("  group:       '%s'\n", pk_group_enum_to_text (group));
@@ -833,9 +837,9 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("Package files\n");
 
 	if (*filevector != NULL) {
+		g_print ("%s\n", _("Package files"));
 		gchar **current_file = filevector;
 
 		while (*current_file != NULL) {
@@ -843,7 +847,7 @@ pk_console_files_cb (PkClient *client, const gchar *package_id,
 			current_file++;
 		}
 	} else {
-	    g_print ("  no files\n");
+	    g_print ("%s\n", _("No files"));
 	}
 
 	g_strfreev (filevector);
@@ -865,7 +869,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("Repository Signature Required\n");
+	g_print ("%s\n", "Repository signature required");
 	g_print ("Package:     %s\n", package_id);
 	g_print ("Name:        %s\n", repository_name);
 	g_print ("URL:         %s\n", key_url);
@@ -878,7 +882,7 @@ pk_console_repo_signature_required_cb (PkClient *client, const gchar *package_id
 	import = pk_console_get_prompt (_("Okay to import key?"), FALSE);
 	if (!import) {
 		need_requeue = FALSE;
-		g_print ("%s\n", _("Did not import key, task will fail"));
+		g_print ("%s\n", _("Did not import key"));
 		return;
 	}
 
@@ -911,7 +915,7 @@ pk_console_eula_required_cb (PkClient *client, const gchar *eula_id, const gchar
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("Eula Required\n");
+	g_print ("%s\n", "Eula required");
 	g_print ("Eula:        %s\n", eula_id);
 	g_print ("Package:     %s\n", package_id);
 	g_print ("Vendor:      %s\n", vendor_name);
@@ -950,7 +954,7 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
 		g_print ("\n");
 	}
 	if (connected == FALSE) {
-		g_print (_("The daemon crashed mid transaction. This is bad\n"));
+		g_print ("%s\n", _("The daemon crashed mid-transaction!"));
 		exit (2);
 	}
 }
@@ -1434,7 +1438,8 @@ main (int argc, char *argv[])
 		ret = pk_client_refresh_cache (client, FALSE, &error);
 
 	} else {
-		g_print (_("Option '%s' not supported\n"), mode);
+		g_print (_("Option '%s' not supported"), mode);
+		g_print ("\n");
 	}
 
 	/* do we wait for the method? */
@@ -1444,11 +1449,11 @@ main (int argc, char *argv[])
 
 out:
 	if (ret == FALSE) {
-		g_print (_("Command failed\n"));
+		g_print ("%s\n", _("Command failed"));
 	}
 	if (error != NULL) {
 		if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
-			g_print (_("You don't have the necessary privileges for this operation\n"));
+			g_print ("%s\n", _("You don't have the necessary privileges for this operation"));
 		} else {
 			g_print ("Error:\n  %s\n\n", error->message);
 			g_error_free (error);

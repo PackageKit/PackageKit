@@ -280,8 +280,8 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s\n"), database_location);
-		g_print (_("You probably need to run this program as the root user\n"));
+		g_print (_("Could not open database: %s"), database_location);
+		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
 		goto out;
 	}
 
