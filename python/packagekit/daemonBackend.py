@@ -295,17 +295,6 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ss')
-    def MetaData(self,typ,fname):
-        '''
-        send 'metadata' signal:
-        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
-        @param fname:  The filename being downloaded
-        '''
-        pklog.info("MetaData (%s, %s)" % (typ,fname))
-
-    @PKSignalHouseKeeper
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
     def RequireRestart(self,type,details):
         '''
         send 'require-restart' signal:

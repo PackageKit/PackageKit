@@ -56,12 +56,12 @@ zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (std::string name, zyp
 /**
   * Return the group of the given PoolItem.
   */
-gchar* zypp_get_group (zypp::sat::Solvable item);
+std::string zypp_get_group (zypp::sat::Solvable item);
 
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum get_enum_group (zypp::sat::Solvable item);
+PkGroupEnum get_enum_group (std::string group);
 
 /**
  * Returns a list of packages that match the specified package_name.
@@ -124,7 +124,7 @@ std::set<zypp::PoolItem> * zypp_get_patches ();
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array

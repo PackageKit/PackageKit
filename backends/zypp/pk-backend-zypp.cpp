@@ -585,7 +585,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	try {
-		PkGroupEnum group = get_enum_group (package);
+		PkGroupEnum group = get_enum_group (zypp_get_group (package));
 
 		if (package.isSystem ()){
 			zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
@@ -1265,7 +1265,7 @@ find_packages_real (PkBackend *backend, const gchar *search, PkFilterEnum filter
                         break;
         };
 
-	zypp_emit_packages_in_list (backend, v);
+	zypp_emit_packages_in_list (backend, v, filters);
 	delete (v);
 }
 
@@ -1344,19 +1344,19 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 30);
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
+	PkGroupEnum pkGroup = pk_group_enum_from_text (d->pkGroup);
 
 	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
 
 	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
-		std::string group = it.asString ();
-		std::transform (group.begin (), group.end (), group.begin (), tolower);
-		if (g_strrstr (group.c_str (), d->pkGroup))
+		PkGroupEnum rpmGroup = get_enum_group (it.asString ());
+		if (pkGroup == rpmGroup)
 			v->push_back (it.inSolvable ());
 	}
 
 	pk_backend_set_percentage (backend, 70);
 
-        zypp_emit_packages_in_list (backend ,v);
+        zypp_emit_packages_in_list (backend ,v, d->filters);
 
         delete (v);
 
@@ -1561,32 +1561,19 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
 
-	if (*filter == PK_FILTER_ENUM_INSTALLED) {
-		zypp_build_local_pool ();
-	}else{
-		zypp_build_pool (TRUE);
-	}
+	zypp_build_pool (TRUE);
   
 	zypp::ResPool pool = zypp::ResPool::instance ();
 
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-		if ((*it)->isSystem ()) {
-			info = PK_INFO_ENUM_INSTALLED;
-			if (*filter == PK_FILTER_ENUM_NOT_INSTALLED)
-			       continue;
-		}	
-
-		gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-		pk_backend_package (backend,
-				info,
-				package_id,
-				(*it)->description ().c_str ());
-		g_free (package_id);
+		v->push_back (it->satSolvable ());
 	}
 
+	zypp_emit_packages_in_list (backend, v, *filter);
 
+	delete (v);
 	g_free (filter);
 	pk_backend_finished (backend);
 
