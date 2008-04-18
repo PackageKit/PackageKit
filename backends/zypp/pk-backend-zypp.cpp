@@ -1561,32 +1561,19 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
 
-	if (*filter == PK_FILTER_ENUM_INSTALLED) {
-		zypp_build_local_pool ();
-	}else{
-		zypp_build_pool (TRUE);
-	}
+	zypp_build_pool (TRUE);
   
 	zypp::ResPool pool = zypp::ResPool::instance ();
 
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-		if ((*it)->isSystem ()) {
-			info = PK_INFO_ENUM_INSTALLED;
-			if (*filter == PK_FILTER_ENUM_NOT_INSTALLED)
-			       continue;
-		}	
-
-		gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-		pk_backend_package (backend,
-				info,
-				package_id,
-				(*it)->description ().c_str ());
-		g_free (package_id);
+		v->push_back (it->satSolvable ());
 	}
 
+	zypp_emit_packages_in_list (backend, v, *filter);
 
+	delete (v);
 	g_free (filter);
 	pk_backend_finished (backend);
 
