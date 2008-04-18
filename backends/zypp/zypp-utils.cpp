@@ -178,7 +178,7 @@ zypp_get_rpmHeader (std::string name, zypp::Edition edition)
 }
 		
 
-gchar*
+std::string
 zypp_get_group (zypp::sat::Solvable item)
 {
         std::string group;
@@ -192,63 +192,61 @@ zypp_get_group (zypp::sat::Solvable item)
                 group = item.lookupStrAttribute (zypp::sat::SolvAttr::group);
         }
         std::transform(group.begin(), group.end(), group.begin(), tolower);
-        return (gchar*)group.c_str ();
+        return group;
 }
 
 PkGroupEnum
-get_enum_group (zypp::sat::Solvable item)
+get_enum_group (std::string group)
 {
         
-        std::string group (zypp_get_group (item));
-
-        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
         // TODO Look for a faster and nice way to do this conversion
+        std::transform(group.begin(), group.end(), group.begin(), tolower);
 
         if (group.find ("amusements") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_GAMES;
+                return PK_GROUP_ENUM_GAMES;
         } else if (group.find ("development") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_PROGRAMMING;
+                return PK_GROUP_ENUM_PROGRAMMING;
         } else if (group.find ("hardware") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SYSTEM;
+                return PK_GROUP_ENUM_SYSTEM;
         } else if (group.find ("archiving") != std::string::npos 
                   || group.find("clustering") != std::string::npos
                   || group.find("system/monitoring") != std::string::npos
                   || group.find("databases") != std::string::npos
                   || group.find("system/management") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_ADMIN_TOOLS;
+                return PK_GROUP_ENUM_ADMIN_TOOLS;
         } else if (group.find ("graphics") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_GRAPHICS;
-        } else if (group.find ("mulitmedia") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_MULTIMEDIA;
+                return PK_GROUP_ENUM_GRAPHICS;
+        } else if (group.find ("multimedia") != std::string::npos) {
+                return PK_GROUP_ENUM_MULTIMEDIA;
         } else if (group.find ("network") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_NETWORK;
+                return PK_GROUP_ENUM_NETWORK;
         } else if (group.find ("office") != std::string::npos 
                   || group.find("text") != std::string::npos
                   || group.find("editors") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_OFFICE;
+                return PK_GROUP_ENUM_OFFICE;
         } else if (group.find ("publishing") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_PUBLISHING;
+                return PK_GROUP_ENUM_PUBLISHING;
         } else if (group.find ("security") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SECURITY;
+                return PK_GROUP_ENUM_SECURITY;
         } else if (group.find ("telephony") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_COMMUNICATION;
+                return PK_GROUP_ENUM_COMMUNICATION;
         } else if (group.find ("gnome") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_GNOME;
+                return PK_GROUP_ENUM_DESKTOP_GNOME;
         } else if (group.find ("kde") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_KDE;
+                return PK_GROUP_ENUM_DESKTOP_KDE;
         } else if (group.find ("xfce") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_XFCE;
+                return PK_GROUP_ENUM_DESKTOP_XFCE;
         } else if (group.find ("gui/other") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_OTHER;
+                return PK_GROUP_ENUM_DESKTOP_OTHER;
         } else if (group.find ("localization") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_LOCALIZATION;
+                return PK_GROUP_ENUM_LOCALIZATION;
         } else if (group.find ("system") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SYSTEM;
+                return PK_GROUP_ENUM_SYSTEM;
         } else if (group.find ("scientific") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_EDUCATION;
+                return PK_GROUP_ENUM_EDUCATION;
         }
 
-        return pkGroup;
+        return PK_GROUP_ENUM_UNKNOWN;
 }
 
 std::vector<zypp::sat::Solvable> *
