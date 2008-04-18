@@ -245,18 +245,6 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 }
 
 /**
- * pk_transaction_get_package_list:
- **/
-PkPackageList *
-pk_transaction_get_package_list (PkTransaction *transaction)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
-
-	return transaction->priv->package_list;
-}
-
-/**
  * pk_transaction_get_text:
  **/
 const gchar *
@@ -296,7 +284,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 
 	/* copy this into the cache if we are getting updates */
 	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		pk_cache_set_updates (transaction->priv->cache, pk_transaction_get_package_list (transaction));
+		pk_cache_set_updates (transaction->priv->cache, transaction->priv->package_list);
 	}
 
 	/* we unref the update cache if it exists */
@@ -459,7 +447,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		packages = pk_package_list_get_string (pk_transaction_get_package_list (transaction));
+		packages = pk_package_list_get_string (transaction->priv->package_list);
 		if (pk_strzero (packages) == FALSE) {
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		}
