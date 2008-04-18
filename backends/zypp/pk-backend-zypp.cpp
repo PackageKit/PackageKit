@@ -1350,8 +1350,13 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 
 	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
 		PkGroupEnum rpmGroup = get_enum_group (it.asString ());
-		if (pkGroup == rpmGroup)
+		if (pkGroup == rpmGroup) {
+			if (d->filters == PK_FILTER_ENUM_INSTALLED && !(it.inSolvable ().isSystem ()))
+				continue;
+			if (d->filters == PK_FILTER_ENUM_NOT_INSTALLED && (it.inSolvable ().isSystem ()))
+				continue;
 			v->push_back (it.inSolvable ());
+		}
 	}
 
 	pk_backend_set_percentage (backend, 70);
