@@ -585,7 +585,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	try {
-		PkGroupEnum group = get_enum_group (package);
+		PkGroupEnum group = get_enum_group (zypp_get_group (package));
 
 		if (package.isSystem ()){
 			zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
@@ -1344,13 +1344,13 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 30);
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
+	PkGroupEnum pkGroup = pk_group_enum_from_text (d->pkGroup);
 
 	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
 
 	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
-		std::string group = it.asString ();
-		std::transform (group.begin (), group.end (), group.begin (), tolower);
-		if (g_strrstr (group.c_str (), d->pkGroup))
+		PkGroupEnum rpmGroup = get_enum_group (it.asString ());
+		if (pkGroup == rpmGroup)
 			v->push_back (it.inSolvable ());
 	}
 
