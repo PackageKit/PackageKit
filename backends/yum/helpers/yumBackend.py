@@ -894,17 +894,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This package could not be installed as it is already installed")
 
     def _checkForNewer(self,po):
-        try:
-            pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
-            if pkgs:
-                newest = pkgs[0]
-                if newest.EVR > po.EVR:
-                    #TODO Add code to send a message here
-                    self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
-        except (yum.Errors.RepoError, yum.Errors.PackageSackError):
-            # We might not be able to connect to the internet to get
-            # repository metadata, or the package might not exist.
-            pass
+        pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
+        if pkgs:
+            newest = pkgs[0]
+            if newest.EVR > po.EVR:
+                self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
     def install_file (self, inst_file):
         '''
@@ -922,18 +916,38 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
-        txmbr = self.yumbase.installLocal(inst_file)
-        if txmbr:
-            self._checkForNewer(txmbr[0].po)
-            try:
-                # Added the package to the transaction set
+
+        try:
+            txmbr = self.yumbase.installLocal(inst_file)
+            if txmbr:
+                self._checkForNewer(txmbr[0].po)
+            # Added the package to the transaction set
                 if len(self.yumbase.tsInfo) > 0:
                     self._runYumTransaction()
+            else:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
+
+        except yum.Errors.InstallError,e:
+            msgs = ';'.join(e)
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+        except (yum.Errors.RepoError, yum.Errors.PackageSackError, IOError):
+            # We might not be able to connect to the internet to get
+            # repository metadata, or the package might not exist.
+            # Try again, (temporarily) disabling repos first.
+            try:
+                for repo in self.yumbase.repos.listEnabled():
+                    repo.disable()
+
+                txmbr = self.yumbase.installLocal(inst_file)
+                if txmbr:
+                    if len(self.yumbase.tsInfo) > 0:
+                        self._runYumTransaction()
+                else:
+                    self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
             except yum.Errors.InstallError,e:
                 msgs = ';'.join(e)
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
-        else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
+                self.error(ERROR_LOCAL_INSTALL_FAILED, msgs)
+                
 
     def update(self, packages):
         '''

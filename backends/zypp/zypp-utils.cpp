@@ -402,13 +402,16 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 }
 
 void
-zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
+zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters)
 {
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 
-		// TODO: Determine whether this package is installed or not
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+		if (filters == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
+			continue;
+		if (filters == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
+			continue;
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :
