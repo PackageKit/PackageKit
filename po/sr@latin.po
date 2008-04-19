@@ -1,0 +1,407 @@
+# Serbian translation of PackageKit
+# Courtesy of Prevod.org team (http://prevod.org/) -- 2008.
+#
+# This file is distributed under the same license as the PackageKit package.
+#
+# Maintainer: Goran Rakić <grakic@devbase.net>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PackageKit\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"PO-Revision-Date: 2008-04-19 14:38+0100\n"
+"Last-Translator: Goran Rakić <grakic@devbase.net>\n"
+"Language-Team: Serbian (sr) <gnom@prevod.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4;    plural=n==1? 3 : n%10==1 && n%100!=11 ? 0 :    n"
+"%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "Prihvati licencu"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "Neophodna je autentifikacija za prihvatnje licence"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "Neophodna je autentifikacija za izmenu postavki skladišta softvera"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to install a local file"
+msgstr "Neophodna je autentifikacija za instaliranje lokalne datoteke"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a package"
+msgstr "Neophodna je autentifikacija za instaliranje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a security signature"
+msgstr "Neophodna je autentifikacija za instaliranje sigurnosnog digitalnog potpisa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the package lists"
+msgstr "Neophodna je autentifikacija za osvežavanje liste paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "Neophodna je autentifikacija za uklanjanje paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "Neophodna je autentifikacija za poništavanje sve-ili-ništa promena"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to update all packages"
+msgstr "Neophodna je autentifikacija za nadogradnju svih paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "Neophodna je autentifikacija za nadogradnju paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "Promeni postavke skladišta softvera"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "Instaliraj lokalnu datoteku"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install package"
+msgstr "Instaliraj paket"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install security signature"
+msgstr "Instaliraj sigurnosni potpis"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Refresh package lists"
+msgstr "Osveži listu paketa"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Remove package"
+msgstr "Ukloni paket"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Rollback to a previous transaction"
+msgstr "Vrati se na stanje prethodne promene"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Update all packages"
+msgstr "Nadogradi sve pakete"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update package"
+msgstr "Nadogradi paket"
+
+#: ../client/pk-console.c:208
+msgid "Update detail"
+msgstr "Više o nadogradnji"
+
+#: ../client/pk-console.c:400
+msgid "A system restart is required"
+msgstr "Neophodno je ponovno pokretanje sistema"
+
+#: ../client/pk-console.c:402
+msgid "A logout and login is required"
+msgstr "Neophodno je odjavljivanje i ponovna prijava"
+
+#: ../client/pk-console.c:404
+msgid "An application restart is required"
+msgstr "Neophodno je ponovno pokretanje programa"
+
+#: ../client/pk-console.c:443
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Unesi broj između 1 i %i: "
+
+#: ../client/pk-console.c:493
+msgid "Could not find a package match"
+msgstr "Ne mogu da pronađem paket"
+
+#: ../client/pk-console.c:507
+msgid "There are multiple package matches"
+msgstr "Postoji više paketa koji odgovaraju upitu"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:514
+msgid "Please enter the package number: "
+msgstr "Unesi broj paketa: "
+
+#: ../client/pk-console.c:530
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr ""
+"Ne mogu da pronađem traženi paket ili je paket već instaliran"
+
+#: ../client/pk-console.c:612
+msgid "Could not find a package with that name to remove"
+msgstr "Ne mogu da pronađem traženi paket za uklanjanje"
+
+#: ../client/pk-console.c:652
+msgid "The following packages have to be removed"
+msgstr "Sledeći paketi će biti uklonjeni"
+
+#. get user input
+#: ../client/pk-console.c:661
+msgid "Okay to remove additional packages?"
+msgstr "Da li je u redu da uklonim ove dodatne pakete?"
+
+#: ../client/pk-console.c:665
+msgid "Cancelled!"
+msgstr "Prekinuto!"
+
+#: ../client/pk-console.c:687
+msgid "Could not find a package with that name to update"
+msgstr "Ne mogu da pronađem traženi paket za nadogradnju"
+
+#: ../client/pk-console.c:705
+msgid "Could not find what packages require this package"
+msgstr "Ne mogu da pronađem koji paketi zahtevaju ovaj paket"
+
+#: ../client/pk-console.c:723
+msgid "Could not get dependencies for this package"
+msgstr "Ne mogu da pribavim međuzavisnosti za ovaj paket"
+
+#: ../client/pk-console.c:741
+msgid "Could not find a description for this package"
+msgstr "Ne mogu da pribavim opis za ovaj paket"
+
+#: ../client/pk-console.c:759
+#, c-format
+msgid "Could not find the files for this package"
+msgstr "Ne mogu da pribavim spisak datoteka iz ovog paketa"
+
+#: ../client/pk-console.c:819
+msgid "Package description"
+msgstr "Opis paketa"
+
+#: ../client/pk-console.c:842
+msgid "Package files"
+msgstr "Spisak datoteka"
+
+#: ../client/pk-console.c:850
+msgid "No files"
+msgstr "Nema datoteka"
+
+#. get user input
+#: ../client/pk-console.c:882
+msgid "Okay to import key?"
+msgstr "Da li je u redu da uvezem ključ potpisa?"
+
+#: ../client/pk-console.c:885
+msgid "Did not import key"
+msgstr "Ključ potpisa nije uvezen"
+
+#. get user input
+#: ../client/pk-console.c:925
+msgid "Do you agree?"
+msgstr "Saglasni?"
+
+#: ../client/pk-console.c:928
+msgid "Did not agree to licence, task will fail"
+msgstr "Nema saglasnosti sa uslovima licence, zadatak neće biti izvršen"
+
+#: ../client/pk-console.c:957
+msgid "The daemon crashed mid-transaction!"
+msgstr "Uslužni program se iznenada prekinuo u pola posla!"
+
+#. header
+#: ../client/pk-console.c:1010
+msgid "PackageKit Console Interface"
+msgstr "Tekstualno sučelje programa PaketKit"
+
+#: ../client/pk-console.c:1010
+msgid "Subcommands:"
+msgstr "Komande:"
+
+#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "Prikaži dodatne podatke za otkrivanje grešaka"
+
+#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+msgid "Show the program version and exit"
+msgstr "Prikaži verziju programa i završi rad"
+
+#: ../client/pk-console.c:1118
+msgid "Set the filter, e.g. installed"
+msgstr "Postavi filter, npr. instalirani"
+
+#: ../client/pk-console.c:1120
+msgid "Exit without waiting for actions to complete"
+msgstr "Završi rad bez čekanja da se poslovi završe"
+
+#: ../client/pk-console.c:1143
+msgid "Could not connect to system DBUS."
+msgstr "Ne mogu da se povežem na sistemsku komunikacionu magistralu."
+
+#: ../client/pk-console.c:1231
+#, c-format
+msgid "You need to specify a search type"
+msgstr "Moraš navesti tip pretrage"
+
+#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
+#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
+#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
+#, c-format
+msgid "You need to specify a search term"
+msgstr "Moraš navesti uslov pretrage"
+
+#: ../client/pk-console.c:1262
+#, c-format
+msgid "Invalid search type"
+msgstr "Neispravan tip pretrage"
+
+#: ../client/pk-console.c:1267
+#, c-format
+msgid "You need to specify a package or file to install"
+msgstr "Moraš navesti paket ili datoteku za instaliranje"
+
+#: ../client/pk-console.c:1280
+#, c-format
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Moraš navesti tip, key_id i package_id"
+
+#: ../client/pk-console.c:1287
+#, c-format
+msgid "You need to specify a package to remove"
+msgstr "Moraš navesti paket za uklanjanje"
+
+#: ../client/pk-console.c:1294
+#, c-format
+msgid "You need to specify a eula-id"
+msgstr "Moraš navesti eula-id"
+
+#: ../client/pk-console.c:1309
+#, c-format
+msgid "You need to specify a package name to resolve"
+msgstr "Moraš navesti ime paketa za upit"
+
+#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
+#, c-format
+msgid "You need to specify a repo name"
+msgstr "Moraš navesti ime skladišta"
+
+#: ../client/pk-console.c:1330
+#, c-format
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Moraš navesti ime ili parametar skladišta i vrednost"
+
+#: ../client/pk-console.c:1343
+#, c-format
+msgid "You need to specify a time term"
+msgstr "Moraš navesti vremensku odrednicu"
+
+#: ../client/pk-console.c:1348
+#, c-format
+msgid "You need to specify a correct role"
+msgstr "Moraš navesti ispravnu rolu"
+
+#: ../client/pk-console.c:1353
+#, c-format
+#,fuzzy
+msgid "Failed to get last time"
+msgstr ""
+#msgstr "Nisam uspeo da otkrijem prethodno vreme"
+#msgstr "Prošli put nisam uspeo da preuzmem"
+
+#: ../client/pk-console.c:1389
+#, c-format
+msgid "You need to specify a package to find the description for"
+msgstr "Moraš navesti ime paketa za prikaz opisa"
+
+#: ../client/pk-console.c:1396
+#, c-format
+msgid "You need to specify a package to find the files for"
+msgstr "Moraš navesti ime paketa za prikaz liste datoteka"
+
+#: ../client/pk-console.c:1441
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "Opcija „%s“ nije podržana"
+
+#: ../client/pk-console.c:1452
+msgid "Command failed"
+msgstr "Komanda nije uspela"
+
+#: ../client/pk-console.c:1456
+msgid "You don't have the necessary privileges for this operation"
+msgstr "Nemaš neophodne privilegije za ovu operaciju"
+
+#: ../client/pk-monitor.c:113
+msgid "PackageKit Monitor"
+msgstr "PaketKit redar"
+
+#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Ne mogu da otvorim bazu: %s"
+
+#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "Verovatno trebaš pokrenuti program kao korisnik „root“"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "Pokretanje nije uspelo usled sistemske sigurnosne politike."
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "Dva su moguća razloga:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "Program ne pokreće odgovarajući korisnik (najčešće treba „root“)"
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"Datoteka „org.freedesktop.PackageKit.conf“ nije instalirana u sistemski “/etc/"
+"dbus-1/system.d“ direktorijum"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Pozadinski sistem u upotrebi, npr. „dummy“ (probni)"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "Odvoji od terminala i nastavi rad kao uslužni"
+
+#: ../src/pk-main.c:191
+#,fuzzy
+msgid "Disable the idle timer"
+msgstr "Onemogući merač čekanja"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "Prikaži verziju i završi rad"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "Sačekaj malo i završi rad"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "Završi rad nakon što se učita pozadinski sistem"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "Servis PaketKita"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "Ne mogu da se povežem na sistemsku magistralu"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "Greška pri pokretanju: %s\n"
