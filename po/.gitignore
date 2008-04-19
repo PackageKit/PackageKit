@@ -3,4 +3,5 @@ POTFILES
 stamp-it
 Makefile.in.in
 *.pot
+*.gmo
 
