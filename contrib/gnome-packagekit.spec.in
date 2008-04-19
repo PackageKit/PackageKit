@@ -144,6 +144,11 @@ fi
 %{_bindir}/gpk-*
 %{_bindir}/system-install-packages
 %{_datadir}/gnome-packagekit
+%{_datadir}/icons/hicolor/16x16/status/*.png
+%{_datadir}/icons/hicolor/22x22/status/*.png
+%{_datadir}/icons/hicolor/24x24/status/*.png
+%{_datadir}/icons/hicolor/48x48/status/*.png
+%{_datadir}/icons/hicolor/scalable/status/*.svg
 %config(noreplace) %{_sysconfdir}/gconf/schemas/*.schemas
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/gtk-doc/html/gnome-packagekit
