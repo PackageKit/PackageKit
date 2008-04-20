@@ -15,10 +15,79 @@ from conary import errors
 from conary.deps import deps
 from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
+from conary.local import database
+from conary import trove
 
 from packagekit.backend import *
 from conaryCallback import UpdateCallback
 
+groupMap = {
+    '2DGraphics'          : GROUP_GRAPHICS,
+    'Accessibility'       : GROUP_ACCESSIBILITY,
+    'AdvancedSettings'    : GROUP_ADMIN_TOOLS,
+    'Application'         : GROUP_OTHER,
+    'ArcadeGame'          : GROUP_GAMES,
+    'Audio'               : GROUP_MULTIMEDIA,
+    'AudioVideo'          : GROUP_MULTIMEDIA,
+    'BlocksGame'          : GROUP_GAMES,
+    'BoardGame'           : GROUP_GAMES,
+    'Calculator'          : GROUP_ACCESSORIES,
+    'Calendar'            : GROUP_ACCESSORIES,
+    'CardGame'            : GROUP_GAMES,
+    'Compiz'              : GROUP_SYSTEM,
+    'ContactManagement'   : GROUP_ACCESSORIES,
+    'Core'                : GROUP_SYSTEM,
+    'Database'            : GROUP_SERVERS,
+    'DesktopSettings'     : GROUP_ADMIN_TOOLS,
+    'Development'         : GROUP_PROGRAMMING,
+    'Email'               : GROUP_INTERNET,
+    'FileTransfer'        : GROUP_INTERNET,
+    'Filesystem'          : GROUP_SYSTEM,
+    'GNOME'               : GROUP_DESKTOP_GNOME,
+    'GTK'                 : GROUP_DESKTOP_GNOME,
+    'GUIDesigner'         : GROUP_PROGRAMMING,
+    'Game'                : GROUP_GAMES,
+    'Graphics'            : GROUP_GRAPHICS,
+    'HardwareSettings'    : GROUP_ADMIN_TOOLS,
+    'IRCClient'           : GROUP_INTERNET,
+    'InstantMessaging'    : GROUP_INTERNET,
+    'LogicGame'           : GROUP_GAMES,
+    'Monitor'             : GROUP_ADMIN_TOOLS,
+    'Music'               : GROUP_MULTIMEDIA,
+    'Network'             : GROUP_INTERNET,
+    'News'                : GROUP_INTERNET,
+    'Office'              : GROUP_OFFICE,
+    'P2P'                 : GROUP_INTERNET,
+    'PackageManager'      : GROUP_ADMIN_TOOLS,
+    'Photography'         : GROUP_MULTIMEDIA,
+    'Player'              : GROUP_MULTIMEDIA,
+    'Presentation'        : GROUP_OFFICE,
+    'Publishing'          : GROUP_OFFICE,
+    'RasterGraphics'      : GROUP_GRAPHICS,
+    'Security'            : GROUP_SECURITY,
+    'Settings'            : GROUP_ADMIN_TOOLS,
+    'Spreadsheet'         : GROUP_OFFICE,
+    'System'              : GROUP_SYSTEM,
+    'Telephony'           : GROUP_COMMUNICATION,
+    'TerminalEmulator'    : GROUP_ACCESSORIES,
+    'TextEditor'          : GROUP_ACCESSORIES,
+    'Utility'             : GROUP_ACCESSORIES,
+    'VectorGraphics'      : GROUP_GRAPHICS,
+    'Video'               : GROUP_MULTIMEDIA,
+    'Viewer'              : GROUP_MULTIMEDIA,
+    'WebBrowser'          : GROUP_INTERNET,
+    'WebDevelopment'      : GROUP_PROGRAMMING,
+    'WordProcessor'       : GROUP_OFFICE
+}
+
+revGroupMap = {}
+
+for (con_cat, pk_group) in groupMap.items():
+    if revGroupMap.has_key(pk_group):
+        revGroupMap[pk_group].append(con_cat)
+    else:
+        revGroupMap[pk_group] = [con_cat]
+       
 #from conary.lib import util
 #sys.excepthook = util.genExcepthook()
 
@@ -166,14 +235,40 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return installed
 
     @ExceptionHandler
-    def search_group(self, options, searchterms):
+    def search_group(self, filters, key):
         '''
         Implement the {backend}-search-name functionality
+        FIXME: Ignoring filters for now.
         '''
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
-        pass
+
+        fltlist = filters.split(';')
+        cache = Cache()
+
+        try:
+            troveTupleList = cache.searchByGroups([key])
+        finally:
+            pass
+
+        troveTupleList.sort()
+        troveTupleList.reverse()
+        
+        for troveTuple in troveTupleList:
+            troveTuple = tuple([item.encode('UTF-8') for item in troveTuple[0:2]])
+            name = troveTuple[0]
+            version = versions.ThawVersion(troveTuple[1])
+            flavor = deps.ThawFlavor(troveTuple[2])
+            id = self.get_package_id(name, version, flavor)
+            summary = self._get_metadata(id, 'shortDesc') or " "
+            category = troveTuple[3][0]
+            category = category.encode('UTF-8')
+            troveTuple = tuple([name, version, flavor])
+            installed = self.check_installed(troveTuple)
+            
+            if self._do_filtering(name,fltlist,installed):
+                self.package(id, installed, summary)
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
@@ -535,6 +630,23 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         installed = self.check_installed(troveTuple)
         return name, version, flavor, installed
 
+    def repo_set_data(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        '''
+        pass
+
+    def get_repo_list(self, filters):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        pass
+
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        '''
+
 
 class Cache(object):
     # Database name and path
@@ -566,6 +678,10 @@ class Cache(object):
         self.cursor.execute(stmt)
         # List of all tables with names that start with "conary_"
         tbllist = self.cursor.fetchall()
+        if tbllist == [('conary_packages',)]:
+            self.cursor.execute('DROP TABLE conary_packages')
+            self.conn.commit()
+            tbllist = []
         if tbllist != []:
             return True
             #print "Verified packages table"
@@ -627,6 +743,7 @@ class Cache(object):
     def _create_database(self):
         """ Creates a blank database. """
         sql = '''CREATE TABLE conary_packages (
+            packageId INTEGER,
             trove text,
             component text,
             version text,
@@ -638,6 +755,23 @@ class Cache(object):
             size text)'''
 
         self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_categories (
+            categoryId INTEGER,
+            categoryName text)'''
+
+        self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_category_package_map (
+            categoryId INTEGER,
+            packageId INTEGER)'''
+
+        self.cursor.execute(sql)
+
+        #self.conn.createIndex('conary_catagories', 'conary_category_name_idx', ['categoryName'])
+        #self.conn.createIndex('conary_catagories', 'conary_category_id_idx', ['categoryId'])
+
+
 
     def commit(self):
         self.cursor.commit()
@@ -675,10 +809,48 @@ class Cache(object):
             print str(e)
             return None
 
+    def searchByGroups(self, groups):
+        """
+        Returns all troves for given group. (trove, version, flavor)
+        Needs filtering capability.
+        ['all'] means all packages
+        FIXME: No filtering done on group text - SQL injection
+        """
+        if not groups:
+            groups = ["all"]
+
+        if "all" in groups:
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+                    "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
+                    "          WHERE CCMap.package_id = CP.id"
+                    "            AND CCMap.category_id = CC.id"
+                    "       GROUP BY CP.trove, CP.version, CP.flavor"
+                    "       ORDER BY CP.trove, CP.version DESC, CP.flavor")
+        else:
+            group_string = ", ".join(groups)
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+                    "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
+                    "          WHERE CC.category_name IN (%s)"
+                    "            AND CCMap.package_id = CP.id"
+                    "            AND CCMap.category_id = CC.id"
+                    "       GROUP BY CP.trove, CP.version, CP.flavor"
+                    "       ORDER BY CP.trove, CP.version DESC, CP.flavor" % group_string)
+        
+        try:
+            self.cursor.execute(stmt)
+            return self.cursor.fetchall()
+        except Exception, e:
+            print str(e)
+            return None
+        
     def _insert(self, trove):
         """
         Insert trove into database.
         """
+        res = self.cursor.execute("SELECT COALESCE(max(packageId), 0) + 1 FROM conary_packages")
+        pkgId = res.fetchone()[0] + 1
+        trove = [pkgId] + trove[:]
+
         values = [str(field) for field in trove]
         cols = ",".join("?" * len(trove))
         sql = "INSERT INTO conary_packages VALUES (%s)" % cols
@@ -694,11 +866,53 @@ class Cache(object):
         Deletes * records from table.
         """
         stmt = "DELETE FROM %s" % tableName
-        self.cursor.execute(stmt)
+        try:
+            self.cursor.execute(stmt)
+        except dbstore.sqlerrors.InvalidTable:
+            pass
 
     def populate_database(self):
         packages = self.conaryquery()
         # Clear table first
-        self._clear_table()
+        for tblName in ('conary_packages', 'conary_category_package_map',
+                'conary_categories'):
+            self._clear_table(tblName)
         for package in packages:
             self._insert(package)
+
+    def _addPackageCategory(self, trv, category):
+        res = self.cursor.execute( \
+                'SELECT packageId FROM conary_packages WHERE trove=? and version=? and flavor = ?', trv.getName(), trv.getVersion().freeze(), trv.getFlavor().freeze())
+        res = res.fetchone()
+        if res:
+            # we have a packageID
+            pkgId = res[0]
+        else:
+            # we really should have had this data
+            raise RuntimeError
+
+        # now look up/make the categoryId
+        res = self.cursor.execute('SELECT categoryId FROM conary_categories WHERE categoryName=?', category)
+        res = res.fetchone()
+        if not res:
+            res = self.cursor.execute('SELECT COALESCE(MAX(categoryId), 0) + 1 FROM conary_categories')
+            catId = res.fetchone()[0]
+            self.cursor.execute('INSERT INTO conary_categories VALUES(?, ?)',
+                    catId, category)
+        else:
+            catId = category
+
+        self.cursor.execute("INSERT INTO conary_category_package_map VALUES(?, ?)", catId, pkgId)
+        self.conn.commit()
+
+    def populate_categories(self, csList):
+        for cs in csList:
+            for troveCS in cs.iterNewTroveList():
+                trv = trove.Trove(troveCS)
+                if ':' in trv.getName():
+                    # components aren't tracked at the moment
+                    continue
+                metadata = trv.getMetadata()
+                categories = metadata.get('categories', [])
+                for category in categories:
+                    self._addPackageCategory(trv, category)
