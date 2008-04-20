@@ -675,6 +675,36 @@ class Cache(object):
             print str(e)
             return None
 
+    def searchByGroup(self, groups):
+        """
+        Returns all troves for given groups. (trove, version, flavor)
+        Needs filtering capability.
+        ['all'] means all packages
+        FIXME: No filtering done on group text - SQL injection
+        """
+        if not groups:
+            groups = ["all"]
+
+        if "all" in groups:
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+                    "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
+                    "       GROUP BY CP.trove, CP.version, CP.flavor"
+                    "       ORDER BY CP.trove, CP.version DESC, CP.flavor")
+        else:
+            group_string = ", ".join(groups)
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+                    "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
+                    "          WHERE CC.category_name IN (%s)"
+                    "       GROUP BY CP.trove, CP.version, CP.flavor"
+                    "       ORDER BY CP.trove, CP.version DESC, CP.flavor" % group_string)
+        
+        try:
+            self.cursor.execute(stmt)
+            return self.cursor.fetchall()
+        except Exception, e:
+            print str(e)
+            return None
+        
     def _insert(self, trove):
         """
         Insert trove into database.
