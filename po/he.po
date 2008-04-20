@@ -1,0 +1,397 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "קבל רשיון משתמש הקצה (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "אימות נדרש כדי לשנות פרמטרים של מקורות תוכנה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to install a local file"
+msgstr "אימות נדרש כדי להתקין קובץ מקומי"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a package"
+msgstr "אימות נדרש כדי להתקין חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a security signature"
+msgstr "אימות נדרש כדי להתקין חותחת אבטחה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the package lists"
+msgstr "אימות נדרש כדי לרענן את רשימות החבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "אימות נדרש כדי להסיר חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "אימות נדרש כדי לגלגל אחורנית טרנסאקציה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to update all packages"
+msgstr "אימות נדרש כדי לעדכן את כל החבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "אימות נדרש כדי לעדכן חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "שנה פרמטרים של מקורות תוכנה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "התקן קובץ מקומי"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install package"
+msgstr "התקן חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install security signature"
+msgstr "התקן חותמת אבטחה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Refresh package lists"
+msgstr "רענן רשימות חבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Remove package"
+msgstr "הסר חבילה"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Rollback to a previous transaction"
+msgstr "גלגל אחרונית לטרהסאקציה קודמת"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Update all packages"
+msgstr "עדכן את כל החבילות"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update package"
+msgstr "עדכן חבילה"
+
+#: ../client/pk-console.c:208
+msgid "Update detail"
+msgstr "פרטי עדכון"
+
+#: ../client/pk-console.c:400
+msgid "A system restart is required"
+msgstr "נדרש אתחול מחדש של המערכת"
+
+#: ../client/pk-console.c:402
+msgid "A logout and login is required"
+msgstr "נדרשת יציאה מהמשתמש וכניסה מחדש"
+
+#: ../client/pk-console.c:404
+msgid "An application restart is required"
+msgstr "נדרשת הפעלה מחדש של תוכנה"
+
+#: ../client/pk-console.c:443
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "אנא הזן מספר מ- 1 ל- %i"
+
+#: ../client/pk-console.c:493
+msgid "Could not find a package match"
+msgstr "לא נמצאה חבילה תואמת"
+
+#: ../client/pk-console.c:507
+msgid "There are multiple package matches"
+msgstr "ישנן מספר חבילות מתאימות"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:514
+msgid "Please enter the package number: "
+msgstr "אנא הזן את מספר החבילה: "
+
+#: ../client/pk-console.c:530
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr "לא נמצאה חבילה בשם זה להתקנה, או חבילה כבר מותקנת"
+
+#: ../client/pk-console.c:612
+msgid "Could not find a package with that name to remove"
+msgstr "לא נמצאה חבילה בשם זה להסרה"
+
+#: ../client/pk-console.c:652
+msgid "The following packages have to be removed"
+msgstr "יש להסיר את החבילות הבאות"
+
+#. get user input
+#: ../client/pk-console.c:661
+msgid "Okay to remove additional packages?"
+msgstr "האם ניתן להסיר חבילות נוספות?"
+
+#: ../client/pk-console.c:665
+msgid "Cancelled!"
+msgstr "בוטל!"
+
+#: ../client/pk-console.c:687
+msgid "Could not find a package with that name to update"
+msgstr "לא נמצאה חבילה בשם זה לעדכון"
+
+#: ../client/pk-console.c:705
+msgid "Could not find what packages require this package"
+msgstr "לא ניתן למצוא אילו חבילות נזקקות לחבילה זו"
+
+#: ../client/pk-console.c:723
+msgid "Could not get dependencies for this package"
+msgstr "לא ניתן למצוא תלויות לחבילה זו"
+
+#: ../client/pk-console.c:741
+msgid "Could not find a description for this package"
+msgstr "לא ניתן למצוא תיאור לחבילה זו"
+
+#: ../client/pk-console.c:759
+#, c-format
+msgid "Could not find the files for this package"
+msgstr "לא ניתן למצוא את הקבצים לחבילה זו"
+
+#: ../client/pk-console.c:819
+msgid "Package description"
+msgstr "תיאור חבילה"
+
+#: ../client/pk-console.c:842
+msgid "Package files"
+msgstr "קבצי החבילה"
+
+#: ../client/pk-console.c:850
+msgid "No files"
+msgstr "אין קבצים"
+
+#. get user input
+#: ../client/pk-console.c:882
+msgid "Okay to import key?"
+msgstr "האם ניתן לייבא מפתח?"
+
+#: ../client/pk-console.c:885
+msgid "Did not import key"
+msgstr "מפתח לא יובא"
+
+#. get user input
+#: ../client/pk-console.c:925
+msgid "Do you agree?"
+msgstr "האם את/ה מסכים?"
+
+#: ../client/pk-console.c:928
+msgid "Did not agree to licence, task will fail"
+msgstr "לא היתה הסכמה להסכם, המשימה תכשל"
+
+#: ../client/pk-console.c:957
+msgid "The daemon crashed mid-transaction!"
+msgstr "ה- daemon נכשל באמצע טרנסאקציה!"
+
+#. header
+#: ../client/pk-console.c:1010
+msgid "PackageKit Console Interface"
+msgstr "ממשק טרמינל של PackageKit"
+
+#: ../client/pk-console.c:1010
+msgid "Subcommands:"
+msgstr "תתי פקודות:"
+
+#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "הצג מידע דיבוג נוסף"
+
+#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+msgid "Show the program version and exit"
+msgstr "הצג את גרסת התוכנה וסיים"
+
+#: ../client/pk-console.c:1118
+msgid "Set the filter, e.g. installed"
+msgstr "קבע את הפילטר, למשל, מותקן"
+
+#: ../client/pk-console.c:1120
+msgid "Exit without waiting for actions to complete"
+msgstr "סיים ללא המתנה לסיום פעולות"
+
+#: ../client/pk-console.c:1143
+msgid "Could not connect to system DBUS."
+msgstr "לא התאפשר להתחבר ל- DBUS המערכת"
+
+#: ../client/pk-console.c:1231
+#, c-format
+msgid "You need to specify a search type"
+msgstr "יש לקבוע סוג חיפוש"
+
+#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
+#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
+#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
+#, c-format
+msgid "You need to specify a search term"
+msgstr "יש לציין פריט חיפוש"
+
+#: ../client/pk-console.c:1262
+#, c-format
+msgid "Invalid search type"
+msgstr "סוג חיפוש לא תקין"
+
+#: ../client/pk-console.c:1267
+#, c-format
+msgid "You need to specify a package or file to install"
+msgstr "יש לקבוע חבילה או קובץ להתקנה"
+
+#: ../client/pk-console.c:1280
+#, c-format
+msgid "You need to specify a type, key_id and package_id"
+msgstr "יש לקבוע סוג, זיהוי מפתח וזיהוי חבילה"
+
+#: ../client/pk-console.c:1287
+#, c-format
+msgid "You need to specify a package to remove"
+msgstr "יש לקבוע חבילה להסרה"
+
+#: ../client/pk-console.c:1294
+#, c-format
+msgid "You need to specify a eula-id"
+msgstr "יש לציין זיהוי של הסכם משתמש הקצה"
+
+#: ../client/pk-console.c:1309
+#, c-format
+msgid "You need to specify a package name to resolve"
+msgstr "יש לציין שם חבילה לבירור"
+
+#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
+#, c-format
+msgid "You need to specify a repo name"
+msgstr "יש לציין שם מקור חבילות"
+
+#: ../client/pk-console.c:1330
+#, c-format
+msgid "You need to specify a repo name/parameter and value"
+msgstr "יש לציין שם מקור חבילות או פרמטר וערך"
+
+#: ../client/pk-console.c:1343
+#, c-format
+msgid "You need to specify a time term"
+msgstr "יש לציין פריט זמן"
+
+#: ../client/pk-console.c:1348
+#, c-format
+msgid "You need to specify a correct role"
+msgstr "יש לציין תפקיד תקין"
+
+#: ../client/pk-console.c:1353
+#, c-format
+msgid "Failed to get last time"
+msgstr "כשלון בבירור הזמן הקודם"
+
+#: ../client/pk-console.c:1389
+#, c-format
+msgid "You need to specify a package to find the description for"
+msgstr "יש לציין חבילה עבורה למצוא תיאור"
+
+#: ../client/pk-console.c:1396
+#, c-format
+msgid "You need to specify a package to find the files for"
+msgstr "יש לציין חבילה עבורה למצוא קבצים"
+
+#: ../client/pk-console.c:1441
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "אוצפיה '%s' לא נתמכת"
+
+#: ../client/pk-console.c:1452
+msgid "Command failed"
+msgstr "פעולה נכשלה"
+
+#: ../client/pk-console.c:1456
+msgid "You don't have the necessary privileges for this operation"
+msgstr "אין לך ההרשאות הנדרשות לפעולה זו"
+
+#: ../client/pk-monitor.c:113
+msgid "PackageKit Monitor"
+msgstr "מוניטור PackageKit"
+
+#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "לא ניתן לפתוח מסד נתונים: %s"
+
+#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "כנראה שיש להריץ תוכנה זו כמשתמש root"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "אתחול נכשל כתוצאה ממדיניות אבטחה על מחשב זה"
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "זה עשוי לקרות מאחת משתי סיבות:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "המשתמש הנכון לא מריץ את הקובץ (לרוב root("
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr "הקובץ org.freedesktop.PackageKit.conf לא מותקן בתיקיה /etc/dbus-1/system.d"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "שיטת חבילות לשימוש, למשל dummy"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "הפוך ל- daemon ונתן מהטרמינל"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "כבה את הטיימר לחוסר פעילות"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "הצג גרסא וסיים"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "צא אחרי המתנה קצרה"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "צא אחרי שהמנוע נטען"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "שרות PackageKit"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "לא יכול להתחבר ל- system bus"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "כשלון בהפעלת: %s\n"
