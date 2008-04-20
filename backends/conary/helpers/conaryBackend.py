@@ -198,23 +198,40 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
             if self._do_filtering(name,fltlist,installed):
                 self.package(id, installed, summary)
 
-    def _do_update(self, applyList, apply=False):
+    def _get_update(self, applyList, cache=True):
         updJob = self.client.newUpdateJob()
         suggMap = self.client.prepareUpdateJob(updJob, applyList)
-
-        if apply:
-            self.allow_cancel(False)
-            restartDir = self.client.applyUpdateJob(updJob)
-
+        if cache:
+            Cache().cacheUpdateJob(applyList, updJob)
         return updJob, suggMap
 
-    def _do_package_update(self, name, version, flavor, apply=False):
+    def _do_update(self, applyList):
+        jobPath = Cache().checkCachedUpdateJob(applyList)
+        if jobPath:
+            updJob = self.client.newUpdateJob()
+            try:
+                updJob.thaw(jobPath)
+            except IOError, err:
+                updJob = None
+        else:
+            updJob = self._get_update(applyList, cache=False)
+        self.allow_cancel(False)
+        restartDir = self.client.applyUpdateJob(updJob)
+        return updJob
+
+    def _get_package_update(self, name, version, flavor):
         if name.startswith('-'):
             applyList = [(name, (version, flavor), (None, None), False)]
         else:
             applyList = [(name, (None, None), (version, flavor), True)]
-        updJob, suggMap = self._do_update(applyList, apply=apply)
-        return updJob, suggMap
+        return self._get_update(applyList)
+
+    def _do_package_update(self, name, version, flavor):
+        if name.startswith('-'):
+            applyList = [(name, (version, flavor), (None, None), False)]
+        else:
+            applyList = [(name, (None, None), (version, flavor), True)]
+        return self._do_update(applyList)
 
     @ExceptionHandler
     def resolve(self, filter, package):
@@ -297,9 +314,8 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     'Package already installed')
 
             else:
-                updJob, suggMap = self._do_package_update(name, version, flavor,
-                                                      apply=False)
-
+                updJob, suggMap = self._get_package_update(name, version,
+                                                           flavor)
                 for what, need in suggMap:
                     id = self.get_package_id(need[0], need[1], need[2])
                     depInstalled = self.check_installed(need[0])
@@ -343,7 +359,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.allow_cancel(True)
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        updJob, suggMap = self._do_update(applyList, apply=True)
+        updJob, suggMap = self._do_update(applyList)
 
     @ExceptionHandler
     def refresh_cache(self):
@@ -364,7 +380,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         for package in packages.split(" "):
             name, version, flavor, installed = self._findPackage(package)
             if name:
-                self._do_package_update(name, version, flavor, apply=True)
+                self._do_package_update(name, version, flavor)
             else:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                     'No available updates')
@@ -386,7 +402,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     'Package already installed')
 
             self.status(STATUS_INSTALL)
-            self._do_package_update(name, version, flavor, apply=True)
+            self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
@@ -407,7 +423,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.status(STATUS_REMOVE)
             name = '-%s' % name
-            self._do_package_update(name, version, flavor, apply=True)
+            self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
                 'Package was not found')
@@ -550,7 +566,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
         updateItems = self.client.fullUpdateItemList()
         applyList = [ (x[0], (None, None), x[1:], True) for x in updateItems ]
-        updJob, suggMap = self._do_update(applyList, apply=False)
+        updJob, suggMap = self._get_update(applyList)
 
         jobLists = updJob.getJobs()
 
@@ -657,11 +673,14 @@ class Cache(object):
     #else:
     #    dbPath = '/var/cache/conary/'
     dbPath = '/var/cache/conary/'
+    jobPath = dbPath + 'jobs'
 
     """ Class to retrieve and cache package information from label. """
     def __init__(self):
         if not os.path.isdir(self.dbPath):
             os.makedirs(self.dbPath)
+        if not os.path.isdir(self.jobPath):
+            os.mkdir(self.jobPath)
 
         self.conn = dbstore.connect(os.path.join(self.dbPath, self.dbName))
         self.cursor = self.conn.cursor()
@@ -693,6 +712,24 @@ class Cache(object):
                 backend.status(STATUS_WAIT)
                 self.populate_database()
                 return True
+
+    def _getJobCachePath(self, applyList):
+        from conary.lib import sha1helper
+        applyStr = '\0'.join(['%s=%s[%s]--%s[%s]%s' % (x[0], x[1][0], x[1][1], x[2][0], x[2][1], x[3]) for x in applyList])
+        return self.jobPath + '/' + sha1helper.sha1ToString(sha1helper.sha1String(applyStr))
+
+    def checkCachedUpdateJob(self, applyList):
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            return jobPath
+
+    def cacheUpdateJob(self, applyList, updJob):
+        jobPath = self._getJobCachePath(applyList)
+        if os.path.exists(jobPath):
+            from conary.lib import util
+            util.rmtree(jobPath)
+        os.mkdir(jobPath)
+        updJob.freeze(jobPath)
 
     def conaryquery(self):
         self.cfg = conarycfg.ConaryConfiguration()
@@ -741,6 +778,8 @@ class Cache(object):
         return connection.cursor()
 
     def _create_database(self):
+        #FIXME: delete the category column. it's not useful
+
         """ Creates a blank database. """
         sql = '''CREATE TABLE conary_packages (
             packageId INTEGER,
@@ -764,6 +803,18 @@ class Cache(object):
 
         sql = '''CREATE TABLE conary_category_package_map (
             categoryId INTEGER,
+            packageId INTEGER)'''
+
+        self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_lienses (
+            licenseId INTEGER,
+            licenseName text)'''
+
+        self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_license_package_map (
+            licenseId INTEGER,
             packageId INTEGER)'''
 
         self.cursor.execute(sql)
@@ -905,7 +956,7 @@ class Cache(object):
         self.cursor.execute("INSERT INTO conary_category_package_map VALUES(?, ?)", catId, pkgId)
         self.conn.commit()
 
-    def populate_categories(self, csList):
+    def populate_metadata(self, csList):
         for cs in csList:
             for troveCS in cs.iterNewTroveList():
                 trv = trove.Trove(troveCS)
@@ -916,3 +967,6 @@ class Cache(object):
                 categories = metadata.get('categories', [])
                 for category in categories:
                     self._addPackageCategory(trv, category)
+                #licenses = metadata.get('licenses', [])
+                #for license in licenses:
+                #    self._addPackageLicense(trv, license)
