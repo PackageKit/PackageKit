@@ -105,6 +105,8 @@ install -m644 docs/spec/pk-structure.png $RPM_BUILD_ROOT%{_datadir}/doc/packagek
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/yumDBUSBackend.py
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 
+%find_lang %name
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -112,7 +114,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %postun libs -p /sbin/ldconfig
 
-%files
+%files -f %{name}.lang
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING 
 %dir %{_datadir}/doc/packagekit
