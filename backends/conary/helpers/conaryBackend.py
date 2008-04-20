@@ -585,6 +585,10 @@ class Cache(object):
         self.cursor.execute(stmt)
         # List of all tables with names that start with "conary_"
         tbllist = self.cursor.fetchall()
+        if tbllist == [('conary_packages',)]:
+            self.cursor.execute('DROP TABLE conary_packages')
+            self.conn.commit()
+            tbllist = []
         if tbllist != []:
             return True
             #print "Verified packages table"
@@ -661,7 +665,7 @@ class Cache(object):
 
         sql = '''CREATE TABLE conary_categories (
             categoryId INTEGER,
-            catergoryName text)'''
+            categoryName text)'''
 
         self.cursor.execute(sql)
 
@@ -746,6 +750,10 @@ class Cache(object):
         """
         Insert trove into database.
         """
+        res = self.cursor.execute("SELECT COALESCE(max(packageId), 0) + 1 FROM conary_packages")
+        pkgId = res.fetchone()[0] + 1
+        trove = [pkgId] + trove[:]
+
         values = [str(field) for field in trove]
         cols = ",".join("?" * len(trove))
         sql = "INSERT INTO conary_packages VALUES (%s)" % cols
@@ -758,18 +766,16 @@ class Cache(object):
 
     def _clear_table(self, tableName='conary_packages'):
         """
-        Sorta deletes * records from table.
-        Just drop table for now.
+        Deletes * records from table.
         """
-        stmt = "DROP TABLE %s" % tableName
+        stmt = "DELETE FROM %s" % tableName
         try:
             self.cursor.execute(stmt)
         except dbstore.sqlerrors.InvalidTable:
             pass
 
     def populate_database(self):
-        #packages = self.conaryquery()
-        packages = []
+        packages = self.conaryquery()
         # Clear table first
         for tblName in ('conary_packages', 'conary_category_package_map',
                 'conary_categories'):
@@ -780,6 +786,7 @@ class Cache(object):
     def _addPackageCategory(self, trv, category):
         res = self.cursor.execute( \
                 'SELECT packageId FROM conary_packages WHERE trove=? and version=? and flavor = ?', trv.getName(), trv.getVersion().freeze(), trv.getFlavor().freeze())
+        res = res.fetchone()
         if res:
             # we have a packageID
             pkgId = res[0]
@@ -789,15 +796,17 @@ class Cache(object):
 
         # now look up/make the categoryId
         res = self.cursor.execute('SELECT categoryId FROM conary_categories WHERE categoryName=?', category)
+        res = res.fetchone()
         if not res:
-            res = self.cursor.execute('SELECT MAX(COALESCE(categoryId, 0)) + 1 FROM conary_categories')
-            catId = res[0]
-            self.cursor.execute('INSERT INTO CATEGORIES VALUES(?, ?)',
+            res = self.cursor.execute('SELECT COALESCE(MAX(categoryId), 0) + 1 FROM conary_categories')
+            catId = res.fetchone()[0]
+            self.cursor.execute('INSERT INTO conary_categories VALUES(?, ?)',
                     catId, category)
         else:
             catId = category
 
         self.cursor.execute("INSERT INTO conary_category_package_map VALUES(?, ?)", catId, pkgId)
+        self.conn.commit()
 
     def populate_categories(self, csList):
         for cs in csList:
