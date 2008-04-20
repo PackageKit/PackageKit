@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
