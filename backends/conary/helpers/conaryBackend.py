@@ -535,6 +535,23 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         installed = self.check_installed(troveTuple)
         return name, version, flavor, installed
 
+    def repo_set_data(self, repoid, parameter, value):
+        '''
+        Implement the {backend}-repo-set-data functionality
+        '''
+        pass
+
+    def get_repo_list(self, filters):
+        '''
+        Implement the {backend}-get-repo-list functionality
+        '''
+        pass
+
+    def repo_enable(self, repoid, enable):
+        '''
+        Implement the {backend}-repo-enable functionality
+        '''
+
 
 class Cache(object):
     # Database name and path
