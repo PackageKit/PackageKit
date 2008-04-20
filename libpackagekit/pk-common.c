@@ -640,6 +640,74 @@ pk_delay_yield (gfloat delay)
 }
 
 /**
+ * pk_ptr_array_to_argv:
+ * @array: the GPtrArray of strings
+ *
+ * Form a composite string array of strings.
+ * The data in the GPtrArray is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+gchar **
+pk_ptr_array_to_argv (GPtrArray *array)
+{
+	gchar **strv_array;
+	const gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	/* copy the array to a strv */
+	strv_array = g_new0 (gchar *, array->len + 2);
+	for (i=0; i<array->len; i++) {
+		value_temp = (const gchar *) g_ptr_array_index (array, i);
+		strv_array[i] = g_strdup (value_temp);
+	}
+	/* set the last element to NULL */
+	strv_array[i] = NULL;
+
+	return strv_array;
+}
+
+/**
+ * pk_va_list_to_argv:
+ * @string_first: the first string
+ * @args: any subsequant string's
+ *
+ * Form a composite string array of string
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+gchar **
+pk_va_list_to_argv (const gchar *string_first, va_list *args)
+{
+	GPtrArray *ptr_array;
+	gchar **array;
+	gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (args != NULL, NULL);
+	g_return_val_if_fail (string_first != NULL, NULL);
+
+	/* find how many elements we have in a temp array */
+	ptr_array = g_ptr_array_new ();
+	g_ptr_array_add (ptr_array, g_strdup (string_first));
+	for (i=0;; i++) {
+		value_temp = va_arg (*args, gchar *);
+		if (value_temp == NULL) break;
+		g_ptr_array_add (ptr_array, g_strdup (value_temp));
+	}
+	pk_debug ("number of strings=%i", i+1);
+
+	/* convert the array to a strv type */
+	array = pk_ptr_array_to_argv (ptr_array);
+
+	/* get rid of the array, and free the contents */
+	g_ptr_array_free (ptr_array, TRUE);
+	return array;
+}
+
+/**
  * pk_strbuild_va:
  * @first_element: The first string item, or NULL
  * @args: the va_list

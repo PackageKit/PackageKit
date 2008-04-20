@@ -441,45 +441,50 @@ pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 }
 
 /**
- * pk_backend_spawn_helper_internal:
+ * pk_backend_spawn_helper_va_list:
  **/
 static gboolean
-pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *script, const gchar *argument)
+pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *executable, va_list *args)
 {
 	gboolean ret;
 	gchar *filename;
-	gchar *command;
+	gchar **argv;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
+	/* convert to a argv */
+	argv = pk_va_list_to_argv (executable, args);
+	if (argv == NULL) {
+		pk_warning ("argv NULL");
+		return FALSE;
+	}
+
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
-	filename = g_build_filename ("..", "backends", backend_spawn->priv->name, "helpers", script, NULL);
+	filename = g_build_filename ("..", "backends", backend_spawn->priv->name, "helpers", argv[0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		pk_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, script, NULL);
+		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, argv[0], NULL);
 	}
 #else
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, script, NULL);
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, argv[0], NULL);
 #endif
 	pk_debug ("using spawn filename %s", filename);
 
-	if (argument != NULL) {
-		command = g_strdup_printf ("%s %s", filename, argument);
-	} else {
-		command = g_strdup (filename);
-	}
+	/* replace the filename with the full path */
+	g_free (argv[0]);
+	argv[0] = g_strdup (filename);
 
 	pk_backend_spawn_helper_new (backend_spawn);
-	ret = pk_spawn_command (backend_spawn->priv->spawn, command);
+	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv);
 	if (!ret) {
 		pk_backend_spawn_helper_delete (backend_spawn);
-		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
+		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Spawn of helper '%s' failed", argv[0]);
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
 	g_free (filename);
-	g_free (command);
 	return ret;
 }
 
@@ -527,22 +532,20 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
  * pk_backend_spawn_helper:
  **/
 gboolean
-pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *script, const gchar *first_element, ...)
+pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_element, ...)
 {
 	gboolean ret;
 	va_list args;
-	gchar *arguments;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	g_return_val_if_fail (first_element != NULL, FALSE);
 	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
 
 	/* get the argument list */
 	va_start (args, first_element);
-	arguments = pk_strbuild_va (first_element, &args);
+	ret = pk_backend_spawn_helper_va_list (backend_spawn, first_element, &args);
 	va_end (args);
 
-	ret = pk_backend_spawn_helper_internal (backend_spawn, script, arguments);
-	g_free (arguments);
 	return ret;
 }
 

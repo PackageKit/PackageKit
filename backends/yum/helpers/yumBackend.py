@@ -925,11 +925,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if len(self.yumbase.tsInfo) > 0:
                     self._runYumTransaction()
             else:
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"Can't install %s " % inst_file)
+                self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s " % inst_file)
 
         except yum.Errors.InstallError,e:
             msgs = ';'.join(e)
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,msgs)
+            self.error(ERROR_LOCAL_INSTALL_FAILED,msgs)
         except (yum.Errors.RepoError, yum.Errors.PackageSackError, IOError):
             # We might not be able to connect to the internet to get
             # repository metadata, or the package might not exist.
