@@ -19,6 +19,73 @@ from conary import dbstore, queryrep, versions, updatecmd
 from packagekit.backend import *
 from conaryCallback import UpdateCallback
 
+groupMap = {
+    '2DGraphics'          : GROUP_GRAPHICS,
+    'Accessibility'       : GROUP_ACCESSIBILITY,
+    'AdvancedSettings'    : GROUP_ADMIN_TOOLS,
+    'Application'         : GROUP_OTHER,
+    'ArcadeGame'          : GROUP_GAMES,
+    'Audio'               : GROUP_MULTIMEDIA,
+    'AudioVideo'          : GROUP_MULTIMEDIA,
+    'BlocksGame'          : GROUP_GAMES,
+    'BoardGame'           : GROUP_GAMES,
+    'Calculator'          : GROUP_ACCESSORIES,
+    'Calendar'            : GROUP_ACCESSORIES,
+    'CardGame'            : GROUP_GAMES,
+    'Compiz'              : GROUP_SYSTEM,
+    'ContactManagement'   : GROUP_ACCESSORIES,
+    'Core'                : GROUP_SYSTEM,
+    'Database'            : GROUP_SERVERS,
+    'DesktopSettings'     : GROUP_ADMIN_TOOLS,
+    'Development'         : GROUP_PROGRAMMING,
+    'Email'               : GROUP_INTERNET,
+    'FileTransfer'        : GROUP_INTERNET,
+    'Filesystem'          : GROUP_SYSTEM,
+    'GNOME'               : GROUP_DESKTOP_GNOME,
+    'GTK'                 : GROUP_DESKTOP_GNOME,
+    'GUIDesigner'         : GROUP_PROGRAMMING,
+    'Game'                : GROUP_GAMES,
+    'Graphics'            : GROUP_GRAPHICS,
+    'HardwareSettings'    : GROUP_ADMIN_TOOLS,
+    'IRCClient'           : GROUP_INTERNET,
+    'InstantMessaging'    : GROUP_INTERNET,
+    'LogicGame'           : GROUP_GAMES,
+    'Monitor'             : GROUP_ADMIN_TOOLS,
+    'Music'               : GROUP_MULTIMEDIA,
+    'Network'             : GROUP_INTERNET,
+    'News'                : GROUP_INTERNET,
+    'Office'              : GROUP_OFFICE,
+    'P2P'                 : GROUP_INTERNET,
+    'PackageManager'      : GROUP_ADMIN_TOOLS,
+    'Photography'         : GROUP_MULTIMEDIA,
+    'Player'              : GROUP_MULTIMEDIA,
+    'Presentation'        : GROUP_OFFICE,
+    'Publishing'          : GROUP_OFFICE,
+    'RasterGraphics'      : GROUP_GRAPHICS,
+    'Security'            : GROUP_SECURITY,
+    'Settings'            : GROUP_ADMIN_TOOLS,
+    'Spreadsheet'         : GROUP_OFFICE,
+    'System'              : GROUP_SYSTEM,
+    'Telephony'           : GROUP_COMMUNICATION,
+    'TerminalEmulator'    : GROUP_ACCESSORIES,
+    'TextEditor'          : GROUP_ACCESSORIES,
+    'Utility'             : GROUP_ACCESSORIES,
+    'VectorGraphics'      : GROUP_GRAPHICS,
+    'Video'               : GROUP_MULTIMEDIA,
+    'Viewer'              : GROUP_MULTIMEDIA,
+    'WebBrowser'          : GROUP_INTERNET,
+    'WebDevelopment'      : GROUP_PROGRAMMING,
+    'WordProcessor'       : GROUP_OFFICE
+}
+
+revGroupMap = {}
+
+for (con_cat, pk_group) in groupMap.items():
+    if revGroupMap.has_key(pk_group):
+        revGroupMap[pk_group].append(con_cat)
+    else:
+        revGroupMap[pk_group] = [con_cat]
+       
 #from conary.lib import util
 #sys.excepthook = util.genExcepthook()
 
@@ -166,14 +233,40 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         return installed
 
     @ExceptionHandler
-    def search_group(self, options, searchterms):
+    def search_group(self, filters, key):
         '''
         Implement the {backend}-search-name functionality
+        FIXME: Ignoring filters for now.
         '''
         self.allow_cancel(True)
         self.percentage(None)
         self.status(STATUS_QUERY)
-        pass
+
+        fltlist = filters.split(';')
+        cache = Cache()
+
+        try:
+            troveTupleList = cache.searchByGroups([key])
+        finally:
+            pass
+
+        troveTupleList.sort()
+        troveTupleList.reverse()
+        
+        for troveTuple in troveTupleList:
+            troveTuple = tuple([item.encode('UTF-8') for item in troveTuple[0:2]])
+            name = troveTuple[0]
+            version = versions.ThawVersion(troveTuple[1])
+            flavor = deps.ThawFlavor(troveTuple[2])
+            id = self.get_package_id(name, version, flavor)
+            summary = self._get_metadata(id, 'shortDesc') or " "
+            category = troveTuple[3][0]
+            category = category.encode('UTF-8')
+            troveTuple = tuple([name, version, flavor])
+            installed = self.check_installed(troveTuple)
+            
+            if self._do_filtering(name,fltlist,installed):
+                self.package(id, installed, summary)
 
     @ExceptionHandler
     def search_name(self, options, searchlist):
@@ -692,9 +785,9 @@ class Cache(object):
             print str(e)
             return None
 
-    def searchByGroup(self, groups):
+    def searchByGroups(self, groups):
         """
-        Returns all troves for given groups. (trove, version, flavor)
+        Returns all troves for given group. (trove, version, flavor)
         Needs filtering capability.
         ['all'] means all packages
         FIXME: No filtering done on group text - SQL injection
@@ -705,6 +798,8 @@ class Cache(object):
         if "all" in groups:
             stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
                     "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
+                    "          WHERE CCMap.package_id = CP.id"
+                    "            AND CCMap.category_id = CC.id"
                     "       GROUP BY CP.trove, CP.version, CP.flavor"
                     "       ORDER BY CP.trove, CP.version DESC, CP.flavor")
         else:
@@ -712,6 +807,8 @@ class Cache(object):
             stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
                     "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
                     "          WHERE CC.category_name IN (%s)"
+                    "            AND CCMap.package_id = CP.id"
+                    "            AND CCMap.category_id = CC.id"
                     "       GROUP BY CP.trove, CP.version, CP.flavor"
                     "       ORDER BY CP.trove, CP.version DESC, CP.flavor" % group_string)
         
