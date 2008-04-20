@@ -107,12 +107,26 @@ typedef struct {
 	gboolean	allow_deps;
 } TsData;
 
+/* I need this to avoid showing error messages more than once.
+ * It's initalized by backend_initalize() and destroyed by
+ * backend_destroy(), but every method should clean it at the
+ * end. */
+typedef struct {
+	/* last 'vfff: foo' message */
+	gchar		*vfffmsg;
+
+	/* all messages merged into one string which can
+	 * be displayed at the end of transaction. */
+	GString		*tslog;
+} PbError;
+
 /* global variables */
 static PkBackendThread	*thread;
 static PkNetwork	*network;
 
 static gint verbose = 1;
 static gint ref = 0;
+static PbError *pberror;
 
 static struct poldek_ctx	*ctx = NULL;
 static struct poclidek_ctx	*cctx = NULL;
@@ -1102,23 +1116,58 @@ search_package (PkBackendThread *thread, gpointer data)
 }
 
 static void
+pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
+{
+	/* Before emiting error_code try to find the most suitable PkErrorCodeEnum */
+	if (g_strrstr (pberror->tslog->str, " unresolved depend") != NULL)
+		errorcode = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED;
+	else if (g_strrstr (pberror->tslog->str, " conflicts") != NULL)
+		errorcode = PK_ERROR_ENUM_FILE_CONFLICTS;
+
+	pk_backend_error_code (backend, errorcode, pberror->tslog->str);
+}
+
+static void
+pb_error_clean (void)
+{
+	g_free (pberror->vfffmsg);
+
+	pberror->tslog = g_string_erase (pberror->tslog, 0, -1);
+}
+
+static void
 poldek_backend_log (void *data, int pri, char *message)
 {
-	const gchar *msg = strchr (message, ':');
 	PkBackend	*backend;
+
+	/* skip messages that we don't want to show */
+	if (g_str_has_prefix (message, "Nothing")) // 'Nothing to do'
+		return;
+	if (g_str_has_prefix (message, "There we")) // 'There were errors'
+		return;
 
 	backend = pk_backend_thread_get_backend (thread);
 
 	/* catch vfff messages */
 	if (g_str_has_prefix (message, "vfff: ")) {
+		/* check if this message was already showed */
+		if (pberror->vfffmsg) {
+			if (strcmp (pberror->vfffmsg, message) == 0)
+				return;
+			else
+				g_free (pberror->vfffmsg);
+		}
+
+		pberror->vfffmsg = g_strdup (message);
+
 		// 'vfff: unable to connect to ftp.pld-linux.org:21: Connection refused'
 		pk_backend_message (backend, PK_MESSAGE_ENUM_WARNING, "%s", message);
-	} else if (msg) {
-
-		if (strcmp (msg+(2*sizeof(char)), "equal version installed, skipped\n") == 0)
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, "Package already installed");
-		else if (strcmp (msg+(2*sizeof(char)), "refusing to upgrade held package\n") == 0)
-			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Refusing to upgrade held package");
+	} else {
+		if (pri & LOGERR) {
+			g_string_append_printf (pberror->tslog, "error: %s", message);
+		} else {
+			g_string_append_printf (pberror->tslog, "%s", message);
+		}
 	}
 }
 
@@ -1138,6 +1187,7 @@ do_poldek_init (void) {
 	poldeklib_init ();
 	
 	ctx = poldek_new (0);
+
 	poldek_load_config (ctx, "/etc/poldek/poldek.conf", NULL, 0);
 
 	poldek_setup (ctx);
@@ -1191,6 +1241,9 @@ backend_initalize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 
+	pberror = g_new0 (PbError, 1);
+	pberror->tslog = g_string_new ("");
+
 	thread = pk_backend_thread_new ();
 
 	/* reference count for the global variables */
@@ -1215,6 +1268,12 @@ backend_destroy (PkBackend *backend)
 		return;
 	
 	do_poldek_destroy ();
+
+	/* release PbError struct */
+	g_free (pberror->vfffmsg);
+	g_string_free (pberror->tslog, TRUE);
+
+	g_free (pberror);
 }
 
 /**
@@ -1300,6 +1359,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
@@ -1364,6 +1424,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_description_thread,
@@ -1443,6 +1504,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_files_thread,
@@ -1461,6 +1523,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	data->mode = SEARCH_ENUM_NONE;
 	data->filters = filters;
@@ -1521,6 +1584,7 @@ backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *pac
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
@@ -1610,6 +1674,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	pk_backend_thread_create (thread,
 				  (PkBackendThreadFunc)backend_get_update_detail_thread,
@@ -1674,6 +1739,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
 }
@@ -1706,13 +1772,13 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
 	nvra = poldek_get_nvra_from_package_id (td->package_id);
-	command = g_strdup_printf ("install %s", nvra);
+	command = g_strdup_printf ("install --test %s", nvra);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
 	if (!poclidek_rcmd_execline (rcmd, command))
 	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Package can't be installed!");
+		pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
 	}
 
 	g_free (nvra);
@@ -1747,6 +1813,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	}
 
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->package_id = g_strdup (package_id);
 	data->pd = g_new0 (PercentageData, 1);
@@ -1824,6 +1891,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	if (pk_network_is_online (network) == FALSE) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
@@ -1863,7 +1931,7 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 	if (!poclidek_rcmd_execline (rcmd, command))
 	{
-		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "Package can't be removed!");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, pberror->tslog->str);
 	}
 
 	g_free (nvra);
@@ -1888,6 +1956,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	g_return_if_fail (backend != NULL);
 
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->package_id = g_strdup (package_id);
 	data->allow_deps = allow_deps;
@@ -1925,6 +1994,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	data->mode = SEARCH_ENUM_DETAILS;
 	data->filters = filters;
@@ -1944,6 +2014,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	data->mode = SEARCH_ENUM_FILE;
 	data->filters = filters;
@@ -1963,6 +2034,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	data->mode = SEARCH_ENUM_GROUP;
 	data->filters = filters;
@@ -1982,6 +2054,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
 
 	data->mode = SEARCH_ENUM_NAME;
 	data->filters = filters;
@@ -2035,14 +2108,9 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 			command = g_strdup_printf ("upgrade %s", nvra);
 
 			if (!poclidek_rcmd_execline (rcmd, command)) {
-				gchar	*error;
+				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
 
-				error = g_strdup_printf ("Cannot update %s", nvra);
-
-				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
 				update_cancelled = TRUE;
-
-				g_free (error);
 			}
 
 			g_free (nvra);
@@ -2092,6 +2160,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
@@ -2168,14 +2237,9 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 			command = g_strdup_printf ("upgrade %s-%s-%s.%s", pkg->name, pkg->ver, pkg->rel, pkg_arch (pkg));
 
 			if (!poclidek_rcmd_execline (rcmd, command)) {
-				gchar	*error;
+				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
 
-				error = g_strdup_printf ("Cannot update %s-%s-%s.%s", pkg->name, pkg->ver, pkg->rel, pkg_arch (pkg));
-
-				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, error);
 				update_cancelled = TRUE;
-
-				g_free (error);
 			}
 
 			g_free (command);
@@ -2221,6 +2285,7 @@ backend_update_system (PkBackend *backend)
 	}
 
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;
@@ -2240,6 +2305,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	pb_error_clean ();
 
 	sources = poldek_get_sources (ctx);
 
