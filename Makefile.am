@@ -43,6 +43,9 @@ gprof:
 	cat gprof.txt
 endif
 
+snapshot:
+	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
+
 DISTCLEANFILES =					\
 	PackageKit-*.tar.gz				\
 	packagekit.pc					\
