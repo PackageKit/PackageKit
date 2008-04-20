@@ -15,6 +15,8 @@ from conary import errors
 from conary.deps import deps
 from conary import conarycfg, conaryclient
 from conary import dbstore, queryrep, versions, updatecmd
+from conary.local import database
+from conary import trove
 
 from packagekit.backend import *
 from conaryCallback import UpdateCallback
@@ -676,6 +678,10 @@ class Cache(object):
         self.cursor.execute(stmt)
         # List of all tables with names that start with "conary_"
         tbllist = self.cursor.fetchall()
+        if tbllist == [('conary_packages',)]:
+            self.cursor.execute('DROP TABLE conary_packages')
+            self.conn.commit()
+            tbllist = []
         if tbllist != []:
             return True
             #print "Verified packages table"
@@ -737,6 +743,7 @@ class Cache(object):
     def _create_database(self):
         """ Creates a blank database. """
         sql = '''CREATE TABLE conary_packages (
+            packageId INTEGER,
             trove text,
             component text,
             version text,
@@ -748,6 +755,23 @@ class Cache(object):
             size text)'''
 
         self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_categories (
+            categoryId INTEGER,
+            categoryName text)'''
+
+        self.cursor.execute(sql)
+
+        sql = '''CREATE TABLE conary_category_package_map (
+            categoryId INTEGER,
+            packageId INTEGER)'''
+
+        self.cursor.execute(sql)
+
+        #self.conn.createIndex('conary_catagories', 'conary_category_name_idx', ['categoryName'])
+        #self.conn.createIndex('conary_catagories', 'conary_category_id_idx', ['categoryId'])
+
+
 
     def commit(self):
         self.cursor.commit()
@@ -823,6 +847,10 @@ class Cache(object):
         """
         Insert trove into database.
         """
+        res = self.cursor.execute("SELECT COALESCE(max(packageId), 0) + 1 FROM conary_packages")
+        pkgId = res.fetchone()[0] + 1
+        trove = [pkgId] + trove[:]
+
         values = [str(field) for field in trove]
         cols = ",".join("?" * len(trove))
         sql = "INSERT INTO conary_packages VALUES (%s)" % cols
@@ -838,11 +866,53 @@ class Cache(object):
         Deletes * records from table.
         """
         stmt = "DELETE FROM %s" % tableName
-        self.cursor.execute(stmt)
+        try:
+            self.cursor.execute(stmt)
+        except dbstore.sqlerrors.InvalidTable:
+            pass
 
     def populate_database(self):
         packages = self.conaryquery()
         # Clear table first
-        self._clear_table()
+        for tblName in ('conary_packages', 'conary_category_package_map',
+                'conary_categories'):
+            self._clear_table(tblName)
         for package in packages:
             self._insert(package)
+
+    def _addPackageCategory(self, trv, category):
+        res = self.cursor.execute( \
+                'SELECT packageId FROM conary_packages WHERE trove=? and version=? and flavor = ?', trv.getName(), trv.getVersion().freeze(), trv.getFlavor().freeze())
+        res = res.fetchone()
+        if res:
+            # we have a packageID
+            pkgId = res[0]
+        else:
+            # we really should have had this data
+            raise RuntimeError
+
+        # now look up/make the categoryId
+        res = self.cursor.execute('SELECT categoryId FROM conary_categories WHERE categoryName=?', category)
+        res = res.fetchone()
+        if not res:
+            res = self.cursor.execute('SELECT COALESCE(MAX(categoryId), 0) + 1 FROM conary_categories')
+            catId = res.fetchone()[0]
+            self.cursor.execute('INSERT INTO conary_categories VALUES(?, ?)',
+                    catId, category)
+        else:
+            catId = category
+
+        self.cursor.execute("INSERT INTO conary_category_package_map VALUES(?, ?)", catId, pkgId)
+        self.conn.commit()
+
+    def populate_categories(self, csList):
+        for cs in csList:
+            for troveCS in cs.iterNewTroveList():
+                trv = trove.Trove(troveCS)
+                if ':' in trv.getName():
+                    # components aren't tracked at the moment
+                    continue
+                metadata = trv.getMetadata()
+                categories = metadata.get('categories', [])
+                for category in categories:
+                    self._addPackageCategory(trv, category)
