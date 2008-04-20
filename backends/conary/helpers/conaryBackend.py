@@ -248,7 +248,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         cache = Cache()
 
         try:
-            troveTupleList = cache.searchByGroups([key])
+            troveTupleList = cache.searchByGroups(revGroupMap[key])
         finally:
             pass
 
@@ -811,7 +811,7 @@ class Cache(object):
 
     def searchByGroups(self, groups):
         """
-        Returns all troves for given group. (trove, version, flavor)
+        Returns all troves for given groups. (trove, version, flavor)
         Needs filtering capability.
         ['all'] means all packages
         FIXME: No filtering done on group text - SQL injection
