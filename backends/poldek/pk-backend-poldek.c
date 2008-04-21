@@ -41,6 +41,8 @@ static gchar* poldek_pkg_evr (const struct pkg *pkg);
 static void poldek_backend_package (const struct pkg *pkg, gint status);
 static long do_get_bytes_to_download (const struct poldek_ts *ts, const gchar *mark);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
+static void pb_load_packages (PkBackend *backend);
+static void poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset);
 
 typedef enum {
 	TS_TYPE_ENUM_INSTALL,
@@ -949,6 +951,8 @@ search_package (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
+	pb_load_packages (backend);
+
 	cmd = poclidek_rcmd_new (cctx, NULL);
 
 	switch (d->mode) {
@@ -1116,6 +1120,22 @@ search_package (PkBackendThread *thread, gpointer data)
 }
 
 static void
+pb_load_packages (PkBackend *backend)
+{
+	gboolean	allow_cancel = pk_backend_get_allow_cancel (backend);
+
+	/* this operation can't be cancelled, so if enabled, set allow_cancel to FALSE */
+	if (allow_cancel)
+		poldek_backend_set_allow_cancel (backend, FALSE, FALSE);
+
+	/* load information about installed and available packages */
+	poclidek_load_packages (cctx, POCLIDEK_LOAD_ALL);
+
+	if (allow_cancel)
+		poldek_backend_set_allow_cancel (backend, TRUE, FALSE);
+}
+
+static void
 pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
 {
 	/* Before emiting error_code try to find the most suitable PkErrorCodeEnum */
@@ -1209,9 +1229,6 @@ do_poldek_init (void) {
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
-
-	/* load information about installed and available packages */
-	poclidek_load_packages (cctx, POCLIDEK_LOAD_ALL);
 
 	sigint_init ();
 }
@@ -1319,6 +1336,8 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
+	pb_load_packages (backend);
+
 	deppkgs = n_array_new (2, NULL, NULL);
 
 	installed = poldek_get_installed_packages ();
@@ -1379,6 +1398,8 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	pkg = poldek_get_pkg_from_package_id (package_id);
 
@@ -1443,6 +1464,8 @@ backend_get_files_thread (PkBackendThread *thread, gchar *package_id)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	pkg = poldek_get_pkg_from_package_id (package_id);
 
@@ -1546,6 +1569,8 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
+	pb_load_packages (backend);
+
 	reqpkgs = n_array_new (2, NULL, NULL);
 
 	pkg = poldek_get_pkg_from_package_id (d->package_id);
@@ -1606,6 +1631,8 @@ backend_get_update_detail_thread (PkBackendThread *thread, gchar *package_id)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -1694,6 +1721,8 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
+	pb_load_packages (backend);
+
 	rcmd = poclidek_rcmd_new (cctx, NULL);
 
 	if (rcmd) {
@@ -1764,6 +1793,8 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	/* setup callbacks */
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
@@ -1917,6 +1948,8 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	/* setup callbacks */
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
@@ -2082,6 +2115,8 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
 
+	pb_load_packages (backend);
+
 	/* setup callbacks */
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
 
@@ -2188,6 +2223,8 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 	/* get current backend */
 	backend = pk_backend_thread_get_backend (thread);
 	g_return_val_if_fail (backend != NULL, FALSE);
+
+	pb_load_packages (backend);
 
 	/* setup callbacks */
 	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, td);
