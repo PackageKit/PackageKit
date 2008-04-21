@@ -267,6 +267,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         try:
             troveTupleList = cache.searchByGroups(revGroupMap[key])
         finally:
+            # FIXME: Really need to send an error here
             pass
 
         troveTupleList.sort()
@@ -807,7 +808,7 @@ class Cache(object):
 
         self.cursor.execute(sql)
 
-        sql = '''CREATE TABLE conary_lienses (
+        sql = '''CREATE TABLE conary_licenses (
             licenseId INTEGER,
             licenseName text)'''
 
@@ -871,19 +872,19 @@ class Cache(object):
             groups = ["all"]
 
         if "all" in groups:
-            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.categoryName"
                     "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
-                    "          WHERE CCMap.package_id = CP.id"
-                    "            AND CCMap.category_id = CC.id"
+                    "          WHERE CCMap.packageId = CP.packageId"
+                    "            AND CCMap.categoryId = CC.categoryId"
                     "       GROUP BY CP.trove, CP.version, CP.flavor"
                     "       ORDER BY CP.trove, CP.version DESC, CP.flavor")
         else:
             group_string = ", ".join(groups)
-            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.category_name"
+            stmt = ("SELECT DISTINCT CP.trove, CP.version, CP.flavor, CC.categoryName"
                     "           FROM conary_packages CP, conary_categories CC, conary_category_package_map CCMap"
-                    "          WHERE CC.category_name IN (%s)"
-                    "            AND CCMap.package_id = CP.id"
-                    "            AND CCMap.category_id = CC.id"
+                    "          WHERE CC.categoryName IN (%s)"
+                    "            AND CCMap.packageId = CP.packageId"
+                    "            AND CCMap.categoryId = CC.categoryId"
                     "       GROUP BY CP.trove, CP.version, CP.flavor"
                     "       ORDER BY CP.trove, CP.version DESC, CP.flavor" % group_string)
         
