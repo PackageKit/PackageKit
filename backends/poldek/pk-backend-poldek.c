@@ -311,6 +311,9 @@ poldek_vf_progress (void *bar, long total, long amount)
 
 	if (td->type != TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->filesget == pd->filesdownload) {
+			/* we shouldn't cancel packages installation proccess */
+			poldek_backend_set_allow_cancel (backend, FALSE, FALSE);
+
 			if (td->type == TS_TYPE_ENUM_INSTALL)
 				pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 			else if (td->type == TS_TYPE_ENUM_UPDATE)
@@ -434,6 +437,9 @@ ts_confirm (void *data, struct poldek_ts *ts)
 
 			/* set proper status if there are no packages to download */
 			if (result == 1 && td->pd->filesdownload == 0) {
+				/* we shouldn't cancel packages installation proccess */
+				poldek_backend_set_allow_cancel (backend, FALSE, FALSE);
+
 				if (td->type == TS_TYPE_ENUM_INSTALL)
 					pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 				else if (td->type == TS_TYPE_ENUM_UPDATE)
@@ -466,8 +472,10 @@ ts_confirm (void *data, struct poldek_ts *ts)
 			}
 
 			/* set proper status if removing will be performed */
-			if (result == 1)
+			if (result == 1) {
+				poldek_backend_set_allow_cancel (backend, FALSE, FALSE);
 				pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+			}
 
 			break;
 	}
@@ -1138,6 +1146,11 @@ pb_load_packages (PkBackend *backend)
 static void
 pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
 {
+	if (sigint_reached()) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Action cancelled.");
+		return;
+	}
+
 	/* Before emiting error_code try to find the most suitable PkErrorCodeEnum */
 	if (g_strrstr (pberror->tslog->str, " unresolved depend") != NULL)
 		errorcode = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED;
@@ -1145,6 +1158,29 @@ pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode)
 		errorcode = PK_ERROR_ENUM_FILE_CONFLICTS;
 
 	pk_backend_error_code (backend, errorcode, pberror->tslog->str);
+}
+
+/**
+ * pb_error_check:
+ *
+ * When we try to install already installed package, poldek won't report any error
+ * just show message like 'liferea-1.4.11-2.i686: equal version installed, skipped'.
+ * This function checks if it happens and if yes, emits error_code and returns TRUE.
+ **/
+static gboolean
+pb_error_check (PkBackend *backend)
+{
+	PkErrorCodeEnum	errorcode = PK_ERROR_ENUM_UNKNOWN;
+
+	if (g_strrstr (pberror->tslog->str, " version installed, skipped") != NULL)
+		errorcode = PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED;
+
+	if (errorcode != PK_ERROR_ENUM_UNKNOWN) {
+		pk_backend_error_code (backend, errorcode, pberror->tslog->str);
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 static void
@@ -1170,6 +1206,9 @@ poldek_backend_log (void *data, int pri, char *message)
 
 	/* catch vfff messages */
 	if (g_str_has_prefix (message, "vfff: ")) {
+		if (g_str_has_prefix (message, "vfff: Inter")) // 'Interrupted system call'
+			return;
+
 		/* check if this message was already showed */
 		if (pberror->vfffmsg) {
 			if (strcmp (pberror->vfffmsg, message) == 0)
@@ -1245,9 +1284,13 @@ do_poldek_destroy (void)
 }
 
 static void
-poldek_reload (void) {
+poldek_reload (PkBackend *backend, gboolean load_packages) {
 	do_poldek_destroy ();
 	do_poldek_init ();
+
+	if (load_packages)
+		pb_load_packages (backend);
+
 }
 
 /**
@@ -1803,14 +1846,14 @@ backend_install_package_thread (PkBackendThread *thread, gpointer data)
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
 	nvra = poldek_get_nvra_from_package_id (td->package_id);
-	command = g_strdup_printf ("install --test %s", nvra);
+	command = g_strdup_printf ("install %s", nvra);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
 	if (!poclidek_rcmd_execline (rcmd, command))
-	{
 		pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
-	}
+	else
+		pb_error_check (backend);
 
 	g_free (nvra);
 	g_free (command);
@@ -1843,7 +1886,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
 	data->package_id = g_strdup (package_id);
@@ -1897,13 +1940,16 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 			if (src->flags & PKGSOURCE_NOAUTOUP)
 				continue;
 
+			if (sigint_reached ())
+				break;
+
 			source_update (src, 0);
 			pd->step++;
 		}
 		n_array_free (sources);
 	}
 
-	poldek_reload ();
+	poldek_reload (backend, TRUE);
 
 	pk_backend_set_percentage (backend, 100);
 
@@ -1921,7 +1967,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
 	if (pk_network_is_online (network) == FALSE) {
@@ -2127,6 +2173,7 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 		struct pkg	*pkg = NULL;
 
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+		pb_error_clean ();
 
 		pk_backend_set_sub_percentage (backend, 0);
 
@@ -2146,6 +2193,9 @@ backend_update_packages_thread (PkBackendThread *thread, gpointer data)
 				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
 
 				update_cancelled = TRUE;
+			} else {
+				/* allow_cancel is disabled in ts_confirm () */
+				poldek_backend_set_allow_cancel (backend, TRUE, FALSE);
 			}
 
 			g_free (nvra);
@@ -2194,7 +2244,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 		return;
 	}
 
-	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
 	data->package_ids = g_strdupv (package_ids);
@@ -2266,6 +2316,8 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 
 			pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
+			pb_error_clean ();
+
 			pk_backend_set_sub_percentage (backend, 0);
 
 			ts = poldek_ts_new (ctx, 0);
@@ -2277,6 +2329,9 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
 
 				update_cancelled = TRUE;
+			} else {
+				/* allow_cancel is disabled in ts_confirm () */
+				poldek_backend_set_allow_cancel (backend, TRUE, FALSE);
 			}
 
 			g_free (command);
@@ -2321,7 +2376,7 @@ backend_update_system (PkBackend *backend)
 		return;
 	}
 
-	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
 	data->pd = g_new0 (PercentageData, 1);
