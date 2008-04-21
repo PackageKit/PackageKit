@@ -1222,21 +1222,18 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 	try
 	{
 		// Iterate over the resolvables and mark the ones we want to remove
-		//zypp->start ();
-		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
-				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-			zypp::ui::Selectable::Ptr selectable = *it;
-			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
-				if (selectable->status () == zypp::ui::S_KeepInstalled) {
-					selectable->setStatus (zypp::ui::S_Del);
-					break;
-				}
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+				it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+			if ((*it)->isSystem ()) {
+				it->status ().setToBeUninstalled (zypp::ResStatus::USER);
+				break;
 			}
 		}
-
+		
 		pk_backend_set_percentage (backend, 40);
 
-                if (!zypp_perform_execution (backend, REMOVE, FALSE)){
+                if (!zypp_perform_execution (backend, REMOVE, TRUE)){
                         pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't remove the package");
                         g_free (d->package_id);
                         g_free (d);
@@ -1247,7 +1244,6 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 100);
 
-		// TODO: Check result for success
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
