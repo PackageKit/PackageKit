@@ -1270,7 +1270,7 @@ main (int argc, char *argv[])
 		/* is it a local file? */
 		ret = g_file_test (value, G_FILE_TEST_EXISTS);
 		if (ret) {
-			ret = pk_client_install_file (client, value, &error);
+			ret = pk_client_install_file (client, TRUE, value, &error);
 		} else {
 			ret = pk_console_install_package (client, value, &error);
 		}

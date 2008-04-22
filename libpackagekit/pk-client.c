@@ -84,6 +84,7 @@ struct _PkClientPrivate
 	gboolean		 cached_force;
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_autoremove;
+	gboolean		 cached_trusted;
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
@@ -2384,7 +2385,7 @@ pk_client_update_package (PkClient *client, const gchar *package_id, GError **er
  * pk_client_install_file_action:
  **/
 static gboolean
-pk_client_install_file_action (PkClient *client, const gchar *file, GError **error)
+pk_client_install_file_action (PkClient *client, gboolean trusted, const gchar *file, GError **error)
 {
 	gboolean ret;
 
@@ -2397,6 +2398,7 @@ pk_client_install_file_action (PkClient *client, const gchar *file, GError **err
 		return FALSE;
 	}
 	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFile", error,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_STRING, file,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
@@ -2432,6 +2434,7 @@ pk_resolve_local_path (const gchar *rel_path)
 /**
  * pk_client_install_file:
  * @client: a valid #PkClient instance
+ * @trusted: if untrused actions should be allowed
  * @file_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @error: a %GError to put the error code and message in, or %NULL
  *
@@ -2441,7 +2444,7 @@ pk_resolve_local_path (const gchar *rel_path)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
+pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_rel, GError **error)
 {
 	gboolean ret;
 	gchar *file;
@@ -2462,10 +2465,11 @@ pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
+	client->priv->cached_trusted = trusted;
 	client->priv->cached_full_path = g_strdup (file);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_file_action (client, file, &error_pk);
+	ret = pk_client_install_file_action (client, trusted, file, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -2474,7 +2478,7 @@ pk_client_install_file (PkClient *client, const gchar *file_rel, GError **error)
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_install_file_action (client, file, &error_pk);
+			ret = pk_client_install_file_action (client, trusted, file, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2945,7 +2949,7 @@ pk_client_requeue (PkClient *client, GError **error)
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		ret = pk_client_install_package (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		ret = pk_client_install_file (client, priv->cached_full_path, error);
+		ret = pk_client_install_file (client, priv->cached_trusted, priv->cached_full_path, error);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {

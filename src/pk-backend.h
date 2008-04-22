@@ -164,6 +164,7 @@ typedef struct {
 	void		(*get_updates)		(PkBackend *backend,
 						 PkFilterEnum filters);
 	void		(*install_file)		(PkBackend *backend,
+						 gboolean trusted,
 						 const gchar *full_path);
 	void		(*install_package)	(PkBackend *backend,
 						 const gchar *package_id);

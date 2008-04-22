@@ -596,7 +596,7 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
-    def InstallFile (self, inst_file):
+    def InstallFile (self, trusted, inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file

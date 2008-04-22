@@ -898,7 +898,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
-    def install_file (self,inst_file):
+    def install_file (self,trusted,inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
@@ -913,7 +913,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
-        self.yumbase.conf.gpgcheck=0
+        if trusted:
+            self.yumbase.conf.gpgcheck=1
+        else
+            self.yumbase.conf.gpgcheck=0
 
         try:
             txmbr = self.yumbase.installLocal(inst_file)
