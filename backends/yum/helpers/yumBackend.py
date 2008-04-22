@@ -33,7 +33,7 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string,unique
-from yum.packages import YumLocalPackage
+from yum.packages import YumLocalPackage, parsePackages
 from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
@@ -932,6 +932,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.conf.gpgcheck=0
 
         try:
+            self._check_local_file(inst_file)
             txmbr = self.yumbase.installLocal(inst_file)
             if txmbr:
                 self._checkForNewer(txmbr[0].po)
@@ -962,6 +963,25 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
                 
+    def _check_local_file(self, pkg):
+        """
+        Duplicates some of the checks that yumbase.installLocal would
+        do, so we can get decent error reporting.
+        """
+        po = None
+        try:
+            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
+        except yum.Errors.MiscError:
+            raise yum.Errors.InstallError("%s does not appear to be a valid package." % pkg)
+
+        if self._is_inst(po):
+            raise yum.Errors.InstallError("%s is already installed" % str(po))
+
+        if len(self.yumbase.conf.exclude) > 0:
+           exactmatch, matched, unmatched = \
+                   parsePackages([po], self.yumbase.conf.exclude, casematch=1)
+           if po in exactmatch + matched:
+               raise yum.Errors.InstallError("%s is excluded by yum configuration." % pkg)
 
     def update(self,packages):
         '''

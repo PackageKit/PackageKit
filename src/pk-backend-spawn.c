@@ -485,6 +485,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
 	g_free (filename);
+	g_strfreev (argv);
 	return ret;
 }
 

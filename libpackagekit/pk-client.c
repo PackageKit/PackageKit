@@ -2300,7 +2300,11 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
-	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* only copy if we are not requeing */
+	if (client->priv->cached_package_ids == package_ids) {
+		client->priv->cached_package_ids = g_strdupv (package_ids);
+	}
 
 	/* hopefully do the operation first time */
 	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
@@ -2350,6 +2354,7 @@ pk_client_update_packages (PkClient *client, GError **error, const gchar *packag
 {
 	va_list args;
 	gchar **package_ids;
+	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -2359,7 +2364,9 @@ pk_client_update_packages (PkClient *client, GError **error, const gchar *packag
 	package_ids = pk_package_ids_from_va_list (package_id, &args);
 	va_end (args);
 
-	return pk_client_update_packages_strv (client, package_ids, error);
+	ret = pk_client_update_packages_strv (client, package_ids, error);
+	g_strfreev (package_ids);
+	return ret;
 }
 
 /**
