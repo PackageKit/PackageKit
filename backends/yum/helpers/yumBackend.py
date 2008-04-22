@@ -927,7 +927,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             try:
                 self.yumbase._checkSignatures([po], None)
             except yum.Errors.YumGPGCheckError,e:
-                self.error(ERROR_UNKNOWN,str(e))
+                self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
         else:
             self.yumbase.conf.gpgcheck=0
 
