@@ -136,10 +136,10 @@ find_packages_real (PkBackend *backend, const gchar *search, PkFilterEnum filter
 	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 		filter_box = filter_box | PKG_AVAILABLE;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVEL)) {
+	if (pk_enums_contain (filters, PK_FILTER_ENUM_DEVELOPMENT)) {
 		filter_box = filter_box | PKG_DEVEL;
 	}
-	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVEL)) {
+	if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
 		filter_box = filter_box | PKG_NON_DEVEL;
 	}
 	if (pk_enums_contain (filters, PK_FILTER_ENUM_GUI)) {
