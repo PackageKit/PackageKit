@@ -33,6 +33,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <sys/prctl.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -106,6 +107,7 @@ typedef enum {
 	PK_CLIENT_STATUS_CHANGED,
 	PK_CLIENT_UPDATE_DETAIL,
 	PK_CLIENT_REPO_SIGNATURE_REQUIRED,
+	PK_CLIENT_EULA_REQUIRED,
 	PK_CLIENT_CALLER_ACTIVE_CHANGED,
 	PK_CLIENT_REPO_DETAIL,
 	PK_CLIENT_ALLOW_CANCEL,
@@ -584,12 +586,28 @@ pk_client_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit repo_signature_required %s, %s, %s, %s, %s, %s, %s, %s",
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %s",
 		  package_id, repository_name, key_url, key_userid,
 		  key_id, key_fingerprint, key_timestamp, type_text);
 
 	g_signal_emit (client, signals [PK_CLIENT_REPO_SIGNATURE_REQUIRED], 0,
 		       package_id, repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type_text);
+}
+
+/**
+ * pk_client_eula_required_cb:
+ **/
+static void
+pk_client_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+			    const gchar *vendor_name, const gchar *license_agreement, PkClient *client)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (client, signals [PK_CLIENT_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
 }
 
 /**
@@ -2281,7 +2299,11 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
-	client->priv->cached_package_ids = g_strdupv (package_ids);
+
+	/* only copy if we are not requeing */
+	if (client->priv->cached_package_ids == package_ids) {
+		client->priv->cached_package_ids = g_strdupv (package_ids);
+	}
 
 	/* hopefully do the operation first time */
 	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
@@ -2331,6 +2353,7 @@ pk_client_update_packages (PkClient *client, GError **error, const gchar *packag
 {
 	va_list args;
 	gchar **package_ids;
+	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
@@ -2340,7 +2363,9 @@ pk_client_update_packages (PkClient *client, GError **error, const gchar *packag
 	package_ids = pk_package_ids_from_va_list (package_id, &args);
 	va_end (args);
 
-	return pk_client_update_packages_strv (client, package_ids, error);
+	ret = pk_client_update_packages_strv (client, package_ids, error);
+	g_strfreev (package_ids);
+	return ret;
 }
 
 /**
@@ -2414,7 +2439,7 @@ pk_resolve_local_path (const gchar *rel_path)
 /**
  * pk_client_install_file:
  * @client: a valid #PkClient instance
- * @file: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @file_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a file locally, and get the deps from the repositories.
@@ -2530,6 +2555,88 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 }
 
 /**
+ * pk_client_accept_eula_action:
+ **/
+static gboolean
+pk_client_accept_eula_action (PkClient *client, const gchar *eula_id, GError **error)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (client != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+
+	/* check to see if we have a valid proxy */
+	if (client->priv->proxy == NULL) {
+		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
+		return FALSE;
+	}
+	ret = dbus_g_proxy_call (client->priv->proxy, "AcceptEula", error,
+				 G_TYPE_STRING, eula_id,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	return ret;
+}
+
+/**
+ * pk_client_accept_eula:
+ * @client: a valid #PkClient instance
+ * @eula_id: the <literal>eula_id</literal> we are agreeing to
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * We may want to agree to a EULA dialog if one is presented.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ */
+gboolean
+pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
+{
+	gboolean ret;
+	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
+
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	/* get and set a new ID */
+	ret = pk_client_allocate_transaction_id (client, error);
+	if (!ret) {
+		return FALSE;
+	}
+
+	/* save this so we can re-issue it */
+	client->priv->role = PK_ROLE_ENUM_ACCEPT_EULA;
+
+	/* hopefully do the operation first time */
+	ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+
+	/* we were refused by policy */
+	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+		/* try to get auth */
+		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+			/* clear old error */
+			g_clear_error (&error_pk);
+			/* retry the action now we have got auth */
+			ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
+		}
+	}
+	/* we failed one of these, return the error to the user */
+	if (!ret) {
+		pk_client_error_fixup (&error_pk);
+		g_propagate_error (error, error_pk);
+	}
+
+	if (ret) {
+		/* allow clients to respond in the status changed callback */
+		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
+
+		/* spin until finished */
+		if (client->priv->synchronous) {
+			g_main_loop_run (client->priv->loop);
+		}
+	}
+
+	return ret;
+}
+
+/**
  * pk_client_repo_enable_action:
  **/
 static gboolean
@@ -2612,6 +2719,8 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 
 	return ret;
 }
+
+
 
 /**
  * pk_client_repo_set_data_action:
@@ -2921,6 +3030,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RepoDetail", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "ErrorCode", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "RequireRestart", G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
@@ -2946,6 +3057,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_files_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_client_repo_signature_required_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_client_eula_required_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
 				     G_CALLBACK (pk_client_repo_detail_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "ErrorCode",
@@ -3098,6 +3211,7 @@ pk_client_class_init (PkClientClass *klass)
 	/**
 	 * PkClient::repo-signature-required:
 	 * @client: the #PkClient instance that emitted the signal
+	 * @package_id: the package_id of the package
 	 * @repository_name: the name of the repository
 	 * @key_url: the URL of the repository
 	 * @key_userid: the user signing the repository
@@ -3116,6 +3230,22 @@ pk_client_class_init (PkClientClass *klass)
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	/**
+	 * PkClient::eula-required:
+	 * @client: the #PkClient instance that emitted the signal
+	 * @eula_id: the EULA id, e.g. <literal>vmware5_single_user</literal>
+	 * @package_id: the package_id of the package
+	 * @vendor_name: the Vendor name, e.g. Acme Corp.
+	 * @license_agreement: the text of the license agreement
+	 *
+	 * The ::eula signal is emitted when the transaction needs to fail for a EULA prompt.
+	 **/
+	signals [PK_CLIENT_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkClientClass, eula_required),
+			      NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	/**
 	 * PkClient::repo-detail:
 	 * @client: the #PkClient instance that emitted the signal
@@ -3274,6 +3404,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
 				        G_CALLBACK (pk_client_repo_signature_required_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "EulaRequired",
+				        G_CALLBACK (pk_client_eula_required_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "ErrorCode",
 				        G_CALLBACK (pk_client_error_code_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RequireRestart",
@@ -3427,6 +3559,11 @@ pk_client_init (PkClient *client)
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 					   G_TYPE_INVALID);
 
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
+
 	/* Files */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING,
@@ -3509,6 +3646,20 @@ pk_client_new (void)
 	PkClient *client;
 	client = g_object_new (PK_TYPE_CLIENT, NULL);
 	return PK_CLIENT (client);
+}
+
+/**
+ * init:
+ *
+ * Library constructor: Disable ptrace() and core dumping for applications
+ * which use this library, so that local trojans cannot silently abuse PackageKit
+ * privileges.
+ */
+__attribute__ ((constructor))
+void init()
+{
+	/* this is a bandaid */
+	prctl (PR_SET_DUMPABLE, 0);
 }
 
 /***************************************************************************

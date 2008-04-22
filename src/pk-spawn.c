@@ -267,27 +267,21 @@ pk_spawn_kill (PkSpawn *spawn)
 }
 
 /**
- * pk_spawn_command:
+ * pk_spawn_argv:
+ * @argv: Can be generated using g_strsplit (command, " ", 0)
+ * if there are no spaces in the filename
+ *
  **/
 gboolean
-pk_spawn_command (PkSpawn *spawn, const gchar *command)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv)
 {
 	gboolean ret;
-	gchar **argv;
 
 	g_return_val_if_fail (PK_IS_SPAWN (spawn), FALSE);
-	g_return_val_if_fail (command != NULL, FALSE);
+	g_return_val_if_fail (argv != NULL, FALSE);
 
-	if (command == NULL) {
-		pk_warning ("command NULL");
-		return FALSE;
-	}
-
-	pk_debug ("command '%s'", command);
+	pk_debug ("argv[0] '%s'", argv[0]);
 	spawn->priv->finished = FALSE;
-
-	/* split command line */
-	argv = g_strsplit (command, " ", 0);
 
 	/* create spawned object for tracking */
 	ret = g_spawn_async_with_pipes (NULL, argv, NULL,
@@ -297,11 +291,10 @@ pk_spawn_command (PkSpawn *spawn, const gchar *command)
 				 &spawn->priv->stdout_fd,
 				 NULL,
 				 NULL);
-	g_strfreev (argv);
 
 	/* we failed to invoke the helper */
 	if (ret == FALSE) {
-		pk_warning ("failed to spawn '%s'", command);
+		pk_warning ("failed to spawn '%s'", argv[0]);
 		return FALSE;
 	}
 
@@ -490,6 +483,7 @@ libst_spawn (LibSelfTest *test)
 	PkSpawn *spawn = NULL;
 	gboolean ret;
 	gchar *path;
+	gchar **argv;
 
 	if (libst_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
 		return;
@@ -501,8 +495,9 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure return error for missing file");
 	mexit = BAD_EXIT;
-	path = pk_test_get_data ("pk-spawn-test.sh");
-	ret = pk_spawn_command (spawn, "pk-spawn-test-xxx.sh");
+	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
+	ret = pk_spawn_argv (spawn, argv);
+	g_strfreev (argv);
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
 	} else {
@@ -520,7 +515,11 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper");
 	mexit = -1;
-	ret = pk_spawn_command (spawn, path);
+	path = pk_test_get_data ("pk-spawn-test.sh");
+	argv = g_strsplit (path, " ", 0);
+	ret = pk_spawn_argv (spawn, argv);
+	g_free (path);
+	g_strfreev (argv);
 	if (ret) {
 		libst_success (test, "ran correct file");
 	} else {
@@ -561,7 +560,11 @@ libst_spawn (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
 	mexit = BAD_EXIT;
-	ret = pk_spawn_command (spawn, path);
+	path = pk_test_get_data ("pk-spawn-test.sh");
+	argv = g_strsplit (path, " ", 0);
+	ret = pk_spawn_argv (spawn, argv);
+	g_free (path);
+	g_strfreev (argv);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -583,13 +586,15 @@ libst_spawn (LibSelfTest *test)
 
 	/* get new object */
 	new_spawn_object (test, &spawn);
-	g_free (path);
 
 	/************************************************************/
 	libst_title (test, "make sure run correct helper, and quit it");
 	mexit = BAD_EXIT;
 	path = pk_test_get_data ("pk-spawn-test-sigquit.sh");
-	ret = pk_spawn_command (spawn, path);
+	argv = g_strsplit (path, " ", 0);
+	ret = pk_spawn_argv (spawn, argv);
+	g_free (path);
+	g_strfreev (argv);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -609,12 +614,13 @@ libst_spawn (LibSelfTest *test)
 		libst_failed (test, "finish %i!", mexit);
 	}
 
-	g_free (path);
-
 	/************************************************************/
 	libst_title (test, "run lots of data for profiling");
 	path = pk_test_get_data ("pk-spawn-test-profiling.sh");
-	ret = pk_spawn_command (spawn, path);
+	argv = g_strsplit (path, " ", 0);
+	ret = pk_spawn_argv (spawn, argv);
+	g_free (path);
+	g_strfreev (argv);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -622,7 +628,6 @@ libst_spawn (LibSelfTest *test)
 	}
 
 	g_object_unref (spawn);
-	g_free (path);
 
 	libst_end (test);
 }

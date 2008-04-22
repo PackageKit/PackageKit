@@ -58,6 +58,7 @@
 #include "pk-marshal.h"
 #include "pk-notify.h"
 #include "pk-restart.h"
+#include "pk-security.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -73,9 +74,9 @@ static void     pk_engine_finalize	(GObject       *object);
  *
  * We probably also need to wait for NetworkManager to come back up if we are
  * resuming, and we probably don't want to be doing this at a busy time after
- * a yum tramsaction.
+ * a yum transaction.
  */
-#define PK_ENGINE_STATE_CHANGED_TIMEOUT		5 /* seconds */
+#define PK_ENGINE_STATE_CHANGED_TIMEOUT		10 /* seconds */
 
 struct PkEnginePrivate
 {
@@ -87,6 +88,7 @@ struct PkEnginePrivate
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
 	PkNetwork		*network;
+	PkSecurity		*security;
 	PkNotify		*notify;
 	PkRestart		*restart;
 	PkRoleEnum		 actions;
@@ -276,9 +278,17 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 static gboolean
 pk_engine_state_changed_cb (gpointer data)
 {
+	gboolean ret;
 	PkEngine *engine = PK_ENGINE (data);
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* if NetworkManager is not up, then just reschedule */
+	ret = pk_network_is_online (engine->priv->network);
+	if (!ret) {
+		/* wait another timeout of PK_ENGINE_STATE_CHANGED_TIMEOUT */
+		return TRUE;
+	}
 
 	pk_debug ("unreffing updates cache as state may have changed");
 	pk_cache_invalidate (engine->priv->cache);
@@ -488,6 +498,7 @@ pk_engine_init (PkEngine *engine)
 
 	/* we dont need this, just don't keep creating and destroying it */
 	engine->priv->network = pk_network_new ();
+	engine->priv->security = pk_security_new ();
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);
@@ -571,6 +582,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
 	g_object_unref (engine->priv->network);
+	g_object_unref (engine->priv->security);
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);

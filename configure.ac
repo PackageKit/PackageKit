@@ -55,7 +55,8 @@ dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Werror -Wcast-align -Wno-uninitialized"
-	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security"
+#	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security"
+	CPPFLAGS="$CPPFLAGS -Wall"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -587,6 +588,7 @@ docs/spec/Makefile
 docs/api/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
 backends/alpm/Makefile

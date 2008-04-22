@@ -117,6 +117,16 @@
               <literal>gimp-2.4.3-1.fc9.i386</literal>.
             </entry>
           </row>
+          <row>
+            <entry><literal>arch</literal> or <literal>~arch</literal></entry>
+            <entry>
+              The arch filter will only return the packages that match the exact architecture
+              of the system, for instance only showing x86_64 packages on a AMD Turion 64.
+              This would mean that x86_64 packages could be filtered from non-native 32-bit
+              packages.
+              This allows the used to choose non-native packages if a multi-lib policy is allowed.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>
@@ -293,6 +303,17 @@
             <entry><literal>repo-not-found</literal></entry>
             <entry>The repository name could not be found</entry>
           </row>
+          <row>
+            <entry><literal>repo-configuration-error</literal></entry>
+            <entry>One of the enabled repositories has invalid configuration</entry>
+          </row>
+	  <row>
+	    <entry><literal>repo-not-available</literal></entry>
+	    <entry>
+	      There was a (possibly transient) problem connecting to a
+	      repository
+	    </entry>
+	  </row>
           <row>
             <entry><literal>cannot-remove-system-package</literal></entry>
             <entry>

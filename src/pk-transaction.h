@@ -95,6 +95,9 @@ gboolean	 pk_transaction_set_tid			(PkTransaction	*transaction,
 							 const gchar	*tid);
 
 /* dbus methods */
+void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
+							 const gchar	*eula_id,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
@@ -201,7 +204,7 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_service_pack			(PkTransaction	*transaction,
+gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,

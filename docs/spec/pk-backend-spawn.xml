@@ -59,7 +59,7 @@
     <title>Methods</title>
     <para>
       The following methods are mapped from the helper to comand line programs
-      in the compile helper.
+      in the spawn helper.
     </para>
     <informaltable>
       <tgroup cols="2">

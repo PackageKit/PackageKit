@@ -142,7 +142,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
-"Scribus is an desktop open source page layout program with "
+"Scribus is an desktop open source page layöut program with "
 "the aim of producing commercial grade output in PDF and "
 "Postscript, primarily, though not exclusively for Linux.\n"
 "\n"
@@ -303,16 +303,51 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
+	const gchar *license_agreement;
+	const gchar *eula_id;
+	gboolean has_eula;
 
-	if (!_has_signature && pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
-		pk_backend_repo_signature_required (backend, package_id, "updates", "http://example.com/gpgkey",
-						    "Test Key (Fedora) fedora@example.com", "BB7576AC",
-						    "D8CC 06C2 77EC 9C53 372F  C199 B1EE 1799 F24F 1B08",
-						    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
-				       "GPG signed package could not be verified");
-		pk_backend_finished (backend);
-		return;
+	if (pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+		if (!_has_signature) {
+			pk_backend_repo_signature_required (backend, package_id, "updates",
+							    "http://example.com/gpgkey",
+							    "Test Key (Fedora) fedora@example.com",
+							    "BB7576AC",
+							    "D8CC 06C2 77EC 9C53 372F C199 B1EE 1799 F24F 1B08",
+							    "2007-10-04", PK_SIGTYPE_ENUM_GPG);
+			pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE,
+					       "GPG signed package could not be verified");
+			pk_backend_finished (backend);
+			return;
+		}
+		eula_id = "eula_hughsie_dot_com";
+		has_eula = pk_backend_is_eula_valid (backend, eula_id);
+		if (!has_eula) {
+			license_agreement = "Narrator: In A.D. 2101, war was beginning.\n"
+					    "Captain: What happen ?\n"
+					    "Mechanic: Somebody set up us the bomb.\n\n"
+					    "Operator: We get signal.\n"
+					    "Captain: What !\n"
+					    "Operator: Main screen turn on.\n"
+					    "Captain: It's you !!\n"
+					    "CATS: How are you gentlemen !!\n"
+					    "CATS: All your base are belong to us.\n"
+					    "CATS: You are on the way to destruction.\n\n"
+					    "Captain: What you say !!\n"
+					    "CATS: You have no chance to survive make your time.\n"
+					    "CATS: Ha Ha Ha Ha ....\n\n"
+					    "Operator: Captain!! *\n"
+					    "Captain: Take off every 'ZIG' !!\n"
+					    "Captain: You know what you doing.\n"
+					    "Captain: Move 'ZIG'.\n"
+					    "Captain: For great justice.\n";
+			pk_backend_eula_required (backend, eula_id, package_id,
+						  "CATS Inc.", license_agreement);
+			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
+					       "licence not installed so cannot install");
+			pk_backend_finished (backend);
+			return;
+		}
 	}
 
 	pk_backend_set_allow_cancel (backend, TRUE);

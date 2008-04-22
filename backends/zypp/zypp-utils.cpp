@@ -178,7 +178,7 @@ zypp_get_rpmHeader (std::string name, zypp::Edition edition)
 }
 		
 
-gchar*
+std::string
 zypp_get_group (zypp::sat::Solvable item)
 {
         std::string group;
@@ -192,63 +192,61 @@ zypp_get_group (zypp::sat::Solvable item)
                 group = item.lookupStrAttribute (zypp::sat::SolvAttr::group);
         }
         std::transform(group.begin(), group.end(), group.begin(), tolower);
-        return (gchar*)group.c_str ();
+        return group;
 }
 
 PkGroupEnum
-get_enum_group (zypp::sat::Solvable item)
+get_enum_group (std::string group)
 {
         
-        std::string group (zypp_get_group (item));
-
-        PkGroupEnum pkGroup = PK_GROUP_ENUM_UNKNOWN;
         // TODO Look for a faster and nice way to do this conversion
+        std::transform(group.begin(), group.end(), group.begin(), tolower);
 
         if (group.find ("amusements") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_GAMES;
+                return PK_GROUP_ENUM_GAMES;
         } else if (group.find ("development") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_PROGRAMMING;
+                return PK_GROUP_ENUM_PROGRAMMING;
         } else if (group.find ("hardware") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SYSTEM;
+                return PK_GROUP_ENUM_SYSTEM;
         } else if (group.find ("archiving") != std::string::npos 
                   || group.find("clustering") != std::string::npos
                   || group.find("system/monitoring") != std::string::npos
                   || group.find("databases") != std::string::npos
                   || group.find("system/management") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_ADMIN_TOOLS;
+                return PK_GROUP_ENUM_ADMIN_TOOLS;
         } else if (group.find ("graphics") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_GRAPHICS;
-        } else if (group.find ("mulitmedia") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_MULTIMEDIA;
+                return PK_GROUP_ENUM_GRAPHICS;
+        } else if (group.find ("multimedia") != std::string::npos) {
+                return PK_GROUP_ENUM_MULTIMEDIA;
         } else if (group.find ("network") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_NETWORK;
+                return PK_GROUP_ENUM_NETWORK;
         } else if (group.find ("office") != std::string::npos 
                   || group.find("text") != std::string::npos
                   || group.find("editors") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_OFFICE;
+                return PK_GROUP_ENUM_OFFICE;
         } else if (group.find ("publishing") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_PUBLISHING;
+                return PK_GROUP_ENUM_PUBLISHING;
         } else if (group.find ("security") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SECURITY;
+                return PK_GROUP_ENUM_SECURITY;
         } else if (group.find ("telephony") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_COMMUNICATION;
+                return PK_GROUP_ENUM_COMMUNICATION;
         } else if (group.find ("gnome") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_GNOME;
+                return PK_GROUP_ENUM_DESKTOP_GNOME;
         } else if (group.find ("kde") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_KDE;
+                return PK_GROUP_ENUM_DESKTOP_KDE;
         } else if (group.find ("xfce") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_XFCE;
+                return PK_GROUP_ENUM_DESKTOP_XFCE;
         } else if (group.find ("gui/other") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_DESKTOP_OTHER;
+                return PK_GROUP_ENUM_DESKTOP_OTHER;
         } else if (group.find ("localization") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_LOCALIZATION;
+                return PK_GROUP_ENUM_LOCALIZATION;
         } else if (group.find ("system") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_SYSTEM;
+                return PK_GROUP_ENUM_SYSTEM;
         } else if (group.find ("scientific") != std::string::npos) {
-                pkGroup = PK_GROUP_ENUM_EDUCATION;
+                return PK_GROUP_ENUM_EDUCATION;
         }
 
-        return pkGroup;
+        return PK_GROUP_ENUM_UNKNOWN;
 }
 
 std::vector<zypp::sat::Solvable> *
@@ -258,12 +256,9 @@ zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, 
 
 	zypp::ResPool pool = zypp_build_pool (include_local);
 
-        zypp::Capability cap (package_name, kind, zypp::Capability::PARSED);
-        zypp::sat::WhatProvides provs (cap);
-
-        for (zypp::sat::WhatProvides::const_iterator it = provs.begin ();
-                        it != provs.end (); it++) {
-                v->push_back (*it);
+        for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (kind, package_name);
+                        it != pool.byIdentEnd (kind, package_name); it++) {
+                v->push_back (it->satSolvable ());
         }
 
 	return v;
@@ -407,13 +402,16 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 }
 
 void
-zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v)
+zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters)
 {
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
 
-		// TODO: Determine whether this package is installed or not
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+		if (filters == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
+			continue;
+		if (filters == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
+			continue;
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :
@@ -482,6 +480,8 @@ zypp_get_patches ()
         zypp::ZYpp::Ptr zypp;
         zypp = get_zypp ();
 
+	zypp->resolver ()->resolvePool ();
+
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
@@ -540,6 +540,30 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                                 pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
                                 break;
                 };
+
+		// look for licenses to confirm
+
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+			if (it->status ().isToBeInstalled () && !(it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).empty ())) {
+				gchar *eula_id = g_strdup ((*it)->name ().c_str ());
+				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
+				if (!has_eula) {
+					gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
+					pk_backend_eula_required (backend,
+							eula_id,
+							package_id,
+							(*it)->vendor ().c_str (),
+							it->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::eula).c_str ()); 
+					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
+					g_free (package_id);
+					g_free (eula_id);
+					pk_backend_finished (backend);
+					return FALSE;
+				}
+				g_free (eula_id);
+			}
+		}
 
                 // Perform the installation
                 zypp::ZYppCommitPolicy policy;
@@ -622,4 +646,20 @@ zypp_convert_set_char (std::set<zypp::sat::Solvable> *set)
         }
 
         return array;
+}
+
+gchar *
+zypp_build_package_id_capabilities (zypp::Capabilities caps)
+{
+	gchar * package_ids = new gchar ();
+
+	zypp::sat::WhatProvides provs (caps);
+
+	for (zypp::sat::WhatProvides::const_iterator it = provs.begin (); it != provs.end (); it++) {
+		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
+		package_ids = g_strconcat (package_ids, package_id, " ", (gchar *)NULL);
+		g_free (package_id);
+	}
+
+	return package_ids;
 }

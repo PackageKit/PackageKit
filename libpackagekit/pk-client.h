@@ -123,6 +123,11 @@ struct _PkClientClass
 							 const gchar	*key_fingerprint,
 							 const gchar	*key_timestamp,
 							 PkSigTypeEnum	 type);
+	void		(* eula_required)		(PkClient	*client,
+							 const gchar	*eula_id,
+							 const gchar	*package_id,
+							 const gchar	*vendor_name,
+							 const gchar	*license_agreement);
 	void		(* repo_detail)			(PkClient	*client,
 							 const gchar	*repo_id,
 							 const gchar	*description,
@@ -303,6 +308,10 @@ gboolean	 pk_client_cancel			(PkClient	*client,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_client_requeue			(PkClient	*client,
+							 GError		**error)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gboolean	 pk_client_accept_eula			(PkClient	*client,
+							 const gchar	*eula_id,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
 

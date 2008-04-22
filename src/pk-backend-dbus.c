@@ -254,6 +254,19 @@ pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *pack
 }
 
 /**
+ * pk_backend_dbus_eula_required_cb:
+ **/
+static void
+pk_backend_dbus_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+				  const gchar *vendor_name, const gchar *license_agreement,
+				  PkBackendDbus *backend_dbus)
+{
+	pk_debug ("got signal");
+	pk_backend_eula_required (backend_dbus->priv->backend, eula_id,
+				  package_id, vendor_name, license_agreement);
+}
+
+/**
  * pk_backend_dbus_time_reset:
  **/
 static gboolean
@@ -335,6 +348,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
 					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
+					G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus);
 	return TRUE;
 }
 
@@ -396,7 +411,10 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_UINT, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* add callbacks */
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
@@ -429,6 +447,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus, NULL);
 
 	backend_dbus->priv->proxy = proxy;
 
@@ -1365,6 +1385,11 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,

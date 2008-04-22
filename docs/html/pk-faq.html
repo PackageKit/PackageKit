@@ -28,7 +28,7 @@
 <li><a href="#remaining-times">Why are the remaining times sometimes wildly wrong?</a></li>
 <li><a href="#different-options">How will PackageKit support all the different options?</a></li>
 <li><a href="#error-codes">Error codes are different on each backend?</a></li>
-<li><a href="#user-interaction">Installation an application that needs user interaction?</a></li>
+<li><a href="#user-interaction">Installing packages needs user interaction!</a></li>
 <li><a href="#up2date">Does PackageKit replace up2date?</a></li>
 <li><a href="#system-daemon">Is PackageKit a system daemon, always running and using resources?</a></li>
 <li><a href="#dependencies">How does PackageKit handle dependencies?</a></li>
@@ -114,7 +114,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
@@ -369,7 +369,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
@@ -391,7 +391,7 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>WhatRequires</b></td>
+<td><b>WhatProvides</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
@@ -401,12 +401,12 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
+<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>GetFiles</b></td>
+<td><b>GetPackages</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
@@ -414,9 +414,9 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
+<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
 <td><img src="img/status-good.png" alt="[no]"/></td><!-- zypp -->
 </tr>
@@ -495,7 +495,7 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
+<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
 </tr>
@@ -531,6 +531,21 @@
 </tr>
 <tr>
 <td><b>Newest</b></td>
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
+<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
+</tr>
+<tr>
+<td><b>Arch</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
@@ -661,15 +676,16 @@ The reasons for this are as follows:
 </p>
 <p>
 EULAs or other agreements will have to be agreed to <b>before</b> the
-transaction is processed.
-EULAs are legally questionable (because the files are already installed) and
-only the user that installing the software is ever shown them.
-If EULAs are required, they should be shown per-user - i.e. the first time an
-application is run.
+transaction is processed using the <code>EulaRequired</code> signal.
+</p>
+<p>
+EULAs should preferably be shown per-user - i.e. the first time an application is run.
 </p>
 <p>
 PackageKit will not install packages with broken maintainer scripts that
 require a stdin.
+<a href="http://www.debian.org/doc/debian-policy/ch-binary.html#s-maintscriptprompt">Debian</a>
+policy clearly says that prompting on <code>stdin</code> instead of using debconf is deprecated.
 If this is attempted the backend should detect this and error out of the
 transaction with <code>PK_ERROR_ENUM_BROKEN_PACKAGE</code>.
 <b>We cannot and will not ask the user for random standard input.</b>

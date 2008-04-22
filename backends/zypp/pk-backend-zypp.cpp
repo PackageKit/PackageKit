@@ -49,6 +49,7 @@
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/RpmException.h>
 #include <zypp/base/LogControl.h>
+#include <zypp/TmpPath.h>
 
 #include <zypp/sat/Solvable.h>
 
@@ -95,6 +96,10 @@ typedef struct {
 	gchar *package_id;
 	gint type;
 } ThreadData;
+
+typedef struct {
+	gchar *full_path;
+} InstFileData;
 
 typedef struct {
         gchar *package_id;
@@ -192,7 +197,7 @@ backend_get_requires_thread (PkBackendThread *thread, gpointer data) {
         zypp::PoolItem package;
 
         if (solvable.isSystem ()) {
-                zypp::ResPool pool = zypp_build_local_pool ();
+                zypp::ResPool pool = zypp_build_pool (true);
 
                 gboolean found = FALSE;
 
@@ -562,11 +567,15 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		const char *version = it->edition ().asString ().c_str ();
-		if (strcmp (pi->version, version) == 0) {
+		gchar *version = g_strdup (it->edition ().asString ().c_str ());
+		gchar *arch = g_strdup (it->arch ().c_str ());
+
+		if (strcmp (pi->version, version) == 0 && strcmp (pi->arch, arch) == 0) {
 			package = *it;
 			break;
 		}
+		g_free (version);
+		g_free (arch);
 	}
 
 	delete (v);
@@ -581,7 +590,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	try {
-		PkGroupEnum group = get_enum_group (package);
+		PkGroupEnum group = get_enum_group (zypp_get_group (package));
 
 		if (package.isSystem ()){
 			zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
@@ -590,7 +599,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 				d->package_id,                          // package_id
 				rpmHeader->tag_license ().c_str (),     // const gchar *license
 				group,                                  // PkGroupEnum group
-				rpmHeader->tag_description ().c_str (), // const gchar *description
+				package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str (), //pkg->description ().c_str (),
 				rpmHeader->tag_url (). c_str (),        // const gchar *url
 				(gulong)rpmHeader->tag_archivesize ());        // gulong size
 
@@ -665,10 +674,21 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 
 		// Emit the package
 
-		PkInfoEnum infoEnum = PK_INFO_ENUM_AVAILABLE;
+		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
 
-		if (zypp::isKind<zypp::Patch>(res))
-			infoEnum = PK_INFO_ENUM_SECURITY;
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			if (patch->category () == "recommended") {
+				infoEnum = PK_INFO_ENUM_IMPORTANT;
+			}else if (patch->category () == "optional") {
+				infoEnum = PK_INFO_ENUM_LOW;
+			}else if (patch->category () == "security") {
+				infoEnum = PK_INFO_ENUM_SECURITY;
+			}else{
+				infoEnum = PK_INFO_ENUM_NORMAL;
+			}
+		}
+		
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
 		pk_backend_package (backend,
@@ -689,6 +709,86 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 	return TRUE;
 }
 
+static gboolean
+backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
+{
+	PkBackend *backend;
+	RefreshData *d = (RefreshData*) data;
+
+	backend = pk_backend_thread_get_backend (thread);
+	gboolean force = d->force;
+	g_free (d);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	pk_backend_set_percentage (backend, 0);
+
+	zypp::RepoManager manager;
+	std::list <zypp::RepoInfo> repos;
+	try
+	{
+		repos = manager.knownRepositories();
+	}
+	catch ( const zypp::Exception &e)
+	{
+		// FIXME: make sure this dumps out the right sring.
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	int i = 1;
+	int num_of_repos = repos.size ();
+	int percentage_increment = 100 / num_of_repos;
+
+	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
+		zypp::RepoInfo repo (*it);
+
+		// skip disabled repos
+		if (repo.enabled () == false)
+			continue;
+
+		// skip changeable meda (DVDs and CDs).  Without doing this,
+		// the disc would be required to be physically present.
+		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
+			continue;
+
+		try {
+                        // Refreshing metadata
+			manager.refreshMetadata (repo, force == TRUE ?
+				zypp::RepoManager::RefreshForced :
+				zypp::RepoManager::RefreshIfNeeded);
+		} catch (const zypp::Exception &ex) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		try {
+                        // Building cache
+                        manager.buildCache (repo, force == TRUE ?
+				zypp::RepoManager::BuildForced :
+				zypp::RepoManager::BuildIfNeeded);
+		//} catch (const zypp::repo::RepoNoUrlException &ex) {
+		//} catch (const zypp::repo::RepoNoAliasException &ex) {
+		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
+		//} catch (const zypp::repo::RepoException &ex) {
+		} catch (const zypp::Exception &ex) {
+			// TODO: Handle the exceptions in manager.refreshMetadata
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		// Update the percentage completed
+		pk_backend_set_percentage (backend,
+					      i == num_of_repos ?
+						100 :
+						i * percentage_increment);
+	}
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
 
 /**
  * backend_get_updates
@@ -698,6 +798,137 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
+}
+
+static gboolean
+backend_install_file_thread (PkBackendThread *thread, gpointer data)
+{
+	PkBackend *backend;
+	InstFileData *d = (InstFileData*) data;
+
+	backend = pk_backend_thread_get_backend (thread);
+
+	// check if file is really a rpm
+
+	zypp::Pathname rpmPath (d->full_path);
+	zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
+
+	if (rpmHeader == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is no valid rpm-File", d->full_path);
+		g_free (d->full_path);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	// create a temporary directory
+	zypp::filesystem::TmpDir tmpDir;
+	if (tmpDir == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not create a temporary directory");
+		g_free (d->full_path);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	// copy the rpm into tmpdir
+
+	std::string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
+	if (zypp::filesystem::copy (d->full_path, tempDest) != 0) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not copy the rpm-file into the temp-dir");
+		g_free (d->full_path);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	// create a plaindir-repo
+	zypp::RepoInfo tmpRepo;
+
+	try {
+
+		tmpRepo.setType(zypp::repo::RepoType::RPMPLAINDIR);
+		std::string url = "dir://" + tmpDir.path ().asString ();
+		tmpRepo.addBaseUrl(zypp::Url::parseUrl(url));
+		tmpRepo.setEnabled (true);
+		tmpRepo.setAutorefresh (true);
+		tmpRepo.setAlias ("PK_TMP_DIR");
+		tmpRepo.setName ("PK_TMP_DIR");
+
+		// add Repo to pool
+
+		zypp::RepoManager manager;
+		manager.addRepository (tmpRepo);
+
+		manager.refreshMetadata (tmpRepo);
+		manager.buildCache (tmpRepo);
+
+	} catch (const zypp::url::UrlException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+		g_free (d->full_path);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	} catch (const zypp::Exception &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+		g_free (d->full_path);
+		g_free (d);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	// look for the package and try to install it
+	std::vector<zypp::sat::Solvable> *solvables = new std::vector<zypp::sat::Solvable>;	
+	solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
+	zypp::PoolItem *item = NULL;
+	gboolean found = FALSE;
+
+	for (std::vector<zypp::sat::Solvable>::iterator it = solvables->begin (); it != solvables->end (); it ++) {
+	       if (it->repository ().name () == "PK_TMP_DIR") {
+		       item = new zypp::PoolItem(*it);
+		       found = TRUE;
+		       break;
+	       }
+	}
+
+	if (!found) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
+	}else{
+		zypp::ResStatus status = item->status ().setToBeInstalled (zypp::ResStatus::USER);
+		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
+                }
+
+                item->statusReset ();
+	}
+
+	//remove tmp-dir and the tmp-repo
+	try {
+		zypp::RepoManager manager;
+		manager.removeRepository (tmpRepo);
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+	}
+
+	g_free (d->full_path);
+	g_free (d);
+	delete (solvables);
+	delete (item);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+  * backend_install_file
+  */
+static void
+backend_install_file (PkBackend *backend, const gchar *full_path)
+{
+	g_return_if_fail (backend != NULL);
+	InstFileData *data = g_new0(InstFileData, 1);
+	data->full_path = g_strdup (full_path);
+
+	pk_backend_thread_create (thread, backend_install_file_thread, data);
 }
 
 static gboolean
@@ -722,17 +953,17 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 	zypp::sat::Solvable solvable = zypp_get_package_by_id (d->package_id);
 
 	zypp::Capabilities obs = solvable.obsoletes ();
+	zypp::Capabilities upd = solvable.freshens ();
 
-	gchar *obsoletes = new gchar ();
-
-	for (zypp::Capabilities::const_iterator it = obs.begin (); it != obs.end (); it++) {
-		g_strlcat(obsoletes, it->c_str (), (strlen (obsoletes) + strlen (it->c_str ()) + 1));
-		g_strlcat(obsoletes, ";", (strlen (obsoletes) + 2));
-	}
+	gchar *obsoletes = zypp_build_package_id_capabilities (obs);
+	gchar *updates = zypp_build_package_id_capabilities (upd);
 
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
 	zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
+	
+	gchar *bugzilla = new gchar ();
+	gchar *cve = new gchar ();
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
@@ -741,19 +972,46 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 		}else if (patch->affects_pkg_manager ()) {
 			restart = PK_RESTART_ENUM_SESSION;
 		}
+
+		// Building links like "http://www.distro-update.org/page?moo;Bugfix release for kernel;http://www.test.de/bgz;test domain"
+		for (zypp::Patch::ReferenceIterator it = patch->referencesBegin (); it != patch->referencesEnd (); it ++) {
+			if (it.type () == "bugzilla") {
+				if (strlen (bugzilla) == 0) {
+					bugzilla = g_strconcat (it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}else{
+					bugzilla = g_strconcat (bugzilla, ";", it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}
+			}else{
+				if (strlen (cve) == 0) {
+					cve = g_strconcat (it.href ().c_str (), ";", it.title ().c_str (), (gchar *)NULL);
+				}else{
+					cve = g_strconcat (cve, it.href ().c_str (), ";", it.title ().c_str (), ";", (gchar *)NULL);
+				}
+			}
+		}
+		
+		zypp::sat::SolvableSet content = patch->contents ();
+
+		for (zypp::sat::SolvableSet::const_iterator it = content.begin (); it != content.end (); it++) {
+			obsoletes = g_strconcat (obsoletes, zypp_build_package_id_capabilities (it->obsoletes ()), " ", (gchar *)NULL);
+			updates = g_strconcat (updates, zypp_build_package_id_capabilities (it->freshens ()), " ", (gchar *)NULL);
+		}
 	}
 
 	pk_backend_update_detail (backend,
 				  d->package_id,
-				  "",
-				  "", // CURRENTLY CAUSES SEGFAULT obsoletes,
-				  "", // CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
-				  "",
-				  "",
+				  updates, 	// updates
+				  obsoletes, 	// CURRENTLY CAUSES SEGFAULT obsoletes,
+				  "", 		// CURRENTLY CAUSES SEGFAULT solvable.vendor ().c_str (),
+				  bugzilla, 	// bugzilla
+				  cve, 		// cve
 				  restart,
 				  solvable.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
+	g_free (bugzilla);
+	g_free (cve);
 	g_free (obsoletes);
+	g_free (updates);
 	pk_package_id_free (pi);
 	g_free (d->package_id);
 	g_free (d);
@@ -930,87 +1188,6 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
-{
-	PkBackend *backend;
-	RefreshData *d = (RefreshData*) data;
-
-	backend = pk_backend_thread_get_backend (thread);
-	gboolean force = d->force;
-	g_free (d);
-
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_set_percentage (backend, 0);
-
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
-	try
-	{
-		repos = manager.knownRepositories();
-	}
-	catch ( const zypp::Exception &e)
-	{
-		// FIXME: make sure this dumps out the right sring.
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-	int i = 1;
-	int num_of_repos = repos.size ();
-	int percentage_increment = 100 / num_of_repos;
-
-	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
-		zypp::RepoInfo repo (*it);
-
-		// skip disabled repos
-		if (repo.enabled () == false)
-			continue;
-
-		// skip changeable meda (DVDs and CDs).  Without doing this,
-		// the disc would be required to be physically present.
-		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
-			continue;
-
-		try {
-                        // Refreshing metadata
-			manager.refreshMetadata (repo, force == TRUE ?
-				zypp::RepoManager::RefreshForced :
-				zypp::RepoManager::RefreshIfNeeded);
-		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
-		try {
-                        // Building cache
-                        manager.buildCache (repo, force == TRUE ?
-				zypp::RepoManager::BuildForced :
-				zypp::RepoManager::BuildIfNeeded);
-		//} catch (const zypp::repo::RepoNoUrlException &ex) {
-		//} catch (const zypp::repo::RepoNoAliasException &ex) {
-		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
-		//} catch (const zypp::repo::RepoException &ex) {
-		} catch (const zypp::Exception &ex) {
-			// TODO: Handle the exceptions in manager.refreshMetadata
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
-		// Update the percentage completed
-		pk_backend_set_percentage (backend,
-					      i == num_of_repos ?
-						100 :
-						i * percentage_increment);
-	}
-
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
-static gboolean
 backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 {
 	PkBackend *backend;
@@ -1045,21 +1222,18 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 	try
 	{
 		// Iterate over the resolvables and mark the ones we want to remove
-		//zypp->start ();
-		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
-				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-			zypp::ui::Selectable::Ptr selectable = *it;
-			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
-				if (selectable->status () == zypp::ui::S_KeepInstalled) {
-					selectable->setStatus (zypp::ui::S_Del);
-					break;
-				}
+		zypp::ResPool pool = zypp::ResPool::instance ();
+		for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
+				it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
+			if ((*it)->isSystem ()) {
+				it->status ().setToBeUninstalled (zypp::ResStatus::USER);
+				break;
 			}
 		}
-
+		
 		pk_backend_set_percentage (backend, 40);
 
-                if (!zypp_perform_execution (backend, REMOVE, FALSE)){
+                if (!zypp_perform_execution (backend, REMOVE, TRUE)){
                         pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't remove the package");
                         g_free (d->package_id);
                         g_free (d);
@@ -1070,7 +1244,6 @@ backend_remove_package_thread (PkBackendThread *thread, gpointer data)
 
 		pk_backend_set_percentage (backend, 100);
 
-		// TODO: Check result for success
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
@@ -1223,7 +1396,7 @@ find_packages_real (PkBackend *backend, const gchar *search, PkFilterEnum filter
                         break;
         };
 
-	zypp_emit_packages_in_list (backend, v);
+	zypp_emit_packages_in_list (backend, v, filters);
 	delete (v);
 }
 
@@ -1302,19 +1475,19 @@ backend_search_group_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_percentage (backend, 30);
 
         std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable> ();
+	PkGroupEnum pkGroup = pk_group_enum_from_text (d->pkGroup);
 
 	zypp::sat::LookupAttr look (zypp::sat::SolvAttr::group);
 
 	for (zypp::sat::LookupAttr::iterator it = look.begin (); it != look.end (); it++) {
-		std::string group = it.asString ();
-		std::transform (group.begin (), group.end (), group.begin (), tolower);
-		if (g_strrstr (group.c_str (), d->pkGroup))
+		PkGroupEnum rpmGroup = get_enum_group (it.asString ());
+		if (pkGroup == rpmGroup)
 			v->push_back (it.inSolvable ());
 	}
 
 	pk_backend_set_percentage (backend, 70);
 
-        zypp_emit_packages_in_list (backend ,v);
+        zypp_emit_packages_in_list (backend ,v, d->filters);
 
         delete (v);
 
@@ -1519,32 +1692,19 @@ backend_get_packages_thread (PkBackendThread *thread, gpointer data) {
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	PkInfoEnum info = PK_INFO_ENUM_AVAILABLE;
+        std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
 
-	if (*filter == PK_FILTER_ENUM_INSTALLED) {
-		zypp_build_local_pool ();
-	}else{
-		zypp_build_pool (TRUE);
-	}
+	zypp_build_pool (TRUE);
   
 	zypp::ResPool pool = zypp::ResPool::instance ();
 
 	for (zypp::ResPool::byKind_iterator it = pool.byKindBegin (zypp::ResKind::package); it != pool.byKindEnd (zypp::ResKind::package); it++) {
-		if ((*it)->isSystem ()) {
-			info = PK_INFO_ENUM_INSTALLED;
-			if (*filter == PK_FILTER_ENUM_NOT_INSTALLED)
-			       continue;
-		}	
-
-		gchar *package_id = zypp_build_package_id_from_resolvable (it->satSolvable ());
-		pk_backend_package (backend,
-				info,
-				package_id,
-				(*it)->description ().c_str ());
-		g_free (package_id);
+		v->push_back (it->satSolvable ());
 	}
 
+	zypp_emit_packages_in_list (backend, v, *filter);
 
+	delete (v);
 	g_free (filter);
 	pk_backend_finished (backend);
 
@@ -1787,7 +1947,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
+	backend_install_file,			/* install_file */
 	backend_install_package,		/* install_package */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */

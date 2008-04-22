@@ -84,6 +84,11 @@ gchar		**pk_strsplit				(const gchar	*id,
 gchar		*pk_strbuild_va				(const gchar	*first_element,
 							 va_list	*args)
 							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		**pk_va_list_to_argv			(const gchar	*string_first,
+							 va_list	*args)
+							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strcmp_sections			(const gchar	*id1,
 							 const gchar	*id2,
 							 guint		 parts,

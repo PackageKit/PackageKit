@@ -51,23 +51,7 @@
 gchar **
 pk_package_ids_from_array (GPtrArray *array)
 {
-	gchar **strv_array;
-	const gchar *value_temp;
-	guint i;
-
-	g_return_val_if_fail (array != NULL, NULL);
-
-	/* copy the temp array to a strv */
-	strv_array = g_new0 (gchar *, array->len + 2);
-	for (i=0; i<array->len; i++) {
-		value_temp = (const gchar *) g_ptr_array_index (array, i);
-		/* we don't need to copy the copy */
-		strv_array[i] = g_strdup (value_temp);
-	}
-	/* set the last element to NULL */
-	strv_array[i] = NULL;
-
-	return strv_array;
+	return pk_ptr_array_to_argv (array);
 }
 
 /**
@@ -82,30 +66,7 @@ pk_package_ids_from_array (GPtrArray *array)
 gchar **
 pk_package_ids_from_va_list (const gchar *package_id_first, va_list *args)
 {
-	GPtrArray *data;
-	gchar **array;
-	gchar *value_temp;
-	guint i;
-
-	g_return_val_if_fail (args != NULL, NULL);
-	g_return_val_if_fail (package_id_first != NULL, NULL);
-
-	/* find how many elements we have in a temp array */
-	data = g_ptr_array_new ();
-	g_ptr_array_add (data, g_strdup (package_id_first));
-	for (i=0;; i++) {
-		value_temp = va_arg (*args, gchar *);
-		if (value_temp == NULL) break;
-		g_ptr_array_add (data, g_strdup (value_temp));
-	}
-	pk_debug ("number of packages=%i", i+1);
-
-	/* convert the array to a strv type */
-	array = pk_package_ids_from_array (data);
-
-	/* get rid of the array, and free the contents */
-	g_ptr_array_free (data, TRUE);
-	return array;
+	return pk_va_list_to_argv (package_id_first, args);
 }
 
 /**

@@ -72,7 +72,8 @@ struct PkTransactionPrivate
 	gboolean		 finished;
 	gboolean		 running;
 	gboolean		 allow_cancel;
-	gboolean		 emit_key_required;
+	gboolean		 emit_eula_required;
+	gboolean		 emit_signature_required;
 	LibGBus			*libgbus;
 	PkBackend		*backend;
 	PkInhibit		*inhibit;
@@ -115,6 +116,7 @@ struct PkTransactionPrivate
 	guint			 signal_progress_changed;
 	guint			 signal_repo_detail;
 	guint			 signal_repo_signature_required;
+	guint			 signal_eula_required;
 	guint			 signal_require_restart;
 	guint			 signal_status_changed;
 	guint			 signal_update_detail;
@@ -132,6 +134,7 @@ enum {
 	PK_TRANSACTION_PROGRESS_CHANGED,
 	PK_TRANSACTION_REPO_DETAIL,
 	PK_TRANSACTION_REPO_SIGNATURE_REQUIRED,
+	PK_TRANSACTION_EULA_REQUIRED,
 	PK_TRANSACTION_REQUIRE_RESTART,
 	PK_TRANSACTION_STATUS_CHANGED,
 	PK_TRANSACTION_TRANSACTION,
@@ -242,18 +245,6 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 }
 
 /**
- * pk_transaction_get_package_list:
- **/
-PkPackageList *
-pk_transaction_get_package_list (PkTransaction *transaction)
-{
-	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
-	g_return_val_if_fail (transaction->priv->tid != NULL, NULL);
-
-	return transaction->priv->package_list;
-}
-
-/**
  * pk_transaction_get_text:
  **/
 const gchar *
@@ -293,7 +284,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 
 	/* copy this into the cache if we are getting updates */
 	if (transaction->priv->role == PK_ROLE_ENUM_GET_UPDATES) {
-		pk_cache_set_updates (transaction->priv->cache, pk_transaction_get_package_list (transaction));
+		pk_cache_set_updates (transaction->priv->cache, transaction->priv->package_list);
 	}
 
 	/* we unref the update cache if it exists */
@@ -435,9 +426,11 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* mark not running */
 	transaction->priv->running = FALSE;
 
-	/* if we did ::repo-signature-required, change the error code */
-	if (transaction->priv->emit_key_required) {
+	/* if we did ::repo-signature-required or ::eula-required, change the error code */
+	if (transaction->priv->emit_signature_required) {
 		exit = PK_EXIT_ENUM_KEY_REQUIRED;
+	} else if (transaction->priv->emit_eula_required) {
+		exit = PK_EXIT_ENUM_EULA_REQUIRED;
 	}
 
 	/* invalidate some caches if we succeeded*/
@@ -454,7 +447,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
 	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		packages = pk_package_list_get_string (pk_transaction_get_package_list (transaction));
+		packages = pk_package_list_get_string (transaction->priv->package_list);
 		if (pk_strzero (packages) == FALSE) {
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
 		}
@@ -491,6 +484,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_progress_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_detail);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_repo_signature_required);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_eula_required);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_require_restart);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_status_changed);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_update_detail);
@@ -619,7 +613,27 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend, const gchar *pack
 		       key_fingerprint, key_timestamp, type_text);
 
 	/* we should mark this transaction so that we finish with a special code */
-	transaction->priv->emit_key_required = TRUE;
+	transaction->priv->emit_signature_required = TRUE;
+}
+
+/**
+ * pk_transaction_eula_required_cb:
+ **/
+static void
+pk_transaction_eula_required_cb (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
+				 const gchar *vendor_name, const gchar *license_agreement,
+				 PkTransaction *transaction)
+{
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	pk_debug ("emitting eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
+
+	/* we should mark this transaction so that we finish with a special code */
+	transaction->priv->emit_eula_required = TRUE;
 }
 
 /**
@@ -757,6 +771,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_repo_signature_required =
 		g_signal_connect (transaction->priv->backend, "repo-signature-required",
 				  G_CALLBACK (pk_transaction_repo_signature_required_cb), transaction);
+	transaction->priv->signal_eula_required =
+		g_signal_connect (transaction->priv->backend, "eula-required",
+				  G_CALLBACK (pk_transaction_eula_required_cb), transaction);
 	transaction->priv->signal_require_restart =
 		g_signal_connect (transaction->priv->backend, "require-restart",
 				  G_CALLBACK (pk_transaction_require_restart_cb), transaction);
@@ -1047,6 +1064,56 @@ pk_transaction_priv_get_role (PkTransaction *transaction)
 	g_return_val_if_fail (transaction != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	return transaction->priv->role;
+}
+
+/**
+ * pk_transaction_accept_eula:
+ *
+ * This should be called when a eula_id needs to be added into an internal db.
+ **/
+void
+pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	const gchar *exit_text;
+	gchar *sender;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* check for sanity */
+	ret = pk_strvalidate (eula_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "Invalid input passed to daemon");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_ACCEPT_EULA, &error);
+	g_free (sender);
+	if (!ret) {
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	pk_debug ("AcceptEula method called: %s", eula_id);
+	ret = pk_backend_accept_eula (transaction->priv->backend, eula_id);
+	if (!ret) {
+		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "EULA failed to be added");
+		dbus_g_method_return_error (context, error);
+		return;
+	}
+
+	exit_text = pk_exit_enum_to_text (PK_EXIT_ENUM_SUCCESS);
+	pk_debug ("emitting finished transaction '%s', %i", exit_text, 0);
+	g_signal_emit (transaction, signals [PK_TRANSACTION_FINISHED], 0, exit_text, 0);
+
+	dbus_g_method_return (context);
 }
 
 /**
@@ -2876,6 +2943,11 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_STRING,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	signals [PK_TRANSACTION_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_TRANSACTION_REQUIRE_RESTART] =
 		g_signal_new ("require-restart",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -2913,7 +2985,8 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
 	transaction->priv->allow_cancel = FALSE;
-	transaction->priv->emit_key_required = FALSE;
+	transaction->priv->emit_eula_required = FALSE;
+	transaction->priv->emit_signature_required = FALSE;
 	transaction->priv->dbus_name = NULL;
 	transaction->priv->cached_enabled = FALSE;
 	transaction->priv->cached_key_id = NULL;

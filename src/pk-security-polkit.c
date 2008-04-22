@@ -117,6 +117,8 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 		policy = "org.freedesktop.packagekit.localinstall";
 	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		policy = "org.freedesktop.packagekit.install-signature";
+	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
+		policy = "org.freedesktop.packagekit.accept-eula";
 	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
 		policy = "org.freedesktop.packagekit.rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
@@ -124,8 +126,6 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 		policy = "org.freedesktop.packagekit.repo-change";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.refresh-cache";
-	} else {
-		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
 	}
 	return policy;
 }
@@ -148,6 +148,10 @@ pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
 
 	/* map the roles to policykit rules */
 	policy = pk_security_role_to_action (security, role);
+	if (policy == NULL) {
+		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
+		return FALSE;
+	}
 
 	/* get the dbus sender */
 	pk_result = pk_security_can_do_action (security, dbus_sender, policy);

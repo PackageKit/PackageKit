@@ -17,11 +17,12 @@
 
 
 __pkcon_commandlist="
+    accept-eula
     get-actions
     get-depends
     get-description
     get-files
-    get-filter
+    get-filters
     get-groups
     get-packages
     get-requires

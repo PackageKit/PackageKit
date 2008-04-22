@@ -51,7 +51,6 @@ typedef struct
 GType		 pk_backend_spawn_get_type		(void) G_GNUC_CONST;
 PkBackendSpawn	*pk_backend_spawn_new			(void);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
-							 const gchar	*script,
 							 const gchar	*first_element, ...);
 gboolean	 pk_backend_spawn_kill			(PkBackendSpawn	*backend_spawn);
 const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);

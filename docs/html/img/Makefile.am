@@ -9,23 +9,29 @@ IMAGE_FILES =					\
 	large-preferences-system.png		\
 	large-system-users.png			\
 	packagekit.png				\
-	pk-application-search.png		\
-	pk-application-groups.png		\
-	pk-auto-update.png			\
-	pk-backend-status.png			\
-	pk-battery.png				\
-	pk-inhibit.png				\
-	pk-network.png				\
-	pk-prefs.png				\
-	pk-progress.png				\
-	pk-repo-auth.png			\
-	pk-repo.png				\
-	pk-require-restart.png			\
-	pk-transactions.png			\
-	pk-updates.png				\
-	pk-updates-warning.png			\
-	pk-waiting.png				\
-	pk-remove-confirm.png			\
+	pk-update-bugfix.png			\
+	pk-update-enhancement.png		\
+	pk-update-high.png			\
+	pk-update-low.png			\
+	pk-update-normal.png			\
+	pk-update-security.png			\
+	gpk-application-search.png		\
+	gpk-application-groups.png		\
+	gpk-auto-update.png			\
+	gpk-backend-status.png			\
+	gpk-battery.png				\
+	gpk-inhibit.png				\
+	gpk-network.png				\
+	gpk-prefs.png				\
+	gpk-progress.png			\
+	gpk-repo-auth.png			\
+	gpk-repo.png				\
+	gpk-require-restart.png			\
+	gpk-log.png				\
+	gpk-updates.png				\
+	gpk-updates-warning.png			\
+	gpk-waiting.png				\
+	gpk-remove-confirm.png			\
 	$(NULL)
 
 EXTRA_DIST = 					\

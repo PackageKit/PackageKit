@@ -80,11 +80,13 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	PkTime			*time;
+	GHashTable		*eulas;
 	gchar			*name;
 	gchar			*c_tid;
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
+	gboolean		 set_eula;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -111,6 +113,7 @@ enum {
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
+	PK_BACKEND_EULA_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
 	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
@@ -902,6 +905,42 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
 }
 
 /**
+ * pk_backend_eula_required:
+ **/
+gboolean
+pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
+			  const gchar *vendor_name, const gchar *license_agreement)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (vendor_name != NULL, FALSE);
+	g_return_val_if_fail (license_agreement != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
+	/* check we don't do this more than once */
+	if (backend->priv->set_eula) {
+		pk_warning ("already asked for a signature, cannot process");
+		return FALSE;
+	}
+	backend->priv->set_eula = TRUE;
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (backend, signals [PK_BACKEND_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
+
+	return TRUE;
+}
+
+/**
  * pk_backend_repo_detail:
  **/
 gboolean
@@ -1274,6 +1313,45 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 }
 
 /**
+ * pk_backend_accept_eula:
+ */
+gboolean
+pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	pk_debug ("eula_id %s", eula_id);
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		pk_debug ("already added %s to accepted list", eula_id);
+		return FALSE;
+	}
+	g_hash_table_insert (backend->priv->eulas, g_strdup (eula_id), GINT_TO_POINTER (1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_is_eula_valid:
+ */
+gboolean
+pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
  * pk_backend_finalize:
  **/
 static void
@@ -1287,6 +1365,7 @@ pk_backend_finalize (GObject *object)
 
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_hash_table_destroy (backend->priv->eulas);
 
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
@@ -1375,6 +1454,12 @@ pk_backend_class_init (PkBackendClass *klass)
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_BACKEND_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1403,6 +1488,7 @@ pk_backend_reset (PkBackend *backend)
 
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
+	backend->priv->set_eula = FALSE;
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
@@ -1432,6 +1518,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
+	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	pk_backend_reset (backend);
 }
 
@@ -1501,6 +1588,42 @@ libst_backend (LibSelfTest *test)
 
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
+
+	/************************************************************/
+	libst_title (test, "get eula that does not exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was not accepted");
+	}
+
+	/************************************************************/
+	libst_title (test, "get eula that does exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula (again)");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was accepted twice");
+	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");

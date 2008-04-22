@@ -75,7 +75,6 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
-	g_return_val_if_fail (summary != NULL, FALSE);
 
 	pk_debug ("adding to cache array package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
 	item = g_new0 (PkPackageItem, 1);
@@ -315,6 +314,15 @@ libst_package_list (LibSelfTest *test)
 		libst_failed (test, "get string incorrect '%s'", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "add entry with NULL summary");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "nosummary;1.23;i386;data", NULL);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not add NULL summary");
+	}
 
 	libst_end (test);
 }

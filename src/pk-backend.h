@@ -35,6 +35,10 @@ typedef struct _PkBackend PkBackend;
 /* set the state */
 gboolean	 pk_backend_set_current_tid		(PkBackend	*backend,
 							 const gchar	*tid);
+gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
+							 const gchar	*eula_id);
+gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
+							 const gchar	*eula_id);
 gboolean	 pk_backend_set_role			(PkBackend	*backend,
 							 PkRoleEnum	 role);
 gboolean	 pk_backend_set_status			(PkBackend	*backend,
@@ -101,7 +105,7 @@ gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
-gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,
+gboolean         pk_backend_repo_signature_required	(PkBackend      *backend,
 							 const gchar	*package_id,
 							 const gchar    *repository_name,
 							 const gchar    *key_url,
@@ -110,6 +114,11 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 const gchar    *key_fingerprint,
 							 const gchar    *key_timestamp,
 							 PkSigTypeEnum   type);
+gboolean         pk_backend_eula_required		(PkBackend      *backend,
+							 const gchar	*eula_id,
+							 const gchar    *package_id,
+							 const gchar    *vendor_name,
+							 const gchar    *license_agreement);
 
 /* internal state */
 gboolean	 pk_backend_set_internal		(PkBackend	*backend,

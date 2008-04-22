@@ -81,6 +81,9 @@ EXTRA_DIST =						\
 clean-local:
 	rm -f *~
 
+install-data-hook:
+	chmod a+x $(DESTDIR)$(libdir)/pm-utils/sleep.d/95packagekit;
+
 DISTCLEANFILES =					\
 	org.freedesktop.PackageKit.service		\
 	org.freedesktop.PackageKitTestBackend.service	\
