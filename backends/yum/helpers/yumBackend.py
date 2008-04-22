@@ -914,7 +914,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkgs_to_inst = []
         # If trusted is true, it means that we will only install trusted files
-        if trusted == 'true':
+        if trusted == 'yes':
             self.yumbase.conf.gpgcheck=1
         else:
             self.yumbase.conf.gpgcheck=0
