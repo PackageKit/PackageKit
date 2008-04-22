@@ -34,6 +34,7 @@ from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string,unique
 from yum.packages import YumLocalPackage
+from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
 import types
@@ -953,6 +954,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.installLocal(inst_file)
                 if txmbr:
                     if len(self.yumbase.tsInfo) > 0:
+                        if not self.yumbase.tsInfo.pkgSack:
+                            self.yumbase.tsInfo.pkgSack = MetaSack()
                         self._runYumTransaction()
                 else:
                     self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
