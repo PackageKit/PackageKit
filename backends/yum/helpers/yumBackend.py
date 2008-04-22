@@ -1644,11 +1644,13 @@ class PackageKitYumBase(yum.YumBase):
         for po in pkgs:
             result,errmsg = self.sigCheckPkg(po)
             if result == 0:
-                # Verified ok, or verify not req'd
+                # verified ok, or verify not required
                 continue
             elif result == 1:
+                # verify failed but installation of the correct GPG key might help
                 self.getKeyForPackage(po,fullaskcb=self._fullAskForGPGKeyImport)
             else:
+                # fatal GPG verification error
                 raise yum.Errors.YumGPGCheckError,errmsg
         return 0
 

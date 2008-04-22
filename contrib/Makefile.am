@@ -1,5 +1,7 @@
+SUBDIRS = udev
+
 if BACKEND_TYPE_YUM
-SUBDIRS = yum-packagekit
+SUBDIRS += yum-packagekit
 endif
 
 bashcompletiondir = ${SYSCONFDIR}/bash_completion.d

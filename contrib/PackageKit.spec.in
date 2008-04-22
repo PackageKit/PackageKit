@@ -43,6 +43,17 @@ PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
 cross-architecture API.
 
+%package -n udev-packagekit
+Summary: Tell PackageKit to install firmware that udev requires
+Group: System Environment/Base
+Requires: udev
+Requires: PackageKit
+
+%description -n udev-packagekit
+udev-packagekit tells PackageKit that firmware was not available and was
+needed. This allows PackageKit to do the right thing and prompt for
+the firmware to be installed.
+
 %package -n yum-packagekit
 Summary: Tell PackageKit to check for updates when yum exits
 Group: System Environment/Base
@@ -153,6 +164,11 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %config(noreplace) %{_sysconfdir}/yum/pluginconf.d/refresh-packagekit.conf
 /usr/lib/yum-plugins/refresh-packagekit.*
+
+%files -n udev-packagekit
+%defattr(-, root, root)
+%{_sysconfdir}/udev/rules.d/*.rules
+/lib/udev/*.sh
 
 %files libs
 %defattr(-,root,root,-)
