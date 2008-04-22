@@ -657,8 +657,8 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	alpm_list_t *localresult = NULL;
 	alpm_list_t *dbs = NULL;
 
-	installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
-	ninstalled = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+	gboolean installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean ninstalled = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
 	pk_debug ("alpm: searching for \"%s\" - searching in installed: %i, ~installed: %i",
 		  search, installed, ninstalled);
@@ -775,6 +775,7 @@ PK_BACKEND_OPTIONS (
 	"Andreas Obergrusberger <tradiaz@yahoo.de>",	/* author */
 	backend_initialize,				/* initialize */
 	backend_destroy,				/* destroy */
+	NULL,						/* get_groups */
 	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
  	NULL,						/* get_depends */

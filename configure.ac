@@ -588,6 +588,7 @@ docs/spec/Makefile
 docs/api/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
 backends/alpm/Makefile

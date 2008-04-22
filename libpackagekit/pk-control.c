@@ -665,8 +665,7 @@ pk_control_init (PkControl *control)
 	dbus_g_proxy_connect_signal (control->priv->proxy, "TransactionListChanged",
 				     G_CALLBACK(pk_control_transaction_list_changed_cb), control, NULL);
 
-	dbus_g_proxy_add_signal (control->priv->proxy, "UpdatesChanged",
-				 G_TYPE_STRING, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (control->priv->proxy, "UpdatesChanged", G_TYPE_INVALID);
 	dbus_g_proxy_connect_signal (control->priv->proxy, "UpdatesChanged",
 				     G_CALLBACK (pk_control_updates_changed_cb), control, NULL);
 
