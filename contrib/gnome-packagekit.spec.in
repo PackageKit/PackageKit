@@ -18,7 +18,6 @@ Requires:  libnotify >= 0.4.3
 Requires:  dbus-glib >= %{dbus_version}
 Requires:  dbus-x11 >= %{dbus_version}
 Requires:  PackageKit >= %{packagekit_version}
-Requires: gnome-packagekit-libs = %{version}-%{release}
 Requires(post):   scrollkeeper
 Requires(pre):    GConf2
 Requires(post):   GConf2
@@ -51,26 +50,6 @@ packagekit-gnome provides session applications for the PackageKit API.
 There are several utilities designed for installing, updating and
 removing packages on your system.
 
-%package libs
-Summary: Libraries for accessing PackageKit
-Group: Development/Libraries
-Requires: dbus >= %{dbus_version}
-Requires: %{name} = %{version}-%{release}
-
-%description libs
-Libraries for accessing PackageKit in the GNOME desktop.
-
-%package devel
-Summary: Libraries and headers for gnome-packagekit
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
-Requires: dbus-devel >= %{dbus_version}
-Requires: pkgconfig
-Requires: sqlite-devel
-
-%description devel
-Headers and libraries for packagekit-gnome.
-
 %prep
 %setup -q
 
@@ -86,9 +65,6 @@ unset GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_bindir}/system-install-packages
 install %{SOURCE2} $RPM_BUILD_ROOT%{_datadir}/man/man1/system-install-packages.1.gz
-
-rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit-gnome*.a
-rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit-gnome*.la
 
 desktop-file-install --delete-original                   \
   --dir=$RPM_BUILD_ROOT%{_sysconfdir}/xdg/autostart/                    \
@@ -151,24 +127,10 @@ fi
 %{_datadir}/icons/hicolor/scalable/status/*.svg
 %config(noreplace) %{_sysconfdir}/gconf/schemas/*.schemas
 %{_datadir}/man/man1/*.1.gz
-%{_datadir}/gtk-doc/html/gnome-packagekit
 %{_datadir}/gnome/help/gnome-packagekit
 %{_datadir}/omf/gnome-packagekit
 %{_sysconfdir}/xdg/autostart/gpk-update-icon.desktop
 %{_datadir}/applications/gpk-*.desktop
-%exclude %{_libdir}/libpackagekit-gnome*.so.*
-
-%files libs
-%defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING 
-%{_libdir}/*packagekit-gnome*.so.*
-
-%files devel
-%defattr(-,root,root,-)
-
-%{_libdir}/lib*.so
-%{_libdir}/pkgconfig/*
-%{_includedir}/*
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
