@@ -2299,7 +2299,10 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 
 	/* save this so we can re-issue it */
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
-	client->priv->cached_package_ids = g_strdupv (package_ids);
+        /* I think this is needed when called from: pk_client_requeue() 
+         * although this makes the "ownership" of package_ids interesting. */
+        if (client->priv->cached_package_ids != package_ids)
+	        client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* hopefully do the operation first time */
 	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
