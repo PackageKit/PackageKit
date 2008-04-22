@@ -1,6 +1,11 @@
 IMAGE_FILES =				\
 	pk-structure.png		\
-	pk-structure.svg
+	pk-structure.svg		\
+	pk-transactions.svg		\
+	pk-transactions-failure.png	\
+	pk-transactions-sig-install.png	\
+	pk-transactions-success.png	\
+	pk-transactions-trusted.png
 
 SPEC_XML_FILES =			\
 	pk-backend-compiled.xml		\
