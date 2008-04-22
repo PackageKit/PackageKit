@@ -913,9 +913,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
-        if trusted:
+        # If trusted is true, it means that we will only install trusted files
+        if trusted == 'true':
             self.yumbase.conf.gpgcheck=1
-        else
+        else:
             self.yumbase.conf.gpgcheck=0
 
         try:
