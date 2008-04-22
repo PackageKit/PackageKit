@@ -913,9 +913,20 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
+
         # If trusted is true, it means that we will only install trusted files
         if trusted == 'yes':
+            # disregard the default
             self.yumbase.conf.gpgcheck=1
+
+            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck=1
+            # This means we don't run runYumTransaction, and don't get the GPG failure in
+            # PackageKitYumBase(_checkSignatures) -- so we check here
+            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            try:
+                self.yumbase._checkSignatures([po], None)
+            except yum.Errors.YumGPGCheckError,e:
+                self.error(ERROR_UNKNOWN,str(e))
         else:
             self.yumbase.conf.gpgcheck=0
 
