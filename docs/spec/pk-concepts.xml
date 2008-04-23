@@ -538,7 +538,7 @@
       This will fail if the package does not have a valid GPG key, and ordinarily the transaction
       would fail. What the client can do, e.g. using <literal>gnome-packagekit</literal>, is
       to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
-      This will use a different PolicyKit authentication, and allow the file to succeed.      
+      This will use a different PolicyKit authentication, and allow the file to succeed.
     </para>
     <para>
       So why do we bother calling <literal>trusted</literal> in the first place?
