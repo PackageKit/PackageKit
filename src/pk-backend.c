@@ -39,6 +39,7 @@
 #include "pk-backend.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
+#include "pk-file-monitor.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -91,6 +92,9 @@ struct _PkBackendPrivate
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
 	PkInhibit		*inhibit;
+	PkFileMonitor		*file_monitor;
+	PkBackendFileChanged	 file_changed_func;
+	gpointer		 file_changed_data;
 	gboolean		 during_initialize;
 	gboolean		 allow_cancel;
 	gboolean		 finished;
@@ -1342,6 +1346,44 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	return FALSE;
 }
 
+
+/**
+ * pk_backend_watch_file:
+ */
+gboolean
+pk_backend_watch_file (PkBackend *backend, const gchar *filename, PkBackendFileChanged func, gpointer data)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
+
+	if (backend->priv->file_changed_func != NULL) {
+		pk_warning ("already set");
+		return FALSE;
+	}
+	ret = pk_file_monitor_set_file (backend->priv->file_monitor, filename);;
+
+	/* if we set it up, set the function callback */
+	if (ret) {
+		backend->priv->file_changed_func = func;
+		backend->priv->file_changed_data = data;
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_file_monitor_changed_cb:
+ **/
+static void
+pk_backend_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	pk_debug ("config file changed");
+	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
+}
+
 /**
  * pk_backend_finalize:
  **/
@@ -1503,6 +1545,8 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->c_tid = NULL;
+	backend->priv->file_changed_func = NULL;
+	backend->priv->file_changed_data = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
@@ -1510,6 +1554,12 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+	/* monitor config files for changes */
+	backend->priv->file_monitor = pk_file_monitor_new ();
+	g_signal_connect (backend->priv->file_monitor, "file-changed",
+			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
 	pk_backend_reset (backend);
 }
 
@@ -1535,6 +1585,7 @@ pk_backend_new (void)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#include <glib/gstdio.h>
 
 static guint number_messages = 0;
 
@@ -1557,12 +1608,23 @@ pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *t
 	libst_loopquit (test);
 }
 
+/**
+ * pk_backend_test_watch_file_cb:
+ **/
+static void
+pk_backend_test_watch_file_cb (PkBackend *backend, gpointer data)
+{
+	LibSelfTest *test = (LibSelfTest *) data;
+	libst_loopquit (test);
+}
+
 void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
 	gchar *text;
 	gboolean ret;
+	const gchar *filename;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1572,6 +1634,47 @@ libst_backend (LibSelfTest *test)
 	libst_title (test, "get an backend");
 	backend = pk_backend_new ();
 	if (backend != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "create a config file");
+	filename = "/tmp/dave";
+	ret = g_file_set_contents (filename, "foo", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set up a watch file on a config file");
+	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "change the config file");
+	ret = g_file_set_contents (filename, "bar", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wait for config file change */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "delete the config file");
+	ret = g_unlink (filename);
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

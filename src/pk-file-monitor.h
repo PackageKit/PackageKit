@@ -19,36 +19,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __PK_RESTART_H
-#define __PK_RESTART_H
+#ifndef __PK_FILE_MONITOR_H
+#define __PK_FILE_MONITOR_H
 
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_RESTART		(pk_restart_get_type ())
-#define PK_RESTART(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_RESTART, PkRestart))
-#define PK_RESTART_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_RESTART, PkRestartClass))
-#define PK_IS_RESTART(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_RESTART))
-#define PK_IS_RESTART_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_RESTART))
-#define PK_RESTART_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_RESTART, PkRestartClass))
+#define PK_TYPE_FILE_MONITOR		(pk_file_monitor_get_type ())
+#define PK_FILE_MONITOR(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_FILE_MONITOR, PkFileMonitor))
+#define PK_FILE_MONITOR_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_FILE_MONITOR, PkFileMonitorClass))
+#define PK_IS_FILE_MONITOR(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_FILE_MONITOR))
+#define PK_IS_FILE_MONITOR_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_FILE_MONITOR))
+#define PK_FILE_MONITOR_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_FILE_MONITOR, PkFileMonitorClass))
 
-typedef struct PkRestartPrivate PkRestartPrivate;
+typedef struct PkFileMonitorPrivate PkFileMonitorPrivate;
 
 typedef struct
 {
 	 GObject		 parent;
-	 PkRestartPrivate	*priv;
-} PkRestart;
+	 PkFileMonitorPrivate	*priv;
+} PkFileMonitor;
 
 typedef struct
 {
 	GObjectClass	parent_class;
-} PkRestartClass;
+} PkFileMonitorClass;
 
-GType		 pk_restart_get_type		  	(void) G_GNUC_CONST;
-PkRestart	*pk_restart_new				(void);
+GType		 pk_file_monitor_get_type	 	(void) G_GNUC_CONST;
+gboolean	 pk_file_monitor_set_file		(PkFileMonitor	*file_monitor,
+							 const gchar	*filename);
+PkFileMonitor	*pk_file_monitor_new			(void);
 
 G_END_DECLS
 
-#endif /* __PK_RESTART_H */
+#endif /* __PK_FILE_MONITOR_H */
+
