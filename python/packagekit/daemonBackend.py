@@ -356,12 +356,18 @@ class PackageKitBaseBackend(dbus.service.Object):
                        "This function is not implemented in this backend")
         self.Finished(EXIT_FAILED)
 
+    # We have to idle add this from self.Exit() so that DBUS gets a chance to reply
+    def _doExitDelay(self):
+        pklog.info("ExitDelay()")
+        self.loop.quit()
+        sys.exit(1)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
+        gobject.idle_add (self._doExitDelay)
         self.doExit()
-        self.loop.quit()
 
     def doExit(self):
         '''
