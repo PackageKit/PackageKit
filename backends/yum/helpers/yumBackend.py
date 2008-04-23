@@ -881,10 +881,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
         txmbrs = []
+        already_warned = False
         for package in packages:
             pkg,inst = self._findPackage(package)
             if pkg and not inst:
+                repo = self.yumbase.repos.getRepo(pkg.repoid)
+                if not already_warned and not repo.gpgcheck:
+                    self.message(MESSAGE_WARNING,"The package %s was installed untrusted from %s." % (pkg.name, repo))
+                    already_warned = True
                 txmbr = self.yumbase.install(name=pkg.name)
                 txmbrs.extend(txmbr)
         if txmbrs:
