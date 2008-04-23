@@ -263,6 +263,20 @@
             <entry>A package failed to download correctly</entry>
           </row>
           <row>
+            <entry><literal>invalid-package-file</literal></entry>
+            <entry>
+	      The file that is supposed to contain a package to
+              install is corrupt, or is not a valid package file
+	    </entry>
+          </row>
+          <row>
+            <entry><literal>package-install-blocked</literal></entry>
+            <entry>
+	      The backend's configuration or policy prevents the
+              install or updating of a package
+	    </entry>
+          </row>
+          <row>
             <entry><literal>dep-resolution-failed</literal></entry>
             <entry>Dependency resolution failed</entry>
           </row>

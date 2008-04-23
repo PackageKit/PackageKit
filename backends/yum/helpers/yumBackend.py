@@ -916,8 +916,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkgs_to_inst = []
         self.yumbase.conf.gpgcheck=0
 
+        if not self._check_local_file(inst_file):
+            return
+            
         try:
-            self._check_local_file(inst_file)
             txmbr = self.yumbase.installLocal(inst_file)
             if txmbr:
                 self._checkForNewer(txmbr[0].po)
@@ -957,16 +959,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
         except yum.Errors.MiscError:
-            raise yum.Errors.InstallError("%s does not appear to be a valid package." % pkg)
+            self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg)
+            return False
 
         if self._is_inst(po):
-            raise yum.Errors.InstallError("%s is already installed" % str(po))
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed" % str(po))
+            return False
 
         if len(self.yumbase.conf.exclude) > 0:
            exactmatch, matched, unmatched = \
                    parsePackages([po], self.yumbase.conf.exclude, casematch=1)
            if po in exactmatch + matched:
-               raise yum.Errors.InstallError("%s is excluded by yum configuration." % pkg)
+               self.error(ERROR_PACKAGE_INSTALL_BLOCKED, "Installation of %s is excluded by yum configuration." % pkg)
+               return False
+
+        return True
 
     def update(self,packages):
         '''
