@@ -39,15 +39,16 @@
 #include <pk-common.h>
 #include <pk-debug.h>
 #include "pk-conf.h"
-#include "pk-restart.h"
+#include "pk-file-monitor.h"
 
-static void     pk_restart_class_init	(PkRestartClass *klass);
-static void     pk_restart_init		(PkRestart      *restart);
-static void     pk_restart_finalize	(GObject       *object);
+static void     pk_file_monitor_class_init	(PkFileMonitorClass	*klass);
+static void     pk_file_monitor_init		(PkFileMonitor		*file_monitor);
+static void     pk_file_monitor_finalize	(GObject		*object);
 
-#define PK_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESTART, PkRestartPrivate))
+#define PK_FILE_MONITOR_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_FILE_MONITOR, PkFileMonitorPrivate))
+#define PK_FILE_MONITOR_RATE_LIMIT	1000
 
-struct PkRestartPrivate
+struct PkFileMonitorPrivate
 {
 	GString			*stdout_buf;
 	GFileMonitor		*monitor;
@@ -55,114 +56,122 @@ struct PkRestartPrivate
 };
 
 enum {
-	PK_RESTART_SCHEDULE,
-	PK_RESTART_LAST_SIGNAL
+	PK_FILE_MONITOR_CHANGED,
+	PK_FILE_MONITOR_LAST_SIGNAL
 };
 
-static guint	     signals [PK_RESTART_LAST_SIGNAL] = { 0 };
+static guint signals [PK_FILE_MONITOR_LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE (PkRestart, pk_restart, G_TYPE_OBJECT)
+G_DEFINE_TYPE (PkFileMonitor, pk_file_monitor, G_TYPE_OBJECT)
 
 /**
- * pk_restart_class_init:
- * @klass: The PkRestartClass
+ * pk_file_monitor_class_init:
+ * @klass: The PkFileMonitorClass
  **/
 static void
-pk_restart_class_init (PkRestartClass *klass)
+pk_file_monitor_class_init (PkFileMonitorClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_restart_finalize;
+	object_class->finalize = pk_file_monitor_finalize;
 
-	signals [PK_RESTART_SCHEDULE] =
-		g_signal_new ("restart-schedule",
+	signals [PK_FILE_MONITOR_CHANGED] =
+		g_signal_new ("file-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
 
-	g_type_class_add_private (klass, sizeof (PkRestartPrivate));
+	g_type_class_add_private (klass, sizeof (PkFileMonitorPrivate));
 }
 
 /**
- * pk_restart_monitor_changed:
- * @restart: This class instance
+ * pk_file_monitor_monitor_changed:
+ * @file_monitor: This class instance
  **/
 static void
-pk_restart_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_file,
-			    GFileMonitorEvent event_type, PkRestart *restart)
+pk_file_monitor_monitor_changed (GFileMonitor *monitor, GFile *file, GFile *other_file,
+			    GFileMonitorEvent event_type, PkFileMonitor *file_monitor)
 {
-	pk_debug ("emit: restart-schedule");
-	g_signal_emit (restart, signals [PK_RESTART_SCHEDULE], 0);
+	pk_debug ("emit: file-changed");
+	g_signal_emit (file_monitor, signals [PK_FILE_MONITOR_CHANGED], 0);
 }
 
 /**
- * pk_restart_init:
- * @restart: This class instance
+ * pk_file_monitor_set_file:
  **/
-static void
-pk_restart_init (PkRestart *restart)
+gboolean
+pk_file_monitor_set_file (PkFileMonitor	*file_monitor, const gchar *filename)
 {
 	GError *error = NULL;
-	gchar *filename;
-	restart->priv = PK_RESTART_GET_PRIVATE (restart);
 
-	/* this is the file we are interested in */
-	filename = pk_conf_get_filename ();
-	if (filename == NULL) {
-		pk_warning ("can't get config file");
-		goto out;
+	if (file_monitor->priv->file != NULL) {
+		pk_warning ("already set file monitor, so can't set %s", filename);
+		return FALSE;
 	}
-	restart->priv->file = g_file_new_for_path (filename);
+
+	/* use a GFile */
+	file_monitor->priv->file = g_file_new_for_path (filename);
 
 	/* watch this */
-	restart->priv->monitor = g_file_monitor_file (restart->priv->file, G_FILE_MONITOR_NONE, NULL, &error);
-	if (restart->priv->monitor == NULL) {
+	file_monitor->priv->monitor = g_file_monitor_file (file_monitor->priv->file, G_FILE_MONITOR_NONE, NULL, &error);
+	if (file_monitor->priv->monitor == NULL) {
 		pk_warning ("failed to setup watch: %s", error->message);
 		g_error_free (error);
-		goto out;
+		return FALSE;
 	}
 
 	/* we should get notified of changes */
 	pk_debug ("watching for changes: %s", filename);
-	g_file_monitor_set_rate_limit (restart->priv->monitor, 1000);
-	g_signal_connect (restart->priv->monitor, "changed",
-			  G_CALLBACK (pk_restart_monitor_changed), restart);
-out:
-	g_free (filename);
+	g_file_monitor_set_rate_limit (file_monitor->priv->monitor, PK_FILE_MONITOR_RATE_LIMIT);
+	g_signal_connect (file_monitor->priv->monitor, "changed",
+			  G_CALLBACK (pk_file_monitor_monitor_changed), file_monitor);
+	return TRUE;
 }
 
 /**
- * pk_restart_finalize:
+ * pk_file_monitor_init:
+ * @file_monitor: This class instance
+ **/
+static void
+pk_file_monitor_init (PkFileMonitor *file_monitor)
+{
+	file_monitor->priv = PK_FILE_MONITOR_GET_PRIVATE (file_monitor);
+	file_monitor->priv->file = NULL;
+	file_monitor->priv->monitor = NULL;
+}
+
+/**
+ * pk_file_monitor_finalize:
  * @object: The object to finalize
  **/
 static void
-pk_restart_finalize (GObject *object)
+pk_file_monitor_finalize (GObject *object)
 {
-	PkRestart *restart;
+	PkFileMonitor *file_monitor;
 
-	g_return_if_fail (PK_IS_RESTART (object));
+	g_return_if_fail (PK_IS_FILE_MONITOR (object));
 
-	restart = PK_RESTART (object);
-	g_return_if_fail (restart->priv != NULL);
+	file_monitor = PK_FILE_MONITOR (object);
+	g_return_if_fail (file_monitor->priv != NULL);
 
-	g_file_monitor_cancel (restart->priv->monitor);
+	g_file_monitor_cancel (file_monitor->priv->monitor);
 
-	g_object_unref (restart->priv->file);
-	g_object_unref (restart->priv->monitor);
+	g_object_unref (file_monitor->priv->file);
+	g_object_unref (file_monitor->priv->monitor);
 
-	G_OBJECT_CLASS (pk_restart_parent_class)->finalize (object);
+	G_OBJECT_CLASS (pk_file_monitor_parent_class)->finalize (object);
 }
 
 /**
- * pk_restart_new:
+ * pk_file_monitor_new:
  *
- * Return value: a new PkRestart object.
+ * Return value: a new PkFileMonitor object.
  **/
-PkRestart *
-pk_restart_new (void)
+PkFileMonitor *
+pk_file_monitor_new (void)
 {
-	PkRestart *restart;
-	restart = g_object_new (PK_TYPE_RESTART, NULL);
-	return PK_RESTART (restart);
+	PkFileMonitor *file_monitor;
+	file_monitor = g_object_new (PK_TYPE_FILE_MONITOR, NULL);
+	return PK_FILE_MONITOR (file_monitor);
 }
 
 /***************************************************************************
@@ -172,23 +181,23 @@ pk_restart_new (void)
 #include <libselftest.h>
 
 void
-libst_restart (LibSelfTest *test)
+libst_file_monitor (LibSelfTest *test)
 {
-	PkRestart *restart;
+	PkFileMonitor *file_monitor;
 
-	if (libst_start (test, "PkRestart", CLASS_AUTO) == FALSE) {
+	if (libst_start (test, "PkFileMonitor", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
-	libst_title (test, "get a restart");
-	restart = pk_restart_new ();
-	if (restart != NULL) {
+	libst_title (test, "get a file_monitor");
+	file_monitor = pk_file_monitor_new ();
+	if (file_monitor != NULL) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
 	}
-	g_object_unref (restart);
+	g_object_unref (file_monitor);
 
 	libst_end (test);
 }
