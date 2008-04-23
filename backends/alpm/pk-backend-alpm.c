@@ -20,6 +20,13 @@
  */
 
 #define ALPM_CONFIG_PATH "/etc/pacman.conf"
+
+#define ALPM_ROOT "/"
+#define ALPM_DBPATH "/var/lib/pacman"
+#define ALPM_CACHEDIR "/var/cache/pacman/pkg"
+#define ALPM_LOGFILE "/var/log/pacman.log"
+#define ALPM_XFERCOMMAND "/usr/bin/wget --passive-ftp -c -O \%o \%u"
+
 #define ALPM_PROGRESS_UPDATE_INTERVAL 400
 
 #include <gmodule.h>
@@ -107,55 +114,6 @@ state_notify (void *backend)
 }
 
 alpm_list_t *
-my_list_mmerge (alpm_list_t *left, alpm_list_t *right, alpm_list_fn_cmp fn)
-{
-    alpm_list_t *newlist, *lp;
-
-    if (left == NULL && right == NULL)
-	return NULL;
-
-    if (left == NULL)
-	return right;
-    if (right == NULL)
-	return left;
-
-    if (fn (left->data, right->data) <= 0) {
-	newlist = left;
-	left = left->next;
-    } else {
-	newlist = right;
-	right = right->next;
-    }
-
-    newlist->prev = NULL;
-    newlist->next = NULL;
-    lp = newlist;
-
-    while ((left != NULL) && (right != NULL)) {
-	if (fn (left->data, right->data) <= 0) {
-	    lp->next = left;
-	    left->prev = lp;
-	    left = left->next;
-	} else {
-	    lp->next = right;
-	    right->prev = lp;
-	    right = right->next;
-	}
-	lp = lp->next;
-	lp->next = NULL;
-    }
-
-    if (left != NULL) {
-	lp->next = left;
-	left->prev = lp;
-    } else if (right != NULL) {
-	lp->next = right;
-	right->prev = lp;
-    }
-    return(newlist);
-}
-
-alpm_list_t *
 my_list_remove_node (alpm_list_t *node)
 {
     if (!node)
@@ -203,16 +161,11 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
     return TRUE;
 }
 
-
-static int
-list_cmp_fn (const void *n1, const void *n2)
-{
-    return 0;
-}
-
 static void
 add_package (PkBackend *backend, PackageSource *package)
 {
+    pk_debug ("add_package: hi, package_name=%s", alpm_pkg_get_name(package->pkg));
+
     PkInfoEnum info;
     gchar *pkg_string;
     gchar *arch = (gchar *) alpm_pkg_get_arch (package->pkg);
@@ -236,6 +189,9 @@ add_packages_from_list (PkBackend *backend, alpm_list_t *list)
     PackageSource *package = NULL;
     alpm_list_t *li = NULL;
 
+    if (list == NULL)
+	pk_warning ("add_packages_from_list: list is empty!");
+
     for (li = list; li != NULL; li = alpm_list_next (li)) {
 	package = (PackageSource *) li->data;
 	add_package (backend, package);
@@ -250,49 +206,30 @@ find_packages_by_desc (const gchar *name, pmdb_t *db)
 
     alpm_list_t *needle = NULL;
     alpm_list_t *result = NULL;
-    alpm_list_t *localresult = NULL;
-    pmdb_t *localdb = NULL;
-    const gchar *dbname = NULL;
+    alpm_list_t *query_result = NULL;
 
+    // determine if repository is local
+    gboolean repo_is_local = (db == alpm_option_get_localdb ());
+    // determine repository name
+    const gchar *repo = alpm_db_get_name (db);
+    // set search term
     needle = alpm_list_add (needle, (gchar *) name);
-    dbname = alpm_db_get_name (db);
-    localdb = alpm_option_get_localdb ();
+    // execute query
+    query_result = alpm_db_search (db, needle);
 
-    alpm_list_t *i = NULL;
-
-    if (db != localdb) {
-	if (localdb != NULL)
-	    localresult = alpm_db_search (localdb, needle);
-    }
-
-    result = alpm_db_search (db, needle);
-    for (i = result; i; i = alpm_list_next (i)) {
+    alpm_list_t *iterator;
+    for (iterator = query_result; iterator; iterator = alpm_list_next (iterator)) {
 	PackageSource *source = g_malloc (sizeof (PackageSource));
 
-	source->pkg = (pmpkg_t *) i->data;
-	source->repo = (gchar *) dbname;
+	source->pkg = (pmpkg_t *) alpm_list_getdata(iterator);
+	source->repo = (gchar *) repo;
+	source->installed = repo_is_local;
 
-	if (localresult != NULL) {
-	    alpm_list_t *icmp = NULL;
-	    for (icmp = localresult; icmp; icmp = alpm_list_next (icmp))
-		if (pkg_equal ((pmpkg_t *) icmp->data, (pmpkg_t *) i->data))
-		    source->installed = TRUE;
-		else
-		    source->installed = FALSE;
-	} else if (localdb == db)
-	    source->installed = TRUE;
-	else
-	    source->installed = FALSE;
-
-	i->data = source;
+	result = alpm_list_add (result, (PackageSource *) source);
     }
 
+    alpm_list_free (query_result);
     alpm_list_free (needle);
-    if (localresult != NULL) {
-	// alpm_list_free_inner (localresult, (alpm_list_fn_free) alpm_pkg_free);
-	alpm_list_free(localresult);
-    }
-
     return result;
 }
 
@@ -324,29 +261,6 @@ pkg_is_installed (const gchar *name, const gchar *version)
 
     return FALSE;
 }
-
-static void
-filter_packages_installed (alpm_list_t *packages, gboolean filter)
-{
-    alpm_list_t *i;
-    for (i = packages; i; ) {
-	if (((PackageSource *) i->data)->installed == filter) {
-	    alpm_list_t *temp = i;
-	    i = alpm_list_next (i);
-	    package_source_free ((PackageSource *) temp->data);
-	    my_list_remove_node (temp);
-	    continue;
-	}
-	i = alpm_list_next (i);
-    }
-}
-
-/*
-static void
-filter_packages_multiavail (alpm_list_t *packages, gboolean)
-{
-}
-*/
 
 /**
  * backend_destroy:
@@ -481,11 +395,11 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
     pmdb_t *db = NULL;
 
     /* set default options */
-    alpm_option_set_root ("/");
-    alpm_option_set_dbpath ("/var/lib/pacman");
-    alpm_option_add_cachedir ("/var/cache/pacman/pkg");
-    alpm_option_set_logfile ("/var/log/pacman.log");
-    alpm_option_set_xfercommand ("/usr/bin/wget --passive-ftp -c -O %%o %%u");
+    alpm_option_set_root (ALPM_ROOT);
+    alpm_option_set_dbpath (ALPM_DBPATH);
+    alpm_option_add_cachedir (ALPM_CACHEDIR);
+    alpm_option_set_logfile (ALPM_LOGFILE);
+    alpm_option_set_xfercommand (ALPM_XFERCOMMAND);
 
     fp = fopen(file, "r");
     if (fp == NULL) {
@@ -692,7 +606,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
     // Next generation code?
 /*
     for (; syncdbs; syncdbs = alpm_list_next (syncdbs))
-	result = my_list_mmerge (result, find_packages_by_desc (id->name, (pmdb_t *) syncdbs->data), list_cmp_fn);
+	result = alpm_list_join (result, find_packages_by_desc (id->name, (pmdb_t *) syncdbs->data));
 
     if (result == NULL) {
 	pk_backend_error_code (backend,
@@ -862,9 +776,8 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
     }
 
     pmpkg_t *pkg = ((PackageSource *) result->data)->pkg;
-    // l is for "local"
     pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-	    pk_package_id_build (alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), alpm_pkg_get_arch (pkg), "l"),
+	    pk_package_id_build (alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), alpm_pkg_get_arch (pkg), "local"),
 	    alpm_pkg_get_desc (pkg));
 
     alpm_list_free_inner (result, (alpm_list_fn_free) package_source_free);
@@ -918,61 +831,59 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 }
 
 /**
- * backend_search_name:
+ * backend_search_details:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
     g_return_if_fail (backend != NULL);
 
     alpm_list_t *result = NULL;
-    alpm_list_t *localresult = NULL;
-    alpm_list_t *dbs = NULL;
+    alpm_list_t *repos = NULL;
+
+    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
     gboolean installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
     gboolean ninstalled = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
 
-    pk_debug ("alpm: searching for \"%s\" - searching in installed: %i, ~installed: %i",
-	search, installed, ninstalled);
-
-    if (installed && !ninstalled)
-	dbs = alpm_list_add (dbs, alpm_option_get_localdb ());
-    if (ninstalled)
-	dbs = my_list_mmerge (dbs, alpm_option_get_syncdbs (), list_cmp_fn);
-
-    for (; dbs; dbs = alpm_list_next (dbs))
-	result  = my_list_mmerge (result,
-		find_packages_by_desc (search, (pmdb_t *) dbs->data), list_cmp_fn);
-
-    if (ninstalled && installed) {
-	pmdb_t *localdb = alpm_option_get_localdb ();
-	if (localdb != NULL) {
-	    localresult = find_packages_by_desc (search, localdb);
-
-	    alpm_list_t *i = NULL;
-	    for (i = alpm_list_first (result); i; i = alpm_list_next (i)) {
-		alpm_list_t *icmp = NULL;
-		for (icmp = localresult; icmp; )
-		    if (pkg_equal ((pmpkg_t *) icmp->data, (pmpkg_t *) i->data)) {
-			alpm_list_t *tmp = icmp;
-			icmp = alpm_list_next (icmp);
-			my_list_remove_node (tmp);
-		    } else
-			icmp = alpm_list_next (icmp);
-	    }
-	} else
-	    pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR,
-		    "Could not find local db");
-
-	result = my_list_mmerge (result, localresult, list_cmp_fn);
-    }
-
-    if (!installed)
-	filter_packages_installed (result, TRUE);
     if (!ninstalled)
-	filter_packages_installed (result, FALSE);
+	repos = alpm_list_add (repos, alpm_option_get_localdb ());
+    if (!installed)
+	repos = alpm_list_join (repos, alpm_list_copy(alpm_option_get_syncdbs ()));
+
+    alpm_list_t *iterator;
+    for (iterator = repos; iterator; iterator = alpm_list_next (iterator))
+	result = alpm_list_join (result, find_packages_by_desc (search, (pmdb_t *) alpm_list_getdata(iterator)));
 
     add_packages_from_list (backend, alpm_list_first (result));
+
+    alpm_list_free_inner (result, (alpm_list_fn_free) package_source_free);
+    alpm_list_free (result);
+
+    alpm_list_free (repos);
+    pk_backend_finished (backend);
+}
+
+/**
+ * backend_search_name:
+ */
+static void
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search) {
+    g_return_if_fail (backend != NULL);
+
+    alpm_list_t *repos = NULL;
+
+    pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+    gboolean installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
+    gboolean ninstalled = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+
+    if (!ninstalled)
+	repos = alpm_list_add (repos, alpm_option_get_localdb ());
+    if (!installed)
+	repos = alpm_list_join (repos, alpm_list_copy(alpm_option_get_syncdbs ()));
+
+    alpm_list_free (repos);
     pk_backend_finished (backend);
 }
 
@@ -1000,7 +911,7 @@ backend_get_filters (PkBackend *backend)
 }
 
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
+backend_install_file (PkBackend *backend, const gchar *path)
 {
     g_return_if_fail (backend != NULL);
 
@@ -1056,8 +967,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
     repos = alpm_list_first (repos);
     while (repos != NULL) {
 	pmdb_t *db = alpm_list_getdata (repos);
-	pk_backend_repo_detail (backend, alpm_db_get_name (db),
-		alpm_db_get_url (db), TRUE);
+	pk_backend_repo_detail (backend, alpm_db_get_name (db), alpm_db_get_url (db), TRUE);
 	repos = alpm_list_next (repos);
     }
 
@@ -1090,7 +1000,7 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
 	NULL,						/* rollback */
-	NULL,						/* search_details */
+	backend_search_details,				/* search_details */
 	NULL,						/* search_file */
 	NULL,						/* search_group */
 	backend_search_name,				/* search_name */
