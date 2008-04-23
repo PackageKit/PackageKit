@@ -833,7 +833,18 @@ backend_get_update_detail_thread (PkBackend *backend)
 
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
+	zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);
+	
+	gchar *bugzilla = new gchar ();
+	gchar *cve = new gchar ();
+
+	if (zypp::isKind<zypp::Patch>(solvable)) {
+		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
+		if (patch->rebootSuggested ()) {
+			restart = PK_RESTART_ENUM_SYSTEM;
+		}else if (patch->restartSuggested ()) {
+			restart = PK_RESTART_ENUM_SESSION;
+		}
 
 		gchar *bugzilla = new gchar ();
 		gchar *cve = new gchar ();
