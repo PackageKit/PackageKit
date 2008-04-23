@@ -36,8 +36,8 @@
   </action>
 
   <action id="org.freedesktop.packagekit.localinstall-trusted">
-    <_description>Install trusted local file</_description>
-    <_message>Authentication is required to install a trusted local file</_message>
+    <_description>Install local file</_description>
+    <_message>Authentication is required to install a local file</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
