@@ -595,14 +595,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
+                         in_signature='bs', out_signature='')
     def InstallFile (self, trusted, inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
         '''
-        pklog.info("InstallFile(%s)" % inst_file)
-        self.doInstallFile(inst_file)
+        pklog.info("InstallFile(%i,%s)" % (trusted,inst_file))
+        self.doInstallFile(trusted,inst_file)
 
     def doInstallFile(self, inst_file):
         '''
