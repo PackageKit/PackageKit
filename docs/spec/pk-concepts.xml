@@ -496,8 +496,85 @@
     </itemizedlist>
   </sect1>
 
+  <sect1 id="introduction-ideas-transactions">
+    <title>Transactions</title>
+    <para>
+      PackageKit does not ask the user questions when the transaction is running.
+      It also supports a fire-and-forget method invocation, which means that transactions will
+      have one calling method, and have many signals going back to the caller.
+    </para>
+    <para>
+      Each transaction is a new path on the <literal>org.freedesktop.PackageKit</literal>
+      service, and to create a path you have to call <literal>GetTid</literal> on the base
+      interface which creates the new DBUS path, and returns the new path for you to connect to.
+      In the libpackagekit binding, <literal>PkControl</literal> handles the base interface,
+      whilst <literal>PkClient</literal> handles all the transaction interface stuff.
+      The <literal>org.freedesktop.PackageKit.Transaction</literal> interface can be used
+      on the newly created path, but only used once.
+      New methods require a new transaction path (i.e. another call to <literal>GetTid</literal>)
+      which is synchronous and thus very fast.
+    </para>
+    <para>
+      A typical successful transaction can be seen below.
+    </para>
+    <mediaobject id="pk-transactions-success">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-success.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      A typical simple transaction failure case can be seen below.
+      The user is not given the change to requeue the transaction as it is a fatal error.
+    </para>
+    <mediaobject id="pk-transactions-failure">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-failure.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      In this non-trivial example, a local file install is being attempted.
+      First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
+      flag set.
+      This will fail if the package does not have a valid GPG key, and ordinarily the transaction
+      would fail. What the client can do, e.g. using <literal>gnome-packagekit</literal>, is
+      to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
+      This will use a different PolicyKit authentication, and allow the file to succeed.
+    </para>
+    <para>
+      So why do we bother calling <literal>trusted</literal> in the first place?
+      Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
+      set to the users password as the GPG key is already trusted by the user.
+      The <literal>non-trusted</literal> action would likely ask for the administrator password,
+      and not allowed to be saved. This gives the user the benifit of installing trusted local
+      files without a password (common case) but requiring something stronger for untrusted or
+      unsigned files.
+    </para>
+    <mediaobject id="pk-transactions-trusted">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-trusted.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+    <mediaobject id="pk-transactions-sig-install">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-sig-install.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+  </sect1>
+
   <sect1 id="introduction-ideas-transactionid">
-    <title>Transaction ID</title>
+    <title>Transaction IDs</title>
     <para>
       A <literal>transaction_id</literal> is a unique identifier that
       identifies the present or past transaction.

@@ -922,7 +922,7 @@ backend_install_file_thread (PkBackendThread *thread, gpointer data)
   * backend_install_file
   */
 static void
-backend_install_file (PkBackend *backend, const gchar *full_path)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
 {
 	g_return_if_fail (backend != NULL);
 	InstFileData *data = g_new0(InstFileData, 1);

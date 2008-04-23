@@ -199,11 +199,11 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
  * backend_install_file:
  */
 static void
-backend_install_file (PkBackend *backend, const gchar *full_path)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_install_file (dbus, full_path);
+	pk_backend_dbus_install_file (dbus, trusted, full_path);
 }
 
 /**

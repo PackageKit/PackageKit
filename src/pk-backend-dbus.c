@@ -1202,7 +1202,7 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
  * pk_backend_dbus_install_file:
  **/
 gboolean
-pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_path)
+pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, gboolean trusted, const gchar *full_path)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1214,6 +1214,7 @@ pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_pat
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_STRING, full_path,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {

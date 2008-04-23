@@ -70,6 +70,7 @@
     </method>
     <method name="InstallFile">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="b" name="trusted" direction="in"/>
       <arg type="s" name="full_path" direction="in"/>
     </method>
     <method name="InstallPackage">
