@@ -911,7 +911,7 @@ backend_get_filters (PkBackend *backend)
 }
 
 static void
-backend_install_file (PkBackend *backend, const gchar *path)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
 {
     g_return_if_fail (backend != NULL);
 
