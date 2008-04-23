@@ -1836,13 +1836,13 @@ libst_backend (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "check we enforce finished after error_code");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
 	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
 	libst_loopcheck (test);
 
+	libst_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1) {
 		libst_success (test, NULL);
 	} else {
@@ -1854,7 +1854,6 @@ libst_backend (LibSelfTest *test)
 	number_messages = 0;
 
 	/************************************************************/
-	libst_title (test, "check we enforce finished after two error_codes");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error1");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
 
