@@ -1862,12 +1862,6 @@ libst_backend (LibSelfTest *test)
 	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
 	libst_loopcheck (test);
 
-	if (number_messages == 1) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "we messaged %i times!", number_messages);
-	}
-
 	g_object_unref (backend);
 
 	libst_end (test);
