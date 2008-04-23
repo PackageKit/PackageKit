@@ -11,9 +11,12 @@
 # (at your option) any later version.
 
 import sys
+
 import pisiBackend
 
+trusted = sys.argv[1]
+file_to_inst = sys.argv[2]
 backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.install_file(sys.argv[1])
+backend.install_file(trusted, file_to_inst)
 
 sys.exit()

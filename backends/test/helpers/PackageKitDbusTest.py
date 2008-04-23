@@ -61,12 +61,12 @@ class PackageKitTestBackendService(PackageKitBaseBackend):
 
     @threaded
     def doInit(self):
-        pklog.info( 'Init!')
+        pklog.info('Init!')
         time.sleep(0.1)
 
     def doExit(self):
-        pklog.info('Exit!')
-        sys.exit(0)
+        pklog.info('Exit requested!')
+        time.sleep(0.1)
 
     @threaded
     def doCancel(self):
@@ -87,7 +87,7 @@ class PackageKitTestBackendService(PackageKitBaseBackend):
             if self._canceled.isSet():
                 self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
                                "Search was canceled")
-                self.Finished(EXIT_KILL)
+                self.Finished(EXIT_KILLED)
                 self._canceled.clear()
                 return
             time.sleep(1)

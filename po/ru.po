@@ -1,0 +1,400 @@
+# PACKAGEKIT RUSSIAN TRANSLATION.
+# Copyright (C) 2008 Ivan Ignatyev
+# This file is distributed under the same license as the PackageKit package.
+# Ivan Ignatyev <ivan.ignatyev@auditory.ru>, 2008.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PackageKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-18 16:49+0100\n"
+"PO-Revision-Date: 2008-04-23 12:30+0300\n"
+"Last-Translator: Ivan Ignatyev <ivan.ignatyev@auditory.ru>\n"
+"Language-Team: No <ivan.ignatyev@auditory.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:1
+msgid "Accept EULA"
+msgstr "Принять EULA"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:2
+msgid "Authentication is required to accept a EULA"
+msgstr "Для принятия EULA необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:3
+msgid "Authentication is required to change software source parameters"
+msgstr "Для изменения параметров исходного кода необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:4
+msgid "Authentication is required to install a local file"
+msgstr "Для установки локальных файлов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:5
+msgid "Authentication is required to install a package"
+msgstr "Для установки пакетов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:6
+msgid "Authentication is required to install a security signature"
+msgstr "Для установки цифровой подписи необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:7
+msgid "Authentication is required to refresh the package lists"
+msgstr "Для обновления списков пакетов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:8
+msgid "Authentication is required to remove packages"
+msgstr "Для удаления пакетов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:9
+msgid "Authentication is required to rollback a transaction"
+msgstr "Для отката транзакции необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:10
+msgid "Authentication is required to update all packages"
+msgstr "Для обновления всех пакетов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:11
+msgid "Authentication is required to update packages"
+msgstr "Для обновления пакетов необходима аутентификация"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:12
+msgid "Change software source parameters"
+msgstr "Изменить параметры исходного кода"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:13
+msgid "Install local file"
+msgstr "Установить локальный файл"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:14
+msgid "Install package"
+msgstr "Установить пакет"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:15
+msgid "Install security signature"
+msgstr "Установить цифровую подпись"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:16
+msgid "Refresh package lists"
+msgstr "Обновить списки пакетов"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:17
+msgid "Remove package"
+msgstr "Удалить пакет"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:18
+msgid "Rollback to a previous transaction"
+msgstr "Откатиться к предыдущей транзакции"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:19
+msgid "Update all packages"
+msgstr "Обновить все пакеты"
+
+#: ../policy/org.freedesktop.packagekit.policy.in.h:20
+msgid "Update package"
+msgstr "Обновить пакет"
+
+#: ../client/pk-console.c:208
+msgid "Update detail"
+msgstr "Подробности обновления"
+
+#: ../client/pk-console.c:400
+msgid "A system restart is required"
+msgstr "Необходим перезапуск системы"
+
+#: ../client/pk-console.c:402
+msgid "A logout and login is required"
+msgstr "Необходим выход и вход в сеанс"
+
+#: ../client/pk-console.c:404
+msgid "An application restart is required"
+msgstr "Необходим перезапуск приложения"
+
+#: ../client/pk-console.c:443
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Пожалуйста, введите число от 1 до %i"
+
+#: ../client/pk-console.c:493
+msgid "Could not find a package match"
+msgstr "Не найдено совпадений в пакетах"
+
+#: ../client/pk-console.c:507
+msgid "There are multiple package matches"
+msgstr "Несколько подходящих пакетов найдено"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:514
+msgid "Please enter the package number: "
+msgstr "Пожалуйста, введите номер пакета:"
+
+#: ../client/pk-console.c:530
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr ""
+"Не удалось найти для установки пакет с таким именем, или пакет уже "
+"установлен"
+#: ../client/pk-console.c:612
+msgid "Could not find a package with that name to remove"
+msgstr "Не удалось найти  для удаления пакет с таким именем"
+
+#: ../client/pk-console.c:652
+msgid "The following packages have to be removed"
+msgstr "Следующие пакеты будут удалены"
+
+#. get user input
+#: ../client/pk-console.c:661
+msgid "Okay to remove additional packages?"
+msgstr "Можно удалить еще и дополнительные пакеты?"
+
+#: ../client/pk-console.c:665
+msgid "Cancelled!"
+msgstr "Отменено!"
+
+#: ../client/pk-console.c:687
+msgid "Could not find a package with that name to update"
+msgstr "Не удалось найти для обновления пакет с таким именем"
+
+#: ../client/pk-console.c:705
+msgid "Could not find what packages require this package"
+msgstr "Не удалось найти пакеты, требующие этот пакет"
+
+#: ../client/pk-console.c:723
+msgid "Could not get dependencies for this package"
+msgstr "Не удалось получить зависимости для этого пакета"
+
+#: ../client/pk-console.c:741
+msgid "Could not find a description for this package"
+msgstr "Не удалось найти описания для этого пакета"
+
+#: ../client/pk-console.c:759
+#, c-format
+msgid "Could not find the files for this package"
+msgstr "Не удалось найти файлов этого пакета"
+
+#: ../client/pk-console.c:819
+msgid "Package description"
+msgstr "Описание пакета"
+
+#: ../client/pk-console.c:842
+msgid "Package files"
+msgstr "Файлы пакета"
+
+#: ../client/pk-console.c:850
+msgid "No files"
+msgstr "Нет файлов"
+
+#. get user input
+#: ../client/pk-console.c:882
+msgid "Okay to import key?"
+msgstr "Можно импортировать ключ?"
+
+#: ../client/pk-console.c:885
+msgid "Did not import key"
+msgstr "Ключ не импортирован"
+
+#. get user input
+#: ../client/pk-console.c:925
+msgid "Do you agree?"
+msgstr "Вы согласны?"
+
+#: ../client/pk-console.c:928
+msgid "Did not agree to licence, task will fail"
+msgstr "Не получено согласие с лицензией, успешное завершение задачи невозможно"
+
+#: ../client/pk-console.c:957
+msgid "The daemon crashed mid-transaction!"
+msgstr "Демон сломался в середине транзакции!"
+
+#. header
+#: ../client/pk-console.c:1010
+msgid "PackageKit Console Interface"
+msgstr "Консольный Интерфейс PackageKit"
+
+#: ../client/pk-console.c:1010
+msgid "Subcommands:"
+msgstr "Подкоманды:"
+
+#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "Показать дополнительную отладочную информацию"
+
+#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+msgid "Show the program version and exit"
+msgstr "Показать версию программы и выйти"
+
+#: ../client/pk-console.c:1118
+msgid "Set the filter, e.g. installed"
+msgstr "Установите фильтр, к примеру, установленные программы"
+
+#: ../client/pk-console.c:1120
+msgid "Exit without waiting for actions to complete"
+msgstr "Выйти, не ожидая завершения задач"
+
+#: ../client/pk-console.c:1143
+msgid "Could not connect to system DBUS."
+msgstr "Не удалось подсоединиться к системной шине DBUS"
+
+#: ../client/pk-console.c:1231
+#, c-format
+msgid "You need to specify a search type"
+msgstr "Укажите тип поиска"
+
+#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
+#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
+#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
+#, c-format
+msgid "You need to specify a search term"
+msgstr "Укажите условия поиска"
+
+#: ../client/pk-console.c:1262
+#, c-format
+msgid "Invalid search type"
+msgstr "Неверный тип поиска"
+
+#: ../client/pk-console.c:1267
+#, c-format
+msgid "You need to specify a package or file to install"
+msgstr "Укажите пакет или файл для установки"
+
+#: ../client/pk-console.c:1280
+#, c-format
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Укажите тип, key_id или package_id"
+
+#: ../client/pk-console.c:1287
+#, c-format
+msgid "You need to specify a package to remove"
+msgstr "Укажите пакет для удаления"
+
+#: ../client/pk-console.c:1294
+#, c-format
+msgid "You need to specify a eula-id"
+msgstr "Укажите eula_id"
+
+#: ../client/pk-console.c:1309
+#, c-format
+msgid "You need to specify a package name to resolve"
+msgstr "Укажите имя пакета для показа"
+
+#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
+#, c-format
+msgid "You need to specify a repo name"
+msgstr "Укажите имя репозитария"
+
+#: ../client/pk-console.c:1330
+#, c-format
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Укажите имя/параметр и значение репозитария"
+
+#: ../client/pk-console.c:1343
+#, c-format
+msgid "You need to specify a time term"
+msgstr "Укажите временной промежуток"
+
+#: ../client/pk-console.c:1348
+#, c-format
+msgid "You need to specify a correct role"
+msgstr "Укажите корректую роль"
+
+#: ../client/pk-console.c:1353
+#, c-format
+msgid "Failed to get last time"
+msgstr "Не удалось получить в последний раз"
+
+#: ../client/pk-console.c:1389
+#, c-format
+msgid "You need to specify a package to find the description for"
+msgstr "Укажите пакет, для которого искать описание"
+
+#: ../client/pk-console.c:1396
+#, c-format
+msgid "You need to specify a package to find the files for"
+msgstr "Укажите пакет, для которого искать файлы"
+
+#: ../client/pk-console.c:1441
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "Опция '%s' не поддерживается"
+
+#: ../client/pk-console.c:1452
+msgid "Command failed"
+msgstr "Команда не удалась"
+
+#: ../client/pk-console.c:1456
+msgid "You don't have the necessary privileges for this operation"
+msgstr "У Вас недостаточно прав для выполнения этой операции"
+
+#: ../client/pk-monitor.c:113
+msgid "PackageKit Monitor"
+msgstr "Монитор PackageKit"
+
+#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Не удалось открыть базу данных: %s"
+
+#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "Вам вероятно следует запустить эту программу от имени привилегированного пользователя"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "Запуск не удался из-за политики безопасности на этом компьютере"
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "Это может случится по двум причинам:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "Нужный пользователь не запускает исполняемый файл (обычно привилегированный)"
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"Файл org.freedesktop.PackageKit.conf не установлен в системной директории"
+"/etc/dbus-1/system.d"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Использовать внутренний интерфейс пакетной системы, к примеру, заглушку"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "Запустить в качестве демона и отсоединить от терминала"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "Отключить таймер неактивности"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "Показать версию и выйти"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "Выйти после небольшой задержки"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "Выйти после загрузки движка"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "Сервис PackageKit"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "Не удалось подсоединиться к системной шине"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "Ошибка при попытке запуска: %s\n"

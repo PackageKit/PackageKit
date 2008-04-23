@@ -1,11 +1,19 @@
 IMAGE_FILES =				\
 	pk-structure.png		\
-	pk-structure.svg
+	pk-structure.svg		\
+	pk-faq-error-code.png		\
+	pk-faq-status.png		\
+	pk-transactions.svg		\
+	pk-transactions-failure.png	\
+	pk-transactions-sig-install.png	\
+	pk-transactions-success.png	\
+	pk-transactions-trusted.png
 
 SPEC_XML_FILES =			\
 	pk-backend-compiled.xml		\
 	pk-backend-dbus.xml		\
 	pk-backend-spawn.xml		\
+	pk-developer-faq.xml		\
 	pk-concepts.xml			\
 	pk-introduction.xml		\
 	pk-methods.xml			\

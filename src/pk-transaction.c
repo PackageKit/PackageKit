@@ -94,6 +94,7 @@ struct PkTransactionPrivate
 	gboolean		 cached_allow_deps;
 	gboolean		 cached_autoremove;
 	gboolean		 cached_enabled;
+	gboolean		 cached_trusted;
 	gchar			*cached_package_id;
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
@@ -822,7 +823,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		desc->install_package (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		desc->install_file (priv->backend, priv->cached_full_path);
+		desc->install_file (priv->backend, priv->cached_trusted, priv->cached_full_path);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
@@ -1038,13 +1039,13 @@ out:
  **/
 static gboolean
 pk_transaction_action_is_allowed (PkTransaction *transaction, const gchar *dbus_sender,
-				  PkRoleEnum role, GError **error)
+				  gboolean trusted, PkRoleEnum role, GError **error)
 {
 	gboolean ret;
 	gchar *error_detail;
 
 	/* use security model to get auth */
-	ret = pk_security_action_is_allowed (transaction->priv->security, dbus_sender, role, &error_detail);
+	ret = pk_security_action_is_allowed (transaction->priv->security, dbus_sender, trusted, role, &error_detail);
 	if (!ret) {
 		*error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
 		return FALSE;
@@ -1093,7 +1094,7 @@ pk_transaction_accept_eula (PkTransaction *transaction, const gchar *eula_id, DB
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_ACCEPT_EULA, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_ACCEPT_EULA, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -1810,8 +1811,8 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
  * pk_transaction_install_file:
  **/
 void
-pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
-			     DBusGMethodInvocation *context)
+pk_transaction_install_file (PkTransaction *transaction, gboolean trusted,
+			     const gchar *full_path, DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
@@ -1820,7 +1821,7 @@ pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("InstallFile method called: %s", full_path);
+	pk_debug ("InstallFile method called: %s (trusted %i)", full_path, trusted);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_file == NULL) {
@@ -1842,7 +1843,7 @@ pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_INSTALL_FILE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, trusted, PK_ROLE_ENUM_INSTALL_FILE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -1853,6 +1854,7 @@ pk_transaction_install_file (PkTransaction *transaction, const gchar *full_path,
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
+	transaction->priv->cached_trusted = trusted;
 	transaction->priv->cached_full_path = g_strdup (full_path);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILE);
@@ -1915,7 +1917,7 @@ pk_transaction_install_package (PkTransaction *transaction, const gchar *package
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -1989,7 +1991,7 @@ pk_transaction_install_signature (PkTransaction *transaction, const gchar *sig_t
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_SIGNATURE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2059,7 +2061,7 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_REFRESH_CACHE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REFRESH_CACHE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2136,7 +2138,7 @@ pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2201,7 +2203,7 @@ pk_transaction_repo_enable (PkTransaction *transaction, const gchar *repo_id, gb
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_REPO_ENABLE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REPO_ENABLE, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2268,7 +2270,7 @@ pk_transaction_repo_set_data (PkTransaction *transaction, const gchar *repo_id,
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_REPO_SET_DATA, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REPO_SET_DATA, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2396,7 +2398,7 @@ pk_transaction_rollback (PkTransaction *transaction, const gchar *transaction_id
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_ROLLBACK, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_ROLLBACK, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2724,7 +2726,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2778,7 +2780,7 @@ pk_transaction_update_system (PkTransaction *transaction, DBusGMethodInvocation 
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_UPDATE_SYSTEM, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);

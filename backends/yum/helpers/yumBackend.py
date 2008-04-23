@@ -881,10 +881,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
         txmbrs = []
+        already_warned = False
         for package in packages:
             pkg,inst = self._findPackage(package)
             if pkg and not inst:
+                repo = self.yumbase.repos.getRepo(pkg.repoid)
+                if not already_warned and not repo.gpgcheck:
+                    self.message(MESSAGE_WARNING,"The package %s was installed untrusted from %s." % (pkg.name, repo))
+                    already_warned = True
                 txmbr = self.yumbase.install(name=pkg.name)
                 txmbrs.extend(txmbr)
         if txmbrs:
@@ -899,7 +905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
-    def install_file (self,inst_file):
+    def install_file (self,trusted,inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
@@ -914,7 +920,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
-        self.yumbase.conf.gpgcheck=0
+
+        # If trusted is true, it means that we will only install trusted files
+        if trusted == 'yes':
+            # disregard the default
+            self.yumbase.conf.gpgcheck=1
+
+            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck=1
+            # This means we don't run runYumTransaction, and don't get the GPG failure in
+            # PackageKitYumBase(_checkSignatures) -- so we check here
+            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            try:
+                self.yumbase._checkSignatures([po], None)
+            except yum.Errors.YumGPGCheckError,e:
+                self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
+        else:
+            self.yumbase.conf.gpgcheck=0
 
         if not self._check_local_file(inst_file):
             return

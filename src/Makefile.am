@@ -59,7 +59,7 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
-	pk-restart.h					\
+	pk-file-monitor.h				\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
@@ -82,11 +82,11 @@ shared_SOURCES =					\
 
 if PK_BUILD_GIO
 shared_SOURCES +=					\
-	pk-restart-gio.c				\
+	pk-file-monitor-gio.c				\
 	$(NULL)
 else
 shared_SOURCES +=					\
-	pk-restart-dummy.c				\
+	pk-file-monitor-dummy.c				\
 	$(NULL)
 endif
 

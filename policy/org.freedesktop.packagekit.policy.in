@@ -24,14 +24,25 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.localinstall">
+  <action id="org.freedesktop.packagekit.localinstall-untrusted">
+    <_description>Install untrusted local file</_description>
+    <_message>Further authentication is required to install an untrusted local file</_message>
+    <icon_name>pk-package-add</icon_name>
+    <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
+    <defaults>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+
+  <action id="org.freedesktop.packagekit.localinstall-trusted">
     <_description>Install local file</_description>
     <_message>Authentication is required to install a local file</_message>
     <icon_name>pk-package-add</icon_name>
     <vendor_url>http://www.packagekit.org/pk-reference.html#methods-install-file</vendor_url>
     <defaults>
       <allow_inactive>no</allow_inactive>
-      <allow_active>auth_admin</allow_active>
+      <allow_active>auth_admin_keep_always</allow_active>
     </defaults>
   </action>
 

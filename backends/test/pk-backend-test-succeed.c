@@ -162,7 +162,7 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
  * backend_install_file:
  */
 static void
-backend_install_file (PkBackend *backend, const gchar *full_path)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);

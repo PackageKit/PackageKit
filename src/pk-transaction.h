@@ -151,6 +151,7 @@ void		 pk_transaction_get_updates		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_file		(PkTransaction	*transaction,
+							 gboolean	 trusted,
 							 const gchar	*full_path,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_package		(PkTransaction	*transaction,
