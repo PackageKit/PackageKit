@@ -132,6 +132,14 @@ gchar		*pk_backend_get_internal		(PkBackend	*backend,
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
 
+/* config changed functions */
+typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
+							 gpointer	 data);
+gboolean	 pk_backend_watch_file			(PkBackend	*backend,
+							 const gchar	*filename,
+							 PkBackendFileChanged func,
+							 gpointer	 data);
+
 /**
  * PkBackendDesc:
  */
