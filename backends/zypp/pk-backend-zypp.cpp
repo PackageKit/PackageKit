@@ -969,9 +969,9 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
-		if (patch->reboot_needed ()) {
+		if (patch->rebootSuggested ()) {
 			restart = PK_RESTART_ENUM_SYSTEM;
-		}else if (patch->affects_pkg_manager ()) {
+		}else if (patch->restartSuggested ()) {
 			restart = PK_RESTART_ENUM_SESSION;
 		}
 
