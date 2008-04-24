@@ -108,6 +108,7 @@ gboolean	 pk_backend_dbus_install_package	(PkBackendDbus	*backend_dbus,
 gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus	*backend_dbus,
 							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
+							 gboolean	 trusted,
 							 const gchar	*full_path);
 gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,
 							 const gchar	*location,

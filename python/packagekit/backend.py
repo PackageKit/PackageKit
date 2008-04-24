@@ -360,7 +360,7 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_file (self, inst_file):
+    def install_file (self, trusted, inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file

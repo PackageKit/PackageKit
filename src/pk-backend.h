@@ -132,6 +132,14 @@ gchar		*pk_backend_get_internal		(PkBackend	*backend,
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
 
+/* config changed functions */
+typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
+							 gpointer	 data);
+gboolean	 pk_backend_watch_file			(PkBackend	*backend,
+							 const gchar	*filename,
+							 PkBackendFileChanged func,
+							 gpointer	 data);
+
 /**
  * PkBackendDesc:
  */
@@ -164,6 +172,7 @@ typedef struct {
 	void		(*get_updates)		(PkBackend *backend,
 						 PkFilterEnum filters);
 	void		(*install_file)		(PkBackend *backend,
+						 gboolean trusted,
 						 const gchar *full_path);
 	void		(*install_package)	(PkBackend *backend,
 						 const gchar *package_id);

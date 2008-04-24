@@ -33,7 +33,8 @@ from yum.constants import *
 from yum.update_md import UpdateMetadata
 from yum.callbacks import *
 from yum.misc import prco_tuple_to_string,unique
-from yum.packages import YumLocalPackage
+from yum.packages import YumLocalPackage, parsePackages
+from yum.packageSack import MetaSack
 import rpmUtils
 import exceptions
 import types
@@ -880,10 +881,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
+
         txmbrs = []
+        already_warned = False
         for package in packages:
             pkg,inst = self._findPackage(package)
             if pkg and not inst:
+                repo = self.yumbase.repos.getRepo(pkg.repoid)
+                if not already_warned and not repo.gpgcheck:
+                    self.message(MESSAGE_WARNING,"The package %s was installed untrusted from %s." % (pkg.name, repo))
+                    already_warned = True
                 txmbr = self.yumbase.install(name=pkg.name)
                 txmbrs.extend(txmbr)
         if txmbrs:
@@ -898,7 +905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
-    def install_file (self,inst_file):
+    def install_file (self,trusted,inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
@@ -913,8 +920,26 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.status(STATUS_RUNNING)
 
         pkgs_to_inst = []
-        self.yumbase.conf.gpgcheck=0
 
+        # If trusted is true, it means that we will only install trusted files
+        if trusted == 'yes':
+            # disregard the default
+            self.yumbase.conf.gpgcheck=1
+
+            # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck=1
+            # This means we don't run runYumTransaction, and don't get the GPG failure in
+            # PackageKitYumBase(_checkSignatures) -- so we check here
+            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+            try:
+                self.yumbase._checkSignatures([po], None)
+            except yum.Errors.YumGPGCheckError,e:
+                self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
+        else:
+            self.yumbase.conf.gpgcheck=0
+
+        if not self._check_local_file(inst_file):
+            return
+            
         try:
             txmbr = self.yumbase.installLocal(inst_file)
             if txmbr:
@@ -938,12 +963,38 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 txmbr = self.yumbase.installLocal(inst_file)
                 if txmbr:
                     if len(self.yumbase.tsInfo) > 0:
+                        if not self.yumbase.tsInfo.pkgSack:
+                            self.yumbase.tsInfo.pkgSack = MetaSack()
                         self._runYumTransaction()
                 else:
                     self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
                 
+    def _check_local_file(self, pkg):
+        """
+        Duplicates some of the checks that yumbase.installLocal would
+        do, so we can get decent error reporting.
+        """
+        po = None
+        try:
+            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=pkg)
+        except yum.Errors.MiscError:
+            self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg)
+            return False
+
+        if self._is_inst(po):
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed" % str(po))
+            return False
+
+        if len(self.yumbase.conf.exclude) > 0:
+           exactmatch, matched, unmatched = \
+                   parsePackages([po], self.yumbase.conf.exclude, casematch=1)
+           if po in exactmatch + matched:
+               self.error(ERROR_PACKAGE_INSTALL_BLOCKED, "Installation of %s is excluded by yum configuration." % pkg)
+               return False
+
+        return True
 
     def update(self,packages):
         '''

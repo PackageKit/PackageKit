@@ -47,11 +47,14 @@ static gboolean has_output_bar = FALSE;
 static gboolean need_requeue = FALSE;
 static gboolean nowait = FALSE;
 static gboolean awaiting_space = FALSE;
+static gboolean trusted = TRUE;
 static guint timer_id = 0;
 static guint percentage_last = 0;
+static gchar *filename = NULL;
 static PkControl *control = NULL;
 static PkClient *client = NULL;
 static PkClient *client_task = NULL;
+static PkClient *client_install_file = NULL;
 static PkClient *client_signature = NULL;
 
 typedef struct {
@@ -363,6 +366,15 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
 }
 
 /**
+ * pk_console_install_file_finished_cb:
+ **/
+static void
+pk_console_install_file_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+{
+	g_main_loop_quit (loop);
+}
+
+/**
  * pk_console_finished_cb:
  **/
 static void
@@ -402,6 +414,12 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("%s\n", _("A logout and login is required"));
 	} else if (restart == PK_RESTART_ENUM_APPLICATION) {
 		g_print ("%s\n", _("An application restart is required"));
+	}
+
+	if (role == PK_ROLE_ENUM_INSTALL_FILE &&
+	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
+		pk_warning ("waiting for second install file to finish");
+		return;
 	}
 
 	/* have we failed to install, and the gpg key is now installed */
@@ -788,6 +806,12 @@ pk_console_get_update_detail (PkClient *client, const gchar *package, GError **e
 static void
 pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, gpointer data)
 {
+	gboolean ret;
+	PkRoleEnum role;
+	GError *error = NULL;
+
+	pk_client_get_role (client, &role, NULL, NULL);
+
 	/* handled */
 	if (need_requeue) {
 		if (error_code == PK_ERROR_ENUM_GPG_FAILURE ||
@@ -796,6 +820,20 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 			return;
 		}
 		pk_warning ("set requeue, but did not handle error");
+	}
+
+	/* do we need to do the untrusted action */
+	if (role == PK_ROLE_ENUM_INSTALL_FILE &&
+	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
+		pk_debug ("need to try again with trusted FALSE");
+		trusted = FALSE;
+		ret = pk_client_install_file (client_install_file, trusted, filename, &error);
+		/* we succeeded, so wait for the requeue */
+		if (!ret) {
+			pk_warning ("failed to install file second time: %s", error->message);
+			g_error_free (error);
+		}
+		need_requeue = ret;
 	}
 	if (awaiting_space) {
 		g_print ("\n");
@@ -1205,6 +1243,12 @@ main (int argc, char *argv[])
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
+	client_install_file = pk_client_new ();
+	g_signal_connect (client_install_file, "finished",
+			  G_CALLBACK (pk_console_install_file_finished_cb), NULL);
+	g_signal_connect (client_install_file, "error-code",
+			  G_CALLBACK (pk_console_error_code_cb), NULL);
+
 	client_signature = pk_client_new ();
 	g_signal_connect (client_signature, "finished",
 			  G_CALLBACK (pk_console_signature_finished_cb), NULL);
@@ -1270,7 +1314,9 @@ main (int argc, char *argv[])
 		/* is it a local file? */
 		ret = g_file_test (value, G_FILE_TEST_EXISTS);
 		if (ret) {
-			ret = pk_client_install_file (client, value, &error);
+			ret = pk_client_install_file (client, trusted, value, &error);
+			/* we need this for the untrusted try */
+			filename = g_strdup (value);
 		} else {
 			ret = pk_console_install_package (client, value, &error);
 		}
@@ -1463,9 +1509,11 @@ out:
 	g_free (options_help);
 	g_free (filter);
 	g_free (summary);
+	g_free (filename);
 	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
+	g_object_unref (client_install_file);
 	g_object_unref (client_signature);
 
 	return 0;

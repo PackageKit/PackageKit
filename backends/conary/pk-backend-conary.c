@@ -182,7 +182,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
  */
 /**
 static void
-backend_install_file (PkBackend *backend, const gchar *full_path)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);

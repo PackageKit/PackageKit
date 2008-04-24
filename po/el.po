@@ -1,0 +1,346 @@
+# translation of packagekit.master.po to Greek Fedora team
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Dimitris Glezos <dimitris@glezos.com>, 2008.
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-22 23:08+0300\n"
+"PO-Revision-Date: 2008-04-22 23:43+0300\n"
+"Last-Translator: Dimitris Glezos <dimitris@glezos.com>\n"
+"Language-Team: Greek Fedora team <fedora-trans-el@redhat.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+#: ../client/pk-console.c:208
+#, fuzzy
+msgid "Update detail"
+msgstr "Ενημέρωση"
+
+#: ../client/pk-console.c:400
+msgid "A system restart is required"
+msgstr "Απαιτείται επανεκκίνηση του συστήματος"
+
+#: ../client/pk-console.c:402
+msgid "A logout and login is required"
+msgstr "Απαιτείται επανασύνδεση του χρήστη"
+
+#: ../client/pk-console.c:404
+msgid "An application restart is required"
+msgstr "Απαιτείται επανεκκίνηση της εφαρμογής"
+
+#: ../client/pk-console.c:443
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Παρακαλούμε εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
+
+#: ../client/pk-console.c:493
+msgid "Could not find a package match"
+msgstr "Δε μπόρεσε να βρεθεί αντιστοιχία πακέτου"
+
+#: ../client/pk-console.c:507
+msgid "There are multiple package matches"
+msgstr "Υπάρχουν πολλές αντιστοιχίες πακέτων"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:514
+msgid "Please enter the package number: "
+msgstr "Παρακαλούμε εισάγετε τον αριθμό του πακέτου: "
+
+#: ../client/pk-console.c:530
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr "Δε μπόρεσε να βρεθεί ένα πακέτο με αυτό το όνομα για να εγκατασταθεί, ή το πακέτο είναι ήδη εγκατεστημένο"
+
+#: ../client/pk-console.c:612
+msgid "Could not find a package with that name to remove"
+msgstr "Δε μπόρεσε να βρεθεί ένα πακέτο με αυτό το όνομα προς αφαίρεση"
+
+#: ../client/pk-console.c:652
+msgid "The following packages have to be removed"
+msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν"
+
+#. get user input
+#: ../client/pk-console.c:661
+msgid "Okay to remove additional packages?"
+msgstr "Εντάξει για την αφαίρεση επιπλέον πακέτων;"
+
+#: ../client/pk-console.c:665
+msgid "Cancelled!"
+msgstr "Ακυρώθηκε!"
+
+#: ../client/pk-console.c:687
+msgid "Could not find a package with that name to update"
+msgstr "Δε μπόρεσε να βρεθεί πακέτο με αυτό το όνομα για προς ενημέρωση"
+
+#: ../client/pk-console.c:705
+msgid "Could not find what packages require this package"
+msgstr "Δε μπόρεσε να βρεθεί ποια πακέτα απαιτούν αυτό το πακέτο"
+
+#: ../client/pk-console.c:723
+#, fuzzy
+msgid "Could not get dependencies for this package"
+msgstr "όχι get εξαρτήσεις για πακέτο"
+
+#: ../client/pk-console.c:741
+#, fuzzy
+msgid "Could not find a description for this package"
+msgstr "όχι a περιγραφή για πακέτο"
+
+#: ../client/pk-console.c:759
+#, fuzzy
+msgid "Could not find the files for this package"
+msgstr "όχι αρχεία για πακέτο"
+
+#: ../client/pk-console.c:819
+msgid "Package description"
+msgstr "Περιγραφή πακέτου"
+
+#: ../client/pk-console.c:842
+msgid "Package files"
+msgstr "Αρχεία πακέτου"
+
+#: ../client/pk-console.c:850
+msgid "No files"
+msgstr "Χωρίς αρχεία"
+
+#. get user input
+#: ../client/pk-console.c:882
+msgid "Okay to import key?"
+msgstr "Εντάξει για την εισαγωγή κλειδιού;"
+
+#: ../client/pk-console.c:885
+msgid "Did not import key"
+msgstr "Δεν έγινε εισαγωγή κλειδιού"
+
+#. get user input
+#: ../client/pk-console.c:925
+msgid "Do you agree?"
+msgstr "Συμφωνείτε;"
+
+#: ../client/pk-console.c:928
+msgid "Did not agree to licence, task will fail"
+msgstr "Δεν έγινε συμφωνία με την άδεια χρήσης, η ενέργεια θα αποτύχει"
+
+#: ../client/pk-console.c:957
+msgid "The daemon crashed mid-transaction!"
+msgstr ""
+
+#. header
+#: ../client/pk-console.c:1010
+#, fuzzy
+msgid "PackageKit Console Interface"
+msgstr "Κονσόλα"
+
+#: ../client/pk-console.c:1010
+msgid "Subcommands:"
+msgstr "Υποεντολές:"
+
+#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+#, fuzzy
+msgid "Show extra debugging information"
+msgstr "Προβολή επιπρόσθετων επιλογών αποσφαλμάτωσης"
+
+#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+#, fuzzy
+msgid "Show the program version and exit"
+msgstr "πρόγραμμα έκδοση και"
+
+#: ../client/pk-console.c:1118
+#, fuzzy
+msgid "Set the filter, e.g. installed"
+msgstr "Ορισμός φίλτρο e g εγκατεστημένο"
+
+#: ../client/pk-console.c:1120
+#, fuzzy
+msgid "Exit without waiting for actions to complete"
+msgstr "Έξοδος για ολοκληρωμένο"
+
+#: ../client/pk-console.c:1143
+#, fuzzy
+msgid "Could not connect to system DBUS."
+msgstr "όχι σύνδεση σύστημα."
+
+#: ../client/pk-console.c:1231
+#, fuzzy
+msgid "You need to specify a search type"
+msgstr "a τύπος"
+
+#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
+#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
+#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
+#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
+#, fuzzy
+msgid "You need to specify a search term"
+msgstr "a όρος"
+
+#: ../client/pk-console.c:1262
+#, fuzzy
+msgid "Invalid search type"
+msgstr "Μη έγκυρο τύπος"
+
+#: ../client/pk-console.c:1267
+#, fuzzy
+msgid "You need to specify a package or file to install"
+msgstr "a πακέτο ή αρχείο"
+
+#: ../client/pk-console.c:1280
+#, fuzzy
+msgid "You need to specify a type, key_id and package_id"
+msgstr "a τύπος και"
+
+#: ../client/pk-console.c:1287
+#, fuzzy
+msgid "You need to specify a package to remove"
+msgstr "a πακέτο αφαίρεση"
+
+#: ../client/pk-console.c:1294
+#, fuzzy
+msgid "You need to specify a eula-id"
+msgstr "a id"
+
+#: ../client/pk-console.c:1309
+#, fuzzy
+msgid "You need to specify a package name to resolve"
+msgstr "a πακέτο όνομα"
+
+#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
+#, fuzzy
+msgid "You need to specify a repo name"
+msgstr "a όνομα"
+
+#: ../client/pk-console.c:1330
+#, fuzzy
+msgid "You need to specify a repo name/parameter and value"
+msgstr "a όνομα και τιμή"
+
+#: ../client/pk-console.c:1343
+#, fuzzy
+msgid "You need to specify a time term"
+msgstr "a ώρα όρος"
+
+#: ../client/pk-console.c:1348
+#, fuzzy
+msgid "You need to specify a correct role"
+msgstr "a σωστό"
+
+#: ../client/pk-console.c:1353
+#, fuzzy
+msgid "Failed to get last time"
+msgstr "Απέτυχε get ώρα"
+
+#: ../client/pk-console.c:1389
+#, fuzzy
+msgid "You need to specify a package to find the description for"
+msgstr "a πακέτο περιγραφή για"
+
+#: ../client/pk-console.c:1396
+#, fuzzy
+msgid "You need to specify a package to find the files for"
+msgstr "a πακέτο αρχεία για"
+
+#: ../client/pk-console.c:1441
+#, c-format
+#, fuzzy
+msgid "Option '%s' not supported"
+msgstr "όχι υποστηρίζεται"
+
+#: ../client/pk-console.c:1452
+#, fuzzy
+msgid "Command failed"
+msgstr "Εντολή απέτυχε"
+
+#: ../client/pk-console.c:1456
+#, fuzzy
+msgid "You don't have the necessary privileges for this operation"
+msgstr "t για"
+
+#: ../client/pk-monitor.c:113
+#, fuzzy
+msgid "PackageKit Monitor"
+msgstr "Οθόνη"
+
+#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#, c-format
+#, fuzzy
+msgid "Could not open database: %s"
+msgstr "όχι open"
+
+#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+#, fuzzy
+msgid "You probably need to run this program as the root user"
+msgstr "πρόγραμμα χρήστης"
+
+#: ../src/pk-main.c:83
+#, fuzzy
+msgid "Startup failed due to security policies on this machine."
+msgstr "απέτυχε ενεργό."
+
+#: ../src/pk-main.c:84
+#, fuzzy
+msgid "This can happen for two reasons:"
+msgstr "για δύο:"
+
+#: ../src/pk-main.c:85
+#, fuzzy
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "σωστό χρήστης είναι όχι"
+
+#: ../src/pk-main.c:86
+#, fuzzy
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr "οργανισμός αρχείο είναι όχι εγκατεστημένο μέσα σύστημα σύστημα ημ"
+
+#: ../src/pk-main.c:185
+#, fuzzy
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Πακετάρισμα e g dummy"
+
+#: ../src/pk-main.c:187
+#, fuzzy
+msgid "Daemonize and detach from the terminal"
+msgstr "και από"
+
+#: ../src/pk-main.c:191
+#, fuzzy
+msgid "Disable the idle timer"
+msgstr "Απενεργοποίηση χρονόμετρο"
+
+#: ../src/pk-main.c:193
+#, fuzzy
+msgid "Show version and exit"
+msgstr "έκδοση και"
+
+#: ../src/pk-main.c:195
+#, fuzzy
+msgid "Exit after a small delay"
+msgstr "Έξοδος a μικρό"
+
+#: ../src/pk-main.c:197
+#, fuzzy
+msgid "Exit after the engine has loaded"
+msgstr "Έξοδος φορτωμένο"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "Υπηρεσία PackageKit"
+
+#: ../src/pk-main.c:233
+#, fuzzy
+msgid "Cannot connect to the system bus"
+msgstr "σύνδεση σύστημα"
+
+#: ../src/pk-main.c:273
+#, c-format
+#, fuzzy
+msgid "Error trying to start: %s\n"
+msgstr "Σφάλμα έναρξη n"
+

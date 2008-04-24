@@ -666,7 +666,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
  * backend_install_file:
  */
 static void
-backend_install_file (PkBackend *backend, const gchar *file)
+backend_install_file (PkBackend *backend, gboolean trusted, const gchar *file)
 {
 	ThreadData *data = g_new0(ThreadData, 1);
 

@@ -243,7 +243,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
-    def install_file(self, file):
+    def install_file(self, trusted, file):
         """ Installs given package into system"""
         # FIXME: install progress
         self.allow_cancel(False);

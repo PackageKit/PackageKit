@@ -57,8 +57,9 @@
 #include "pk-inhibit.h"
 #include "pk-marshal.h"
 #include "pk-notify.h"
-#include "pk-restart.h"
+#include "pk-file-monitor.h"
 #include "pk-security.h"
+#include "pk-conf.h"
 
 static void     pk_engine_class_init	(PkEngineClass *klass);
 static void     pk_engine_init		(PkEngine      *engine);
@@ -90,7 +91,7 @@ struct PkEnginePrivate
 	PkNetwork		*network;
 	PkSecurity		*security;
 	PkNotify		*notify;
-	PkRestart		*restart;
+	PkFileMonitor		*file_monitor;
 	PkRoleEnum		 actions;
 	PkGroupEnum		 groups;
 	PkFilterEnum		 filters;
@@ -463,10 +464,10 @@ pk_engine_class_init (PkEngineClass *klass)
 }
 
 /**
- * pk_engine_restart_schedule_cb:
+ * pk_engine_file_monitor_changed_cb:
  **/
 static void
-pk_engine_restart_schedule_cb (PkRestart *restart, PkEngine *engine)
+pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	pk_debug ("setting restart_schedule TRUE");
@@ -481,6 +482,7 @@ pk_engine_init (PkEngine *engine)
 {
 	DBusGConnection *connection;
 	gboolean ret;
+	gchar *filename;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->restart_schedule = FALSE;
@@ -528,10 +530,13 @@ pk_engine_init (PkEngine *engine)
 	g_signal_connect (engine->priv->notify, "updates-changed",
 			  G_CALLBACK (pk_engine_notify_updates_changed_cb), engine);
 
-	/* add the interface */
-	engine->priv->restart = pk_restart_new ();
-	g_signal_connect (engine->priv->restart, "restart-schedule",
-			  G_CALLBACK (pk_engine_restart_schedule_cb), engine);
+	/* monitor the config file for changes */
+	engine->priv->file_monitor = pk_file_monitor_new ();
+	filename = pk_conf_get_filename ();
+	pk_file_monitor_set_file (engine->priv->file_monitor, filename);
+	g_signal_connect (engine->priv->file_monitor, "file-changed",
+			  G_CALLBACK (pk_engine_file_monitor_changed_cb), engine);
+	g_free (filename);
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
@@ -577,7 +582,7 @@ pk_engine_finalize (GObject *object)
 
 	/* compulsory gobjects */
 	g_timer_destroy (engine->priv->timer);
-	g_object_unref (engine->priv->restart);
+	g_object_unref (engine->priv->file_monitor);
 	g_object_unref (engine->priv->inhibit);
 	g_object_unref (engine->priv->transaction_list);
 	g_object_unref (engine->priv->transaction_db);
