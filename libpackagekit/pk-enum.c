@@ -1118,7 +1118,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find role_value");
 	role_value = pk_enum_find_value (enum_role, "search-file");
-	if (PK_ROLE_ENUM_SEARCH_FILE) {
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1136,7 +1136,7 @@ libst_enum (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "find value");
 	role_value = pk_role_enum_from_text ("search-file");
-	if (PK_ROLE_ENUM_SEARCH_FILE) {
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
