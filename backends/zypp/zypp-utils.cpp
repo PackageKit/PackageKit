@@ -532,6 +532,13 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 				}
 			}
 
+			// reset the status of all touched PoolItems
+			zypp::ResPool pool = zypp::ResPool::instance ();
+			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+				if (it->status ().isToBeInstalled ())
+					it->statusReset ();
+			}
+
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
 			g_free (emsg);
 			return FALSE;
