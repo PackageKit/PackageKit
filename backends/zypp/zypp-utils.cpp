@@ -412,6 +412,14 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 			continue;
 		if (filters == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
 			continue;
+		if (filters == PK_FILTER_ENUM_ARCH) {
+			if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
+				continue;
+		}
+		if (filters == PK_FILTER_ENUM_NOT_ARCH) {
+			if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
+				continue;
+		}
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :

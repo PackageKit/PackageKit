@@ -364,7 +364,9 @@ backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
-			PK_FILTER_ENUM_NOT_INSTALLED);
+			PK_FILTER_ENUM_NOT_INSTALLED |
+			PK_FILTER_ENUM_ARCH |
+			PK_FILTER_ENUM_NOT_ARCH);
 }
 
 static gboolean
@@ -967,9 +969,9 @@ backend_get_update_detail_thread (PkBackendThread *thread, gpointer data)
 
 	if (zypp::isKind<zypp::Patch>(solvable)) {
 		zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(item);
-		if (patch->reboot_needed ()) {
+		if (patch->rebootSuggested ()) {
 			restart = PK_RESTART_ENUM_SYSTEM;
-		}else if (patch->affects_pkg_manager ()) {
+		}else if (patch->restartSuggested ()) {
 			restart = PK_RESTART_ENUM_SESSION;
 		}
 
