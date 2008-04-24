@@ -1404,10 +1404,6 @@ pk_backend_finalize (GObject *object)
 
 	pk_debug ("backend finalise");
 
-	g_object_unref (backend->priv->time);
-	g_object_unref (backend->priv->inhibit);
-	g_hash_table_destroy (backend->priv->eulas);
-
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
@@ -1421,6 +1417,9 @@ pk_backend_finalize (GObject *object)
 
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
+	g_object_unref (backend->priv->time);
+	g_object_unref (backend->priv->inhibit);
+	g_hash_table_destroy (backend->priv->eulas);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
