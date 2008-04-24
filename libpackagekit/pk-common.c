@@ -670,11 +670,34 @@ pk_ptr_array_to_argv (GPtrArray *array)
 }
 
 /**
+ * pk_va_list_to_argv_string:
+ **/
+static void
+pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
+{
+	gchar **array;
+	guint length;
+	guint i;
+
+	/* split the string up by spaces */
+	array = g_strsplit (string, " ", 0);
+
+	/* for each */
+	length = g_strv_length (array);
+	for (i=0; i<length; i++) {
+		g_ptr_array_add (ptr_array, g_strdup (array[i]));
+	}
+	g_strfreev (array);
+}
+
+/**
  * pk_va_list_to_argv:
  * @string_first: the first string
  * @args: any subsequant string's
  *
- * Form a composite string array of string
+ * Form a composite string array of string, with a special twist;
+ * if the entry contains a space, then it is split as seporate parts
+ * of the array.
  *
  * Return value: the string array, or %NULL if invalid
  **/
@@ -691,11 +714,16 @@ pk_va_list_to_argv (const gchar *string_first, va_list *args)
 
 	/* find how many elements we have in a temp array */
 	ptr_array = g_ptr_array_new ();
-	g_ptr_array_add (ptr_array, g_strdup (string_first));
+	pk_va_list_to_argv_string (ptr_array, string_first);
+
+	/* process all the va_list entries */
 	for (i=0;; i++) {
 		value_temp = va_arg (*args, gchar *);
+		/* end of array */
 		if (value_temp == NULL) break;
-		g_ptr_array_add (ptr_array, g_strdup (value_temp));
+
+		/* split the string up by spaces */
+		pk_va_list_to_argv_string (ptr_array, value_temp);
 	}
 	pk_debug ("number of strings=%i", i+1);
 
@@ -774,6 +802,20 @@ pk_strbuild_test (const gchar *first_element, ...)
 	va_end (args);
 
 	return text;
+}
+
+static gchar **
+pk_va_list_to_argv_test (const gchar *first_element, ...)
+{
+	va_list args;
+	gchar **array;
+
+	/* get the argument list */
+	va_start (args, first_element);
+	array = pk_va_list_to_argv (first_element, &args);
+	va_end (args);
+
+	return array;
 }
 
 void
@@ -867,6 +909,58 @@ libst_common (LibSelfTest *test)
 		libst_failed (test, "incorrect ret '%s'", text_safe);
 	}
 	g_free (text_safe);
+
+	/************************************************************
+	 ****************      splitting va_list       **************
+	 ************************************************************/
+	libst_title (test, "va_list_to_argv single");
+	array = pk_va_list_to_argv_test ("richard", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    array[1] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s'", array[0]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple");
+	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple with space first");
+	array = pk_va_list_to_argv_test ("richard phillip", "hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple with space second");
+	array = pk_va_list_to_argv_test ("richard", "phillip hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
 
 	/************************************************************
 	 ****************        validate text         **************
