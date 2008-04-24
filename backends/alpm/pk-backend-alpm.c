@@ -65,19 +65,19 @@ package_source_free (PackageSource *source)
 }
 
 void
-trans_event_cb (pmtransevt_t event, void *data1, void *data2)
+cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
     // TODO: Add code here
 }
 
 void
-trans_conv_cb (pmtransconv_t conv, void *data1, void *data2, void *data3, int *response)
+cb_trans_conv (pmtransconv_t conv, void *data1, void *data2, void *data3, int *response)
 {
     // TODO: Add code here
 }
 
 void
-trans_prog_cb (pmtransprog_t prog, const char *pkgname, int percent, int n, int remain)
+cb_trans_progress (pmtransprog_t prog, const char *pkgname, int percent, int n, int remain)
 {
     pk_debug ("Percentage is %i", percent);
     subprogress_percentage = percent;
@@ -204,24 +204,23 @@ find_packages_by_desc (const gchar *name, pmdb_t *db)
     if (db == NULL || name == NULL)
 	return NULL;
 
-    alpm_list_t *needle = NULL;
     alpm_list_t *result = NULL;
-    alpm_list_t *query_result = NULL;
 
     // determine if repository is local
     gboolean repo_is_local = (db == alpm_option_get_localdb ());
     // determine repository name
     const gchar *repo = alpm_db_get_name (db);
     // set search term
+    alpm_list_t *needle = NULL;
     needle = alpm_list_add (needle, (gchar *) name);
     // execute query
-    query_result = alpm_db_search (db, needle);
+    alpm_list_t *query_result = alpm_db_search (db, needle);
 
     alpm_list_t *iterator;
     for (iterator = query_result; iterator; iterator = alpm_list_next (iterator)) {
 	PackageSource *source = g_malloc (sizeof (PackageSource));
 
-	source->pkg = (pmpkg_t *) alpm_list_getdata(iterator);
+	source->pkg = (pmpkg_t *) alpm_list_getdata (iterator);
 	source->repo = (gchar *) repo;
 	source->installed = repo_is_local;
 
@@ -230,6 +229,39 @@ find_packages_by_desc (const gchar *name, pmdb_t *db)
 
     alpm_list_free (query_result);
     alpm_list_free (needle);
+    return result;
+}
+
+alpm_list_t *
+find_packages_by_name (const gchar *name, pmdb_t *db)
+{
+    if (db == NULL || name == NULL)
+	return NULL;
+
+    alpm_list_t *result = NULL;
+
+    // determine if repository is local
+    gboolean repo_is_local = (db == alpm_option_get_localdb ());
+    // determine repository name
+    const gchar *repo = alpm_db_get_name (db);
+    // get list of packages in repository
+    alpm_list_t *cache = alpm_db_getpkgcache (db);
+
+    alpm_list_t *iterator;
+    for (iterator = cache; iterator; iterator = alpm_list_next (iterator)) {
+	pmpkg_t *pkg = alpm_list_getdata (iterator);
+
+	if (strstr (alpm_pkg_get_name (pkg), name)) {
+	    PackageSource *source = g_malloc (sizeof (PackageSource));
+
+	    source->pkg = (pmpkg_t *) pkg;
+	    source->repo = (gchar *) repo;
+	    source->installed = repo_is_local;
+
+	    result = alpm_list_add (result, (PackageSource *) source);
+	}
+    }
+
     return result;
 }
 
@@ -271,9 +303,7 @@ backend_destroy (PkBackend *backend)
     g_return_if_fail (backend != NULL);
 
     if (alpm_release () == -1)
-	pk_backend_error_code (backend,
-		PK_ERROR_ENUM_FAILED_FINALISE,
-		"Failed to release control");
+	pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_FINALISE, "Failed to release control");
 }
 
 /**
@@ -635,7 +665,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
     }
 */
 
-    if (alpm_trans_init (PM_TRANS_TYPE_SYNC, flags, trans_event_cb, trans_conv_cb, trans_prog_cb) == -1) {
+    if (alpm_trans_init (PM_TRANS_TYPE_SYNC, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
 	pk_backend_error_code (backend,
 		PK_ERROR_ENUM_TRANSACTION_ERROR,
 		alpm_strerror (pm_errno));
@@ -711,7 +741,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
     alpm_list_t *problems = NULL;
 */
 
-    if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0, trans_event_cb, trans_conv_cb, trans_prog_cb) != 0) {
+    if (alpm_trans_init (PM_TRANS_TYPE_SYNC, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
 	pk_backend_finished (backend);
 	return;
@@ -727,21 +757,18 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
     }
 */
 
-    alpm_list_t *i = NULL;
     pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-    g_timeout_add (ALPM_PROGRESS_UPDATE_INTERVAL, update_subprogress, backend);
 
-    for (i = dbs; i; i = alpm_list_next (i)) {
-	if (alpm_db_update (force, (pmdb_t *) i->data)) {
+    alpm_list_t *iterator;
+    for (iterator = dbs; iterator; iterator = alpm_list_next (iterator)) {
+	if (alpm_db_update (force, (pmdb_t *) alpm_list_getdata (iterator))) {
 	    pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
-	    alpm_list_free (dbs);
 	    pk_backend_finished (backend);
-	    subprogress_percentage = -1;
 	    return;
 	}
-	subprogress_percentage = -1;
     }
 
+    alpm_trans_release ();
     pk_backend_finished (backend);
 }
 
@@ -800,7 +827,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
     if (allow_deps)
 	flags |= PM_TRANS_FLAG_CASCADE;
 
-    if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, trans_event_cb, trans_conv_cb, trans_prog_cb) == -1) {
+    if (alpm_trans_init (PM_TRANS_TYPE_REMOVE, flags, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
 	pk_backend_finished (backend);
 	pk_package_id_free (id);
@@ -849,7 +876,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
     if (!ninstalled)
 	repos = alpm_list_add (repos, alpm_option_get_localdb ());
     if (!installed)
-	repos = alpm_list_join (repos, alpm_list_copy(alpm_option_get_syncdbs ()));
+	repos = alpm_list_join (repos, alpm_list_copy (alpm_option_get_syncdbs ()));
 
     alpm_list_t *iterator;
     for (iterator = repos; iterator; iterator = alpm_list_next (iterator))
@@ -868,7 +895,8 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search) {
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
     g_return_if_fail (backend != NULL);
 
     alpm_list_t *repos = NULL;
@@ -882,33 +910,11 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
     if (!ninstalled)
 	repos = alpm_list_add (repos, alpm_option_get_localdb ());
     if (!installed)
-	repos = alpm_list_join (repos, alpm_list_copy(alpm_option_get_syncdbs ()));
+	repos = alpm_list_join (repos, alpm_list_copy (alpm_option_get_syncdbs ()));
 
     alpm_list_t *iterator;
-    for (iterator = repos; iterator; iterator = alpm_list_next (iterator)) {
-	pmdb_t *db = alpm_list_getdata (iterator);
-	alpm_list_t *cache = alpm_db_getpkgcache (db);
-
-	// determine if repository is local
-	gboolean db_is_local = (db == alpm_option_get_localdb ());
-	// determine repository name
-	const gchar *repo = alpm_db_get_name (db);
-
-	alpm_list_t *pkg_iterator;
-	for (pkg_iterator = cache; pkg_iterator; pkg_iterator = alpm_list_next (pkg_iterator)) {
-	    pmpkg_t *pkg = alpm_list_getdata(pkg_iterator);
-
-	    if (strstr (alpm_pkg_get_name (pkg), search)) {
-		PackageSource *source = g_malloc (sizeof (PackageSource));
-
-		source->pkg = (pmpkg_t *) pkg;
-		source->repo = (gchar *) repo;
-		source->installed = db_is_local;
-
-		result = alpm_list_add (result, (PackageSource *) source);
-	    }
-	}
-    }
+    for (iterator = repos; iterator; iterator = alpm_list_next (iterator))
+	result = alpm_list_join (result, find_packages_by_name (search, (pmdb_t *) alpm_list_getdata(iterator)));
 
     add_packages_from_list (backend, alpm_list_first (result));
 
@@ -948,7 +954,7 @@ backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
     g_return_if_fail (backend != NULL);
 
     alpm_list_t *problems = NULL;
-    if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0, trans_event_cb, trans_conv_cb, trans_prog_cb) == -1) {
+    if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
 	pk_backend_error_code (backend,
 		PK_ERROR_ENUM_TRANSACTION_ERROR,
 		alpm_strerror (pm_errno));
@@ -991,19 +997,17 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
     pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
     alpm_list_t *repos = alpm_option_get_syncdbs ();
-
     if (repos == NULL)
 	pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, alpm_strerror (pm_errno));
 
     // Iterate on repository list
-    repos = alpm_list_first (repos);
-    while (repos != NULL) {
+    alpm_list_t *iterator;
+    for (iterator = repos; iterator; iterator = alpm_list_next(iterator)) {
 	pmdb_t *db = alpm_list_getdata (repos);
 	pk_backend_repo_detail (backend, alpm_db_get_name (db), alpm_db_get_url (db), TRUE);
 	repos = alpm_list_next (repos);
     }
 
-    alpm_list_free (repos);
     pk_backend_finished (backend);
 }
   
