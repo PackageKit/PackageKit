@@ -872,6 +872,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
     g_return_if_fail (backend != NULL);
 
     alpm_list_t *repos = NULL;
+    alpm_list_t *result = NULL;
 
     pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -882,6 +883,37 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	repos = alpm_list_add (repos, alpm_option_get_localdb ());
     if (!installed)
 	repos = alpm_list_join (repos, alpm_list_copy(alpm_option_get_syncdbs ()));
+
+    alpm_list_t *iterator;
+    for (iterator = repos; iterator; iterator = alpm_list_next (iterator)) {
+	pmdb_t *db = alpm_list_getdata (iterator);
+	alpm_list_t *cache = alpm_db_getpkgcache (db);
+
+	// determine if repository is local
+	gboolean db_is_local = (db == alpm_option_get_localdb ());
+	// determine repository name
+	const gchar *repo = alpm_db_get_name (db);
+
+	alpm_list_t *pkg_iterator;
+	for (pkg_iterator = cache; pkg_iterator; pkg_iterator = alpm_list_next (pkg_iterator)) {
+	    pmpkg_t *pkg = alpm_list_getdata(pkg_iterator);
+
+	    if (strstr (alpm_pkg_get_name (pkg), search)) {
+		PackageSource *source = g_malloc (sizeof (PackageSource));
+
+		source->pkg = (pmpkg_t *) pkg;
+		source->repo = (gchar *) repo;
+		source->installed = db_is_local;
+
+		result = alpm_list_add (result, (PackageSource *) source);
+	    }
+	}
+    }
+
+    add_packages_from_list (backend, alpm_list_first (result));
+
+    alpm_list_free_inner (result, (alpm_list_fn_free) package_source_free);
+    alpm_list_free (result);
 
     alpm_list_free (repos);
     pk_backend_finished (backend);
@@ -896,7 +928,7 @@ backend_get_groups (PkBackend *backend)
     g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 
     // TODO: Provide support for groups in alpm
-    return PK_GROUP_ENUM_UNKNOWN;
+    return PK_GROUP_ENUM_OTHER | PK_GROUP_ENUM_UNKNOWN;
 }
 
 /**
