@@ -760,7 +760,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
 		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
 			pk_backend_finished (backend);
 			return FALSE;
 		}
@@ -776,7 +776,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 		//} catch (const zypp::repo::RepoException &ex) {
 		} catch (const zypp::Exception &ex) {
 			// TODO: Handle the exceptions in manager.refreshMetadata
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString().c_str() );
 			pk_backend_finished (backend);
 			return FALSE;
 		}
