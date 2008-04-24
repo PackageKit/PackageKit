@@ -1407,6 +1407,7 @@ pk_backend_finalize (GObject *object)
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
+		pk_debug ("doing unref quickly delay");
 		pk_backend_finished_delay (backend);
 	}
 
