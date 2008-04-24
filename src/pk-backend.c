@@ -137,7 +137,11 @@ pk_backend_get_groups (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_GROUP_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->desc->get_groups != NULL, PK_GROUP_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_groups == NULL) {
+		return PK_GROUP_ENUM_UNKNOWN;
+	}
 	return backend->desc->get_groups (backend);
 }
 
@@ -149,7 +153,11 @@ pk_backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_FILTER_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->desc->get_filters != NULL, PK_GROUP_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_filters == NULL) {
+		return PK_FILTER_ENUM_UNKNOWN;
+	}
 	return backend->desc->get_filters (backend);
 }
 
