@@ -153,10 +153,14 @@ pk_file_monitor_finalize (GObject *object)
 	file_monitor = PK_FILE_MONITOR (object);
 	g_return_if_fail (file_monitor->priv != NULL);
 
-	g_file_monitor_cancel (file_monitor->priv->monitor);
-
-	g_object_unref (file_monitor->priv->file);
-	g_object_unref (file_monitor->priv->monitor);
+	/* we might not have called pk_file_monitor_set_file */
+	if (file_monitor->priv->monitor != NULL) {
+		g_file_monitor_cancel (file_monitor->priv->monitor);
+		g_object_unref (file_monitor->priv->monitor);
+	}
+	if (file_monitor->priv->file != NULL) {
+		g_object_unref (file_monitor->priv->file);
+	}
 
 	G_OBJECT_CLASS (pk_file_monitor_parent_class)->finalize (object);
 }
