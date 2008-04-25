@@ -1495,7 +1495,7 @@ main (int argc, char *argv[])
 
 out:
 	if (ret == FALSE) {
-		g_print ("%s\n", _("Command failed"));
+		g_print ("\n%s\n", _("Command failed"));
 	}
 	if (error != NULL) {
 		if (g_str_has_prefix (error->message, "org.freedesktop.packagekit."))  {
