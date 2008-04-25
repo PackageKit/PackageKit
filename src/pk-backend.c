@@ -39,6 +39,7 @@
 #include "pk-backend.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
+#include "pk-file-monitor.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -91,6 +92,9 @@ struct _PkBackendPrivate
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
 	PkInhibit		*inhibit;
+	PkFileMonitor		*file_monitor;
+	PkBackendFileChanged	 file_changed_func;
+	gpointer		 file_changed_data;
 	gboolean		 during_initialize;
 	gboolean		 allow_cancel;
 	gboolean		 finished;
@@ -133,7 +137,11 @@ pk_backend_get_groups (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_GROUP_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->desc->get_groups != NULL, PK_GROUP_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_groups == NULL) {
+		return PK_GROUP_ENUM_UNKNOWN;
+	}
 	return backend->desc->get_groups (backend);
 }
 
@@ -145,7 +153,11 @@ pk_backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_FILTER_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
-	g_return_val_if_fail (backend->desc->get_filters != NULL, PK_GROUP_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_filters == NULL) {
+		return PK_FILTER_ENUM_UNKNOWN;
+	}
 	return backend->desc->get_filters (backend);
 }
 
@@ -1214,16 +1226,7 @@ pk_backend_finished (PkBackend *backend)
 	if (backend->priv->set_error == FALSE &&
 	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Backends should send status <value> signals for %s!\n"
-				    "If you are:\n"
-				    "* Calling out to external tools, the compiled backend "
-				    "should call pk_backend_set_status() manually.\n"
-				    "* Using a scripted backend with dumb commands then "
-				    "this should be set at the start of the runtime call\n"
-				    "   - see helpers/yumBackend.py:self.status()\n"
-				    "* Using a scripted backend with clever commands then a "
-				    "  callback should use map values into status enums\n"
-				    "   - see helpers/yumBackend.py:self.state_actions", role_text);
+				    "Backends should send status <value> signals for %s!", role_text);
 		pk_warning ("GUI will remain unchanged!");
 	}
 
@@ -1351,6 +1354,44 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	return FALSE;
 }
 
+
+/**
+ * pk_backend_watch_file:
+ */
+gboolean
+pk_backend_watch_file (PkBackend *backend, const gchar *filename, PkBackendFileChanged func, gpointer data)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
+
+	if (backend->priv->file_changed_func != NULL) {
+		pk_warning ("already set");
+		return FALSE;
+	}
+	ret = pk_file_monitor_set_file (backend->priv->file_monitor, filename);;
+
+	/* if we set it up, set the function callback */
+	if (ret) {
+		backend->priv->file_changed_func = func;
+		backend->priv->file_changed_data = data;
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_file_monitor_changed_cb:
+ **/
+static void
+pk_backend_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	pk_debug ("config file changed");
+	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
+}
+
 /**
  * pk_backend_finalize:
  **/
@@ -1363,13 +1404,10 @@ pk_backend_finalize (GObject *object)
 
 	pk_debug ("backend finalise");
 
-	g_object_unref (backend->priv->time);
-	g_object_unref (backend->priv->inhibit);
-	g_hash_table_destroy (backend->priv->eulas);
-
 	/* do finish now, as we might be unreffing quickly */
 	if (backend->priv->signal_finished != 0) {
 		g_source_remove (backend->priv->signal_finished);
+		pk_debug ("doing unref quickly delay");
 		pk_backend_finished_delay (backend);
 	}
 
@@ -1380,6 +1418,9 @@ pk_backend_finalize (GObject *object)
 
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
+	g_object_unref (backend->priv->time);
+	g_object_unref (backend->priv->inhibit);
+	g_hash_table_destroy (backend->priv->eulas);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
@@ -1512,6 +1553,8 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->c_tid = NULL;
+	backend->priv->file_changed_func = NULL;
+	backend->priv->file_changed_data = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
@@ -1519,6 +1562,12 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+	/* monitor config files for changes */
+	backend->priv->file_monitor = pk_file_monitor_new ();
+	g_signal_connect (backend->priv->file_monitor, "file-changed",
+			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
 	pk_backend_reset (backend);
 }
 
@@ -1544,6 +1593,7 @@ pk_backend_new (void)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#include <glib/gstdio.h>
 
 static guint number_messages = 0;
 
@@ -1566,12 +1616,23 @@ pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *t
 	libst_loopquit (test);
 }
 
+/**
+ * pk_backend_test_watch_file_cb:
+ **/
+static void
+pk_backend_test_watch_file_cb (PkBackend *backend, gpointer data)
+{
+	LibSelfTest *test = (LibSelfTest *) data;
+	libst_loopquit (test);
+}
+
 void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
 	gchar *text;
 	gboolean ret;
+	const gchar *filename;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1581,6 +1642,47 @@ libst_backend (LibSelfTest *test)
 	libst_title (test, "get an backend");
 	backend = pk_backend_new ();
 	if (backend != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "create a config file");
+	filename = "/tmp/dave";
+	ret = g_file_set_contents (filename, "foo", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set up a watch file on a config file");
+	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "change the config file");
+	ret = g_file_set_contents (filename, "bar", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wait for config file change */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "delete the config file");
+	ret = g_unlink (filename);
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1742,13 +1844,13 @@ libst_backend (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "check we enforce finished after error_code");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
 	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
 	libst_loopcheck (test);
 
+	libst_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1) {
 		libst_success (test, NULL);
 	} else {
@@ -1760,19 +1862,12 @@ libst_backend (LibSelfTest *test)
 	number_messages = 0;
 
 	/************************************************************/
-	libst_title (test, "check we enforce finished after two error_codes");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error1");
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
 
 	/* wait for finished */
 	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
 	libst_loopcheck (test);
-
-	if (number_messages == 1) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "we messaged %i times!", number_messages);
-	}
 
 	g_object_unref (backend);
 

@@ -364,7 +364,9 @@ backend_get_filters (PkBackend *backend)
 {
 	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
-			PK_FILTER_ENUM_NOT_INSTALLED);
+			PK_FILTER_ENUM_NOT_INSTALLED |
+			PK_FILTER_ENUM_ARCH |
+			PK_FILTER_ENUM_NOT_ARCH);
 }
 
 static gboolean
@@ -404,15 +406,17 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 			zypp::PoolItem selectable = *it;
 			if (strcmp (selectable->name().c_str(), pi->name) == 0) {
 				// This package matches the name we're looking
-				const char *edition_str = selectable->edition ().asString ().c_str();
+				char *edition_str = g_strdup (selectable->edition ().asString ().c_str());
 
 				if (strcmp (edition_str, pi->version) == 0) {
+					g_free (edition_str);
 					// this is the one, mark it to be installed
 					pool_item = selectable;
 					pool_item_found = TRUE;
 					pk_backend_set_percentage (backend, 20);
 					break; // Found it, get out of the for loop
 				}
+				g_free (edition_str);
 			}
 		}
 
@@ -468,19 +472,21 @@ backend_get_depends_thread (PkBackendThread *thread, gpointer data)
 				it++) {
 
 			gchar *package_id;
-			const gchar *package_name;
+			gchar *package_name;
 
 			/* do not emit packages with invalid names generated above via dependencies such as "rpmlib(PayloadFilesHavePrefix) <= 4.0-1"
 			   this was causing a crash - BNC# 372429
 			   Fixme - need to find if those dependencies should actually be in the list above and if so a better way to strip them out
 			*/
-			package_name = it->second.name ().c_str();
+			package_name = g_strdup (it->second.name ().c_str());
 
 			if (package_name == NULL || *package_name == '\0')
 			{
 				pk_debug ("Skipping emitting a non valid package");
+				g_free (package_name);
 				continue;
 			}
+			g_free (package_name);
 
 			package_id = pk_package_id_build (it->second.name ().c_str(),
 					it->second.edition ().asString ().c_str(),
@@ -758,7 +764,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
 		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
 			pk_backend_finished (backend);
 			return FALSE;
 		}
@@ -774,7 +780,7 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 		//} catch (const zypp::repo::RepoException &ex) {
 		} catch (const zypp::Exception &ex) {
 			// TODO: Handle the exceptions in manager.refreshMetadata
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString().c_str() );
 			pk_backend_finished (backend);
 			return FALSE;
 		}
@@ -1618,11 +1624,13 @@ backend_get_files_thread (PkBackendThread *thread, gpointer data) {
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-		const char *version = it->edition ().asString ().c_str ();
+		char *version = g_strdup (it->edition ().asString ().c_str ());
 		if (strcmp (pi->version, version) == 0) {
+			g_free (version);
 			package = *it;
 			break;
 		}
+		g_free (version);
 	}
 
 	delete (v);
@@ -1718,6 +1726,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filter)
 {
 	g_return_if_fail (backend != NULL);
 	PkFilterEnum *data = g_new0(PkFilterEnum, 1);
+	*data = filter;
 
 	pk_backend_thread_create (thread, backend_get_packages_thread, data);
 }

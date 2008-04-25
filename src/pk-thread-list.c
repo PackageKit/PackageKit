@@ -135,30 +135,6 @@ pk_thread_list_wait (PkThreadList *tlist)
 }
 
 /**
- * pk_thread_list_number_running:
- **/
-guint
-pk_thread_list_number_running (PkThreadList *tlist)
-{
-	guint i;
-	guint length;
-	PkThreadListItem *item;
-	guint number = 0;
-
-	g_return_val_if_fail (PK_IS_THREAD_LIST (tlist), FALSE);
-
-	/* find all the running threads */
-	length = tlist->priv->thread_list->len;
-	for (i=0; i<length; i++) {
-		item = (PkThreadListItem *) g_ptr_array_index (tlist->priv->thread_list, i);
-		if (item->running) {
-			number++;
-		}
-	}
-	return number;
-}
-
-/**
  * pk_thread_list_class_init:
  * @klass: The PkThreadListClass
  **/
@@ -209,7 +185,6 @@ pk_thread_free_data (PkThreadList *tlist)
 static void
 pk_thread_list_finalize (GObject *object)
 {
-	guint running;
 	PkThreadList *tlist;
 
 	g_return_if_fail (object != NULL);
@@ -220,12 +195,6 @@ pk_thread_list_finalize (GObject *object)
 
 	/* wait for existing threads to finish */
 	pk_thread_list_wait (tlist);
-
-	/* be paranoid */
-	running = pk_thread_list_number_running (tlist);
-	if (running > 0) {
-		pk_warning ("running=%i", running);
-	}
 
 	pk_thread_free_data (tlist);
 	g_ptr_array_free (tlist->priv->thread_list, TRUE);
