@@ -154,12 +154,14 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 	{
 		clear_package_id ();
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
+		gchar* summary = g_strdup(resolvable->satSolvable ().lookupStrAttribute (zypp::sat::SolvAttr::summary).c_str ());
 		//pk_debug ("InstallResolvableReportReceiver::start(): %s", _package_id == NULL ? "unknown" : _package_id);
 		if (_package_id != NULL) {
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_INSTALL);
-			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, _package_id, summary);
 			reset_sub_percentage ();
 		}
+		g_free (summary);
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
