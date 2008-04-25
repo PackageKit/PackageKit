@@ -408,18 +408,30 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 			it != v->end (); it++) {
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-		if (filters == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
-			continue;
-		if (filters == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
-			continue;
-		if (filters == PK_FILTER_ENUM_ARCH) {
-			if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
-				continue;
+
+		// iterate through the given filters
+		if (filters != PK_FILTER_ENUM_NONE){
+			gboolean print = TRUE;
+			for (guint i = 1; i < PK_FILTER_ENUM_UNKNOWN; i*=2) {
+				if ((filters & i) == 0)
+					continue;
+				if (i == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
+					print = FALSE;
+				if (i == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
+					print = FALSE;;
+				if (i == PK_FILTER_ENUM_ARCH) {
+					if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
+						print = FALSE;
+				}
+				if (i == PK_FILTER_ENUM_NOT_ARCH) {
+					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
+						print = FALSE;
+				}
+			}
+			if (!print)
+				continue;		
 		}
-		if (filters == PK_FILTER_ENUM_NOT_ARCH) {
-			if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
-				continue;
-		}
+
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :
@@ -530,6 +542,13 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
 					g_free (tempmsg);
 				}
+			}
+
+			// reset the status of all touched PoolItems
+			zypp::ResPool pool = zypp::ResPool::instance ();
+			for (zypp::ResPool::const_iterator it = pool.begin (); it != pool.end (); it++) {
+				if (it->status ().isToBeInstalled ())
+					it->statusReset ();
 			}
 
 			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, emsg);
