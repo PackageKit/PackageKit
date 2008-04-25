@@ -408,18 +408,30 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 			it != v->end (); it++) {
 
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
-		if (filters == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
-			continue;
-		if (filters == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
-			continue;
-		if (filters == PK_FILTER_ENUM_ARCH) {
-			if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
-				continue;
+
+		// iterate through the given filters
+		if (filters != PK_FILTER_ENUM_NONE){
+			gboolean print = TRUE;
+			for (guint i = 1; i < PK_FILTER_ENUM_UNKNOWN; i*=2) {
+				if ((filters & i) == 0)
+					continue;
+				if (i == PK_FILTER_ENUM_INSTALLED && !(it->isSystem ()))
+					print = FALSE;
+				if (i == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
+					print = FALSE;;
+				if (i == PK_FILTER_ENUM_ARCH) {
+					if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
+						print = FALSE;
+				}
+				if (i == PK_FILTER_ENUM_NOT_ARCH) {
+					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
+						print = FALSE;
+				}
+			}
+			if (!print)
+				continue;		
 		}
-		if (filters == PK_FILTER_ENUM_NOT_ARCH) {
-			if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
-				continue;
-		}
+
 		pk_backend_package (backend,
 			    it->isSystem() == true ?
 				PK_INFO_ENUM_INSTALLED :

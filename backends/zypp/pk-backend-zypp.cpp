@@ -1726,6 +1726,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filter)
 {
 	g_return_if_fail (backend != NULL);
 	PkFilterEnum *data = g_new0(PkFilterEnum, 1);
+	*data = filter;
 
 	pk_backend_thread_create (thread, backend_get_packages_thread, data);
 }
