@@ -788,6 +788,24 @@ pk_transaction_set_running (PkTransaction *transaction)
 	/* mark running */
 	transaction->priv->running = TRUE;
 
+	/* set all possible arguments for backend */
+	pk_backend_set_bool (priv->backend, "force", priv->cached_force);
+	pk_backend_set_bool (priv->backend, "allow_deps", priv->cached_allow_deps);
+	pk_backend_set_bool (priv->backend, "autoremove", priv->cached_autoremove);
+	pk_backend_set_bool (priv->backend, "enabled", priv->cached_enabled);
+	pk_backend_set_bool (priv->backend, "trusted", priv->cached_trusted);
+	pk_backend_set_uint (priv->backend, "filters", priv->cached_filters);
+	pk_backend_set_uint (priv->backend, "provides", priv->cached_provides);
+	pk_backend_set_strv (priv->backend, "package_ids", priv->cached_package_ids);
+	pk_backend_set_string (priv->backend, "package_id", priv->cached_package_id);
+	pk_backend_set_string (priv->backend, "transaction_id", priv->cached_transaction_id);
+	pk_backend_set_string (priv->backend, "full_path", priv->cached_full_path);
+	pk_backend_set_string (priv->backend, "search", priv->cached_search);
+	pk_backend_set_string (priv->backend, "repo_id", priv->cached_repo_id);
+	pk_backend_set_string (priv->backend, "key_id", priv->cached_key_id);
+	pk_backend_set_string (priv->backend, "parameter", priv->cached_parameter);
+	pk_backend_set_string (priv->backend, "value", priv->cached_value);
+
 	/* lets reduce pointer dereferences... */
 	desc = priv->backend->desc;
 
