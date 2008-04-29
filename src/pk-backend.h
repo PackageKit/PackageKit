@@ -120,13 +120,29 @@ gboolean         pk_backend_eula_required		(PkBackend      *backend,
 							 const gchar    *vendor_name,
 							 const gchar    *license_agreement);
 
-/* internal state */
-gboolean	 pk_backend_set_internal		(PkBackend	*backend,
-							 const gchar	*key,
-							 const gchar	*data);
-gchar		*pk_backend_get_internal		(PkBackend	*backend,
-							 const gchar	*key);
+/* set backend instance data */
+gboolean	 pk_backend_set_string			(PkBackend		*backend,
+							 const gchar		*key,
+							 const gchar		*data);
+gboolean	 pk_backend_set_uint			(PkBackend		*backend,
+							 const gchar		*key,
+							 guint			 data);
+gboolean	 pk_backend_set_bool			(PkBackend		*backend,
+							 const gchar		*key,
+							 gboolean		 data);
+gboolean	 pk_backend_set_pointer			(PkBackend		*backend,
+							 const gchar		*key,
+							 gpointer		 data);
 
+/* get backend instance data */
+const gchar	*pk_backend_get_string			(PkBackend		*backend,
+							 const gchar		*key);
+guint		 pk_backend_get_uint			(PkBackend		*backend,
+							 const gchar		*key);
+gboolean	 pk_backend_get_bool			(PkBackend		*backend,
+							 const gchar		*key);
+gpointer	 pk_backend_get_pointer			(PkBackend		*backend,
+							 const gchar		*key);
 
 /* helper functions */
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,

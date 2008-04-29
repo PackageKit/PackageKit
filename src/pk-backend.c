@@ -104,6 +104,8 @@ struct _PkBackendPrivate
 	guint			 last_remaining;
 	guint			 signal_finished;
 	guint			 signal_error_timeout;
+	GHashTable		*hash_string;
+	GHashTable		*hash_pointer;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -252,28 +254,166 @@ pk_backend_get_actions (PkBackend *backend)
 }
 
 /**
- * pk_backend_set_internal:
- *
- * Designed for volatile internal state, such as the authentication prompt
- * response, the proxy to use and that sort of thing
+ * pk_backend_set_string:
  **/
 gboolean
-pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data)
+pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 {
+	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return FALSE;
+	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving '%s' for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_string, g_strdup (key), (gpointer) g_strdup (data));
+	return TRUE;
 }
 
 /**
- * pk_backend_get_internal:
- *
- * Must g_free() the return value. Returns NULL on error.
+ * pk_backend_set_uint:
  **/
-gchar *
-pk_backend_get_internal (PkBackend *backend, const gchar *key)
+gboolean
+pk_backend_set_uint (PkBackend *backend, const gchar *key, guint data)
 {
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %i for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_bool:
+ **/
+gboolean
+pk_backend_set_bool (PkBackend *backend, const gchar *key, gboolean data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %i for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_pointer:
+ **/
+gboolean
+pk_backend_set_pointer (PkBackend *backend, const gchar *key, gpointer data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), data+1);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_string:
+ **/
+const gchar *
+pk_backend_get_string (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return NULL;
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return (const gchar *) value;
+}
+
+/**
+ * pk_backend_get_uint:
+ **/
+uint
+pk_backend_get_uint (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
+	g_return_val_if_fail (key != NULL, 0);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	/* we do the +1/-1 as NULL also means missing in the hash table */
+	return GPOINTER_TO_INT (value)-1;
+}
+
+/**
+ * pk_backend_get_bool:
+ **/
+gboolean
+pk_backend_get_bool (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return GPOINTER_TO_INT (value)-1;
+}
+
+/**
+ * pk_backend_get_pointer:
+ **/
+gpointer
+pk_backend_get_pointer (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return value-1;
 }
 
 /**
@@ -1177,6 +1317,10 @@ pk_backend_finished_delay (gpointer data)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 	}
 
+	pk_debug ("resetting hash tables to blank");
+	g_hash_table_remove_all (backend->priv->hash_pointer);
+	g_hash_table_remove_all (backend->priv->hash_string);
+
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
@@ -1436,6 +1580,8 @@ pk_backend_finalize (GObject *object)
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
 	g_hash_table_destroy (backend->priv->eulas);
+	g_hash_table_unref (backend->priv->hash_string);
+	g_hash_table_unref (backend->priv->hash_pointer);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
@@ -1578,6 +1724,8 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->time = pk_time_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	/* monitor config files for changes */
 	backend->priv->file_monitor = pk_file_monitor_new ();
@@ -1649,6 +1797,9 @@ libst_backend (LibSelfTest *test)
 	gchar *text;
 	gboolean ret;
 	const gchar *filename;
+	const gchar *data_string;
+	guint data_uint;
+	gboolean data_bool;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1661,6 +1812,114 @@ libst_backend (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a blank string");
+	ret = pk_backend_set_string (backend, "dave2", "");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a ~bool");
+	ret = pk_backend_set_bool (backend, "roger2", FALSE);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a zero uint");
+	ret = pk_backend_set_uint (backend, "linda2", 0);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a blank string");
+	data_string = pk_backend_get_string (backend, "dave2");
+	if (pk_strequal (data_string, "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %s", data_string);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a ~bool");
+	data_bool = pk_backend_get_bool (backend, "roger2");
+	if (!data_bool) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_bool);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a zero uint");
+	data_uint = pk_backend_get_uint (backend, "linda2");
+	if (data_uint == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_uint);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a string");
+	ret = pk_backend_set_string (backend, "dave", "ania");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a bool");
+	ret = pk_backend_set_bool (backend, "roger", TRUE);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a uint");
+	ret = pk_backend_set_uint (backend, "linda", 999);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a string");
+	data_string = pk_backend_get_string (backend, "dave");
+	if (pk_strequal (data_string, "ania")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %s", data_string);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a bool");
+	data_bool = pk_backend_get_bool (backend, "roger");
+	if (data_bool) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_bool);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a uint");
+	data_uint = pk_backend_get_uint (backend, "linda");
+	if (data_uint == 999) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_uint);
 	}
 
 	/************************************************************/
