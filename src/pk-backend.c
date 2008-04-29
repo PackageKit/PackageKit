@@ -88,6 +88,7 @@ struct _PkBackendPrivate
 	gboolean		 set_error;
 	gboolean		 set_signature;
 	gboolean		 set_eula;
+	gboolean		 has_sent_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -689,6 +690,9 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id
 		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
 	}
 
+	/* we've sent a package for this transaction */
+	backend->priv->has_sent_package = TRUE;
+
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
@@ -1216,6 +1220,17 @@ pk_backend_finished (PkBackend *backend)
 		return FALSE;
 	}
 
+	/* check we got a Package() else the UI will suck */
+	if (!backend->priv->set_error &&
+	    !backend->priv->has_sent_package &&
+	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
+	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Backends need to send a Package() for this role!");
+		return FALSE;
+	}
+
 	/* if we set an error code notifier, clear */
 	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
@@ -1532,6 +1547,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->set_eula = FALSE;
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
+	backend->priv->has_sent_package = FALSE;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
