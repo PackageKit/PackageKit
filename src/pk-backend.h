@@ -121,32 +121,35 @@ gboolean         pk_backend_eula_required		(PkBackend      *backend,
 							 const gchar    *license_agreement);
 
 /* set backend instance data */
-gboolean	 pk_backend_set_string			(PkBackend		*backend,
-							 const gchar		*key,
-							 const gchar		*data);
-gboolean	 pk_backend_set_uint			(PkBackend		*backend,
-							 const gchar		*key,
-							 guint			 data);
-gboolean	 pk_backend_set_bool			(PkBackend		*backend,
-							 const gchar		*key,
-							 gboolean		 data);
-gboolean	 pk_backend_set_pointer			(PkBackend		*backend,
-							 const gchar		*key,
-							 gpointer		 data);
+gboolean	 pk_backend_set_string			(PkBackend	*backend,
+							 const gchar	*key,
+							 const gchar	*data);
+gboolean	 pk_backend_set_uint			(PkBackend	*backend,
+							 const gchar	*key,
+							 guint		 data);
+gboolean	 pk_backend_set_bool			(PkBackend	*backend,
+							 const gchar	*key,
+							 gboolean	 data);
+gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
+							 const gchar	*key,
+							 gpointer	 data);
 
 /* get backend instance data */
-const gchar	*pk_backend_get_string			(PkBackend		*backend,
-							 const gchar		*key);
-guint		 pk_backend_get_uint			(PkBackend		*backend,
-							 const gchar		*key);
-gboolean	 pk_backend_get_bool			(PkBackend		*backend,
-							 const gchar		*key);
-gpointer	 pk_backend_get_pointer			(PkBackend		*backend,
-							 const gchar		*key);
+const gchar	*pk_backend_get_string			(PkBackend	*backend,
+							 const gchar	*key);
+guint		 pk_backend_get_uint			(PkBackend	*backend,
+							 const gchar	*key);
+gboolean	 pk_backend_get_bool			(PkBackend	*backend,
+							 const gchar	*key);
+gpointer	 pk_backend_get_pointer			(PkBackend	*backend,
+							 const gchar	*key);
 
 /* helper functions */
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
+typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
+gboolean	 pk_backend_thread_create		(PkBackend	*backend,
+							 PkBackendThreadFunc func);
 
 /* config changed functions */
 typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
@@ -160,82 +163,82 @@ gboolean	 pk_backend_watch_file			(PkBackend	*backend,
  * PkBackendDesc:
  */
 typedef struct {
-	const char	*description;
-	const char	*author;
-	void		(*initialize)		(PkBackend *backend);
-	void		(*destroy)		(PkBackend *backend);
-	PkGroupEnum	(*get_groups)		(PkBackend *backend);
-	PkFilterEnum	(*get_filters)		(PkBackend *backend);
-	void		(*cancel)		(PkBackend *backend);
-	void		(*get_depends)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *package_id,
-						 gboolean recursive);
-	void		(*get_description)	(PkBackend *backend,
-						 const gchar *package_id);
-	void		(*get_files)	        (PkBackend *backend,
-						 const gchar *package_id);
-	void		(*get_packages)	        (PkBackend *backend,
-						 PkFilterEnum filters);
-	void		(*get_repo_list)	(PkBackend *backend,
-						 PkFilterEnum filters);
-	void		(*get_requires)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *package_id,
-						 gboolean recursive);
-	void		(*get_update_detail)	(PkBackend *backend,
-						 const gchar *package_id);
-	void		(*get_updates)		(PkBackend *backend,
-						 PkFilterEnum filters);
-	void		(*install_file)		(PkBackend *backend,
-						 gboolean trusted,
-						 const gchar *full_path);
-	void		(*install_package)	(PkBackend *backend,
-						 const gchar *package_id);
-	void		(*install_signature)	(PkBackend *backend,
-						 PkSigTypeEnum type,
-						 const gchar *key_id,
-						 const gchar *package_id);
-	void		(*refresh_cache)	(PkBackend *backend,
-						 gboolean force);
-	void		(*remove_package)	(PkBackend *backend,
-						 const gchar *package_id,
-						 gboolean allow_deps,
-						 gboolean autoremove);
-	void		(*repo_enable)		(PkBackend *backend,
-						 const gchar *repo_id,
-						 gboolean enabled);
-	void		(*repo_set_data)	(PkBackend *backend,
-						 const gchar *repo_id,
-						 const gchar *parameter,
-						 const gchar *value);
-	void		(*resolve)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *package);
-	void		(*rollback)		(PkBackend *backend,
-						 const gchar *transaction_id);
-	void		(*search_details)	(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *search);
-	void		(*search_file)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *search);
-	void		(*search_group)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *search);
-	void		(*search_name)		(PkBackend *backend,
-						 PkFilterEnum filters,
-						 const gchar *search);
-	void		(*service_pack)		(PkBackend *backend,
-						 const gchar *location,
-						 gboolean enabled);
-	void		(*update_packages)	(PkBackend *backend,
-						 gchar **package_ids);
-	void		(*update_system)	(PkBackend *backend);
-	void		(*what_provides)	(PkBackend *backend,
-						 PkFilterEnum filters,
-						 PkProvidesEnum provide,
-						 const gchar *search);
+	const gchar	*description;
+	const gchar	*author;
+	void		(*initialize)			(PkBackend	*backend);
+	void		(*destroy)			(PkBackend	*backend);
+	PkGroupEnum	(*get_groups)			(PkBackend	*backend);
+	PkFilterEnum	(*get_filters)			(PkBackend	*backend);
+	void		(*cancel)			(PkBackend	*backend);
+	void		(*get_depends)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+	void		(*get_description)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_files)			(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_packages)			(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*get_repo_list)		(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*get_requires)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+	void		(*get_update_detail)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_updates)			(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*install_file)			(PkBackend	*backend,
+							 gboolean	 trusted,
+							 const gchar	*full_path);
+	void		(*install_package)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*install_signature)		(PkBackend	*backend,
+							 PkSigTypeEnum	 type,
+							 const gchar	*key_id,
+							 const gchar	*package_id);
+	void		(*refresh_cache)		(PkBackend	*backend,
+							 gboolean	 force);
+	void		(*remove_package)		(PkBackend	*backend,
+							 const gchar	*package_id,
+							 gboolean	 allow_deps,
+							 gboolean	 autoremove);
+	void		(*repo_enable)			(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 gboolean	 enabled);
+	void		(*repo_set_data)		(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 const gchar	*parameter,
+							 const gchar	*value);
+	void		(*resolve)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package);
+	void		(*rollback)			(PkBackend	*backend,
+							 const gchar	*transaction_id);
+	void		(*search_details)		(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_file)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_group)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_name)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*service_pack)			(PkBackend	*backend,
+							 const gchar	*location,
+							 gboolean	 enabled);
+	void		(*update_packages)		(PkBackend	*backend,
+							 gchar		**package_ids);
+	void		(*update_system)		(PkBackend	*backend);
+	void		(*what_provides)		(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 PkProvidesEnum provide,
+							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;
 

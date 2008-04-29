@@ -104,6 +104,7 @@ struct _PkBackendPrivate
 	guint			 last_remaining;
 	guint			 signal_finished;
 	guint			 signal_error_timeout;
+	GThread			*thread;
 	GHashTable		*hash_string;
 	GHashTable		*hash_pointer;
 };
@@ -1192,7 +1193,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	/* we mark any transaction with errors as failed */
 	pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
-	pk_debug ("emit error-code %i, %s", code, buffer);
+	pk_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
 out:
@@ -1430,6 +1431,27 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 }
 
 /**
+ * pk_backend_thread_create:
+ **/
+gboolean
+pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
+
+	if (backend->priv->thread != NULL) {
+		pk_warning ("already has thread");
+		return FALSE;
+	}
+	backend->priv->thread = g_thread_create ((GThreadFunc) func, backend, FALSE, NULL);
+	if (backend->priv->thread == NULL) {
+		pk_warning ("failed to create thread");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_get_backend_detail:
  */
 gboolean
@@ -1575,6 +1597,8 @@ pk_backend_finalize (GObject *object)
 		g_source_remove (backend->priv->signal_error_timeout);
 	}
 
+	/* TODO: need to wait for Finished() if running */
+
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
@@ -1694,6 +1718,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
 	backend->priv->has_sent_package = FALSE;
+	backend->priv->thread = NULL;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -1788,6 +1813,21 @@ pk_backend_test_watch_file_cb (PkBackend *backend, gpointer data)
 {
 	LibSelfTest *test = (LibSelfTest *) data;
 	libst_loopquit (test);
+}
+
+static gboolean
+pk_backend_test_func_true (PkBackend *backend)
+{
+	g_usleep (1000*1000);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static gboolean
+pk_backend_test_func_immediate_false (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+	return FALSE;
 }
 
 void
@@ -2119,6 +2159,36 @@ libst_backend (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "wait for a thread to return true");
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_true);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wait for a thread failed");
+	}
+
+	/* wait for Finished */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/* reset */
+	pk_backend_reset (backend);
+
+	/************************************************************/
+	libst_title (test, "wait for a thread to return false (straight away)");
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned false!");
+	}
+
+	/* wait for Finished */
+	libst_loopwait (test, PK_BACKEND_FINISHED_TIMEOUT_GRACE + 100);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	pk_backend_reset (backend);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
@@ -2131,18 +2201,6 @@ libst_backend (LibSelfTest *test)
 	} else {
 		libst_failed (test, "we messaged %i times!", number_messages);
 	}
-
-	/* reset */
-	pk_backend_reset (backend);
-	number_messages = 0;
-
-	/************************************************************/
-	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error1");
-	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
-
-	/* wait for finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
-	libst_loopcheck (test);
 
 	g_object_unref (backend);
 
