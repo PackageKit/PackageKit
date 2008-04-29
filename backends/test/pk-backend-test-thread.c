@@ -33,7 +33,6 @@ static gboolean is_cancelled = FALSE;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
 }
 
@@ -44,7 +43,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: destroy");
 }
 
@@ -71,7 +69,6 @@ backend_search_group_thread (PkBackend *backend)
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_thread_create (backend, backend_search_group_thread);
 }
 
@@ -126,9 +123,6 @@ backend_search_name_thread (PkBackend *backend)
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-	pk_backend_set_uint (backend, "filters", filters);
-	pk_backend_set_string (backend, "search", search);
 	pk_backend_thread_create (backend, backend_search_name_thread);
 }
 
@@ -138,7 +132,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
 }
