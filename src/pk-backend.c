@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
+#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-common.h"
@@ -89,6 +90,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
+	PkNetwork		*network;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -1482,6 +1484,15 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 }
 
 /**
+ * pk_backend_is_online:
+ **/
+gboolean
+pk_backend_is_online (PkBackend *backend)
+{
+	return pk_network_is_online (backend->priv->network);
+}
+
+/**
  * pk_backend_thread_create:
  **/
 gboolean
@@ -1654,6 +1665,7 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_object_unref (backend->priv->network);
 	g_hash_table_destroy (backend->priv->eulas);
 	g_hash_table_unref (backend->priv->hash_string);
 	g_hash_table_unref (backend->priv->hash_strv);
@@ -1799,6 +1811,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
+	backend->priv->network = pk_network_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);

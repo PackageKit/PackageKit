@@ -155,6 +155,7 @@ gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
 gboolean	 pk_backend_thread_create		(PkBackend	*backend,
 							 PkBackendThreadFunc func);
+gboolean	 pk_backend_is_online			(PkBackend	*backend);
 
 /* config changed functions */
 typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
