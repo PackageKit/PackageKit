@@ -24,14 +24,11 @@
 #include <glib.h>
 #include <string.h>
 #include <pk-backend.h>
-#include <pk-backend-thread.h>
 #include <pk-debug.h>
 #include <pk-package-ids.h>
 
 #define OPKG_LIB
 #include <libopkg.h>
-
-static PkBackendThread *thread;
 
 /* this is implemented in libopkg.a */
 int opkg_upgrade_pkg(opkg_conf_t *conf, pkg_t *old);
@@ -42,16 +39,12 @@ enum {
 	SEARCH_TAG
 };
 
-/* parameters passed to the search thread */
-typedef struct {
-	gint search_type;
-	gchar *needle;
-	PkFilterEnum filters;
-} SearchParams;
-
 /* global config structures */
 static opkg_conf_t global_conf;
 static args_t args;
+
+/* opkg has no user_data */
+PkBackend *_backend = NULL;
 
 /* Opkg message callback function */
 extern opkg_message_callback opkg_cb_message;
@@ -63,13 +56,9 @@ extern opkg_download_progress_callback opkg_cb_download_progress;
 /* Opkg state changed callback function */
 extern opkg_state_changed_callback opkg_cb_state_changed;
 
-
 int
 opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 {
-	PkBackend *backend;
-	backend = pk_backend_thread_get_backend (thread);
-
 	if (level == OPKG_NOTICE)
 		pk_debug ("OPKG Notice: %s", msg);
 	if (level == OPKG_ERROR)
@@ -80,35 +69,29 @@ opkg_debug (opkg_conf_t *conf, message_level_t level, char *msg)
 		printf ("OPKG: %s", msg);
 
 	/* free the last error message and store the new one */
-	if (level == OPKG_ERROR)
-	{
+	if (level == OPKG_ERROR) {
 		g_free (last_error);
 		last_error = g_strdup (msg);
 	}
 	return 0;
 }
 
-
-
 void
 pk_opkg_state_changed (opkg_state_t state, const char *data)
 {
-	PkBackend *backend;
-	backend = pk_backend_thread_get_backend (thread);
-
-	/* data is conveniently in pkgid format :-) */
+_	/* data is conveniently in pkgid format :-) */
 	switch (state) {
 	case OPKG_STATE_DOWNLOADING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, data, NULL);
+		pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, data, NULL);
 		break;
 	case OPKG_STATE_INSTALLING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, data, NULL);
+		pk_backend_package (_backend, PK_INFO_ENUM_INSTALLING, data, NULL);
 		break;
 	case OPKG_STATE_REMOVING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, data, NULL);
+		pk_backend_package (_backend, PK_INFO_ENUM_REMOVING, data, NULL);
 		break;
 	case OPKG_STATE_UPGRADING_PKG:
-		pk_backend_package (backend, PK_INFO_ENUM_UPDATING, data, NULL);
+		pk_backend_package (_backend, PK_INFO_ENUM_UPDATING, data, NULL);
 		break;
 	default: return;
 	}
@@ -133,14 +116,12 @@ opkg_unknown_error (PkBackend *backend, gint error_code, gchar *failed_cmd)
 static gboolean
 opkg_is_gui_pkg (pkg_t *pkg)
 {
-  gint i;
-
-  for (i = 0; i < pkg->depends_count; i++)
-  {
-    if (g_strrstr (pkg->depends_str[i], "gtk"))
-      return TRUE;
-  }
-  return FALSE;
+	gint i;
+	for (i = 0; i < pkg->depends_count; i++) {
+		if (g_strrstr (pkg->depends_str[i], "gtk"))
+			return TRUE;
+	}
+	return FALSE;
 }
 
 /**
@@ -151,16 +132,13 @@ opkg_is_gui_pkg (pkg_t *pkg)
 static gboolean
 opkg_is_devel_pkg (pkg_t *pkg)
 {
-  if (g_strrstr (pkg->name, "-dev"))
-      return TRUE;
-
-  if (g_strrstr (pkg->name, "-dbg"))
-      return TRUE;
-
-  if (g_strrstr (pkg->section, "devel"))
-      return TRUE;
-
-  return FALSE;
+	if (g_strrstr (pkg->name, "-dev"))
+		return TRUE;
+	if (g_strrstr (pkg->name, "-dbg"))
+		return TRUE;
+	if (g_strrstr (pkg->section, "devel"))
+		return TRUE;
+	return FALSE;
 }
 
 /**
@@ -173,8 +151,7 @@ static pkg_t*
 opkg_vec_find_latest_helper (pkg_vec_t *vec, pkg_t *pkg)
 {
 	gint i;
-	for (i = 0; i < vec->len; i++)
-	{
+	for (i = 0; i < vec->len; i++) {
 		/* if the version found is newer, return it */
 		if (pkg_compare_versions (pkg, vec->pkgs[i]) > 0)
 			return vec->pkgs[i];
@@ -196,8 +173,7 @@ opkg_vec_find_latest (pkg_vec_t *vec)
 
 	ret = tmp = vec->pkgs[0];
 
-	for (i = 0; i < vec->len; i++)
-	{
+	for (i = 0; i < vec->len; i++) {
 		tmp = opkg_vec_find_latest_helper (vec, ret);
 		if (!tmp)
 			return ret;
@@ -206,8 +182,6 @@ opkg_vec_find_latest (pkg_vec_t *vec)
 	}
 	return NULL;
 }
-
-
 
 /**
  * opkg_check_tag:
@@ -231,11 +205,8 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	int err;
-	g_return_if_fail (backend != NULL);
-
-	/* we use the thread helper */
-	thread = pk_backend_thread_new ();
-
+	/* we have no userdata */
+	_backend = backend;
 
 	/* Ipkg requires the PATH env variable to be set to find wget when
 	 * downloading packages. PackageKit unsets all env variables as a
@@ -268,10 +239,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-
-	g_object_unref (thread);
-
 	/* this appears to (sometimes) be freed elsewhere, perhaps
 	 * by the functions in libopkg.c */
 	/* opkg_conf_deinit (&global_conf); */
@@ -280,21 +247,17 @@ backend_destroy (PkBackend *backend)
 	last_error = NULL;
 }
 
-
 static gboolean
-backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
+backend_get_description_thread (PkBackend *backend)
 {
 	pkg_t *pkg = NULL;
 	PkPackageId *pi;
-	PkBackend *backend;
 	gboolean ret = TRUE;
+	const gchar *package_id;
 
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
+	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
-
-	if (!pi->name || !pi->version)
-	{
+	if (!pi->name || !pi->version) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
 		ret = FALSE;
@@ -302,9 +265,7 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
-
-	if (!pkg)
-	{
+	if (!pkg) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
 		ret = FALSE;
@@ -312,13 +273,12 @@ backend_get_description_thread (PkBackendThread *thread, gchar *package_id)
 	}
 
 	pk_backend_description (backend, package_id,
-	    "unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
+				"unknown", PK_GROUP_ENUM_OTHER, pkg->description, pkg->url, 0);
 
 out:
 	g_free (package_id);
 	pk_backend_finished (backend);
 	return ret;
-
 }
 
 /**
@@ -327,18 +287,13 @@ out:
 static void
 backend_get_description (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_get_description_thread,
-		g_strdup (package_id));
+	pk_backend_thread_create (thread, backend_get_description_thread);
 }
 
 static void
 pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 {
-	PkBackend *backend;
 	static gint sources_list_count = 0;
 	static gint total_progress = 0;
 	static char *old_url = NULL;
@@ -357,25 +312,21 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 	 */
 
 	/* calculate the number of files we are going to download */
-	if (sources_list_count == 0)
-	{
+	if (sources_list_count == 0) {
 		pkg_src_list_elt_t *p;
 		p = global_conf.pkg_src_list.head;
-		while (p)
-		{
+		while (p) {
 			sources_list_count++;
 			p = p->next;
 		};
 	}
 
-	if (!old_url)
-	{
+	if (!old_url) {
 		old_url = g_strdup (url);
 	}
 
 	/* increase the total progress mark if we are moving onto the next file */
-	if (old_url && url && strcmp (old_url, url))
-	{
+	if (old_url && url && strcmp (old_url, url)) {
 		total_progress += 100 / sources_list_count;
 
 		/* store the current url for comparison next time the progress callback
@@ -385,27 +336,19 @@ pk_opkg_refresh_cache_progress_cb (int progress, char *url)
 
 	}
 
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
-
 	/* set the percentage as a fraction of the current progress plus the
 	 * progress we have already recorded */
 	if (total_progress  + (progress / sources_list_count) > 100)
 		return;
 
-	pk_backend_set_percentage (backend,
+	pk_backend_set_percentage (_backend,
 			total_progress + (progress / sources_list_count));
-
 }
 
 static gboolean
-backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
+backend_refresh_cache_thread (PkBackend *backend)
 {
 	int ret;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	/* set the download progress callback */
 	opkg_cb_download_progress = pk_opkg_refresh_cache_progress_cb;
@@ -428,41 +371,27 @@ backend_refresh_cache_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_no_percentage_updates (backend);
-
-
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_refresh_cache_thread,
-		NULL);
+	pk_backend_thread_create (thread, backend_refresh_cache_thread);
 }
 
 /**
  * backend_search_name:
  */
 static gboolean
-backend_search_thread (PkBackendThread *thread, SearchParams *params)
+backend_search_thread (PkBackend *backend)
 {
 	int i;
 	pkg_vec_t *available;
 	pkg_t *pkg;
 	gchar *search;
 	PkFilterEnum filters;
-	PkBackend *backend;
+	guint type;
 
-	if (!params->needle)
-	{
-		g_free (params);
-		return FALSE;
-	}
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
-
-	search = params->needle;
-	filters = params->filters;
+	search = pk_backend_get_string (backend, "needle");
+	filters = pk_backend_get_uint (backend, "filters");
+	type = pk_backend_get_uint (backend, "type");
 
 	available = pkg_vec_alloc();
 	pkg_hash_fetch_available (&global_conf.pkg_hash, available);
@@ -473,19 +402,17 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 
 		pkg = available->pkgs[i];
 
-		if (params->search_type == SEARCH_NAME
+		if (search_type == SEARCH_NAME
 				&& !g_strrstr (pkg->name, search))
 			continue;
 
-		else if (params->search_type == SEARCH_DESCRIPTION)
-		{
+		else if (search_type == SEARCH_DESCRIPTION) {
 			gchar *needle, *haystack;
 			gboolean match;
-			if (pkg->description && search)
-			{
+			if (pkg->description && search) {
 				needle = g_utf8_strdown (search, -1);
 				haystack = g_utf8_strdown (pkg->description, -1);
-				match = (g_strrstr (haystack, needle) != NULL);
+				match = (g_strrstr (haystack, needle_local) != NULL);
 				g_free (needle);
 				g_free (haystack);
 			}
@@ -498,7 +425,7 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 				continue;
 		}
 
-		else if (params->search_type == SEARCH_TAG
+		else if (search_type == SEARCH_TAG
 				&&
 				(!pkg->tags || !g_strrstr (pkg->tags, search)))
 			continue;
@@ -531,28 +458,18 @@ backend_search_thread (PkBackendThread *thread, SearchParams *params)
 
 	pkg_vec_free(available);
 	pk_backend_finished (backend);
-
-	g_free (params->needle);
-	g_free (params);
 	return TRUE;
 }
 
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	SearchParams *params;
-
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	params = g_new0 (SearchParams, 1);
-	params->filters = filters;
-	params->search_type = SEARCH_NAME;
-	params->needle = g_strdup (search);
-
-	pk_backend_thread_create_old (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_set_uint (backend, "type", SEARCH_NAME);
+	pk_backend_set_string (backend, "search", search);
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 /**
@@ -561,64 +478,43 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_description (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	SearchParams *params;
-
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	params = g_new0 (SearchParams, 1);
-	params->filters = filters;
-	params->search_type = SEARCH_DESCRIPTION;
-	params->needle = g_strdup (search);
-
-	pk_backend_thread_create_old (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_set_uint (backend, "type", SEARCH_DESCRIPTION);
+	pk_backend_set_string (backend, "needle", search);
+	pk_backend_thread_create (backend, backend_search_thread);
 }
 
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	SearchParams *params;
-
-	g_return_if_fail (backend != NULL);
-
+	gchar *needle;
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
 
-	params = g_new0 (SearchParams, 1);
-	params->filters = filters;
-	params->search_type = SEARCH_TAG;
-	params->needle = g_strdup_printf ("group::%s", search);
-
-	pk_backend_thread_create_old (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_set_uint (backend, "type", SEARCH_TAG);
+	needle = g_strdup_printf ("group::%s", search);
+	pk_backend_set_string (backend, "needle", needle);
+	g_free (needle);
+	pk_backend_thread_create (backend, backend_search_thread);
 }
-
-
-
 
 static void
 pk_opkg_install_progress_cb (int percent, char* url)
 {
-	PkBackend *backend;
-
 	/* get current backend and set percentage */
 	backend = pk_backend_thread_get_backend (thread);
 	pk_backend_set_percentage (backend, percent);
 }
 
 static gboolean
-backend_install_package_thread (PkBackendThread *thread, gchar *package_id)
+backend_install_package_thread (PkBackend *backend, gchar *package_id)
 {
 	PkPackageId *pi;
 	gint err;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
-
 	/* set the download progress callback */
 	opkg_cb_download_progress = pk_opkg_install_progress_cb;
 
@@ -638,38 +534,26 @@ backend_install_package_thread (PkBackendThread *thread, gchar *package_id)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_install_package_thread,
-		g_strdup (package_id));
+	pk_backend_thread_create (thread, backend_install_package_thread);
 }
 
 static gboolean
-backend_remove_package_thread (PkBackendThread *thread, gpointer data[3])
+backend_remove_package_thread (PkBackend *backend, gpointer data[3])
 {
 	PkPackageId *pi;
 	gint err;
-	PkBackend *backend;
 	gchar *package_id;
 	gboolean allow_deps;
 	gboolean autoremove;
-
 
 	package_id = (gchar*) data[0];
 	allow_deps = GPOINTER_TO_INT (data[1]);
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
 
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
-
 	pi = pk_package_id_new_from_string (package_id);
-
 	args.autoremove = autoremove;
 	args.force_removal_of_dependent_packages = allow_deps;
 
@@ -689,7 +573,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 {
 	gpointer *params;
 
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
 
@@ -700,10 +583,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	params[1] = GINT_TO_POINTER (allow_deps);
 	params[2] = GINT_TO_POINTER (autoremove);
 
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_remove_package_thread,
-		params);
-
+	pk_backend_thread_create (thread, backend_remove_package_thread, params);
 }
 
 /**
@@ -718,16 +598,11 @@ backend_get_filters (PkBackend *backend)
 		PK_FILTER_ENUM_GUI);
 }
 
-
 static gboolean
-backend_update_system_thread (PkBackendThread *thread, gpointer data)
+backend_update_system_thread (PkBackend *backend)
 {
 	gint err;
 	err = opkg_packages_upgrade (&args);
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	if (err)
 		opkg_unknown_error (backend, err, "Upgrading system");
@@ -739,13 +614,9 @@ backend_update_system_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
-
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_update_system_thread,
-		NULL);
+	pk_backend_thread_create (thread, backend_update_system_thread);
 }
 
 /**
@@ -753,21 +624,15 @@ backend_update_system (PkBackend *backend)
  */
 
 static gboolean
-backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
+backend_get_depends_thread (PkBackend *backend, gchar *package_id)
 {
 	PkPackageId *pi;
 	pkg_t *pkg = NULL;
 	gint i;
 	GRegex *regex;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
-
-	if (!pi->name || !pi->version)
-	{
+	if (!pi->name || !pi->version) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
 		pk_package_id_free (pi);
@@ -776,9 +641,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
-
-	if (!pkg)
-	{
+	if (!pkg) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
 		pk_package_id_free (pi);
@@ -789,8 +652,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 	/* compile a regex expression to parse depends_str package names */
 	regex = g_regex_new ("(.+) \\(([>=<]+) (.+)\\)", G_REGEX_OPTIMIZE, 0, NULL);
 
-	for (i = 0; i < pkg->depends_count; i++)
-	{
+	for (i = 0; i < pkg->depends_count; i++) {
 		pkg_t *d_pkg = NULL;
 		pkg_vec_t *p_vec;
 		GMatchInfo *match_info = NULL;
@@ -802,8 +664,7 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 		 * latest version number
 		 */
 
-		if (!g_regex_match (regex, pkg->depends_str[i], 0, &match_info))
-		{
+		if (!g_regex_match (regex, pkg->depends_str[i], 0, &match_info)) {
 			/* we couldn't parse the depends string */
 
 			/* match_info is always allocated, even if the match
@@ -843,44 +704,32 @@ backend_get_depends_thread (PkBackendThread *thread, gchar *package_id)
 	}
 
 	g_regex_unref (regex);
-	pk_backend_finished (backend);
 	g_free (package_id);
-
+	pk_backend_finished (backend);
 	return TRUE;
 }
 
 static void
 backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
-	/* TODO: revursive is ignored */
-	g_return_if_fail (backend != NULL);
-
+	/* TODO: recursive is ignored */
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
-
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_get_depends_thread,
-		g_strdup (package_id));
+	pk_backend_thread_create (thread, backend_get_depends_thread);
 }
 
 /**
- * backend_update_package:
+ * backend_update_package_thread:
  */
 static gboolean
-backend_update_package_thread (PkBackendThread *thread, gchar *package_id)
+backend_update_package_thread (PkBackend *backend, gchar *package_id)
 {
 	PkPackageId *pi;
 	pkg_t *pkg;
 	gint err = 0;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	pi = pk_package_id_new_from_string (package_id);
-
-	if (!pi->name || !pi->version)
-	{
+	if (!pi->name || !pi->version) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Package not found");
 		pk_package_id_free (pi);
@@ -889,7 +738,6 @@ backend_update_package_thread (PkBackendThread *thread, gchar *package_id)
 	}
 
 	pkg = pkg_hash_fetch_by_name_version (&global_conf.pkg_hash, pi->name, pi->version);
-
 	if (!pkg) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				"Packge not found");
@@ -910,15 +758,11 @@ backend_update_package_thread (PkBackendThread *thread, gchar *package_id)
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
-
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_update_package_thread,
-		/* TODO: process the entire list */
-		g_strdup (package_ids[0]));
+	/* TODO: process the entire list */
+	pk_backend_set_string (backend, "package_id", package_ids[0]);
+	pk_backend_thread_create (thread, backend_update_package_thread);
 }
 
 /**
@@ -926,21 +770,15 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
  */
 
 static gboolean
-backend_get_updates_thread (PkBackendThread *thread, gpointer data)
+backend_get_updates_thread (PkBackend *backend)
 {
 	pkg_vec_t *installed;
 	gint i;
-	PkBackend *backend;
-
-	/* get current backend */
-	backend = pk_backend_thread_get_backend (thread);
 
 	installed = pkg_vec_alloc();
-
 	pkg_hash_fetch_all_installed (&global_conf.pkg_hash, installed);
 
 	for (i=0; i < installed->len; i++) {
-
 		gchar *uid;
 		pkg_t *pkg, *best_pkg;
 		gint status;
@@ -976,14 +814,10 @@ backend_get_updates_thread (PkBackendThread *thread, gpointer data)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create_old (thread,
-		(PkBackendThreadFunc) backend_get_updates_thread,
-		NULL);
+	pk_backend_thread_create (thread, backend_get_updates_thread);
 }
 
 /**
@@ -1001,7 +835,6 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_REPOS |
 		PK_GROUP_ENUM_MAPS);
 }
-
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
