@@ -264,7 +264,11 @@ pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
@@ -286,7 +290,11 @@ pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
