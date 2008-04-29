@@ -76,6 +76,7 @@ pk_console_bar (guint subpercentage)
 		return;
 	}
 	if (!has_output_bar) {
+		pk_warning ("no bar");
 		return;
 	}
 	/* restore cursor */
@@ -99,6 +100,25 @@ pk_console_bar (guint subpercentage)
 }
 
 /**
+ * pk_console_start_bar:
+ **/
+static void
+pk_console_start_bar (const gchar *text)
+{
+	gchar *text_pad;
+
+	/* make these all the same lenght */
+	text_pad = pk_strpad (text, 50);
+	g_print ("%s", text_pad);
+	g_free (text_pad);
+	has_output_bar = TRUE;
+
+	/* save cursor in new position */
+	g_print ("%c7", 0x1B);
+	pk_console_bar (0);
+}
+
+/**
  * pk_console_package_cb:
  **/
 static void
@@ -108,7 +128,7 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	PkRoleEnum role;
 	gchar *package = NULL;
 	gchar *info_pad = NULL;
-	gchar *package_pad = NULL;
+	gchar *text = NULL;
 
 	/* split */
 	ident = pk_package_id_new_from_string (package_id);
@@ -132,7 +152,6 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	} else {
 		package = g_strdup_printf ("%s-%s", ident->name, ident->version);
 	}
-	package_pad = pk_strpad (package, 40);
 
 	/* mark previous complete */
 	if (has_output_bar) {
@@ -153,25 +172,19 @@ pk_console_package_cb (PkClient *client, PkInfoEnum info, const gchar *package_i
 	    role == PK_ROLE_ENUM_GET_REQUIRES ||
 	    role == PK_ROLE_ENUM_GET_UPDATES) {
 		/* don't do the bar */
-		g_print ("%s %s\n", info_pad, package_pad);
+		g_print ("%s %s\n", info_pad, package);
 		goto out;
 	}
 
-	has_output_bar = TRUE;
-	/* do we need to new line? */
+	text = g_strdup_printf ("%s %s", info_pad, package);
+	pk_console_start_bar (text);
+	g_free (text);
 
-	/* pretty print */
-	g_print ("%s %s ", info_pad, package_pad);
-
-	/* save cursor in new position */
-	g_print ("%c7", 0x1B);
-	pk_console_bar (0);
 out:
 	/* free all the data */
 	pk_package_id_free (ident);
 	g_free (package);
 	g_free (info_pad);
-	g_free (package_pad);
 }
 
 /**
@@ -1482,6 +1495,8 @@ main (int argc, char *argv[])
 		ret = pk_client_get_old_transactions (client, 10, &error);
 
 	} else if (strcmp (mode, "refresh") == 0) {
+		/* special case - this takes a long time, and doesn't do packages */
+		pk_console_start_bar ("refresh-cache");
 		ret = pk_client_refresh_cache (client, FALSE, &error);
 
 	} else {
