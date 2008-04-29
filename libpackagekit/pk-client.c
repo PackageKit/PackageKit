@@ -147,6 +147,7 @@ pk_client_error_get_type (void)
 		static const GEnumValue values[] =
 		{
 			ENUM_ENTRY (PK_CLIENT_ERROR_FAILED, "Failed"),
+			ENUM_ENTRY (PK_CLIENT_ERROR_FAILED_AUTH, "FailedAuth"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_NO_TID, "NoTid"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_ALREADY_TID, "AlreadyTid"),
 			ENUM_ENTRY (PK_CLIENT_ERROR_ROLE_UNKNOWN, "RoleUnkown"),
@@ -1096,6 +1097,13 @@ pk_client_update_system (PkClient *client, GError **error)
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
 			ret = pk_client_update_system_action (client, &error_pk);
+		}
+		if (pk_polkit_client_error_denied_by_policy (error_pk)) {
+			/* we failed to get an auth */
+			pk_client_error_set (error, PK_CLIENT_ERROR_FAILED_AUTH, error_pk->message);
+			/* clear old error */
+			g_clear_error (&error_pk);
+			return FALSE;
 		}
 	}
 	/* we failed one of these, return the error to the user */

@@ -568,7 +568,11 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
+	std::vector<zypp::sat::Solvable> *v2;
 	v = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::package, TRUE);
+	v2 = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::patch, TRUE);
+
+	v->insert (v->end (), v2->begin (), v2->end ());
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -585,6 +589,7 @@ backend_get_description_thread (PkBackendThread *thread, gpointer data)
 	}
 
 	delete (v);
+	delete (v2);
 
 	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");

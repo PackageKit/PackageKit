@@ -274,10 +274,13 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 		clear_package_id ();
 		_package_id = build_package_id_from_url (&file);
 
-		//fprintf (stderr, "\n\n----> DownloadProgressReportReceiver::start(): %s\n", _package_id == NULL ? "unknown" : _package_id);
+		//pk_debug ("DownloadProgressReportReceiver::start():%s --%s\n",
+		//		g_strdup (file.asString().c_str()),	g_strdup (localfile.asString().c_str()) );
 		if (_package_id != NULL) {
+			gchar* summary = g_strdup (file.asString().c_str());
 			pk_backend_set_status (_backend, PK_STATUS_ENUM_DOWNLOAD);
-			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, "TODO: Put the package summary here if possible");
+			pk_backend_package (_backend, PK_INFO_ENUM_DOWNLOADING, _package_id, summary);
+			g_free (summary);
 			reset_sub_percentage ();
 		}
 	}

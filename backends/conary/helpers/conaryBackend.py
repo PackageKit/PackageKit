@@ -403,6 +403,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
                     'Package already installed')
 
             self.status(STATUS_INSTALL)
+            self._get_package_update(name, version, flavor)
             self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,
@@ -424,6 +425,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
 
             self.status(STATUS_REMOVE)
             name = '-%s' % name
+            self._get_package_update(name, version, flavor)
             self._do_package_update(name, version, flavor)
         else:
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED,

@@ -157,34 +157,26 @@ find_packages_real (PkBackend *backend, const gchar *search, PkFilterEnum filter
 	db = db_open();
 
 	if (mode == SEARCH_TYPE_FILE) {
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		    !pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-		} else	{
-			list = box_db_repos_search_file_with_filter (db, search, filter_box);
-			add_packages_from_list (backend, list, FALSE);
-			box_db_repos_package_list_free (list);
-		}
+		list = box_db_repos_search_file_with_filter (db, search, filter_box);
+		add_packages_from_list (backend, list, FALSE);
+		box_db_repos_package_list_free (list);
 	} else if (mode == SEARCH_TYPE_RESOLVE) {
 		list = box_db_repos_packages_search_one (db, (gchar *)search);
 		add_packages_from_list (backend, list, FALSE);
 		box_db_repos_package_list_free (list);
 	} else {
-		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-		    !pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_UNKNOWN, "invalid search mode");
-		} else	{
-			if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
-			    pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-				list = box_db_repos_packages_search_all(db, (gchar *)search, filter_box);
-			} else if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
-				list = box_db_repos_packages_search_installed(db, (gchar *)search, filter_box);
-			} else if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-				list = box_db_repos_packages_search_available(db, (gchar *)search, filter_box);
-			}
-			add_packages_from_list (backend, list, FALSE);
-			box_db_repos_package_list_free (list);
+		if ((pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+		     pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) ||
+		    (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED) &&
+		     !pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED))) {
+			list = box_db_repos_packages_search_all(db, (gchar *)search, filter_box);
+		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			list = box_db_repos_packages_search_installed(db, (gchar *)search, filter_box);
+		} else if (pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			list = box_db_repos_packages_search_available(db, (gchar *)search, filter_box);
 		}
+		add_packages_from_list (backend, list, FALSE);
+		box_db_repos_package_list_free (list);
 	}
 
 	db_close(db);
