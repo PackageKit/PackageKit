@@ -124,6 +124,9 @@ gboolean         pk_backend_eula_required		(PkBackend      *backend,
 gboolean	 pk_backend_set_string			(PkBackend	*backend,
 							 const gchar	*key,
 							 const gchar	*data);
+gboolean	 pk_backend_set_strv			(PkBackend	*backend,
+							 const gchar	*key,
+							 gchar		**data);
 gboolean	 pk_backend_set_uint			(PkBackend	*backend,
 							 const gchar	*key,
 							 guint		 data);
@@ -136,6 +139,8 @@ gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
 
 /* get backend instance data */
 const gchar	*pk_backend_get_string			(PkBackend	*backend,
+							 const gchar	*key);
+gchar		**pk_backend_get_strv			(PkBackend	*backend,
 							 const gchar	*key);
 guint		 pk_backend_get_uint			(PkBackend	*backend,
 							 const gchar	*key);
