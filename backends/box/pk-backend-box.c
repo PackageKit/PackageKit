@@ -316,6 +316,7 @@ backend_get_files_thread (PkBackend *backend)
 	PkPackageId *pi;
 	gchar *files;
 	sqlite3 *db;
+	const gchar *package_id;
 
 	db = db_open();
 	package_id = pk_backend_get_string (backend, "package_id");
@@ -348,9 +349,12 @@ backend_get_depends_requires_thread (PkBackend *backend)
 	PkPackageId *pi;
 	GList *list = NULL;
 	sqlite3 *db;
+	const gchar *package_id;
+	int deps_type;
 
 	db = db_open ();
 	package_id = pk_backend_get_string (backend, "package_id");
+	deps_type = pk_backend_get_uint (backend, "type");
 
 	pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
@@ -362,9 +366,9 @@ backend_get_depends_requires_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	if (d->type == DEPS_TYPE_DEPENDS)
+	if (deps_type == DEPS_TYPE_DEPENDS)
 		list = box_db_repos_get_depends(db, pi->name);
-	else if (d->type == DEPS_TYPE_REQUIRES)
+	else if (deps_type == DEPS_TYPE_REQUIRES)
 		list = box_db_repos_get_requires(db, pi->name);
 
 	add_packages_from_list (backend, list, FALSE);
@@ -381,6 +385,7 @@ static gboolean
 backend_remove_package_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
+	const gchar *package_id;
 
 	package_id = pk_backend_get_string (backend, "package_id");
 	pi = pk_package_id_new_from_string (package_id);
@@ -448,6 +453,7 @@ backend_get_filters (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
+	pk_backend_set_uint (backend, "type", DEPS_TYPE_DEPENDS);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);
 }
 
@@ -475,6 +481,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
+	pk_backend_set_uint (backend, "type", DEPS_TYPE_REQUIRES);
 	pk_backend_thread_create (backend, backend_get_depends_requires_thread);
 }
 
