@@ -326,7 +326,7 @@ backend_get_requires(PkBackend *backend, PkFilterEnum filters, const gchar *pack
         data->package_id = g_strdup(package_id);
         data->type = recursive;
         data->filters = filters;
-        pk_backend_thread_create (thread, backend_get_requires_thread, data);
+        pk_backend_thread_create_old (thread, backend_get_requires_thread, data);
 }
 
 /**
@@ -545,7 +545,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 	ThreadData *data = g_new0(ThreadData, 1);
 	data->package_id = g_strdup (package_id);
 	data->type = DEPS_TYPE_DEPENDS;
-	pk_backend_thread_create (thread, backend_get_depends_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_depends_thread, data);
 }
 
 static gboolean
@@ -656,7 +656,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 
 	ThreadData *data = g_new0(ThreadData, 1);
 	data->package_id = g_strdup(package_id);
-	pk_backend_thread_create (thread, backend_get_description_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_description_thread, data);
 }
 
 static gboolean
@@ -808,7 +808,7 @@ static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
+	pk_backend_thread_create_old (thread, backend_get_updates_thread, NULL);
 }
 
 static gboolean
@@ -939,7 +939,7 @@ backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_pa
 	InstFileData *data = g_new0(InstFileData, 1);
 	data->full_path = g_strdup (full_path);
 
-	pk_backend_thread_create (thread, backend_install_file_thread, data);
+	pk_backend_thread_create_old (thread, backend_install_file_thread, data);
 }
 
 static gboolean
@@ -1041,7 +1041,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 
         ThreadData *data = g_new0(ThreadData, 1);
 	data->package_id = g_strdup(package_id);
-	pk_backend_thread_create (thread, backend_get_update_detail_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_update_detail_thread, data);
 }
 
 static gboolean
@@ -1093,7 +1093,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
         g_return_if_fail (backend != NULL);
-        pk_backend_thread_create (thread, backend_update_system_thread, NULL);
+        pk_backend_thread_create_old (thread, backend_update_system_thread, NULL);
 }
 
 static gboolean
@@ -1195,7 +1195,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_set_allow_cancel (backend, FALSE);
 
 	gchar *package_to_install = g_strdup (package_id);
-	pk_backend_thread_create (thread, backend_install_package_thread, package_to_install);
+	pk_backend_thread_create_old (thread, backend_install_package_thread, package_to_install);
 }
 
 static gboolean
@@ -1295,7 +1295,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	data->package_id = g_strdup (package_id);
 	data->deps_behavior = allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW;
 
-	pk_backend_thread_create (thread, backend_remove_package_thread, data);
+	pk_backend_thread_create_old (thread, backend_remove_package_thread, data);
 }
 
 /**
@@ -1316,7 +1316,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	*/
 	RefreshData *data = g_new(RefreshData, 1);
 	data->force = force;
-	pk_backend_thread_create (thread, backend_refresh_cache_thread, data);
+	pk_backend_thread_create_old (thread, backend_refresh_cache_thread, data);
 }
 
 static gboolean
@@ -1378,7 +1378,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_
 	ResolveData *data = g_new0(ResolveData, 1);
 	data->name = g_strdup (package_id);
 	data->filters = filters;
-	pk_backend_thread_create (thread, backend_resolve_thread, data);
+	pk_backend_thread_create_old (thread, backend_resolve_thread, data);
 }
 
 static void
@@ -1439,7 +1439,7 @@ find_packages (PkBackend *backend, const gchar *search, PkFilterEnum filters, gi
 	data->search = g_strdup(search);
 	data->filters = filters;
 	data->mode = mode;
-	pk_backend_thread_create (thread, backend_find_packages_thread, data);
+	pk_backend_thread_create_old (thread, backend_find_packages_thread, data);
 }
 
 /**
@@ -1522,7 +1522,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *pkG
         GroupData *data = g_new0(GroupData, 1);
         data->pkGroup = g_strdup(pkGroup);
         data->filters = filters;
-        pk_backend_thread_create (thread, backend_search_group_thread, data);
+        pk_backend_thread_create_old (thread, backend_search_group_thread, data);
 }
 
 /**
@@ -1692,7 +1692,7 @@ backend_get_files(PkBackend *backend, const gchar *package_id)
 
         ThreadData *data = g_new0(ThreadData, 1);
         data->package_id = g_strdup(package_id);
-        pk_backend_thread_create (thread, backend_get_files_thread, data);
+        pk_backend_thread_create_old (thread, backend_get_files_thread, data);
 }
 
 static gboolean
@@ -1733,7 +1733,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filter)
 	PkFilterEnum *data = g_new0(PkFilterEnum, 1);
 	*data = filter;
 
-	pk_backend_thread_create (thread, backend_get_packages_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_packages_thread, data);
 }
 
 static gboolean
@@ -1772,7 +1772,7 @@ backend_update_packages(PkBackend *backend, gchar **package_ids)
         UpdateData *data = g_new0(UpdateData, 1);
         data->packages = g_strdupv (package_ids);
 
-        pk_backend_thread_create(thread, backend_update_packages_thread, data);
+        pk_backend_thread_create_old(thread, backend_update_packages_thread, data);
 
 }
 
@@ -1898,7 +1898,7 @@ backend_repo_set_data(PkBackend *backend, const gchar *repo_id, const gchar *par
         data->parameter = g_strdup (parameter);
         data->value = g_strdup (value);
 
-        pk_backend_thread_create(thread, backend_repo_set_data_thread, data);
+        pk_backend_thread_create_old(thread, backend_repo_set_data_thread, data);
 
 }
 
@@ -1942,7 +1942,7 @@ backend_what_provides(PkBackend *backend, PkFilterEnum filters, PkProvidesEnum p
         ResolveData *data = g_new0(ResolveData, 1);
         data->name = g_strdup(search);
         data->filters = filters;
-        pk_backend_thread_create (thread, backend_what_provides_thread, data);
+        pk_backend_thread_create_old (thread, backend_what_provides_thread, data);
 }
 
 extern "C" PK_BACKEND_OPTIONS (

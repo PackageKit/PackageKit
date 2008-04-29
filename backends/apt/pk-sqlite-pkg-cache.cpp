@@ -166,7 +166,7 @@ backend_search_common(PkBackend * backend, const gchar * filter, const gchar * s
 	data->search = g_strdup(search);
 	data->filter = g_strdup(filter);
 	data->depth = which;
-	pk_backend_thread_create (thread, func, data);
+	pk_backend_thread_create_old (thread, func, data);
 }
 
 /**
@@ -239,7 +239,7 @@ sqlite_get_description (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_thread_create (thread, sqlite_get_description_thread, data);
+	pk_backend_thread_create_old (thread, sqlite_get_description_thread, data);
 	return;
 }
 

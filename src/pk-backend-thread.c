@@ -66,12 +66,13 @@ struct PkBackendThreadPrivate
 G_DEFINE_TYPE (PkBackendThread, pk_backend_thread, G_TYPE_OBJECT)
 
 /**
- * pk_backend_thread_create:
+ * pk_backend_thread_create_old:
  **/
 gboolean
-pk_backend_thread_create (PkBackendThread *backend_thread, PkBackendThreadFunc func, gpointer data)
+pk_backend_thread_create_old (PkBackendThread *backend_thread, PkBackendThreadFuncOld func, gpointer data)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_THREAD (backend_thread), FALSE);
+	pk_warning ("*** DO NOT USE THIS FUNCTION *** - use pk_backend_thread_create() instead ***");
 	return pk_thread_list_create (backend_thread->priv->thread_list, (PkThreadFunc) func, backend_thread, data);
 }
 
@@ -217,7 +218,7 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return true");
-	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_true, NULL);
+	ret = pk_backend_thread_create_old (backend_thread, pk_backend_thread_test_func_true, NULL);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -247,7 +248,7 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false");
-	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_false, NULL);
+	ret = pk_backend_thread_create_old (backend_thread, pk_backend_thread_test_func_false, NULL);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -277,7 +278,7 @@ libst_backend_thread (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "wait for a thread to return false (straight away)");
-	ret = pk_backend_thread_create (backend_thread, pk_backend_thread_test_func_immediate_false, NULL);
+	ret = pk_backend_thread_create_old (backend_thread, pk_backend_thread_test_func_immediate_false, NULL);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

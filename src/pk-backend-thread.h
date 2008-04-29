@@ -52,10 +52,10 @@ typedef struct
 /* general */
 GType		 pk_backend_thread_get_type		(void) G_GNUC_CONST;
 PkBackendThread	*pk_backend_thread_new			(void);
-typedef gboolean (*PkBackendThreadFunc)			(PkBackendThread	*backend_thread,
+typedef gboolean (*PkBackendThreadFuncOld)		(PkBackendThread	*backend_thread,
 							 gpointer		 data);
-gboolean	 pk_backend_thread_create		(PkBackendThread	*backend_thread,
-							 PkBackendThreadFunc	 func,
+gboolean	 pk_backend_thread_create_old		(PkBackendThread	*backend_thread,
+							 PkBackendThreadFuncOld	 func,
 							 gpointer		 data);
 PkBackend	*pk_backend_thread_get_backend		(PkBackendThread	*backend_thread);
 

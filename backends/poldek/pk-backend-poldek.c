@@ -1426,7 +1426,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
 	data->recursive = recursive;
-	pk_backend_thread_create (thread, backend_get_depends_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_depends_thread, data);
 }
 
 /**
@@ -1490,7 +1490,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread,
+	pk_backend_thread_create_old (thread,
 				  (PkBackendThreadFunc)backend_get_description_thread,
 				  g_strdup (package_id));
 }
@@ -1572,7 +1572,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread,
+	pk_backend_thread_create_old (thread,
 				  (PkBackendThreadFunc)backend_get_files_thread,
 				  g_strdup (package_id));
 }
@@ -1593,7 +1593,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 
 	data->mode = SEARCH_ENUM_NONE;
 	data->filters = filters;
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -1657,7 +1657,7 @@ backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *pac
 	data->package_id = g_strdup (package_id);
 	data->filters = filters;
 	data->recursive = recursive;
-	pk_backend_thread_create (thread, backend_get_requires_thread, data);
+	pk_backend_thread_create_old (thread, backend_get_requires_thread, data);
 }
 
 /**
@@ -1746,7 +1746,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread,
+	pk_backend_thread_create_old (thread,
 				  (PkBackendThreadFunc)backend_get_update_detail_thread,
 				  g_strdup (package_id));
 }
@@ -1813,7 +1813,7 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread, backend_get_updates_thread, NULL);
+	pk_backend_thread_create_old (thread, backend_get_updates_thread, NULL);
 }
 
 /**
@@ -1891,7 +1891,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 
 	data->package_id = g_strdup (package_id);
 	data->pd = g_new0 (PercentageData, 1);
-	pk_backend_thread_create (thread, backend_install_package_thread, data);
+	pk_backend_thread_create_old (thread, backend_install_package_thread, data);
 }
 
 /**
@@ -1976,7 +1976,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 		return;
 	}
 
-	pk_backend_thread_create (thread, backend_refresh_cache_thread, NULL);
+	pk_backend_thread_create_old (thread, backend_refresh_cache_thread, NULL);
 }
 
 /**
@@ -2039,7 +2039,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 
 	data->package_id = g_strdup (package_id);
 	data->allow_deps = allow_deps;
-	pk_backend_thread_create (thread, backend_remove_package_thread, data);
+	pk_backend_thread_create_old (thread, backend_remove_package_thread, data);
 }
 
 /**
@@ -2058,7 +2058,7 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 	data->mode = SEARCH_ENUM_NAME;
 	data->filters = filters;
 	data->search = g_strdup (package);
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -2078,7 +2078,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 	data->mode = SEARCH_ENUM_DETAILS;
 	data->filters = filters;
 	data->search = g_strdup (search);
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -2098,7 +2098,7 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	data->mode = SEARCH_ENUM_FILE;
 	data->filters = filters;
 	data->search = g_strdup (search);
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -2118,7 +2118,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	data->mode = SEARCH_ENUM_GROUP;
 	data->filters = filters;
 	data->search = g_strdup (search);
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -2138,7 +2138,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	data->mode = SEARCH_ENUM_NAME;
 	data->filters = filters;
 	data->search = g_strdup (search);
-	pk_backend_thread_create (thread, search_package, data);
+	pk_backend_thread_create_old (thread, search_package, data);
 }
 
 /**
@@ -2250,7 +2250,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	data->package_ids = g_strdupv (package_ids);
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;
-	pk_backend_thread_create (thread, backend_update_packages_thread, data);
+	pk_backend_thread_create_old (thread, backend_update_packages_thread, data);
 }
 
 /**
@@ -2382,7 +2382,7 @@ backend_update_system (PkBackend *backend)
 	data->pd = g_new0 (PercentageData, 1);
 	data->type = TS_TYPE_ENUM_UPDATE;
 
-	pk_backend_thread_create (thread, backend_update_system_thread, data);
+	pk_backend_thread_create_old (thread, backend_update_system_thread, data);
 }
 
 /**
