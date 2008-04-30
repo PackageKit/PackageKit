@@ -1168,7 +1168,9 @@ poldek_backend_log (void *data, int pri, char *message)
 
 	/* catch vfff messages */
 	if (g_str_has_prefix (message, "vfff: ")) {
-		if (g_str_has_prefix (message, "vfff: Inter")) // 'Interrupted system call'
+		if (g_str_has_prefix (message + 6, "Inter")) // 'Interrupted system call'
+			return;
+		else if (g_str_has_prefix (message + 6, "connection cancell")) // 'connection cancelled'
 			return;
 
 		/* check if this message was already showed */
@@ -1202,10 +1204,26 @@ poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboo
 }
 
 static void
+poldek_backend_percentage_data_create (PkBackend *backend)
+{
+	PercentageData *data;
+
+	data = g_new0 (PercentageData, 1);
+	pk_backend_set_pointer (backend, "percentage_ptr", data);
+}
+
+static void
+poldek_backend_percentage_data_destroy (PkBackend *backend)
+{
+	PercentageData *data;
+
+	data = (gpointer) pk_backend_get_pointer (backend, "percentage_ptr");
+	g_free (data);
+}
+
+static void
 do_poldek_init (PkBackend *backend)
 {
-	PercentageData *pd;
-
 	poldeklib_init ();
 
 	ctx = poldek_new (0);
@@ -1215,9 +1233,6 @@ do_poldek_init (PkBackend *backend)
 	poldek_setup (ctx);
 
 	cctx = poclidek_new (ctx);
-
-	pd = g_new0 (PercentageData, 1);
-	pk_backend_set_pointer (backend, "percentage_ptr", pd);
 
 	poldek_set_verbose (1);
 	/* disable LOGFILE and LOGTTY logging */
@@ -1241,11 +1256,7 @@ do_poldek_init (PkBackend *backend)
 static void
 do_poldek_destroy (PkBackend *backend)
 {
-	PercentageData *pd;
 	sigint_destroy ();
-
-	pd = (gpointer) pk_backend_get_pointer (backend, "percentage_ptr");
-	g_free (pd);
 
 	poclidek_free (cctx);
 	poldek_free (ctx);
@@ -1746,6 +1757,8 @@ backend_install_package_thread (PkBackend *backend)
 	poldek_ts_free (ts);
 	poclidek_rcmd_free (rcmd);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1762,6 +1775,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_thread_create (backend, backend_install_package_thread);
 }
 
@@ -1817,6 +1831,8 @@ backend_refresh_cache_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1824,16 +1840,17 @@ backend_refresh_cache_thread (PkBackend *backend)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
-	pb_error_clean ();
-
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
 		pk_backend_finished (backend);
 		return;
 	}
 
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
@@ -2025,6 +2042,8 @@ backend_update_packages_thread (PkBackend *backend)
 	if (!update_cancelled)
 		pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -2033,7 +2052,6 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
-
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
 		pk_backend_finished (backend);
 		return;
@@ -2042,6 +2060,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
 	pk_backend_thread_create (backend, backend_update_packages_thread);
 }
@@ -2140,6 +2159,8 @@ backend_update_system_thread (PkBackend *backend)
 	if (!update_cancelled)
 		pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -2156,6 +2177,7 @@ backend_update_system (PkBackend *backend)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
