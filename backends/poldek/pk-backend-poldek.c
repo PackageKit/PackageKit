@@ -36,7 +36,7 @@
 #include <sigint/sigint.h>
 
 static gchar* poldek_pkg_evr (const struct pkg *pkg);
-static void poldek_backend_package (const struct pkg *pkg, gint status);
+static void poldek_backend_package (PkBackend *backend, const struct pkg *pkg, gint status);
 static long do_get_bytes_to_download (const struct poldek_ts *ts, const gchar *mark);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
 static void pb_load_packages (PkBackend *backend);
@@ -202,7 +202,7 @@ poldek_vf_progress_new (void *data, const gchar *label)
 
 		if (pkgs) {
 			pkg = n_array_nth (pkgs, 0);
-			poldek_backend_package (pkg, PK_INFO_ENUM_DOWNLOADING);
+			poldek_backend_package (backend, pkg, PK_INFO_ENUM_DOWNLOADING);
 		}
 
 		poclidek_rcmd_free (rcmd);
@@ -370,7 +370,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 					struct pkg	*rpkg = n_array_nth (rpkgs, i);
 
 					if (!poldek_pkg_in_array (rpkg, upkgs, (tn_fn_cmp)pkg_cmp_name))
-						poldek_backend_package (rpkg, PK_INFO_ENUM_REMOVING);
+						poldek_backend_package (backend, rpkg, PK_INFO_ENUM_REMOVING);
 				}
 			}
 
@@ -379,7 +379,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 					struct pkg	*dpkg = n_array_nth (dpkgs, i);
 
 					if (!poldek_pkg_in_array (dpkg, upkgs, (tn_fn_cmp)pkg_cmp_name))
-						poldek_backend_package (dpkg, PK_INFO_ENUM_INSTALLING);
+						poldek_backend_package (backend, dpkg, PK_INFO_ENUM_INSTALLING);
 				}
 			}
 
@@ -388,14 +388,14 @@ ts_confirm (void *data, struct poldek_ts *ts)
 					struct pkg	*ipkg = n_array_nth (ipkgs, i);
 
 					if (!poldek_pkg_in_array (ipkg, upkgs, (tn_fn_cmp)pkg_cmp_name))
-						poldek_backend_package (ipkg, PK_INFO_ENUM_INSTALLING);
+						poldek_backend_package (backend, ipkg, PK_INFO_ENUM_INSTALLING);
 				}
 			}
 
 			for (i = 0; i < n_array_size (upkgs); i++) {
 				struct pkg	*upkg = n_array_nth (upkgs, i);
 
-				poldek_backend_package (upkg, PK_INFO_ENUM_UPDATING);
+				poldek_backend_package (backend, upkg, PK_INFO_ENUM_UPDATING);
 			}
 
 			/* set proper status if there are no packages to download */
@@ -423,7 +423,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 				for (i = 0; i < n_array_size (dpkgs); i++) {
 					struct pkg	*pkg = n_array_nth (dpkgs, i);
 
-					poldek_backend_package (pkg, PK_INFO_ENUM_REMOVING);
+					poldek_backend_package (backend, pkg, PK_INFO_ENUM_REMOVING);
 				}
 			}
 
@@ -431,7 +431,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 				for (i = 0; i < n_array_size (rpkgs); i++) {
 					struct pkg	*pkg = n_array_nth (rpkgs, i);
 
-					poldek_backend_package (pkg, PK_INFO_ENUM_REMOVING);
+					poldek_backend_package (backend, pkg, PK_INFO_ENUM_REMOVING);
 				}
 			}
 
@@ -803,7 +803,7 @@ do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct 
  * poldek_backend_package:
  */
 static void
-poldek_backend_package (const struct pkg *pkg, gint status)
+poldek_backend_package (PkBackend *backend, const struct pkg *pkg, gint status)
 {
 	struct pkguinf	*pkgu;
 	gchar		*evr, *package_id, *poldek_dir;
@@ -921,7 +921,6 @@ search_package_thread (PkBackend *backend)
 	struct poclidek_rcmd	*cmd = NULL;
 	const gchar *search;
 	guint mode;
-	PkFilterEnum filters;
 
 	pb_load_packages (backend);
 
@@ -1064,7 +1063,7 @@ search_package_thread (PkBackend *backend)
 					}
 				}
 
-				poldek_backend_package (pkg, PK_INFO_ENUM_UNKNOWN);
+				poldek_backend_package (backend, pkg, PK_INFO_ENUM_UNKNOWN);
 			}
 			n_array_free (pkgs);
 		} else {
@@ -1159,6 +1158,7 @@ pb_error_clean (void)
 static void
 poldek_backend_log (void *data, int pri, char *message)
 {
+	PkBackend *backend = (PkBackend*)data;
 
 	/* skip messages that we don't want to show */
 	if (g_str_has_prefix (message, "Nothing")) // 'Nothing to do'
@@ -1168,7 +1168,9 @@ poldek_backend_log (void *data, int pri, char *message)
 
 	/* catch vfff messages */
 	if (g_str_has_prefix (message, "vfff: ")) {
-		if (g_str_has_prefix (message, "vfff: Inter")) // 'Interrupted system call'
+		if (g_str_has_prefix (message + 6, "Inter")) // 'Interrupted system call'
+			return;
+		else if (g_str_has_prefix (message + 6, "connection cancell")) // 'connection cancelled'
 			return;
 
 		/* check if this message was already showed */
@@ -1202,10 +1204,26 @@ poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboo
 }
 
 static void
-do_poldek_init (void)
+poldek_backend_percentage_data_create (PkBackend *backend)
 {
-	PercentageData *pd;
+	PercentageData *data;
 
+	data = g_new0 (PercentageData, 1);
+	pk_backend_set_pointer (backend, "percentage_ptr", data);
+}
+
+static void
+poldek_backend_percentage_data_destroy (PkBackend *backend)
+{
+	PercentageData *data;
+
+	data = (gpointer) pk_backend_get_pointer (backend, "percentage_ptr");
+	g_free (data);
+}
+
+static void
+do_poldek_init (PkBackend *backend)
+{
 	poldeklib_init ();
 
 	ctx = poldek_new (0);
@@ -1216,15 +1234,12 @@ do_poldek_init (void)
 
 	cctx = poclidek_new (ctx);
 
-	pd = g_new0 (PercentageData, 1);
-	pk_backend_set_pointer (backend, "percentage_ptr", pd);
-
 	poldek_set_verbose (1);
 	/* disable LOGFILE and LOGTTY logging */
 	poldek_configure (ctx, POLDEK_CONF_LOGFILE, NULL);
 	poldek_configure (ctx, POLDEK_CONF_LOGTTY, NULL);
 
-	poldek_log_set_appender ("PackageKit", NULL, NULL, 0, (poldek_vlog_fn)poldek_backend_log);
+	poldek_log_set_appender ("PackageKit", (void *)backend, NULL, 0, (poldek_vlog_fn)poldek_backend_log);
 
 	/* disable unique package names */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_UNIQN, 0);
@@ -1239,13 +1254,9 @@ do_poldek_init (void)
 }
 
 static void
-do_poldek_destroy (void)
+do_poldek_destroy (PkBackend *backend)
 {
-	PercentageData *pd;
 	sigint_destroy ();
-
-	pd = (gpointer) pk_backend_get_pointer (backend, "percentage_ptr");
-	g_free (pd);
 
 	poclidek_free (cctx);
 	poldek_free (ctx);
@@ -1255,8 +1266,8 @@ do_poldek_destroy (void)
 
 static void
 poldek_reload (PkBackend *backend, gboolean load_packages) {
-	do_poldek_destroy ();
-	do_poldek_init ();
+	do_poldek_destroy (backend);
+	do_poldek_init (backend);
 
 	if (load_packages)
 		pb_load_packages (backend);
@@ -1275,7 +1286,7 @@ backend_initalize (PkBackend *backend)
 	if (ref++ > 1)
 		return;
 
-	do_poldek_init ();
+	do_poldek_init (backend);
 }
 /**
  * backend_destroy:
@@ -1286,7 +1297,7 @@ backend_destroy (PkBackend *backend)
 	if (ref-- > 0)
 		return;
 
-	do_poldek_destroy ();
+	do_poldek_destroy (backend);
 
 	/* release PbError struct */
 	g_free (pberror->vfffmsg);
@@ -1348,7 +1359,7 @@ backend_get_depends_thread (PkBackend *backend)
 	for (i = 0; i < n_array_size (deppkgs); i++) {
 		struct pkg	*p = n_array_nth (deppkgs, i);
 
-		poldek_backend_package (p, PK_INFO_ENUM_UNKNOWN);
+		poldek_backend_package (backend, p, PK_INFO_ENUM_UNKNOWN);
 	}
 
 	pkg_free (pkg);
@@ -1375,9 +1386,12 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
  * backend_get_description:
  */
 static gboolean
-backend_get_description_thread (PkBackend *backend, gchar *package_id)
+backend_get_description_thread (PkBackend *backend)
 {
+	const gchar *package_id;
 	struct pkg	*pkg = NULL;
+
+	package_id = pk_backend_get_string (backend, "package_id");
 
 	pb_load_packages (backend);
 
@@ -1411,8 +1425,6 @@ backend_get_description_thread (PkBackend *backend, gchar *package_id)
 		pkg_free (pkg);
 	}
 
-	g_free (package_id);
-
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1424,16 +1436,19 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread, backend_get_description_thread);
+	pk_backend_thread_create (backend, backend_get_description_thread);
 }
 
 /**
  * backend_get_files:
  */
 static gboolean
-backend_get_files_thread (PkBackend *backend, gchar *package_id)
+backend_get_files_thread (PkBackend *backend)
 {
+	const gchar *package_id;
 	struct pkg	*pkg;
+
+	package_id = pk_backend_get_string (backend, "package_id");
 
 	pb_load_packages (backend);
 
@@ -1483,8 +1498,6 @@ backend_get_files_thread (PkBackend *backend, gchar *package_id)
 		pkg_free (pkg);
 	}
 
-	g_free (package_id);
-
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1496,7 +1509,7 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread, backend_get_files_thread);
+	pk_backend_thread_create (backend, backend_get_files_thread);
 }
 
 /**
@@ -1541,7 +1554,7 @@ backend_get_requires_thread (PkBackend *backend)
 	for (i = 0; i < n_array_size (reqpkgs); i++) {
 		struct pkg	*p = n_array_nth (reqpkgs, i);
 
-		poldek_backend_package (p, PK_INFO_ENUM_UNKNOWN);
+		poldek_backend_package (backend, p, PK_INFO_ENUM_UNKNOWN);
 	}
 
 	n_array_free (reqpkgs);
@@ -1566,11 +1579,14 @@ backend_get_requires (PkBackend	*backend, PkFilterEnum filters, const gchar *pac
  * backend_get_update_detail:
  */
 static gboolean
-backend_get_update_detail_thread (PkBackend *backend, gchar *package_id)
+backend_get_update_detail_thread (PkBackend *backend)
 {
 	PkPackageId	*pi;
+	const gchar *package_id;
 	struct poclidek_rcmd	*rcmd;
 	gchar		*command;
+
+	package_id = pk_backend_get_string (backend, "package_id");
 
 	pb_load_packages (backend);
 
@@ -1640,7 +1656,7 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (thread, backend_get_update_detail_thread);
+	pk_backend_thread_create (backend, backend_get_update_detail_thread);
 }
 
 /**
@@ -1673,9 +1689,9 @@ backend_get_updates_thread (PkBackend *backend)
 
 				/* mark held packages as blocked */
 				if (pkg->flags & PKG_HELD)
-					poldek_backend_package (pkg, PK_INFO_ENUM_BLOCKED);
+					poldek_backend_package (backend, pkg, PK_INFO_ENUM_BLOCKED);
 				else
-					poldek_backend_package (pkg, PK_INFO_ENUM_NORMAL);
+					poldek_backend_package (backend, pkg, PK_INFO_ENUM_NORMAL);
 			}
 			n_array_free (pkgs);
 		}
@@ -1741,6 +1757,8 @@ backend_install_package_thread (PkBackend *backend)
 	poldek_ts_free (ts);
 	poclidek_rcmd_free (rcmd);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1757,6 +1775,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_thread_create (backend, backend_install_package_thread);
 }
 
@@ -1812,6 +1831,8 @@ backend_refresh_cache_thread (PkBackend *backend)
 
 	pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1819,16 +1840,17 @@ backend_refresh_cache_thread (PkBackend *backend)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
-	pb_error_clean ();
-
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache when offline!");
 		pk_backend_finished (backend);
 		return;
 	}
 
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
@@ -1838,7 +1860,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static gboolean
 backend_remove_package_thread (PkBackend *backend)
 {
-	PkBackend		*backend = (PkBackend *) data;
 	struct poclidek_rcmd	*rcmd;
 	struct poldek_ts	*ts;
 	gchar			*nvra, *command;
@@ -2021,6 +2042,8 @@ backend_update_packages_thread (PkBackend *backend)
 	if (!update_cancelled)
 		pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -2029,7 +2052,6 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
-
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline!");
 		pk_backend_finished (backend);
 		return;
@@ -2038,6 +2060,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
 	pk_backend_thread_create (backend, backend_update_packages_thread);
 }
@@ -2136,6 +2159,8 @@ backend_update_system_thread (PkBackend *backend)
 	if (!update_cancelled)
 		pk_backend_set_percentage (backend, 100);
 
+	poldek_backend_percentage_data_destroy (backend);
+
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -2152,6 +2177,7 @@ backend_update_system (PkBackend *backend)
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
 	pb_error_clean ();
 
+	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
