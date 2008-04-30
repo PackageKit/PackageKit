@@ -595,6 +595,8 @@ backend_get_updates_thread (PkBackend *backend)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
+	//Fixme - we should check the network status and bail if not online
+	gboolean force = pk_backend_get_bool(backend, "force");
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_set_percentage (backend, 0);
 
@@ -684,7 +686,7 @@ backend_install_file_thread (PkBackend *backend)
 	zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
 
 	if (rpmHeader == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is no valid rpm-File", full_path);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is not valid rpm-File", full_path);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -940,7 +942,6 @@ backend_install_package_thread (PkBackend *backend)
 	PkPackageId *pi = pk_package_id_new_from_string (package_id);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		g_free (package_id);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -980,7 +981,6 @@ backend_install_package_thread (PkBackend *backend)
 
 		if (!hit) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find the package.");
-			g_free (package_id);
 			pk_package_id_free (pi);
 			pk_backend_finished (backend);
 			return FALSE;
@@ -989,7 +989,6 @@ backend_install_package_thread (PkBackend *backend)
 		pk_backend_set_percentage (backend, 40);
 
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
-			g_free (package_id);
 			pk_backend_finished (backend);
 			return FALSE;
 		}
@@ -999,13 +998,11 @@ backend_install_package_thread (PkBackend *backend)
 
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		g_free (package_id);
 		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
 
-	g_free (package_id);
 	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1019,7 +1016,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
-	pk_backend_thread_create (backend, backend_install_package_thread, package_to_install);
+	pk_backend_thread_create (backend, backend_install_package_thread);
 }
 
 static gboolean
@@ -1114,12 +1111,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static gboolean
 backend_resolve_thread (PkBackend *backend)
 {
-	gchar *package_id;
+	const gchar *package_id = pk_backend_get_string (backend, "package_id");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
-	v = zypp_get_packages_by_name ((const gchar *)rdata->name, zypp::ResKind::package, TRUE);
+	v = zypp_get_packages_by_name (package_id, zypp::ResKind::package, TRUE);
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -1147,7 +1144,6 @@ backend_resolve_thread (PkBackend *backend)
 			    package_id,
 			    package.lookupStrAttribute (zypp::sat::SolvAttr::description).c_str ());
 
-	g_free (package_id);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1170,7 +1166,7 @@ backend_find_packages_thread (PkBackend *backend)
 	//GList *list = NULL;
 
 	search = pk_backend_get_string (backend, "search");
-	filters = pk_backend_get_uint (backend, "filters");
+	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
 	mode = pk_backend_get_uint (backend, "mode");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1224,7 +1220,7 @@ backend_search_group_thread (PkBackend *backend)
 	PkFilterEnum filters;
 
 	group = pk_backend_get_string (backend, "group");
-	filters = pk_backend_get_uint (backend, "filters");
+	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_GROUP_NOT_FOUND, "Group is invalid.");
@@ -1423,7 +1419,7 @@ static gboolean
 backend_get_packages_thread (PkBackend *backend)
 {
 	PkFilterEnum filters;
-	filters = pk_backend_get_uint (backend, "filters");
+	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
@@ -1473,7 +1469,7 @@ backend_update_packages_thread (PkBackend *backend)
 static void
 backend_update_packages(PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_thread_create(thread, backend_update_packages_thread);
+	pk_backend_thread_create(backend, backend_update_packages_thread);
 }
 
 static gboolean
@@ -1586,7 +1582,7 @@ backend_repo_set_data_thread (PkBackend *backend)
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
-	pk_backend_thread_create (thread, backend_repo_set_data_thread);
+	pk_backend_thread_create (backend, backend_repo_set_data_thread);
 }
 
 static gboolean
