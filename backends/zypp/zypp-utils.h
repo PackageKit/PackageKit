@@ -33,6 +33,11 @@ typedef enum {
         UPDATE
 } PerformType;
 
+/**
+  * A map to store the signatures which were accepted for each backend
+  */
+extern std::map<PkBackend *, std::vector<std::string> *> _signatures;
+
 zypp::ZYpp::Ptr get_zypp ();
 
 gboolean zypp_is_changeable_media (const zypp::Url &url);

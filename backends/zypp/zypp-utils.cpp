@@ -356,15 +356,22 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 gboolean
 zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 {
-        gboolean ok = pk_backend_repo_signature_required (backend,
-                        "dummy;0.0.1;i386;data",
-                        "TODO: Repo-Name",
-                        key.path ().c_str (),
-                        key.id ().c_str (),
-                        key.id ().c_str (),
-                        key.fingerprint ().c_str (),
-                        key.created ().asString ().c_str (),
-                        PK_SIGTYPE_ENUM_GPG);
+	gboolean ok = FALSE;
+
+	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), key.id ()) == _signatures[backend]->end ()) {
+        	pk_backend_repo_signature_required (backend,
+				"dummy;0.0.1;i386;data",
+	                        "TODO: Repo-Name",
+        	                key.path ().c_str (),
+                	        key.id ().c_str (),
+                        	key.id ().c_str (),
+	                        key.fingerprint ().c_str (),
+        	                key.created ().asString ().c_str (),
+                	        PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+	}else{
+		ok = TRUE;
+	}
 
         return ok;
 }
@@ -372,15 +379,22 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 gboolean
 zypp_signature_required (PkBackend *backend, const std::string &file, const std::string &id)
 {
-        gboolean ok = pk_backend_repo_signature_required (backend,
-                        "dummy;0.0.1;i386;data",
-                        "TODO: Repo-Name",
-                        file.c_str (),
-                        id.c_str (),
-                        id.c_str (),
-                        "UNKNOWN",
-                        "UNKNOWN",
-                        PK_SIGTYPE_ENUM_GPG);
+        gboolean ok = FALSE;
+	
+	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), id) == _signatures[backend]->end ()) {
+		pk_backend_repo_signature_required (backend,
+				"dummy;0.0.1;i386;data",
+	                        "TODO: Repo-Name",
+        	                file.c_str (),
+                	        id.c_str (),
+                        	id.c_str (),
+	                        "UNKNOWN",
+        	                "UNKNOWN",
+                	        PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+	}else{
+		ok = TRUE;
+	}
 
         return ok;
 }
@@ -388,15 +402,22 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
 gboolean
 zypp_signature_required (PkBackend *backend, const std::string &file)
 {
-        gboolean ok = pk_backend_repo_signature_required (backend,
-                        "dummy;0.0.1;i386;data",
-                        "TODO: Repo-Name",
-                        file.c_str (),
-                        "UNKNOWN",
-                        "UNKNOWN",
-                        "UNKNOWN",
-                        "UNKNOWN",
-                        PK_SIGTYPE_ENUM_GPG);
+	gboolean ok = FALSE;
+
+	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), file) == _signatures[backend]->end ()) {
+        	pk_backend_repo_signature_required (backend,
+				"dummy;0.0.1;i386;data",
+	                        "TODO: Repo-Name",
+        	                file.c_str (),
+	                        "UNKNOWN",
+        	                file.c_str (),
+                	        "UNKNOWN",
+                        	"UNKNOWN",
+	                        PK_SIGTYPE_ENUM_GPG);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+	}else{
+		ok = TRUE;
+	}
 
         return ok;
 }

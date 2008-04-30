@@ -80,6 +80,7 @@ enum DepsBehavior {
  * each zypp backend that is created.
  */
 static std::map<PkBackend *, EventDirector *> _eventDirectors;
+std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
 /**
  * backend_initialize:
@@ -92,6 +93,8 @@ backend_initialize (PkBackend *backend)
 	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
+	std::vector<std::string> *signature = new std::vector<std::string> ();
+	_signatures [backend] = signature;
 }
 
 /**
@@ -107,6 +110,8 @@ backend_destroy (PkBackend *backend)
 		delete (eventDirector);
 		_eventDirectors.erase (backend);
 	}
+
+	delete (_signatures[backend]);
 }
 
 /**
@@ -1020,6 +1025,25 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
+backend_install_signature_thread (PkBackend *backend)
+{
+	const gchar *key_id = pk_backend_get_string (backend, "key_id");
+	_signatures[backend]->push_back ((std::string)(key_id));
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_install_signature:
+ */
+static void
+backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
+{
+	pk_backend_thread_create (backend, backend_install_signature_thread);
+}
+
+static gboolean
 backend_remove_package_thread (PkBackend *backend)
 {
 	const gchar *package_id;
@@ -1636,7 +1660,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_updates,			/* get_updates */
 	backend_install_file,			/* install_file */
 	backend_install_package,		/* install_package */
-	NULL,					/* install_signature */
+	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
 	backend_repo_enable,			/* repo_enable */
