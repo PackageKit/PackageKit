@@ -198,8 +198,8 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_no_percentage_updates (backend);
 
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_refresh_cache_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_refresh_cache_thread,
 		NULL);
 }
 
@@ -297,7 +297,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	params->needle = g_utf8_strdown (search, -1);
 	params->backend = backend;
 
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_thread_create_old (thread, (PkBackendThreadFuncOld) backend_search_thread, params);
 }
 
 /**
@@ -318,7 +318,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 	params->search_type = SEARCH_DESCRIPTION;
 	params->needle = g_utf8_strdown (search, -1);
 
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_thread_create_old (thread, (PkBackendThreadFuncOld) backend_search_thread, params);
 }
 
 static void
@@ -336,7 +336,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	params->search_type = SEARCH_TAG;
 	params->needle = g_strdup_printf ("group::%s", search);
 
-	pk_backend_thread_create (thread, (PkBackendThreadFunc) backend_search_thread, params);
+	pk_backend_thread_create_old (thread, (PkBackendThreadFuncOld) backend_search_thread, params);
 }
 
 
@@ -372,8 +372,8 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_install_package_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_install_package_thread,
 		g_strdup (package_id));
 }
 
@@ -430,8 +430,8 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	params[1] = GINT_TO_POINTER (allow_deps);
 	params[2] = GINT_TO_POINTER (autoremove);
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_remove_package_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_remove_package_thread,
 		params);
 
 }
@@ -474,8 +474,8 @@ backend_update_system (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_update_system_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_update_system_thread,
 		NULL);
 }
 
@@ -523,8 +523,8 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_update_package_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_update_package_thread,
 		/* TODO: process the entire list */
 		g_strdup (package_ids[0]));
 }
@@ -570,8 +570,8 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
-	pk_backend_thread_create (thread,
-		(PkBackendThreadFunc) backend_get_updates_thread,
+	pk_backend_thread_create_old (thread,
+		(PkBackendThreadFuncOld) backend_get_updates_thread,
 		backend);
 }
 
