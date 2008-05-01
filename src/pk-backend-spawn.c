@@ -54,7 +54,6 @@
 #include "pk-spawn.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
-#include "pk-thread-list.h"
 
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101

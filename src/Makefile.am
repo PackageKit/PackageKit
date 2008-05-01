@@ -37,7 +37,6 @@ pkbackendincludedir=$(includedir)/packagekit-backend
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
 	pk-backend-spawn.h				\
-	pk-backend-thread.h				\
 	$(NULL)
 
 shared_SOURCES =					\
@@ -64,12 +63,8 @@ shared_SOURCES =					\
 	pk-engine.c					\
 	pk-inhibit.h					\
 	pk-inhibit.c					\
-	pk-thread-list.h				\
-	pk-thread-list.c				\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
-	pk-backend-thread.h				\
-	pk-backend-thread.c				\
 	pk-backend-dbus.h				\
 	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
