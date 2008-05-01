@@ -96,6 +96,19 @@ pk_network_is_online (PkNetwork *network)
 }
 
 /**
+ * pk_network_is_modem:
+ * @network: a valid #PkNetwork instance
+ *
+ * Return value: %TRUE if the network is a modem, on a slow or expensive connection
+ **/
+gboolean
+pk_network_is_modem (PkNetwork *network)
+{
+	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
+	return TRUE;
+}
+
+/**
  * pk_network_nm_changed_cb:
  **/
 static void

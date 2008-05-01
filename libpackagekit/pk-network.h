@@ -60,6 +60,7 @@ struct _PkNetworkClass
 GType		 pk_network_get_type		  	(void) G_GNUC_CONST;
 PkNetwork	*pk_network_new				(void);
 gboolean	 pk_network_is_online			(PkNetwork	*network);
+gboolean	 pk_network_is_modem			(PkNetwork	*network);
 
 G_END_DECLS
 
