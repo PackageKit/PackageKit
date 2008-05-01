@@ -421,6 +421,7 @@ gboolean
 pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **error)
 {
 	gboolean ret;
+	gchar *tid_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
 
@@ -431,13 +432,25 @@ pk_control_allocate_transaction_id (PkControl *control, gchar **tid, GError **er
 	}
 	ret = dbus_g_proxy_call (control->priv->proxy, "GetTid", error,
 				 G_TYPE_INVALID,
-				 G_TYPE_STRING, tid,
+				 G_TYPE_STRING, &tid_local,
 				 G_TYPE_INVALID);
 	if (!ret) {
 		pk_control_error_fixup (error);
-		return FALSE;
+		goto out;
 	}
-	pk_debug ("Got tid: '%s'", *tid);
+
+	/* check we are not running new client tools with an old server */
+	if (g_strrstr (tid_local, ";") != NULL) {
+		pk_control_error_set (error, PK_CONTROL_ERROR_FAILED, "Incorrect path with ';' returned!");
+		ret = FALSE;
+		goto out;
+	}
+
+	/* copy */
+	*tid = g_strdup (tid_local);
+	pk_debug ("Got tid: '%s'", tid_local);
+out:
+	g_free (tid_local);
 	return ret;
 }
 
