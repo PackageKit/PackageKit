@@ -17,6 +17,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
+	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -48,6 +49,11 @@ shared_SOURCES =					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
 	pk-security.h					\
+	pk-network.c					\
+	pk-network.h					\
+	pk-network-nm.h					\
+	pk-network-unix.c				\
+	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
 	pk-conf.c					\
@@ -74,6 +80,14 @@ shared_SOURCES =					\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
+
+if PK_BUILD_NETWORKMANAGER
+shared_SOURCES +=					\
+	pk-network-nm.c
+else
+shared_SOURCES +=					\
+	pk-network-nm-dummy.c
+endif
 
 if PK_BUILD_GIO
 shared_SOURCES +=					\
@@ -105,6 +119,7 @@ packagekitd_SOURCES =					\
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
+	$(LIBNM_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\

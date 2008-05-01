@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,11 +20,10 @@
  */
 
 /**
- * SECTION:pk-network-dummy
- * @short_description: Dummy network detection code
+ * SECTION:pk-network
+ * @short_description: network detection code
  *
- * This file contains a dummy network implimentation.
- * It is designed for people that don't have NetworkManager installed.
+ * This file contains a network checker.
  */
 
 #include "config.h"
@@ -45,6 +44,8 @@
 
 #include "pk-debug.h"
 #include "pk-network.h"
+#include "pk-network-nm.h"
+#include "pk-network-unix.h"
 #include "pk-marshal.h"
 
 static void     pk_network_class_init	(PkNetworkClass *klass);
@@ -60,11 +61,14 @@ static void     pk_network_finalize	(GObject        *object);
  **/
 struct _PkNetworkPrivate
 {
-	gpointer		 data;
+	gboolean		 use_nm;
+	gboolean		 use_unix;
+	PkNetworkNm		*net_nm;
+	PkNetworkUnix		*net_unix;
 };
 
 enum {
-	PK_NETWORK_ONLINE,
+	PK_NETWORK_STATE_CHANGED,
 	PK_NETWORK_LAST_SIGNAL
 };
 
@@ -74,34 +78,55 @@ static gpointer pk_network_object = NULL;
 G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 
 /**
- * pk_network_is_online:
+ * pk_network_get_network_state:
  * @network: a valid #PkNetwork instance
  *
  * Return value: %TRUE if the network is online
  * Note: This is a dummy file and no checks are done
  **/
-gboolean
-pk_network_is_online (PkNetwork *network)
+PkNetworkEnum
+pk_network_get_network_state (PkNetwork *network)
 {
-	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
-	/* don't do any checks */
-	return TRUE;
+	g_return_val_if_fail (PK_IS_NETWORK (network), PK_NETWORK_ENUM_UNKNOWN);
+	/* use the correct backend */
+	if (network->priv->use_nm) {
+		return pk_network_nm_get_network_state (network->priv->net_nm);
+	}
+	if (network->priv->use_unix) {
+		return pk_network_unix_get_network_state (network->priv->net_unix);
+	}
+	return PK_NETWORK_ENUM_ONLINE;
 }
 
 /**
- * pk_network_is_modem:
- * @network: a valid #PkNetwork instance
- *
- * Return value: %TRUE if the network is a modem, on a slow or expensive connection
+ * pk_network_nm_network_changed_cb:
  **/
-gboolean
-pk_network_is_modem (PkNetwork *network)
+static void
+pk_network_nm_network_changed_cb (PkNetworkNm *net_nm, gboolean online, PkNetwork *network)
 {
-	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
-	/* don't do any checks */
-	return TRUE;
+	PkNetworkEnum ret;
+	g_return_if_fail (PK_IS_NETWORK (network));
+	if (network->priv->use_nm) {
+		if (online) {
+			ret = PK_NETWORK_ENUM_ONLINE;
+		} else {
+			ret = PK_NETWORK_ENUM_OFFLINE;
+		}
+		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, ret);
+	}
 }
 
+/**
+ * pk_network_unix_network_changed_cb:
+ **/
+static void
+pk_network_unix_network_changed_cb (PkNetworkUnix *net_unix, gboolean online, PkNetwork *network)
+{
+	g_return_if_fail (PK_IS_NETWORK (network));
+	if (network->priv->use_unix) {
+		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, online);
+	}
+}
 
 /**
  * pk_network_class_init:
@@ -112,11 +137,11 @@ pk_network_class_init (PkNetworkClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_network_finalize;
-	signals [PK_NETWORK_ONLINE] =
-		g_signal_new ("online",
+	signals [PK_NETWORK_STATE_CHANGED] =
+		g_signal_new ("state-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkNetworkPrivate));
 }
 
@@ -128,6 +153,19 @@ static void
 pk_network_init (PkNetwork *network)
 {
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
+	network->priv->use_nm = TRUE;
+	network->priv->use_unix = TRUE;
+	network->priv->net_nm = pk_network_nm_new ();
+	g_signal_connect (network->priv->net_nm, "state-changed",
+			  G_CALLBACK (pk_network_nm_network_changed_cb), network);
+	network->priv->net_unix = pk_network_unix_new ();
+	g_signal_connect (network->priv->net_unix, "state-changed",
+			  G_CALLBACK (pk_network_unix_network_changed_cb), network);
+
+#if !PK_BUILD_NETWORKMANAGER
+	/* hardcode */
+	network->priv->use_nm = FALSE;
+#endif
 }
 
 /**
@@ -143,6 +181,8 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
+	g_object_unref (network->priv->net_nm);
+	g_object_unref (network->priv->net_unix);
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }
 

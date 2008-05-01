@@ -263,9 +263,11 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 gboolean
 pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
 {
+	PkNetworkEnum network;
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
-	//TODO: get the network state
-	*state = g_strdup (pk_network_enum_to_text (PK_NETWORK_ENUM_UNKNOWN));
+	/* get the network state */
+	network = pk_network_get_network_state (engine->priv->network);
+	*state = g_strdup (pk_network_enum_to_text (network));
 	return TRUE;
 }
 
@@ -292,14 +294,14 @@ pk_engine_get_transaction_list (PkEngine *engine, gchar ***transaction_list, GEr
 static gboolean
 pk_engine_state_changed_cb (gpointer data)
 {
-	gboolean ret;
+	PkNetworkEnum state;
 	PkEngine *engine = PK_ENGINE (data);
 
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	/* if NetworkManager is not up, then just reschedule */
-	ret = pk_network_is_online (engine->priv->network);
-	if (!ret) {
+	/* if network is not up, then just reschedule */
+	state = pk_network_get_network_state (engine->priv->network);
+	if (state == PK_NETWORK_ENUM_OFFLINE) {
 		/* wait another timeout of PK_ENGINE_STATE_CHANGED_TIMEOUT */
 		return TRUE;
 	}
@@ -493,6 +495,19 @@ pk_engine_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkEngine *engine
 }
 
 /**
+ * pk_engine_network_state_changed_cb:
+ **/
+static void
+pk_engine_network_state_changed_cb (PkNetwork *file_monitor, PkNetworkEnum state, PkEngine *engine)
+{
+	const gchar *state_text;
+	g_return_if_fail (PK_IS_ENGINE (engine));
+	state_text = pk_network_enum_to_text (state);
+	pk_debug ("emitting network-state-changed: %s", state_text);
+	g_signal_emit (engine, signals [PK_ENGINE_NETWORK_STATE_CHANGED], 0, state_text);
+}
+
+/**
  * pk_engine_init:
  **/
 static void
@@ -517,8 +532,12 @@ pk_engine_init (PkEngine *engine)
 	}
 
 	/* we dont need this, just don't keep creating and destroying it */
-	engine->priv->network = pk_network_new ();
 	engine->priv->security = pk_security_new ();
+
+	/* proxy the network state */
+	engine->priv->network = pk_network_new ();
+	g_signal_connect (engine->priv->network, "state-changed",
+			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
 
 	/* create a new backend so we can get the static stuff */
 	engine->priv->actions = pk_backend_get_actions (engine->priv->backend);

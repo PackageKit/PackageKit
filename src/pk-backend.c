@@ -1489,7 +1489,13 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 gboolean
 pk_backend_is_online (PkBackend *backend)
 {
-	return pk_network_is_online (backend->priv->network);
+	PkNetworkEnum state;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	state = pk_network_get_network_state (backend->priv->network);
+	if (pk_enums_contain (state, PK_NETWORK_ENUM_ONLINE)) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /**

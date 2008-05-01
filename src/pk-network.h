@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -30,6 +30,7 @@
 #define __PK_NETWORK_H
 
 #include <glib-object.h>
+#include <pk-enum.h>
 
 G_BEGIN_DECLS
 
@@ -59,8 +60,7 @@ struct _PkNetworkClass
 
 GType		 pk_network_get_type		  	(void) G_GNUC_CONST;
 PkNetwork	*pk_network_new				(void);
-gboolean	 pk_network_is_online			(PkNetwork	*network);
-gboolean	 pk_network_is_modem			(PkNetwork	*network);
+PkNetworkEnum	 pk_network_get_network_state		(PkNetwork	*network);
 
 G_END_DECLS
 
