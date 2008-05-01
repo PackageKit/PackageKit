@@ -73,7 +73,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	polkit_action_set_action_id (pk_action, action);
 
 	/* set caller */
-	pk_debug ("using caller %s", dbus_sender);
+	pk_debug ("using caller %s for action %s", dbus_sender, action);
 	dbus_error_init (&dbus_error);
 	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
 	if (pk_caller == NULL) {

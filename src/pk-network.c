@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -19,6 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION:pk-network
+ * @short_description: network detection code
+ *
+ * This file contains a network checker.
+ */
+
 #include "config.h"
 
 #include <stdlib.h>
@@ -33,15 +40,14 @@
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
 
-#include <sys/wait.h>
-#include <fcntl.h>
-
 #include <glib/gi18n.h>
-#include <libnm_glib.h>
 
 #include "pk-debug.h"
 #include "pk-network.h"
+#include "pk-network-nm.h"
+#include "pk-network-unix.h"
 #include "pk-marshal.h"
+#include "pk-conf.h"
 
 static void     pk_network_class_init	(PkNetworkClass *klass);
 static void     pk_network_init		(PkNetwork      *network);
@@ -50,18 +56,21 @@ static void     pk_network_finalize	(GObject        *object);
 #define PK_NETWORK_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_NETWORK, PkNetworkPrivate))
 
 /**
- * PkNetworkPrivate:
+ * _PkNetworkPrivate:
  *
  * Private #PkNetwork data
  **/
 struct _PkNetworkPrivate
 {
-	libnm_glib_ctx		*ctx;
-	guint			 callback_id;
+	gboolean		 use_nm;
+	gboolean		 use_unix;
+	PkNetworkNm		*net_nm;
+	PkNetworkUnix		*net_unix;
+	PkConf			*conf;
 };
 
 enum {
-	PK_NETWORK_ONLINE,
+	PK_NETWORK_STATE_CHANGED,
 	PK_NETWORK_LAST_SIGNAL
 };
 
@@ -71,43 +80,54 @@ static gpointer pk_network_object = NULL;
 G_DEFINE_TYPE (PkNetwork, pk_network, G_TYPE_OBJECT)
 
 /**
- * pk_network_is_online:
+ * pk_network_get_network_state:
  * @network: a valid #PkNetwork instance
  *
  * Return value: %TRUE if the network is online
+ * Note: This is a dummy file and no checks are done
  **/
-gboolean
-pk_network_is_online (PkNetwork *network)
+PkNetworkEnum
+pk_network_get_network_state (PkNetwork *network)
 {
-	libnm_glib_state state;
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_NETWORK (network), FALSE);
-
-	state = libnm_glib_get_network_state (network->priv->ctx);
-	switch (state) {
-	case LIBNM_NO_NETWORK_CONNECTION:
-		ret = FALSE;
-		break;
-	default:
-		ret = TRUE;
+	g_return_val_if_fail (PK_IS_NETWORK (network), PK_NETWORK_ENUM_UNKNOWN);
+	/* use the correct backend */
+	if (network->priv->use_nm) {
+		return pk_network_nm_get_network_state (network->priv->net_nm);
 	}
-	return ret;
+	if (network->priv->use_unix) {
+		return pk_network_unix_get_network_state (network->priv->net_unix);
+	}
+	return PK_NETWORK_ENUM_ONLINE;
 }
 
 /**
- * pk_network_nm_changed_cb:
+ * pk_network_nm_network_changed_cb:
  **/
 static void
-pk_network_nm_changed_cb (libnm_glib_ctx *libnm_ctx, gpointer data)
+pk_network_nm_network_changed_cb (PkNetworkNm *net_nm, gboolean online, PkNetwork *network)
 {
-	gboolean ret;
-	PkNetwork *network = (PkNetwork *) data;
-
+	PkNetworkEnum ret;
 	g_return_if_fail (PK_IS_NETWORK (network));
+	if (network->priv->use_nm) {
+		if (online) {
+			ret = PK_NETWORK_ENUM_ONLINE;
+		} else {
+			ret = PK_NETWORK_ENUM_OFFLINE;
+		}
+		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, ret);
+	}
+}
 
-	ret = pk_network_is_online (network);
-	g_signal_emit (network, signals [PK_NETWORK_ONLINE], 0, ret);
+/**
+ * pk_network_unix_network_changed_cb:
+ **/
+static void
+pk_network_unix_network_changed_cb (PkNetworkUnix *net_unix, gboolean online, PkNetwork *network)
+{
+	g_return_if_fail (PK_IS_NETWORK (network));
+	if (network->priv->use_unix) {
+		g_signal_emit (network, signals [PK_NETWORK_STATE_CHANGED], 0, online);
+	}
 }
 
 /**
@@ -119,11 +139,11 @@ pk_network_class_init (PkNetworkClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_network_finalize;
-	signals [PK_NETWORK_ONLINE] =
-		g_signal_new ("online",
+	signals [PK_NETWORK_STATE_CHANGED] =
+		g_signal_new ("state-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
-			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
+			      0, NULL, NULL, g_cclosure_marshal_VOID__UINT,
+			      G_TYPE_NONE, 1, G_TYPE_UINT);
 	g_type_class_add_private (klass, sizeof (PkNetworkPrivate));
 }
 
@@ -134,16 +154,26 @@ pk_network_class_init (PkNetworkClass *klass)
 static void
 pk_network_init (PkNetwork *network)
 {
-	GMainContext *context;
-
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
-	context = g_main_context_default ();
-	network->priv->ctx = libnm_glib_init ();
-	network->priv->callback_id =
-		libnm_glib_register_callback (network->priv->ctx,
-					      pk_network_nm_changed_cb,
-					      network, context);
-	pk_debug ("ctx=%p, id=%i", network->priv->ctx, network->priv->callback_id);
+	network->priv->conf = pk_conf_new ();
+	network->priv->net_nm = pk_network_nm_new ();
+	g_signal_connect (network->priv->net_nm, "state-changed",
+			  G_CALLBACK (pk_network_nm_network_changed_cb), network);
+	network->priv->net_unix = pk_network_unix_new ();
+	g_signal_connect (network->priv->net_unix, "state-changed",
+			  G_CALLBACK (pk_network_unix_network_changed_cb), network);
+
+	/* get the defaults from the config file */
+	network->priv->use_nm = pk_conf_get_bool (network->priv->conf, "UseNetworkManager");
+	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
+
+#if !PK_BUILD_NETWORKMANAGER
+	/* check we can actually use the default */
+	if (network->priv->use_nm) {
+		pk_warning ("UseNetworkManager true, but not built with NM support");
+		network->priv->use_nm = FALSE;
+	}
+#endif
 }
 
 /**
@@ -159,15 +189,9 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
-
-	pk_debug ("ctx=%p, id=%i", network->priv->ctx, network->priv->callback_id);
-	libnm_glib_unregister_callback (network->priv->ctx, network->priv->callback_id);
-	libnm_glib_shutdown (network->priv->ctx);
-
-	/* be paranoid */
-	network->priv->ctx = NULL;
-	network->priv->callback_id = 0;
-
+	g_object_unref (network->priv->conf);
+	g_object_unref (network->priv->net_nm);
+	g_object_unref (network->priv->net_unix);
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
 }
 

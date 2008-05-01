@@ -28,14 +28,12 @@
 void libst_conf (LibSelfTest *test);
 void libst_inhibit (LibSelfTest *test);
 void libst_spawn (LibSelfTest *test);
-void libst_thread_list (LibSelfTest *test);
 void libst_transaction_list (LibSelfTest *test);
 void libst_transaction_db (LibSelfTest *test);
 void libst_security (LibSelfTest *test);
 void libst_time (LibSelfTest *test);
 void libst_backend (LibSelfTest *test);
 void libst_backend_spawn (LibSelfTest *test);
-void libst_backend_thread (LibSelfTest *test);
 void libst_backend_dbus (LibSelfTest *test);
 void libst_file_monitor (LibSelfTest *test);
 void libst_engine (LibSelfTest *test);
@@ -59,14 +57,12 @@ main (int argc, char **argv)
 	libst_conf (&test);
 	libst_inhibit (&test);
 	libst_spawn (&test);
-	libst_thread_list (&test);
 	libst_transaction_list (&test);
 	libst_transaction_db (&test);
 
 	/* backend stuff */
 	libst_backend (&test);
 	libst_backend_spawn (&test);
-	libst_backend_thread (&test);
 	libst_backend_dbus (&test);
 
 	/* system */

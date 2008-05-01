@@ -535,7 +535,7 @@ if test x$enable_box = xyes; then
 fi
 
 if test x$enable_opkg = xyes; then
-	PKG_CHECK_MODULES(OPKG, libopkg)
+	PKG_CHECK_MODULES(OPKG, libopkg = 0.1)
 	AC_SUBST(OPKG_CFLAGS)
 	AC_SUBST(OPKG_LIBS)
 fi

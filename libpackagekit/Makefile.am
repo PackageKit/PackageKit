@@ -4,7 +4,6 @@ NULL =
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
-	$(LIBNM_CFLAGS)						\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
@@ -36,7 +35,6 @@ libpackagekit_include_HEADERS =					\
 	pk-debug.h						\
 	pk-extra.h						\
 	pk-connection.h						\
-	pk-network.h						\
 	pk-package-id.h						\
 	pk-package-ids.h					\
 	pk-package-list.h					\
@@ -57,7 +55,6 @@ libpackagekit_la_SOURCES =					\
 	pk-extra.h						\
 	pk-connection.c						\
 	pk-connection.h						\
-	pk-network.h						\
 	pk-package-id.c						\
 	pk-package-id.h						\
 	pk-package-ids.c					\
@@ -78,21 +75,10 @@ libpackagekit_la_SOURCES =					\
 	pk-polkit-client.h					\
 	$(NULL)
 
-if PK_BUILD_NETWORKMANAGER
-libpackagekit_la_SOURCES +=					\
-	pk-network-nm.c						\
-	$(NULL)
-else
-libpackagekit_la_SOURCES +=					\
-	pk-network-dummy.c					\
-	$(NULL)
-endif
-
 libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
-	$(LIBNM_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 

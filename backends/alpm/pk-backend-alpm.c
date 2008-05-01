@@ -35,7 +35,6 @@
 #include <pk-backend.h>
 #include <pk-debug.h>
 #include <pk-package-ids.h>
-#include <pk-network.h>
 
 #include <alpm.h>
 #include <alpm_list.h>
@@ -48,8 +47,6 @@
 static int progress_percentage;
 static int subprogress_percentage;
 PkBackend *install_backend = NULL;
-
-static PkNetwork *network;
 
 typedef struct _PackageSource
 {
@@ -619,8 +616,6 @@ backend_initialize (PkBackend *backend)
     pk_debug ("alpm: ready to go");
 
     alpm_option_set_dlcb(cb_dl_progress);
-
-    network = pk_network_new();
 }
 
 /**
@@ -739,7 +734,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 {
     g_return_if_fail (backend != NULL);
 
-    if (pk_network_is_online (network) == FALSE) {
+    if (!pk_backend_is_online (backend)) {
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 	pk_backend_finished (backend);
 	return;

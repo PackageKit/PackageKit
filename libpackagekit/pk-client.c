@@ -2310,7 +2310,7 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 	client->priv->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
 
 	/* only copy if we are not requeing */
-	if (client->priv->cached_package_ids == package_ids) {
+	if (client->priv->cached_package_ids != package_ids) {
 		client->priv->cached_package_ids = g_strdupv (package_ids);
 	}
 

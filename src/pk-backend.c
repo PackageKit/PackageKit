@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
+#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-common.h"
@@ -89,6 +90,7 @@ struct _PkBackendPrivate
 	gboolean		 set_signature;
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
+	PkNetwork		*network;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -106,6 +108,7 @@ struct _PkBackendPrivate
 	guint			 signal_error_timeout;
 	GThread			*thread;
 	GHashTable		*hash_string;
+	GHashTable		*hash_strv;
 	GHashTable		*hash_pointer;
 };
 
@@ -263,7 +266,11 @@ pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (key != NULL, FALSE);
-	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
 
 	/* does already exist? */
 	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
@@ -273,6 +280,32 @@ pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
 	}
 	pk_debug ("saving '%s' for %s", data, key);
 	g_hash_table_insert (backend->priv->hash_string, g_strdup (key), (gpointer) g_strdup (data));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_strv:
+ **/
+gboolean
+pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_strv, g_strdup (key), (gpointer) g_strdupv (data));
 	return TRUE;
 }
 
@@ -357,6 +390,25 @@ pk_backend_get_string (PkBackend *backend, const gchar *key)
 		return FALSE;
 	}
 	return (const gchar *) value;
+}
+
+/**
+ * pk_backend_get_strv:
+ **/
+gchar **
+pk_backend_get_strv (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return (gchar **) value;
 }
 
 /**
@@ -1321,6 +1373,7 @@ pk_backend_finished_delay (gpointer data)
 	pk_debug ("resetting hash tables to blank");
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
+	g_hash_table_remove_all (backend->priv->hash_strv);
 
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
@@ -1428,6 +1481,21 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 	/* don't wait, do this now */
 	pk_backend_finished_delay (backend);
 	return TRUE;
+}
+
+/**
+ * pk_backend_is_online:
+ **/
+gboolean
+pk_backend_is_online (PkBackend *backend)
+{
+	PkNetworkEnum state;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	state = pk_network_get_network_state (backend->priv->network);
+	if (pk_enums_contain (state, PK_NETWORK_ENUM_ONLINE)) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /**
@@ -1603,8 +1671,10 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
 	g_object_unref (backend->priv->inhibit);
+	g_object_unref (backend->priv->network);
 	g_hash_table_destroy (backend->priv->eulas);
 	g_hash_table_unref (backend->priv->hash_string);
+	g_hash_table_unref (backend->priv->hash_strv);
 	g_hash_table_unref (backend->priv->hash_pointer);
 
 	if (backend->priv->handle != NULL) {
@@ -1747,9 +1817,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
+	backend->priv->network = pk_network_new ();
 	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
 	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	/* monitor config files for changes */
