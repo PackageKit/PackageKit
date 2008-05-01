@@ -39,7 +39,6 @@
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
 #include "pk-time.h"
-#include "pk-inhibit.h"
 #include "pk-file-monitor.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
@@ -94,7 +93,6 @@ struct _PkBackendPrivate
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
-	PkInhibit		*inhibit;
 	PkFileMonitor		*file_monitor;
 	PkBackendFileChanged	 file_changed_func;
 	gpointer		 file_changed_data;
@@ -1269,12 +1267,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
-	/* remove or add the hal inhibit */
-	if (allow_cancel) {
-		pk_inhibit_remove (backend->priv->inhibit, backend);
-	} else {
-		pk_inhibit_add (backend->priv->inhibit, backend);
-	}
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
@@ -1451,9 +1443,6 @@ pk_backend_finished (PkBackend *backend)
 
 	/* we can't ever be re-used */
 	backend->priv->finished = TRUE;
-
-	/* remove any inhibit */
-	pk_inhibit_remove (backend->priv->inhibit, backend);
 
 	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
@@ -1670,7 +1659,6 @@ pk_backend_finalize (GObject *object)
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
-	g_object_unref (backend->priv->inhibit);
 	g_object_unref (backend->priv->network);
 	g_hash_table_destroy (backend->priv->eulas);
 	g_hash_table_unref (backend->priv->hash_string);
@@ -1818,7 +1806,6 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
 	backend->priv->network = pk_network_new ();
-	backend->priv->inhibit = pk_inhibit_new ();
 	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
