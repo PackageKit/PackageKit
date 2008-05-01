@@ -163,7 +163,7 @@ pk_inhibit_add (PkInhibit *inhibit, gpointer data)
 
 	for (i=0; i<inhibit->priv->array->len; i++) {
 		if (g_ptr_array_index (inhibit->priv->array, i) == data) {
-			pk_debug ("trying to add item %p already in array", data);
+			pk_warning ("trying to add item %p already in array", data);
 			return FALSE;
 		}
 	}
@@ -195,7 +195,7 @@ pk_inhibit_remove (PkInhibit *inhibit, gpointer data)
 			return ret;
 		}
 	}
-	pk_debug ("cannot find item %p", data);
+	pk_warning ("cannot find item %p", data);
 	return FALSE;
 }
 
