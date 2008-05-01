@@ -279,6 +279,15 @@ static PkEnumMatch enum_provides[] = {
 	{0, NULL}
 };
 
+static PkEnumMatch enum_network[] = {
+	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
+	{PK_NETWORK_ENUM_ONLINE,		"online"},
+	{PK_NETWORK_ENUM_SLOW,			"slow"},
+	{PK_NETWORK_ENUM_FAST,			"fast"},
+	{0, NULL}
+};
+
 static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
 	{PK_LICENSE_ENUM_GLIDE,			"Glide"},
@@ -618,6 +627,34 @@ const gchar *
 pk_exit_enum_to_text (PkExitEnum exit)
 {
 	return pk_enum_find_string (enum_exit, exit);
+}
+
+/**
+ * pk_network_enum_from_text:
+ * @network: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
+ */
+PkNetworkEnum
+pk_network_enum_from_text (const gchar *network)
+{
+	return pk_enum_find_value (enum_network, network);
+}
+
+/**
+ * pk_network_enum_to_text:
+ * @network: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
+ **/
+const gchar *
+pk_network_enum_to_text (PkNetworkEnum network)
+{
+	return pk_enum_find_string (enum_network, network);
 }
 
 /**

@@ -102,6 +102,7 @@ enum {
 	PK_ENGINE_LOCKED,
 	PK_ENGINE_TRANSACTION_LIST_CHANGED,
 	PK_ENGINE_REPO_LIST_CHANGED,
+	PK_ENGINE_NETWORK_STATE_CHANGED,
 	PK_ENGINE_RESTART_SCHEDULE,
 	PK_ENGINE_UPDATES_CHANGED,
 	PK_ENGINE_LAST_SIGNAL
@@ -253,6 +254,18 @@ pk_engine_get_tid (PkEngine *engine, gchar **tid, GError **error)
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
 
+	return TRUE;
+}
+
+/**
+ * pk_engine_get_network_state:
+ **/
+gboolean
+pk_engine_get_network_state (PkEngine *engine, gchar **state, GError **error)
+{
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+	//TODO: get the network state
+	*state = g_strdup (pk_network_enum_to_text (PK_NETWORK_ENUM_UNKNOWN));
 	return TRUE;
 }
 
@@ -454,6 +467,11 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	signals [PK_ENGINE_NETWORK_STATE_CHANGED] =
+		g_signal_new ("network-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1, G_TYPE_STRING);
 	signals [PK_ENGINE_UPDATES_CHANGED] =
 		g_signal_new ("updates-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

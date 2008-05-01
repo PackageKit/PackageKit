@@ -85,6 +85,9 @@ gboolean	 pk_engine_get_groups			(PkEngine	*engine,
 gboolean	 pk_engine_get_tid			(PkEngine	*engine,
 							 gchar		**tid,
 							 GError		**error);
+gboolean	 pk_engine_get_network_state		(PkEngine	*engine,
+							 gchar		**state,
+							 GError		**error);
 gboolean	 pk_engine_get_time_since_action	(PkEngine	*engine,
 							 const gchar	*role_text,
 							 guint		*seconds,
