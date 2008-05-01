@@ -3,16 +3,31 @@
 
 [Daemon]
 
-# Log transactions to the database
+# Should we log transactions to the database.
+#
 # default=yes
 TransactionLogging=true
 
+# Use NetworkManager where available. If disabled, then NM state will be ignored.
+#
+# default=yes
+UseNetworkManager=true
+
+# If NetworkManager is not available, then use the presence of a default
+# route to indicate a viable network connection.
+# If disabled, and no NM, then the network is assumed to be always online.
+#
+# default=yes
+UseNetworkHeuristic=true
+
 # Shut down the daemon after this many seconds idle. 0 means don't shutdown.
+#
 # default=300
 ShutdownTimeout=300
 
 # Default backend, as chosen in the configure script. This will be used where
 # no --backend="foo" option is given to the daemon.
+#
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@
 
