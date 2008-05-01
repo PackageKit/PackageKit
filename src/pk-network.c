@@ -47,6 +47,7 @@
 #include "pk-network-nm.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
+#include "pk-conf.h"
 
 static void     pk_network_class_init	(PkNetworkClass *klass);
 static void     pk_network_init		(PkNetwork      *network);
@@ -65,6 +66,7 @@ struct _PkNetworkPrivate
 	gboolean		 use_unix;
 	PkNetworkNm		*net_nm;
 	PkNetworkUnix		*net_unix;
+	PkConf			*conf;
 };
 
 enum {
@@ -153,8 +155,7 @@ static void
 pk_network_init (PkNetwork *network)
 {
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
-	network->priv->use_nm = TRUE;
-	network->priv->use_unix = TRUE;
+	network->priv->conf = pk_conf_new ();
 	network->priv->net_nm = pk_network_nm_new ();
 	g_signal_connect (network->priv->net_nm, "state-changed",
 			  G_CALLBACK (pk_network_nm_network_changed_cb), network);
@@ -162,9 +163,16 @@ pk_network_init (PkNetwork *network)
 	g_signal_connect (network->priv->net_unix, "state-changed",
 			  G_CALLBACK (pk_network_unix_network_changed_cb), network);
 
+	/* get the defaults from the config file */
+	network->priv->use_nm = pk_conf_get_bool (network->priv->conf, "UseNetworkManager");
+	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
+
 #if !PK_BUILD_NETWORKMANAGER
-	/* hardcode */
-	network->priv->use_nm = FALSE;
+	/* check we can actually use the default */
+	if (network->priv->use_nm) {
+		pk_warning ("UseNetworkManager true, but not built with NM support");
+		network->priv->use_nm = FALSE;
+	}
 #endif
 }
 
@@ -181,6 +189,7 @@ pk_network_finalize (GObject *object)
 	network = PK_NETWORK (object);
 
 	g_return_if_fail (network->priv != NULL);
+	g_object_unref (network->priv->conf);
 	g_object_unref (network->priv->net_nm);
 	g_object_unref (network->priv->net_unix);
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);
