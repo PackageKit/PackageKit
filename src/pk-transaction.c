@@ -888,11 +888,6 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	ret = pk_transaction_set_running (transaction);
-	if (ret) {
-		/* we start inhibited, it's up to the backed to
-		 * release early if a shutdown is possible */
-		pk_inhibit_add (transaction->priv->inhibit, transaction);
-	}
 	return ret;
 }
 
