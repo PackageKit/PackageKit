@@ -776,8 +776,11 @@ backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum 
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
-			    "update1;2.19.1-4.fc8;i386;fedora",
-			    "The first update");
+			    "evince;0.9.3-5.fc8;i386;installed",
+			    "PDF Document viewer");
+	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
+			    "scribus;1.3.4-1.fc8;i386;fedora",
+			    "Scribus is an desktop open source page layout program");
 	pk_backend_finished (backend);
 }
 
