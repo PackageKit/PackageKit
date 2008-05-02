@@ -277,6 +277,7 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
+	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
 	{0, NULL}
 };
 
