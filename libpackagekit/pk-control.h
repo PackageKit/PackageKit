@@ -69,6 +69,7 @@ struct _PkControlClass
 	void		(* transaction_list_changed)	(PkControl	*control);
 	void		(* updates_changed)		(PkControl	*control);
 	void		(* repo_list_changed)		(PkControl	*control);
+	void		(* network_state_changed)	(PkControl	*control);
 	void		(* restart_schedule)		(PkControl	*control);
 	void		(* locked)			(PkControl	*control,
 							 gboolean	 is_locked);
@@ -90,6 +91,7 @@ gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
 PkRoleEnum	 pk_control_get_actions			(PkControl	*control);
 PkFilterEnum	 pk_control_get_filters			(PkControl	*control);
 PkGroupEnum	 pk_control_get_groups			(PkControl	*control);
+PkNetworkEnum	 pk_control_get_network_state		(PkControl	*control);
 gboolean	 pk_control_get_backend_detail		(PkControl	*control,
 							 gchar		**name,
 							 gchar		**author,

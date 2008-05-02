@@ -434,6 +434,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _buildGroupDict(self):
         pkgGroups= {}
         cats = self.yumbase.comps.categories
+        if len(cats) == 0:
+            self.error(ERROR_GROUP_LIST_INVALID,'comps categories could not be loaded')
         for cat in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
                filter(lambda x: self.yumbase.comps.has_group(x),cat.groups))
@@ -888,7 +890,6 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.allow_cancel(False)
         self.percentage(0)
         self.status(STATUS_RUNNING)
-
         txmbrs = []
         already_warned = False
         for package in packages:
@@ -1059,7 +1060,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._check_for_reboot()
             if removedeps == False:
                 if len(self.yumbase.tsInfo) > 1:
-                    retmsg = 'package could not be removed,as other packages depend on it'
+                    retmsg = 'package could not be removed, as other packages depend on it'
                     self.error(ERROR_DEP_RESOLUTION_FAILED,retmsg)
                     return
 
@@ -1473,7 +1474,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.yumbase.doConfigSetup(errorlevel=0,debuglevel=0)     # Setup Yum Config
         self.yumbase.conf.throttle = "90%"                        # Set bandwidth throttle to 40%
         self.dnlCallback = DownloadCallback(self,showNames=True)  # Download callback
-        self.yumbase.repos.setProgressBar(self.dnlCallback)     # Setup the download callback class
+        self.yumbase.repos.setProgressBar(self.dnlCallback)       # Setup the download callback class
 
 class DownloadCallback(BaseMeter):
     """ Customized version of urlgrabber.progress.BaseMeter class """

@@ -74,9 +74,13 @@ pk_connection_changed_cb (PkConnection *pconnection, gboolean connected, gpointe
  * pk_monitor_locked_cb:
  **/
 static void
-pk_monitor_locked_cb (PkControl *control, gpointer data)
+pk_monitor_locked_cb (PkControl *control, gboolean is_locked, gpointer data)
 {
-	g_print ("locked\n");
+	if (is_locked) {
+		g_print ("locked\n");
+	} else {
+		g_print ("unlocked\n");
+	}
 }
 
 /**

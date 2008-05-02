@@ -129,6 +129,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
 	{PK_ERROR_ENUM_GROUP_NOT_FOUND,		"group-not-found"},
+	{PK_ERROR_ENUM_GROUP_LIST_INVALID,	"group-list-invalid"},
 	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
@@ -276,6 +277,15 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_network[] = {
+	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
+	{PK_NETWORK_ENUM_ONLINE,		"online"},
+	{PK_NETWORK_ENUM_SLOW,			"slow"},
+	{PK_NETWORK_ENUM_FAST,			"fast"},
 	{0, NULL}
 };
 
@@ -618,6 +628,34 @@ const gchar *
 pk_exit_enum_to_text (PkExitEnum exit)
 {
 	return pk_enum_find_string (enum_exit, exit);
+}
+
+/**
+ * pk_network_enum_from_text:
+ * @network: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
+ */
+PkNetworkEnum
+pk_network_enum_from_text (const gchar *network)
+{
+	return pk_enum_find_value (enum_network, network);
+}
+
+/**
+ * pk_network_enum_to_text:
+ * @network: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
+ **/
+const gchar *
+pk_network_enum_to_text (PkNetworkEnum network)
+{
+	return pk_enum_find_string (enum_network, network);
 }
 
 /**

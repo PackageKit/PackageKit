@@ -19,12 +19,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-dbus.h>
 
 static PkBackendDbus *dbus;
-static PkNetwork *network;
 
 #define PK_DBUS_BACKEND_SERVICE_YUM	"org.freedesktop.PackageKitYumBackend"
 
@@ -37,7 +35,6 @@ backend_initialize (PkBackend *backend)
 {
 	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_YUM);
 }
@@ -52,7 +49,6 @@ backend_destroy (PkBackend *backend)
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (dbus != NULL);
 	pk_debug ("FILTER: destroy");
-	g_object_unref (network);
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -186,7 +182,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (dbus != NULL);
 
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
@@ -216,7 +212,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	g_return_if_fail (dbus != NULL);
 
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -290,7 +286,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	g_return_if_fail (dbus != NULL);
 
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;

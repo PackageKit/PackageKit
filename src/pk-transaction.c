@@ -325,6 +325,13 @@ pk_transaction_allow_cancel_cb (PkBackend *backend, gboolean allow_cancel, PkTra
 	pk_debug ("AllowCancel now %i", allow_cancel);
 	transaction->priv->allow_cancel = allow_cancel;
 
+	/* remove or add the hal inhibit */
+	if (allow_cancel) {
+		pk_inhibit_remove (transaction->priv->inhibit, transaction);
+	} else {
+		pk_inhibit_add (transaction->priv->inhibit, transaction);
+	}
+
 	pk_debug ("emitting allow-interrpt %i", allow_cancel);
 	g_signal_emit (transaction, signals [PK_TRANSACTION_ALLOW_CANCEL], 0, allow_cancel);
 }
@@ -473,6 +480,9 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	} else {
 		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, FALSE, time);
 	}
+
+	/* remove any inhibit */
+	pk_inhibit_remove (transaction->priv->inhibit, transaction);
 
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
@@ -878,11 +888,6 @@ pk_transaction_run (PkTransaction *transaction)
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	ret = pk_transaction_set_running (transaction);
-	if (ret) {
-		/* we start inhibited, it's up to the backed to
-		 * release early if a shutdown is possible */
-		pk_inhibit_add (transaction->priv->inhibit, transaction);
-	}
 	return ret;
 }
 

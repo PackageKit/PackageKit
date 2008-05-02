@@ -127,6 +127,16 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	gsize len;
 	gchar *locale_temp;
 	static GPtrArray *locale_array = NULL;
+	const gchar *icon_name;
+	const gchar *summary;
+
+	/* can we optimise for the common case? */
+	icon_name = pk_extra_get_icon_name (extra, package_name);
+	summary = pk_extra_get_summary (extra, package_name);
+	if (icon_name != NULL || summary != NULL) {
+		g_print ("PackageName:\t%s\t[skipping]\n", package_name);
+		return;
+	}
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
@@ -172,11 +182,11 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 			/* save in order of priority */
 			if (comment != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, comment);
+				pk_extra_set_data_locale (extra, package_name, comment);
 			} else if (genericname != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, genericname);
+				pk_extra_set_data_locale (extra, package_name, genericname);
 			} else {
-				pk_extra_set_localised_detail (extra, package_name, name);
+				pk_extra_set_data_locale (extra, package_name, name);
 			}
 			g_free (comment);
 			g_free (genericname);
@@ -190,7 +200,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
 	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
-	pk_extra_set_package_detail (extra, package_name, icon, exec);
+	pk_extra_set_data_package (extra, package_name, icon, exec);
 	g_free (icon);
 	g_free (exec);
 

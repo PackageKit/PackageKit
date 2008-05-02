@@ -147,6 +147,17 @@ typedef enum {
 } PkExitEnum;
 
 /**
+ * PkNetworkEnum:
+ **/
+typedef enum {					     /* fso */
+	PK_NETWORK_ENUM_OFFLINE			= 0, /* 000 */
+	PK_NETWORK_ENUM_ONLINE			= 1, /* 001 */
+	PK_NETWORK_ENUM_SLOW			= 3, /* 011 */
+	PK_NETWORK_ENUM_FAST			= 5, /* 101 */
+	PK_NETWORK_ENUM_UNKNOWN			= 7  /* 111 */
+} PkNetworkEnum;
+
+/**
  * PkFilterEnum:
  *
  * The filter types
@@ -216,6 +227,7 @@ typedef enum {
 	PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 	PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
 	PK_ERROR_ENUM_GROUP_NOT_FOUND,
+	PK_ERROR_ENUM_GROUP_LIST_INVALID,
 	PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
 	PK_ERROR_ENUM_FILTER_INVALID,
 	PK_ERROR_ENUM_CREATE_THREAD_FAILED,
@@ -504,6 +516,9 @@ const gchar	*pk_freq_enum_to_text			(PkFreqEnum	 freq);
 
 PkExitEnum	 pk_exit_enum_from_text			(const gchar	*exit);
 const gchar	*pk_exit_enum_to_text			(PkExitEnum	 exit);
+
+PkNetworkEnum	 pk_network_enum_from_text		(const gchar	*network);
+const gchar	*pk_network_enum_to_text		(PkNetworkEnum	 network);
 
 PkStatusEnum	 pk_status_enum_from_text		(const gchar	*status);
 const gchar	*pk_status_enum_to_text			(PkStatusEnum	 status);

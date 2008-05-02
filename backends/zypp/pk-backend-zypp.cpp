@@ -1243,7 +1243,7 @@ backend_search_group_thread (PkBackend *backend)
 	const gchar *group;
 	PkFilterEnum filters;
 
-	group = pk_backend_get_string (backend, "group");
+	group = pk_backend_get_string (backend, "search");
 	filters = (PkFilterEnum) pk_backend_get_uint (backend, "filters");
 
 	if (group == NULL) {
