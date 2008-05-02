@@ -102,13 +102,10 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 		value = argv[i];
 		/* save the package name, and use it is the key */
 		if (pk_strequal (col, "package") && value != NULL) {
-pk_warning ("package=%s", argv[i]);
 			package = g_strdup (argv[i]);
 		} else if (pk_strequal (col, "icon") && value != NULL) {
-pk_warning ("icon_name=%s", argv[i]);
 			icon_name = g_strdup (argv[i]);
 		} else if (pk_strequal (col, "exec") && value != NULL) {
-pk_warning ("exec=%s", argv[i]);
 			exec = g_strdup (argv[i]);
 		}
 	}
