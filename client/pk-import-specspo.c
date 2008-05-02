@@ -122,7 +122,7 @@ pk_import_specspo_do_package (const gchar *package_name)
 				g_print (" %s", locale);
 //				g_print (" %s", trans);
 				pk_extra_set_locale (extra, locale);
-				pk_extra_set_localised_detail (extra, package_name, trans);
+				pk_extra_set_data_locale (extra, package_name, trans);
 			}
 		}
 	}
