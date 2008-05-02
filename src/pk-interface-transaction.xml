@@ -19,7 +19,7 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="recursive" direction="in"/>
     </method>
-    <method name="GetDescription">
+    <method name="GetDetails">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
     </method>

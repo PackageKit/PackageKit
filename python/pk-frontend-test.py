@@ -83,7 +83,7 @@ def desc(*args):
 	if len(args)!=1 or len(args[0])!=1:
 		print "desc only takes single arg"
 		raise PackageKitTransactionFailure
-	return p.GetDescription(args[0][0])
+	return p.GetDetails(args[0][0])
 
 def depends(*args):
 	if len(args)!=1 or len(args[0])!=1:

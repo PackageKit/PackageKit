@@ -186,8 +186,8 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->get_depends != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
 	}
-	if (desc->get_description != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_DESCRIPTION);
+	if (desc->get_details != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DETAILS);
 	}
 	if (desc->get_files != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_FILES);

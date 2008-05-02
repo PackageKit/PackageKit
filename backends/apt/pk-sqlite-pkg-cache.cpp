@@ -158,9 +158,9 @@ sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search
 	pk_backend_thread_create (backend, sqlite_search_packages_thread);
 }
 
-// sqlite_get_description_thread
+// sqlite_get_details_thread
 static gboolean
-sqlite_get_description_thread (PkBackend *backend)
+sqlite_get_details_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	const gchar *package_id;
@@ -204,12 +204,12 @@ sqlite_get_description_thread (PkBackend *backend)
 }
 
 /**
- * sqlite_get_description:
+ * sqlite_get_details:
  */
 extern "C++" void
-sqlite_get_description (PkBackend *backend, const gchar *package_id)
+sqlite_get_details (PkBackend *backend, const gchar *package_id)
 {
-	pk_backend_thread_create (backend, sqlite_get_description_thread);
+	pk_backend_thread_create (backend, sqlite_get_details_thread);
 	return;
 }
 

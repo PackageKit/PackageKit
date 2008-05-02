@@ -653,10 +653,10 @@
     </para>
   </sect1>
 
-  <sect1 id="methods-get-description">
+  <sect1 id="methods-get-details">
     <title>Get Description</title>
     <para>
-      GetDescription should return the description of that
+      GetDetails should return the description of that
       <literal>package_id</literal>.
     </para>
     <para>

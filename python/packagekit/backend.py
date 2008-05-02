@@ -397,9 +397,9 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_description(self, package):
+    def get_details(self, package):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

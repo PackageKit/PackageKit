@@ -267,12 +267,12 @@ class PackageKit(PackageKitDbusInterface):
 
 	@dbusException
 	@job_id
-	def GetDescription(self,package_id):
+	def GetDetails(self,package_id):
 		"""
 		Gets the Description of a given package_id.
 		Causes a 'Description' signal.
 		"""
-		return self.pk_iface.GetDescription(self.tid(),package_id)
+		return self.pk_iface.GetDetails(self.tid(),package_id)
 
 	@dbusException
 	@job_id

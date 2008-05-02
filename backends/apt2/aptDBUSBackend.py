@@ -298,9 +298,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    def GetDescription(self, pkg_id):
+    def GetDetails(self, pkg_id):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         '''
         pklog.info("Get description of %s" % pkg_id)
         self.StatusChanged(STATUS_INFO)

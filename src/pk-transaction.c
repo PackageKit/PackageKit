@@ -828,8 +828,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		desc->rollback (priv->backend, priv->cached_transaction_id);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		desc->get_description (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
+		desc->get_details (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		desc->get_files (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
@@ -1279,10 +1279,10 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 }
 
 /**
- * pk_transaction_get_description:
+ * pk_transaction_get_details:
  **/
 void
-pk_transaction_get_description (PkTransaction *transaction, const gchar *package_id,
+pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
 				DBusGMethodInvocation *context)
 {
 	gboolean ret;
@@ -1291,11 +1291,11 @@ pk_transaction_get_description (PkTransaction *transaction, const gchar *package
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetDescription method called: %s", package_id);
+	pk_debug ("GetDetails method called: %s", package_id);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_description == NULL) {
-		pk_debug ("Not implemented yet: GetDescription");
+	if (transaction->priv->backend->desc->get_details == NULL) {
+		pk_debug ("Not implemented yet: GetDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1326,7 +1326,7 @@ pk_transaction_get_description (PkTransaction *transaction, const gchar *package
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DESCRIPTION);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);

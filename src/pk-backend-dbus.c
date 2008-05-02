@@ -1046,10 +1046,10 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 }
 
 /**
- * pk_backend_dbus_get_description:
+ * pk_backend_dbus_get_details:
  **/
 gboolean
-pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	gboolean ret;
 	GError *error = NULL;
@@ -1060,7 +1060,7 @@ pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *packa
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDescription", &error,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDetails", &error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {

@@ -524,7 +524,7 @@ class PackageKitConaryBackend(PackageKitBaseBackend):
         self.update_detail(id,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
     @ExceptionHandler
-    def get_description(self, id):
+    def get_details(self, id):
         '''
         Print a detailed description for a given package
         '''

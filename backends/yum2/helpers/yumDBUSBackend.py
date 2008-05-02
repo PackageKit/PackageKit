@@ -973,7 +973,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doGetDescription(self, package):
+    def doGetDetails(self, package):
         '''
         Print a detailed description for a given package
         '''

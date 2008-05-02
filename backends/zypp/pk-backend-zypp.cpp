@@ -446,7 +446,7 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 }
 
 static gboolean
-backend_get_description_thread (PkBackend *backend)
+backend_get_details_thread (PkBackend *backend)
 {
 	const gchar *package_id;
 	PkPackageId *pi;
@@ -533,12 +533,12 @@ backend_get_description_thread (PkBackend *backend)
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	pk_backend_thread_create (backend, backend_get_description_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 static gboolean
@@ -1627,7 +1627,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,		/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

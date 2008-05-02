@@ -1756,7 +1756,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
 }
 
 /**
- * pk_client_get_description:
+ * pk_client_get_details:
  * @client: a valid #PkClient instance
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1767,7 +1767,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_get_description (PkClient *client, const gchar *package_id, GError **error)
+pk_client_get_details (PkClient *client, const gchar *package_id, GError **error)
 {
 	gboolean ret;
 
@@ -1789,7 +1789,7 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 	}
 
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_GET_DESCRIPTION;
+	client->priv->role = PK_ROLE_ENUM_GET_DETAILS;
 	client->priv->cached_package_id = g_strdup (package_id);
 
 	/* check to see if we have a valid proxy */
@@ -1797,7 +1797,7 @@ pk_client_get_description (PkClient *client, const gchar *package_id, GError **e
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetDescription", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (ret) {
@@ -2945,8 +2945,8 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_resolve (client, priv->cached_filters, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		ret = pk_client_rollback (client, priv->cached_transaction_id, error);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		ret = pk_client_get_description (client, priv->cached_package_id, error);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
+		ret = pk_client_get_details (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		ret = pk_client_get_files (client, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
@@ -3198,7 +3198,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * @url: the upstream URL of the package
 	 * @size: the size of the package in bytes
 	 *
-	 * The ::description signal is emitted when GetDescription() is called.
+	 * The ::description signal is emitted when GetDetails() is called.
 	 **/
 	signals [PK_CLIENT_DESCRIPTION] =
 		g_signal_new ("description",

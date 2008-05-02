@@ -1122,7 +1122,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package %s is not installed" % package)
 
-    def get_description(self,package):
+    def get_details(self,package):
         '''
         Print a detailed description for a given package
         '''

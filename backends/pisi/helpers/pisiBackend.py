@@ -161,7 +161,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
             self.__get_package(pkg.package)
 
-    def get_description(self, package_id):
+    def get_details(self, package_id):
         """ Prints a detailed description for a given package """
         self.allow_cancel(True)
         self.percentage(None)

@@ -671,14 +671,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
-    def GetDescription(self, package):
+    def GetDetails(self, package):
         '''
         Print a detailed description for a given package
         '''
-        pklog.info("GetDescription(%s)" % package)
-        self.doGetDescription(package)
+        pklog.info("GetDetails(%s)" % package)
+        self.doGetDetails(package)
 
-    def doGetDescription(self, package):
+    def doGetDetails(self, package):
         '''
         Should be replaced in the corresponding backend sub class
         '''

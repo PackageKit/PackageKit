@@ -62,13 +62,13 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 
 extern "C" void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	sqlite_get_description(backend,package_id);
+	sqlite_get_details(backend,package_id);
 }
 
 /**

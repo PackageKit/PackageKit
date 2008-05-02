@@ -1383,10 +1383,10 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static gboolean
-backend_get_description_thread (PkBackend *backend)
+backend_get_details_thread (PkBackend *backend)
 {
 	const gchar *package_id;
 	struct pkg	*pkg = NULL;
@@ -1430,13 +1430,13 @@ backend_get_description_thread (PkBackend *backend)
 }
 
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
 
-	pk_backend_thread_create (backend, backend_get_description_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -2224,7 +2224,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,				/* get_filters */
 	backend_get_cancel,				/* cancel */
 	backend_get_depends,				/* get_depends */
-	backend_get_description,			/* get_description */
+	backend_get_details,			/* get_details */
 	backend_get_files,				/* get_files */
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */

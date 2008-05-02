@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
+# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -11,9 +11,10 @@
 # (at your option) any later version.
 
 import sys
-import pisiBackend
 
-backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.get_description(sys.argv[1])
+from smartBackend import PackageKitSmartBackend
 
-sys.exit()
+package = sys.argv[1]
+backend = PackageKitSmartBackend(sys.argv[1:])
+backend.get_details(package)
+sys.exit(0)

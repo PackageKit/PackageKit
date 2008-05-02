@@ -116,7 +116,7 @@
           </row>
           <row>
             <entry>Get Description</entry>
-            <entry><literal>get-description.*</literal></entry>
+            <entry><literal>get-details.*</literal></entry>
           </row>
           <row>
             <entry>Get Files</entry>

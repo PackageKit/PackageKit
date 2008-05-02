@@ -71,9 +71,9 @@ try:
     if cmd == 'resolve' or cmd == 'all':
         print "Testing Resolve(FILTER_NONE,'yum')"
         iface.Resolve(FILTER_NONE,'yum')
-    if cmd == 'get-description' or cmd == 'all':
-        print "Testing GetDescription(PKG_ID)"
-        iface.GetDescription(PKG_ID)
+    if cmd == 'get-details' or cmd == 'all':
+        print "Testing GetDetails(PKG_ID)"
+        iface.GetDetails(PKG_ID)
     if cmd == 'get-files' or cmd == 'all':
         print "Testing GetFiles(PKG_ID)"
         iface.GetFiles(PKG_ID)
