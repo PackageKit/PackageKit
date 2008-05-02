@@ -209,6 +209,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 	switch (params->search_type)
 	{
 		case SEARCH_NAME:
+			if (!pkg->name)
+				return;
 			haystack = g_utf8_strdown (pkg->name, -1);
 			match = (g_strrstr (haystack, params->needle) != NULL);
 			g_free (haystack);
@@ -216,6 +218,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 				return;
 			break;
 		case SEARCH_DESCRIPTION:
+			if (!pkg->description)
+				return;
 			haystack = g_utf8_strdown (pkg->description, -1);
 			match = (g_strrstr (haystack, params->needle) != NULL);
 			g_free (haystack);
@@ -223,6 +227,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 				return;
 			break;
 		case SEARCH_TAG:
+			if (!pkg->tags)
+				return;
 			if (!g_strrstr (pkg->tags, params->needle))
 				return;
 			break;
