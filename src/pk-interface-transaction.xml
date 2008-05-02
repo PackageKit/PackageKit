@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node name="/">
-  <!-- This is not used yet, but this will be the new transaction interface in
-       PackageKit 0.2.0 -->
   <interface name="org.freedesktop.PackageKit.Transaction">
 
     <method name="AcceptEula">
