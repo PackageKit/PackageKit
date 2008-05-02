@@ -316,7 +316,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         res = self.yumbase.searchGenerator(searchlist,[key])
         fltlist = filters.split(';')
-        installed_nevra = [] # yum returns packages as available even when installed
+        seen_nevra = [] # yum returns packages as available even when installed
         pkg_list = [] # only do the second iteration on not installed pkgs
         package_list = [] #we can't do emitting as found if we are post-processing
 
@@ -324,14 +324,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg.repo.id == 'installed':
                 if self._do_extra_filtering(pkg,fltlist):
                     package_list.append((pkg,INFO_INSTALLED))
-                    installed_nevra.append(self._get_nevra(pkg))
+                    seen_nevra.append(self._get_nevra(pkg))
             else:
                 pkg_list.append(pkg)
         for pkg in pkg_list:
             nevra = self._get_nevra(pkg)
-            if nevra not in installed_nevra:
+            if nevra not in seen_nevra:
                 if self._do_extra_filtering(pkg,fltlist):
                     package_list.append((pkg,INFO_AVAILABLE))
+                    seen_nevra.append(self._get_nevra(pkg))
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
