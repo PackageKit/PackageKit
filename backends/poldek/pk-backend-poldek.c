@@ -1404,7 +1404,7 @@ backend_get_details_thread (PkBackend *backend)
 		pkgu = pkg_uinf (pkg);
 
 		if (pkgu) {
-			pk_backend_description (backend,
+			pk_backend_details (backend,
 						package_id,
 						pkguinf_get (pkgu, PKGUINF_LICENSE),
 						PK_GROUP_ENUM_OTHER,
@@ -1413,7 +1413,7 @@ backend_get_details_thread (PkBackend *backend)
 						pkg->size);
 			pkguinf_free (pkgu);
 		} else {
-			pk_backend_description (backend,
+			pk_backend_details (backend,
 						package_id,
 						"",
 						PK_GROUP_ENUM_OTHER,

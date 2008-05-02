@@ -769,7 +769,7 @@ pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("%s\n", _("Could not find a description for this package"));
+		g_print ("%s\n", _("Could not find details for this package"));
 		return FALSE;
 	}
 	ret = pk_client_get_details (client, package_id, error);
@@ -855,10 +855,10 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 }
 
 /**
- * pk_console_description_cb:
+ * pk_console_details_cb:
  **/
 static void
-pk_console_description_cb (PkClient *client, const gchar *package_id,
+pk_console_details_cb (PkClient *client, const gchar *package_id,
 			   const gchar *license, PkGroupEnum group,
 			   const gchar *description, const gchar *url,
 			   gulong size, gpointer data)
@@ -1231,8 +1231,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (client, "description",
-			  G_CALLBACK (pk_console_description_cb), NULL);
+	g_signal_connect (client, "details",
+			  G_CALLBACK (pk_console_details_cb), NULL);
 	g_signal_connect (client, "files",
 			  G_CALLBACK (pk_console_files_cb), NULL);
 	g_signal_connect (client, "repo-signature-required",
@@ -1446,7 +1446,7 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
-			g_print (_("You need to specify a package to find the description for"));
+			g_print (_("You need to specify a package to find the details for"));
 			goto out;
 		}
 		ret = pk_console_get_details (client, value, &error);

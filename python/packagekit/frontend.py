@@ -63,8 +63,8 @@ class PackageKit(PackageKitDbusInterface):
 			self.Package(args[0],args[1],args[2],args[3])
 		elif kwargs['member'] == "UpdateDetail":
 			self.UpdateDetail(args[0],args[1],args[2],args[3],args[4],args[5],args[6])
-		elif kwargs['member'] == "Description":
-			self.Description(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7])
+		elif kwargs['member'] == "Details":
+			self.Details(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7])
 		elif kwargs['member'] == "ErrorCode":
 			self.ErrorCode(args[0],args[1],args[2])
 		elif kwargs['member'] == "RequireRestart":
@@ -122,7 +122,7 @@ class PackageKit(PackageKitDbusInterface):
 			 ):
 		pass
 
-	def Description(self,
+	def Details(self,
 			jid,        # Job ID
 			package_id,
 			license,
@@ -224,7 +224,6 @@ class PackageKit(PackageKitDbusInterface):
 		Lists all packages in groups matching 'pattern'.
 		'filter' could be 'installed', a repository name, or 'none'.
 		Causes 'Package' signals for each package found.
-		(description is a guess, since this not yet supported in yum backend, and maybe others)
 		"""
 		return self.pk_iface.SearchGroup(self.tid(),filter,pattern)
 
@@ -242,8 +241,7 @@ class PackageKit(PackageKitDbusInterface):
 	@job_id
 	def GetDepends(self,package_id,recursive=False):
 		"""
-		Lists package dependancies?
-		(description is a guess, since this doesn't seem to work for me)
+		Lists package dependancies
 		"""
 		return self.pk_iface.GetDepends(self.tid(),package_id,recursive)
 
@@ -251,8 +249,7 @@ class PackageKit(PackageKitDbusInterface):
 	@job_id
 	def GetRequires(self,package_id,recursive):
 		"""
-		Lists package dependancies?
-		(description is a guess, since this not doesn't seem to work for me)
+		Lists package requires
 		"""
 		return self.pk_iface.GetRequires(self.tid(),package_id,recursive)
 
@@ -261,7 +258,6 @@ class PackageKit(PackageKitDbusInterface):
 	def GetUpdateDetail(self,package_id):
 		"""
 		More details about an update.
-		(description is a guess, since this not yet supported in yum backend, and maybe others)
 		"""
 		return self.pk_iface.GetUpdateDetail(self.tid(),package_id)
 
@@ -269,8 +265,8 @@ class PackageKit(PackageKitDbusInterface):
 	@job_id
 	def GetDetails(self,package_id):
 		"""
-		Gets the Description of a given package_id.
-		Causes a 'Description' signal.
+		Gets the Details of a given package_id.
+		Causes a 'Details' signal.
 		"""
 		return self.pk_iface.GetDetails(self.tid(),package_id)
 

@@ -144,16 +144,16 @@ pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gch
 }
 
 /**
- * pk_backend_dbus_description_cb:
+ * pk_backend_dbus_details_cb:
  **/
 static void
-pk_backend_dbus_description_cb (DBusGProxy *proxy, const gchar *package_id,
+pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
 				const gchar *license, const gchar *group_text,
 				const gchar *detail, const gchar *url,
 				guint64 size, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_description (backend_dbus->priv->backend, package_id,
+	pk_backend_details (backend_dbus->priv->backend, package_id,
 				license, pk_group_enum_from_text (group_text), detail, url, size);
 }
 
@@ -329,8 +329,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
 					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
-	dbus_g_proxy_disconnect_signal (proxy, "Description",
-					G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Details",
+					G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
@@ -388,7 +388,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Description",
+	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Files",
@@ -428,8 +428,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Description",
-				     G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
@@ -1370,7 +1370,7 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
-	/* Description */
+	/* Details */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,

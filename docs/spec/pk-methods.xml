@@ -654,9 +654,9 @@
   </sect1>
 
   <sect1 id="methods-get-details">
-    <title>Get Description</title>
+    <title>Get Details</title>
     <para>
-      GetDetails should return the description of that
+      GetDetails should return all the details about a specific
       <literal>package_id</literal>.
     </para>
     <para>
@@ -683,7 +683,7 @@
       <literal>Progress</literal>,
       <literal>Status</literal> and
       <literal>Error</literal> and
-      <literal>Description</literal>.
+      <literal>Details</literal>.
     </para>
   </sect1>
 

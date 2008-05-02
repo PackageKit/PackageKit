@@ -990,7 +990,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 	}
     }
 
-    pk_backend_description (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+    pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
     pk_backend_finished (backend);
 }
 

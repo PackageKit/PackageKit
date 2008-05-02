@@ -497,7 +497,7 @@ backend_get_details_thread (PkBackend *backend)
 		if (package.isSystem ()){
 			zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (package.name (), package.edition ());
 
-			pk_backend_description (backend,
+			pk_backend_details (backend,
 				package_id,			  // package_id
 				rpmHeader->tag_license ().c_str (),     // const gchar *license
 				group,				  // PkGroupEnum group
@@ -506,7 +506,7 @@ backend_get_details_thread (PkBackend *backend)
 				(gulong)rpmHeader->tag_archivesize ());	// gulong size
 
 		} else {
-			pk_backend_description (backend,
+			pk_backend_details (backend,
 				package_id,
 				package.lookupStrAttribute (zypp::sat::SolvAttr::license).c_str (), //pkg->license ().c_str (),
 				group,

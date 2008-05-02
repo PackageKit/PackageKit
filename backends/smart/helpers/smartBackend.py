@@ -215,7 +215,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if not pkgsize:
             pkgsize = "unknown"
 
-        self.description(packageid, "unknown", "unknown", description, url,
+        self.details(packageid, "unknown", "unknown", description, url,
                 pkgsize)
 
     @needs_cache

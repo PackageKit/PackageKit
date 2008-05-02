@@ -115,7 +115,7 @@
             <entry><literal>get-update-detail.*</literal></entry>
           </row>
           <row>
-            <entry>Get Description</entry>
+            <entry>Get Details</entry>
             <entry><literal>get-details.*</literal></entry>
           </row>
           <row>
@@ -205,8 +205,8 @@
             <entry><literal>package_id[tab]status[tab]summary</literal></entry>
           </row>
           <row>
-            <entry>Description</entry>
-            <entry><literal>description[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes</literal></entry>
+            <entry>Details</entry>
+            <entry><literal>details[tab]package_id[tab]group[tab]detail[tab]url[tab]size_in_bytes</literal></entry>
           </row>
           <row>
             <entry>Files</entry>

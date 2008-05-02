@@ -302,7 +302,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-get-details functionality
         '''
-        pklog.info("Get description of %s" % pkg_id)
+        pklog.info("Get details of %s" % pkg_id)
         self.StatusChanged(STATUS_INFO)
         self.NoPercentageUpdates()
         self.AllowCancel(False)
@@ -331,7 +331,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         p = re.compile(r'\s\s+', re.MULTILINE)
         desc = p.sub('\n', desc)
         #FIXME: group and licence information missing
-        self.Description(pkg_id, 'unknown', 'unknown', desc,
+        self.Details(pkg_id, 'unknown', 'unknown', desc,
                          pkg.homepage, pkg.packageSize)
         self.Finished(EXIT_SUCCESS)
 

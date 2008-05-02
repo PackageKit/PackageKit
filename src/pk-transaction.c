@@ -108,7 +108,7 @@ struct PkTransactionPrivate
 	PkProvidesEnum		 cached_provides;
 
 	guint			 signal_allow_cancel;
-	guint			 signal_description;
+	guint			 signal_details;
 	guint			 signal_error_code;
 	guint			 signal_files;
 	guint			 signal_finished;
@@ -126,7 +126,7 @@ struct PkTransactionPrivate
 enum {
 	PK_TRANSACTION_ALLOW_CANCEL,
 	PK_TRANSACTION_CALLER_ACTIVE_CHANGED,
-	PK_TRANSACTION_DESCRIPTION,
+	PK_TRANSACTION_DETAILS,
 	PK_TRANSACTION_ERROR_CODE,
 	PK_TRANSACTION_FILES,
 	PK_TRANSACTION_FINISHED,
@@ -352,10 +352,10 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
 }
 
 /**
- * pk_transaction_description_cb:
+ * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
+pk_transaction_details_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
 			       const gchar *detail, const gchar *url,
 			       guint64 size, PkTransaction *transaction)
 {
@@ -366,9 +366,9 @@ pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, cons
 
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting description %s, %s, %s, %s, %s, %ld",
+	pk_debug ("emitting details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, group_text, detail, url, (long int) size);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_DESCRIPTION], 0,
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0,
 		       package_id, license, group_text, detail, url, size);
 }
 
@@ -486,7 +486,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_description);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
@@ -755,9 +755,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_allow_cancel =
 		g_signal_connect (transaction->priv->backend, "allow-cancel",
 				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
-	transaction->priv->signal_description =
-		g_signal_connect (transaction->priv->backend, "description",
-				  G_CALLBACK (pk_transaction_description_cb), transaction);
+	transaction->priv->signal_details =
+		g_signal_connect (transaction->priv->backend, "details",
+				  G_CALLBACK (pk_transaction_details_cb), transaction);
 	transaction->priv->signal_error_code =
 		g_signal_connect (transaction->priv->backend, "error-code",
 				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
@@ -2920,8 +2920,8 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals [PK_TRANSACTION_DESCRIPTION] =
-		g_signal_new ("description",
+	signals [PK_TRANSACTION_DETAILS] =
+		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING,

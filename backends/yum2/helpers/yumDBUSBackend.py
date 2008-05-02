@@ -264,7 +264,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Signals ( backend -> engine -> client )
 #
 
-    #FIXME: _show_description and _show_package wrap Description and
+    #FIXME: _show_details and _show_package wrap Details and
     #       Package so that the encoding can be fixed. This is ugly.
     #       we could probably use a decorator to do it instead.
 
@@ -280,9 +280,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         summary = self._to_unicode(pkg.summary)
         self.Package(status,id,summary)
 
-    def _show_description(self,id,license,group,desc,url,bytes):
+    def _show_details(self,id,license,group,desc,url,bytes):
         '''
-        Send 'description' signal
+        Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param license: The license of the package
         @param group: The enumerated group
@@ -292,7 +292,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._to_unicode(desc)
-        self.Description(id,license,group,desc,url,bytes)
+        self.Details(id,license,group,desc,url,bytes)
 
     def _show_update_detail(self,pkg,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc):
         '''
@@ -975,7 +975,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     @async
     def doGetDetails(self, package):
         '''
-        Print a detailed description for a given package
+        Print a detailed details for a given package
         '''
         self._check_init()
         self._lock_yum()
@@ -990,7 +990,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return
 
         if pkg:
-            self._show_package_description(pkg)
+            self._show_package_details(pkg)
         else:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
@@ -1104,7 +1104,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showPkg:
                             self._show_package(pkg, INFO_INSTALLED)
                         if showDesc:
-                            self._show_package_description(pkg)
+                            self._show_package_details(pkg)
 
 
         # Now show available packages.
@@ -1118,7 +1118,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showPkg:
                             self._show_package(pkg, INFO_AVAILABLE)
                         if showDesc:
-                            self._show_package_description(pkg)
+                            self._show_package_details(pkg)
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
@@ -1535,7 +1535,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
 
-    def _show_package_description(self,pkg):
+    def _show_package_details(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
@@ -1543,7 +1543,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = desc.replace('\n',' ')
         desc = desc.replace('__PARAGRAPH_SEPARATOR__','\n')
 
-        self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+        self._show_details(id, pkg.license, "unknown", desc, pkg.url,
                              pkg.size)
 
     def _getEVR(self,idver):
@@ -1807,7 +1807,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         urls = {'bugzilla': [], 'cve': [], 'vendor': []}
         notice = self.updateMetadata.get_notice((pkg.name, pkg.version, pkg.release))
         if notice:
-            # Update Description
+            # Update Details
             desc = notice['description']
 
             # Update References (Bugzilla,CVE ...)

@@ -156,7 +156,7 @@
     <signal name="CallerActiveChanged">
       <arg type="b" name="is_active" direction="out"/>
     </signal>
-    <signal name="Description">
+    <signal name="Details">
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="license" direction="out"/>
       <arg type="s" name="group" direction="out"/>

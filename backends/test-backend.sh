@@ -9,7 +9,7 @@ echo "get deps $package_id"
 ./$backend/helpers/get-deps.py $package_id 
 echo "exitcode=$?"
 
-echo "get description $package_id"
+echo "get details $package_id"
 ./$backend/helpers/get-details.py $package_id
 echo "exitcode=$?"
 

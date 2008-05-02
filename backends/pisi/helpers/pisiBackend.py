@@ -176,7 +176,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 group = GROUP_UNKNOWN
 
-            self.description("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
+            self.details("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
                             pkg.license,
                             group,
                             pkg.description,

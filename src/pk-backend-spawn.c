@@ -126,7 +126,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
-	} else if (pk_strequal (command, "description")) {
+	} else if (pk_strequal (command, "details")) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -144,7 +144,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_description (backend_spawn->priv->backend, sections[1], sections[2],
+		pk_backend_details (backend_spawn->priv->backend, sections[1], sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
 	} else if (pk_strequal (command, "files")) {

@@ -96,7 +96,7 @@ struct _PkClientPrivate
 };
 
 typedef enum {
-	PK_CLIENT_DESCRIPTION,
+	PK_CLIENT_DETAILS,
 	PK_CLIENT_ERROR_CODE,
 	PK_CLIENT_FILES,
 	PK_CLIENT_FINISHED,
@@ -539,10 +539,10 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
 }
 
 /**
- * pk_client_description_cb:
+ * pk_client_details_cb:
  */
 static void
-pk_client_description_cb (DBusGProxy  *proxy,
+pk_client_details_cb (DBusGProxy  *proxy,
 			  const gchar *package_id,
 			  const gchar *license,
 			  const gchar *group_text,
@@ -555,9 +555,9 @@ pk_client_description_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
+	pk_debug ("emit details %s, %s, %i, %s, %s, %ld",
 		  package_id, license, group, description, url, (long int) size);
-	g_signal_emit (client , signals [PK_CLIENT_DESCRIPTION], 0,
+	g_signal_emit (client , signals [PK_CLIENT_DETAILS], 0,
 		       package_id, license, group, description, url, size);
 }
 
@@ -1761,7 +1761,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
- * Det a description of a package, so more information can be obtained for GUI
+ * Get details of a package, so more information can be obtained for GUI
  * or command line tools.
  *
  * Return value: %TRUE if the daemon queued the transaction
@@ -3033,7 +3033,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Description",
+	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
 				 G_TYPE_INVALID);
@@ -3063,8 +3063,8 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 				     G_CALLBACK (pk_client_transaction_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
 				     G_CALLBACK (pk_client_update_detail_cb), client, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Description",
-				     G_CALLBACK (pk_client_description_cb), client, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_client_details_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_client_files_cb), client, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
@@ -3190,7 +3190,7 @@ pk_client_class_init (PkClientClass *klass)
 			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING);
 	/**
-	 * PkClient::description:
+	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
 	 * @package_id: the package_id of the package
 	 * @group: the #PkGroupEnum of the package, e.g. PK_GROUP_ENUM_EDUCATION
@@ -3198,12 +3198,12 @@ pk_client_class_init (PkClientClass *klass)
 	 * @url: the upstream URL of the package
 	 * @size: the size of the package in bytes
 	 *
-	 * The ::description signal is emitted when GetDetails() is called.
+	 * The ::details signal is emitted when GetDetails() is called.
 	 **/
-	signals [PK_CLIENT_DESCRIPTION] =
-		g_signal_new ("description",
+	signals [PK_CLIENT_DETAILS] =
+		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkClientClass, description),
+			      G_STRUCT_OFFSET (PkClientClass, details),
 			      NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
 			      G_TYPE_STRING, G_TYPE_UINT64);
@@ -3410,8 +3410,8 @@ pk_client_disconnect_proxy (PkClient *client)
 				        G_CALLBACK (pk_client_package_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Transaction",
 				        G_CALLBACK (pk_client_transaction_cb), client);
-	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Description",
-				        G_CALLBACK (pk_client_description_cb), client);
+	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Details",
+				        G_CALLBACK (pk_client_details_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "Files",
 				        G_CALLBACK (pk_client_files_cb), client);
 	dbus_g_proxy_disconnect_signal (client->priv->proxy, "RepoSignatureRequired",
@@ -3566,7 +3566,7 @@ pk_client_init (PkClient *client)
 	dbus_g_object_register_marshaller (g_cclosure_marshal_VOID__BOOLEAN,
 					   G_TYPE_NONE, G_TYPE_BOOLEAN, G_TYPE_INVALID);
 
-	/* Description */
+	/* Details */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,

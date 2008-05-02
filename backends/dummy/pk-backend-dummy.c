@@ -141,7 +141,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_description (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 "Scribus is an desktop open source page layöut program with "
 "the aim of producing commercial grade output in PDF and "
 "Postscript, primarily, though not exclusively for Linux.\n"

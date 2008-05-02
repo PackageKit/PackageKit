@@ -105,7 +105,7 @@ struct _PkClientClass
 							 const gchar	*cve_url,
 							 PkRestartEnum	 restart,
 							 const gchar	*update_text);
-	void		(* description)			(PkClient	*client,
+	void		(* details)			(PkClient	*client,
 							 const gchar	*package_id,
 							 const gchar	*license,
 							 PkGroupEnum	 group,
