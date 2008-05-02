@@ -158,9 +158,9 @@ sqlite_search_name (PkBackend *backend, const gchar *filter, const gchar *search
 	pk_backend_thread_create (backend, sqlite_search_packages_thread);
 }
 
-// sqlite_get_description_thread
+// sqlite_get_details_thread
 static gboolean
-sqlite_get_description_thread (PkBackend *backend)
+sqlite_get_details_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	const gchar *package_id;
@@ -188,7 +188,7 @@ sqlite_get_description_thread (PkBackend *backend)
 	if (res!=SQLITE_OK)
 		pk_error("sqlite error during select prepare: %s", sqlite3_errmsg(db));
 	res = sqlite3_step(package);
-	pk_backend_description(backend,pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0);
+	pk_backend_details(backend,pi->name, "unknown", PK_GROUP_ENUM_OTHER,(const gchar*)sqlite3_column_text(package,0),"",0);
 	res = sqlite3_step(package);
 	if (res==SQLITE_ROW)
 		pk_error("multiple matches for that package!");
@@ -204,12 +204,12 @@ sqlite_get_description_thread (PkBackend *backend)
 }
 
 /**
- * sqlite_get_description:
+ * sqlite_get_details:
  */
 extern "C++" void
-sqlite_get_description (PkBackend *backend, const gchar *package_id)
+sqlite_get_details (PkBackend *backend, const gchar *package_id)
 {
-	pk_backend_thread_create (backend, sqlite_get_description_thread);
+	pk_backend_thread_create (backend, sqlite_get_details_thread);
 	return;
 }
 

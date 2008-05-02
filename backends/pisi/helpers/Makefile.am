@@ -6,7 +6,7 @@ NULL =
 dist_helper_DATA = 			\
 	get-depends.py			\
 	get-files.py			\
-	get-description.py		\
+	get-details.py			\
 	get-repo-list.py 		\
 	get-requires.py			\
 	get-updates.py			\

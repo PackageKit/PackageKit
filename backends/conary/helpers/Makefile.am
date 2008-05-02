@@ -16,7 +16,7 @@ dist_helper_DATA = 			\
 	remove.py			\
 	resolve.py			\
 	update-system.py		\
-	get-description.py		\
+	get-details.py			\
 	get-files.py			\
 	conaryBackend.py		\
 	conaryCallback.py		\

@@ -209,6 +209,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 	switch (params->search_type)
 	{
 		case SEARCH_NAME:
+			if (!pkg->name)
+				return;
 			haystack = g_utf8_strdown (pkg->name, -1);
 			match = (g_strrstr (haystack, params->needle) != NULL);
 			g_free (haystack);
@@ -216,6 +218,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 				return;
 			break;
 		case SEARCH_DESCRIPTION:
+			if (!pkg->description)
+				return;
 			haystack = g_utf8_strdown (pkg->description, -1);
 			match = (g_strrstr (haystack, params->needle) != NULL);
 			g_free (haystack);
@@ -223,6 +227,8 @@ pk_opkg_package_list_cb (opkg_t *opkg, opkg_package_t *pkg, void *data)
 				return;
 			break;
 		case SEARCH_TAG:
+			if (!pkg->tags)
+				return;
 			if (!g_strrstr (pkg->tags, params->needle))
 				return;
 			break;
@@ -309,6 +315,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 	params->filters = filters;
 	params->search_type = SEARCH_DESCRIPTION;
 	params->needle = g_utf8_strdown (search, -1);
+	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
 	pk_backend_thread_create (backend, backend_search_thread);
@@ -328,6 +335,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	params->filters = filters;
 	params->search_type = SEARCH_TAG;
 	params->needle = g_strdup_printf ("group::%s", search);
+	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
 	pk_backend_thread_create (backend, backend_search_thread);
@@ -440,7 +448,7 @@ backend_update_system_thread (PkBackend *backend)
 {
 	gint err;
 
-	opkg_upgrade_all (opkg, pk_opkg_progress_cb, backend);
+	err = opkg_upgrade_all (opkg, pk_opkg_progress_cb, backend);
 
 	if (err)
 		opkg_unknown_error (backend, err, "Upgrading system");
@@ -574,7 +582,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	NULL,					/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

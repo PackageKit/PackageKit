@@ -127,9 +127,9 @@ class PackageKitBaseBackend:
         print "data\t%s" % (data)
         sys.stdout.flush()
 
-    def description(self,id,license,group,desc,url,bytes):
+    def details(self,id,license,group,desc,url,bytes):
         '''
-        Send 'description' signal
+        Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param license: The license of the package
         @param group: The enumerated group
@@ -137,7 +137,7 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         '''
-        print >> sys.stdout,"description\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
+        print >> sys.stdout,"details\t%s\t%s\t%s\t%s\t%s\t%ld" % (id,license,group,desc,url,bytes)
         sys.stdout.flush()
 
     def files(self, id, file_list):
@@ -397,9 +397,9 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def get_description(self, package):
+    def get_details(self, package):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")

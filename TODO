@@ -2,22 +2,10 @@
 
 * Make PkMessages into proper enumerated types with localised descriptions
 
-* Add a way to import GPG keys for unsigned packages
-  In fedora, if you add a signed repo you have to agree to the GPG key.
-
 *** Timeframe: 0.2.0 ***
-
-* Make the dbus interface sane
-  Preview available in src/pk-interface-transaction.xml
-
-* Make installing firmware with udev possible
-  http://lists.freedesktop.org/archives/packagekit/2008-March/002430.html
 
 * Enable GetUpdateDetail to handle arrays for 'updates' and 'obsoletes'
   Until then, use a space to delimit package_id's
-
-* Add the GetPackages(filter) method to get the complete package list
-  Then add a group menu item for this in pk-application
 
 * Make one-click installs work
 
@@ -30,9 +18,6 @@
   testing.
 
 *** Timeframe: Sometime in the future ***
-
-* Split up PolicyKit install into different types
-  Have different permissions for signed and unsigned repos.
 
 * Fix ServicePack to work correctly:
   http://lists.freedesktop.org/archives/packagekit/2008-March/002434.html

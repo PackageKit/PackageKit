@@ -267,7 +267,7 @@ backend_install_file_thread (PkBackend *backend)
 }
 
 static gboolean
-backend_get_description_thread (PkBackend *backend)
+backend_get_details_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	PackageSearch *ps;
@@ -300,7 +300,7 @@ backend_get_description_thread (PkBackend *backend)
 	}
 	ps = (PackageSearch*) list->data;
 
-	pk_backend_description (backend, package_id, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
+	pk_backend_details (backend, package_id, "unknown", PK_GROUP_ENUM_OTHER, ps->description, "", 0);
 
 	pk_package_id_free (pi);
 	box_db_repos_package_list_free (list);
@@ -458,12 +458,12 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	pk_backend_thread_create (backend, backend_get_description_thread);
+	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 
 /**
@@ -668,7 +668,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,		/* get_details */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

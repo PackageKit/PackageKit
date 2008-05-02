@@ -10,7 +10,7 @@ dist_helper_DATA = 			\
 	search-group.py			\
 	search-file.py			\
 	get-depends.py			\
-	get-description.py		\
+	get-details.py			\
 	get-repo-list.py		\
 	get-requires.py			\
 	get-update-detail.py		\

@@ -105,7 +105,7 @@ struct _PkClientClass
 							 const gchar	*cve_url,
 							 PkRestartEnum	 restart,
 							 const gchar	*update_text);
-	void		(* description)			(PkClient	*client,
+	void		(* details)			(PkClient	*client,
 							 const gchar	*package_id,
 							 const gchar	*license,
 							 PkGroupEnum	 group,
@@ -253,7 +253,7 @@ gboolean	 pk_client_what_provides		(PkClient	*client,
 							 const gchar	*search,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_client_get_description		(PkClient	*client,
+gboolean	 pk_client_get_details		(PkClient	*client,
 							 const gchar	*package_id,
 							 GError		**error);
 gboolean	 pk_client_get_files			(PkClient	*client,

@@ -84,7 +84,7 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
 	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
-	{PK_ROLE_ENUM_GET_DESCRIPTION,		"get-description"},
+	{PK_ROLE_ENUM_GET_DETAILS,		"get-details"},
 	{PK_ROLE_ENUM_GET_FILES,		"get-files"},
 	{PK_ROLE_ENUM_GET_PACKAGES,		"get-packages"},
 	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},

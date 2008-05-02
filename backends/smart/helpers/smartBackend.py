@@ -165,7 +165,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         for package in packages:
             if self._passes_filters(package, filters):
                 info = package.loaders.keys()[0].getInfo(package)
-                if searchstring in info.getDescription():
+                if searchstring in info.GetDetails():
                     self._show_package(package)
 
     def refresh_cache(self):
@@ -174,7 +174,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.saveSysConf()
 
     @needs_cache
-    def get_description(self, packageid):
+    def get_details(self, packageid):
         ratio, results, suggestions = self._search_packageid(packageid)
 
         packages = self._process_search_results(results)
@@ -192,7 +192,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         info = infos[0]
 
         version, arch = package.version.split('@')
-        description = info.getDescription()
+        description = info.GetDetails()
         description = description.replace("\n\n", ";")
         description = description.replace("\n", " ")
         urls = info.getReferenceURLs()
@@ -215,7 +215,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         if not pkgsize:
             pkgsize = "unknown"
 
-        self.description(packageid, "unknown", "unknown", description, url,
+        self.details(packageid, "unknown", "unknown", description, url,
                 pkgsize)
 
     @needs_cache
