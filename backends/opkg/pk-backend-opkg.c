@@ -440,7 +440,7 @@ backend_update_system_thread (PkBackend *backend)
 {
 	gint err;
 
-	opkg_upgrade_all (opkg, pk_opkg_progress_cb, backend);
+	err = opkg_upgrade_all (opkg, pk_opkg_progress_cb, backend);
 
 	if (err)
 		opkg_unknown_error (backend, err, "Upgrading system");
