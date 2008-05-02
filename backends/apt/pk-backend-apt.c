@@ -229,7 +229,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,		/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

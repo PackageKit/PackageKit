@@ -39,7 +39,7 @@ class pkt(PackageKit):
 	def Package(self,jid,value,name,summary):
 		print "Package: %s - %s"%(name,summary)
 
-	def Description(self,jid,package_id,license,group,detail,url,size,file_list):
+	def Details(self,jid,package_id,license,group,detail,url,size,file_list):
 		print "Package: %s" % package_id
 		print "  %s" % url
 		print "  %s" % detail
@@ -83,7 +83,7 @@ def desc(*args):
 	if len(args)!=1 or len(args[0])!=1:
 		print "desc only takes single arg"
 		raise PackageKitTransactionFailure
-	return p.GetDescription(args[0][0])
+	return p.GetDetails(args[0][0])
 
 def depends(*args):
 	if len(args)!=1 or len(args[0])!=1:

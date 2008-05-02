@@ -108,7 +108,7 @@ void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_get_description		(PkTransaction	*transaction,
+void		 pk_transaction_get_details		(PkTransaction	*transaction,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,

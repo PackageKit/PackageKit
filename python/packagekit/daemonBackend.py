@@ -243,8 +243,8 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssst')
-    def Description(self, package_id, license, group, detail, url, size):
-        pklog.info("Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
+    def Details(self, package_id, license, group, detail, url, size):
+        pklog.info("Details (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -671,14 +671,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
-    def GetDescription(self, package):
+    def GetDetails(self, package):
         '''
-        Print a detailed description for a given package
+        Print a detailed details for a given package
         '''
-        pklog.info("GetDescription(%s)" % package)
-        self.doGetDescription(package)
+        pklog.info("GetDetails(%s)" % package)
+        self.doGetDetails(package)
 
-    def doGetDescription(self, package):
+    def doGetDetails(self, package):
         '''
         Should be replaced in the corresponding backend sub class
         '''

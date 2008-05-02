@@ -95,7 +95,7 @@ gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
-gboolean	 pk_backend_dbus_get_description	(PkBackendDbus	*backend_dbus,
+gboolean	 pk_backend_dbus_get_details	(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
 gboolean	 pk_backend_dbus_get_files		(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);

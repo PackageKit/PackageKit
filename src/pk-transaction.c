@@ -108,7 +108,7 @@ struct PkTransactionPrivate
 	PkProvidesEnum		 cached_provides;
 
 	guint			 signal_allow_cancel;
-	guint			 signal_description;
+	guint			 signal_details;
 	guint			 signal_error_code;
 	guint			 signal_files;
 	guint			 signal_finished;
@@ -126,7 +126,7 @@ struct PkTransactionPrivate
 enum {
 	PK_TRANSACTION_ALLOW_CANCEL,
 	PK_TRANSACTION_CALLER_ACTIVE_CHANGED,
-	PK_TRANSACTION_DESCRIPTION,
+	PK_TRANSACTION_DETAILS,
 	PK_TRANSACTION_ERROR_CODE,
 	PK_TRANSACTION_FILES,
 	PK_TRANSACTION_FINISHED,
@@ -352,10 +352,10 @@ pk_transaction_caller_active_changed_cb (LibGBus *libgbus, gboolean is_active, P
 }
 
 /**
- * pk_transaction_description_cb:
+ * pk_transaction_details_cb:
  **/
 static void
-pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
+pk_transaction_details_cb (PkBackend *backend, const gchar *package_id, const gchar *license, PkGroupEnum group,
 			       const gchar *detail, const gchar *url,
 			       guint64 size, PkTransaction *transaction)
 {
@@ -366,9 +366,9 @@ pk_transaction_description_cb (PkBackend *backend, const gchar *package_id, cons
 
 	group_text = pk_group_enum_to_text (group);
 
-	pk_debug ("emitting description %s, %s, %s, %s, %s, %ld",
+	pk_debug ("emitting details %s, %s, %s, %s, %s, %ld",
 		  package_id, license, group_text, detail, url, (long int) size);
-	g_signal_emit (transaction, signals [PK_TRANSACTION_DESCRIPTION], 0,
+	g_signal_emit (transaction, signals [PK_TRANSACTION_DETAILS], 0,
 		       package_id, license, group_text, detail, url, size);
 }
 
@@ -486,7 +486,7 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 
 	/* disconnect these straight away, as the PkTransaction object takes time to timeout */
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_allow_cancel);
-	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_description);
+	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_details);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_error_code);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_files);
 	g_signal_handler_disconnect (transaction->priv->backend, transaction->priv->signal_finished);
@@ -755,9 +755,9 @@ pk_transaction_set_running (PkTransaction *transaction)
 	transaction->priv->signal_allow_cancel =
 		g_signal_connect (transaction->priv->backend, "allow-cancel",
 				  G_CALLBACK (pk_transaction_allow_cancel_cb), transaction);
-	transaction->priv->signal_description =
-		g_signal_connect (transaction->priv->backend, "description",
-				  G_CALLBACK (pk_transaction_description_cb), transaction);
+	transaction->priv->signal_details =
+		g_signal_connect (transaction->priv->backend, "details",
+				  G_CALLBACK (pk_transaction_details_cb), transaction);
 	transaction->priv->signal_error_code =
 		g_signal_connect (transaction->priv->backend, "error-code",
 				  G_CALLBACK (pk_transaction_error_code_cb), transaction);
@@ -828,8 +828,8 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->resolve (priv->backend, priv->cached_filters, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_ROLLBACK) {
 		desc->rollback (priv->backend, priv->cached_transaction_id);
-	} else if (priv->role == PK_ROLE_ENUM_GET_DESCRIPTION) {
-		desc->get_description (priv->backend, priv->cached_package_id);
+	} else if (priv->role == PK_ROLE_ENUM_GET_DETAILS) {
+		desc->get_details (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_FILES) {
 		desc->get_files (priv->backend, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REQUIRES) {
@@ -1279,10 +1279,10 @@ pk_transaction_get_depends (PkTransaction *transaction, const gchar *filter, con
 }
 
 /**
- * pk_transaction_get_description:
+ * pk_transaction_get_details:
  **/
 void
-pk_transaction_get_description (PkTransaction *transaction, const gchar *package_id,
+pk_transaction_get_details (PkTransaction *transaction, const gchar *package_id,
 				DBusGMethodInvocation *context)
 {
 	gboolean ret;
@@ -1291,11 +1291,11 @@ pk_transaction_get_description (PkTransaction *transaction, const gchar *package
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("GetDescription method called: %s", package_id);
+	pk_debug ("GetDetails method called: %s", package_id);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->get_description == NULL) {
-		pk_debug ("Not implemented yet: GetDescription");
+	if (transaction->priv->backend->desc->get_details == NULL) {
+		pk_debug ("Not implemented yet: GetDetails");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		dbus_g_method_return_error (context, error);
@@ -1326,7 +1326,7 @@ pk_transaction_get_description (PkTransaction *transaction, const gchar *package
 	/* save so we can run later */
 	transaction->priv->cached_package_id = g_strdup (package_id);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DESCRIPTION);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_DETAILS);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -2920,8 +2920,8 @@ pk_transaction_class_init (PkTransactionClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__BOOLEAN,
 			      G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
-	signals [PK_TRANSACTION_DESCRIPTION] =
-		g_signal_new ("description",
+	signals [PK_TRANSACTION_DETAILS] =
+		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING,

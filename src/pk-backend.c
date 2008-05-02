@@ -116,7 +116,7 @@ static gpointer pk_backend_object = NULL;
 enum {
 	PK_BACKEND_STATUS_CHANGED,
 	PK_BACKEND_PROGRESS_CHANGED,
-	PK_BACKEND_DESCRIPTION,
+	PK_BACKEND_DETAILS,
 	PK_BACKEND_FILES,
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
@@ -186,8 +186,8 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->get_depends != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
 	}
-	if (desc->get_description != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_GET_DESCRIPTION);
+	if (desc->get_details != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DETAILS);
 	}
 	if (desc->get_files != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_FILES);
@@ -1019,13 +1019,12 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 }
 
 /**
- * pk_backend_description:
+ * pk_backend_details:
  **/
 gboolean
-pk_backend_description (PkBackend *backend, const gchar *package_id,
-			const gchar *license, PkGroupEnum group,
-			const gchar *description, const gchar *url,
-			gulong size)
+pk_backend_details (PkBackend *backend, const gchar *package_id,
+		    const gchar *license, PkGroupEnum group,
+		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe;
 
@@ -1042,10 +1041,10 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
+	pk_debug ("emit details %s, %s, %i, %s, %s, %ld",
 		  package_id, license, group, description_safe, url,
 		  size);
-	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0,
+	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0,
 		       package_id, license, group, description_safe, url,
 		       size);
 	g_free (description_safe);
@@ -1716,8 +1715,8 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_BACKEND_DESCRIPTION] =
-		g_signal_new ("description",
+	signals [PK_BACKEND_DETAILS] =
+		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
