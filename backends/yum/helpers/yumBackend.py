@@ -434,6 +434,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def _buildGroupDict(self):
         pkgGroups= {}
         cats = self.yumbase.comps.categories
+        if len(cats) == 0:
+            self.error(ERROR_GROUP_LIST_INVALID,'comps categories could not be loaded')
         for cat in cats:
             grps = map(lambda x: self.yumbase.comps.return_group(x),
                filter(lambda x: self.yumbase.comps.has_group(x),cat.groups))

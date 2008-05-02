@@ -39,7 +39,7 @@
 #include <glib/gi18n.h>
 
 #include "pk-debug.h"
-#include "pk-network_nm.h"
+#include "pk-network-nm.h"
 #include "pk-marshal.h"
 
 static void     pk_network_nm_class_init	(PkNetworkNmClass *klass);

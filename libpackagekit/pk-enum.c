@@ -129,6 +129,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
 	{PK_ERROR_ENUM_GROUP_NOT_FOUND,		"group-not-found"},
+	{PK_ERROR_ENUM_GROUP_LIST_INVALID,	"group-list-invalid"},
 	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
@@ -276,6 +277,7 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
+	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
 	{0, NULL}
 };
 

@@ -1,5 +1,6 @@
 %define dbus_version 0.61
 %define alphatag #ALPHATAG#
+%define _use_internal_dependency_generator 0
 
 Summary:   GNOME PackageKit Client
 Name:      gnome-packagekit

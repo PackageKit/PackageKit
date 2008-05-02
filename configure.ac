@@ -76,8 +76,8 @@ GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.7
-POLKIT_GRANT_REQUIRED=0.7
+POLKIT_DBUS_REQUIRED=0.8
+POLKIT_GRANT_REQUIRED=0.8
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
