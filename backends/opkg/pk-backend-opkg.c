@@ -315,6 +315,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 	params->filters = filters;
 	params->search_type = SEARCH_DESCRIPTION;
 	params->needle = g_utf8_strdown (search, -1);
+	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
 	pk_backend_thread_create (backend, backend_search_thread);
@@ -334,6 +335,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	params->filters = filters;
 	params->search_type = SEARCH_TAG;
 	params->needle = g_strdup_printf ("group::%s", search);
+	params->backend = backend;
 
 	pk_backend_set_pointer (backend, "search-params", params);
 	pk_backend_thread_create (backend, backend_search_thread);
