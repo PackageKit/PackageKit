@@ -401,6 +401,14 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
         return ok;
 }
 
+gboolean
+system_and_package_are_x86 (zypp::sat::Solvable item)
+{
+	// i586, i686, ... all should be considered the same arch for our comparison
+	return (!strcmp (item.arch ().asString ().c_str (), "i586") &&
+			!strcmp (zypp::ZConfig::defaultSystemArchitecture ().asString().c_str(), "i686"));
+}
+
 void
 zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters)
 {
@@ -420,13 +428,18 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 				if (i == PK_FILTER_ENUM_NOT_INSTALLED && it->isSystem ())
 					print = FALSE;;
 				if (i == PK_FILTER_ENUM_ARCH) {
-					if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () && it->arch () != zypp::Arch_noarch)
+					if (it->arch () != zypp::ZConfig::defaultSystemArchitecture () &&
+							it->arch () != zypp::Arch_noarch &&
+							! system_and_package_are_x86 (*it))
 						print = FALSE;
 				}
 				if (i == PK_FILTER_ENUM_NOT_ARCH) {
-					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture ())
+					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture () ||
+							system_and_package_are_x86 (*it))
 						print = FALSE;
 				}
+				//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
+				//pk_debug ("my default arch is %s", myarch);
 			}
 			if (!print)
 				continue;		
