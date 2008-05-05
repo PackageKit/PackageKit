@@ -141,6 +141,36 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 	return TRUE;
 }
 
+pmpkg_t *
+get_pkg_from_package_id (const gchar *package_id)
+{
+	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id);
+
+	/* do all this fancy stuff */
+	pmdb_t *repo = NULL;
+	if (strcmp ("local", pkg_id->data) == 0)
+		repo = alpm_option_get_localdb ();
+	else {
+		alpm_list_t *iterator;
+		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
+			repo = alpm_list_getdata (iterator);
+			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
+				break;
+		}
+	}
+
+	pmpkg_t *pkg;
+	if (repo != NULL)
+		pkg = alpm_db_get_pkg (repo, pkg_id->name);
+	else
+		pkg = NULL;
+
+	/* free package id as we no longer need it */
+	pk_package_id_free (pkg_id);
+
+	return pkg;
+}
+
 static void
 add_package (PkBackend *backend, PackageSource *package)
 {
@@ -655,32 +685,12 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id);
-
-	/* do all this fancy stuff */
-	pmdb_t *repo = NULL;
-	if (strcmp ("local", pkg_id->data) == 0)
-		repo = alpm_option_get_localdb ();
-	else {
-		alpm_list_t *iterator;
-		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
-			repo = alpm_list_getdata (iterator);
-			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
-				break;
-		}
-	}
-
-	if (repo == NULL) {
+	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
+	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerror (pm_errno));
-		pk_package_id_free (pkg_id);
 		pk_backend_finished (backend);
 		return;
 	}
-
-	pmpkg_t *pkg = alpm_db_get_pkg (repo, pkg_id->name);
-
-	/* free package id as we no longer need it */
-	pk_package_id_free (pkg_id);
 
 	GString *licenses_str;
 	alpm_list_t *licenses_list = alpm_pkg_get_licenses (pkg);
@@ -710,32 +720,12 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id);
-
-	/* do all this fancy stuff */
-	pmdb_t *repo = NULL;
-	if (strcmp ("local", pkg_id->data) == 0)
-		repo = alpm_option_get_localdb ();
-	else {
-		alpm_list_t *iterator;
-		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
-			repo = alpm_list_getdata (iterator);
-			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
-				break;
-		}
-	}
-
-	if (repo == NULL) {
+	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
+	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerror (pm_errno));
-		pk_package_id_free (pkg_id);
 		pk_backend_finished (backend);
 		return;
 	}
-
-	pmpkg_t *pkg = alpm_db_get_pkg (repo, pkg_id->name);
-
-	/* free package id as we no longer need it */
-	pk_package_id_free (pkg_id);
 
 	GString *files_str = g_string_new ("");
 	alpm_list_t *pkg_files = alpm_pkg_get_files (pkg);
