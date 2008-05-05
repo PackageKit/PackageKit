@@ -682,21 +682,75 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 	/* free package id as we no longer need it */
 	pk_package_id_free (pkg_id);
 
-	gchar *licenses;
+	GString *licenses_str;
 	alpm_list_t *licenses_list = alpm_pkg_get_licenses (pkg);
 	if (licenses_list == NULL)
-		licenses = "unknown";
+		licenses_str = g_string_new ("unknown");
 	else {
-		licenses = g_strnfill(100, '\0');
+		licenses_str = g_string_new ("");
 		alpm_list_t *iterator;
 		for (iterator = licenses_list; iterator; iterator = alpm_list_next (iterator)) {
 			if (iterator != licenses_list)
-				g_strlcat (licenses, ", ", 100);
-			g_strlcat (licenses, alpm_list_getdata (iterator), 100);
+				g_string_append (licenses_str, ", ");
+			g_string_append (licenses_str, (char *) alpm_list_getdata (iterator));
+		}
+	}
+	gchar *licenses = g_string_free (licenses_str, FALSE);
+
+	pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_files:
+ */
+static void
+backend_get_files (PkBackend *backend, const gchar *package_id)
+{
+	g_return_if_fail (backend != NULL);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id);
+
+	/* do all this fancy stuff */
+	pmdb_t *repo = NULL;
+	if (strcmp ("local", pkg_id->data) == 0)
+		repo = alpm_option_get_localdb ();
+	else {
+		alpm_list_t *iterator;
+		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
+			repo = alpm_list_getdata (iterator);
+			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
+				break;
 		}
 	}
 
-	pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+	if (repo == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerror (pm_errno));
+		pk_package_id_free (pkg_id);
+		pk_backend_finished (backend);
+		return;
+	}
+
+	pmpkg_t *pkg = alpm_db_get_pkg (repo, pkg_id->name);
+
+	/* free package id as we no longer need it */
+	pk_package_id_free (pkg_id);
+
+	GString *files_str = g_string_new ("");
+	alpm_list_t *pkg_files = alpm_pkg_get_files (pkg);
+	if (pkg_files != NULL) {
+		alpm_list_t *iterator;
+		for (iterator = pkg_files; iterator; iterator = alpm_list_next (iterator)) {
+			if (iterator != pkg_files)
+				g_string_append (files_str, ";");
+			g_string_append (files_str, alpm_option_get_root ());
+			g_string_append (files_str, (char *) alpm_list_getdata (iterator));
+		}
+	}
+	gchar *files = g_string_free (files_str, FALSE);
+
+	pk_backend_files (backend, package_id, files);
 	pk_backend_finished (backend);
 }
 
@@ -1112,7 +1166,7 @@ PK_BACKEND_OPTIONS (
 		NULL,						/* cancel */
 		NULL,						/* get_depends */
 		backend_get_details,				/* get_details */
-		NULL,						/* get_files */
+		backend_get_files,				/* get_files */
 		backend_get_packages,				/* get_packages */
 		backend_get_repo_list,				/* get_repo_list */
 		NULL,						/* get_requires */
