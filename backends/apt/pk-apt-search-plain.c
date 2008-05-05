@@ -58,14 +58,14 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 
 void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
-	pk_backend_spawn_helper (spawn, "get-description.py", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
 }
 
 /**

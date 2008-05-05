@@ -243,9 +243,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if lock:
             self.doLock()
 
-    def description(self,id,license,group,desc,url,bytes):
+    def details(self,id,license,group,desc,url,bytes):
         '''
-        Send 'description' signal
+        Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param license: The license of the package
         @param group: The enumerated group
@@ -255,7 +255,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._to_unicode(desc)
-        PackageKitBaseBackend.description(self,id,license,group,desc,url,bytes)
+        PackageKitBaseBackend.details(self,id,license,group,desc,url,bytes)
 
     def package(self,id,status,summary):
         '''
@@ -316,7 +316,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         res = self.yumbase.searchGenerator(searchlist,[key])
         fltlist = filters.split(';')
-        installed_nevra = [] # yum returns packages as available even when installed
+        seen_nevra = [] # yum returns packages as available even when installed
         pkg_list = [] # only do the second iteration on not installed pkgs
         package_list = [] #we can't do emitting as found if we are post-processing
 
@@ -324,14 +324,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg.repo.id == 'installed':
                 if self._do_extra_filtering(pkg,fltlist):
                     package_list.append((pkg,INFO_INSTALLED))
-                    installed_nevra.append(self._get_nevra(pkg))
+                    seen_nevra.append(self._get_nevra(pkg))
             else:
                 pkg_list.append(pkg)
         for pkg in pkg_list:
             nevra = self._get_nevra(pkg)
-            if nevra not in installed_nevra:
+            if nevra not in seen_nevra:
                 if self._do_extra_filtering(pkg,fltlist):
                     package_list.append((pkg,INFO_AVAILABLE))
+                    seen_nevra.append(self._get_nevra(pkg))
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
@@ -1122,9 +1123,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED,"Package %s is not installed" % package)
 
-    def get_description(self,package):
+    def get_details(self,package):
         '''
-        Print a detailed description for a given package
+        Print a detailed details for a given package
         '''
         self._check_init()
         self.allow_cancel(True)
@@ -1133,18 +1134,18 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         pkg,inst = self._findPackage(package)
         if pkg:
-            self._show_description(pkg)
+            self._show_details(pkg)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND,'Package %s was not found' % package)
 
-    def _show_description(self,pkg):
+    def _show_details(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repo)
         desc = pkg.description
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
 
-        self.description(id,pkg.license,"unknown",desc,pkg.url,
+        self.details(id,pkg.license,"unknown",desc,pkg.url,
                          pkg.size)
 
     def get_files(self,package):
@@ -1371,7 +1372,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         notice = md.get_notice((pkg.name,pkg.version,pkg.release))
         urls = {'bugzilla':[],'cve' : [],'vendor': []}
         if notice:
-            # Update Description
+            # Update Details
             desc = notice['description']
             # Update References (Bugzilla,CVE ...)
             refs = notice['references']

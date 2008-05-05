@@ -943,10 +943,10 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
     g_return_if_fail (backend != NULL);
 
@@ -990,7 +990,7 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
 	}
     }
 
-    pk_backend_description (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+    pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
     pk_backend_finished (backend);
 }
 
@@ -1069,7 +1069,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,				/* get_filters */
 	NULL,						/* cancel */
 	NULL,						/* get_depends */
-	backend_get_description,			/* get_description */
+	backend_get_details,			/* get_details */
 	NULL,						/* get_files */
 	NULL,						/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */

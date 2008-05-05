@@ -192,7 +192,7 @@ Released: 2008-02-21
 * Backends:
  - apt: some random fixes to get it work again (Sebastian Heinlein)
  - apt2: initial work on a dbus based backend introduced as apt2 (Sebastian Heinlein)
- - apt2: implement GetDescription (Sebastian Heinlein)
+ - apt2: implement GetDetails (Sebastian Heinlein)
  - apt2: fix SearchName (Sebastian Heinlein)
  - apt2: fix a typo in GetUpdates (Sebastian Heinlein)
  - yum: check for missing package in GetUpdateDetail call (Robin Norwood)
@@ -207,7 +207,7 @@ Released: 2008-02-21
  - zypp: Added SearchFiles (Stefan Haas)
  - zypp: Added SearchDetails (Stefan Haas)
  - zypp: Added GetRequires (Stefan Haas)
- - zypp: added missing stuff of GetDescription (Stefan Haas)
+ - zypp: added missing stuff of GetDetails (Stefan Haas)
 
 * New features:
  - Allow pkcon to actually remove dependancies on user prompt (Richard Hughes)

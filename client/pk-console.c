@@ -760,19 +760,19 @@ pk_console_get_depends (PkClient *client, const gchar *package, GError **error)
 }
 
 /**
- * pk_console_get_description:
+ * pk_console_get_details:
  **/
 static gboolean
-pk_console_get_description (PkClient *client, const gchar *package, GError **error)
+pk_console_get_details (PkClient *client, const gchar *package, GError **error)
 {
 	gboolean ret;
 	gchar *package_id;
 	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NONE, package, error);
 	if (package_id == NULL) {
-		g_print ("%s\n", _("Could not find a description for this package"));
+		g_print ("%s\n", _("Could not find details for this package"));
 		return FALSE;
 	}
-	ret = pk_client_get_description (client, package_id, error);
+	ret = pk_client_get_details (client, package_id, error);
 	g_free (package_id);
 	return ret;
 }
@@ -855,10 +855,10 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 }
 
 /**
- * pk_console_description_cb:
+ * pk_console_details_cb:
  **/
 static void
-pk_console_description_cb (PkClient *client, const gchar *package_id,
+pk_console_details_cb (PkClient *client, const gchar *package_id,
 			   const gchar *license, PkGroupEnum group,
 			   const gchar *description, const gchar *url,
 			   gulong size, gpointer data)
@@ -1102,8 +1102,8 @@ pk_console_get_summary (PkRoleEnum roles)
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		g_string_append_printf (string, "  %s\n", "get-requires [package]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DESCRIPTION)) {
-		g_string_append_printf (string, "  %s\n", "get-description [package]");
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_DETAILS)) {
+		g_string_append_printf (string, "  %s\n", "get-details [package]");
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_GET_FILES)) {
 		g_string_append_printf (string, "  %s\n", "get-files [package]");
@@ -1231,8 +1231,8 @@ main (int argc, char *argv[])
 			  G_CALLBACK (pk_console_package_cb), NULL);
 	g_signal_connect (client, "transaction",
 			  G_CALLBACK (pk_console_transaction_cb), NULL);
-	g_signal_connect (client, "description",
-			  G_CALLBACK (pk_console_description_cb), NULL);
+	g_signal_connect (client, "details",
+			  G_CALLBACK (pk_console_details_cb), NULL);
 	g_signal_connect (client, "files",
 			  G_CALLBACK (pk_console_files_cb), NULL);
 	g_signal_connect (client, "repo-signature-required",
@@ -1444,12 +1444,12 @@ main (int argc, char *argv[])
 		}
 		ret = pk_client_what_provides (client, filters, PK_PROVIDES_ENUM_CODEC, value, &error);
 
-	} else if (strcmp (mode, "get-description") == 0) {
+	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
-			g_print (_("You need to specify a package to find the description for"));
+			g_print (_("You need to specify a package to find the details for"));
 			goto out;
 		}
-		ret = pk_console_get_description (client, value, &error);
+		ret = pk_console_get_details (client, value, &error);
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {

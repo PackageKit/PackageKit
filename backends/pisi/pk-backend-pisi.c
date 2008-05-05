@@ -135,14 +135,14 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	g_return_if_fail (backend != NULL);
 	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-description.py", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
 }
 
 /**
@@ -383,7 +383,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_description,		/* get_description */
+	backend_get_details,		/* get_details */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */

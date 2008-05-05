@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Ali Sabil <ali.sabil@gmail.com>
+# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -10,9 +10,9 @@
 # (at your option) any later version.
 
 import sys
-from aptBackend import PackageKitAptBackend
+from conaryBackend import PackageKitConaryBackend
 
 package = sys.argv[1]
-backend = PackageKitAptBackend(sys.argv[1:])
-backend.get_description(package)
+backend = PackageKitConaryBackend(sys.argv[1:])
+backend.get_details(package)
 sys.exit(0)

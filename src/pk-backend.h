@@ -92,7 +92,7 @@ gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 gboolean	 pk_backend_message			(PkBackend	*backend,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...);
-gboolean	 pk_backend_description			(PkBackend	*backend,
+gboolean	 pk_backend_details			(PkBackend	*backend,
 							 const gchar	*package_id,
 							 const gchar	*license,
 							 PkGroupEnum	 group,
@@ -180,7 +180,7 @@ typedef struct {
 							 PkFilterEnum	 filters,
 							 const gchar	*package_id,
 							 gboolean	 recursive);
-	void		(*get_description)		(PkBackend	*backend,
+	void		(*get_details)		(PkBackend	*backend,
 							 const gchar	*package_id);
 	void		(*get_files)			(PkBackend	*backend,
 							 const gchar	*package_id);
@@ -249,7 +249,7 @@ typedef struct {
 } PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel,	\
-			   get_depends, get_description, get_files, get_packages, get_repo_list, get_requires,	\
+			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
 			   get_update_detail, get_updates, install_file, install_package,		\
 			   install_signature, refresh_cache, remove_package, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
@@ -263,7 +263,7 @@ typedef struct {
 		get_groups,		\
 		cancel,			\
 		get_depends,		\
-		get_description,	\
+		get_details,	\
 		get_files,		\
 		get_packages,		\
 		get_repo_list,		\

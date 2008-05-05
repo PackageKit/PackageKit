@@ -22,6 +22,7 @@
 <h2>Table Of Contents</h2>
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#session-system">Why is there a session service and and a system service?</a></li>
 <li><a href="#session-methods">How do I use PackageKit in my application?</a></li>
 <li><a href="#rawhide-updates">Why don't I get update details with Fedora Rawhide?</a></li>
 <li><a href="#selinux">Why doesn't PackageKit work with SELinux?</a></li>
@@ -273,7 +274,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>GetDescription</b></td>
+<td><b>GetDetails</b></td>
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
@@ -374,7 +375,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
 </tr>
 <tr>
@@ -403,7 +404,7 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
@@ -418,9 +419,9 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[no]"/></td><!-- zypp -->
+<td><img src="img/status-good.png" alt="[good]"/></td><!-- zypp -->
 </tr>
 </table>
 
@@ -497,7 +498,7 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[yes]"/></td><!-- yum -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
 </tr>
@@ -559,9 +560,38 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 </table>
+
+<hr>
+<h3><a name="session-system">Why is there a session service <b>and</b> and a system service?</a></h3>
+<p>
+PackageKit runs a process <code>packagekitd</code> that is a daemon that runs per-system.
+The daemon lets you schedule transactions using either the raw
+<a href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/pk-interface-transaction.xml">
+DBUS methods</a>, or using <a href="http://www.packagekit.org/gtk-doc/PkClient.html">libpackagekit</a>.
+The transactions are very fine grained, so an application would have to manage
+<a href="http://www.packagekit.org/pk-reference.html#introduction-ideas-transactions">
+the transaction process</a> itself.
+This would mean handling the EULA and GPG callbacks in each application. This is less than ideal.
+</p>
+<p>
+For this reason, a session helper is provided by the <code>gpk-update-icon</code> process which
+basically makes all the complexity go away; it handles all the GPG key authentication and
+EULA agreements, and also works with Seahorse and GConf to give some of the settings session persistence.
+Using the session service is also designed to be synchronous, which means you can send the DBUS call
+and just wait for the result, rather than managing callbacks to update custom GUIs.
+</p>
+<p>
+The session helper therefore depends on the shared code in <code>gpk-update-icon</code>, but
+because this is implemented as a DBUS service, can be coded as a QObject for KDE or a simpler
+object for XFCE or EFL.
+If you want full integration using <a href="http://www.packagekit.org/img/gpk-added-deps.png">
+custom dialogs</a> without running the extra session process, then use libpackagekit.
+If you don't care, and just want things to <i>work</i> then
+<a href="http://www.packagekit.org/pk-faq.html#session-methods">use the session interface</a>.
+</p>
 
 <hr>
 <h3><a name="session-methods">How do I use PackageKit in my application?</a></h3>
@@ -617,6 +647,7 @@ The methods available on this interface are:
 <li><code>InstallPackageName("openoffice-clipart")</code></li>
 <li><code>InstallProvideFile("/usr/share/fonts/sarai/Sarai_07.ttf")</code></li>
 <li><code>InstallLocalFile("/home/dave/Desktop/lirc-0.6.6-4.rhfc1.dag.i686.rpm")</code></li>
+<li><code>InstallMimeType("application/x-rpm")</code></li>
 </ul>
 <p>
 Please email me or the
@@ -748,8 +779,6 @@ The reasons for this are as follows:
 <p>
 EULAs or other agreements will have to be agreed to <b>before</b> the
 transaction is processed using the <code>EulaRequired</code> signal.
-</p>
-<p>
 EULAs should preferably be shown per-user - i.e. the first time an application is run.
 </p>
 <p>
@@ -851,7 +880,7 @@ can only be shown after the transaction has completed.</i>
 <hr>
 <h3><a name="translation">How do I translate gnome-packagekit?</a></h3>
 <p>
-Please see the <a href="http://l10n.gnome.org/teams">GNOME Translation Team</a>
+See the <a href="http://l10n.gnome.org/teams">GNOME Translation Team</a>
 web pages for how to contribute to GNOME localisation.
 </p>
 

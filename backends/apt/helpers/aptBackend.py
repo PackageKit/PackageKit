@@ -271,9 +271,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                         "Failed to fetch the following items:\n%s" % error_message)
         return res
 
-    def get_description(self, package):
+    def get_details(self, package):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         '''
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
