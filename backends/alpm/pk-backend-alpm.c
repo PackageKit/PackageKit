@@ -25,7 +25,6 @@
 #define ALPM_DBPATH "/var/lib/pacman"
 #define ALPM_CACHEDIR "/var/cache/pacman/pkg"
 #define ALPM_LOGFILE "/var/log/pacman.log"
-#define ALPM_XFERCOMMAND "/usr/bin/wget --passive-ftp -c -O \%o \%u"
 
 #define ALPM_PROGRESS_UPDATE_INTERVAL 400
 
