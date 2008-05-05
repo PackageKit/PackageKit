@@ -268,6 +268,37 @@ find_packages_by_name (const gchar *name, pmdb_t *db)
 	return result;
 }
 
+alpm_list_t *
+get_packages (pmdb_t *db)
+{
+	if (db == NULL)
+		return NULL;
+
+	alpm_list_t *result = NULL;
+
+	// determine if repository is local
+	gboolean repo_is_local = (db == alpm_option_get_localdb ());
+	// determine repository name
+	const gchar *repo = alpm_db_get_name (db);
+	// get list of packages in repository
+	alpm_list_t *cache = alpm_db_getpkgcache (db);
+
+	alpm_list_t *iterator;
+	for (iterator = cache; iterator; iterator = alpm_list_next (iterator)) {
+		pmpkg_t *pkg = alpm_list_getdata (iterator);
+
+		PackageSource *source = g_malloc (sizeof (PackageSource));
+
+		source->pkg = (pmpkg_t *) pkg;
+		source->repo = (gchar *) repo;
+		source->installed = repo_is_local;
+
+		result = alpm_list_add (result, (PackageSource *) source);
+	}
+
+	return result;
+}
+
 gboolean
 pkg_is_installed (const gchar *name, const gchar *version)
 {
@@ -693,6 +724,41 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 }
 
 /**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	g_return_if_fail (backend != NULL);
+
+	alpm_list_t *result = NULL;
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+
+	gboolean search_installed = pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED);
+	gboolean search_not_installed = pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED);
+
+	if (!search_not_installed) {
+		// Search in local db
+		result = alpm_list_join (result, get_packages (alpm_option_get_localdb ()));
+	}
+
+	if (!search_installed) {
+		// Search in sync dbs
+		alpm_list_t *iterator;
+		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator))
+			result = alpm_list_join (result, get_packages ((pmdb_t *) alpm_list_getdata(iterator)));
+	}
+
+	add_packages_from_list (backend, alpm_list_first (result));
+
+	alpm_list_free_inner (result, (alpm_list_fn_free) package_source_free);
+	alpm_list_free (result);
+
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_repo_list:
  */
 void
@@ -1070,7 +1136,7 @@ PK_BACKEND_OPTIONS (
 		NULL,						/* get_depends */
 		backend_get_details,				/* get_details */
 		NULL,						/* get_files */
-		NULL,						/* get_packages */
+		backend_get_packages,				/* get_packages */
 		backend_get_repo_list,				/* get_repo_list */
 		NULL,						/* get_requires */
 		NULL,						/* get_update_detail */
