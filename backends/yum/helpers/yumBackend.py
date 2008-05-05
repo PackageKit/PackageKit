@@ -1385,7 +1385,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if typ in ('bugzilla','cve'):
                             urls[typ].append("%s;%s" % (href,title))
                         else:
-                            urls['vendor'].append("%s;%s" % (href,ref['title']))
+                            urls['vendor'].append("%s;%s" % (href,title))
 
             # Reboot flag
             if notice.get_metadata().has_key('reboot_suggested') and notice['reboot_suggested']:
