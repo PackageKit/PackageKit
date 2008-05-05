@@ -116,29 +116,6 @@ state_notify (void *backend)
 	return backend;
 }
 
-alpm_list_t *
-my_list_remove_node (alpm_list_t *node)
-{
-	if (!node)
-		return (NULL);
-
-	alpm_list_t *ret = NULL;
-
-	if (node->prev) {
-		node->prev->next = node->next;
-		ret = node->prev;
-		//node->prev = NULL;
-	}
-
-	if (node->next) {
-		node->next->prev = node->prev;
-		ret = node->next;
-		node->next = NULL;
-	}
-
-	return (ret);
-}
-
 gboolean
 pkg_equal (pmpkg_t *p1, pmpkg_t *p2)
 {
