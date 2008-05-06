@@ -21,13 +21,11 @@
  */
 
 
-#include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 #include <pk-package-ids.h>
 
 static PkBackendSpawn *spawn;
-static PkNetwork *network;
 
 /**
  * backend_initialize:
@@ -37,7 +35,6 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "smart");
 }
@@ -50,7 +47,6 @@ static void
 backend_destroy (PkBackend *backend)
 {
 	pk_debug ("FILTER: destroy");
-	g_object_unref (network);
 	g_object_unref (spawn);
 }
 
@@ -104,7 +100,7 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
@@ -129,7 +125,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -194,7 +190,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 
 	/* check network state */
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
