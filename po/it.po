@@ -1,392 +1,303 @@
-# SOME DESCRIPTIVE TITLE.
+# translation of it.po to Italiano
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Translated by
-# DANIELE COSTARELLA <daniele.costarella@gmail.com>, 
+# DANIELE COSTARELLA <daniele.costarella@gmail.com>,
 # 2008.
 #
+# Francesco Tombolini <tombo@adamantio.net>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: it\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-18 16:49+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Daniele Costarella <daniele.costarella@gmail.com>\n"
-"Language-Team: italian <LL@li.org>\n"
+"POT-Creation-Date: 2008-05-03 01:34+0000\n"
+"PO-Revision-Date: 2008-05-06 07:08+0200\n"
+"Last-Translator: Francesco Tombolini <tombo@adamantio.net>\n"
+"Language-Team: Italiano <fedora-trans-it@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.4\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
-#: ../policy/org.freedesktop.packagekit.policy.in.h:1
-msgid "Accept EULA"
-msgstr "Accetto l'EULA"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:2
-msgid "Authentication is required to accept a EULA"
-msgstr "Per accettare l'EULA e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:3
-msgid "Authentication is required to change software source parameters"
-msgstr "Per cambiare i parametri del sorgente del software e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:4
-msgid "Authentication is required to install a local file"
-msgstr "Per installare un file locale e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:5
-msgid "Authentication is required to install a package"
-msgstr "Per installare un pacchetto e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:6
-msgid "Authentication is required to install a security signature"
-msgstr "Per installare una firma per la sicurezza e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:7
-msgid "Authentication is required to refresh the package lists"
-msgstr "Per aggiornare la lista dei pacchetti e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:8
-msgid "Authentication is required to remove packages"
-msgstr "Per rimuovere pacchetti e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:9
-msgid "Authentication is required to rollback a transaction"
-msgstr "Per far ripartire una transazione e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:10
-msgid "Authentication is required to update all packages"
-msgstr "Per aggiornare tutti i pacchetti e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:11
-msgid "Authentication is required to update packages"
-msgstr "Per aggiornare pacchetti e' richiesta l'autenticazione"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:12
-msgid "Change software source parameters"
-msgstr "Cambia i parametri relativi sorgente del software"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:13
-msgid "Install local file"
-msgstr "Installa un file locale"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:14
-msgid "Install package"
-msgstr "Installa un pacchetto"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:15
-msgid "Install security signature"
-msgstr "Installa una firma per la sicurezza"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:16
-msgid "Refresh package lists"
-msgstr "Aggiorna la lista dei pacchetti"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:17
-msgid "Remove package"
-msgstr "Rimuovi un pacchetto"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:18
-msgid "Rollback to a previous transaction"
-msgstr "Ritorna ad una transazione precedente"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:19
-msgid "Update all packages"
-msgstr "Aggiorna tutti i pacchetti"
-
-#: ../policy/org.freedesktop.packagekit.policy.in.h:20
-msgid "Update package"
-msgstr "Aggiorna il pacchetto"
-
-#: ../client/pk-console.c:208
+#: ../client/pk-console.c:224
 msgid "Update detail"
 msgstr "Aggiorna i dettagli"
 
-#: ../client/pk-console.c:400
+#: ../client/pk-console.c:425
 msgid "A system restart is required"
 msgstr "E' richiesto un riavvio del sistema"
 
-#: ../client/pk-console.c:402
+#: ../client/pk-console.c:427
 msgid "A logout and login is required"
-msgstr "E' richiesto un logout ed un nuovo login"
+msgstr "E' richiesto un logout ed un login"
 
-#: ../client/pk-console.c:404
+#: ../client/pk-console.c:429
 msgid "An application restart is required"
 msgstr "E' richiesto un riavvio di un'applicazione"
 
-#: ../client/pk-console.c:443
+#: ../client/pk-console.c:474
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Per favore inserisci un numero compreso tra 1 e %i: "
+msgstr "Inserire un numero compreso tra 1 e %i: "
 
-#: ../client/pk-console.c:493
+#: ../client/pk-console.c:524
 msgid "Could not find a package match"
-msgstr "Impossibile trovare un'associazione al pacchetto"
+msgstr "Impossibile trovare un pacchetto corrispondente"
 
-#: ../client/pk-console.c:507
+#: ../client/pk-console.c:538
 msgid "There are multiple package matches"
-msgstr "Sono presenti pacchetti multipli associati"
+msgstr "Sono presenti pacchetti multipli corrispondenti"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:514
+#: ../client/pk-console.c:545
 msgid "Please enter the package number: "
-msgstr "Per favore inserisci il numero del pacchetto: "
+msgstr "Inserire il numero del pacchetto: "
 
-#: ../client/pk-console.c:530
+#: ../client/pk-console.c:561
 msgid ""
 "Could not find a package with that name to install, or package already "
 "installed"
-msgstr "Impossibile trovare un pacchetto con quel nome da installare o pacchetto gia' installato"
+msgstr ""
+"Impossibile trovare un pacchetto con quel nome da installare o pacchetto "
+"già installato"
 
-#: ../client/pk-console.c:612
+#: ../client/pk-console.c:643
 msgid "Could not find a package with that name to remove"
 msgstr "Impossibile trovare un pacchetto con quel nome da rimuovere"
 
-#: ../client/pk-console.c:652
+#: ../client/pk-console.c:683
 msgid "The following packages have to be removed"
 msgstr "I seguenti pacchetti devono essere rimossi"
 
 #. get user input
-#: ../client/pk-console.c:661
+#: ../client/pk-console.c:692
 msgid "Okay to remove additional packages?"
-msgstr "Okay per rimuovere pacchetti aggiuntivi?"
+msgstr "Confermi la rimozione dei pacchetti aggiuntivi?"
 
-#: ../client/pk-console.c:665
+#: ../client/pk-console.c:696
 msgid "Cancelled!"
-msgstr "Cancellato!"
+msgstr "Annullato!"
 
-#: ../client/pk-console.c:687
+#: ../client/pk-console.c:718
 msgid "Could not find a package with that name to update"
 msgstr "Impossibile trovare un pacchetto da aggiornare con quel nome"
 
-#: ../client/pk-console.c:705
+#: ../client/pk-console.c:736
 msgid "Could not find what packages require this package"
-msgstr "Impossibile trovare i pacchetti richiesti da tale pacchetto"
+msgstr "Impossibile trovare quali pacchetti sono richiesti da questo pacchetto"
 
-#: ../client/pk-console.c:723
+#: ../client/pk-console.c:754
 msgid "Could not get dependencies for this package"
 msgstr "Impossibile ottenere le dipendenze per questo pacchetto"
 
-#: ../client/pk-console.c:741
-msgid "Could not find a description for this package"
-msgstr "Impossibile trovare una descrizione per questo pacchetto"
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "Impossibile trovare i dettagli per questo pacchetto"
 
-#: ../client/pk-console.c:759
-#, c-format
+#: ../client/pk-console.c:790
 msgid "Could not find the files for this package"
 msgstr "Impossibile trovare i file per questo pacchetto"
 
-#: ../client/pk-console.c:819
+#: ../client/pk-console.c:870
 msgid "Package description"
 msgstr "Descrizione del pacchetto"
 
-#: ../client/pk-console.c:842
+#: ../client/pk-console.c:893
 msgid "Package files"
 msgstr "File del pacchetto"
 
-#: ../client/pk-console.c:850
+#: ../client/pk-console.c:901
 msgid "No files"
 msgstr "Nessun file"
 
 #. get user input
-#: ../client/pk-console.c:882
+#: ../client/pk-console.c:933
 msgid "Okay to import key?"
-msgstr "Ok per importare la chiave?"
+msgstr "Confermi l'importazione della chiave?"
 
-#: ../client/pk-console.c:885
+#: ../client/pk-console.c:936
 msgid "Did not import key"
 msgstr "La chiave non è stata importata"
 
 #. get user input
-#: ../client/pk-console.c:925
+#: ../client/pk-console.c:976
 msgid "Do you agree?"
 msgstr "Sei d'accordo?"
 
-#: ../client/pk-console.c:928
+#: ../client/pk-console.c:979
 msgid "Did not agree to licence, task will fail"
-msgstr "La licensa non è stata accettata, il compito non sarà terminato"
+msgstr "La licenza non è stata accettata, il compito non sarà terminato"
 
-#: ../client/pk-console.c:957
+#: ../client/pk-console.c:1008
 msgid "The daemon crashed mid-transaction!"
-msgstr "Il demone e' andato in crash a meta' transazione!"
+msgstr "Il demone e' andato in crash a metà transazione!"
 
 #. header
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1061
 msgid "PackageKit Console Interface"
 msgstr "PackageKit Console Interface"
 
-#: ../client/pk-console.c:1010
+#: ../client/pk-console.c:1061
 msgid "Subcommands:"
 msgstr "Sottocomandi:"
 
-#: ../client/pk-console.c:1114 ../client/pk-monitor.c:100 ../src/pk-main.c:189
+#: ../client/pk-console.c:1165 ../client/pk-monitor.c:104 ../src/pk-main.c:189
 msgid "Show extra debugging information"
-msgstr "Mostra informazioni extra di debugging"
+msgstr "Mostrare informazioni extra di debugging"
 
-#: ../client/pk-console.c:1116 ../client/pk-monitor.c:102
+#: ../client/pk-console.c:1167 ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
-msgstr "Mostra la versione del programma e esci"
+msgstr "Mostrare la versione del programma ed uscire"
 
-#: ../client/pk-console.c:1118
+#: ../client/pk-console.c:1169
 msgid "Set the filter, e.g. installed"
-msgstr "Imposta il filtro, es. installato"
+msgstr "Impostare il filtro, es. installato"
 
-#: ../client/pk-console.c:1120
+#: ../client/pk-console.c:1171
 msgid "Exit without waiting for actions to complete"
-msgstr "Esci senza attendere il completamento delle azioni in corso"
+msgstr "Uscire senza attendere il completamento delle azioni in corso"
 
-#: ../client/pk-console.c:1143
+#: ../client/pk-console.c:1194
 msgid "Could not connect to system DBUS."
-msgstr "Impossibile collegarsi al sistema DBUS"
+msgstr "Impossibile collegarsi al sistema DBUS."
 
-#: ../client/pk-console.c:1231
-#, c-format
+#: ../client/pk-console.c:1288
 msgid "You need to specify a search type"
 msgstr "E' necessario specificare un criterio di ricerca"
 
-#: ../client/pk-console.c:1236 ../client/pk-console.c:1243
-#: ../client/pk-console.c:1250 ../client/pk-console.c:1257
-#: ../client/pk-console.c:1361 ../client/pk-console.c:1368
-#: ../client/pk-console.c:1375 ../client/pk-console.c:1382
-#, c-format
+#: ../client/pk-console.c:1293 ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307 ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421 ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1442
 msgid "You need to specify a search term"
 msgstr "E' necessario specificare un termine per la ricerca"
 
-#: ../client/pk-console.c:1262
-#, c-format
+#: ../client/pk-console.c:1319
 msgid "Invalid search type"
-msgstr "Tipo di ricerca non valido"
+msgstr "Tipo di ricerca non valida"
 
-#: ../client/pk-console.c:1267
-#, c-format
+#: ../client/pk-console.c:1324
 msgid "You need to specify a package or file to install"
 msgstr "E' necessario specificare un pacchetto o un file da installare"
 
-#: ../client/pk-console.c:1280
-#, c-format
+#: ../client/pk-console.c:1339
 msgid "You need to specify a type, key_id and package_id"
 msgstr "E' necessario speficare un tipo, un key_id ed un package_id"
 
-#: ../client/pk-console.c:1287
-#, c-format
+#: ../client/pk-console.c:1346
 msgid "You need to specify a package to remove"
 msgstr "E' necessario specificare un pacchetto da rimuovere"
 
-#: ../client/pk-console.c:1294
-#, c-format
+#: ../client/pk-console.c:1353
 msgid "You need to specify a eula-id"
 msgstr "E' necessario specificare un eula-id"
 
-#: ../client/pk-console.c:1309
-#, c-format
+#: ../client/pk-console.c:1369
 msgid "You need to specify a package name to resolve"
 msgstr "E necessario specificare un nome del pacchetto da risolvere"
 
-#: ../client/pk-console.c:1316 ../client/pk-console.c:1323
-#, c-format
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1383
 msgid "You need to specify a repo name"
-msgstr "E' necessario specificare un nome per il repository"
+msgstr "E' necessario specificare un nome per il repositorio"
 
-#: ../client/pk-console.c:1330
-#, c-format
+#: ../client/pk-console.c:1390
 msgid "You need to specify a repo name/parameter and value"
-msgstr "E' necessario specificare un nome/parametro e un valore per il repository"
+msgstr "E' necessario specificare un nome/parametro e un valore per il repositorio"
 
-#: ../client/pk-console.c:1343
-#, c-format
+#: ../client/pk-console.c:1403
 msgid "You need to specify a time term"
 msgstr "E' necessario specificare un tempo limite"
 
-#: ../client/pk-console.c:1348
-#, c-format
+#: ../client/pk-console.c:1408
 msgid "You need to specify a correct role"
 msgstr "E' necessario specificare un ruolo corretto"
 
-#: ../client/pk-console.c:1353
-#, c-format
+#: ../client/pk-console.c:1413
 msgid "Failed to get last time"
 msgstr "Impossibile ottenere l'ultimo tempo"
 
-#: ../client/pk-console.c:1389
-#, c-format
-msgid "You need to specify a package to find the description for"
-msgstr "E' necessario specificare un pacchetto per trovarne la sua descrizione"
+#: ../client/pk-console.c:1449
+msgid "You need to specify a package to find the details for"
+msgstr "E' necessario specificare un pacchetto per trovarne i dettagli"
 
-#: ../client/pk-console.c:1396
-#, c-format
+#: ../client/pk-console.c:1456
 msgid "You need to specify a package to find the files for"
 msgstr "E' necessario specificare un pacchetto per trovarne i file"
 
-#: ../client/pk-console.c:1441
+#: ../client/pk-console.c:1503
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "Opzione '%s' non supportata"
 
-#: ../client/pk-console.c:1452
+#: ../client/pk-console.c:1514
 msgid "Command failed"
 msgstr "Comando non riuscito"
 
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1518
 msgid "You don't have the necessary privileges for this operation"
-msgstr "Non disponi dei privilegi necessari per questa operazione"
+msgstr "Non si dispone dei privilegi necessari per questa operazione"
 
-#: ../client/pk-monitor.c:113
+#: ../client/pk-monitor.c:117
 msgid "PackageKit Monitor"
 msgstr "PackageKit Monitor"
 
-#: ../client/pk-import-desktop.c:283 ../client/pk-import-specspo.c:169
+#: ../client/pk-import-desktop.c:293 ../client/pk-import-specspo.c:169
 #, c-format
 msgid "Could not open database: %s"
 msgstr "Impossibile accedere al database: %s"
 
-#: ../client/pk-import-desktop.c:284 ../client/pk-import-specspo.c:170
+#: ../client/pk-import-desktop.c:294 ../client/pk-import-specspo.c:170
 msgid "You probably need to run this program as the root user"
-msgstr "Probabilmente hai bisogno di eseguire questo programma come utente root"
+msgstr "Probabilmente si ha bisogno di eseguire questo programma come utente root"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
-msgstr "Avvio non riuscito a causa delle politiche di sicurezza presenti su questa macchina."
+msgstr "Avvio non riuscito a causa delle politiche di sicurezza presenti sulla macchina."
 
 #: ../src/pk-main.c:84
 msgid "This can happen for two reasons:"
-msgstr "Cio' puo' accadere per due motivi:"
+msgstr "Ciò può accadere per due motivi:"
 
 #: ../src/pk-main.c:85
 msgid "The correct user is not launching the executable (usually root)"
-msgstr "L'eseguibile non sta per essere lanciato dall'utente corretto (di solito root)"
+msgstr "L'eseguibile non è lanciato dall'utente corretto (di solito root)"
 
 #: ../src/pk-main.c:86
 msgid ""
 "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
 "dbus-1/system.d directory"
-msgstr "Il file org.freedesktop.PackageKit.conf  non e' installato nella directory di sistema /etc/dbus-1/system.d directory"
+msgstr ""
+"Il file org.freedesktop.PackageKit.conf  non è installato nella directory "
+"di sistema /etc/dbus-1/system.d directory"
 
 #: ../src/pk-main.c:185
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Costruisci il pacchetto per il backend da utilizzare, es. dummy"
+msgstr "Backend per la costruzione dei pacchetti da utilizzare, es. dummy"
 
 #: ../src/pk-main.c:187
 msgid "Daemonize and detach from the terminal"
-msgstr "Rendi demone e stacca dal terminale"
+msgstr "Esegui come demone e stacca dal terminale"
 
 #: ../src/pk-main.c:191
 msgid "Disable the idle timer"
-msgstr "Disattiva il timer"
+msgstr "Disattiva il timer di attesa"
 
 #: ../src/pk-main.c:193
 msgid "Show version and exit"
-msgstr "Mostra la versione e esci"
+msgstr "Mostrare la versione ed uscire"
 
 #: ../src/pk-main.c:195
 msgid "Exit after a small delay"
-msgstr "Esci dopo un piccolo ritardo"
+msgstr "Uscire dopo un piccolo ritardo"
 
 #: ../src/pk-main.c:197
 msgid "Exit after the engine has loaded"
-msgstr "Esci dopo che il motore e' caricato"
+msgstr "Uscire dopo il caricamento del motore"
 
 #: ../src/pk-main.c:207
 msgid "PackageKit service"
-msgstr "PackageKit service"
+msgstr "Servizio PackageKit"
 
 #: ../src/pk-main.c:233
 msgid "Cannot connect to the system bus"
@@ -396,3 +307,4 @@ msgstr "Impossibile collegarsi al bus di sistema"
 #, c-format
 msgid "Error trying to start: %s\n"
 msgstr "Errore nell'avvio di: %s\n"
+
