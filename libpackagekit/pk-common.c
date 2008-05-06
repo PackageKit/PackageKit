@@ -680,7 +680,7 @@ pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
 	guint i;
 
 	/* split the string up by spaces */
-	array = g_strsplit (string, " ", 0);
+	array = g_strsplit (string, "|", 0);
 
 	/* for each */
 	length = g_strv_length (array);
@@ -696,7 +696,7 @@ pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
  * @args: any subsequant string's
  *
  * Form a composite string array of string, with a special twist;
- * if the entry contains a space, then it is split as seporate parts
+ * if the entry contains a '|', then it is split as seporate parts
  * of the array.
  *
  * Return value: the string array, or %NULL if invalid
@@ -938,7 +938,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "va_list_to_argv triple with space first");
-	array = pk_va_list_to_argv_test ("richard phillip", "hughes", NULL);
+	array = pk_va_list_to_argv_test ("richard|phillip", "hughes", NULL);
 	if (pk_strequal (array[0], "richard") &&
 	    pk_strequal (array[1], "phillip") &&
 	    pk_strequal (array[2], "hughes") &&
@@ -951,7 +951,7 @@ libst_common (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "va_list_to_argv triple with space second");
-	array = pk_va_list_to_argv_test ("richard", "phillip hughes", NULL);
+	array = pk_va_list_to_argv_test ("richard", "phillip|hughes", NULL);
 	if (pk_strequal (array[0], "richard") &&
 	    pk_strequal (array[1], "phillip") &&
 	    pk_strequal (array[2], "hughes") &&

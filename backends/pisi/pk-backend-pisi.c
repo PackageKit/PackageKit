@@ -315,7 +315,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	}
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, " ");
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
 	pk_backend_spawn_helper (spawn, "update.py", package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
