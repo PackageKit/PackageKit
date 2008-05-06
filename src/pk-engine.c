@@ -438,6 +438,31 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 }
 
 /**
+ * pk_engine_suggest_daemon_quit:
+ **/
+gboolean
+pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
+{
+	guint size;
+
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	/* can we exit straight away */
+	size = pk_transaction_list_get_size (engine->priv->transaction_list);
+	if (size == 0) {
+		pk_warning ("exit!!");
+		exit (0);
+		return TRUE;
+	}
+
+	/* This will wait from 0..10 seconds, depending on the status of
+	 * pk_main_timeout_check_cb() - usually it should be a few seconds
+	 * after the last transaction */
+	engine->priv->restart_schedule = TRUE;
+	return TRUE;
+}
+
+/**
  * pk_engine_class_init:
  * @klass: The PkEngineClass
  **/
