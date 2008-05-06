@@ -26,6 +26,7 @@
       <arg type="as" name="transactions" direction="out"/>
     </method>
     <method name="StateHasChanged">
+      <arg type="s" name="reason" direction="in"/>
     </method>
     <method name="SuggestDaemonQuit">
     </method>

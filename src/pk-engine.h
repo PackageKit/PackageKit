@@ -96,6 +96,7 @@ gboolean	 pk_engine_get_transaction_list		(PkEngine	*engine,
 							 gchar		***transaction_list,
 							 GError		**error);
 gboolean	 pk_engine_state_has_changed		(PkEngine	*engine,
+							 const gchar	*reason,
 							 GError		**error);
 gboolean	 pk_engine_suggest_daemon_quit		(PkEngine	*engine,
 							 GError		**error);

@@ -68,16 +68,26 @@ static void     pk_engine_finalize	(GObject       *object);
 #define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
 
 /**
- * PK_ENGINE_STATE_CHANGED_TIMEOUT:
+ * PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT:
  *
  * The timeout in seconds to wait when we get the StateHasChanged method.
- * We don't want to queue these transactions if one is already in progress.
+ * We don't queue these transactions if one is already in progress.
  *
- * We probably also need to wait for NetworkManager to come back up if we are
- * resuming, and we probably don't want to be doing this at a busy time after
- * a yum transaction.
+ * This should be used when a native tool has been used, and the update UI should
+ * be updated to reflect reality.
  */
-#define PK_ENGINE_STATE_CHANGED_TIMEOUT		10 /* seconds */
+#define PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT		5 /* seconds */
+
+/**
+ * PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT:
+ *
+ * The timeout in seconds to wait when we get the StateHasChanged method (for selected reasons).
+ * We don't queue these transactions if one is already in progress.
+ *
+ * We probably don't want to be doing an update check at the busy time after a resume, or for
+ * other non-critical reasons.
+ */
+#define PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT		10*60 /* seconds */
 
 struct PkEnginePrivate
 {
@@ -95,7 +105,8 @@ struct PkEnginePrivate
 	PkRoleEnum		 actions;
 	PkGroupEnum		 groups;
 	PkFilterEnum		 filters;
-	gboolean		 signal_state_timeout; /* don't queue StateHasChanged */
+	guint			 signal_state_priority_timeout;
+	guint			 signal_state_normal_timeout;
 };
 
 enum {
@@ -302,7 +313,7 @@ pk_engine_state_changed_cb (gpointer data)
 	/* if network is not up, then just reschedule */
 	state = pk_network_get_network_state (engine->priv->network);
 	if (state == PK_NETWORK_ENUM_OFFLINE) {
-		/* wait another timeout of PK_ENGINE_STATE_CHANGED_TIMEOUT */
+		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
 		return TRUE;
 	}
 
@@ -312,7 +323,8 @@ pk_engine_state_changed_cb (gpointer data)
 	pk_notify_updates_changed (engine->priv->notify);
 
 	/* reset, now valid */
-	engine->priv->signal_state_timeout = 0;
+	engine->priv->signal_state_priority_timeout = 0;
+	engine->priv->signal_state_normal_timeout = 0;
 
 	return FALSE;
 }
@@ -324,21 +336,47 @@ pk_engine_state_changed_cb (gpointer data)
  * have finished their transaction, and the update cache may not be valid.
  **/
 gboolean
-pk_engine_state_has_changed (PkEngine *engine, GError **error)
+pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **error)
 {
+	gboolean is_priority = TRUE;
+
 	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
 
-	if (engine->priv->signal_state_timeout != 0) {
+	/* have we already scheduled priority? */
+	if (engine->priv->signal_state_priority_timeout != 0) {
 		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
-			     "Already asked to refresh state less than %i seconds ago",
-			     PK_ENGINE_STATE_CHANGED_TIMEOUT);
+			     "Already asked to refresh priority state less than %i seconds ago",
+			     PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT);
 		return FALSE;
 	}
 
-	/* wait a little delay in case we get multiple requests */
-	engine->priv->signal_state_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT,
-								    pk_engine_state_changed_cb, engine);
+	/* don't bombard the user 10 seconds after resuming */
+	if (pk_strcmp (reason, "resume")) {
+		is_priority = FALSE;
+	}
 
+	/* are we normal, and already scheduled normal? */
+	if (!is_priority && engine->priv->signal_state_normal_timeout != 0) {
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_INVALID_STATE,
+			     "Already asked to refresh normal state less than %i seconds ago",
+			     PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT);
+		return FALSE;
+	}
+
+	/* are we priority, and already scheduled normal? */
+	if (is_priority && engine->priv->signal_state_normal_timeout != 0) {
+		/* clear normal, as we are about to schedule a priority */
+		g_source_remove (engine->priv->signal_state_normal_timeout);
+		engine->priv->signal_state_normal_timeout = 0;	}
+
+	/* wait a little delay in case we get multiple requests */
+	if (is_priority) {
+		engine->priv->signal_state_priority_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_PRIORITY_TIMEOUT,
+										     pk_engine_state_changed_cb, engine);
+	} else {
+		engine->priv->signal_state_normal_timeout = g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_NORMAL_TIMEOUT,
+										   pk_engine_state_changed_cb, engine);
+	}
 	return TRUE;
 }
 
@@ -575,7 +613,8 @@ pk_engine_init (PkEngine *engine)
 	engine->priv->cache = pk_cache_new ();
 
 	/* we need to be able to clear this */
-	engine->priv->signal_state_timeout = 0;
+	engine->priv->signal_state_priority_timeout = 0;
+	engine->priv->signal_state_normal_timeout = 0;
 
 	/* get another connection */
 	connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, NULL);
@@ -637,9 +676,13 @@ pk_engine_finalize (GObject *object)
 	}
 
 	/* if we set an state changed notifier, clear */
-	if (engine->priv->signal_state_timeout != 0) {
-		g_source_remove (engine->priv->signal_state_timeout);
-		engine->priv->signal_state_timeout = 0;
+	if (engine->priv->signal_state_priority_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_priority_timeout);
+		engine->priv->signal_state_priority_timeout = 0;
+	}
+	if (engine->priv->signal_state_normal_timeout != 0) {
+		g_source_remove (engine->priv->signal_state_normal_timeout);
+		engine->priv->signal_state_normal_timeout = 0;
 	}
 
 	/* compulsory gobjects */
