@@ -1449,6 +1449,7 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filter)
 static gboolean
 backend_update_packages_thread (PkBackend *backend)
 {
+	gboolean retval;
 	gchar **package_ids;
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
@@ -1458,9 +1459,9 @@ backend_update_packages_thread (PkBackend *backend)
 		item.status ().setToBeInstalled (zypp::ResStatus::USER);
 	}
 
-	zypp_perform_execution (backend, UPDATE, FALSE);
+	retval = zypp_perform_execution (backend, UPDATE, FALSE);
 	pk_backend_finished (backend);
-	return TRUE;
+	return retval;
 }
 
 /**

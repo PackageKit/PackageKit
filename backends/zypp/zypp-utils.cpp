@@ -598,7 +598,6 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 					pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT, "You've to agree/decline a license");
 					g_free (package_id);
 					g_free (eula_id);
-					pk_backend_finished (backend);
 					return FALSE;
 				}
 				g_free (eula_id);
