@@ -351,7 +351,7 @@ pk_engine_state_has_changed (PkEngine *engine, const gchar *reason, GError **err
 	}
 
 	/* don't bombard the user 10 seconds after resuming */
-	if (pk_strcmp (reason, "resume")) {
+	if (pk_strequal (reason, "resume")) {
 		is_priority = FALSE;
 	}
 
