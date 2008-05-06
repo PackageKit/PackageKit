@@ -1197,7 +1197,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
 	message = PK_MESSAGE_ENUM_DAEMON;
 	buffer = "ErrorCode() has to be followed with Finished()!";
-	pk_debug ("emit message %i, %s", message, buffer);
+	pk_warning ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
 
 	pk_backend_finished (backend);
@@ -1641,20 +1641,7 @@ pk_backend_finalize (GObject *object)
 
 	pk_debug ("backend finalise");
 
-	/* do finish now, as we might be unreffing quickly */
-	if (backend->priv->signal_finished != 0) {
-		g_source_remove (backend->priv->signal_finished);
-		pk_debug ("doing unref quickly delay");
-		pk_backend_finished_delay (backend);
-	}
-
-	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0) {
-		g_source_remove (backend->priv->signal_error_timeout);
-	}
-
-	/* TODO: need to wait for Finished() if running */
-
+	pk_backend_reset (backend);
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
@@ -1768,6 +1755,20 @@ gboolean
 pk_backend_reset (PkBackend *backend)
 {
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+
+	/* do finish now, as we might be unreffing quickly */
+	if (backend->priv->signal_finished != 0) {
+		g_source_remove (backend->priv->signal_finished);
+		pk_debug ("doing unref quickly delay");
+		pk_backend_finished_delay (backend);
+	}
+
+	/* if we set an error code notifier, clear */
+	if (backend->priv->signal_error_timeout != 0) {
+		g_source_remove (backend->priv->signal_error_timeout);
+	}
+
+	/* TODO: need to wait for Finished() if running */
 
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
