@@ -469,7 +469,7 @@
   </sect1>
 
   <sect1 id="methods-what-provides">
-    <title>Get Depends</title>
+    <title>What Provides</title>
     <para>
       WhatProvides should return packages that provide the supplied attributes.
       This method is useful for finding out what package(s) provide a modalias
@@ -497,7 +497,7 @@
           <row>
             <entry><literal>type</literal></entry>
             <entry>
-              A PkProvideType, e.g. <literal>PK_PROVIDE_ENUM_CODEC</literal>.
+              A PkProvideType, e.g. <literal>PK_PROVIDES_ENUM_CODEC</literal>.
             </entry>
           </row>
           <row>
