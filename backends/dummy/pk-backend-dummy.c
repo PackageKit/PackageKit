@@ -255,6 +255,12 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
+		pk_backend_finished (backend);
+		return;
+	}
 	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
 }
 
