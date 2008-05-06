@@ -33,7 +33,6 @@ extern PkBackendSpawn *spawn;
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSORIES |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
@@ -51,7 +50,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -64,7 +62,6 @@ backend_get_filters (PkBackend *backend)
 void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
 }
 
@@ -76,7 +73,6 @@ void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-details.py", filters_texts_text, search, NULL);
 	g_free (filters_text);
@@ -89,7 +85,6 @@ void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
 	g_free (filters_text);
@@ -102,7 +97,6 @@ void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
 	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
 	g_free (filters_text);
 }

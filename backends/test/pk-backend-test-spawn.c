@@ -34,7 +34,6 @@ static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
 	gchar *filters_text;
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_no_percentage_updates (backend);
 	filters_text = pk_filter_enums_to_text (filters);
@@ -49,7 +48,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "test");
@@ -62,7 +60,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: destroy");
 	g_object_unref (spawn);
 }

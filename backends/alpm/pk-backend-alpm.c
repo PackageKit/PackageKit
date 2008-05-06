@@ -610,8 +610,6 @@ parse_config (const char *file, const char *givensection, pmdb_t * const givendb
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_debug ("alpm: hi!");
 
 	if (alpm_initialize () == -1) {
@@ -645,8 +643,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-
 	if (alpm_release () == -1) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_FAILED_FINALISE, "Failed to release package manager");
 		pk_debug ("alpm: %s", alpm_strerror (pm_errno));
@@ -659,8 +655,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
-
 	// TODO: Provide support for groups in alpm
 	return PK_GROUP_ENUM_OTHER;
 }
@@ -671,8 +665,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
-
 	return PK_FILTER_ENUM_INSTALLED;
 }
 
@@ -682,8 +674,6 @@ backend_get_filters (PkBackend *backend)
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
 	if (pkg == NULL) {
@@ -717,8 +707,6 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
 	if (pkg == NULL) {
@@ -750,8 +738,6 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -785,8 +771,6 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 void
 backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	alpm_list_t *repos = alpm_option_get_syncdbs ();
@@ -810,8 +794,6 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
 {
-	g_return_if_fail (backend != NULL);
-
 	alpm_list_t *problems = NULL;
 	if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
@@ -846,7 +828,6 @@ static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
 	pk_debug ("hello %i", GPOINTER_TO_INT (backend));
-	g_return_if_fail (backend != NULL);
 /*
 	alpm_list_t *syncdbs = alpm_option_get_syncdbs ();
 */
@@ -967,8 +948,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
@@ -986,8 +965,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_if_fail (backend != NULL);
-
 	PkPackageId *id = pk_package_id_new_from_string (package_id);
 	pmtransflag_t flags = 0;
 	alpm_list_t *problems = NULL;
@@ -1032,8 +1009,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 static void
 backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	pmdb_t *localdb = alpm_option_get_localdb ();
@@ -1072,8 +1047,6 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -1107,8 +1080,6 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
-
 	alpm_list_t *result = NULL;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);

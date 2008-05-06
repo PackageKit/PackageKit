@@ -121,8 +121,6 @@ opkg_check_tag (opkg_package_t *pkg, gchar *tag)
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-
 	opkg = opkg_new ();
 
 	if (!opkg) {
@@ -145,8 +143,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-
 	opkg_free (opkg);
 }
 
@@ -181,8 +177,6 @@ backend_refresh_cache_thread (PkBackend *backend)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_no_percentage_updates (backend);
 
@@ -283,7 +277,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 {
 	SearchParams *params;
 
-	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
@@ -306,7 +299,6 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 {
 	SearchParams *params;
 
-	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
@@ -326,7 +318,6 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 {
 	SearchParams *params;
 
-	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
@@ -365,8 +356,6 @@ backend_install_package_thread (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
@@ -413,7 +402,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 {
 	gpointer *params;
 
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_no_percentage_updates (backend);
 
@@ -436,7 +424,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT |
 		PK_FILTER_ENUM_GUI);
@@ -460,7 +447,6 @@ backend_update_system_thread (PkBackend *backend)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
@@ -504,7 +490,6 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gint i;
-	g_return_if_fail (backend != NULL);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
@@ -548,8 +533,6 @@ backend_get_updates_thread (PkBackend *backend)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
 	pk_backend_no_percentage_updates (backend);
 
@@ -562,7 +545,6 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_COMMUNICATION |
 		PK_GROUP_ENUM_PROGRAMMING |
 		PK_GROUP_ENUM_GAMES |

@@ -57,7 +57,6 @@ get_zypp ()
         zypp::ZYpp::Ptr zypp = NULL;
 
         try {
-
 	        zypp = zypp::ZYppFactory::instance ().getZYpp ();
 	
 	        // TODO: Make this threadsafe
@@ -143,7 +142,6 @@ zypp_build_local_pool ()
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 
 	try {
-
 		for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
 			if (! it->isSystemRepo ())
 				pool.reposErase(it->name ());
@@ -414,7 +412,6 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 {
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
 			it != v->end (); it++) {
-
 		gchar *package_id = zypp_build_package_id_from_resolvable (*it);
 
 		// iterate through the given filters
