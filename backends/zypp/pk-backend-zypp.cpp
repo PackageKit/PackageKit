@@ -547,57 +547,6 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 }
 
 static gboolean
-backend_get_updates_thread (PkBackend *backend)
-{
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_set_percentage (backend, 0);
-
-	zypp::ResPool pool = zypp_build_pool (TRUE);
-	pk_backend_set_percentage (backend, 40);
-
-	// get all Packages and Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
-	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
-
-	candidates->insert (candidates2->begin (), candidates2->end ());
-
-	pk_backend_set_percentage (backend, 80);
-	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
-	for (ci = cb; ci != ce; ++ci) {
-		zypp::ResObject::constPtr res = ci->resolvable();
-
-		// Emit the package
-		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
-		if (zypp::isKind<zypp::Patch>(res)) {
-			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
-			if (patch->category () == "recommended") {
-				infoEnum = PK_INFO_ENUM_IMPORTANT;
-			}else if (patch->category () == "optional") {
-				infoEnum = PK_INFO_ENUM_LOW;
-			}else if (patch->category () == "security") {
-				infoEnum = PK_INFO_ENUM_SECURITY;
-			} else {
-				infoEnum = PK_INFO_ENUM_NORMAL;
-			}
-		}
-
-		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
-		pk_backend_package (backend, infoEnum, package_id, "");
-					// some package descriptions generate markup parse failures
-					// causing the update to show empty package lines, comment for now
-					// res->description ().c_str ());
-		g_free (package_id);
-	}
-
-	delete (candidates);
-	delete (candidates2);
-
- 	pk_backend_set_percentage (backend, 100);
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
-static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
 	//Fixme - we should check the network status and bail if not online
@@ -667,6 +616,73 @@ backend_refresh_cache_thread (PkBackend *backend)
 		pk_backend_set_percentage (backend, i == num_of_repos ? 100 : i * percentage_increment);
 	}
 
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_refresh_cache
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	pk_backend_thread_create (backend, backend_refresh_cache_thread);
+}
+
+static gboolean
+backend_get_updates_thread (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_percentage (backend, 0);
+
+	// refresh the repos before checking for updates
+	pk_backend_set_bool (backend, "force", FALSE);
+	if (!backend_refresh_cache_thread (backend)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	zypp::ResPool pool = zypp_build_pool (TRUE);
+	pk_backend_set_percentage (backend, 40);
+
+	// get all Packages and Patches for Update
+	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
+	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
+
+	candidates->insert (candidates2->begin (), candidates2->end ());
+
+	pk_backend_set_percentage (backend, 80);
+	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+		zypp::ResObject::constPtr res = ci->resolvable();
+
+		// Emit the package
+		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			if (patch->category () == "recommended") {
+				infoEnum = PK_INFO_ENUM_IMPORTANT;
+			}else if (patch->category () == "optional") {
+				infoEnum = PK_INFO_ENUM_LOW;
+			}else if (patch->category () == "security") {
+				infoEnum = PK_INFO_ENUM_SECURITY;
+			} else {
+				infoEnum = PK_INFO_ENUM_NORMAL;
+			}
+		}
+
+		gchar *package_id = zypp_build_package_id_from_resolvable (res->satSolvable ());
+		pk_backend_package (backend, infoEnum, package_id, "");
+					// some package descriptions generate markup parse failures
+					// causing the update to show empty package lines, comment for now
+					// res->description ().c_str ());
+		g_free (package_id);
+	}
+
+	delete (candidates);
+	delete (candidates2);
+
+ 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1121,15 +1137,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 {
 	pk_backend_set_uint (backend, "allow_deps", allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW);
 	pk_backend_thread_create (backend, backend_remove_package_thread);
-}
-
-/**
- * backend_refresh_cache
- */
-static void
-backend_refresh_cache (PkBackend *backend, gboolean force)
-{
-	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
 static gboolean
@@ -1652,7 +1659,7 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_details,		/* get_details */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
