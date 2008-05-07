@@ -258,7 +258,7 @@ backend_install_files_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	full_path = pk_backend_get_strv (backend, "full_paths");
+	full_paths = pk_backend_get_strv (backend, "full_paths");
 	result = box_package_install(full_paths[0], ROOT_DIRECTORY, common_progress, backend, FALSE);
 
 	pk_backend_finished (backend);
@@ -385,9 +385,9 @@ static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	gchar *package_ids;
+	gchar **package_ids;
 
-	package_ids = pk_backend_get_string (backend, "package_ids");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
