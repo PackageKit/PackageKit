@@ -1839,6 +1839,7 @@ void
 pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 			      gchar **full_paths, DBusGMethodInvocation *context)
 {
+	gchar *full_paths_temp;
 	gboolean ret;
 	GError *error;
 	gchar *sender;
@@ -1848,7 +1849,9 @@ pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("InstallFiles method called: %s (trusted %i)", full_paths[0], trusted);
+	full_paths_temp = pk_package_ids_to_text (full_paths, ", ");
+	pk_debug ("InstallFiles method called: %s (trusted %i)", full_paths_temp, trusted);
+	g_free (full_paths_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_files == NULL) {
@@ -1912,12 +1915,14 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	gboolean ret;
 	GError *error;
 	gchar *sender;
-	gchar *package_id_temp;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("method called: %s", package_ids[0]);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("InstallPackages method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->install_packages == NULL) {
@@ -1931,10 +1936,10 @@ pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (ret == FALSE) {
-		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_id_temp);
-		g_free (package_id_temp);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2127,12 +2132,14 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	gboolean ret;
 	GError *error;
 	gchar *sender;
-	gchar *package_id_temp;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("RemovePackages method called: %s, %i, %i", package_ids[0], allow_deps, autoremove);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->remove_packages == NULL) {
@@ -2146,10 +2153,10 @@ pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (ret == FALSE) {
-		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_id_temp);
-		g_free (package_id_temp);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2715,7 +2722,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	gboolean ret;
 	GError *error;
 	gchar *sender;
-	gchar *package_id_temp;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2734,10 +2741,10 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (ret == FALSE) {
-		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_id_temp);
-		g_free (package_id_temp);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
