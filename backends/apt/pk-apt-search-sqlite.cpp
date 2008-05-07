@@ -37,7 +37,6 @@ static PkBackendSpawn *spawn;
 extern "C" PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSORIES |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
@@ -55,7 +54,6 @@ backend_get_groups (PkBackend *backend)
 extern "C" PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -96,7 +94,6 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 extern "C" void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_spawn_helper (spawn, "search-group.py", filter, search, NULL);
 }

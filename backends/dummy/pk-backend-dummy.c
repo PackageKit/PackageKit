@@ -47,7 +47,6 @@ static gboolean _has_signature = FALSE;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	_progress_percentage = 0;
 }
 
@@ -57,7 +56,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 }
 
 /**
@@ -66,7 +64,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSIBILITY |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_SYSTEM);
@@ -78,7 +75,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -108,7 +104,6 @@ backend_cancel_timeout (gpointer data)
 static void
 backend_cancel (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	/* cancel the timeout */
 	if (_signal_timeout != 0) {
 		g_source_remove (_signal_timeout);
@@ -124,7 +119,6 @@ backend_cancel (PkBackend *backend)
 static void
 backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -139,7 +133,6 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_details (backend, "gnome-power-manager;2.6.19;i386;fedora", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 "Scribus is an desktop open source page layöut program with "
@@ -159,7 +152,6 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_files (backend, "gnome-power-manager;2.6.19;i386;fedora",
 			  "/usr/share/man/man1;/usr/share/man/man1/gnome-power-manager.1.gz");
@@ -171,7 +163,6 @@ backend_get_files (PkBackend *backend, const gchar *package_id)
 static void
 backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "glib2;2.14.0;i386;fedora", "The GLib library");
@@ -223,7 +214,6 @@ backend_get_update_detail_timeout (gpointer data)
 static void
 backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	_package_id = package_id;
 	_signal_timeout = g_timeout_add (500, backend_get_update_detail_timeout, backend);
@@ -263,10 +253,14 @@ backend_get_updates_timeout (gpointer data)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_no_percentage_updates (backend);
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
+		pk_backend_finished (backend);
+		return;
+	}
 	_signal_timeout = g_timeout_add (1000, backend_get_updates_timeout, backend);
 }
 
@@ -302,7 +296,6 @@ backend_install_timeout (gpointer data)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	const gchar *license_agreement;
 	const gchar *eula_id;
 	gboolean has_eula;
@@ -365,7 +358,6 @@ static void
 backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	if (type == PK_SIGTYPE_ENUM_GPG &&
 	    pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva") &&
@@ -386,7 +378,6 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 static void
 backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -412,7 +403,6 @@ backend_refresh_cache_timeout (gpointer data)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
 	_progress_percentage = 0;
 
 	/* reset */
@@ -430,7 +420,6 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	if (pk_strequal (package, "vips-doc")) {
 		pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -449,7 +438,6 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
 static void
 backend_rollback (PkBackend *backend, const gchar *transaction_id)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_finished (backend);
 }
 
@@ -459,7 +447,6 @@ backend_rollback (PkBackend *backend, const gchar *transaction_id)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
 	pk_backend_finished (backend);
@@ -471,7 +458,6 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -486,7 +472,6 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 static void
 backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -501,7 +486,6 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE,
@@ -542,7 +526,6 @@ backend_search_name_timeout (gpointer data)
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
@@ -618,7 +601,6 @@ backend_update_packages_download_timeout (gpointer data)
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
-	g_return_if_fail (backend != NULL);
 	_package_ids = package_ids;
 	_package_current = 0;
 	pk_backend_set_percentage (backend, 0);
@@ -680,7 +662,6 @@ backend_update_system_timeout (gpointer data)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	_progress_percentage = 0;
@@ -694,7 +675,6 @@ backend_update_system (PkBackend *backend)
 static void
 backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	if (_has_service_pack) {
 		pk_backend_repo_detail (backend, "local",
@@ -713,7 +693,6 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 
 	if (pk_strequal (rid, "local")) {
@@ -737,7 +716,6 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 static void
 backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parameter, const gchar *value)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
 	pk_backend_finished (backend);
@@ -749,7 +727,6 @@ backend_repo_set_data (PkBackend *backend, const gchar *rid, const gchar *parame
 static void
 backend_service_pack (PkBackend *backend, const gchar *location, gboolean enabled)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_RUNNING);
 	pk_warning ("service pack %i on %s device", enabled, location);
 
@@ -773,7 +750,6 @@ backend_service_pack (PkBackend *backend, const gchar *location, gboolean enable
 static void
 backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "evince;0.9.3-5.fc8;i386;installed",
@@ -790,7 +766,6 @@ backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum 
 static void
 backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REQUEST);
 	pk_backend_package (backend, PK_INFO_ENUM_INSTALLED,
 			    "update1;2.19.1-4.fc8;i386;fedora",

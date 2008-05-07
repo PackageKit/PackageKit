@@ -44,6 +44,7 @@
 
 #include <glib/gi18n.h>
 
+#include "pk-common.h"
 #include "pk-debug.h"
 #include "pk-network-unix.h"
 #include "pk-marshal.h"
@@ -72,6 +73,8 @@ enum {
 static guint signals [PK_NETWORK_UNIX_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkNetworkUnix, pk_network_unix, G_TYPE_OBJECT)
+#define PK_NETWORK_PROC_ROUTE	"/proc/net/route"
+
 
 /**
  * pk_network_unix_get_network_state:
@@ -82,9 +85,81 @@ G_DEFINE_TYPE (PkNetworkUnix, pk_network_unix, G_TYPE_OBJECT)
 PkNetworkEnum
 pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 {
+	gchar *contents = NULL;
+	gboolean ret;
+	GError *error = NULL;
+	gchar **lines;
+	gchar **sections;
+	guint number_lines;
+	guint number_sections;
+	guint i;
+	gboolean online = FALSE;
+
 	g_return_val_if_fail (PK_IS_NETWORK_UNIX (network_unix), PK_NETWORK_ENUM_UNKNOWN);
-	/* TODO: check the default route */
-	return PK_NETWORK_ENUM_ONLINE;
+
+	/* hack, because netlink is teh suck */
+	ret = g_file_get_contents (PK_NETWORK_PROC_ROUTE, &contents, NULL, &error);
+	if (!ret) {
+		pk_warning ("could not open %s: %s", PK_NETWORK_PROC_ROUTE, error->message);
+		g_error_free (error);
+		/* no idea whatsoever! */
+		return PK_NETWORK_ENUM_ONLINE;
+	}
+
+	/* something insane */
+	if (contents == NULL) {
+		pk_warning ("insane contents of %s", PK_NETWORK_PROC_ROUTE);
+		return PK_NETWORK_ENUM_ONLINE;
+	}
+
+	/* one line per interface */
+	lines = g_strsplit (contents, "\n", 0);
+	if (lines == NULL) {
+		pk_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+		return PK_NETWORK_ENUM_ONLINE;
+	}
+
+	number_lines = g_strv_length (lines);
+	for (i=0; i<number_lines; i++) {
+		/* empty line */
+		if (pk_strzero (lines[i])) {
+			continue;
+		}
+
+		/* tab delimited */
+		sections = g_strsplit (lines[i], "\t", 0);
+		if (sections == NULL) {
+			pk_warning ("unable to split %s", PK_NETWORK_PROC_ROUTE);
+			continue;
+		}
+
+		/* is header? */
+		if (pk_strequal (sections[0], "Iface")) {
+			continue;
+		}
+
+		/* is correct parameters? */
+		number_sections = g_strv_length (sections);
+		if (number_sections != 11) {
+			pk_warning ("invalid line '%s' (%i)", lines[i], number_sections);
+			continue;
+		}
+
+		/* is MTU and gateway nonzero? */
+		if (!pk_strequal (sections[8], "0") &&
+		    !pk_strequal (sections[2], "00000000")) {
+			pk_debug ("interface %s is valid", sections[0]);
+			online = TRUE;
+		}
+		g_strfreev (sections);
+	}
+	g_strfreev (lines);
+
+	if (online) {
+		return PK_NETWORK_ENUM_ONLINE;
+	}
+
+	return PK_NETWORK_ENUM_OFFLINE;
 }
 
 /**

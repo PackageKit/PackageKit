@@ -67,7 +67,7 @@
 <td><b>Resolve</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
@@ -82,7 +82,7 @@
 <td><b>RefreshCache</b></td>
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
@@ -142,7 +142,7 @@
 <td><b>SearchDetails</b></td>
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
@@ -202,7 +202,7 @@
 <td><b>InstallFile</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
@@ -277,7 +277,7 @@
 <td><b>GetDetails</b></td>
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
@@ -292,7 +292,7 @@
 <td><b>GetFiles</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
@@ -412,7 +412,7 @@
 <td><b>GetPackages</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
@@ -639,6 +639,24 @@ if (!ret) {
         g_warning ("failed: %s", error->message);
         g_error_free (error);
 }
+</pre>
+<p>
+or in python...
+</p>
+<pre>
+import dbus
+
+try:
+    bus = dbus.SessionBus()
+except dbus.DBusException, e:
+    print 'Unable to connect to dbus: %s' % str(e)
+    sys.exit()
+try:
+    proxy = bus.get_object('org.freedesktop.PackageKit', '/org/freedesktop/PackageKit')
+    iface = dbus.Interface(proxy, 'org.freedesktop.PackageKit')
+    iface.InstallPackageName('openoffice-clipart')
+except dbus.DBusException, e:
+    print 'Unable to use PackageKit: %s' % str(e)
 </pre>
 <p>
 The methods available on this interface are:

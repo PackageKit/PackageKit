@@ -20,12 +20,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-dbus.h>
 
 static PkBackendDbus *dbus;
-static PkNetwork *network;
 
 #define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
@@ -36,9 +34,7 @@ static PkNetwork *network;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
@@ -50,10 +46,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
 	pk_debug ("FILTER: destroy");
-	g_object_unref (network);
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -64,7 +57,6 @@ backend_destroy (PkBackend *backend)
 static PkGroupEnum
 backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_GROUP_ENUM_UNKNOWN);
 	return (PK_GROUP_ENUM_ACCESSORIES |
 		PK_GROUP_ENUM_GAMES |
 		PK_GROUP_ENUM_GRAPHICS |
@@ -82,7 +74,6 @@ backend_get_groups (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
 	return (PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
 		PK_FILTER_ENUM_DEVELOPMENT);
@@ -94,8 +85,6 @@ backend_get_filters (PkBackend *backend)
 static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
 	pk_backend_dbus_get_updates (dbus, filters);
 }
 
@@ -105,11 +94,8 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
-
 	// check network state
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -124,9 +110,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_update_system (dbus);
+	pk_backend_dbus_update_system (dbus);
 }
 
 /**
@@ -135,9 +119,7 @@ backend_update_system (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_install_package (dbus, package_id);
+	pk_backend_dbus_install_package (dbus, package_id);
 }
 
 /**
@@ -146,9 +128,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
+	pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
 }
 
 /**
@@ -157,9 +137,7 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_get_details (dbus, package_id);
+	pk_backend_dbus_get_details (dbus, package_id);
 }
 
 /**
@@ -168,9 +146,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 static void
 backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_details (dbus, filters, search);
+	pk_backend_dbus_search_details (dbus, filters, search);
 }
 
 /**
@@ -179,9 +155,7 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_name (dbus, filters, search);
+	pk_backend_dbus_search_name (dbus, filters, search);
 }
 
 /**
@@ -190,9 +164,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 static void
 backend_cancel (PkBackend *backend)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_cancel (dbus);
+	pk_backend_dbus_cancel (dbus);
 }
 
 
@@ -205,7 +177,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
 	NULL,					/* get_depends */
-	backend_get_details,	        /* get_details */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */

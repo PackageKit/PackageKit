@@ -1312,8 +1312,6 @@ backend_destroy (PkBackend *backend)
 static PkFilterEnum
 backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_FILTER_ENUM_UNKNOWN);
-
 	return (PK_FILTER_ENUM_NEWEST |
 		PK_FILTER_ENUM_GUI |
 		PK_FILTER_ENUM_INSTALLED |
