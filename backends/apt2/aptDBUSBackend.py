@@ -487,6 +487,28 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    def doGetPackages(self, filters):
+        '''
+        Implement the apt2-get-packages functionality
+        '''
+        pklog.info("Get all packages")
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            elif self._is_package_visible(pkg, filters):
+                self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
     # Helpers
 
     def _open_cache(self, prange=(0,100), progress=True):
