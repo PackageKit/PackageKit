@@ -193,8 +193,8 @@ backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), full_paths, NULL);
+	package_ids_temp = pk_package_ids_to_text (full_paths, "|");
+	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), package_ids_temp, NULL);
 	g_free (package_ids_temp);
 }
 
@@ -356,7 +356,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_files */
+	backend_install_files,			/* install_files */
 	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
