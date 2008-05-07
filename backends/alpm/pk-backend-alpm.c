@@ -890,36 +890,71 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_files:
+ * backend_install_files_thread:
  */
-static void
-backend_install_files (PkBackend *backend, gboolean trusted, const gchar *paths)
+static gboolean
+backend_install_files_thread (PkBackend *backend)
 {
-	alpm_list_t *problems = NULL;
+	pk_backend_no_percentage_updates (backend);
+
+	gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
+
+	/* create a new transaction */
 	if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		pk_backend_finished (backend);
-		return;
+		return FALSE;
+	}
+	pk_debug ("alpm: %s", "transaction initialized");
+
+	/* add targets to the transaction */
+	int iterator;
+	for (iterator = 0; iterator < g_strv_length (full_paths); ++iterator) {
+		if (alpm_trans_addtarget (full_paths[iterator]) == -1) {
+			pk_warning ("alpm: %s", alpm_strerrorlast ());
+			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
+			alpm_trans_release ();
+			pk_backend_finished (backend);
+			return FALSE;
+		}
 	}
 
-	alpm_trans_addtarget ((char *) path);
+	alpm_list_t *data = NULL;
 
-	if (alpm_trans_prepare (&problems) != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
-		pk_backend_finished (backend);
+	/* prepare transaction */
+	if (alpm_trans_prepare (&data) == -1) {
+		pk_warning ("alpm: %s", alpm_strerrorlast ());
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
-		return;
+		pk_backend_finished (backend);
+		return FALSE;
 	}
 
-	if (alpm_trans_commit (&problems) != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));
-		pk_backend_finished (backend);
+	/* commit transaction */
+	if (alpm_trans_commit (&data) == -1) {
+		pk_warning ("alpm: %s", alpm_strerrorlast ());
+		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerrorlast ());
 		alpm_trans_release ();
-		return;
+		pk_backend_finished (backend);
+		return FALSE;
 	}
 
 	alpm_trans_release ();
+	pk_debug ("alpm: %s", "transaction released");
+
 	pk_backend_finished (backend);
+	return TRUE;
+}
+
+/**
+ * backend_install_files:
+ */
+static void
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
+
+	pk_backend_thread_create (backend, backend_install_files_thread);
 }
 
 /**
@@ -934,7 +969,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 */
 	alpm_list_t *result = NULL;
 	alpm_list_t *problems = NULL;
-	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	PkPackageId *id = pk_package_id_new_from_string (package_ids[0]);
 	pmtransflag_t flags = 0;
 	GThread *progress = NULL;
 
@@ -989,7 +1024,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 		return;
 	}
 
-	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, package_id, "An HTML widget for GTK+ 2.0");
+	pk_backend_package (backend, PK_INFO_ENUM_DOWNLOADING, package_ids[0], "An HTML widget for GTK+ 2.0");
 
 	progress = g_thread_create (state_notify, (void *) backend, TRUE, NULL);
 	install_backend = backend;
