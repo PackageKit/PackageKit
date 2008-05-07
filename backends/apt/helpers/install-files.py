@@ -14,7 +14,8 @@ import sys
 
 from aptBackend import PackageKitAptBackend
 
-files_to_inst = sys.argv[1]
+trusted = sys.argv[1]
+files_to_inst = sys.argv[2:]
 backend = PackageKitAptBackend(sys.argv[1:])
-backend.install_files(files_to_inst)
+backend.install_files(trusted, files_to_inst)
 sys.exit(0)
