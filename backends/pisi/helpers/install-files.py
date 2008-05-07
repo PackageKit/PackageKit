@@ -15,8 +15,8 @@ import sys
 import pisiBackend
 
 trusted = sys.argv[1]
-file_to_insts = sys.argv[2]
+files_to_inst = sys.argv[2:]
 backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.install_files(trusted, file_to_insts)
+backend.install_files(trusted, files_to_inst)
 
 sys.exit()

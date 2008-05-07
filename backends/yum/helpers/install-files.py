@@ -15,7 +15,7 @@ import sys
 from yumBackend import PackageKitYumBackend
 
 trusted = sys.argv[1]
-files_to_inst = sys.argv[2]
+files_to_inst = sys.argv[2:]
 backend = PackageKitYumBackend(sys.argv[1:])
 backend.install_files(trusted, files_to_inst)
 sys.exit(0)
