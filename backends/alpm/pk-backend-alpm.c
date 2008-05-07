@@ -702,9 +702,27 @@ backend_initialize (PkBackend *backend)
 	g_hash_table_insert (group_mapping, "compiz-fusion-kde", "desktop-kde");
 	g_hash_table_insert (group_mapping, "lxde", "desktop-other");
 	g_hash_table_insert (group_mapping, "rox-desktop", "desktop-other");
+	g_hash_table_insert (group_mapping, "e17-cvs", "desktop-other");
+	g_hash_table_insert (group_mapping, "e17-extra-cvs", "desktop-other");
+	g_hash_table_insert (group_mapping, "e17-libs-cvs", "desktop-other");
 	g_hash_table_insert (group_mapping, "xfce4", "desktop-xfce");
 	g_hash_table_insert (group_mapping, "xfce4-goodies", "desktop-xfce");
+	g_hash_table_insert (group_mapping, "bmp-io-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "bmp-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "bmp-visualization-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "gstreamer0.10-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "ladspa-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "pvr", "multimedia");
+	g_hash_table_insert (group_mapping, "mythtv-extras", "multimedia");
+	g_hash_table_insert (group_mapping, "xmms-effect-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "xmms-io-plugins", "multimedia");
+	g_hash_table_insert (group_mapping, "xmms-plugins", "multimedia");
 	g_hash_table_insert (group_mapping, "base-devel", "programming");
+	g_hash_table_insert (group_mapping, "texlive-lang", "publishing");
+	g_hash_table_insert (group_mapping, "texlive-lang-doc", "publishing");
+	g_hash_table_insert (group_mapping, "texlive-most", "publishing");
+	g_hash_table_insert (group_mapping, "texlive-most-doc", "publishing");
+	g_hash_table_insert (group_mapping, "texlive-most-svn", "publishing");
 	g_hash_table_insert (group_mapping, "base", "system");
 
 	pk_debug ("alpm: ready to go");
@@ -735,8 +753,10 @@ backend_get_groups (PkBackend *backend)
 			PK_GROUP_ENUM_DESKTOP_KDE |
 			PK_GROUP_ENUM_DESKTOP_OTHER |
 			PK_GROUP_ENUM_DESKTOP_XFCE |
+			PK_GROUP_ENUM_MULTIMEDIA |
 			PK_GROUP_ENUM_OTHER |
 			PK_GROUP_ENUM_PROGRAMMING |
+			PK_GROUP_ENUM_PUBLISHING |
 			PK_GROUP_ENUM_SYSTEM);
 }
 
