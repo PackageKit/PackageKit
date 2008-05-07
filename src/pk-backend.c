@@ -108,6 +108,7 @@ struct _PkBackendPrivate
 	GHashTable		*hash_string;
 	GHashTable		*hash_strv;
 	GHashTable		*hash_pointer;
+	GHashTable		*hash_array;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -308,6 +309,32 @@ pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 }
 
 /**
+ * pk_backend_set_array:
+ **/
+gboolean
+pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_array, g_strdup (key), (gpointer) data);
+	return TRUE;
+}
+
+/**
  * pk_backend_set_uint:
  **/
 gboolean
@@ -385,7 +412,7 @@ pk_backend_get_string (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
 	if (value == NULL) {
 		pk_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return (const gchar *) value;
 }
@@ -404,9 +431,28 @@ pk_backend_get_strv (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
 	if (value == NULL) {
 		pk_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return (gchar **) value;
+}
+
+/**
+ * pk_backend_get_array:
+ **/
+GPtrArray *
+pk_backend_get_array (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return NULL;
+	}
+	return (GPtrArray *) value;
 }
 
 /**
@@ -1365,6 +1411,7 @@ pk_backend_finished_delay (gpointer data)
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
 	g_hash_table_remove_all (backend->priv->hash_strv);
+	g_hash_table_remove_all (backend->priv->hash_array);
 
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
@@ -1650,6 +1697,7 @@ pk_backend_finalize (GObject *object)
 	g_hash_table_unref (backend->priv->hash_string);
 	g_hash_table_unref (backend->priv->hash_strv);
 	g_hash_table_unref (backend->priv->hash_pointer);
+	g_hash_table_unref (backend->priv->hash_array);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
@@ -1789,6 +1837,15 @@ pk_backend_reset (PkBackend *backend)
 }
 
 /**
+ * pk_free_ptr_array:
+ **/
+static void
+pk_free_ptr_array (gpointer data)
+{
+	g_ptr_array_free ((GPtrArray *) data, TRUE);
+}
+
+/**
  * pk_backend_init:
  **/
 static void
@@ -1810,6 +1867,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
 	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	backend->priv->hash_array = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, pk_free_ptr_array);
 
 	/* monitor config files for changes */
 	backend->priv->file_monitor = pk_file_monitor_new ();
