@@ -1,4 +1,6 @@
-<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 
 <!-- Process this file with docbook-to-man to generate an nroff manual
      page: `docbook-to-man manpage.sgml > manpage.1'.  You may view
@@ -76,21 +78,3 @@ manpage.1: manpage.sgml
     </para>
   </refsect1>
 </refentry>
-
-<!-- Keep this comment at the end of the file
-Local variables:
-mode: sgml
-sgml-omittag:t
-sgml-shorttag:t
-sgml-minimize-attributes:nil
-sgml-always-quote-attributes:t
-sgml-indent-step:2
-sgml-indent-data:t
-sgml-parent-document:nil
-sgml-default-dtd-file:nil
-sgml-exposed-tags:nil
-sgml-local-catalogs:nil
-sgml-local-ecat-files:nil
-End:
--->
-
