@@ -3,11 +3,11 @@
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 
 <!-- Process this file with docbook-to-man to generate an nroff manual
-     page: `docbook-to-man manpage.sgml > manpage.1'.  You may view
-     the manual page with: `docbook-to-man manpage.sgml | nroff -man |
+     page: `docbook-to-man manpage.xml > manpage.1'.  You may view
+     the manual page with: `docbook-to-man manpage.xml | nroff -man |
      less'.  A typical entry in a Makefile or Makefile.am is:
 
-manpage.1: manpage.sgml
+manpage.1: manpage.xml
 	docbook-to-man $< > $@
 
 	The docbook-to-man binary is found in the docbook-to-man package.
