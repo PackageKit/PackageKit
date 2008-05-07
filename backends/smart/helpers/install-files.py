@@ -14,7 +14,8 @@ import sys
 
 from smartBackend import PackageKitSmartBackend
 
-package = sys.argv[1]
+trusted = sys.argv[1]
+files_to_inst = sys.argv[2]
 backend = PackageKitSmartBackend(sys.argv[1:])
-backend.update(package)
+backend.install_files(trusted, files_to_inst)
 sys.exit(0)

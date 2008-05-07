@@ -130,19 +130,19 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_id)
 {
 	pk_backend_finished (backend);
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	pk_backend_finished (backend);
 }
@@ -157,10 +157,10 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_finished (backend);
 }
@@ -252,18 +252,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_details,		/* get_details */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */

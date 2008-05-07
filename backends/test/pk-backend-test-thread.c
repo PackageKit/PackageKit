@@ -152,11 +152,11 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_file */
-	NULL,					/* install_package */
+	NULL,					/* install_files */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

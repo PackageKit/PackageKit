@@ -90,6 +90,7 @@ struct _PkClientPrivate
 	gchar			*cached_transaction_id;
 	gchar			*cached_key_id;
 	gchar			*cached_full_path;
+	gchar			**cached_full_paths;
 	gchar			*cached_search;
 	PkProvidesEnum		 cached_provides;
 	PkFilterEnum		 cached_filters;
@@ -1871,12 +1872,12 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 }
 
 /**
- * pk_client_remove_package_action:
+ * pk_client_remove_packages_action:
  **/
 static gboolean
-pk_client_remove_package_action (PkClient *client, const gchar *package_id,
-				 gboolean allow_deps, gboolean autoremove,
-				 GError **error)
+pk_client_remove_packages_action (PkClient *client, gchar **package_ids,
+				  gboolean allow_deps, gboolean autoremove,
+				  GError **error)
 {
 	gboolean ret;
 
@@ -1888,8 +1889,8 @@ pk_client_remove_package_action (PkClient *client, const gchar *package_id,
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackage", error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (client->priv->proxy, "RemovePackages", error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1897,9 +1898,9 @@ pk_client_remove_package_action (PkClient *client, const gchar *package_id,
 }
 
 /**
- * pk_client_remove_package:
+ * pk_client_remove_packages:
  * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @allow_deps: if other dependant packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @error: a %GError to put the error code and message in, or %NULL
@@ -1911,20 +1912,23 @@ pk_client_remove_package_action (PkClient *client, const gchar *package_id,
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps,
+pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow_deps,
 			  gboolean autoremove, GError **error)
 {
 	gboolean ret;
+	gchar *package_ids_temp;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -1935,13 +1939,13 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 	}
 
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGE;
+	client->priv->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
 	client->priv->cached_allow_deps = allow_deps;
 	client->priv->cached_autoremove = autoremove;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_remove_package_action (client, package_id, allow_deps, autoremove, &error_pk);
+	ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -1950,7 +1954,7 @@ pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean al
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_remove_package_action (client, package_id, allow_deps, autoremove, &error_pk);
+			ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2061,7 +2065,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
  * pk_client_install_package_action:
  **/
 static gboolean
-pk_client_install_package_action (PkClient *client, const gchar *package_id, GError **error)
+pk_client_install_package_action (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
 
@@ -2073,16 +2077,16 @@ pk_client_install_package_action (PkClient *client, const gchar *package_id, GEr
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackage", error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallPackages", error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
 
 /**
- * pk_client_install_package:
+ * pk_client_install_packages:
  * @client: a valid #PkClient instance
- * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @package_ids: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a package of the newest and most correct version.
@@ -2090,19 +2094,22 @@ pk_client_install_package_action (PkClient *client, const gchar *package_id, GEr
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_package (PkClient *client, const gchar *package_id, GError **error)
+pk_client_install_packages (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
+	gchar *package_ids_temp;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
-	/* check the PackageID here to avoid a round trip if invalid */
-	ret = pk_package_id_check (package_id);
+	/* check the PackageIDs here to avoid a round trip if invalid */
+	ret = pk_package_ids_check (package_ids);
 	if (!ret) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		pk_client_error_set (error, PK_CLIENT_ERROR_INVALID_PACKAGEID,
-				     "package_id '%s' is not valid", package_id);
+				     "package_ids '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		return FALSE;
 	}
 
@@ -2113,11 +2120,11 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 	}
 
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGE;
-	client->priv->cached_package_id = g_strdup (package_id);
+	client->priv->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
+	client->priv->cached_package_ids = g_strdupv (package_ids);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_package_action (client, package_id, &error_pk);
+	ret = pk_client_install_package_action (client, package_ids, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -2126,7 +2133,7 @@ pk_client_install_package (PkClient *client, const gchar *package_id, GError **e
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_install_package_action (client, package_id, &error_pk);
+			ret = pk_client_install_package_action (client, package_ids, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2271,7 +2278,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
 }
 
 /**
- * pk_client_update_packages_strv:
+ * pk_client_update_packages:
  * @client: a valid #PkClient instance
  * @package_ids: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
  * @error: a %GError to put the error code and message in, or %NULL
@@ -2281,7 +2288,7 @@ pk_client_update_packages_action (PkClient *client, gchar **package_ids, GError 
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **error)
+pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error)
 {
 	gboolean ret;
 	gchar *package_ids_temp;
@@ -2347,37 +2354,6 @@ pk_client_update_packages_strv (PkClient *client, gchar **package_ids, GError **
 }
 
 /**
- * pk_client_update_packages:
- * @client: a valid #PkClient instance
- * @error: a %GError to put the error code and message in, or %NULL
- * @package_id: an array of package_id structures such as "gnome-power-manager;0.0.1;i386;fedora"
- * @...: NULL terminated list
- *
- * Update specific packages to the newest available versions.
- *
- * Return value: %TRUE if the daemon queued the transaction
- **/
-gboolean
-pk_client_update_packages (PkClient *client, GError **error, const gchar *package_id, ...)
-{
-	va_list args;
-	gchar **package_ids;
-	gboolean ret;
-
-	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
-
-	/* process the valist */
-	va_start (args, package_id);
-	package_ids = pk_package_ids_from_va_list (package_id, &args);
-	va_end (args);
-
-	ret = pk_client_update_packages_strv (client, package_ids, error);
-	g_strfreev (package_ids);
-	return ret;
-}
-
-/**
  * pk_client_update_package:
  * @client: a valid #PkClient instance
  * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
@@ -2390,17 +2366,95 @@ pk_client_update_packages (PkClient *client, GError **error, const gchar *packag
 gboolean
 pk_client_update_package (PkClient *client, const gchar *package_id, GError **error)
 {
+	gchar **package_ids;
+	gboolean ret;
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	return pk_client_update_packages (client, error, package_id, NULL);
+	package_ids = g_strsplit (package_id, "|", 1);
+	ret = pk_client_update_packages (client, package_ids, error);
+	g_strfreev (package_ids);
+	return ret;
 }
 
 /**
- * pk_client_install_file_action:
+ * pk_client_install_package:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Install a specific package.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_install_package (PkClient *client, const gchar *package_id, GError **error)
+{
+	gchar **package_ids;
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	package_ids = g_strsplit (package_id, "|", 1);
+	ret = pk_client_install_packages (client, package_ids, error);
+	g_strfreev (package_ids);
+	return ret;
+}
+
+/**
+ * pk_client_install_file:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Install a specific package.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_rel, GError **error)
+{
+	gchar **files_rel;
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (file_rel != NULL, FALSE);
+
+	files_rel = g_strsplit (file_rel, "|", 1);
+	ret = pk_client_install_files (client, trusted, files_rel, error);
+	g_strfreev (files_rel);
+	return ret;
+}
+
+/**
+ * pk_client_remove_package:
+ * @client: a valid #PkClient instance
+ * @package_id: a package_id structure such as "gnome-power-manager;0.0.1;i386;fedora"
+ * @error: a %GError to put the error code and message in, or %NULL
+ *
+ * Remove a specific package.
+ *
+ * Return value: %TRUE if the daemon queued the transaction
+ **/
+gboolean
+pk_client_remove_package (PkClient *client, const gchar *package_id, gboolean allow_deps,
+			  gboolean autoremove, GError **error)
+{
+	gchar **package_ids;
+	gboolean ret;
+	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+
+	package_ids = g_strsplit (package_id, "|", 1);
+	ret = pk_client_remove_packages (client, package_ids, allow_deps, autoremove, error);
+	g_strfreev (package_ids);
+	return ret;
+}
+
+/**
+ * pk_client_install_files_action:
  **/
 static gboolean
-pk_client_install_file_action (PkClient *client, gboolean trusted, const gchar *file, GError **error)
+pk_client_install_files_action (PkClient *client, gboolean trusted, gchar **files, GError **error)
 {
 	gboolean ret;
 
@@ -2412,9 +2466,9 @@ pk_client_install_file_action (PkClient *client, gboolean trusted, const gchar *
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFile", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "InstallFiles", error,
 				 G_TYPE_BOOLEAN, trusted,
-				 G_TYPE_STRING, file,
+				 G_TYPE_STRV, files,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	return ret;
 }
@@ -2447,10 +2501,10 @@ pk_resolve_local_path (const gchar *rel_path)
 }
 
 /**
- * pk_client_install_file:
+ * pk_client_install_files:
  * @client: a valid #PkClient instance
  * @trusted: if untrused actions should be allowed
- * @file_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
+ * @files_rel: a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @error: a %GError to put the error code and message in, or %NULL
  *
  * Install a file locally, and get the deps from the repositories.
@@ -2459,14 +2513,17 @@ pk_resolve_local_path (const gchar *rel_path)
  * Return value: %TRUE if the daemon queued the transaction
  **/
 gboolean
-pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_rel, GError **error)
+pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, GError **error)
 {
+	guint i;
+	guint length;
 	gboolean ret;
+	gchar **files;
 	gchar *file;
 	GError *error_pk = NULL; /* we can't use the same error as we might be NULL */
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
-	g_return_val_if_fail (file_rel != NULL, FALSE);
+	g_return_val_if_fail (files_rel != NULL, FALSE);
 
 	/* get and set a new ID */
 	ret = pk_client_allocate_transaction_id (client, error);
@@ -2474,17 +2531,28 @@ pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_re
 		return FALSE;
 	}
 
-	/* resolve to an absolute path */
-	file = pk_resolve_local_path (file_rel);
-	pk_debug ("resolved %s to %s", file_rel, file);
+	/* convert all the relative paths to absolute ones */
+	files = g_strdupv (files_rel);
+	length = g_strv_length (files);
+	for (i=0; i<length; i++) {
+		file = pk_resolve_local_path (files[i]);
+		/* only replace if different */
+		if (!pk_strequal (file, files[i])) {
+			pk_debug ("resolved %s to %s", files[i], file);
+			/* replace */
+			g_free (files[i]);
+			files[i] = g_strdup (file);
+		}
+		g_free (file);
+	}
 
 	/* save this so we can re-issue it */
-	client->priv->role = PK_ROLE_ENUM_INSTALL_FILE;
+	client->priv->role = PK_ROLE_ENUM_INSTALL_FILES;
 	client->priv->cached_trusted = trusted;
-	client->priv->cached_full_path = g_strdup (file);
+	client->priv->cached_full_paths = g_strdupv (files);
 
 	/* hopefully do the operation first time */
-	ret = pk_client_install_file_action (client, trusted, file, &error_pk);
+	ret = pk_client_install_files_action (client, trusted, files, &error_pk);
 
 	/* we were refused by policy */
 	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
@@ -2493,7 +2561,7 @@ pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_re
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
-			ret = pk_client_install_file_action (client, trusted, file, &error_pk);
+			ret = pk_client_install_files_action (client, trusted, files, &error_pk);
 		}
 	}
 	/* we failed one of these, return the error to the user */
@@ -2512,7 +2580,7 @@ pk_client_install_file (PkClient *client, gboolean trusted, const gchar *file_re
 		}
 	}
 
-	g_free (file);
+	g_strfreev (files);
 	return ret;
 }
 
@@ -2961,18 +3029,18 @@ pk_client_requeue (PkClient *client, GError **error)
 		ret = pk_client_search_group (client, priv->cached_filters, priv->cached_search, error);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		ret = pk_client_search_name (client, priv->cached_filters, priv->cached_search, error);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		ret = pk_client_install_package (client, priv->cached_package_id, error);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		ret = pk_client_install_file (client, priv->cached_trusted, priv->cached_full_path, error);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		ret = pk_client_install_packages (client, priv->cached_package_ids, error);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES) {
+		ret = pk_client_install_files (client, priv->cached_trusted, priv->cached_full_paths, error);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		ret = pk_client_install_signature (client, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id, error);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		ret = pk_client_refresh_cache (client, priv->cached_force, error);
-	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		ret = pk_client_remove_package (client, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove, error);
+	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		ret = pk_client_remove_packages (client, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove, error);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		ret = pk_client_update_packages_strv (client, priv->cached_package_ids, error);
+		ret = pk_client_update_packages (client, priv->cached_package_ids, error);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		ret = pk_client_update_system (client, error);
 	} else if (priv->role == PK_ROLE_ENUM_GET_REPO_LIST) {
@@ -3471,6 +3539,7 @@ pk_client_reset (PkClient *client, GError **error)
 	g_free (client->priv->cached_full_path);
 	g_free (client->priv->cached_search);
 	g_strfreev (client->priv->cached_package_ids);
+	g_strfreev (client->priv->cached_full_paths);
 
 	/* we need to do this now we have multiple paths */
 	pk_client_disconnect_proxy (client);
@@ -3480,6 +3549,7 @@ pk_client_reset (PkClient *client, GError **error)
 	client->priv->cached_key_id = NULL;
 	client->priv->cached_transaction_id = NULL;
 	client->priv->cached_full_path = NULL;
+	client->priv->cached_full_paths = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_package_ids = NULL;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
@@ -3514,6 +3584,7 @@ pk_client_init (PkClient *client)
 	client->priv->cached_transaction_id = NULL;
 	client->priv->cached_key_id = NULL;
 	client->priv->cached_full_path = NULL;
+	client->priv->cached_full_paths = NULL;
 	client->priv->cached_search = NULL;
 	client->priv->cached_provides = PK_PROVIDES_ENUM_UNKNOWN;
 	client->priv->cached_filters = PK_FILTER_ENUM_UNKNOWN;
@@ -3628,6 +3699,7 @@ pk_client_finalize (GObject *object)
 	g_free (client->priv->cached_search);
 	g_free (client->priv->tid);
 	g_strfreev (client->priv->cached_package_ids);
+	g_strfreev (client->priv->cached_full_paths);
 
 	/* clear the loop, if we were using it */
 	if (client->priv->synchronous) {

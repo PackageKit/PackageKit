@@ -1106,22 +1106,22 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 }
 
 /**
- * pk_backend_dbus_remove_package:
+ * pk_backend_dbus_remove_packages:
  **/
 gboolean
-pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+pk_backend_dbus_remove_packages (PkBackendDbus *backend_dbus, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "RemovePackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_BOOLEAN, allow_deps,
 				 G_TYPE_BOOLEAN, autoremove,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1138,22 +1138,22 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 }
 
 /**
- * pk_backend_dbus_install_package:
+ * pk_backend_dbus_install_packages:
  **/
 gboolean
-pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_install_packages (PkBackendDbus *backend_dbus, gchar **package_ids)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (package_ids != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackage", &error,
-				 G_TYPE_STRING, package_id,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallPackages", &error,
+				 G_TYPE_STRV, package_ids,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -1198,23 +1198,23 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
 }
 
 /**
- * pk_backend_dbus_install_file:
+ * pk_backend_dbus_install_files:
  **/
 gboolean
-pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, gboolean trusted, const gchar *full_path)
+pk_backend_dbus_install_files (PkBackendDbus *backend_dbus, gboolean trusted, gchar **full_paths)
 {
 	gboolean ret;
 	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (full_path != NULL, FALSE);
+	g_return_val_if_fail (full_paths != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFiles", &error,
 				 G_TYPE_BOOLEAN, trusted,
-				 G_TYPE_STRING, full_path,
+				 G_TYPE_STRV, full_paths,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);

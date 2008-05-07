@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
+# Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -12,9 +12,9 @@
 
 import sys
 
-from yumBackend import PackageKitYumBackend
+from smartBackend import PackageKitSmartBackend
 
-packages = sys.argv[1:]
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.install(packages)
+packages = sys.argv[1]
+backend = PackageKitSmartBackend(sys.argv[1:])
+backend.update_packages(packages)
 sys.exit(0)

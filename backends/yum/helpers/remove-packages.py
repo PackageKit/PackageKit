@@ -1,7 +1,6 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
+# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -10,10 +9,16 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
+
 import sys
-import pisiBackend
 
-backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.remove(sys.argv[1], sys.argv[2])
+from yumBackend import PackageKitYumBackend
 
-sys.exit()
+allowdeps = sys.argv[1]
+package = sys.argv[2]
+
+backend = PackageKitYumBackend(sys.argv[1:])
+backend.remove_packages(allowdeps, package)
+backend.unLock()
+
+sys.exit(0)

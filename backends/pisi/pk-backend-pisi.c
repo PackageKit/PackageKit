@@ -164,11 +164,13 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
+	gchar *package_ids_temp;
+
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
@@ -176,16 +178,24 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	pk_backend_spawn_helper (spawn, "install-file.py", pk_backend_bool_to_text (trusted), full_path, NULL);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), full_paths, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -205,12 +215,17 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * pk_backend_remove_package:
+ * pk_backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -341,11 +356,11 @@ PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_file,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

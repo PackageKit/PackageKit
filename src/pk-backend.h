@@ -201,19 +201,19 @@ typedef struct {
 							 const gchar	*package_id);
 	void		(*get_updates)			(PkBackend	*backend,
 							 PkFilterEnum	 filters);
-	void		(*install_file)			(PkBackend	*backend,
+	void		(*install_files)		(PkBackend	*backend,
 							 gboolean	 trusted,
-							 const gchar	*full_path);
-	void		(*install_package)		(PkBackend	*backend,
-							 const gchar	*package_id);
+							 gchar		**full_paths);
+	void		(*install_packages)		(PkBackend	*backend,
+							 gchar		**package_ids);
 	void		(*install_signature)		(PkBackend	*backend,
 							 PkSigTypeEnum	 type,
 							 const gchar	*key_id,
 							 const gchar	*package_id);
 	void		(*refresh_cache)		(PkBackend	*backend,
 							 gboolean	 force);
-	void		(*remove_package)		(PkBackend	*backend,
-							 const gchar	*package_id,
+	void		(*remove_packages)		(PkBackend	*backend,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
 	void		(*repo_enable)			(PkBackend	*backend,
@@ -255,8 +255,8 @@ typedef struct {
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel,	\
 			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
-			   get_update_detail, get_updates, install_file, install_package,		\
-			   install_signature, refresh_cache, remove_package, repo_enable,		\
+			   get_update_detail, get_updates, install_files, install_packages,		\
+			   install_signature, refresh_cache, remove_packages, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
 			   search_name, service_pack, update_packages, update_system, what_provides)	\
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 					\
@@ -268,18 +268,18 @@ typedef struct {
 		get_groups,		\
 		cancel,			\
 		get_depends,		\
-		get_details,	\
+		get_details,		\
 		get_files,		\
 		get_packages,		\
 		get_repo_list,		\
 		get_requires,		\
 		get_update_detail,	\
 		get_updates,		\
-		install_file,		\
-		install_package,	\
+		install_files,		\
+		install_packages,	\
 		install_signature,	\
 		refresh_cache,		\
-		remove_package,		\
+		remove_packages,	\
 		repo_enable,		\
 		repo_set_data,		\
 		resolve,		\

@@ -114,21 +114,21 @@ backend_update_system (PkBackend *backend)
 }
 
 /**
- * backend_install_package
+ * backend_install_packages
  *  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_dbus_install_package (dbus, package_id);
+	pk_backend_dbus_install_packages (dbus, package_ids);
 }
 
 /**
- * backend_remove_package
+ * backend_remove_packages
  *  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
+	pk_backend_dbus_remove_package (dbus, package_ids, allow_deps, autoremove);
 }
 
 /**
@@ -184,11 +184,11 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

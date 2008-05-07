@@ -334,13 +334,13 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 
 
 static gboolean
-backend_install_package_thread (PkBackend *backend)
+backend_install_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err;
-	const gchar *package_id;
+	gchar *package_ids;
 
-	package_id = pk_backend_get_string (backend, "pkid");
+	package_ids = pk_backend_get_string (backend, "package_ids");
 
 	pi = pk_package_id_new_from_string (package_id);
 
@@ -354,34 +354,34 @@ backend_install_package_thread (PkBackend *backend)
 }
 
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_id)
 {
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
 	pk_backend_set_string (backend, "pkid", package_id);
 
-	pk_backend_thread_create (backend, backend_install_package_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend)
+backend_remove_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err;
-	const gchar *package_id;
+	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
 	gpointer *data;
 
 	data = pk_backend_get_pointer (backend, "remove-params");
 
-	package_id = (gchar*) data[0];
+	package_ids = (gchar*) data[0];
 	allow_deps = GPOINTER_TO_INT (data[1]);
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
 
-	pi = pk_package_id_new_from_string (package_id);
+	pi = pk_package_id_new_from_string (package_ids[0]);
 
 	opkg_set_option (opkg, "autoremove", &autoremove);
 	opkg_set_option (opkg, "force_removal_of_dependent_packages", &allow_deps);
@@ -398,7 +398,7 @@ backend_remove_package_thread (PkBackend *backend)
 }
 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar *package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gpointer *params;
 
@@ -408,13 +408,13 @@ backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean al
 	/* params is a small array we can pack our thread parameters into */
 	params = g_new0 (gpointer, 2);
 
-	params[0] = g_strdup (package_id);
+	params[0] = g_strdupv (package_ids);
 	params[1] = GINT_TO_POINTER (allow_deps);
 	params[2] = GINT_TO_POINTER (autoremove);
 
 	pk_backend_set_pointer (backend, "remove-params", params);
 
-	pk_backend_thread_create (backend, backend_remove_package_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
 
 }
 
@@ -571,11 +571,11 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

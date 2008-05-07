@@ -291,18 +291,18 @@ backend_install_timeout (gpointer data)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	const gchar *license_agreement;
 	const gchar *eula_id;
 	gboolean has_eula;
 
-	if (pk_strequal (package_id, "vips-doc;7.12.4-2.fc8;noarch;linva")) {
+	if (pk_strequal (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva")) {
 		if (!_has_signature) {
-			pk_backend_repo_signature_required (backend, package_id, "updates",
+			pk_backend_repo_signature_required (backend, package_ids[0], "updates",
 							    "http://example.com/gpgkey",
 							    "Test Key (Fedora) fedora@example.com",
 							    "BB7576AC",
@@ -334,7 +334,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 					    "Captain: You know what you doing.\n"
 					    "Captain: Move 'ZIG'.\n"
 					    "Captain: For great justice.\n";
-			pk_backend_eula_required (backend, eula_id, package_id,
+			pk_backend_eula_required (backend, eula_id, package_ids[0],
 						  "CATS Inc.", license_agreement);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
 					       "licence not installed so cannot install");
@@ -373,10 +373,10 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type,
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
 	pk_backend_finished (backend);
 }
@@ -442,10 +442,10 @@ backend_rollback (PkBackend *backend, const gchar *transaction_id)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "No network connection available");
@@ -782,18 +782,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_details,		/* get_details */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

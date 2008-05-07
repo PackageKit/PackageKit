@@ -890,10 +890,10 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
+backend_install_files (PkBackend *backend, gboolean trusted, const gchar *paths)
 {
 	alpm_list_t *problems = NULL;
 	if (alpm_trans_init (PM_TRANS_TYPE_ADD, 0, cb_trans_evt, cb_trans_conv, cb_trans_progress) == -1) {
@@ -923,10 +923,10 @@ backend_install_file (PkBackend *backend, gboolean trusted, const gchar *path)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_debug ("hello %i", GPOINTER_TO_INT (backend));
 /*
@@ -1061,12 +1061,12 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	PkPackageId *id = pk_package_id_new_from_string (package_id);
+	PkPackageId *id = pk_package_id_new_from_string (package_ids[0]);
 	pmtransflag_t flags = 0;
 	alpm_list_t *problems = NULL;
 
@@ -1242,7 +1242,7 @@ static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	/* TODO: process the entire list */
-	backend_install_package (backend, package_ids[0]);
+	backend_install_packages (backend, package_ids);
 }
 
 PK_BACKEND_OPTIONS (
@@ -1261,11 +1261,11 @@ PK_BACKEND_OPTIONS (
 		NULL,						/* get_requires */
 		NULL,						/* get_update_detail */
 		NULL,						/* get_updates */
-		backend_install_file,				/* install_file */
-		backend_install_package,			/* install_package */
+		backend_install_files,				/* install_files */
+		backend_install_packages,			/* install_packages */
 		NULL,						/* install_signature */
 		backend_refresh_cache,				/* refresh_cache */
-		backend_remove_package,				/* remove_package */
+		backend_remove_packages,			/* remove_packages */
 		NULL,						/* repo_enable */
 		NULL,						/* repo_set_data */
 		backend_resolve,				/* resolve */

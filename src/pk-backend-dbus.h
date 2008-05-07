@@ -95,21 +95,21 @@ gboolean	 pk_backend_dbus_get_requires		(PkBackendDbus	*backend_dbus,
 							 gboolean	 recursive);
 gboolean	 pk_backend_dbus_get_update_detail	(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
-gboolean	 pk_backend_dbus_get_details	(PkBackendDbus	*backend_dbus,
+gboolean	 pk_backend_dbus_get_details		(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
 gboolean	 pk_backend_dbus_get_files		(PkBackendDbus	*backend_dbus,
 							 const gchar	*package_id);
-gboolean	 pk_backend_dbus_remove_package		(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id,
+gboolean	 pk_backend_dbus_remove_packages	(PkBackendDbus	*backend_dbus,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
-gboolean	 pk_backend_dbus_install_package	(PkBackendDbus	*backend_dbus,
-							 const gchar	*package_id);
+gboolean	 pk_backend_dbus_install_packages	(PkBackendDbus	*backend_dbus,
+							 gchar		**package_ids);
 gboolean	 pk_backend_dbus_update_packages	(PkBackendDbus	*backend_dbus,
 							 gchar		**package_ids);
-gboolean	 pk_backend_dbus_install_file		(PkBackendDbus	*backend_dbus,
+gboolean	 pk_backend_dbus_install_files		(PkBackendDbus	*backend_dbus,
 							 gboolean	 trusted,
-							 const gchar	*full_path);
+							 gchar		**full_paths);
 gboolean	 pk_backend_dbus_service_pack		(PkBackendDbus	*backend_dbus,
 							 const gchar	*location,
 							 gboolean	 enabled);
