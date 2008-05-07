@@ -1,6 +1,6 @@
 EXTRA_DIST =				\
-	pkcon.sgml			\
-	pkmon.sgml
+	pkcon.xml			\
+	pkmon.xml
 
 if HAVE_DOCBOOK2MAN
 man_MANS =				\
@@ -9,10 +9,10 @@ man_MANS =				\
 endif
 
 if HAVE_DOCBOOK2MAN
-pkcon.1: pkcon.sgml
+pkcon.1: pkcon.xml
 	docbook2man $? > /dev/null
 
-pkmon.1: pkmon.sgml
+pkmon.1: pkmon.xml
 	docbook2man $? > /dev/null
 endif
 

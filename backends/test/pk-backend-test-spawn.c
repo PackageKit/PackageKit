@@ -31,12 +31,14 @@ static PkBackendSpawn *spawn;
  * backend_search_name:
  */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
+	gchar *filters_text;
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_no_percentage_updates (backend);
-	pk_backend_spawn_helper (spawn, "search-name.sh", filter, search, NULL);
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-name.sh", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
@@ -46,7 +48,6 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
 	spawn = pk_backend_spawn_new ();
 	pk_backend_spawn_set_name (spawn, "test");
@@ -59,7 +60,6 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: destroy");
 	g_object_unref (spawn);
 }
@@ -73,27 +73,29 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_description */
+	NULL,					/* get_details */
 	NULL,					/* get_files */
+	NULL,					/* get_packages */
+	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_package */
 	NULL,					/* install_file */
+	NULL,					/* install_package */
+	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
 	NULL,					/* remove_package */
+	NULL,					/* repo_enable */
+	NULL,					/* repo_set_data */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	NULL,					/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
+	NULL,					/* service_pack */
 	NULL,					/* update_package */
 	NULL,					/* update_system */
-	NULL,					/* get_repo_list */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* service_pack */
 	NULL					/* what_provides */
 );
 

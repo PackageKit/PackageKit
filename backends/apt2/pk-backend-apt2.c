@@ -20,12 +20,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <pk-network.h>
 #include <pk-backend.h>
 #include <pk-backend-dbus.h>
 
 static PkBackendDbus *dbus;
-static PkNetwork *network;
 
 #define PK_DBUS_BACKEND_SERVICE_APT   "org.freedesktop.PackageKitAptBackend"
 
@@ -36,9 +34,7 @@ static PkNetwork *network;
 static void
 backend_initialize (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
 	pk_debug ("FILTER: initialize");
-	network = pk_network_new ();
 	dbus = pk_backend_dbus_new ();
 	pk_backend_dbus_set_name (dbus, PK_DBUS_BACKEND_SERVICE_APT);
 }
@@ -50,10 +46,7 @@ backend_initialize (PkBackend *backend)
 static void
 backend_destroy (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
 	pk_debug ("FILTER: destroy");
-	g_object_unref (network);
 	pk_backend_dbus_kill (dbus);
 	g_object_unref (dbus);
 }
@@ -61,69 +54,38 @@ backend_destroy (PkBackend *backend)
 /**
  * backend_get_groups:
  */
-static void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSORIES,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_GRAPHICS,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_OFFICE,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_MULTIMEDIA,
-				      PK_GROUP_ENUM_SYSTEM,
-				      -1);
+	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_GRAPHICS |
+		PK_GROUP_ENUM_INTERNET |
+		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_SYSTEM);
 }
 
 /**
  * backend_get_filters:
  */
-static void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
-				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				      -1);
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT);
 }
-
-/**
- * pk_backend_bool_to_text:
- *
-static const gchar *
-pk_backend_bool_to_text (gboolean value)
-{
-	if (value == TRUE) {
-		return "yes";
-	}
-	return "no";
-} */
-
-/**
- * backend_get_depends:
- *
-static void
-backend_get_depends (PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive)
-{
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (spawn != NULL);
-	pk_backend_spawn_helper (spawn, "get-depends.py", package_id, pk_backend_bool_to_text (recursive), NULL);
-} */
 
 /**
  * backend_get_updates:
  */
 static void
-backend_get_updates (PkBackend *backend, const gchar *filter)
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
-	pk_backend_dbus_get_updates (dbus, filter);
+	pk_backend_dbus_get_updates (dbus, filters);
 }
 
 /**
@@ -132,11 +94,8 @@ backend_get_updates (PkBackend *backend, const gchar *filter)
 static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
-
 	// check network state
-	if (pk_network_is_online (network) == FALSE) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -151,9 +110,7 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 static void
 backend_update_system (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_update_system (dbus);
+	pk_backend_dbus_update_system (dbus);
 }
 
 /**
@@ -162,9 +119,7 @@ backend_update_system (PkBackend *backend)
 static void
 backend_install_package (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_install_package (dbus, package_id);
+	pk_backend_dbus_install_package (dbus, package_id);
 }
 
 /**
@@ -173,42 +128,34 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 static void
 backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
+	pk_backend_dbus_remove_package (dbus, package_id, allow_deps, autoremove);
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  *  */
 static void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_get_description (dbus, package_id);
+	pk_backend_dbus_get_details (dbus, package_id);
 }
 
 /**
  *  * pk_backend_search_details:
  *   */
 static void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_details (dbus, filter, search);
+	pk_backend_dbus_search_details (dbus, filters, search);
 }
 
 /**
  *  * pk_backend_search_name:
  *   */
 static void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_search_name (dbus, filter, search);
+	pk_backend_dbus_search_name (dbus, filters, search);
 }
 
 /**
@@ -217,9 +164,7 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 static void
 backend_cancel (PkBackend *backend)
 {
-        g_return_if_fail (backend != NULL);
-        g_return_if_fail (dbus != NULL);
-        pk_backend_dbus_cancel (dbus);
+	pk_backend_dbus_cancel (dbus);
 }
 
 
@@ -232,26 +177,28 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	backend_cancel,				/* cancel */
 	NULL,					/* get_depends */
-	backend_get_description,	        /* get_description */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
+	NULL,					/* get_packages */
+	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_package,		/* install_package */
 	NULL,					/* install_file */
+	backend_install_package,		/* install_package */
+	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	backend_remove_package,			/* remove_package */
+	NULL,					/* repo_enable */
+	NULL,					/* repo_set_data */
 	NULL,					/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
 	NULL,					/* search_group */
 	backend_search_name,			/* search_name */
+	NULL,					/* service_pack */
 	NULL,					/* update_packages */
 	backend_update_system,			/* update_system */
-	NULL,					/* get_repo_list */
-	NULL,					/* repo_enable */
-	NULL,					/* repo_set_data */
-	NULL,					/* service_pack */
 	NULL					/* what_provides */
 );

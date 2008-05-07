@@ -49,12 +49,9 @@ typedef struct
 GType		 pk_notify_get_type		(void) G_GNUC_CONST;
 PkNotify	*pk_notify_new			(void);
 
-gboolean	 pk_notify_repo_list_changed	(PkNotify	*notify,
-						 const gchar	*tid);
-gboolean	 pk_notify_updates_changed	(PkNotify	*notify,
-						 const gchar	*tid);
+gboolean	 pk_notify_repo_list_changed	(PkNotify	*notify);
+gboolean	 pk_notify_updates_changed	(PkNotify	*notify);
 gboolean	 pk_notify_wait_updates_changed	(PkNotify	*notify,
-						 const gchar	*tid,
 						 guint		 timeout);
 gboolean	 pk_notify_restart_schedule	(PkNotify	*notify);
 

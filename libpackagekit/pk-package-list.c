@@ -73,8 +73,8 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 {
 	PkPackageItem *item;
 
-	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	pk_debug ("adding to cache array package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
 	item = g_new0 (PkPackageItem, 1);
@@ -98,7 +98,6 @@ pk_package_list_get_string (PkPackageList *plist)
 	const gchar *info_text;
 	GString *package_cache;
 
-	g_return_val_if_fail (plist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 
 	package_cache = g_string_new ("");
@@ -123,7 +122,6 @@ pk_package_list_get_string (PkPackageList *plist)
 guint
 pk_package_list_get_size (PkPackageList *plist)
 {
-	g_return_val_if_fail (plist != NULL, 0);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), 0);
 	return plist->priv->array->len;
 }
@@ -134,7 +132,6 @@ pk_package_list_get_size (PkPackageList *plist)
 PkPackageItem *
 pk_package_list_get_item (PkPackageList *plist, guint item)
 {
-	g_return_val_if_fail (plist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), NULL);
 	if (item >= plist->priv->array->len) {
 		pk_debug ("item too large!");
@@ -151,7 +148,6 @@ pk_package_list_clear (PkPackageList *plist)
 {
 	PkPackageItem *item;
 
-	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 
 	while (plist->priv->array->len > 0) {
@@ -175,8 +171,8 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 	guint length;
 	gboolean ret = FALSE;
 
-	g_return_val_if_fail (plist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	length = plist->priv->array->len;
 	for (i=0; i<length; i++) {
@@ -318,6 +314,15 @@ libst_package_list (LibSelfTest *test)
 		libst_failed (test, "get string incorrect '%s'", text);
 	}
 	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "add entry with NULL summary");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_INSTALLED, "nosummary;1.23;i386;data", NULL);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not add NULL summary");
+	}
 
 	libst_end (test);
 }

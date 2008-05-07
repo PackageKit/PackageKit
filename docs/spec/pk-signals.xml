@@ -291,8 +291,8 @@
 
   </sect1>
 
-  <sect1 id="signals-description">
-    <title>Description</title>
+  <sect1 id="signals-details">
+    <title>Details</title>
     <informaltable>
       <tgroup cols="2">
         <thead>
@@ -336,14 +336,6 @@
               The size of the package in bytes. This should be the
               size of the entire package file, not the size of the
               files installed on the system.
-            </entry>
-          </row>
-          <row>
-            <entry><literal>file_list</literal></entry>
-            <entry>
-              A list of all files and directories created by the package
-              at install time.
-              The list is separated by the <literal>;</literal> character.
             </entry>
           </row>
         </tbody>
@@ -437,6 +429,10 @@
         </thead>
         <tbody>
           <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A package ID for the package that is trying to be installed</entry>
+          </row>
+          <row>
             <entry><literal>repository_name</literal></entry>
             <entry>
               The name of the repository associated with the provided key
@@ -465,6 +461,48 @@
           <row>
             <entry><literal>type</literal></entry>
             <entry>The type of signature used. 'GPG', for example.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1 id="signals-eula-required">
+    <title>EulaRequired</title>
+    <para>
+      Some backends support EULAs, which have to be agreed to before the install can proceed.
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>eula_id</literal></entry>
+            <entry>
+              The <literal>eula_id</literal> which identifies the EULA - this is provided
+              so that if a specific EULA has previously agreed to a EULA from Acme Corp it is
+              not asked again.
+              An example <literal>eula_id</literal>'s is <literal>vmware5_single_user</literal>.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A package ID for the package that is trying to be installed</entry>
+          </row>
+          <row>
+            <entry><literal>vendor_name</literal></entry>
+            <entry>
+              The vendor that is providing the EULA.
+            </entry>
+          </row>
+          <row>
+            <entry><literal>license_agreement</literal></entry>
+            <entry>The full text EULA.</entry>
           </row>
         </tbody>
       </tgroup>

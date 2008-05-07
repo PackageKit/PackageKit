@@ -25,7 +25,6 @@
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 
-#include <pk-enum-list.h>
 #include <pk-enum.h>
 #include <pk-package-list.h>
 
@@ -76,6 +75,7 @@ typedef enum
 } PkTransactionError;
 
 GQuark		 pk_transaction_error_quark		(void);
+GType		 pk_transaction_error_get_type		(void) G_GNUC_CONST;
 GType		 pk_transaction_get_type		(void) G_GNUC_CONST;
 PkTransaction	*pk_transaction_new			(void);
 
@@ -95,6 +95,9 @@ gboolean	 pk_transaction_set_tid			(PkTransaction	*transaction,
 							 const gchar	*tid);
 
 /* dbus methods */
+void		 pk_transaction_accept_eula		(PkTransaction	*transaction,
+							 const gchar	*eula_id,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_cancel			(PkTransaction	*transaction,
 							 GError		**error);
 gboolean	 pk_transaction_get_allow_cancel	(PkTransaction	*transaction,
@@ -105,7 +108,7 @@ void		 pk_transaction_get_depends		(PkTransaction	*transaction,
 							 const gchar	*package_id,
 							 gboolean	 recursive,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_get_description		(PkTransaction	*transaction,
+void		 pk_transaction_get_details		(PkTransaction	*transaction,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_get_files		(PkTransaction	*transaction,
@@ -114,9 +117,12 @@ void		 pk_transaction_get_files		(PkTransaction	*transaction,
 gboolean	 pk_transaction_get_old_transactions	(PkTransaction	*transaction,
 							 guint		 number,
 							 GError		**error);
-gboolean	 pk_transaction_get_package		(PkTransaction	*transaction,
+gboolean	 pk_transaction_get_package_last	(PkTransaction	*transaction,
 							 gchar		**package,
 							 GError		**error);
+void		 pk_transaction_get_packages		(PkTransaction	*transaction,
+							 const gchar	*filter,
+							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_get_progress		(PkTransaction	*transaction,
 							 guint		*percentage,
 							 guint		*subpercentage,
@@ -145,9 +151,15 @@ void		 pk_transaction_get_updates		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_file		(PkTransaction	*transaction,
+							 gboolean	 trusted,
 							 const gchar	*full_path,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_package		(PkTransaction	*transaction,
+							 const gchar	*package_id,
+							 DBusGMethodInvocation *context);
+void		 pk_transaction_install_signature	(PkTransaction	*transaction,
+							 const gchar	*sig_type,
+							 const gchar	*key_id,
 							 const gchar	*package_id,
 							 DBusGMethodInvocation *context);
 gboolean	 pk_transaction_is_caller_active	(PkTransaction	*transaction,
@@ -193,7 +205,7 @@ void		 pk_transaction_search_name		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 const gchar	*search,
 							 DBusGMethodInvocation *context);
-gboolean	 pk_transaction_service_pack			(PkTransaction	*transaction,
+gboolean	 pk_transaction_service_pack		(PkTransaction	*transaction,
 							 const gchar	*location,
 							 gboolean	 enabled);
 void		 pk_transaction_update_packages		(PkTransaction	*transaction,

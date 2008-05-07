@@ -17,17 +17,29 @@
 
 
 __pkcon_commandlist="
-    search
+    accept-eula
+    get-actions
+    get-depends
+    get-details
+    get-files
+    get-filters
+    get-groups
+    get-packages
+    get-requires
+    get-time
+    get-transactions
+    get-update-detail
+    get-updates
     install
-    remove
-    update
     refresh
+    remove
+    repo-disable
+    repo-enable
+    repo-list
+    repo-set-data
     resolve
-    force-refresh
-    update-system
-    get
-    enable-repo
-    disable-repo
+    search
+    update
     "
 
 __pkconcomp ()
@@ -68,38 +80,6 @@ _pkcon_search ()
     return
 }
 
-_pkcon_get ()
-{
-	local i c=1 command
-	while [ $c -lt $COMP_CWORD ]; do
-		i="${COMP_WORDS[c]}"
-		case "$i" in
-            updates|depends|requires|description|updatedetail|actions|groups|filters|transactions|repos)
-			command="$i"
-			break
-			;;
-		esac
-		c=$((++c))
-	done
-
-	if [ $c -eq $COMP_CWORD -a -z "$command" ]; then
-        __pkconcomp "
-            updates
-            depends
-            requires
-            description
-            files
-            updatedetail
-            actions
-            groups
-            filters
-            transactions
-            repos
-            "
-    fi
-    return
-}
-
 _pkcon ()
 {
 	local i c=1 command
@@ -118,6 +98,7 @@ _pkcon ()
 		--*=*) COMPREPLY=() ;;
 		--*)   __pkconcomp "
 			--version
+			--filter
 			--verbose
             --help
             --nowait
@@ -131,6 +112,7 @@ _pkcon ()
 			--version
 			--verbose
             --help
+            --filter
             --nowait
             "
             ;;
@@ -141,7 +123,6 @@ _pkcon ()
 
 	case "$command" in
 	search)      _pkcon_search ;;
-	get)         _pkcon_get ;;
 	*)           COMPREPLY=() ;;
 	esac
 }

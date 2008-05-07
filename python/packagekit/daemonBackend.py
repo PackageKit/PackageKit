@@ -243,8 +243,8 @@ class PackageKitBaseBackend(dbus.service.Object):
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
                          signature='ssssst')
-    def Description(self, package_id, license, group, detail, url, size):
-        pklog.info("Description (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
+    def Details(self, package_id, license, group, detail, url, size):
+        pklog.info("Details (%s, %s, %s, %s, %s, %u)" % (package_id, license, group, detail, url, size))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -291,17 +291,6 @@ class PackageKitBaseBackend(dbus.service.Object):
         @param description: Error description
         '''
         pklog.info("ErrorCode (%s, %s)" % (code, description))
-
-    @PKSignalHouseKeeper
-    @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='ss')
-    def MetaData(self,typ,fname):
-        '''
-        send 'metadata' signal:
-        @param type:   The type of metadata (repository,package,filelist,changelog,group,unknown)
-        @param fname:  The filename being downloaded
-        '''
-        pklog.info("MetaData (%s, %s)" % (typ,fname))
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
@@ -367,12 +356,18 @@ class PackageKitBaseBackend(dbus.service.Object):
                        "This function is not implemented in this backend")
         self.Finished(EXIT_FAILED)
 
+    # We have to idle add this from self.Exit() so that DBUS gets a chance to reply
+    def _doExitDelay(self):
+        pklog.info("ExitDelay()")
+        self.loop.quit()
+        sys.exit(1)
+
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='', out_signature='')
     def Exit(self):
         pklog.info("Exit()")
+        gobject.idle_add (self._doExitDelay)
         self.doExit()
-        self.loop.quit()
 
     def doExit(self):
         '''
@@ -392,6 +387,23 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.doSearchName(filters, search)
 
     def doSearchName(self, filters, search):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        self.ErrorCode(ERROR_NOT_SUPPORTED,
+                       "This function is not implemented in this backend")
+        self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='s', out_signature='')
+    def GetPackages(self, filters):
+        '''
+        Implement the {backend}-get-packages functionality
+        '''
+        pklog.info("GetPackages()")
+        self.doGetPackages(filters)
+
+    def doGetPackages(self, filters):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -589,14 +601,14 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallFile (self, inst_file):
+                         in_signature='bs', out_signature='')
+    def InstallFile (self, trusted, inst_file):
         '''
         Implement the {backend}-install_file functionality
         Install the package containing the inst_file file
         '''
-        pklog.info("InstallFile(%s)" % inst_file)
-        self.doInstallFile(inst_file)
+        pklog.info("InstallFile(%i,%s)" % (trusted,inst_file))
+        self.doInstallFile(trusted,inst_file)
 
     def doInstallFile(self, inst_file):
         '''
@@ -659,14 +671,14 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
-    def GetDescription(self, package):
+    def GetDetails(self, package):
         '''
-        Print a detailed description for a given package
+        Print a detailed details for a given package
         '''
-        pklog.info("GetDescription(%s)" % package)
-        self.doGetDescription(package)
+        pklog.info("GetDetails(%s)" % package)
+        self.doGetDetails(package)
 
-    def doGetDescription(self, package):
+    def doGetDetails(self, package):
         '''
         Should be replaced in the corresponding backend sub class
         '''

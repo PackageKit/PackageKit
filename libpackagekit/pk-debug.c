@@ -52,6 +52,8 @@
 #define CONSOLE_CYAN		36
 #define CONSOLE_WHITE		37
 
+#define PK_LOG_FILE		PK_LOG_DIR "/PackageKit"
+
 static gboolean do_verbose = FALSE;	/* if we should print out debugging */
 static gboolean do_logging = FALSE;	/* if we should write to a file */
 static gboolean is_console = FALSE;
@@ -64,6 +66,9 @@ void
 pk_debug_set_logging (gboolean enabled)
 {
 	do_logging = enabled;
+	if (enabled) {
+		pk_debug ("now logging to %s", PK_LOG_FILE);
+	}
 }
 
 /**
@@ -93,9 +98,9 @@ pk_log_line (const gchar *buffer)
 	/* open a file */
 	if (fd == -1) {
 		mkdir (PK_LOG_DIR, 0777);
-		fd = open (PK_LOG_DIR "/PackageKit", O_WRONLY|O_APPEND|O_CREAT, 0777);
+		fd = open (PK_LOG_FILE, O_WRONLY|O_APPEND|O_CREAT, 0777);
 		if (fd == -1) {
-			g_error ("could not open log: '%s'", PK_LOG_DIR "/PackageKit");
+			g_error ("could not open log: '%s'", PK_LOG_FILE);
 		}
 	}
 	/* whole line */

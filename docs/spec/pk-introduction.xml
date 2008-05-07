@@ -42,7 +42,7 @@
       A backend is just a compiled <literal>.so</literal> object that is
       loaded at run-time and provides an interface to the underlying package
       commands.
-      A backend converts an async request into either a new thread
+      A backend converts an asynchronous request into either a new thread
       in the same process, executes external "glue" files that
       can be written in any language, or uses DBUS to signal a
       daemon process to handle the request.
@@ -54,14 +54,14 @@
       elements for those commands.
       Please see the <literal>html/pk-faq.html</literal> file for the current
       status of the existing backends.
-      Backend maintainers, please keep this file updated.
+      Backed maintainers, please keep this file updated.
     </para>
   </sect1>
 
   <sect1 id="config-main">
     <title>Daemon Config Options</title>
     <para>
-      The config file <literal>/etc/PackageKit.conf</literal> allows to the
+      The config file <literal>/etc/PackageKit/PackageKit.conf</literal> allows to the
       administrator to change system daemon options.
       In normal use this file does not have to be changed, but it may be
       useful to people debugging the daemon or developing backends.
@@ -72,8 +72,8 @@
     <sect2 id="config-main-logging">
       <title>TransactionLogging</title>
       <para>
-        This logs all transactions to a database so old transactions can be
-        viewed, and rollbacks can be done.
+        This logs all transactions to <literal>/var/log/PackageKit</literal> so old
+        daemon debugging output can be observed.
       </para>
     </sect2>
     <sect2 id="config-main-timeout">

@@ -73,7 +73,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
 	polkit_action_set_action_id (pk_action, action);
 
 	/* set caller */
-	pk_debug ("using caller %s", dbus_sender);
+	pk_debug ("using caller %s for action %s", dbus_sender, action);
 	dbus_error_init (&dbus_error);
 	pk_caller = polkit_caller_new_from_dbus_name (security->priv->connection, dbus_sender, &dbus_error);
 	if (pk_caller == NULL) {
@@ -98,7 +98,7 @@ pk_security_can_do_action (PkSecurity *security, const gchar *dbus_sender, const
  * pk_security_role_to_action:
  **/
 static const gchar *
-pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
+pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum role)
 {
 	const gchar *policy = NULL;
 
@@ -113,8 +113,14 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 		policy = "org.freedesktop.packagekit.remove";
 	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
 		policy = "org.freedesktop.packagekit.install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE) {
-		policy = "org.freedesktop.packagekit.localinstall";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && trusted) {
+		policy = "org.freedesktop.packagekit.localinstall-trusted";
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && !trusted) {
+		policy = "org.freedesktop.packagekit.localinstall-untrusted";
+	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
+		policy = "org.freedesktop.packagekit.install-signature";
+	} else if (role == PK_ROLE_ENUM_ACCEPT_EULA) {
+		policy = "org.freedesktop.packagekit.accept-eula";
 	} else if (role == PK_ROLE_ENUM_ROLLBACK) {
 		policy = "org.freedesktop.packagekit.rollback";
 	} else if (role == PK_ROLE_ENUM_REPO_ENABLE ||
@@ -122,8 +128,6 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
 		policy = "org.freedesktop.packagekit.repo-change";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.refresh-cache";
-	} else {
-		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
 	}
 	return policy;
 }
@@ -136,16 +140,20 @@ pk_security_role_to_action (PkSecurity *security, PkRoleEnum role)
  **/
 gboolean
 pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
-			       PkRoleEnum role, gchar **error_detail)
+			       gboolean trusted, PkRoleEnum role, gchar **error_detail)
 {
 	PolKitResult pk_result;
 	const gchar *policy;
 
-	g_return_val_if_fail (security != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
+	g_return_val_if_fail (dbus_sender != NULL, FALSE);
 
 	/* map the roles to policykit rules */
-	policy = pk_security_role_to_action (security, role);
+	policy = pk_security_role_to_action (security, trusted, role);
+	if (policy == NULL) {
+		pk_warning ("policykit type required for '%s'", pk_role_enum_to_text (role));
+		return FALSE;
+	}
 
 	/* get the dbus sender */
 	pk_result = pk_security_can_do_action (security, dbus_sender, policy);
@@ -165,7 +173,6 @@ static void
 pk_security_finalize (GObject *object)
 {
 	PkSecurity *security;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_SECURITY (object));
 	security = PK_SECURITY (object);
 
@@ -334,7 +341,7 @@ libst_security (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "map valid role to action");
-	action = pk_security_role_to_action (security, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES);
 	if (pk_strequal (action, "org.freedesktop.packagekit.update-package")) {
 		libst_success (test, NULL, error);
 	} else {
@@ -343,7 +350,7 @@ libst_security (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "map invalid role to action");
-	action = pk_security_role_to_action (security, PK_ROLE_ENUM_SEARCH_NAME);
+	action = pk_security_role_to_action (security, FALSE, PK_ROLE_ENUM_SEARCH_NAME);
 	if (action == NULL) {
 		libst_success (test, NULL, error);
 	} else {
@@ -353,7 +360,7 @@ libst_security (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "get the default backend");
 	error = NULL;
-	ret = pk_security_action_is_allowed (security, ":0", PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
+	ret = pk_security_action_is_allowed (security, ":0", FALSE, PK_ROLE_ENUM_UPDATE_PACKAGES, &error);
 	if (ret == FALSE) {
 		libst_success (test, "did not authenticate update-package, error '%s'", error);
 	} else {

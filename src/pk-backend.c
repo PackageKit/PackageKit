@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <glib/gprintf.h>
+#include <pk-network.h>
 
 #include "pk-debug.h"
 #include "pk-common.h"
@@ -38,7 +39,7 @@
 #include "pk-backend-internal.h"
 #include "pk-backend.h"
 #include "pk-time.h"
-#include "pk-inhibit.h"
+#include "pk-file-monitor.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
@@ -80,14 +81,21 @@ struct _PkBackendPrivate
 {
 	GModule			*handle;
 	PkTime			*time;
+	GHashTable		*eulas;
 	gchar			*name;
 	gchar			*c_tid;
 	gboolean		 locked;
 	gboolean		 set_error;
+	gboolean		 set_signature;
+	gboolean		 set_eula;
+	gboolean		 has_sent_package;
+	PkNetwork		*network;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
-	PkInhibit		*inhibit;
+	PkFileMonitor		*file_monitor;
+	PkBackendFileChanged	 file_changed_func;
+	gpointer		 file_changed_data;
 	gboolean		 during_initialize;
 	gboolean		 allow_cancel;
 	gboolean		 finished;
@@ -96,6 +104,10 @@ struct _PkBackendPrivate
 	guint			 last_remaining;
 	guint			 signal_finished;
 	guint			 signal_error_timeout;
+	GThread			*thread;
+	GHashTable		*hash_string;
+	GHashTable		*hash_strv;
+	GHashTable		*hash_pointer;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -104,12 +116,13 @@ static gpointer pk_backend_object = NULL;
 enum {
 	PK_BACKEND_STATUS_CHANGED,
 	PK_BACKEND_PROGRESS_CHANGED,
-	PK_BACKEND_DESCRIPTION,
+	PK_BACKEND_DETAILS,
 	PK_BACKEND_FILES,
 	PK_BACKEND_PACKAGE,
 	PK_BACKEND_UPDATE_DETAIL,
 	PK_BACKEND_ERROR_CODE,
 	PK_BACKEND_REPO_SIGNATURE_REQUIRED,
+	PK_BACKEND_EULA_REQUIRED,
 	PK_BACKEND_REQUIRE_RESTART,
 	PK_BACKEND_MESSAGE,
 	PK_BACKEND_CHANGE_TRANSACTION_DATA,
@@ -122,49 +135,354 @@ enum {
 static guint signals [PK_BACKEND_LAST_SIGNAL] = { 0 };
 
 /**
- * pk_backend_set_internal:
- *
- * Designed for volatile internal state, such as the authentication prompt
- * response, the proxy to use and that sort of thing
+ * pk_backend_get_groups:
  **/
-gboolean
-pk_backend_set_internal (PkBackend *backend, const gchar *key, const gchar *data)
+PkGroupEnum
+pk_backend_get_groups (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	return FALSE;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_GROUP_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_GROUP_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_groups == NULL) {
+		return PK_GROUP_ENUM_UNKNOWN;
+	}
+	return backend->desc->get_groups (backend);
 }
 
 /**
- * pk_backend_get_internal:
- *
- * Must g_free() the return value. Returns NULL on error.
+ * pk_backend_get_filters:
  **/
-gchar *
-pk_backend_get_internal (PkBackend *backend, const gchar *key)
+PkFilterEnum
+pk_backend_get_filters (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_FILTER_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_FILTER_ENUM_UNKNOWN);
+
+	/* not compulsory */
+	if (backend->desc->get_filters == NULL) {
+		return PK_FILTER_ENUM_UNKNOWN;
+	}
+	return backend->desc->get_filters (backend);
+}
+
+/**
+ * pk_backend_get_actions:
+ **/
+PkRoleEnum
+pk_backend_get_actions (PkBackend *backend)
+{
+	PkRoleEnum roles = 0;
+	PkBackendDesc *desc;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
+	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
+
+	/* lets reduce pointer dereferences... */
+	desc = backend->desc;
+	if (desc->cancel != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_CANCEL);
+	}
+	if (desc->get_depends != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DEPENDS);
+	}
+	if (desc->get_details != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_DETAILS);
+	}
+	if (desc->get_files != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_FILES);
+	}
+	if (desc->get_requires != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_REQUIRES);
+	}
+	if (desc->get_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
+	}
+	if (desc->what_provides != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
+	}
+	if (desc->get_updates != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATES);
+	}
+	if (desc->get_update_detail != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
+	}
+	if (desc->install_package != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGE);
+	}
+	if (desc->install_file != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILE);
+	}
+	if (desc->refresh_cache != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
+	}
+	if (desc->remove_package != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	}
+	if (desc->resolve != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
+	}
+	if (desc->rollback != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_ROLLBACK);
+	}
+	if (desc->search_details != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
+	}
+	if (desc->search_file != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
+	}
+	if (desc->search_group != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
+	}
+	if (desc->search_name != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
+	}
+	if (desc->update_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
+	}
+	if (desc->update_system != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_UPDATE_SYSTEM);
+	}
+	if (desc->get_repo_list != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
+	}
+	if (desc->repo_enable != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
+	}
+	if (desc->repo_set_data != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
+	}
+	return roles;
+}
+
+/**
+ * pk_backend_set_string:
+ **/
+gboolean
+pk_backend_set_string (PkBackend *backend, const gchar *key, const gchar *data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving '%s' for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_string, g_strdup (key), (gpointer) g_strdup (data));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_strv:
+ **/
+gboolean
+pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_strv, g_strdup (key), (gpointer) g_strdupv (data));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_uint:
+ **/
+gboolean
+pk_backend_set_uint (PkBackend *backend, const gchar *key, guint data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %i for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_bool:
+ **/
+gboolean
+pk_backend_set_bool (PkBackend *backend, const gchar *key, gboolean data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %i for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), GINT_TO_POINTER (data+1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_set_pointer:
+ **/
+gboolean
+pk_backend_set_pointer (PkBackend *backend, const gchar *key, gpointer data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+	g_return_val_if_fail (data != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_pointer, g_strdup (key), data+1);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_string:
+ **/
+const gchar *
+pk_backend_get_string (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	return NULL;
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return (const gchar *) value;
+}
+
+/**
+ * pk_backend_get_strv:
+ **/
+gchar **
+pk_backend_get_strv (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return (gchar **) value;
+}
+
+/**
+ * pk_backend_get_uint:
+ **/
+uint
+pk_backend_get_uint (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
+	g_return_val_if_fail (key != NULL, 0);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	/* we do the +1/-1 as NULL also means missing in the hash table */
+	return GPOINTER_TO_INT (value)-1;
+}
+
+/**
+ * pk_backend_get_bool:
+ **/
+gboolean
+pk_backend_get_bool (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return GPOINTER_TO_INT (value)-1;
+}
+
+/**
+ * pk_backend_get_pointer:
+ **/
+gpointer
+pk_backend_get_pointer (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_pointer, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return FALSE;
+	}
+	return value-1;
 }
 
 /**
  * pk_backend_build_library_path:
  **/
 static gchar *
-pk_backend_build_library_path (PkBackend *backend)
+pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
 	gchar *filename;
 
-	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
-	g_return_val_if_fail (backend->priv->name != NULL, NULL);
+	g_return_val_if_fail (name != NULL, NULL);
 
-	filename = g_strdup_printf ("libpk_backend_%s.so", backend->priv->name);
+	filename = g_strdup_printf ("libpk_backend_%s.so", name);
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
-	path = g_build_filename ("..", "backends", backend->priv->name, ".libs", filename, NULL);
+	path = g_build_filename ("..", "backends", name, ".libs", filename, NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 		pk_debug ("local backend not found '%s'", path);
 		g_free (path);
@@ -189,8 +507,8 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 	gchar *path = NULL;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (backend_name != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend_name != NULL, FALSE);
 
 	/* have we already been set? */
 	if (backend->priv->name != NULL) {
@@ -201,7 +519,7 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 
 	/* can we load it? */
 	pk_debug ("Trying to load : %s", backend_name);
-	path = pk_backend_build_library_path (backend);
+	path = pk_backend_build_library_path (backend, backend_name);
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		pk_warning ("opening module %s failed : %s", backend_name, g_module_error ());
@@ -240,9 +558,8 @@ out:
 gboolean
 pk_backend_lock (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
-	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (backend->desc != NULL, FALSE);
 
 	if (backend->priv->locked) {
 		pk_warning ("already locked");
@@ -270,7 +587,6 @@ pk_backend_lock (PkBackend *backend)
 gboolean
 pk_backend_unlock (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	if (backend->priv->locked == FALSE) {
@@ -295,7 +611,7 @@ pk_backend_unlock (PkBackend *backend)
 gchar *
 pk_backend_get_name (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	return g_strdup (backend->priv->name);
 }
 
@@ -310,7 +626,6 @@ pk_backend_emit_progress_changed (PkBackend *backend)
 	guint elapsed;
 	guint remaining;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	percentage = backend->priv->last_percentage;
@@ -338,7 +653,6 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 {
 	guint remaining;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -402,7 +716,7 @@ pk_backend_set_percentage (PkBackend *backend, guint percentage)
 guint
 pk_backend_get_runtime (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, 0);
+	g_return_val_if_fail (PK_IS_BACKEND (backend), 0);
 	g_return_val_if_fail (backend->priv->locked != FALSE, 0);
 	return pk_time_get_elapsed (backend->priv->time);
 }
@@ -413,7 +727,6 @@ pk_backend_get_runtime (PkBackend *backend)
 gboolean
 pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -449,7 +762,6 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 gboolean
 pk_backend_no_percentage_updates (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -479,7 +791,6 @@ pk_backend_no_percentage_updates (PkBackend *backend)
 gboolean
 pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -532,7 +843,6 @@ pk_backend_set_status (PkBackend *backend, PkStatusEnum status)
 PkStatusEnum
 pk_backend_get_status (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_STATUS_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_STATUS_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_STATUS_ENUM_UNKNOWN);
 	return backend->priv->status;
@@ -542,12 +852,12 @@ pk_backend_get_status (PkBackend *backend)
  * pk_backend_package:
  **/
 gboolean
-pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, const gchar *summary)
+pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -571,11 +881,14 @@ pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package, c
 		pk_backend_set_status (backend, PK_STATUS_ENUM_OBSOLETE);
 	}
 
+	/* we've sent a package for this transaction */
+	backend->priv->has_sent_package = TRUE;
+
 	/* replace unsafe chars */
 	summary_safe = pk_strsafe (summary);
 
-	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package, summary_safe);
-	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package, summary_safe);
+	pk_debug ("emit package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary_safe);
+	g_signal_emit (backend, signals [PK_BACKEND_PACKAGE], 0, info, package_id, summary_safe);
 	g_free (summary_safe);
 	return TRUE;
 }
@@ -592,8 +905,8 @@ pk_backend_update_detail (PkBackend *backend, const gchar *package_id,
 {
 	gchar *update_text_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -621,7 +934,6 @@ pk_backend_get_progress (PkBackend *backend,
 			 guint *percentage, guint *subpercentage,
 			 guint *elapsed, guint *remaining)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -642,7 +954,6 @@ pk_backend_get_progress (PkBackend *backend,
 gboolean
 pk_backend_require_restart (PkBackend *backend, PkRestartEnum restart, const gchar *details)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -667,7 +978,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	va_list args;
 	gchar *buffer;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -694,7 +1004,6 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 gboolean
 pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -710,18 +1019,17 @@ pk_backend_set_transaction_data (PkBackend *backend, const gchar *data)
 }
 
 /**
- * pk_backend_description:
+ * pk_backend_details:
  **/
 gboolean
-pk_backend_description (PkBackend *backend, const gchar *package_id,
-			const gchar *license, PkGroupEnum group,
-			const gchar *description, const gchar *url,
-			gulong size)
+pk_backend_details (PkBackend *backend, const gchar *package_id,
+		    const gchar *license, PkGroupEnum group,
+		    const gchar *description, const gchar *url, gulong size)
 {
 	gchar *description_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -733,10 +1041,10 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
 	/* replace unsafe chars */
 	description_safe = pk_strsafe (description);
 
-	pk_debug ("emit description %s, %s, %i, %s, %s, %ld",
+	pk_debug ("emit details %s, %s, %i, %s, %s, %ld",
 		  package_id, license, group, description_safe, url,
 		  size);
-	g_signal_emit (backend, signals [PK_BACKEND_DESCRIPTION], 0,
+	g_signal_emit (backend, signals [PK_BACKEND_DETAILS], 0,
 		       package_id, license, group, description_safe, url,
 		       size);
 	g_free (description_safe);
@@ -747,11 +1055,11 @@ pk_backend_description (PkBackend *backend, const gchar *package_id,
  * pk_backend_files:
  **/
 gboolean
-pk_backend_files (PkBackend *backend, const gchar *package_id,
-		  const gchar *filelist)
+pk_backend_files (PkBackend *backend, const gchar *package_id, const gchar *filelist)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (filelist != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -771,12 +1079,13 @@ pk_backend_files (PkBackend *backend, const gchar *package_id,
  * pk_backend_repo_signature_required:
  **/
 gboolean
-pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_name, const gchar *key_url,
+pk_backend_repo_signature_required (PkBackend *backend, const gchar *package_id,
+				    const gchar *repository_name, const gchar *key_url,
 				    const gchar *key_userid, const gchar *key_id, const gchar *key_fingerprint,
 				    const gchar *key_timestamp, PkSigTypeEnum type)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (repository_name != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -785,10 +1094,55 @@ pk_backend_repo_signature_required (PkBackend *backend, const gchar *repository_
 		return FALSE;
 	}
 
-	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %i",
-		  repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
+	/* check we don't do this more than once */
+	if (backend->priv->set_signature) {
+		pk_warning ("already asked for a signature, cannot process");
+		return FALSE;
+	}
+	backend->priv->set_signature = TRUE;
+
+	pk_debug ("emit repo-signature-required %s, %s, %s, %s, %s, %s, %s, %i",
+		  package_id, repository_name, key_url, key_userid, key_id,
+		  key_fingerprint, key_timestamp, type);
 	g_signal_emit (backend, signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED], 0,
-		       repository_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
+		       package_id, repository_name, key_url, key_userid, key_id,
+		       key_fingerprint, key_timestamp, type);
+	return TRUE;
+}
+
+/**
+ * pk_backend_eula_required:
+ **/
+gboolean
+pk_backend_eula_required (PkBackend *backend, const gchar *eula_id, const gchar *package_id,
+			  const gchar *vendor_name, const gchar *license_agreement)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+	g_return_val_if_fail (package_id != NULL, FALSE);
+	g_return_val_if_fail (vendor_name != NULL, FALSE);
+	g_return_val_if_fail (license_agreement != NULL, FALSE);
+	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* have we already set an error? */
+	if (backend->priv->set_error) {
+		pk_warning ("already set error, cannot process");
+		return FALSE;
+	}
+
+	/* check we don't do this more than once */
+	if (backend->priv->set_eula) {
+		pk_warning ("already asked for a signature, cannot process");
+		return FALSE;
+	}
+	backend->priv->set_eula = TRUE;
+
+	pk_debug ("emit eula-required %s, %s, %s, %s",
+		  eula_id, package_id, vendor_name, license_agreement);
+
+	g_signal_emit (backend, signals [PK_BACKEND_EULA_REQUIRED], 0,
+		       eula_id, package_id, vendor_name, license_agreement);
+
 	return TRUE;
 }
 
@@ -801,8 +1155,8 @@ pk_backend_repo_detail (PkBackend *backend, const gchar *repo_id,
 {
 	gchar *description_safe;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (repo_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
@@ -843,7 +1197,7 @@ pk_backend_error_timeout_delay_cb (gpointer data)
 	 * backend->priv->set_error to TRUE and hence the message would be ignored */
 	message = PK_MESSAGE_ENUM_DAEMON;
 	buffer = "ErrorCode() has to be followed with Finished()!";
-	pk_debug ("emit message %i, %s", message, buffer);
+	pk_warning ("emit message %i, %s", message, buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_MESSAGE], 0, message, buffer);
 
 	pk_backend_finished (backend);
@@ -860,7 +1214,6 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	gchar *buffer;
 	gboolean ret = TRUE;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	va_start (args, format);
@@ -876,8 +1229,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 
 	/* did we set a duplicate error? */
 	if (backend->priv->set_error) {
-		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "More than one error emitted! You tried to set '%s'", buffer);
+		pk_warning ("More than one error emitted! You tried to set '%s'", buffer);
 		ret = FALSE;
 		goto out;
 	}
@@ -890,7 +1242,7 @@ pk_backend_error_code (PkBackend *backend, PkErrorCodeEnum code, const gchar *fo
 	/* we mark any transaction with errors as failed */
 	pk_backend_set_exit_code (backend, PK_EXIT_ENUM_FAILED);
 
-	pk_debug ("emit error-code %i, %s", code, buffer);
+	pk_debug ("emit error-code %s, %s", pk_error_enum_to_text (code), buffer);
 	g_signal_emit (backend, signals [PK_BACKEND_ERROR_CODE], 0, code, buffer);
 
 out:
@@ -904,7 +1256,6 @@ out:
 gboolean
 pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -915,12 +1266,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 		return FALSE;
 	}
 
-	/* remove or add the hal inhibit */
-	if (allow_cancel) {
-		pk_inhibit_remove (backend->priv->inhibit, backend);
-	} else {
-		pk_inhibit_add (backend->priv->inhibit, backend);
-	}
 
 	/* can we do the action? */
 	if (backend->desc->cancel != NULL) {
@@ -937,7 +1282,6 @@ pk_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel)
 gboolean
 pk_backend_get_allow_cancel (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 	return backend->priv->allow_cancel;
@@ -949,7 +1293,6 @@ pk_backend_get_allow_cancel (PkBackend *backend)
 gboolean
 pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -975,7 +1318,6 @@ pk_backend_set_role (PkBackend *backend, PkRoleEnum role)
 PkRoleEnum
 pk_backend_get_role (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, PK_ROLE_ENUM_UNKNOWN);
 	return backend->priv->role;
@@ -989,7 +1331,6 @@ pk_backend_get_role (PkBackend *backend)
 gboolean
 pk_backend_set_exit_code (PkBackend *backend, PkExitEnum exit)
 {
-	g_return_val_if_fail (backend != NULL, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -1020,6 +1361,11 @@ pk_backend_finished_delay (gpointer data)
 		pk_backend_set_exit_code (backend, PK_EXIT_ENUM_SUCCESS);
 	}
 
+	pk_debug ("resetting hash tables to blank");
+	g_hash_table_remove_all (backend->priv->hash_pointer);
+	g_hash_table_remove_all (backend->priv->hash_string);
+	g_hash_table_remove_all (backend->priv->hash_strv);
+
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
 	backend->priv->signal_finished = 0;
@@ -1034,7 +1380,6 @@ pk_backend_finished (PkBackend *backend)
 {
 	const gchar *role_text;
 
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
 	/* check we are not doing Init() */
@@ -1064,6 +1409,17 @@ pk_backend_finished (PkBackend *backend)
 		return FALSE;
 	}
 
+	/* check we got a Package() else the UI will suck */
+	if (!backend->priv->set_error &&
+	    !backend->priv->has_sent_package &&
+	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
+	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
+				    "Backends need to send a Package() for this role!");
+		return FALSE;
+	}
+
 	/* if we set an error code notifier, clear */
 	if (backend->priv->signal_error_timeout != 0) {
 		g_source_remove (backend->priv->signal_error_timeout);
@@ -1074,16 +1430,7 @@ pk_backend_finished (PkBackend *backend)
 	if (backend->priv->set_error == FALSE &&
 	    backend->priv->status == PK_STATUS_ENUM_SETUP) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Backends should send status <value> signals for %s!\n"
-				    "If you are:\n"
-				    "* Calling out to external tools, the compiled backend "
-				    "should call pk_backend_set_status() manually.\n"
-				    "* Using a scripted backend with dumb commands then "
-				    "this should be set at the start of the runtime call\n"
-				    "   - see helpers/yumBackend.py:self.status()\n"
-				    "* Using a scripted backend with clever commands then a "
-				    "  callback should use map values into status enums\n"
-				    "   - see helpers/yumBackend.py:self.state_actions", role_text);
+				    "Backends should send status <value> signals for %s!", role_text);
 		pk_warning ("GUI will remain unchanged!");
 	}
 
@@ -1095,9 +1442,6 @@ pk_backend_finished (PkBackend *backend)
 
 	/* we can't ever be re-used */
 	backend->priv->finished = TRUE;
-
-	/* remove any inhibit */
-	pk_inhibit_remove (backend->priv->inhibit, backend);
 
 	/* we have to run this idle as the command may finish before the transaction
 	 * has been sent to the client. I love async... */
@@ -1112,8 +1456,8 @@ pk_backend_finished (PkBackend *backend)
 gboolean
 pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (method != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* this function is only valid when we have a running transaction */
@@ -1128,12 +1472,47 @@ pk_backend_not_implemented_yet (PkBackend *backend, const gchar *method)
 }
 
 /**
+ * pk_backend_is_online:
+ **/
+gboolean
+pk_backend_is_online (PkBackend *backend)
+{
+	PkNetworkEnum state;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	state = pk_network_get_network_state (backend->priv->network);
+	if (pk_enums_contain (state, PK_NETWORK_ENUM_ONLINE)) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_backend_thread_create:
+ **/
+gboolean
+pk_backend_thread_create (PkBackend *backend, PkBackendThreadFunc func)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
+
+	if (backend->priv->thread != NULL) {
+		pk_warning ("already has thread");
+		return FALSE;
+	}
+	backend->priv->thread = g_thread_create ((GThreadFunc) func, backend, FALSE, NULL);
+	if (backend->priv->thread == NULL) {
+		pk_warning ("failed to create thread");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
  * pk_backend_get_backend_detail:
  */
 gboolean
 pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->desc != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
@@ -1153,7 +1532,6 @@ pk_backend_get_backend_detail (PkBackend *backend, gchar **name, gchar **author)
 const gchar *
 pk_backend_get_current_tid (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, NULL);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (backend->priv->locked != FALSE, NULL);
 	return backend->priv->c_tid;
@@ -1165,7 +1543,6 @@ pk_backend_get_current_tid (PkBackend *backend)
 gboolean
 pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
@@ -1176,34 +1553,103 @@ pk_backend_set_current_tid (PkBackend *backend, const gchar *tid)
 }
 
 /**
+ * pk_backend_accept_eula:
+ */
+gboolean
+pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	pk_debug ("eula_id %s", eula_id);
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		pk_debug ("already added %s to accepted list", eula_id);
+		return FALSE;
+	}
+	g_hash_table_insert (backend->priv->eulas, g_strdup (eula_id), GINT_TO_POINTER (1));
+	return TRUE;
+}
+
+/**
+ * pk_backend_is_eula_valid:
+ */
+gboolean
+pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
+{
+	gpointer present;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (eula_id != NULL, FALSE);
+
+	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
+	if (present != NULL) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+/**
+ * pk_backend_watch_file:
+ */
+gboolean
+pk_backend_watch_file (PkBackend *backend, const gchar *filename, PkBackendFileChanged func, gpointer data)
+{
+	gboolean ret;
+
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (filename != NULL, FALSE);
+	g_return_val_if_fail (func != NULL, FALSE);
+
+	if (backend->priv->file_changed_func != NULL) {
+		pk_warning ("already set");
+		return FALSE;
+	}
+	ret = pk_file_monitor_set_file (backend->priv->file_monitor, filename);;
+
+	/* if we set it up, set the function callback */
+	if (ret) {
+		backend->priv->file_changed_func = func;
+		backend->priv->file_changed_data = data;
+	}
+	return ret;
+}
+
+/**
+ * pk_backend_file_monitor_changed_cb:
+ **/
+static void
+pk_backend_file_monitor_changed_cb (PkFileMonitor *file_monitor, PkBackend *backend)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	pk_debug ("config file changed");
+	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
+}
+
+/**
  * pk_backend_finalize:
  **/
 static void
 pk_backend_finalize (GObject *object)
 {
 	PkBackend *backend;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND (object));
 	backend = PK_BACKEND (object);
 
 	pk_debug ("backend finalise");
 
-	g_object_unref (backend->priv->time);
-	g_object_unref (backend->priv->inhibit);
-
-	/* do finish now, as we might be unreffing quickly */
-	if (backend->priv->signal_finished != 0) {
-		g_source_remove (backend->priv->signal_finished);
-		pk_backend_finished_delay (backend);
-	}
-
-	/* if we set an error code notifier, clear */
-	if (backend->priv->signal_error_timeout != 0) {
-		g_source_remove (backend->priv->signal_error_timeout);
-	}
-
+	pk_backend_reset (backend);
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
+	g_object_unref (backend->priv->time);
+	g_object_unref (backend->priv->network);
+	g_hash_table_destroy (backend->priv->eulas);
+	g_hash_table_unref (backend->priv->hash_string);
+	g_hash_table_unref (backend->priv->hash_strv);
+	g_hash_table_unref (backend->priv->hash_pointer);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
@@ -1256,8 +1702,8 @@ pk_backend_class_init (PkBackendClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
 			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [PK_BACKEND_DESCRIPTION] =
-		g_signal_new ("description",
+	signals [PK_BACKEND_DETAILS] =
+		g_signal_new ("details",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_UINT_STRING_STRING_UINT64,
 			      G_TYPE_NONE, 6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING,
@@ -1275,9 +1721,15 @@ pk_backend_class_init (PkBackendClass *klass)
 	signals [PK_BACKEND_REPO_SIGNATURE_REQUIRED] =
 		g_signal_new ("repo-signature-required",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
-			      G_TYPE_NONE, 7, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
+			      G_TYPE_NONE, 8, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+	signals [PK_BACKEND_EULA_REQUIRED] =
+		g_signal_new ("eula-required",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, pk_marshal_VOID__STRING_STRING_STRING_STRING,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING,
+			      G_TYPE_STRING, G_TYPE_STRING);
 	signals [PK_BACKEND_FINISHED] =
 		g_signal_new ("finished",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
@@ -1302,12 +1754,29 @@ pk_backend_class_init (PkBackendClass *klass)
 gboolean
 pk_backend_reset (PkBackend *backend)
 {
-	g_return_val_if_fail (backend != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 
+	/* do finish now, as we might be unreffing quickly */
+	if (backend->priv->signal_finished != 0) {
+		g_source_remove (backend->priv->signal_finished);
+		pk_debug ("doing unref quickly delay");
+		pk_backend_finished_delay (backend);
+	}
+
+	/* if we set an error code notifier, clear */
+	if (backend->priv->signal_error_timeout != 0) {
+		g_source_remove (backend->priv->signal_error_timeout);
+	}
+
+	/* TODO: need to wait for Finished() if running */
+
 	backend->priv->set_error = FALSE;
+	backend->priv->set_signature = FALSE;
+	backend->priv->set_eula = FALSE;
 	backend->priv->allow_cancel = FALSE;
 	backend->priv->finished = FALSE;
+	backend->priv->has_sent_package = FALSE;
+	backend->priv->thread = NULL;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -1329,12 +1798,24 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->c_tid = NULL;
+	backend->priv->file_changed_func = NULL;
+	backend->priv->file_changed_data = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
 	backend->priv->during_initialize = FALSE;
 	backend->priv->time = pk_time_new ();
-	backend->priv->inhibit = pk_inhibit_new ();
+	backend->priv->network = pk_network_new ();
+	backend->priv->eulas = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
+	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+	/* monitor config files for changes */
+	backend->priv->file_monitor = pk_file_monitor_new ();
+	g_signal_connect (backend->priv->file_monitor, "file-changed",
+			  G_CALLBACK (pk_backend_file_monitor_changed_cb), backend);
+
 	pk_backend_reset (backend);
 }
 
@@ -1360,6 +1841,7 @@ pk_backend_new (void)
  ***************************************************************************/
 #ifdef PK_BUILD_TESTS
 #include <libselftest.h>
+#include <glib/gstdio.h>
 
 static guint number_messages = 0;
 
@@ -1382,12 +1864,41 @@ pk_backend_test_finished_cb (PkBackend *backend, PkExitEnum exit, LibSelfTest *t
 	libst_loopquit (test);
 }
 
+/**
+ * pk_backend_test_watch_file_cb:
+ **/
+static void
+pk_backend_test_watch_file_cb (PkBackend *backend, gpointer data)
+{
+	LibSelfTest *test = (LibSelfTest *) data;
+	libst_loopquit (test);
+}
+
+static gboolean
+pk_backend_test_func_true (PkBackend *backend)
+{
+	g_usleep (1000*1000);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static gboolean
+pk_backend_test_func_immediate_false (PkBackend *backend)
+{
+	pk_backend_finished (backend);
+	return FALSE;
+}
+
 void
 libst_backend (LibSelfTest *test)
 {
 	PkBackend *backend;
 	gchar *text;
 	gboolean ret;
+	const gchar *filename;
+	const gchar *data_string;
+	guint data_uint;
+	gboolean data_bool;
 
 	if (libst_start (test, "PkBackend", CLASS_AUTO) == FALSE) {
 		return;
@@ -1402,8 +1913,193 @@ libst_backend (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/************************************************************/
+	libst_title (test, "set a blank string");
+	ret = pk_backend_set_string (backend, "dave2", "");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a ~bool");
+	ret = pk_backend_set_bool (backend, "roger2", FALSE);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a zero uint");
+	ret = pk_backend_set_uint (backend, "linda2", 0);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a blank string");
+	data_string = pk_backend_get_string (backend, "dave2");
+	if (pk_strequal (data_string, "")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %s", data_string);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a ~bool");
+	data_bool = pk_backend_get_bool (backend, "roger2");
+	if (!data_bool) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_bool);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a zero uint");
+	data_uint = pk_backend_get_uint (backend, "linda2");
+	if (data_uint == 0) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_uint);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a string");
+	ret = pk_backend_set_string (backend, "dave", "ania");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a bool");
+	ret = pk_backend_set_bool (backend, "roger", TRUE);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set a uint");
+	ret = pk_backend_set_uint (backend, "linda", 999);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a string");
+	data_string = pk_backend_get_string (backend, "dave");
+	if (pk_strequal (data_string, "ania")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %s", data_string);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a bool");
+	data_bool = pk_backend_get_bool (backend, "roger");
+	if (data_bool) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_bool);
+	}
+
+	/************************************************************/
+	libst_title (test, "get a uint");
+	data_uint = pk_backend_get_uint (backend, "linda");
+	if (data_uint == 999) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "data was %i", data_uint);
+	}
+
+	/************************************************************/
+	libst_title (test, "create a config file");
+	filename = "/tmp/dave";
+	ret = g_file_set_contents (filename, "foo", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
+	libst_title (test, "set up a watch file on a config file");
+	ret = pk_backend_watch_file (backend, filename, pk_backend_test_watch_file_cb, test);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "change the config file");
+	ret = g_file_set_contents (filename, "bar", -1, NULL);
+	if (ret) {
+		libst_success (test, "set contents");
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/* wait for config file change */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	libst_title (test, "delete the config file");
+	ret = g_unlink (filename);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
 	g_signal_connect (backend, "message", G_CALLBACK (pk_backend_test_message_cb), NULL);
 	g_signal_connect (backend, "finished", G_CALLBACK (pk_backend_test_finished_cb), test);
+
+	/************************************************************/
+	libst_title (test, "get eula that does not exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was not accepted");
+	}
+
+	/************************************************************/
+	libst_title (test, "get eula that does exist");
+	ret = pk_backend_is_eula_valid (backend, "license_foo");
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula valid");
+	}
+
+	/************************************************************/
+	libst_title (test, "accept eula (again)");
+	ret = pk_backend_accept_eula (backend, "license_foo");
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "eula was accepted twice");
+	}
 
 	/************************************************************/
 	libst_title (test, "get backend name");
@@ -1522,32 +2218,43 @@ libst_backend (LibSelfTest *test)
 	}
 
 	/************************************************************/
-	libst_title (test, "check we enforce finished after error_code");
+	libst_title (test, "wait for a thread to return true");
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_true);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wait for a thread failed");
+	}
+
+	/* wait for Finished */
+	libst_loopwait (test, 2000);
+	libst_loopcheck (test);
+
+	/* reset */
+	pk_backend_reset (backend);
+
+	/************************************************************/
+	libst_title (test, "wait for a thread to return false (straight away)");
+	ret = pk_backend_thread_create (backend, pk_backend_test_func_immediate_false);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned false!");
+	}
+
+	/* wait for Finished */
+	libst_loopwait (test, PK_BACKEND_FINISHED_TIMEOUT_GRACE + 100);
+	libst_loopcheck (test);
+
+	/************************************************************/
+	pk_backend_reset (backend);
 	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* wait for finished */
 	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 200);
 	libst_loopcheck (test);
 
-	if (number_messages == 1) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, "we messaged %i times!", number_messages);
-	}
-
-	/* reset */
-	pk_backend_reset (backend);
-	number_messages = 0;
-
-	/************************************************************/
-	libst_title (test, "check we enforce finished after two error_codes");
-	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error1");
-	pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "test error2");
-
-	/* wait for finished */
-	libst_loopwait (test, PK_BACKEND_FINISHED_ERROR_TIMEOUT + 100);
-	libst_loopcheck (test);
-
+	libst_title (test, "check we enforce finished after error_code");
 	if (number_messages == 1) {
 		libst_success (test, NULL);
 	} else {

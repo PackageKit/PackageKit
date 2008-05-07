@@ -24,7 +24,6 @@
 
 #include <glib-object.h>
 #include "pk-enum.h"
-#include "pk-enum-list.h"
 #include "pk-package-list.h"
 
 G_BEGIN_DECLS
@@ -67,19 +66,21 @@ const gchar	*pk_extra_get_locale			(PkExtra	*extra);
 gboolean	 pk_extra_set_database			(PkExtra	*extra,
 							 const gchar	*filename)
 							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_extra_get_localised_detail		(PkExtra	*extra,
-							 const gchar	*package,
-							 gchar		**summary);
-gboolean	 pk_extra_set_localised_detail		(PkExtra	*extra,
+
+const gchar	*pk_extra_get_summary			(PkExtra	*extra,
+							 const gchar	*package);
+const gchar	*pk_extra_get_icon_name			(PkExtra	*extra,
+							 const gchar	*package);
+const gchar	*pk_extra_get_exec			(PkExtra	*extra,
+							 const gchar	*package);
+
+/* not individual as they require SQL access, so slow */
+gboolean	 pk_extra_set_data_locale		(PkExtra	*extra,
 							 const gchar	*package,
 							 const gchar	*summary);
-gboolean	 pk_extra_get_package_detail		(PkExtra	*extra,
+gboolean	 pk_extra_set_data_package		(PkExtra	*extra,
 							 const gchar	*package,
-							 gchar		**icon,
-							 gchar		**exec);
-gboolean	 pk_extra_set_package_detail		(PkExtra	*extra,
-							 const gchar	*package,
-							 const gchar	*icon,
+							 const gchar	*icon_name,
 							 const gchar	*exec);
 
 G_END_DECLS

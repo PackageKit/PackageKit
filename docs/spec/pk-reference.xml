@@ -36,6 +36,7 @@
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-compiled.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-spawn.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-backend-dbus.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="pk-developer-faq.xml" />
 
 </book>
 

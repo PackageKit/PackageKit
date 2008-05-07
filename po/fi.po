@@ -1,0 +1,310 @@
+# Finnish translation of packagekit.
+# Copyright (C) 2008 packagekit's COPYRIGHT HOLDER
+# This file is distributed under the same license as the packagekit package.
+# Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-03 01:34+0000\n"
+"PO-Revision-Date: 2008-05-06 00:39+0300\n"
+"Last-Translator: Ville-Pekka Vainio <vpivaini@cs.helsinki.fi>\n"
+"Language-Team: Finnish <laatu@lokalisointi.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../client/pk-console.c:224
+msgid "Update detail"
+msgstr "Päivityksen tiedot"
+
+#: ../client/pk-console.c:425
+msgid "A system restart is required"
+msgstr "Järjestelmä on käynnistettävä uudelleen"
+
+#: ../client/pk-console.c:427
+msgid "A logout and login is required"
+msgstr "On kirjauduttava ulos ja takaisin sisään"
+
+#: ../client/pk-console.c:429
+msgid "An application restart is required"
+msgstr "Sovellus on käynnistettävä uudelleen"
+
+#: ../client/pk-console.c:474
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Anna numero väliltä 1-%i: "
+
+#: ../client/pk-console.c:524
+msgid "Could not find a package match"
+msgstr "Vastaavaa pakettia ei löytynyt"
+
+#: ../client/pk-console.c:538
+msgid "There are multiple package matches"
+msgstr "Useita vastaavia paketteja saatavilla"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:545
+msgid "Please enter the package number: "
+msgstr "Anna paketin numero:"
+
+#: ../client/pk-console.c:561
+msgid ""
+"Could not find a package with that name to install, or package already "
+"installed"
+msgstr ""
+"Nimellä ei löytynyt pakettia asennettavaksi tai paketti on jo asennettu"
+
+#: ../client/pk-console.c:643
+msgid "Could not find a package with that name to remove"
+msgstr "Nimellä ei löytynyt pakettia poistettavaksi"
+
+#: ../client/pk-console.c:683
+msgid "The following packages have to be removed"
+msgstr "Seuraavat paketit on poistettava"
+
+#. get user input
+#: ../client/pk-console.c:692
+msgid "Okay to remove additional packages?"
+msgstr "Poistetaanko lisäpaketteja?"
+
+#: ../client/pk-console.c:696
+msgid "Cancelled!"
+msgstr "Peruttu!"
+
+#: ../client/pk-console.c:718
+msgid "Could not find a package with that name to update"
+msgstr "Nimellä ei löytynyt pakettia päivitettäväksi"
+
+#: ../client/pk-console.c:736
+msgid "Could not find what packages require this package"
+msgstr "Ei löydetty, mitkä paketti vaativat tämän paketit"
+
+#: ../client/pk-console.c:754
+msgid "Could not get dependencies for this package"
+msgstr "Ei voitu hakea riippuvuuksia tälle paketille"
+
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "Tämän paketin tietoja ei löydetty"
+
+#: ../client/pk-console.c:790
+msgid "Could not find the files for this package"
+msgstr "Tämän paketin tiedostoja ei löydetty"
+
+#: ../client/pk-console.c:870
+msgid "Package description"
+msgstr "Paketin kuvaus"
+
+#: ../client/pk-console.c:893
+msgid "Package files"
+msgstr "Paketin tiedostot"
+
+#: ../client/pk-console.c:901
+msgid "No files"
+msgstr "Ei tiedostoja"
+
+#. get user input
+#: ../client/pk-console.c:933
+msgid "Okay to import key?"
+msgstr "Tuodaanko avain?"
+
+#: ../client/pk-console.c:936
+msgid "Did not import key"
+msgstr "Avainta ei tuotu"
+
+#. get user input
+#: ../client/pk-console.c:976
+msgid "Do you agree?"
+msgstr "Hyväksytkö?"
+
+#: ../client/pk-console.c:979
+msgid "Did not agree to licence, task will fail"
+msgstr "Käyttöoikeussopimusta ei hyväksytty, tehtävä epäonnistuu"
+
+#: ../client/pk-console.c:1008
+msgid "The daemon crashed mid-transaction!"
+msgstr "Taustaprosessi kaatui kesken toimenpiteen"
+
+#. header
+#: ../client/pk-console.c:1061
+msgid "PackageKit Console Interface"
+msgstr "PackageKitin konsolikäyttöliittymä"
+
+#: ../client/pk-console.c:1061
+msgid "Subcommands:"
+msgstr "Alikomennot:"
+
+#: ../client/pk-console.c:1165 ../client/pk-monitor.c:104 ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "Näytä ylimääräisiä virheenjäljitystietoja"
+
+#: ../client/pk-console.c:1167 ../client/pk-monitor.c:106
+msgid "Show the program version and exit"
+msgstr "Näytä ohjelman versio ja lopeta"
+
+#: ../client/pk-console.c:1169
+msgid "Set the filter, e.g. installed"
+msgstr "Aseta suodin, esim. asennettu"
+
+#: ../client/pk-console.c:1171
+msgid "Exit without waiting for actions to complete"
+msgstr "Lopeta odottamatta toimintojen valmistumista"
+
+#: ../client/pk-console.c:1194
+msgid "Could not connect to system DBUS."
+msgstr "Järjestelmän DBUSiin yhdistäminen ei onnistunut."
+
+#: ../client/pk-console.c:1288
+msgid "You need to specify a search type"
+msgstr "Haun tyyppi on annettava"
+
+#: ../client/pk-console.c:1293 ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307 ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421 ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435 ../client/pk-console.c:1442
+msgid "You need to specify a search term"
+msgstr "Hakutermi on annettava"
+
+#: ../client/pk-console.c:1319
+msgid "Invalid search type"
+msgstr "Virheellinen haun tyyppi"
+
+#: ../client/pk-console.c:1324
+msgid "You need to specify a package or file to install"
+msgstr "Asennettava paketti tai tiedosto on annettava"
+
+#: ../client/pk-console.c:1339
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Tyyppi, key_id ja package_id on annettava"
+
+#: ../client/pk-console.c:1346
+msgid "You need to specify a package to remove"
+msgstr "Poistettava paketti on annettava"
+
+#: ../client/pk-console.c:1353
+msgid "You need to specify a eula-id"
+msgstr "Eula-id on annettava"
+
+#: ../client/pk-console.c:1369
+msgid "You need to specify a package name to resolve"
+msgstr "Ratkaistavan paketin nimi on annettava"
+
+#: ../client/pk-console.c:1376 ../client/pk-console.c:1383
+msgid "You need to specify a repo name"
+msgstr "Asennuslähteen nimi on annettava"
+
+#: ../client/pk-console.c:1390
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Asennuslähteen nimi/parametri ja arvo on annettava"
+
+#: ../client/pk-console.c:1403
+msgid "You need to specify a time term"
+msgstr "Aika on annettava"
+
+#: ../client/pk-console.c:1408
+msgid "You need to specify a correct role"
+msgstr "Sopiva rooli on annettava"
+
+#: ../client/pk-console.c:1413
+msgid "Failed to get last time"
+msgstr "Edellistä aikaa ei saatu"
+
+#: ../client/pk-console.c:1449
+msgid "You need to specify a package to find the details for"
+msgstr "On annettava paketti, jonka tietoja etsitään"
+
+#: ../client/pk-console.c:1456
+msgid "You need to specify a package to find the files for"
+msgstr "On annettava paketti, jonka tiedostoja etsitään"
+
+#: ../client/pk-console.c:1503
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "valitsin ”%s” ei ole tuettu"
+
+#: ../client/pk-console.c:1514
+msgid "Command failed"
+msgstr "Komento epäonnistui"
+
+#: ../client/pk-console.c:1518
+msgid "You don't have the necessary privileges for this operation"
+msgstr "Sinulla ei ole tähän toimintoon tarvittavia oikeuksia"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "PackageKit-tarkkailija"
+
+#: ../client/pk-import-desktop.c:293 ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "Ei voitu avata tietokantaa: %s"
+
+#: ../client/pk-import-desktop.c:294 ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "Tämä ohjelma on luultavasti suoritettava root-käyttäjänä"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "Käynnistys epäonnistui tämän koneen turvakäytäntöjen vuoksi"
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "Näin voi tapahtua kahdesta syystä:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr ""
+"Oikea käyttäjä (yleensä root) ei ole käynnistämässä suoritettavaa ohjelmaa"
+
+#: ../src/pk-main.c:86
+msgid ""
+"The org.freedesktop.PackageKit.conf file is not installed in the system /etc/"
+"dbus-1/system.d directory"
+msgstr ""
+"Tiedostoa org.freedesktop.PackageKit.conf ei ole asennettu järjestelmän /etc/"
+"dbus-1/system.d-hakemistoon"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "Tee taustaprosessiksi ja irrota päätteestä"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "Poista toimettomuusajastin käytöstä"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "Näytä versio ja lopeta"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "Sulje pienen viiveen jälkeen"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "Sulje sen jälkeen, kun moottori on ladattu"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "PackageKit-palvelu"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "Ei voida yhdistää järjestelmäväylään"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "Virhe yritettäessä käynnistää: %s\n"
+
+#~ msgid "Could not find a description for this package"
+#~ msgstr "Tälle paketille ei löydetty kuvausta"
+
+#~ msgid "You need to specify a package to find the description for"
+#~ msgstr "On annettava paketti, jonka kuvausta etsitään"

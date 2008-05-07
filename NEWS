@@ -1,3 +1,280 @@
+Version 0.2.0
+~~~~~~~~~~~~~~
+Released: 2008-05-06
+
+* Cool new stuff
+ - Tons of new help and example code
+ - New faster transaction DBUS interface
+ - Transiflex integration for new translations
+ - EULA and GPG signature callback support
+
+* Caveats
+ - This is the first (read: unstable) release of a new codebase - 0.1.11 is more stable.
+ - There's a ton of new functionality that has only had light testing.
+ - Importing multiple GPG keys or EULAs in one transaction breaks horribly.
+
+* Translations
+ - Add Dutch translation (Arnout Lok)
+ - Add Hebrew translation (Alon Zakai)
+ - Add Serbian and Serbian Latin translation (Goran Rakic)
+ - Add Brazilian Portugese translation (Igor Pires Soares)
+ - Add Russian translation (Ivan Ignatyev)
+ - Add Italian translation (Daniele Costarella)
+ - Add Spanish translation (Javier Castro)
+ - Add Slovak translation (Lubomir Kundrak)
+ - Add French translation (Marc-André Lureau)
+ - Add Norwegian Bokmaal translation (Mats Taraldsvik)
+ - Add Polish Translation (Piotr Drąg)
+ - Add german translation (Stephan Sachse)
+ - Add Finnish translation (Ville-Pekka Vainio)
+ - Add a czech translation (Vojtěch Smejkal)
+ - Add simplified Chinese translation (jcome)
+ - Unknown translation (Dimitris Glezos)
+ - Unknown translation (Fabian Affolter)
+ - Unknown translation (Francesco Tombolini)
+
+* Backends:
+ - alpm: Changes related to new alpm (Valeriy Lyasotskiy)
+ - alpm: Fix compilation on 64-bit configurations (Valeriy Lyasotskiy)
+ - alpm: finished parse_config, added resolve method for local dbs, fixed repo-list (Valeriy Lyasotskiy)
+ - alpm: improvements in search functions (Valeriy Lyasotskiy)
+ - alpm: updated backend_install_file (Valeriy Lyasotskiy)
+ - alpm: implemented backend_search_name (Valeriy Lyasotskiy)
+ - alpm: some fixes in backend_refresh_cache (Valeriy Lyasotskiy)
+ - alpm: added backend_get_description (Valeriy Lyasotskiy)
+ - alpm: fixes for refresh_cache, partially reformatted to follow the coding standards (Valeriy Lyasotskiy)
+ - alpm: added backend_get_packages (Valeriy Lyasotskiy)
+ - alpm: added backend_get_files (Valeriy Lyasotskiy)
+ - alpm: improvements in backend_resolve, find_packages_by_name (Valeriy Lyasotskiy)
+ - alpm: Fixed alpm make fail (Andrea Scarpino)
+ - box: fixed broken search function (Grzegorz Dabrowski)
+ - conary: Use the new style get_package_update for install and remove (Ken VanDine)
+ - conary: First stab at searchByGroup using DB (Robin Norwood)
+ - conary: Another pass at adding group searching (Robin Norwood)
+ - conary: Look up group list from map (Robin Norwood)
+ - opkg: update opkg backend to use new libopkg api (Thomas Wood)
+ - opkg: include pk-backend-internal.h for PK_BACKEND macro (Thomas Wood)
+ - opkg: fix uninitialised variable warning (Thomas Wood)
+ - opkg: add some checks for NULL search parameters (Thomas Wood)
+ - opkg: add missing backend reference for callbacks (Thomas Wood)
+ - pisi: Use pk_backend_is_online instead of pk_network_is_online (S.Çağlar Onur)
+ - poldek: break UpdatePackages when an error occurs (Marcin Banasiak)
+ - poldek: add GetPackages (Marcin Banasiak)
+ - poldek: add UpdateSystem (Marcin Banasiak)
+ - poldek: warn user about problems with connecting to the server (Marcin Banasiak)
+ - poldek: when an error occurs try to recognize which enum would be the most suitable (Marcin Banasiak)
+ - yum: Fix a bug in _get_update_extras caused by invalid tab->space conversion (rh#304527) (Luke Macken)
+ - yum: Use our local 'title' variable instead of from the ref in _get_update_extras (Luke Macken)
+ - yum: add devel filtering in get-repo-list (Richard Hughes)
+ - yum: use the filter in get-depends, else we tell the user we are going to download files
+   that already exist (Richard Hughes)
+ - yum: fix GetPackages, and connect it up to the daemon (Richard Hughes)
+ - yum: forward port the repo filtering form yum1 to yum2 (Richard Hughes)
+ - yum: fix basename sorting so that we still show packages even if they do not produce a rpm as the
+ - yum: update status in the faq (Richard Hughes)
+ - yum: improve the BASENAME filter by preferably matching against packages (Richard Hughes)
+ - yum: some fixes to the yumBackend.py trusted code (Richard Hughes)
+ - yum: add a warning when we are installing remote unsigned files
+ - yum: catch a case where we can't load the comps list (Richard Hughes)
+ - yum: Handle cache errors for yum backend by rebuilding the cache and trying again (Robin Norwood)
+ - yum: Set default throttle to 90% (Robin Norwood)
+ - yum: Change from network error to repo error when we cannot connect to a repository (Robin Norwood)
+ - yum: Fix some error messages (Robin Norwood)
+ - yum: Catch errors when checking for updated packages during install_file method (Robin Norwood)
+ - yum: Fix for bug #443341 - RefreshYumcache not defined (Robin Norwood)
+ - yum: Since we disable existing repos, we have to manually init pkgSack.  Yuck (Robin Norwood)
+ - yum: Add several checks when installing a local package (Robin Norwood)
+ - yum: Fix error messages for new install-file error cases (Robin Norwood)
+ - yum: Fix duplicates in search lists (Robin Norwood)
+ - yum: update_system should set AllowCancel to True at first - it will be set to False later (Robin Norwood)
+ - zypp: fix error check when calling pk_backend_error_code more than once (Scott Reeves)
+ - zypp: emit error on bad option to set repo data. rip redundant code (Scott Reeves)
+ - zypp: fix logic check to match version AND arch. Fixes BNC# 378591 (Scott Reeves)
+ - zypp: clean up reads of freed mem pointed out by valgrind (Scott Reeves)
+ - zypp: fix up group searching and start fixing arch filtering (Scott Reeves)
+ - zypp: dont call pk_backend_finished twice (Scott Reeves)
+ - zypp: show right size for packages (Stefan Haas)
+ - zypp: add the install_signature backend method, and reorder the methods (Stefan Haas)
+ - zypp: added digest callbacks (Stefan Haas)
+ - zypp: corrected wrong order of backend options (Stefan Haas)
+ - zypp: remove multiple calls of pk_backend_error_code (Stefan Haas)
+ - zypp: removed unnecessary pk_backend_finished (Stefan Haas)
+ - zypp: changed libzypp logging stuff (Stefan Haas)
+ - zypp: added possibility to change the priority of a repo (Stefan Haas)
+ - zypp: changed RpmDB access (Stefan Haas)
+ - zypp: fixed segfault in getRequires (Stefan Haas)
+ - zypp: fix for getRequires the 2nd (Stefan Haas)
+ - zypp: cleanup zypp_get_packages_by_file (Stefan Haas)
+ - zypp: changes for zypp 4.10.0 (Stefan Haas)
+ - zypp: make search group faster (Stefan Haas)
+ - zypp: fixed segfault (Stefan Haas)
+ - zypp: removed code duplication in backend_get_updates_thread (Stefan Haas)
+ - zypp: set pk_status and add patches for installing (Stefan Haas)
+ - zypp: rearrange groups and make it compile again (Stefan Haas)
+ - zypp: added GetPackages to zypp-Backend (Stefan Haas)
+ - zypp: fixed GetPackages (Stefan Haas)
+ - zypp: changed get_updates and get_update_detail (Stefan Haas)
+ - zypp: added license handling stuff (Stefan Haas)
+ - zypp: building buzilla & cve links like in dummy-backend (Stefan Haas)
+ - zypp: logical error in license-handling (Stefan Haas)
+ - zypp: build whole in get_requires (Stefan Haas)
+ - zypp: look for the right arch (Stefan Haas)
+ - zypp: changed license-handling (Stefan Haas)
+ - zypp: changed conversion from rpm-groups to pk-groups (Stefan Haas)
+ - zypp: added filter support to search_group (Stefan Haas)
+ - zypp: added general way for filter support (Stefan Haas)
+ - zypp: removed code duplication (Stefan Haas)
+ - zypp: added install-file to the backend (Stefan Haas)
+ - zypp: added install-file to zypp-backend (Stefan Haas)
+ - zypp: fixed BNC# 381698 and maked it even faster (Stefan Haas)
+ - zypp: added install-file to zypp-backend (Stefan Haas)
+ - zypp: fixed BNC# 381697 and BNC# 381698 (Stefan Haas)
+ - zypp: Added arch filter to backend (Stefan Haas)
+ - zypp: changes for zypp 4.14.0, needed for reboot-flag (Stefan Haas)
+ - zypp: better error-messages when refreshing repositories (Stefan Haas)
+ - zypp: reset the status of a poolitem if installation fails (Stefan Haas)
+ - zypp: added summary to install callback (Stefan Haas)
+ - zypp: changed filter behaviour to accept more then one (Stefan Haas)
+ - zypp: look also for patches (Stefan Haas)
+ - zypp: alter db schema. add categories from changesets (Stu Gott)
+ - zypp: Fixups for category code (Stu Gott)
+ - zypp: caching update code (Stu Gott)
+
+* New features:
+ - Transaction id is now a dbus path (Richard Hughes)
+ - Add the install_signature backend method (Richard Hughes)
+ - Watch for all changes on the config file, to properly detect rpm upgrades (Richard Hughes)
+ - Add per-backend instance getters and setters to PkBackend (Richard Hughes)
+ - Add a simple thread handler in PkBackend (Richard Hughes)
+ - Make pkcon be cleverer when doing the moving bars - hopefully it's more sane now (Richard Hughes)
+ - Rename some commands in pkcon, allow a --filter parameter, and only show entries we can do in the
+   help text (Richard Hughes)
+ - Don't allow org.freedesktop.packagekit.install-signature to be retained (Richard Hughes)
+ - Disable ptrace() and core dumping for applications which use libpackagekit so that local trojans
+   cannot silently abuse privileges (Richard Hughes)
+ - Add a role to allow us to accept a eula (Richard Hughes)
+ - Add pk_backend_accept_eula and pk_backend_is_eula_valid (Richard Hughes)
+ - Add more status enums for downloading cache types (Richard Hughes)
+ - Add a make snapshot target for rpm builds (Richard Hughes)
+ - Add the udev rules for telling PackageKit we need firmware (Richard Hughes)
+ - Add the ARCH filter so we can match native and non-native archs in search results (Richard Hughes)
+ - Add SuggestDaemonQuit to politely ask the daemon to quit as soon as possible (Richard Hughes)
+ - Add a 'reason' parameter to StateHasChanged (Richard Hughes)
+ - Add 'zlib with acknowledgement' license tag (Robin Norwood)
+ - Add VOSTROM public license (Robin Norwood)
+ - Add xerox license to 'free' list (Robin Norwood)
+ - Add repo configuration error enum (Robin Norwood)
+ - Don't inhibit by default. THIS MEANS BACKENDS SHOULD CALL pk_backend_set_allow_cancel(FALSE) if
+   they need to inhibit at startup (Richard Hughes)
+ - Move PkNetwork into src (as it can use the dbus interface) and make building a unix backend to
+   fallback to for NM missing (Richard Hughes)
+ - Check that install, remove and update emit package(), and if not, report a warning (Richard Hughes)
+
+* Bugfixes:
+ - Little fix in doc (Aurelien Lefebvre)
+ - Fix several small memory leaks (James Antill)
+ - Fix compiling PackageKit with GCC2 (Jens Granseuer)
+ - Friendlier message for "permission denied" (Matthias Clasen)
+ - Raise the PolicyKit dep to 0.8 (Patrick Niklaus)
+ - Don't warn the user about the system dbus when we are just prevented from connecting (Richard Hughes)
+ - Don't let GIO start it's own session bus: gnome#526454 (Richard Hughes)
+ - Don't allow a backend to use pk_backend_repo_signature_required more than once (Richard Hughes)
+ - Only fire the transaction-list-changed signal _after_ the other handlers have run (Richard Hughes)
+ - Disconnect the backend connections straight away, as the PkTransaction object takes time to
+   timeout and we don't want to warn when we try to process on multiple fast objects (Richard Hughes)
+ - Send a nag message when backends send unknown error (Richard Hughes)
+ - Only connect the backend signals when the transaction is running, not wen it is queued (Richard Hughes)
+ - Fix the cancel warning when the transaction is long gone, and add some unit tests to make sure it
+   can't happen in the future (Richard Hughes)
+ - Don't error out with 'Package is not installed' when getting requires of a not-installed
+   package. Fixes rh#442221 (Richard Hughes)
+ - 95packagekit should be executable when installed. fixes rh#442286 (Richard Hughes)
+ - Don't allow org.freedesktop.packagekit.install-file to be retained (Richard Hughes)
+ - Make sure we set the verbose state in pkcon (Richard Hughes)
+ - Emit a custom error when there is a file conflict (Richard Hughes)
+ - Check for valid UTF8 in pk_strsafe() to avoid crashing the daemon on invalid input (Richard Hughes)
+ - Allow adding a package with NULL summary to the packagelist (Richard Hughes)
+ - Wait for network to come back up before refreshing after a suspend. fixes rh#442166 (Richard Hughes)
+ - Convert the unused metadata signals into status signals. Now we get nice UI feedback (Richard Hughes)
+ - Fix a metric ton of translation issues (Richard Hughes)
+ - Correct an error enum when we failed to install a local file. rh#443235 (Richard Hughes)
+ - Don't rely on a space to seporate the command list, as this breaks installing local files from
+   directories with spaces in them. fixes rh#443235 (Richard Hughes)
+ - Properly handle exceptions rather than using customTracebackHandler. fixes rh#443342 (Richard Hughes)
+ - Peporate the PolicyKit roles into trusted and untrusted for local file installs (Richard Hughes)
+ - Make the test DBUS backend run due to a changed constant name (Richard Hughes)
+ - Fix pk_va_list_to_argv so that it splits lines with spaces as seporate entries (Richard Hughes)
+ - get_groups and get_filters are not compulsory, don't assert if they are not present (Richard Hughes)
+ - Return a specific error code when we fail to get auth. fixes rh#443551 (Richard Hughes)
+ - When we find a package by it's repo id, make sure we take into account the NEVRA _and_ the
+   repo_id. Fixes rh#443976 (Richard Hughes)
+ - Protect against running an old daemon with new client tools (Richard Hughes)
+ - Get the default parameters from the config file, rather than hardcoding it (Richard Hughes)
+ - Massively simplify PkExtra; we can keep all the data hot in memory (Richard Hughes)
+ - Rename GetDescription to GetDetails (Richard Hughes)
+ - Rename the Description signal to Details (Richard Hughes)
+ - Make sure we disconnect any pending signals in pk_backend_reset (Richard Hughes)
+ - Add generated files to make clean target (Robin Norwood)
+ - Purge ERROR_INTERNAL_ERROR from all backends (Robin Norwood)
+ - Fix enum names (Robin Norwood)
+ - fix logic so package_ids are actually cached (Scott Reeves)
+ - Compile fix for not NETWORK_MANAGER (Tick)
+ - Remove unneeded sourcing from the pm-utils script (Till Maas)
+
+Version 0.1.11
+~~~~~~~~~~~~~~
+Released: 2008-04-05
+
+* Backends:
+ - conary: Added update (Ken VanDine)
+ - poldek: Implement 'newest' filter (Marcin Banasiak)
+ - yum: Don't mention yum so much in the detailed error text. rh#440701
+ - yum: Fix YumBaseError message handling in _runYumTransaction (Luke Macken)
+ - yum: Extended repo_signature_required and implemented new signature-install method (Tim Lauridsen)
+ - yum: Fix one char at a line messages (Tim Lauridsen)
+ - yum: Make get-requires pkg return the packages there need to removed if pkg is removed (Tim Lauridsen)
+ - yum: Rewrite the yum search functions so that we filter out available packages. rh#440122 (Richard Hughes)
+ - yum: Copy the basename filtering from yum2 into yum. rh#440066 (Richard Hughes)
+ - yum: Replace unicode decoding errors with question marks. rh#439764 (Luke Macken)
+ - yum: Fixed traceback in install_file. rhbz #439728 (Tim Lauridsen)
+ - yum: Fix 'No package to instal' typo, fixes rh#439778 (Richard Hughes)
+ - yum: Correct some grammar pointed out in rh#439780 (Richard Hughes)
+ - yum2: Remove file extensions from the MetaDataMap (Luke Macken)
+ - yum2: Set NoPercentageUpdates when doing a dep resolve (Richard Hughes)
+ - zypp: Added rpm-exceptions (Stefan Haas)
+ - zypp: Make more verbose if resolution failed (Stefan Haas)
+ - zypp: Changes for libzypp 4.7.0 (Stefan Haas)
+ - zypp: Check for valid package names before emitting. BNC#372429 (Scott Reeves)
+
+* New features:
+ - Add a hash table into PkExtra so we can see if the query is likely to succeed
+   - This reduces the profile time from 340ms to 69ms on my machine (Richard Hughes)
+ - Make libgbus send a signal when something is replaced on the bus (Richard Hughes)
+ - The daemon will quit when the conf file is changed (Richard Hughes)
+ - Add a new DBUS interface org.freedesktop.PackageKit.Notify so we can get system wide
+   notifications from PackageKit, without having to bodge PkClient to do this for us (Richard Hughes)
+ - Add the NEWEST filter (Richard Hughes)
+ - Change the API of GetRepoList(void) to GetRepoList(filter) (Richard Hughes)
+
+* Bugfixes:
+ - Use BUFSIZ chunks of memory in PkSpawn to use the entire page of memory (Richard Hughes)
+ - Make PkRestart and PkConf use the same config file logic (Richard Hughes)
+ - Correct some problems after Matthias' daemon review (Richard Hughes)
+ - Constify *_get_type, it's top of the profile and could be unrolled (Richard Hughes)
+ - Fix 'No package to instal' typo. rh#439778 (Richard Hughes)
+ - Install pk-import-* into libexec as they are not meant to be run by users (Richard Hughes)
+ - Display why the pk-import-* tools fail to open the PkExtra database. rh#439738 (Richard Hughes)
+ - Resolve the path before passing it to the backend. rh#439692 (Richard Hughes)
+ - When the backend has finished, manually set the allow cancel to FALSE (Richard Hughes)
+ - Set the backend exit code to canceled when we cancel the transaction (Richard Hughes)
+ - When asked to cancel, send ::set-allow-cancel(false) to update UI elements (Richard Hughes)
+ - Warn when we are doing PkClient actions when we don't need to (Richard Hughes)
+ - Update the dummy backend to be able to test the client tools (Richard Hughes)
+ - Ignore some errors like 'Already finished' when we try to cancel (Richard Hughes)
+ - Cancel a running client transaction if we try to reset it (Richard Hughes)
+ - Be more paranoid about sqlite status (Richard Hughes)
+ - Fix 'pkcon get repos' by actually waiting for the return value (Klaus Kämpf)
+
 Version 0.1.10
 ~~~~~~~~~~~~~~
 Released: 2008-03-28
@@ -138,7 +415,7 @@ Released: 2008-02-21
 * Backends:
  - apt: some random fixes to get it work again (Sebastian Heinlein)
  - apt2: initial work on a dbus based backend introduced as apt2 (Sebastian Heinlein)
- - apt2: implement GetDescription (Sebastian Heinlein)
+ - apt2: implement GetDetails (Sebastian Heinlein)
  - apt2: fix SearchName (Sebastian Heinlein)
  - apt2: fix a typo in GetUpdates (Sebastian Heinlein)
  - yum: check for missing package in GetUpdateDetail call (Robin Norwood)
@@ -153,7 +430,7 @@ Released: 2008-02-21
  - zypp: Added SearchFiles (Stefan Haas)
  - zypp: Added SearchDetails (Stefan Haas)
  - zypp: Added GetRequires (Stefan Haas)
- - zypp: added missing stuff of GetDescription (Stefan Haas)
+ - zypp: added missing stuff of GetDetails (Stefan Haas)
 
 * New features:
  - Allow pkcon to actually remove dependancies on user prompt (Richard Hughes)
@@ -203,7 +480,7 @@ Released: 2008-02-14
  - yum: fixed ERROR_SIGNATURE_NOT_IMPORTED traceback (Tim Lauridsen)
  - yum: added get-packages and make the yum backend more resistant to UTF-8 decoding (Tim Lauridsen)
  - yum2: merge in a new backend that uses the dbus service activation.
-   It does not work yet... (Tim Lauridsen, Robin Norwood, Richard Hughes)
+   It does not work yet (Tim Lauridsen, Robin Norwood, Richard Hughes)
  - zypp: move to PkBackendThread (Scott Reeves)
 
 * New features:
@@ -469,7 +746,7 @@ Released: 2007-11-01
  - Convert RefreshCache to a privileged operation but with default to allow
    when on active console. The distro can then patch this default to whatever
    depending on the security policy - and the admin can of course change the
-   default. (S.Çağlar Onur)
+   default (S.Çağlar Onur)
 
 ~~~~~~~~~~~~~
 Version 0.1.1

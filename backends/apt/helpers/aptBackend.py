@@ -71,7 +71,7 @@ class Package(apt.Package):
             print "wanted",wanted_ver
             for ver in pkg._pkg.VersionList:
                 print "vers",version,ver.VerStr
-            backend.error(ERROR_INTERNAL_ERROR,"Can't find version %s for %s"%(version,self.name))
+            backend.error(ERROR_PACKAGE_NOT_FOUND, "Can't find version %s for %s"%(version,self.name))
 
     def setVersion(self,version,compare="="):
         if version!=None and (self.installedVersion == None or not apt_pkg.CheckDep(version,compare,self.installedVersion)):
@@ -98,7 +98,7 @@ class Package(apt.Package):
                 self.__setParent(self._backend._caches[origin][name])
                 self.markInstall(False,False)
                 if not apt_pkg.CheckDep(self.candidateVersion,compare,version):
-                    self._backend.error(ERROR_INTERNAL_ERROR,
+                    self._backend.error(ERROR_PACKAGE_NOT_FOUND,
                             "Unable to locate package version %s (only got %s) for %s"%(version,self.candidateVersion,name))
                     return
                 self.markKeep()
@@ -196,7 +196,8 @@ class PackageKitProgress(apt.progress.OpProgress, apt.progress.FetchProgress):
         self._backend.percentage(100)
 
     def mediaChange(self, medium, drive):
-        self._backend.error(ERROR_INTERNAL_ERROR,
+        # This probably should not be an error, but a Message.
+        self._backend.error(ERROR_UNKNOWN,
                 "Medium change needed")
 
 class PackageKitAptBackend(PackageKitBaseBackend):
@@ -266,13 +267,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             res = self._apt_cache.update(PackageKitProgress(self))
         except Exception, error_message:
-             self.error(ERROR_INTERNAL_ERROR,
+             self.error(ERROR_UNKNOWN,
                         "Failed to fetch the following items:\n%s" % error_message)
         return res
 
-    def get_description(self, package):
+    def get_details(self, package):
         '''
-        Implement the {backend}-get-description functionality
+        Implement the {backend}-get-details functionality
         '''
         self.status(STATUS_INFO)
         name, version, arch, data = self.get_package_from_id(package)
@@ -423,7 +424,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         try:
             repo["__sources"].save()
         except IOError,e:
-            self.error(ERROR_INTERNAL_ERROR, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
+            self.error(ERROR_UNKNOWN, "Problem while trying to save repo settings to %s: %s"%(e.filename,e.strerror))
 
     def get_updates(self, filter):
         self._apt_cache.upgrade(False)
@@ -472,7 +473,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         # FIXME: nasty hack. Need a better way in
         ret = system("dpkg -i %s"%inst_file)
         if ret!=0:
-            self.error(ERROR_INTERNAL_ERROR,"Can't install package")
+            self.error(ERROR_UNKNOWN,"Can't install package")
 
     ### Helpers ###
     def _emit_package(self, package):

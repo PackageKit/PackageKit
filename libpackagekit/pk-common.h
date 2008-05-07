@@ -41,25 +41,11 @@ G_BEGIN_DECLS
 #define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
 
 /**
- * PK_DBUS_PATH_NOTIFY:
- *
- * The DBUS path for the notifications (why can't we use PK_DBUS_PATH?)
- */
-#define	PK_DBUS_PATH_NOTIFY		"/org/freedesktop/PackageKit/Notify"
-
-/**
  * PK_DBUS_INTERFACE:
  *
  * The DBUS interface
  */
 #define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
-
-/**
- * PK_DBUS_INTERFACE_NOTIFY:
- *
- * The DBUS interface for the notifications
- */
-#define	PK_DBUS_INTERFACE_NOTIFY	"org.freedesktop.PackageKit.Notify"
 
 /**
  * PK_DBUS_INTERFACE_TRANSACTION:
@@ -96,6 +82,11 @@ gchar		*pk_strsafe				(const gchar	*text)
 gchar		**pk_strsplit				(const gchar	*id,
 							 guint		 parts);
 gchar		*pk_strbuild_va				(const gchar	*first_element,
+							 va_list	*args)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		**pk_ptr_array_to_argv			(GPtrArray	*array)
+							 G_GNUC_WARN_UNUSED_RESULT;
+gchar		**pk_va_list_to_argv			(const gchar	*string_first,
 							 va_list	*args)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_strcmp_sections			(const gchar	*id1,

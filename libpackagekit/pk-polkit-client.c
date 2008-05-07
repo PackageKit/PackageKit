@@ -54,6 +54,9 @@ static void     pk_polkit_client_finalize		(GObject           *object);
 #define POLKIT_DBUS_PATH		"/org/gnome/PolicyKit/Manager"
 #define POLKIT_DBUS_INTERFACE		"org.gnome.PolicyKit.Manager"
 
+/* we only support auth on the the transaction interface */
+#define	PK_ERROR_REFUSED_BY_POLICY	"org.freedesktop.PackageKit.Transaction.RefusedByPolicy"
+
 /**
  * PkPolkitClientPrivate:
  *
@@ -83,8 +86,8 @@ pk_polkit_client_gain_privilege (PkPolkitClient *pclient, const gchar *pk_action
 	GError *error = NULL;
 	gboolean gained_privilege;
 
-	g_return_val_if_fail (pclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_POLKIT_CLIENT (pclient), FALSE);
+	g_return_val_if_fail (pk_action != NULL, FALSE);
 
 	/* Use PolicyKit-gnome to bring up an auth dialog (we
 	 * don't have any windows so set the XID to "null") */
@@ -124,8 +127,8 @@ pk_polkit_client_gain_privilege_str (PkPolkitClient *pclient, const gchar *error
 	gboolean ret;
 	gchar **tokens;
 
-	g_return_val_if_fail (pclient != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_POLKIT_CLIENT (pclient), FALSE);
+	g_return_val_if_fail (error_str != NULL, FALSE);
 
 	tokens = g_strsplit (error_str, " ", 0);
 	if (tokens == NULL) {
@@ -165,14 +168,14 @@ pk_polkit_client_error_denied_by_policy (GError *error)
 
 	/* not a dbus error */
 	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
-		pk_warning ("not a remote exception, is this sane?");
+		pk_warning ("not a remote exception: %s", error->message);
 		return FALSE;
 	}
 
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
 	pk_debug ("ERROR: %s: %s", error_name, error->message);
-	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
+	if (pk_strequal (error_name, PK_ERROR_REFUSED_BY_POLICY)) {
 		return TRUE;
 	}
 	return FALSE;
@@ -204,7 +207,7 @@ pk_polkit_client_init (PkPolkitClient *pclient)
 	if (error) {
 		pk_warning ("%s", error->message);
 		g_error_free (error);
-		g_error ("This program cannot start until you start the dbus system service.");
+		g_error ("Could not connect to system DBUS.");
 	}
 
 	/* get a connection */

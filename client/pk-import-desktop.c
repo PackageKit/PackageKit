@@ -58,7 +58,7 @@ pk_desktop_get_name_for_file (const gchar *filename)
 		return NULL;
 	}
 
-	ret = pk_client_search_file (client, "installed", filename, &error);
+	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
 	if (!ret) {
 		pk_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
@@ -127,6 +127,16 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	gsize len;
 	gchar *locale_temp;
 	static GPtrArray *locale_array = NULL;
+	const gchar *icon_name;
+	const gchar *summary;
+
+	/* can we optimise for the common case? */
+	icon_name = pk_extra_get_icon_name (extra, package_name);
+	summary = pk_extra_get_summary (extra, package_name);
+	if (icon_name != NULL || summary != NULL) {
+		g_print ("PackageName:\t%s\t[skipping]\n", package_name);
+		return;
+	}
 
 	key = g_key_file_new ();
 	ret = g_key_file_load_from_file (key, filename, G_KEY_FILE_KEEP_TRANSLATIONS, NULL);
@@ -141,7 +151,9 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 		if (g_str_has_prefix (key_array[i], "Name")) {
 			/* set the locale */
 			locale_temp = pk_import_get_locale (key_array[i]);
-			g_ptr_array_add (locale_array, g_strdup (locale_temp));
+			if (locale_temp != NULL) {
+				g_ptr_array_add (locale_array, g_strdup (locale_temp));
+			}
 		}
 	}
 	g_strfreev (key_array);
@@ -170,11 +182,11 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 
 			/* save in order of priority */
 			if (comment != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, comment);
+				pk_extra_set_data_locale (extra, package_name, comment);
 			} else if (genericname != NULL) {
-				pk_extra_set_localised_detail (extra, package_name, genericname);
+				pk_extra_set_data_locale (extra, package_name, genericname);
 			} else {
-				pk_extra_set_localised_detail (extra, package_name, name);
+				pk_extra_set_data_locale (extra, package_name, name);
 			}
 			g_free (comment);
 			g_free (genericname);
@@ -188,7 +200,7 @@ pk_desktop_process_desktop (const gchar *package_name, const gchar *filename)
 	exec = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Exec", NULL);
 	icon = g_key_file_get_string (key, G_KEY_FILE_DESKTOP_GROUP, "Icon", NULL);
 	pk_debug ("PackageName=%s, Exec=%s, Icon=%s", package_name, exec, icon);
-	pk_extra_set_package_detail (extra, package_name, icon, exec);
+	pk_extra_set_data_package (extra, package_name, icon, exec);
 	g_free (icon);
 	g_free (exec);
 
@@ -278,8 +290,8 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s\n"), database_location);
-		g_print (_("You probably need to run this program as the root user\n"));
+		g_print (_("Could not open database: %s"), database_location);
+		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
 		goto out;
 	}
 

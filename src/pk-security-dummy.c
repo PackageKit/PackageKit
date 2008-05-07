@@ -52,9 +52,8 @@ G_DEFINE_TYPE (PkSecurity, pk_security, G_TYPE_OBJECT)
  **/
 G_GNUC_WARN_UNUSED_RESULT gboolean
 pk_security_action_is_allowed (PkSecurity *security, const gchar *dbus_sender,
-			       PkRoleEnum role, gchar **error_detail)
+			       gboolean trusted, PkRoleEnum role, gchar **error_detail)
 {
-	g_return_val_if_fail (security != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_SECURITY (security), FALSE);
 	return TRUE;
 }
@@ -66,7 +65,6 @@ static void
 pk_security_finalize (GObject *object)
 {
 	PkSecurity *security;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_SECURITY (object));
 	security = PK_SECURITY (object);
 	G_OBJECT_CLASS (pk_security_parent_class)->finalize (object);

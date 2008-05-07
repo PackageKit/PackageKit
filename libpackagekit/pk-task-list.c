@@ -41,12 +41,13 @@
 #include <glib/gi18n.h>
 #include <dbus/dbus-glib.h>
 
-#include "pk-debug.h"
-#include "pk-marshal.h"
-#include "pk-client.h"
-#include "pk-common.h"
-#include "pk-task-list.h"
-#include "pk-job-list.h"
+#include <pk-debug.h>
+#include <pk-client.h>
+#include <pk-common.h>
+#include <pk-task-list.h>
+#include <pk-control.h>
+#include <pk-connection.h>
+#include <pk-marshal.h>
 
 static void     pk_task_list_class_init		(PkTaskListClass *klass);
 static void     pk_task_list_init		(PkTaskList      *task_list);
@@ -62,11 +63,16 @@ static void     pk_task_list_finalize		(GObject         *object);
 struct _PkTaskListPrivate
 {
 	GPtrArray		*task_list;
-	PkJobList		*job_list;
+	PkControl		*control;
+	PkConnection		*connection;
 };
 
 typedef enum {
 	PK_TASK_LIST_CHANGED,
+	PK_TASK_LIST_STATUS_CHANGED,
+	PK_TASK_LIST_MESSAGE,
+	PK_TASK_LIST_FINISHED,
+	PK_TASK_LIST_ERROR_CODE,
 	PK_TASK_LIST_LAST_SIGNAL
 } PkSignals;
 
@@ -84,7 +90,6 @@ pk_task_list_print (PkTaskList *tlist)
 	PkTaskListItem *item;
 	guint length;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
@@ -95,7 +100,8 @@ pk_task_list_print (PkTaskList *tlist)
 	}
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		g_print ("%s\t%s %s\n", item->tid, pk_role_enum_to_text (item->role), item->package_id);
+		g_print ("%s\t%s:%s %s\n", item->tid, pk_role_enum_to_text (item->role),
+			 pk_status_enum_to_text (item->status), item->package_id);
 	}
 	return TRUE;
 }
@@ -110,7 +116,6 @@ pk_task_list_contains_role (PkTaskList *tlist, PkRoleEnum role)
 	PkTaskListItem *item;
 	guint length;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	length = tlist->priv->task_list->len;
@@ -145,15 +150,14 @@ pk_task_list_find_existing_tid (PkTaskList *tlist, const gchar *tid)
 }
 
 /**
- * pk_task_list_job_status_changed_cb:
+ * pk_task_list_status_changed_cb:
  **/
 static void
-pk_task_list_job_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskList *tlist)
+pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskList *tlist)
 {
 	gchar *tid;
 	PkTaskListItem *item;
 
-	g_return_if_fail (tlist != NULL);
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
 	tid = pk_client_get_tid (client);
@@ -164,8 +168,41 @@ pk_task_list_job_status_changed_cb (PkClient *client, PkStatusEnum status, PkTas
 	item->status = status;
 	g_free (tid);
 
-	pk_debug ("emit task-list-changed");
-	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+	pk_debug ("emit status-changed");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_STATUS_CHANGED], 0);
+}
+
+/**
+ * gpk_task_list_finished_cb:
+ **/
+static void
+gpk_task_list_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, PkTaskList *tlist)
+{
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	pk_debug ("emit finished");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_FINISHED], 0, client, exit, runtime);
+}
+
+/**
+ * gpk_task_list_error_code_cb:
+ **/
+static void
+gpk_task_list_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gchar *details, PkTaskList *tlist)
+{
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	pk_debug ("emit error-code");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_ERROR_CODE], 0, client, error_code, details);
+}
+
+/**
+ * gpk_task_list_message_cb:
+ **/
+static void
+gpk_task_list_message_cb (PkClient *client, PkMessageEnum message, const gchar *details, PkTaskList *tlist)
+{
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	pk_debug ("emit message");
+	g_signal_emit (tlist, signals [PK_TASK_LIST_MESSAGE], 0, client, message, details);
 }
 
 /**
@@ -181,12 +218,13 @@ pk_task_list_refresh (PkTaskList *tlist)
 	guint length;
 	const gchar *tid;
 	const gchar **array;
+	GError *error = NULL;
+	gboolean ret;
 
-	g_return_val_if_fail (tlist != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), FALSE);
 
 	/* get the latest job list */
-	array = pk_job_list_get_latest (tlist->priv->job_list);
+	array = pk_control_transaction_list_get (tlist->priv->control);
 
 	/* mark previous tasks as non-valid */
 	length = tlist->priv->task_list->len;
@@ -207,8 +245,19 @@ pk_task_list_refresh (PkTaskList *tlist)
 			item->tid = g_strdup (tid);
 			item->monitor = pk_client_new ();
 			g_signal_connect (item->monitor, "status-changed",
-					  G_CALLBACK (pk_task_list_job_status_changed_cb), tlist);
-			pk_client_set_tid (item->monitor, tid, NULL);
+					  G_CALLBACK (pk_task_list_status_changed_cb), tlist);
+			g_signal_connect (item->monitor, "finished",
+					  G_CALLBACK (gpk_task_list_finished_cb), tlist);
+			g_signal_connect (item->monitor, "error-code",
+					  G_CALLBACK (gpk_task_list_error_code_cb), tlist);
+			g_signal_connect (item->monitor, "message",
+					  G_CALLBACK (gpk_task_list_message_cb), tlist);
+			ret = pk_client_set_tid (item->monitor, tid, &error);
+			if (!ret) {
+				pk_error ("could not set tid: %s", error->message);
+				g_error_free (error);
+				break;
+			}
 			pk_client_get_role (item->monitor, &item->role, &item->package_id, NULL);
 			pk_client_get_status (item->monitor, &item->status, NULL);
 
@@ -223,7 +272,7 @@ pk_task_list_refresh (PkTaskList *tlist)
 	/* find and remove non-valid watches */
 	for (i=0; i<tlist->priv->task_list->len; i++) {
 		item = g_ptr_array_index (tlist->priv->task_list, i);
-		if (item->valid == FALSE) {
+		if (!item->valid) {
 			pk_debug ("remove %s", item->tid);
 			g_object_unref (item->monitor);
 			g_ptr_array_remove (tlist->priv->task_list, item);
@@ -242,7 +291,6 @@ pk_task_list_refresh (PkTaskList *tlist)
 guint
 pk_task_list_get_size (PkTaskList *tlist)
 {
-	g_return_val_if_fail (tlist != NULL, 0);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), 0);
 	return tlist->priv->task_list->len;
 }
@@ -253,7 +301,6 @@ pk_task_list_get_size (PkTaskList *tlist)
 PkTaskListItem *
 pk_task_list_get_item (PkTaskList *tlist, guint item)
 {
-	g_return_val_if_fail (tlist != NULL, NULL);
 	g_return_val_if_fail (PK_IS_TASK_LIST (tlist), NULL);
 	if (item >= tlist->priv->task_list->len) {
 		pk_debug ("item too large!");
@@ -266,12 +313,27 @@ pk_task_list_get_item (PkTaskList *tlist, guint item)
  * pk_task_list_transaction_list_changed_cb:
  **/
 static void
-pk_task_list_transaction_list_changed_cb (PkJobList *jlist, PkTaskList *tlist)
+pk_task_list_transaction_list_changed_cb (PkControl *control, PkTaskList *tlist)
 {
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 	/* for now, just refresh all the jobs. a little inefficient me thinks */
 	pk_task_list_refresh (tlist);
-	pk_debug ("emit task-list-changed");
+	pk_debug ("emit changed");
 	g_signal_emit (tlist , signals [PK_TASK_LIST_CHANGED], 0);
+}
+
+/**
+ * pk_task_list_connection_changed_cb:
+ **/
+static void
+pk_task_list_connection_changed_cb (PkConnection *connection, gboolean connected, PkTaskList *tlist)
+{
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	pk_debug ("connected=%i", connected);
+	if (connected) {
+		/* force a refresh so we have valid data*/
+		pk_task_list_refresh (tlist);
+	}
 }
 
 /**
@@ -284,11 +346,80 @@ pk_task_list_class_init (PkTaskListClass *klass)
 
 	object_class->finalize = pk_task_list_finalize;
 
+	/**
+	 * PkTaskList::changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 *
+	 * The ::changed signal is emitted when the transaction list has changed
+	 **/
 	signals [PK_TASK_LIST_CHANGED] =
-		g_signal_new ("task-list-changed",
+		g_signal_new ("changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_STRUCT_OFFSET (PkTaskListClass, changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	/**
+	 * PkTaskList::status-changed:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 *
+	 * The ::status-changed signal is emitted when one of the status' of the transaction list
+	 * clients has changed
+	 **/
+	signals [PK_TASK_LIST_STATUS_CHANGED] =
+		g_signal_new ("status-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, status_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+	/**
+	 * PkTaskList::message:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
+	 * @message: the PkMessageEnum type of the message, e.g. PK_MESSAGE_ENUM_WARNING
+	 * @details: the non-localised message details
+	 *
+	 * The ::message signal is emitted when the transaction wants to tell
+	 * the user something.
+	 **/
+	signals [PK_TASK_LIST_MESSAGE] =
+		g_signal_new ("message",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, message),
+			      NULL, NULL, pk_marshal_VOID__POINTER_UINT_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
+	/**
+	 * PkTaskList::finished:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
+	 * @exit: the #PkExitEnum status value, e.g. PK_EXIT_ENUM_SUCCESS
+	 * @runtime: the time in seconds the transaction has been running
+	 *
+	 * The ::finished signal is emitted when the transaction is complete.
+	 **/
+	signals [PK_TASK_LIST_FINISHED] =
+		g_signal_new ("finished",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, finished),
+			      NULL, NULL, pk_marshal_VOID__POINTER_UINT_UINT,
+			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_UINT);
+	/**
+	 * PkClient::error-code:
+	 * @tlist: the #PkTaskList instance that emitted the signal
+	 * @client: the #PkClient instance that caused the signal
+	 * @code: the #PkErrorCodeEnum of the error, e.g. PK_ERROR_ENUM_DEP_RESOLUTION_FAILED
+	 * @details: the non-locaised details about the error
+	 *
+	 * The ::error-code signal is emitted when the transaction wants to
+	 * convey an error in the transaction.
+	 *
+	 * This can only happen once in a transaction.
+	 **/
+	signals [PK_TASK_LIST_ERROR_CODE] =
+		g_signal_new ("error-code",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkTaskListClass, error_code),
+			      NULL, NULL, pk_marshal_VOID__POINTER_UINT_STRING,
+			      G_TYPE_NONE, 3, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
 
 	g_type_class_add_private (klass, sizeof (PkTaskListPrivate));
 }
@@ -302,12 +433,16 @@ pk_task_list_init (PkTaskList *tlist)
 	tlist->priv = PK_TASK_LIST_GET_PRIVATE (tlist);
 
 	/* get the changing job list */
-	tlist->priv->job_list = pk_job_list_new ();
-	g_signal_connect (tlist->priv->job_list, "transaction-list-changed",
+	tlist->priv->control = pk_control_new ();
+	g_signal_connect (tlist->priv->control, "transaction-list-changed",
 			  G_CALLBACK (pk_task_list_transaction_list_changed_cb), tlist);
 
 	/* we maintain a local copy */
 	tlist->priv->task_list = g_ptr_array_new ();
+
+	tlist->priv->connection = pk_connection_new ();
+	g_signal_connect (tlist->priv->connection, "connection-changed",
+			  G_CALLBACK (pk_task_list_connection_changed_cb), tlist);
 
 	/* force a refresh so we have valid data*/
 	pk_task_list_refresh (tlist);
@@ -339,7 +474,7 @@ pk_task_list_finalize (GObject *object)
 	}
 
 	g_ptr_array_free (tlist->priv->task_list, TRUE);
-	g_object_unref (tlist->priv->job_list);
+	g_object_unref (tlist->priv->control);
 
 	G_OBJECT_CLASS (pk_task_list_parent_class)->finalize (object);
 }
@@ -354,4 +489,70 @@ pk_task_list_new (void)
 	tlist = g_object_new (PK_TYPE_TASK_LIST, NULL);
 	return PK_TASK_LIST (tlist);
 }
+
+/***************************************************************************
+ ***                          MAKE CHECK TESTS                           ***
+ ***************************************************************************/
+#ifdef PK_BUILD_TESTS
+#include <libselftest.h>
+
+static gboolean finished = FALSE;
+
+static void
+libst_task_list_finished_cb (PkTaskList *tlist, PkClient *client, PkExitEnum exit, guint runtime, LibSelfTest *test)
+{
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (PK_IS_TASK_LIST (tlist));
+	finished = TRUE;
+	libst_loopquit (test);
+}
+
+void
+libst_task_list (LibSelfTest *test)
+{
+	PkTaskList *tlist;
+	PkClient *client;
+	gboolean ret;
+	GError *error = NULL;
+
+	if (libst_start (test, "PkTaskList", CLASS_AUTO) == FALSE) {
+		return;
+	}
+
+	/************************************************************/
+	libst_title (test, "get client");
+	tlist = pk_task_list_new ();
+	if (tlist != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+	g_signal_connect (tlist, "finished",
+			  G_CALLBACK (libst_task_list_finished_cb), test);
+
+	/************************************************************/
+	libst_title (test, "search for power");
+	client = pk_client_new ();
+	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
+	if (!ret) {
+		libst_failed (test, "failed: %s", error->message);
+		g_error_free (error);
+	}
+	libst_loopwait (test, 5000);
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "we finished?");
+	if (finished) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "not finished");
+	}
+
+	g_object_unref (tlist);
+	g_object_unref (client);
+
+	libst_end (test);
+}
+#endif
 

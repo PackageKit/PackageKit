@@ -53,6 +53,10 @@ pk_conf_get_string (PkConf *conf, const gchar *key)
 {
 	gchar *value = NULL;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
 	value = g_key_file_get_string (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		/* set to missing value */
@@ -71,6 +75,10 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 {
 	gint value;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
 	value = g_key_file_get_integer (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		/* set to missing value */
@@ -84,11 +92,15 @@ pk_conf_get_int (PkConf *conf, const gchar *key)
 /**
  * pk_conf_get_bool:
  **/
-gint
+gboolean
 pk_conf_get_bool (PkConf *conf, const gchar *key)
 {
 	gboolean value;
 	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONF (conf), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
 	value = g_key_file_get_boolean (conf->priv->keyfile, "Daemon", key, &error);
 	if (error != NULL) {
 		pk_debug ("%s read error: %s", key, error->message);
@@ -104,7 +116,6 @@ static void
 pk_conf_finalize (GObject *object)
 {
 	PkConf *conf;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_CONF (object));
 	conf = PK_CONF (object);
 
@@ -125,6 +136,37 @@ pk_conf_class_init (PkConfClass *klass)
 }
 
 /**
+ * pk_conf_class_init:
+ **/
+gchar *
+pk_conf_get_filename (void)
+{
+	gchar *path;
+
+#if PK_BUILD_LOCAL
+	/* try a local path first */
+	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+		goto out;
+	}
+	pk_debug ("local config file not found '%s'", path);
+	g_free (path);
+#endif
+	/* check the prefix path */
+	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS)) {
+		goto out;
+	}
+
+	/* none found! */
+	pk_warning ("config file not found '%s'", path);
+	g_free (path);
+	path = NULL;
+out:
+	return path;
+}
+
+/**
  * pk_conf_init:
  *
  * initializes the conf class. NOTE: We expect conf objects
@@ -138,27 +180,16 @@ pk_conf_init (PkConf *conf)
 	gchar *path;
 
 	conf->priv = PK_CONF_GET_PRIVATE (conf);
-
-#if PK_BUILD_LOCAL
-	/* try a local path first */
-	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
-		pk_debug ("local config file not found '%s'", path);
-		g_free (path);
-		path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-	}
-#else
-	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-#endif
-	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
-		pk_error ("config file not found '%s'", path);
+	path = pk_conf_get_filename ();
+	if (path == NULL) {
+		pk_error ("config file not found");
 	}
 	pk_debug ("using config file '%s'", path);
 	conf->priv->keyfile = g_key_file_new ();
 	ret = g_key_file_load_from_file (conf->priv->keyfile, path,
 					 G_KEY_FILE_NONE, NULL);
 	g_free (path);
-	if (ret == FALSE) {
+	if (!ret) {
 		pk_error ("failed to parse config file!");
 	}
 }

@@ -161,7 +161,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             # Internal FIXME: PiSi API has really inconsistent for return types and arguments!
             self.__get_package(pkg.package)
 
-    def get_description(self, package_id):
+    def get_details(self, package_id):
         """ Prints a detailed description for a given package """
         self.allow_cancel(True)
         self.percentage(None)
@@ -176,7 +176,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 group = GROUP_UNKNOWN
 
-            self.description("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
+            self.details("%s-%s" % (pkg.name, self.__get_package_version(pkg)),
                             pkg.license,
                             group,
                             pkg.description,
@@ -243,7 +243,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
-    def install_file(self, file):
+    def install_file(self, trusted, file):
         """ Installs given package into system"""
         # FIXME: install progress
         self.allow_cancel(False);
@@ -270,7 +270,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             try:
                 pisi.api.install([package])
             except pisi.Error,e:
-                self.error(ERROR_INTERNAL_ERROR, e)
+                self.error(ERROR_UNKNOWN, e)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
@@ -316,7 +316,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             try:
                 pisi.api.add_repo(repo_id, value, parameter)
             except pisi.Error, e:
-                self.error(ERROR_INTERNAL_ERROR, e)
+                self.error(ERROR_UNKNOWN, e)
 
             try:
                 pisi.api.update_repo(repo_id)
@@ -395,7 +395,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
             try:
                 pisi.api.upgrade([package])
             except pisi.Error,e:
-                self.error(ERROR_INTERNAL_ERROR, e)
+                self.error(ERROR_UNKNOWN, e)
         else:
             self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
 
@@ -406,9 +406,9 @@ class PackageKitPisiBackend(PackageKitBaseBackend):
         self.percentage(None)
 
         if not len(pisi.api.list_upgradable()) > 0:
-            self.error(ERROR_INTERNAL_ERROR, "System is already up2date")
+            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "System is already up2date")
 
         try:
             pisi.api.upgrade(pisi.api.list_upgradable())
         except pisi.Error,e:
-            self.error(ERROR_INTERNAL_ERROR, e)
+            self.error(ERROR_UNKNOWN, e)

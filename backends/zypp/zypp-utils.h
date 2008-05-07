@@ -1,6 +1,9 @@
 #ifndef _ZYPP_UTILS_H_
 #define _ZYPP_UTILS_H_
 
+#undef ZYPP_BASE_LOGGER_LOGGROUP
+#define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
+
 #include <stdlib.h>
 #include <glib.h>
 #include <zypp/RepoManager.h>
@@ -46,24 +49,24 @@ zypp::ResPool zypp_build_pool (gboolean include_local);
 zypp::ResPool zypp_build_local_pool ();
 
 /**
-  * Return the rpm-Database
+  * Return the rpmHeader of a package
   */
-zypp::target::rpm::RpmDb& zypp_get_rpmDb();
+zypp::target::rpm::RpmHeader::constPtr zypp_get_rpmHeader (std::string name, zypp::Edition edition);
 
 /**
-  * Return the gchar of the given PoolItem.
+  * Return the group of the given PoolItem.
   */
-gchar* zypp_get_group (zypp::sat::Solvable item, zypp::target::rpm::RpmDb &rpm);
+std::string zypp_get_group (zypp::sat::Solvable item);
 
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum get_enum_group (zypp::sat::Solvable item);
+PkGroupEnum get_enum_group (std::string group);
 
 /**
  * Returns a list of packages that match the specified package_name.
  */
-std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, gboolean include_local);
+std::vector<zypp::sat::Solvable> * zypp_get_packages_by_name (const gchar *package_name, const zypp::ResKind kind, gboolean include_local);
 
 /**
  * Returns a list of packages that match the specified term in its name or description.
@@ -114,18 +117,23 @@ std::set<zypp::PoolItem> * zypp_get_updates ();
 /**
   * Returns a set of all patches the could be installed
   */
-std::set<zypp::ui::Selectable::Ptr> * zypp_get_patches ();
+std::set<zypp::PoolItem> * zypp_get_patches ();
 
 /**
   * perform changes in pool to the system
   */
 gboolean zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force);
 
-void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v);
+void zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable> *v, PkFilterEnum filters);
 
 /**
   * convert a std::set<zypp::sat::Solvable to gchar ** array
   */
 gchar ** zypp_convert_set_char (std::set<zypp::sat::Solvable> *set);
+
+/**
+  * build string of package_id's seperated by blanks out of the capabilities of a solvable
+  */
+gchar * zypp_build_package_id_capabilities (zypp::Capabilities caps);
 #endif // _ZYPP_UTILS_H_
 

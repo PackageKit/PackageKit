@@ -2,312 +2,52 @@
 <node name="/">
   <interface name="org.freedesktop.PackageKit">
 
-    <!-- Schedule new transactions -->
-    <method name="GetTid">
-      <arg type="s" name="tid" direction="out"/>
-    </method>
-    <method name="GetUpdates">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-    </method>
-    <method name="RefreshCache">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="b" name="force" direction="in"/>
-    </method>
-    <method name="UpdateSystem">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-    </method>
-    <method name="Resolve">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package" direction="in"/>
-    </method>
-    <method name="Rollback">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="transaction_id" direction="in"/>
-    </method>
-    <method name="SearchName">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchDetails">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchGroup">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="SearchFile">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="GetDepends">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-      <arg type="b" name="recursive" direction="in"/>
-    </method>
-    <method name="GetRequires">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-      <arg type="b" name="recursive" direction="in"/>
-    </method>
-    <method name="WhatProvides">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-      <arg type="s" name="type" direction="in"/>
-      <arg type="s" name="search" direction="in"/>
-    </method>
-    <method name="GetUpdateDetail">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="GetDescription"> <!-- orders Description signals for the package -->
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="GetFiles">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="RemovePackage">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-      <arg type="b" name="allow_deps" direction="in"/>
-      <arg type="b" name="autoremove" direction="in"/>
-    </method>
-    <method name="InstallPackage">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package_id" direction="in"/>
-    </method>
-    <method name="UpdatePackages">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="as" name="package_ids" direction="in"/>
-    </method>
-    <method name="InstallFile">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="full_path" direction="in"/>
-    </method>
-
-    <!-- signals emitted from any transaction -->
-    <signal name="StatusChanged">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="status" direction="out"/> <!-- invalid,setup,download,install,update,exit -->
-    </signal>
-    <signal name="ProgressChanged"> <!-- progress of the whole transaction -->
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="u" name="percentage" direction="out"/>
-      <arg type="u" name="subpercentage" direction="out"/>
-      <arg type="u" name="elapsed" direction="out"/>
-      <arg type="u" name="remaining" direction="out"/>
-    </signal>
-    <signal name="Package">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="info" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="summary" direction="out"/>
-    </signal>
-    <signal name="Description">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="license" direction="out"/>
-      <arg type="s" name="group" direction="out"/>
-      <arg type="s" name="detail" direction="out"/>
-      <arg type="s" name="url" direction="out"/>
-      <arg type="t" name="size" direction="out"/> <!-- size of package file in bytes -->
-    </signal>
-    <signal name="Files">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="file_list" direction="out"/> <!-- list of files and dirs separated by ';' -->
-    </signal>
-    <signal name="UpdateDetail">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="package_id" direction="out"/>
-      <arg type="s" name="updates" direction="out"/>
-      <arg type="s" name="obsoletes" direction="out"/>
-      <arg type="s" name="vendor_url" direction="out"/>
-      <arg type="s" name="bugzilla_url" direction="out"/>
-      <arg type="s" name="cve_url" direction="out"/>
-      <arg type="s" name="restart" direction="out"/>
-      <arg type="s" name="update_text" direction="out"/>
-    </signal>
-    <signal name="Finished">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="status" direction="out"/> <!-- success,failed,canceled -->
-      <arg type="u" name="runtime" direction="out"/> <!-- amount of time transaction has been running in ms -->
-    </signal>
-    <signal name="AllowCancel">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="allow_cancel" direction="out"/>
-    </signal>
-    <signal name="ErrorCode">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="code" direction="out"/> <!-- enumerated type, see helpers/README -->
-      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
-    </signal>
-    <signal name="RequireRestart">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="type" direction="out"/>
-      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
-    </signal>
-    <signal name="Message">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="message" direction="out"/>
-      <arg type="s" name="details" direction="out"/> <!-- non-localized detail -->
-    </signal>
-    <signal name="Locked">
-      <arg type="b" name="is_locked" direction="out"/>
-    </signal>
-
-    <!-- Callbacks from repositories -->
-    <signal name="RepoSignatureRequired">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="repository_name" direction="out"/>
-      <arg type="s" name="key_url" direction="out"/>
-      <arg type="s" name="key_userid" direction="out"/>
-      <arg type="s" name="key_id" direction="out"/>
-      <arg type="s" name="key_fingerprint" direction="out"/>
-      <arg type="s" name="key_timestamp" direction="out"/>
-      <arg type="s" name="type" direction="out"/> <!-- 'gpg', for now -->
-    </signal>
-
-    <!-- Repository stuff -->
-    <method name="GetRepoList">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="filter" direction="in"/>
-    </method>
-    <method name="RepoEnable">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="repo_id" direction="in"/>
-      <arg type="b" name="enabled" direction="in"/>
-    </method>
-    <method name="RepoSetData">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="repo_id" direction="in"/>
-      <arg type="s" name="parameter" direction="in"/>
-      <arg type="s" name="value" direction="in"/>
-    </method>
-    <signal name="RepoDetail">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="repo_id" direction="out"/>
-      <arg type="s" name="description" direction="out"/>
-      <arg type="b" name="enabled" direction="out"/>
-    </signal>
-
-    <!-- Do things or query transactions -->
-    <method name="Cancel"> <!-- might not succeed for all manner or reasons -->
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-    </method>
-    <method name="GetStatus"> <!-- this is what the transaction is currrently doing, and might change -->
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
-    </method>
-    <method name="GetRole"> <!-- this is the master role, i.e. won't change for the lifetime of the transaction -->
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="status" direction="out"/> <!-- query,download,install,exit -->
-      <arg type="s" name="package_id" direction="out"/> <!-- what we are doing the action to, or NULL -->
-    </method>
-    <method name="GetProgress">
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="u" name="percentage" direction="out"/>
-      <arg type="u" name="subpercentage" direction="out"/>
-      <arg type="u" name="elapsed" direction="out"/>
-      <arg type="u" name="remaining" direction="out"/>
-    </method>
-    <method name="GetAllowCancel">
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="b" name="allow_cancel" direction="out"/>
-    </method>
-    <method name="GetPackage">
-      <!-- throws NoSuchTransaction -->
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="s" name="package" direction="out"/>
-    </method>
-
-    <!-- Transaction list -->
-    <method name="GetTransactionList">
-      <arg type="as" name="transactions" direction="out"/>
-    </method>
-    <signal name="TransactionListChanged">
-      <arg type="as" name="transactions" direction="out"/>
-    </signal>
-
-    <!-- Transaction methods -->
-    <method name="GetOldTransactions">
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="u" name="number" direction="in"/>
-    </method>
-    <signal name="Transaction">
-      <arg type="s" name="tid" direction="out"/>
-      <arg type="s" name="old_tid" direction="out"/>
-      <arg type="s" name="timespec" direction="out"/>
-      <arg type="b" name="succeeded" direction="out"/>
-      <arg type="s" name="role" direction="out"/>
-      <arg type="u" name="duration" direction="out"/>
-      <arg type="s" name="data" direction="out"/>
-    </signal>
-
-    <!-- General methods -->
-    <method name="StateHasChanged"> <!-- drop caches -->
-    </method>
-    <method name="GetTimeSinceAction">
-      <arg type="s" name="role" direction="in"/>
-      <arg type="u" name="seconds" direction="out"/>
+    <method name="GetActions">
+      <arg type="s" name="actions" direction="out"/>
     </method>
     <method name="GetBackendDetail">
       <arg type="s" name="name" direction="out"/>
       <arg type="s" name="author" direction="out"/>
     </method>
-    <method name="GetActions">
-      <arg type="s" name="actions" direction="out"/> <!-- list of supported actions -->
+    <method name="GetFilters">
+      <arg type="s" name="filters" direction="out"/>
     </method>
     <method name="GetGroups">
-      <arg type="s" name="groups" direction="out"/> <!-- list of supported groups -->
+      <arg type="s" name="groups" direction="out"/>
     </method>
-    <method name="GetFilters">
-      <arg type="s" name="filters" direction="out"/> <!-- list of supported filters -->
-    </method>
-    <method name="IsCallerActive">
-      <arg type="s" name="tid" direction="in"/>
-      <arg type="b" name="is_active" direction="out"/>
-    </method>
-    <signal name="CallerActiveChanged">
+    <method name="GetTid">
       <arg type="s" name="tid" direction="out"/>
-      <arg type="b" name="is_active" direction="out"/>
+    </method>
+    <method name="GetTimeSinceAction">
+      <arg type="s" name="role" direction="in"/>
+      <arg type="u" name="seconds" direction="out"/>
+    </method>
+    <method name="GetTransactionList">
+      <arg type="as" name="transactions" direction="out"/>
+    </method>
+    <method name="StateHasChanged">
+      <arg type="s" name="reason" direction="in"/>
+    </method>
+    <method name="SuggestDaemonQuit">
+    </method>
+    <method name="GetNetworkState">
+      <arg type="s" name="state" direction="out"/>
+    </method>
+
+    <signal name="TransactionListChanged">
+      <arg type="as" name="transactions" direction="out"/>
+    </signal>
+    <signal name="Locked">
+      <arg type="b" name="is_locked" direction="out"/>
+    </signal>
+    <signal name="NetworkStateChanged">
+      <arg type="s" name="state" direction="out"/>
+    </signal>
+    <signal name="RestartSchedule">
+    </signal>
+    <signal name="RepoListChanged">
+    </signal>
+    <signal name="UpdatesChanged">
     </signal>
 
   </interface>

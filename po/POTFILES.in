@@ -4,5 +4,7 @@
 policy/org.freedesktop.packagekit.policy.in
 client/pk-console.c
 client/pk-monitor.c
+client/pk-import-desktop.c
+client/pk-import-specspo.c
 src/pk-main.c
 

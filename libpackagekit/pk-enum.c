@@ -43,6 +43,8 @@ static PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
 	{PK_EXIT_ENUM_FAILED,			"failed"},
 	{PK_EXIT_ENUM_CANCELLED,		"cancelled"},
+	{PK_EXIT_ENUM_KEY_REQUIRED,		"key-required"},
+	{PK_EXIT_ENUM_EULA_REQUIRED,		"eula-required"},
 	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{0, NULL}
 };
@@ -69,35 +71,44 @@ static PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_REQUEST,		"request"},
 	{PK_STATUS_ENUM_FINISHED,		"finished"},
 	{PK_STATUS_ENUM_CANCEL,			"cancel"},
+	{PK_STATUS_ENUM_DOWNLOAD_REPOSITORY,	"download-repository"},
+	{PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST,	"download-package"},
+	{PK_STATUS_ENUM_DOWNLOAD_FILELIST,	"download-filelist"},
+	{PK_STATUS_ENUM_DOWNLOAD_CHANGELOG,	"download-changelog"},
+	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
+	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
 	{0, NULL}
 };
 
 static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_ROLE_ENUM_CANCEL,			"cancel"},
+	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
+	{PK_ROLE_ENUM_GET_DETAILS,		"get-details"},
+	{PK_ROLE_ENUM_GET_FILES,		"get-files"},
+	{PK_ROLE_ENUM_GET_PACKAGES,		"get-packages"},
+	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
+	{PK_ROLE_ENUM_GET_REQUIRES,		"get-requires"},
+	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
+	{PK_ROLE_ENUM_GET_UPDATES,		"get-updates"},
+	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
+	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
+	{PK_ROLE_ENUM_INSTALL_SIGNATURE,	"install-signature"},
+	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
+	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
+	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
+	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
 	{PK_ROLE_ENUM_ROLLBACK,			"rollback"},
-	{PK_ROLE_ENUM_GET_DEPENDS,		"get-depends"},
-	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
-	{PK_ROLE_ENUM_GET_DESCRIPTION,		"get-description"},
-	{PK_ROLE_ENUM_GET_FILES,		"get-files"},
-	{PK_ROLE_ENUM_GET_REQUIRES,		"get-requires"},
-	{PK_ROLE_ENUM_GET_UPDATES,		"get-updates"},
 	{PK_ROLE_ENUM_SEARCH_DETAILS,		"search-details"},
 	{PK_ROLE_ENUM_SEARCH_FILE,		"search-file"},
 	{PK_ROLE_ENUM_SEARCH_GROUP,		"search-group"},
 	{PK_ROLE_ENUM_SEARCH_NAME,		"search-name"},
-	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
-	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
-	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
+	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
 	{PK_ROLE_ENUM_UPDATE_PACKAGES,		"update-package"},
 	{PK_ROLE_ENUM_UPDATE_SYSTEM,		"update-system"},
-	{PK_ROLE_ENUM_GET_REPO_LIST,		"get-repo-list"},
-	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
-	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
-	{PK_ROLE_ENUM_SERVICE_PACK,		"service-pack"},
 	{PK_ROLE_ENUM_WHAT_PROVIDES,		"what-provides"},
+	{PK_ROLE_ENUM_ACCEPT_EULA,		"accept-eula"},
 	{0, NULL}
 };
 
@@ -118,21 +129,29 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,	"package-already-installed"},
 	{PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,	"package-download-failed"},
 	{PK_ERROR_ENUM_GROUP_NOT_FOUND,		"group-not-found"},
+	{PK_ERROR_ENUM_GROUP_LIST_INVALID,	"group-list-invalid"},
 	{PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,	"dep-resolution-failed"},
 	{PK_ERROR_ENUM_CREATE_THREAD_FAILED,	"create-thread-failed"},
 	{PK_ERROR_ENUM_REPO_NOT_FOUND,		"repo-not-found"},
 	{PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,	"cannot-remove-system-package"},
 	{PK_ERROR_ENUM_PROCESS_KILL,		"process-kill"},
-        {PK_ERROR_ENUM_FAILED_INITIALIZATION,   "failed-initialization"},
-        {PK_ERROR_ENUM_FAILED_FINALISE,         "failed-finalise"},
+	{PK_ERROR_ENUM_FAILED_INITIALIZATION,	"failed-initialization"},
+	{PK_ERROR_ENUM_FAILED_FINALISE,		"failed-finalise"},
 	{PK_ERROR_ENUM_FAILED_CONFIG_PARSING,	"failed-config-parsing"},
 	{PK_ERROR_ENUM_CANNOT_CANCEL,		"cannot-cancel"},
-	{PK_ERROR_ENUM_CANNOT_GET_LOCK,         "cannot-get-lock"},
-	{PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,   "no-packages-to-update"},
-	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,        "cannot-write-repo-config"},
-	{PK_ERROR_LOCAL_INSTALL_FAILED,         "local-install-failed"},
-	{PK_ERROR_BAD_GPG_SIGNATURE,            "bad-gpg-signature"},
-	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,       "cannot-install-source-package"},
+	{PK_ERROR_ENUM_CANNOT_GET_LOCK,		"cannot-get-lock"},
+	{PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,	"no-packages-to-update"},
+	{PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG, "cannot-write-repo-config"},
+	{PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,	"local-install-failed"},
+	{PK_ERROR_ENUM_BAD_GPG_SIGNATURE,	"bad-gpg-signature"},
+	{PK_ERROR_ENUM_MISSING_GPG_SIGNATURE,	"missing-gpg-signature"},
+	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,	"cannot-install-source-package"},
+	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,	"repo-configuration-error"},
+	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
+	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
+	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
+	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
+	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
 	{0, NULL}
 };
 
@@ -172,6 +191,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_BASENAME,		"~basename"},
 	{PK_FILTER_ENUM_NEWEST,			"newest"},
 	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
+	{PK_FILTER_ENUM_ARCH,			"arch"},
+	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
 	{0, NULL}
 };
 
@@ -256,134 +277,146 @@ static PkEnumMatch enum_provides[] = {
 	{PK_PROVIDES_ENUM_ANY,			"any"},
 	{PK_PROVIDES_ENUM_MODALIAS,		"modalias"},
 	{PK_PROVIDES_ENUM_CODEC,		"codec"},
+	{PK_PROVIDES_ENUM_MIMETYPE,		"mimetype"},
+	{0, NULL}
+};
+
+static PkEnumMatch enum_network[] = {
+	{PK_NETWORK_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_NETWORK_ENUM_OFFLINE,		"offline"},
+	{PK_NETWORK_ENUM_ONLINE,		"online"},
+	{PK_NETWORK_ENUM_SLOW,			"slow"},
+	{PK_NETWORK_ENUM_FAST,			"fast"},
 	{0, NULL}
 };
 
 static PkEnumMatch enum_free_licenses[] = {
-	{PK_LICENSE_ENUM_UNKNOWN,              "unknown"},	/* fall though value */
-	{PK_LICENSE_ENUM_GLIDE,                "Glide"},
-	{PK_LICENSE_ENUM_AFL,                  "AFL"},
-	{PK_LICENSE_ENUM_AMPAS_BSD,            "AMPAS BSD"},
-	{PK_LICENSE_ENUM_AMAZON_DSL,           "ADSL"},
-	{PK_LICENSE_ENUM_ADOBE,                "Adobe"},
-	{PK_LICENSE_ENUM_AGPLV1,               "AGPLv1"},
-	{PK_LICENSE_ENUM_AGPLV3,               "AGPLv3"},
-	{PK_LICENSE_ENUM_ASL_1_DOT_0,          "ASL 1.0"},
-	{PK_LICENSE_ENUM_ASL_1_DOT_1,          "ASL 1.1"},
-	{PK_LICENSE_ENUM_ASL_2_DOT_0,          "ASL 2.0"},
-	{PK_LICENSE_ENUM_APSL_2_DOT_0,         "APSL 2.0"},
-	{PK_LICENSE_ENUM_ARTISTIC_CLARIFIED,   "Artistic clarified"},
-	{PK_LICENSE_ENUM_ARTISTIC_2_DOT_0,     "Artistic 2.0"},
-	{PK_LICENSE_ENUM_ARL,                  "ARL"},
-	{PK_LICENSE_ENUM_BITTORRENT,           "BitTorrent"},
-	{PK_LICENSE_ENUM_BOOST,                "Boost"},
-	{PK_LICENSE_ENUM_BSD_WITH_ADVERTISING, "BSD with advertising"},
-	{PK_LICENSE_ENUM_BSD,                  "BSD"},
-	{PK_LICENSE_ENUM_CECILL,               "CeCILL"},
-	{PK_LICENSE_ENUM_CDDL,                 "CDDL"},
-	{PK_LICENSE_ENUM_CPL,                  "CPL"},
-	{PK_LICENSE_ENUM_CONDOR,               "Condor"},
-	{PK_LICENSE_ENUM_COPYRIGHT_ONLY,       "Copyright only"},
-	{PK_LICENSE_ENUM_CRYPTIX,              "Cryptix"},
-	{PK_LICENSE_ENUM_CRYSTAL_STACKER,      "Crystal Stacker"},
-	{PK_LICENSE_ENUM_DOC,                  "DOC"},
-	{PK_LICENSE_ENUM_WTFPL,                "WTFPL"},
-	{PK_LICENSE_ENUM_EPL,                  "EPL"},
-	{PK_LICENSE_ENUM_ECOS,                 "eCos"},
-	{PK_LICENSE_ENUM_EFL_2_DOT_0,          "EFL 2.0"},
-	{PK_LICENSE_ENUM_EU_DATAGRID,          "EU Datagrid"},
-	{PK_LICENSE_ENUM_LGPLV2_WITH_EXCEPTIONS, "LGPLv2 with exceptions"},
-	{PK_LICENSE_ENUM_FTL,                  "FTL"},
-	{PK_LICENSE_ENUM_GIFTWARE,             "Giftware"},
-	{PK_LICENSE_ENUM_GPLV2,                "GPLv2"},
-	{PK_LICENSE_ENUM_GPLV2_WITH_EXCEPTIONS, "GPLv2 with exceptions"},
+	{PK_LICENSE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
+	{PK_LICENSE_ENUM_GLIDE,			"Glide"},
+	{PK_LICENSE_ENUM_AFL,			"AFL"},
+	{PK_LICENSE_ENUM_AMPAS_BSD,		"AMPAS BSD"},
+	{PK_LICENSE_ENUM_AMAZON_DSL,		"ADSL"},
+	{PK_LICENSE_ENUM_ADOBE,			"Adobe"},
+	{PK_LICENSE_ENUM_AGPLV1,		"AGPLv1"},
+	{PK_LICENSE_ENUM_AGPLV3,		"AGPLv3"},
+	{PK_LICENSE_ENUM_ASL_1_DOT_0,		"ASL 1.0"},
+	{PK_LICENSE_ENUM_ASL_1_DOT_1,		"ASL 1.1"},
+	{PK_LICENSE_ENUM_ASL_2_DOT_0,		"ASL 2.0"},
+	{PK_LICENSE_ENUM_APSL_2_DOT_0,		"APSL 2.0"},
+	{PK_LICENSE_ENUM_ARTISTIC_CLARIFIED,	"Artistic clarified"},
+	{PK_LICENSE_ENUM_ARTISTIC_2_DOT_0,	"Artistic 2.0"},
+	{PK_LICENSE_ENUM_ARL,			"ARL"},
+	{PK_LICENSE_ENUM_BITTORRENT,		"BitTorrent"},
+	{PK_LICENSE_ENUM_BOOST,			"Boost"},
+	{PK_LICENSE_ENUM_BSD_WITH_ADVERTISING,	"BSD with advertising"},
+	{PK_LICENSE_ENUM_BSD,			"BSD"},
+	{PK_LICENSE_ENUM_CECILL,		"CeCILL"},
+	{PK_LICENSE_ENUM_CDDL,			"CDDL"},
+	{PK_LICENSE_ENUM_CPL,			"CPL"},
+	{PK_LICENSE_ENUM_CONDOR,		"Condor"},
+	{PK_LICENSE_ENUM_COPYRIGHT_ONLY,	"Copyright only"},
+	{PK_LICENSE_ENUM_CRYPTIX,		"Cryptix"},
+	{PK_LICENSE_ENUM_CRYSTAL_STACKER,	"Crystal Stacker"},
+	{PK_LICENSE_ENUM_DOC,			"DOC"},
+	{PK_LICENSE_ENUM_WTFPL,			"WTFPL"},
+	{PK_LICENSE_ENUM_EPL,			"EPL"},
+	{PK_LICENSE_ENUM_ECOS,			"eCos"},
+	{PK_LICENSE_ENUM_EFL_2_DOT_0,		"EFL 2.0"},
+	{PK_LICENSE_ENUM_EU_DATAGRID,		"EU Datagrid"},
+	{PK_LICENSE_ENUM_LGPLV2_WITH_EXCEPTIONS,"LGPLv2 with exceptions"},
+	{PK_LICENSE_ENUM_FTL,			"FTL"},
+	{PK_LICENSE_ENUM_GIFTWARE,		"Giftware"},
+	{PK_LICENSE_ENUM_GPLV2,			"GPLv2"},
+	{PK_LICENSE_ENUM_GPLV2_WITH_EXCEPTIONS,	"GPLv2 with exceptions"},
 	{PK_LICENSE_ENUM_GPLV2_PLUS_WITH_EXCEPTIONS, "GPLv2+ with exceptions"},
-	{PK_LICENSE_ENUM_GPLV3,                "GPLv3"},
-	{PK_LICENSE_ENUM_GPLV3_WITH_EXCEPTIONS, "GPLv3 with exceptions"},
+	{PK_LICENSE_ENUM_GPLV3,			"GPLv3"},
+	{PK_LICENSE_ENUM_GPLV3_WITH_EXCEPTIONS,	"GPLv3 with exceptions"},
 	{PK_LICENSE_ENUM_GPLV3_PLUS_WITH_EXCEPTIONS, "GPLv3+ with exceptions"},
-	{PK_LICENSE_ENUM_LGPLV2,               "LGPLv2"},
-	{PK_LICENSE_ENUM_LGPLV3,               "LGPLv3"},
-	{PK_LICENSE_ENUM_GNUPLOT,              "gnuplot"},
-	{PK_LICENSE_ENUM_IBM,                  "IBM"},
-	{PK_LICENSE_ENUM_IMATIX,               "iMatix"},
-	{PK_LICENSE_ENUM_IMAGEMAGICK,          "ImageMagick"},
-	{PK_LICENSE_ENUM_IMLIB2,               "Imlib2"},
-	{PK_LICENSE_ENUM_IJG,                  "IJG"},
-	{PK_LICENSE_ENUM_INTEL_ACPI,           "Intel ACPI"},
-	{PK_LICENSE_ENUM_INTERBASE,            "Interbase"},
-	{PK_LICENSE_ENUM_ISC,                  "ISC"},
-	{PK_LICENSE_ENUM_JABBER,               "Jabber"},
-	{PK_LICENSE_ENUM_JASPER,               "JasPer"},
-	{PK_LICENSE_ENUM_LPPL,                 "LPPL"},
-	{PK_LICENSE_ENUM_LIBTIFF,              "libtiff"},
-	{PK_LICENSE_ENUM_LPL,                  "LPL"},
-	{PK_LICENSE_ENUM_MECAB_IPADIC,         "mecab-ipadic"},
-	{PK_LICENSE_ENUM_MIT,                  "MIT"},
-	{PK_LICENSE_ENUM_MIT_WITH_ADVERTISING, "MIT with advertising"},
-	{PK_LICENSE_ENUM_MPLV1_DOT_0,          "MPLv1.0"},
-	{PK_LICENSE_ENUM_MPLV1_DOT_1,          "MPLv1.1"},
-	{PK_LICENSE_ENUM_NCSA,                 "NCSA"},
-	{PK_LICENSE_ENUM_NGPL,                 "NGPL"},
-	{PK_LICENSE_ENUM_NOSL,                 "NOSL"},
-	{PK_LICENSE_ENUM_NETCDF,               "NetCDF"},
-	{PK_LICENSE_ENUM_NETSCAPE,             "Netscape"},
-	{PK_LICENSE_ENUM_NOKIA,                "Nokia"},
-	{PK_LICENSE_ENUM_OPENLDAP,             "OpenLDAP"},
-	{PK_LICENSE_ENUM_OPENPBS,              "OpenPBS"},
-	{PK_LICENSE_ENUM_OSL_1_DOT_0,          "OSL 1.0"},
-	{PK_LICENSE_ENUM_OSL_1_DOT_1,          "OSL 1.1"},
-	{PK_LICENSE_ENUM_OSL_2_DOT_0,          "OSL 2.0"},
-	{PK_LICENSE_ENUM_OSL_3_DOT_0,          "OSL 3.0"},
-	{PK_LICENSE_ENUM_OPENSSL,              "OpenSSL"},
-	{PK_LICENSE_ENUM_OREILLY,              "OReilly"},
-	{PK_LICENSE_ENUM_PHORUM,               "Phorum"},
-	{PK_LICENSE_ENUM_PHP,                  "PHP"},
-	{PK_LICENSE_ENUM_PUBLIC_DOMAIN,        "Public Domain"},
-	{PK_LICENSE_ENUM_PYTHON,               "Python"},
-	{PK_LICENSE_ENUM_QPL,                  "QPL"},
-	{PK_LICENSE_ENUM_RPSL,                 "RPSL"},
-	{PK_LICENSE_ENUM_RUBY,                 "Ruby"},
-	{PK_LICENSE_ENUM_SENDMAIL,             "Sendmail"},
-	{PK_LICENSE_ENUM_SLEEPYCAT,            "Sleepycat"},
-	{PK_LICENSE_ENUM_SLIB,                 "SLIB"},
-	{PK_LICENSE_ENUM_SISSL,                "SISSL"},
-	{PK_LICENSE_ENUM_SPL,                  "SPL"},
-	{PK_LICENSE_ENUM_TCL,                  "TCL"},
-	{PK_LICENSE_ENUM_UCD,                  "UCD"},
-	{PK_LICENSE_ENUM_VIM,                  "Vim"},
-	{PK_LICENSE_ENUM_VNLSL,                "VNLSL"},
-	{PK_LICENSE_ENUM_VSL,                  "VSL"},
-	{PK_LICENSE_ENUM_W3C,                  "W3C"},
-	{PK_LICENSE_ENUM_WXWIDGETS,            "wxWidgets"},
-	{PK_LICENSE_ENUM_XINETD,               "xinetd"},
-	{PK_LICENSE_ENUM_ZEND,                 "Zend"},
-	{PK_LICENSE_ENUM_ZPLV1_DOT_0,          "ZPLv1.0"},
-	{PK_LICENSE_ENUM_ZPLV2_DOT_0,          "ZPLv2.0"},
-	{PK_LICENSE_ENUM_ZPLV2_DOT_1,          "ZPLv2.1"},
-	{PK_LICENSE_ENUM_ZLIB,                 "zlib"},
-	{PK_LICENSE_ENUM_CDL,                  "CDL"},
-	{PK_LICENSE_ENUM_FBSDDL,               "FBSDDL"},
-	{PK_LICENSE_ENUM_GFDL,                 "GFDL"},
-	{PK_LICENSE_ENUM_IEEE,                 "IEEE"},
-	{PK_LICENSE_ENUM_OFSFDL,               "OFSFDL"},
-	{PK_LICENSE_ENUM_OPEN_PUBLICATION,     "Open Publication"},
-	{PK_LICENSE_ENUM_CC_BY,                "CC-BY"},
-	{PK_LICENSE_ENUM_CC_BY_SA,             "CC-BY-SA"},
-	{PK_LICENSE_ENUM_CC_BY_ND,             "CC-BY-ND"},
-	{PK_LICENSE_ENUM_DSL,                  "DSL"},
-	{PK_LICENSE_ENUM_FREE_ART,             "Free Art"},
-	{PK_LICENSE_ENUM_OFL,                  "OFL"},
-	{PK_LICENSE_ENUM_UTOPIA,               "Utopia"},
-	{PK_LICENSE_ENUM_ARPHIC,               "Arphic"},
-	{PK_LICENSE_ENUM_BAEKMUK,              "Baekmuk"},
-	{PK_LICENSE_ENUM_BITSTREAM_VERA,       "Bitstream Vera"},
-	{PK_LICENSE_ENUM_LUCIDA,               "Lucida"},
-	{PK_LICENSE_ENUM_MPLUS,                "mplus"},
-	{PK_LICENSE_ENUM_STIX,                 "STIX"},
-	{PK_LICENSE_ENUM_XANO,                 "XANO"},
+	{PK_LICENSE_ENUM_LGPLV2,		"LGPLv2"},
+	{PK_LICENSE_ENUM_LGPLV3,		"LGPLv3"},
+	{PK_LICENSE_ENUM_GNUPLOT,		"gnuplot"},
+	{PK_LICENSE_ENUM_IBM,			"IBM"},
+	{PK_LICENSE_ENUM_IMATIX,		"iMatix"},
+	{PK_LICENSE_ENUM_IMAGEMAGICK,		"ImageMagick"},
+	{PK_LICENSE_ENUM_IMLIB2,		"Imlib2"},
+	{PK_LICENSE_ENUM_IJG,			"IJG"},
+	{PK_LICENSE_ENUM_INTEL_ACPI,		"Intel ACPI"},
+	{PK_LICENSE_ENUM_INTERBASE,		"Interbase"},
+	{PK_LICENSE_ENUM_ISC,			"ISC"},
+	{PK_LICENSE_ENUM_JABBER,		"Jabber"},
+	{PK_LICENSE_ENUM_JASPER,		"JasPer"},
+	{PK_LICENSE_ENUM_LPPL,			"LPPL"},
+	{PK_LICENSE_ENUM_LIBTIFF,		"libtiff"},
+	{PK_LICENSE_ENUM_LPL,			"LPL"},
+	{PK_LICENSE_ENUM_MECAB_IPADIC,		"mecab-ipadic"},
+	{PK_LICENSE_ENUM_MIT,			"MIT"},
+	{PK_LICENSE_ENUM_MIT_WITH_ADVERTISING,	"MIT with advertising"},
+	{PK_LICENSE_ENUM_MPLV1_DOT_0,		"MPLv1.0"},
+	{PK_LICENSE_ENUM_MPLV1_DOT_1,		"MPLv1.1"},
+	{PK_LICENSE_ENUM_NCSA,			"NCSA"},
+	{PK_LICENSE_ENUM_NGPL,			"NGPL"},
+	{PK_LICENSE_ENUM_NOSL,			"NOSL"},
+	{PK_LICENSE_ENUM_NETCDF,		"NetCDF"},
+	{PK_LICENSE_ENUM_NETSCAPE,		"Netscape"},
+	{PK_LICENSE_ENUM_NOKIA,			"Nokia"},
+	{PK_LICENSE_ENUM_OPENLDAP,		"OpenLDAP"},
+	{PK_LICENSE_ENUM_OPENPBS,		"OpenPBS"},
+	{PK_LICENSE_ENUM_OSL_1_DOT_0,		"OSL 1.0"},
+	{PK_LICENSE_ENUM_OSL_1_DOT_1,		"OSL 1.1"},
+	{PK_LICENSE_ENUM_OSL_2_DOT_0,		"OSL 2.0"},
+	{PK_LICENSE_ENUM_OSL_3_DOT_0,		"OSL 3.0"},
+	{PK_LICENSE_ENUM_OPENSSL,		"OpenSSL"},
+	{PK_LICENSE_ENUM_OREILLY,		"OReilly"},
+	{PK_LICENSE_ENUM_PHORUM,		"Phorum"},
+	{PK_LICENSE_ENUM_PHP,			"PHP"},
+	{PK_LICENSE_ENUM_PUBLIC_DOMAIN,		"Public Domain"},
+	{PK_LICENSE_ENUM_PYTHON,		"Python"},
+	{PK_LICENSE_ENUM_QPL,			"QPL"},
+	{PK_LICENSE_ENUM_RPSL,			"RPSL"},
+	{PK_LICENSE_ENUM_RUBY,			"Ruby"},
+	{PK_LICENSE_ENUM_SENDMAIL,		"Sendmail"},
+	{PK_LICENSE_ENUM_SLEEPYCAT,		"Sleepycat"},
+	{PK_LICENSE_ENUM_SLIB,			"SLIB"},
+	{PK_LICENSE_ENUM_SISSL,			"SISSL"},
+	{PK_LICENSE_ENUM_SPL,			"SPL"},
+	{PK_LICENSE_ENUM_TCL,			"TCL"},
+	{PK_LICENSE_ENUM_UCD,			"UCD"},
+	{PK_LICENSE_ENUM_VIM,			"Vim"},
+	{PK_LICENSE_ENUM_VNLSL,			"VNLSL"},
+	{PK_LICENSE_ENUM_VSL,			"VSL"},
+	{PK_LICENSE_ENUM_W3C,			"W3C"},
+	{PK_LICENSE_ENUM_WXWIDGETS,		"wxWidgets"},
+	{PK_LICENSE_ENUM_XINETD,		"xinetd"},
+	{PK_LICENSE_ENUM_ZEND,			"Zend"},
+	{PK_LICENSE_ENUM_ZPLV1_DOT_0,		"ZPLv1.0"},
+	{PK_LICENSE_ENUM_ZPLV2_DOT_0,		"ZPLv2.0"},
+	{PK_LICENSE_ENUM_ZPLV2_DOT_1,		"ZPLv2.1"},
+	{PK_LICENSE_ENUM_ZLIB,			"zlib"},
+	{PK_LICENSE_ENUM_ZLIB_WITH_ACK,		"zlib with acknowledgement"},
+	{PK_LICENSE_ENUM_CDL,			"CDL"},
+	{PK_LICENSE_ENUM_FBSDDL,		"FBSDDL"},
+	{PK_LICENSE_ENUM_GFDL,			"GFDL"},
+	{PK_LICENSE_ENUM_IEEE,			"IEEE"},
+	{PK_LICENSE_ENUM_OFSFDL,		"OFSFDL"},
+	{PK_LICENSE_ENUM_OPEN_PUBLICATION,	"Open Publication"},
+	{PK_LICENSE_ENUM_CC_BY,			"CC-BY"},
+	{PK_LICENSE_ENUM_CC_BY_SA,		"CC-BY-SA"},
+	{PK_LICENSE_ENUM_CC_BY_ND,		"CC-BY-ND"},
+	{PK_LICENSE_ENUM_DSL,			"DSL"},
+	{PK_LICENSE_ENUM_FREE_ART,		"Free Art"},
+	{PK_LICENSE_ENUM_OFL,			"OFL"},
+	{PK_LICENSE_ENUM_UTOPIA,		"Utopia"},
+	{PK_LICENSE_ENUM_ARPHIC,		"Arphic"},
+	{PK_LICENSE_ENUM_BAEKMUK,		"Baekmuk"},
+	{PK_LICENSE_ENUM_BITSTREAM_VERA,	"Bitstream Vera"},
+	{PK_LICENSE_ENUM_LUCIDA,		"Lucida"},
+	{PK_LICENSE_ENUM_MPLUS,			"mplus"},
+	{PK_LICENSE_ENUM_STIX,			"STIX"},
+	{PK_LICENSE_ENUM_XANO,			"XANO"},
+	{PK_LICENSE_ENUM_VOSTROM,		"VOSTROM"},
+	{PK_LICENSE_ENUM_XEROX,                 "Xerox License"},
 	{0, NULL}
 };
-
 
 /**
  * pk_enum_find_value:
@@ -444,6 +477,47 @@ pk_enum_find_string (PkEnumMatch *table, guint value)
 		}
 	}
 	return table[0].string;
+}
+
+/**
+ * pk_enums_contain_priority:
+ * @values: a valid enums instance
+ * @value: the values we are searching for
+ *
+ * Finds elements in a list, but with priority going to the preceeding entry
+ *
+ * Return value: The return enumerated type, or -1 if none are found
+ **/
+gint
+pk_enums_contain_priority (guint values, gint value, ...)
+{
+	va_list args;
+	guint i;
+	guint value_temp;
+	gint retval = -1;
+
+	/* we must query at least one thing */
+	if (pk_enums_contain (values, value)) {
+		return value;
+	}
+
+	/* process the valist */
+	va_start (args, value);
+	for (i=0;; i++) {
+		value_temp = va_arg (args, gint);
+		/* do we have this one? */
+		if (pk_enums_contain (values, value_temp)) {
+			retval = value_temp;
+			break;
+		}
+		/* end of the list */
+		if (value_temp == -1) {
+			break;
+		}
+	}
+	va_end (args);
+
+	return retval;
 }
 
 /**
@@ -559,6 +633,34 @@ pk_exit_enum_to_text (PkExitEnum exit)
 }
 
 /**
+ * pk_network_enum_from_text:
+ * @network: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SIGTYPE_ENUM_GPG
+ */
+PkNetworkEnum
+pk_network_enum_from_text (const gchar *network)
+{
+	return pk_enum_find_value (enum_network, network);
+}
+
+/**
+ * pk_network_enum_to_text:
+ * @network: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available"
+ **/
+const gchar *
+pk_network_enum_to_text (PkNetworkEnum network)
+{
+	return pk_enum_find_string (enum_network, network);
+}
+
+/**
  * pk_status_enum_from_text:
  * @status: Text describing the enumerated type
  *
@@ -612,6 +714,69 @@ const gchar *
 pk_role_enum_to_text (PkRoleEnum role)
 {
 	return pk_enum_find_string (enum_role, role);
+}
+
+/**
+ * pk_roles_enums_to_text:
+ * @filters: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "install-file;update-system"
+ **/
+gchar *
+pk_role_enums_to_text (PkRoleEnum roles)
+{
+	GString *string;
+	guint i;
+
+	string = g_string_new ("");
+	for (i=1; i<PK_ROLE_ENUM_UNKNOWN; i*=2) {
+		if ((roles & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_role_enum_to_text (i));
+	}
+	/* do we have a no enums? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_role_enum_to_text (PK_ROLE_ENUM_UNKNOWN));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_role_enums_from_text:
+ * @roles: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkRoleEnum
+pk_role_enums_from_text (const gchar *roles)
+{
+	PkRoleEnum roles_enum = 0;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (roles, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		roles_enum += pk_role_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return roles_enum;
 }
 
 /**
@@ -727,6 +892,69 @@ pk_group_enum_to_text (PkGroupEnum group)
 }
 
 /**
+ * pk_groups_enums_to_text:
+ * @groups: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "gnome;kde"
+ **/
+gchar *
+pk_group_enums_to_text (PkGroupEnum groups)
+{
+	GString *string;
+	guint i;
+
+	string = g_string_new ("");
+	for (i=1; i<PK_GROUP_ENUM_UNKNOWN; i*=2) {
+		if ((groups & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_group_enum_to_text (i));
+	}
+	/* do we have a no enums? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_group_enum_to_text (PK_GROUP_ENUM_UNKNOWN));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_group_enums_from_text:
+ * @groups: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkGroupEnum
+pk_group_enums_from_text (const gchar *groups)
+{
+	PkGroupEnum groups_enum = 0;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (groups, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		groups_enum += pk_group_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return groups_enum;
+}
+
+/**
  * pk_freq_enum_from_text:
  * @freq: Text describing the enumerated type
  *
@@ -811,6 +1039,74 @@ pk_filter_enum_to_text (PkFilterEnum filter)
 }
 
 /**
+ * pk_filter_enums_to_text:
+ * @filters: The enumerated type values
+ *
+ * Converts a enumerated type bitfield to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "available;~gui"
+ **/
+gchar *
+pk_filter_enums_to_text (PkFilterEnum filters)
+{
+	GString *string;
+	guint i;
+
+	/* shortcut */
+	if (filters == PK_FILTER_ENUM_NONE) {
+		return g_strdup (pk_filter_enum_to_text (filters));
+	}
+
+	string = g_string_new ("");
+	for (i=1; i<PK_FILTER_ENUM_UNKNOWN; i*=2) {
+		if ((filters & i) == 0) {
+			continue;
+		}
+		g_string_append_printf (string, "%s;", pk_filter_enum_to_text (i));
+	}
+	/* do we have a 'none' filter? \n */
+	if (string->len == 0) {
+		pk_warning ("not valid!");
+		g_string_append (string, pk_filter_enum_to_text (PK_FILTER_ENUM_NONE));
+	} else {
+		/* remove last \n */
+		g_string_set_size (string, string->len - 1);
+	}
+	return g_string_free (string, FALSE);
+}
+
+/**
+ * pk_filter_enums_from_text:
+ * @filters: the enumerated constant value, e.g. "available;~gui"
+ *
+ * Converts text representation to its enumerated type bitfield
+ *
+ * Return value: The enumerated type values
+ **/
+PkFilterEnum
+pk_filter_enums_from_text (const gchar *filters)
+{
+	PkFilterEnum filters_enum = PK_FILTER_ENUM_NONE;
+	gchar **split;
+	guint length;
+	guint i;
+
+	split = g_strsplit (filters, ";", 0);
+	if (split == NULL) {
+		pk_warning ("unable to split");
+		goto out;
+	}
+
+	length = g_strv_length (split);
+	for (i=0; i<length; i++) {
+		filters_enum += pk_filter_enum_from_text (split[i]);
+	}
+out:
+	g_strfreev (split);
+	return filters_enum;
+}
+
+/**
  * pk_license_enum_from_text:
  * @license: Text describing the enumerated type
  *
@@ -848,17 +1144,21 @@ void
 libst_enum (LibSelfTest *test)
 {
 	const gchar *string;
-	PkRoleEnum value;
+	PkRoleEnum role_value;
 	guint i;
+	gchar *text;
+	PkFilterEnum filter;
+	guint value;
+	guint values;
 
 	if (libst_start (test, "PkEnum", CLASS_AUTO) == FALSE) {
 		return;
 	}
 
 	/************************************************************/
-	libst_title (test, "find value");
-	value = pk_enum_find_value (enum_role, "search-file");
-	if (PK_ROLE_ENUM_SEARCH_FILE) {
+	libst_title (test, "find role_value");
+	role_value = pk_enum_find_value (enum_role, "search-file");
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -875,8 +1175,8 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "find value");
-	value = pk_role_enum_from_text ("search-file");
-	if (PK_ROLE_ENUM_SEARCH_FILE) {
+	role_value = pk_role_enum_from_text ("search-file");
+	if (role_value == PK_ROLE_ENUM_SEARCH_FILE) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -893,7 +1193,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the role enums");
-	for (i=0; i<=PK_ROLE_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_ROLE_ENUM_UNKNOWN; i*=2) {
 		string = pk_role_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -904,7 +1204,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the status enums");
-	for (i=0; i<=PK_STATUS_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_STATUS_ENUM_UNKNOWN; i*=2) {
 		string = pk_status_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -959,7 +1259,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the group enums");
-	for (i=0; i<=PK_GROUP_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_GROUP_ENUM_UNKNOWN; i*=2) {
 		string = pk_group_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -992,7 +1292,7 @@ libst_enum (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "check we convert all the info enums");
-	for (i=0; i<=PK_INFO_ENUM_UNKNOWN; i++) {
+	for (i=1; i<=PK_INFO_ENUM_UNKNOWN; i*=2) {
 		string = pk_info_enum_to_text (i);
 		if (string == NULL) {
 			libst_failed (test, "failed to get %i", i);
@@ -1022,6 +1322,131 @@ libst_enum (LibSelfTest *test)
 		}
 	}
 	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (none)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NONE);
+	if (pk_strequal (text, "none")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (single)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	if (pk_strequal (text, "~devel")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter enums to text (plural)");
+	text = pk_filter_enums_to_text (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST);
+	if (pk_strequal (text, "~devel;gui;newest")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (none)");
+	filter = pk_filter_enums_from_text ("none");
+	if (filter == PK_FILTER_ENUM_NONE) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (single)");
+	filter = pk_filter_enums_from_text ("~devel");
+	if (filter == PK_FILTER_ENUM_NOT_DEVELOPMENT) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can convert filter text to enums (plural)");
+	filter = pk_filter_enums_from_text ("~devel;gui;newest");
+	if (filter == (PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "filter was %i", i);
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can add / remove enums");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
+	pk_enums_add (filter, PK_FILTER_ENUM_NOT_FREE);
+	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	text = pk_filter_enums_to_text (filter);
+	if (pk_strequal (text, "gui;~free;newest")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "check we can test enum presence");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT | PK_FILTER_ENUM_GUI | PK_FILTER_ENUM_NEWEST;
+	if (pk_enums_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong boolean");
+	}
+	libst_title (test, "check we can test enum false-presence");
+	if (!pk_enums_contain (filter, PK_FILTER_ENUM_FREE)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "wrong boolean");
+	}
+
+	/************************************************************/
+	libst_title (test, "check we can add / remove enums to nothing");
+	filter = PK_FILTER_ENUM_NOT_DEVELOPMENT;
+	pk_enums_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
+	text = pk_filter_enums_to_text (filter);
+	if (pk_strequal (text, "none")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "text was %s", text);
+	}
+	g_free (text);
+
+	/************************************************************/
+	libst_title (test, "priority check missing");
+	values = PK_ROLE_ENUM_SEARCH_DETAILS | PK_ROLE_ENUM_SEARCH_GROUP;
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, -1);
+	if (value == -1) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned priority %i when should be missing", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check first");
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
+	}
+
+	/************************************************************/
+	libst_title (test, "priority check second, correct");
+	value = pk_enums_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	if (value == PK_ROLE_ENUM_SEARCH_GROUP) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "returned wrong value; %i", value);
+	}
 
 	libst_end (test);
 }

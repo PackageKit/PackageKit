@@ -49,7 +49,6 @@ static gpointer pk_cache_object = NULL;
 PkPackageList *
 pk_cache_get_updates (PkCache *cache)
 {
-	g_return_val_if_fail (cache != NULL, NULL);
 	g_return_val_if_fail (PK_IS_CACHE (cache), NULL);
 	return cache->priv->updates_cache;
 }
@@ -60,8 +59,8 @@ pk_cache_get_updates (PkCache *cache)
 gboolean
 pk_cache_set_updates (PkCache *cache, PkPackageList *list)
 {
-	g_return_val_if_fail (cache != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
+	g_return_val_if_fail (list != NULL, FALSE);
 
 	/* do this in case we have old data */
 	pk_cache_invalidate (cache);
@@ -79,7 +78,6 @@ pk_cache_set_updates (PkCache *cache, PkPackageList *list)
 gboolean
 pk_cache_invalidate (PkCache *cache)
 {
-	g_return_val_if_fail (cache != NULL, FALSE);
 	g_return_val_if_fail (PK_IS_CACHE (cache), FALSE);
 
 	pk_debug ("unreffing updates cache");
@@ -97,7 +95,6 @@ static void
 pk_cache_finalize (GObject *object)
 {
 	PkCache *cache;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_CACHE (object));
 	cache = PK_CACHE (object);
 

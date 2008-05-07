@@ -54,7 +54,6 @@
 #include "pk-enum.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
-#include "pk-thread-list.h"
 
 #define PK_BACKEND_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_DBUS, PkBackendDbusPrivate))
 
@@ -145,16 +144,16 @@ pk_backend_dbus_package_cb (DBusGProxy *proxy, const gchar *info_text, const gch
 }
 
 /**
- * pk_backend_dbus_description_cb:
+ * pk_backend_dbus_details_cb:
  **/
 static void
-pk_backend_dbus_description_cb (DBusGProxy *proxy, const gchar *package_id,
+pk_backend_dbus_details_cb (DBusGProxy *proxy, const gchar *package_id,
 				const gchar *license, const gchar *group_text,
 				const gchar *detail, const gchar *url,
 				guint64 size, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_description (backend_dbus->priv->backend, package_id,
+	pk_backend_details (backend_dbus->priv->backend, package_id,
 				license, pk_group_enum_from_text (group_text), detail, url, size);
 }
 
@@ -242,14 +241,28 @@ pk_backend_dbus_message_cb (DBusGProxy *proxy, PkMessageEnum message,
  * pk_backend_dbus_repo_signature_required_cb:
  **/
 static void
-pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *repository_name,
-					    const gchar *key_url, const gchar *key_userid,
-					    const gchar *key_id, const gchar *key_fingerprint,
-					    const gchar *key_timestamp, PkSigTypeEnum type, PkBackendDbus *backend_dbus)
+pk_backend_dbus_repo_signature_required_cb (DBusGProxy *proxy, const gchar *package_id,
+					    const gchar *repository_name, const gchar *key_url,
+					    const gchar *key_userid, const gchar *key_id,
+					    const gchar *key_fingerprint, const gchar *key_timestamp,
+					    PkSigTypeEnum type, PkBackendDbus *backend_dbus)
 {
 	pk_debug ("got signal");
-	pk_backend_repo_signature_required (backend_dbus->priv->backend, repository_name,
+	pk_backend_repo_signature_required (backend_dbus->priv->backend, package_id, repository_name,
 					    key_url, key_userid, key_id, key_fingerprint, key_timestamp, type);
+}
+
+/**
+ * pk_backend_dbus_eula_required_cb:
+ **/
+static void
+pk_backend_dbus_eula_required_cb (DBusGProxy *proxy, const gchar *eula_id, const gchar *package_id,
+				  const gchar *vendor_name, const gchar *license_agreement,
+				  PkBackendDbus *backend_dbus)
+{
+	pk_debug ("got signal");
+	pk_backend_eula_required (backend_dbus->priv->backend, eula_id,
+				  package_id, vendor_name, license_agreement);
 }
 
 /**
@@ -273,7 +286,7 @@ pk_backend_dbus_time_check (PkBackendDbus *backend_dbus)
 	gdouble seconds;
 	guint time;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 
 	seconds = g_timer_elapsed (backend_dbus->priv->timer, NULL);
 	time = (guint) seconds * 1000;
@@ -316,8 +329,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
 					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
-	dbus_g_proxy_disconnect_signal (proxy, "Description",
-					G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "Details",
+					G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Files",
 					G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "UpdateDetail",
@@ -334,6 +347,8 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "RepoSignatureRequired",
 					G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus);
+	dbus_g_proxy_disconnect_signal (proxy, "EulaRequired",
+					G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus);
 	return TRUE;
 }
 
@@ -347,7 +362,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->connection != NULL, FALSE);
 	g_return_val_if_fail (service != NULL, FALSE);
 
@@ -373,7 +388,7 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "Description",
+	dbus_g_proxy_add_signal (proxy, "Details",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Files",
@@ -395,7 +410,10 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	dbus_g_proxy_add_signal (proxy, "RepoSignatureRequired",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-				 G_TYPE_UINT, G_TYPE_INVALID);
+				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+	dbus_g_proxy_add_signal (proxy, "EulaRequired",
+				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+				 G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* add callbacks */
 	dbus_g_proxy_connect_signal (proxy, "RepoDetail",
@@ -410,8 +428,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "Description",
-				     G_CALLBACK (pk_backend_dbus_description_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "Details",
+				     G_CALLBACK (pk_backend_dbus_details_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Files",
 				     G_CALLBACK (pk_backend_dbus_files_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "UpdateDetail",
@@ -428,6 +446,8 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_message_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "RepoSignatureRequired",
 				     G_CALLBACK (pk_backend_dbus_repo_signature_required_cb), backend_dbus, NULL);
+	dbus_g_proxy_connect_signal (proxy, "EulaRequired",
+				     G_CALLBACK (pk_backend_dbus_eula_required_cb), backend_dbus, NULL);
 
 	backend_dbus->priv->proxy = proxy;
 
@@ -460,6 +480,8 @@ pk_backend_dbus_kill (PkBackendDbus *backend_dbus)
 	gboolean ret;
 	GError *error = NULL;
 
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Exit", &error,
@@ -485,7 +507,7 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 
 	/* new sync method call */
@@ -508,18 +530,20 @@ pk_backend_dbus_cancel (PkBackendDbus *backend_dbus)
  * pk_backend_dbus_get_updates:
  **/
 gboolean
-pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
+pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, PkFilterEnum filters)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetUpdates", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -530,6 +554,7 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -537,18 +562,20 @@ pk_backend_dbus_get_updates (PkBackendDbus *backend_dbus, const gchar *filter)
  * pk_backend_dbus_get_repo_list:
  **/
 gboolean
-pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, const gchar *filter)
+pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, PkFilterEnum filters)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRepoList", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
 		pk_warning ("%s", error->message);
@@ -559,6 +586,7 @@ pk_backend_dbus_get_repo_list (PkBackendDbus *backend_dbus, const gchar *filter)
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -571,7 +599,7 @@ pk_backend_dbus_refresh_cache (PkBackendDbus *backend_dbus, gboolean force)
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 
 	/* new sync method call */
@@ -600,7 +628,7 @@ pk_backend_dbus_update_system (PkBackendDbus *backend_dbus)
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 
 	/* new sync method call */
@@ -628,7 +656,7 @@ pk_backend_dbus_repo_enable (PkBackendDbus *backend_dbus, const gchar *rid, gboo
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 
@@ -660,7 +688,7 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (rid != NULL, FALSE);
 	g_return_val_if_fail (parameter != NULL, FALSE);
@@ -689,20 +717,21 @@ pk_backend_dbus_repo_set_data (PkBackendDbus *backend_dbus, const gchar *rid,
  * pk_backend_dbus_resolve:
  **/
 gboolean
-pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package)
+pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (package != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Resolve", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -714,6 +743,7 @@ pk_backend_dbus_resolve (PkBackendDbus *backend_dbus, const gchar *filter, const
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -726,7 +756,7 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (transaction_id != NULL, FALSE);
 
@@ -751,20 +781,21 @@ pk_backend_dbus_rollback (PkBackendDbus *backend_dbus, const gchar *transaction_
  * pk_backend_dbus_search_name:
  **/
 gboolean
-pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchName", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -776,6 +807,7 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -783,20 +815,21 @@ pk_backend_dbus_search_name (PkBackendDbus *backend_dbus, const gchar *filter, c
  * pk_backend_dbus_search_details:
  **/
 gboolean
-pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchDetails", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -808,6 +841,7 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -815,20 +849,21 @@ pk_backend_dbus_search_details (PkBackendDbus *backend_dbus, const gchar *filter
  * pk_backend_dbus_search_group:
  **/
 gboolean
-pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchGroup", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -840,6 +875,7 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -847,20 +883,21 @@ pk_backend_dbus_search_group (PkBackendDbus *backend_dbus, const gchar *filter, 
  * pk_backend_dbus_search_file:
  **/
 gboolean
-pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *search)
+pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SearchFile", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -872,6 +909,7 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -879,19 +917,21 @@ pk_backend_dbus_search_file (PkBackendDbus *backend_dbus, const gchar *filter, c
  * pk_backend_dbus_get_depends:
  **/
 gboolean
-pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDepends", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -904,6 +944,7 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *filter, c
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -911,19 +952,21 @@ pk_backend_dbus_get_depends (PkBackendDbus *backend_dbus, const gchar *filter, c
  * pk_backend_dbus_get_requires:
  **/
 gboolean
-pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *filter, const gchar *package_id, gboolean recursive)
+pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
 {
 	gboolean ret;
 	GError *error = NULL;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetRequires", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -936,6 +979,39 @@ pk_backend_dbus_get_requires (PkBackendDbus *backend_dbus, const gchar *filter, 
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
+	return ret;
+}
+
+/**
+ * pk_backend_dbus_get_packages:
+ **/
+gboolean
+pk_backend_dbus_get_packages (PkBackendDbus *backend_dbus, PkFilterEnum filters)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *filters_text;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	filters_text = pk_filter_enums_to_text (filters);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetPackages", &error,
+				 G_TYPE_STRING, filters_text,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+	}
+	if (ret) {
+		pk_backend_dbus_time_check (backend_dbus);
+	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -948,7 +1024,7 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
@@ -970,21 +1046,21 @@ pk_backend_dbus_get_update_detail (PkBackendDbus *backend_dbus, const gchar *pac
 }
 
 /**
- * pk_backend_dbus_get_description:
+ * pk_backend_dbus_get_details:
  **/
 gboolean
-pk_backend_dbus_get_description (PkBackendDbus *backend_dbus, const gchar *package_id)
+pk_backend_dbus_get_details (PkBackendDbus *backend_dbus, const gchar *package_id)
 {
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDescription", &error,
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "GetDetails", &error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -1008,7 +1084,7 @@ pk_backend_dbus_get_files (PkBackendDbus *backend_dbus, const gchar *package_id)
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
@@ -1038,7 +1114,7 @@ pk_backend_dbus_remove_package (PkBackendDbus *backend_dbus, const gchar *packag
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
@@ -1070,7 +1146,7 @@ pk_backend_dbus_install_package (PkBackendDbus *backend_dbus, const gchar *packa
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
@@ -1100,7 +1176,7 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 
@@ -1125,18 +1201,19 @@ pk_backend_dbus_update_packages (PkBackendDbus *backend_dbus, gchar **package_id
  * pk_backend_dbus_install_file:
  **/
 gboolean
-pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, const gchar *full_path)
+pk_backend_dbus_install_file (PkBackendDbus *backend_dbus, gboolean trusted, const gchar *full_path)
 {
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (full_path != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "InstallFile", &error,
+				 G_TYPE_BOOLEAN, trusted,
 				 G_TYPE_STRING, full_path,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	if (error != NULL) {
@@ -1160,7 +1237,7 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
 	gboolean ret;
 	GError *error = NULL;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
 	g_return_val_if_fail (location != NULL, FALSE);
 
@@ -1186,24 +1263,25 @@ pk_backend_dbus_service_pack (PkBackendDbus *backend_dbus, const gchar *location
  * pk_backend_dbus_what_provides:
  **/
 gboolean
-pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, const gchar *filter,
-			      PkProvidesEnum provides, const gchar *search)
+pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters,
+			       PkProvidesEnum provides, const gchar *search)
 {
 	gboolean ret;
 	GError *error = NULL;
 	const gchar *provides_text;
+	gchar *filters_text;
 
-	g_return_val_if_fail (backend_dbus != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (filter != NULL, FALSE);
 	g_return_val_if_fail (search != NULL, FALSE);
 	g_return_val_if_fail (provides != PK_PROVIDES_ENUM_UNKNOWN, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
 	provides_text = pk_provides_enum_to_text (provides);
+	filters_text = pk_filter_enums_to_text (filters);
 	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "WhatProvides", &error,
-				 G_TYPE_STRING, filter,
+				 G_TYPE_STRING, filters_text,
 				 G_TYPE_STRING, provides_text,
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
@@ -1216,6 +1294,7 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, const gchar *filter,
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}
+	g_free (filters_text);
 	return ret;
 }
 
@@ -1226,7 +1305,6 @@ static void
 pk_backend_dbus_finalize (GObject *object)
 {
 	PkBackendDbus *backend_dbus;
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_DBUS (object));
 
 	backend_dbus = PK_BACKEND_DBUS (object);
@@ -1292,7 +1370,7 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
-	/* Description */
+	/* Details */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_UINT64,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
 					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64,
@@ -1304,9 +1382,15 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 					   G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Repo Signature Required */
-	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_UINT,
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING_STRING_STRING_STRING_UINT,
 					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_UINT, G_TYPE_INVALID);
+
+	/* EulaRequired */
+	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING_STRING,
+					   G_TYPE_NONE, G_TYPE_STRING, G_TYPE_STRING,
+					   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 
 	/* Package */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__STRING_STRING_STRING,
@@ -1415,6 +1499,12 @@ libst_backend_dbus (LibSelfTest *test)
 		return;
 	}
 
+	/* don't do these when doing make distcheck */
+#ifndef PK_IS_DEVELOPER
+	libst_end (test);
+	return;
+#endif
+
 	/************************************************************/
 	libst_title (test, "get an backend_dbus");
 	backend_dbus = pk_backend_dbus_new ();
@@ -1455,7 +1545,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search by name");
-	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	elapsed = libst_elapsed (test);
 	if (ret) {
 		libst_success (test, NULL);
@@ -1489,7 +1579,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search by name again");
-	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -1514,7 +1604,7 @@ libst_backend_dbus (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "search by name");
-	ret = pk_backend_dbus_search_name (backend_dbus, "none", "power");
+	ret = pk_backend_dbus_search_name (backend_dbus, PK_FILTER_ENUM_NONE, "power");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

@@ -7,6 +7,42 @@
     Methods used by the backends are as follows:
   </para>
 
+  <sect1 id="methods-get-packages">
+    <title>Get Packages</title>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>filter</literal></entry>
+            <entry>
+              A correct filter, e.g. <literal>none</literal> or
+              <literal>installed;~devel</literal>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Progress</literal>,
+      <literal>Error</literal> and
+      <literal>Package</literal>.
+    </para>
+    <para>
+      <literal>Package</literal> enumerated types should be
+      <literal>available</literal> or <literal>installed</literal>.
+    </para>
+  </sect1>
+
   <sect1 id="methods-search-name">
     <title>Search Name</title>
     <para>
@@ -39,10 +75,16 @@
       Do not refresh the package cache. This should be fast.
     </para>
     <para>
-      Always emit <literal>installed</literal> before
+      Try to emit <literal>installed</literal> before
       <literal>available</literal> packages first, as it allows the client
       program to perform the GUI filtering and matching whilst the daemon is
       running the transaction.
+    </para>
+    <para>
+      If the backend includes <literal>installed</literal> and
+      <literal>available</literal> versions of the same package when searching
+      then the <literal>available</literal> version will have to be filtered
+      in the backend.
     </para>
     <para>
       The search query in the backend should not be case sensitive, and
@@ -289,6 +331,44 @@
     </para>
   </sect1>
 
+  <sect1 id="methods-install-signature">
+    <title>Install Signature</title>
+    <para>
+      Sometimes we need to install new security keys to allow an install to continue.
+    </para>
+    <para>
+      The arguments are:
+    </para>
+    <informaltable>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>Option</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><literal>sig_type</literal></entry>
+            <entry>A key type, e.g. <literal>gpg</literal></entry>
+          </row>
+          <row>
+            <entry><literal>key_id</literal></entry>
+            <entry>A key ID, e.g. <literal>BB7576AC</literal></entry>
+          </row>
+          <row>
+            <entry><literal>package_id</literal></entry>
+            <entry>A PackageID for the package that the user is trying to install</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>
+      This method typically emits
+      <literal>Error</literal> and
+    </para>
+  </sect1>
+
   <sect1 id="methods-remove">
     <title>Remove Package</title>
     <para>
@@ -389,7 +469,7 @@
   </sect1>
 
   <sect1 id="methods-what-provides">
-    <title>Get Depends</title>
+    <title>What Provides</title>
     <para>
       WhatProvides should return packages that provide the supplied attributes.
       This method is useful for finding out what package(s) provide a modalias
@@ -417,7 +497,7 @@
           <row>
             <entry><literal>type</literal></entry>
             <entry>
-              A PkProvideType, e.g. <literal>PK_PROVIDE_ENUM_CODEC</literal>.
+              A PkProvideType, e.g. <literal>PK_PROVIDES_ENUM_CODEC</literal>.
             </entry>
           </row>
           <row>
@@ -573,10 +653,10 @@
     </para>
   </sect1>
 
-  <sect1 id="methods-get-description">
-    <title>Get Description</title>
+  <sect1 id="methods-get-details">
+    <title>Get Details</title>
     <para>
-      GetDescription should return the description of that
+      GetDetails should return all the details about a specific
       <literal>package_id</literal>.
     </para>
     <para>
@@ -603,7 +683,7 @@
       <literal>Progress</literal>,
       <literal>Status</literal> and
       <literal>Error</literal> and
-      <literal>Description</literal>.
+      <literal>Details</literal>.
     </para>
   </sect1>
 

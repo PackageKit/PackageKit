@@ -23,7 +23,7 @@
 #define __PK_TRANSACTION_LIST_H
 
 #include <glib-object.h>
-#include "pk-runner.h"
+#include "pk-transaction.h"
 #include "pk-package-list.h"
 
 G_BEGIN_DECLS
@@ -50,32 +50,21 @@ typedef struct
 	GObjectClass	parent_class;
 } PkTransactionListClass;
 
-typedef struct {
-	gboolean		 committed;
-	gboolean		 running;
-	gboolean		 finished;
-	PkRunner		*runner;
-	gchar			*tid;
-} PkTransactionItem;
-
 GType		 pk_transaction_list_get_type	  	(void) G_GNUC_CONST;
 PkTransactionList *pk_transaction_list_new		(void);
 
-PkTransactionItem *pk_transaction_list_create		(PkTransactionList	*tlist);
+gboolean	 pk_transaction_list_create		(PkTransactionList	*tlist,
+							 const gchar		*tid);
 gboolean	 pk_transaction_list_remove		(PkTransactionList	*tlist,
-							 PkTransactionItem	*item);
+							 PkTransaction		*transaction);
 gboolean	 pk_transaction_list_commit		(PkTransactionList	*tlist,
-							 PkTransactionItem	*item)
+							 PkTransaction		*transaction)
 							 G_GNUC_WARN_UNUSED_RESULT;
 gboolean	 pk_transaction_list_role_present	(PkTransactionList	*tlist,
 							 PkRoleEnum		 role);
 gchar		**pk_transaction_list_get_array		(PkTransactionList	*tlist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_transaction_list_get_size		(PkTransactionList	*tlist);
-PkTransactionItem *pk_transaction_list_get_from_tid	(PkTransactionList	*tlist,
-							 const gchar		*tid);
-PkTransactionItem *pk_transaction_list_get_from_runner	(PkTransactionList	*tlist,
-							 PkRunner		*runner);
 
 G_END_DECLS
 

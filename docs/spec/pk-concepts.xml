@@ -117,6 +117,16 @@
               <literal>gimp-2.4.3-1.fc9.i386</literal>.
             </entry>
           </row>
+          <row>
+            <entry><literal>arch</literal> or <literal>~arch</literal></entry>
+            <entry>
+              The arch filter will only return the packages that match the exact architecture
+              of the system, for instance only showing x86_64 packages on a AMD Turion 64.
+              This would mean that x86_64 packages could be filtered from non-native 32-bit
+              packages.
+              This allows the used to choose non-native packages if a multi-lib policy is allowed.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>
@@ -253,6 +263,20 @@
             <entry>A package failed to download correctly</entry>
           </row>
           <row>
+            <entry><literal>invalid-package-file</literal></entry>
+            <entry>
+	      The file that is supposed to contain a package to
+              install is corrupt, or is not a valid package file
+	    </entry>
+          </row>
+          <row>
+            <entry><literal>package-install-blocked</literal></entry>
+            <entry>
+	      The backend's configuration or policy prevents the
+              install or updating of a package
+	    </entry>
+          </row>
+          <row>
             <entry><literal>dep-resolution-failed</literal></entry>
             <entry>Dependency resolution failed</entry>
           </row>
@@ -293,6 +317,17 @@
             <entry><literal>repo-not-found</literal></entry>
             <entry>The repository name could not be found</entry>
           </row>
+          <row>
+            <entry><literal>repo-configuration-error</literal></entry>
+            <entry>One of the enabled repositories has invalid configuration</entry>
+          </row>
+	  <row>
+	    <entry><literal>repo-not-available</literal></entry>
+	    <entry>
+	      There was a (possibly transient) problem connecting to a
+	      repository
+	    </entry>
+	  </row>
           <row>
             <entry><literal>cannot-remove-system-package</literal></entry>
             <entry>
@@ -475,8 +510,85 @@
     </itemizedlist>
   </sect1>
 
+  <sect1 id="introduction-ideas-transactions">
+    <title>Transactions</title>
+    <para>
+      PackageKit does not ask the user questions when the transaction is running.
+      It also supports a fire-and-forget method invocation, which means that transactions will
+      have one calling method, and have many signals going back to the caller.
+    </para>
+    <para>
+      Each transaction is a new path on the <literal>org.freedesktop.PackageKit</literal>
+      service, and to create a path you have to call <literal>GetTid</literal> on the base
+      interface which creates the new DBUS path, and returns the new path for you to connect to.
+      In the libpackagekit binding, <literal>PkControl</literal> handles the base interface,
+      whilst <literal>PkClient</literal> handles all the transaction interface stuff.
+      The <literal>org.freedesktop.PackageKit.Transaction</literal> interface can be used
+      on the newly created path, but only used once.
+      New methods require a new transaction path (i.e. another call to <literal>GetTid</literal>)
+      which is synchronous and thus very fast.
+    </para>
+    <para>
+      A typical successful transaction can be seen below.
+    </para>
+    <mediaobject id="pk-transactions-success">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-success.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      A typical simple transaction failure case can be seen below.
+      The user is not given the change to requeue the transaction as it is a fatal error.
+    </para>
+    <mediaobject id="pk-transactions-failure">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-failure.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      In this non-trivial example, a local file install is being attempted.
+      First the <literal>InstallFile</literal> is called with the <literal>trusted</literal>
+      flag set.
+      This will fail if the package does not have a valid GPG key, and ordinarily the transaction
+      would fail. What the client can do, e.g. using <literal>gnome-packagekit</literal>, is
+      to re-request the <literal>InstallFile</literal> with <literal>non-trusted</literal>.
+      This will use a different PolicyKit authentication, and allow the file to succeed.
+    </para>
+    <para>
+      So why do we bother calling <literal>trusted</literal> in the first place?
+      Well, the trusted PolicyKit role can be saved in the gnome-keyring, or could be
+      set to the users password as the GPG key is already trusted by the user.
+      The <literal>non-trusted</literal> action would likely ask for the administrator password,
+      and not allowed to be saved. This gives the user the benifit of installing trusted local
+      files without a password (common case) but requiring something stronger for untrusted or
+      unsigned files.
+    </para>
+    <mediaobject id="pk-transactions-trusted">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-trusted.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+    <mediaobject id="pk-transactions-sig-install">
+      <imageobject>
+        <imagedata format="PNG" fileref="pk-transactions-sig-install.png" align="center"/>
+      </imageobject>
+    </mediaobject>
+    <para>
+      If the package is signed, and a valid GPG signature is available, then we need to ask the
+      user to import the key, and re-run the transaction.
+      This is done as three transactions, as other transactions may be queued and have a higher
+      priority, and to make sure that the transaction object is not reused.
+    </para>
+  </sect1>
+
   <sect1 id="introduction-ideas-transactionid">
-    <title>Transaction ID</title>
+    <title>Transaction IDs</title>
     <para>
       A <literal>transaction_id</literal> is a unique identifier that
       identifies the present or past transaction.
@@ -519,7 +631,7 @@
     </para>
     <para>
       The <literal>transaction_id</literal> must be of the format
-      <literal>job;identifier;data</literal> where the daemon controls
+      <literal>/job_identifier_data</literal> where the daemon controls
       all parameters.
       <literal>job</literal> is a monotonically updating number and is
       retained over reboots.
@@ -530,7 +642,7 @@
       for any other purpose.
       It is designed to make the life of a backend writer a little bit easier.
       An example <literal>transaction_id</literal> would be
-      <literal>45;dafeca;checkpoint32</literal>
+      <literal>/45_dafeca_checkpoint32</literal>
     </para>
   </sect1>
 

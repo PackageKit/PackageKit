@@ -74,7 +74,6 @@ pk_get_distro_id (void)
 {
 	gboolean ret;
 	gchar *contents = NULL;
-	gchar *parseable = NULL;
 	gchar *distro = NULL;
 	gchar *arch = NULL;
 	gchar **split = NULL;
@@ -101,10 +100,10 @@ pk_get_distro_id (void)
 	ret = g_file_get_contents ("/etc/SuSE-release", &contents, NULL, NULL);
 	if (ret) {
 		/* replace with spaces: openSUSE 11.0 (i586) Alpha3\nVERSION = 11.0 */
-		parseable = g_strdelimit (contents, "()\n", ' ');
+		g_strdelimit (contents, "()\n", ' ');
 
 		/* openSUSE 11.0  i586  Alpha3 VERSION = 11.0 */
-		split = g_strsplit (parseable, " ", 0);
+		split = g_strsplit (contents, " ", 0);
 		if (split == NULL)
 			goto out;
 
@@ -133,7 +132,6 @@ pk_get_distro_id (void)
 
 out:
 	g_strfreev (split);
-	g_free (parseable);
 	g_free (arch);
 	g_free (contents);
 	return distro;
@@ -172,13 +170,11 @@ pk_iso8601_difference (const gchar *isodate)
 	gboolean ret;
 	guint time;
 
-	if (pk_strzero (isodate)) {
-		return 0;
-	}
+	g_return_val_if_fail (isodate != NULL, 0);
 
 	/* convert date */
 	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
-	if (ret == FALSE) {
+	if (!ret) {
 		pk_warning ("failed to parse '%s'", isodate);
 		return 0;
 	}
@@ -235,9 +231,17 @@ gchar *
 pk_strsafe (const gchar *text)
 {
 	gchar *text_safe;
+	gboolean ret;
 	const gchar *delimiters;
 
 	if (text == NULL) {
+		return NULL;
+	}
+
+	/* is valid UTF8? */
+	ret = g_utf8_validate (text, -1, NULL);
+	if (!ret) {
+		pk_warning ("text '%s' was not valid UTF8!", text);
 		return NULL;
 	}
 
@@ -299,7 +303,7 @@ pk_strtoint (const gchar *text, gint *value)
 {
 	gboolean ret;
 	ret = pk_strnumber (text);
-	if (ret == FALSE) {
+	if (!ret) {
 		*value = 0;
 		return FALSE;
 	}
@@ -636,6 +640,102 @@ pk_delay_yield (gfloat delay)
 }
 
 /**
+ * pk_ptr_array_to_argv:
+ * @array: the GPtrArray of strings
+ *
+ * Form a composite string array of strings.
+ * The data in the GPtrArray is copied.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+gchar **
+pk_ptr_array_to_argv (GPtrArray *array)
+{
+	gchar **strv_array;
+	const gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (array != NULL, NULL);
+
+	/* copy the array to a strv */
+	strv_array = g_new0 (gchar *, array->len + 2);
+	for (i=0; i<array->len; i++) {
+		value_temp = (const gchar *) g_ptr_array_index (array, i);
+		strv_array[i] = g_strdup (value_temp);
+	}
+	/* set the last element to NULL */
+	strv_array[i] = NULL;
+
+	return strv_array;
+}
+
+/**
+ * pk_va_list_to_argv_string:
+ **/
+static void
+pk_va_list_to_argv_string (GPtrArray *ptr_array, const gchar *string)
+{
+	gchar **array;
+	guint length;
+	guint i;
+
+	/* split the string up by spaces */
+	array = g_strsplit (string, "|", 0);
+
+	/* for each */
+	length = g_strv_length (array);
+	for (i=0; i<length; i++) {
+		g_ptr_array_add (ptr_array, g_strdup (array[i]));
+	}
+	g_strfreev (array);
+}
+
+/**
+ * pk_va_list_to_argv:
+ * @string_first: the first string
+ * @args: any subsequant string's
+ *
+ * Form a composite string array of string, with a special twist;
+ * if the entry contains a '|', then it is split as seporate parts
+ * of the array.
+ *
+ * Return value: the string array, or %NULL if invalid
+ **/
+gchar **
+pk_va_list_to_argv (const gchar *string_first, va_list *args)
+{
+	GPtrArray *ptr_array;
+	gchar **array;
+	gchar *value_temp;
+	guint i;
+
+	g_return_val_if_fail (args != NULL, NULL);
+	g_return_val_if_fail (string_first != NULL, NULL);
+
+	/* find how many elements we have in a temp array */
+	ptr_array = g_ptr_array_new ();
+	pk_va_list_to_argv_string (ptr_array, string_first);
+
+	/* process all the va_list entries */
+	for (i=0;; i++) {
+		value_temp = va_arg (*args, gchar *);
+		/* end of array */
+		if (value_temp == NULL) break;
+
+		/* split the string up by spaces */
+		pk_va_list_to_argv_string (ptr_array, value_temp);
+	}
+	pk_debug ("number of strings=%i", i+1);
+
+	/* convert the array to a strv type */
+	array = pk_ptr_array_to_argv (ptr_array);
+
+	/* get rid of the array, and free the contents */
+	g_ptr_array_free (ptr_array, TRUE);
+	return array;
+}
+
+/**
  * pk_strbuild_va:
  * @first_element: The first string item, or NULL
  * @args: the va_list
@@ -702,6 +802,20 @@ pk_strbuild_test (const gchar *first_element, ...)
 	va_end (args);
 
 	return text;
+}
+
+static gchar **
+pk_va_list_to_argv_test (const gchar *first_element, ...)
+{
+	va_list args;
+	gchar **array;
+
+	/* get the argument list */
+	va_start (args, first_element);
+	array = pk_va_list_to_argv (first_element, &args);
+	va_end (args);
+
+	return array;
 }
 
 void
@@ -797,6 +911,58 @@ libst_common (LibSelfTest *test)
 	g_free (text_safe);
 
 	/************************************************************
+	 ****************      splitting va_list       **************
+	 ************************************************************/
+	libst_title (test, "va_list_to_argv single");
+	array = pk_va_list_to_argv_test ("richard", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    array[1] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s'", array[0]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple");
+	array = pk_va_list_to_argv_test ("richard", "phillip", "hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple with space first");
+	array = pk_va_list_to_argv_test ("richard|phillip", "hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
+
+	/************************************************************/
+	libst_title (test, "va_list_to_argv triple with space second");
+	array = pk_va_list_to_argv_test ("richard", "phillip|hughes", NULL);
+	if (pk_strequal (array[0], "richard") &&
+	    pk_strequal (array[1], "phillip") &&
+	    pk_strequal (array[2], "hughes") &&
+	    array[3] == NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect array '%s','%s','%s'", array[0], array[1], array[2]);
+	}
+	g_strfreev (array);
+
+	/************************************************************
 	 ****************        validate text         **************
 	 ************************************************************/
 	libst_title (test, "validate correct char 1");
@@ -819,7 +985,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate incorrect char");
 	ret = pk_strvalidate_char ('$');
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -828,7 +994,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "validate incorrect text");
 	ret = pk_strvalidate ("richard$hughes");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -867,7 +1033,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "test strzero (long string)");
 	ret = pk_strzero ("Richard");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "zero length word!");
@@ -978,7 +1144,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "id strcmp fail");
 	ret = pk_strequal ("moo;0.0.1;i386;fedora", "moo;0.0.2;i386;fedora");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1010,7 +1176,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail1");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.2;x64;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1018,7 +1184,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail2");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "gnome;0.0.2;i386;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1026,7 +1192,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail3");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 3);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1034,7 +1200,7 @@ libst_common (LibSelfTest *test)
 
 	libst_title (test, "id equal fail (match too high)");
 	ret = pk_strcmp_sections ("moo;0.0.1;i386;fedora", "moo;0.0.3;i386;fedora", 4, 5);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1175,6 +1341,16 @@ libst_common (LibSelfTest *test)
 	g_free (text_safe);
 
 	/************************************************************/
+	libst_title (test, "test replace UTF8 unsafe (okay)");
+	text_safe = pk_strsafe ("Gölas");
+	if (pk_strequal (text_safe, "Gölas")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace unsafe '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
 	libst_title (test, "test replace unsafe (one invalid)");
 	text_safe = pk_strsafe ("Richard\tHughes");
 	if (pk_strequal (text_safe, "Richard Hughes")) {
@@ -1236,7 +1412,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number oversize");
 	ret = pk_strnumber ("123456891234");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1245,7 +1421,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number NULL");
 	ret = pk_strnumber (NULL);
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1254,7 +1430,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number blank");
 	ret = pk_strnumber ("");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1263,7 +1439,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number not negative");
 	ret = pk_strnumber ("503-");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1272,7 +1448,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number positive");
 	ret = pk_strnumber ("+503");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);
@@ -1281,7 +1457,7 @@ libst_common (LibSelfTest *test)
 	/************************************************************/
 	libst_title (test, "check number random chars");
 	ret = pk_strnumber ("dave");
-	if (ret == FALSE) {
+	if (!ret) {
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, NULL);

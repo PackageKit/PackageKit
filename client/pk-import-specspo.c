@@ -66,7 +66,7 @@ pk_import_specspo_get_summary (const gchar *name)
 
 	pk_client_set_use_buffer (client, TRUE, NULL);
 	pk_client_set_synchronous (client, TRUE, NULL);
-	ret = pk_client_resolve (client, "none", name, &error);
+	ret = pk_client_resolve (client, PK_FILTER_ENUM_NONE, name, &error);
 	if (!ret) {
 		pk_warning ("failed to resolve: %s", error->message);
 		g_error_free (error);
@@ -122,7 +122,7 @@ pk_import_specspo_do_package (const gchar *package_name)
 				g_print (" %s", locale);
 //				g_print (" %s", trans);
 				pk_extra_set_locale (extra, locale);
-				pk_extra_set_localised_detail (extra, package_name, trans);
+				pk_extra_set_data_locale (extra, package_name, trans);
 			}
 		}
 	}
@@ -166,8 +166,8 @@ main (int argc, char *argv[])
 	extra = pk_extra_new ();
 	ret = pk_extra_set_database (extra, database_location);
 	if (!ret) {
-		g_print (_("Could not open database: %s\n"), database_location);
-		g_print (_("You probably need to run this program as the root user\n"));
+		g_print (_("Could not open database: %s"), database_location);
+		g_print ("\n%s\n", _("You probably need to run this program as the root user"));
 		goto out;
 	}
 

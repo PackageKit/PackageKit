@@ -34,7 +34,7 @@ def posttrans_hook(conduit):
         packagekit_proxy = bus.get_object('org.freedesktop.PackageKit',
                                           '/org/freedesktop/PackageKit')
         packagekit_iface = dbus.Interface(packagekit_proxy, 'org.freedesktop.PackageKit')
-        packagekit_iface.StateHasChanged()
+        packagekit_iface.StateHasChanged('posttrans')
     except dbus.DBusException, e:
         conduit.info(2, "Unable to send message to PackageKit")
         conduit.info(6, "%s" %(e,))

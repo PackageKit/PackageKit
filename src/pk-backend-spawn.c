@@ -54,7 +54,6 @@
 #include "pk-spawn.h"
 #include "pk-time.h"
 #include "pk-inhibit.h"
-#include "pk-thread-list.h"
 
 #define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
@@ -93,8 +92,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 	PkStatusEnum status_enum;
 	PkMessageEnum message_enum;
 	PkRestartEnum restart_enum;
+	PkSigTypeEnum sig_type;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* check if output line */
 	if (line == NULL)
@@ -126,7 +126,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			goto out;
 		}
 		pk_backend_package (backend_spawn->priv->backend, info, sections[2], sections[3]);
-	} else if (pk_strequal (command, "description")) {
+	} else if (pk_strequal (command, "details")) {
 		if (size != 7) {
 			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
@@ -144,7 +144,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		text = g_strdup (sections[4]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_description (backend_spawn->priv->backend, sections[1], sections[2],
+		pk_backend_details (backend_spawn->priv->backend, sections[1], sections[2],
 					group, text, sections[5], package_size);
 		g_free (text);
 	} else if (pk_strequal (command, "files")) {
@@ -315,7 +315,37 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		}
 		pk_backend_no_percentage_updates (backend_spawn->priv->backend);
 	} else if (pk_strequal (command, "repo-signature-required")) {
-		ret = FALSE;
+
+		if (size != 9+99) {
+			pk_error ("invalid command '%s'", command);
+			ret = FALSE;
+			goto out;
+		}
+
+		sig_type = pk_sig_type_enum_from_text (sections[8]);
+		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
+			ret = FALSE;
+			goto out;
+		}
+		if (pk_strzero (sections[1])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "package_id blank, and hence ignored: '%s'", sections[1]);
+			ret = FALSE;
+			goto out;
+		}
+		if (pk_strzero (sections[2])) {
+			pk_backend_message (backend_spawn->priv->backend, PK_MESSAGE_ENUM_DAEMON,
+					    "repository name blank, and hence ignored: '%s'", sections[2]);
+			ret = FALSE;
+			goto out;
+		}
+
+		/* pass _all_ of the data */
+		ret = pk_backend_repo_signature_required (backend_spawn->priv->backend, sections[1],
+							  sections[2], sections[3], sections[4],
+							  sections[5], sections[6], sections[7], sig_type);
 		goto out;
 	} else {
 		pk_warning ("invalid command '%s'", command);
@@ -331,7 +361,7 @@ out:
 static gboolean
 pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	if (backend_spawn->priv->spawn == NULL) {
 		pk_warning ("spawn object not in use");
 		return FALSE;
@@ -350,7 +380,7 @@ pk_backend_spawn_helper_delete (PkBackendSpawn *backend_spawn)
 static void
 pk_backend_spawn_finished_cb (PkSpawn *spawn, PkExitEnum exit, PkBackendSpawn *backend_spawn)
 {
-	g_return_if_fail (backend_spawn != NULL);
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	pk_debug ("deleting spawn %p, exit %s", backend_spawn, pk_exit_enum_to_text (exit));
 	pk_backend_spawn_helper_delete (backend_spawn);
@@ -377,7 +407,8 @@ static void
 pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
 {
 	gboolean ret;
-	g_return_if_fail (backend_spawn != NULL);
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+
 	pk_debug ("stdout from %p = '%s'", spawn, line);
 	ret = pk_backend_spawn_parse_stdout (backend_spawn, line);
 	if (!ret) {
@@ -391,7 +422,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 static gboolean
 pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	if (backend_spawn->priv->spawn != NULL) {
 		pk_warning ("spawn object already in use");
@@ -409,45 +440,51 @@ pk_backend_spawn_helper_new (PkBackendSpawn *backend_spawn)
 }
 
 /**
- * pk_backend_spawn_helper_internal:
+ * pk_backend_spawn_helper_va_list:
  **/
 static gboolean
-pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *script, const gchar *argument)
+pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *executable, va_list *args)
 {
 	gboolean ret;
 	gchar *filename;
-	gchar *command;
+	gchar **argv;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+
+	/* convert to a argv */
+	argv = pk_va_list_to_argv (executable, args);
+	if (argv == NULL) {
+		pk_warning ("argv NULL");
+		return FALSE;
+	}
 
 #if PK_BUILD_LOCAL
 	/* prefer the local version */
-	filename = g_build_filename ("..", "backends", backend_spawn->priv->name, "helpers", script, NULL);
+	filename = g_build_filename ("..", "backends", backend_spawn->priv->name, "helpers", argv[0], NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		pk_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, script, NULL);
+		filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, argv[0], NULL);
 	}
 #else
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, script, NULL);
+	filename = g_build_filename (DATADIR, "PackageKit", "helpers", backend_spawn->priv->name, argv[0], NULL);
 #endif
 	pk_debug ("using spawn filename %s", filename);
 
-	if (argument != NULL) {
-		command = g_strdup_printf ("%s %s", filename, argument);
-	} else {
-		command = g_strdup (filename);
-	}
+	/* replace the filename with the full path */
+	g_free (argv[0]);
+	argv[0] = g_strdup (filename);
 
 	pk_backend_spawn_helper_new (backend_spawn);
-	ret = pk_spawn_command (backend_spawn->priv->spawn, command);
+	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv);
 	if (!ret) {
 		pk_backend_spawn_helper_delete (backend_spawn);
-		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Spawn of helper '%s' failed", command);
+		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
+				       "Spawn of helper '%s' failed", argv[0]);
 		pk_backend_finished (backend_spawn->priv->backend);
 	}
 	g_free (filename);
-	g_free (command);
+	g_strfreev (argv);
 	return ret;
 }
 
@@ -457,7 +494,7 @@ pk_backend_spawn_helper_internal (PkBackendSpawn *backend_spawn, const gchar *sc
 const gchar *
 pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, NULL);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
 	return backend_spawn->priv->name;
 }
 
@@ -467,7 +504,8 @@ pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 gboolean
 pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	g_return_val_if_fail (name != NULL, FALSE);
 
 	g_free (backend_spawn->priv->name);
 	backend_spawn->priv->name = g_strdup (name);
@@ -480,7 +518,7 @@ pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 gboolean
 pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 {
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	if (backend_spawn->priv->spawn == NULL) {
 		pk_warning ("cannot kill missing process");
@@ -494,22 +532,20 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
  * pk_backend_spawn_helper:
  **/
 gboolean
-pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *script, const gchar *first_element, ...)
+pk_backend_spawn_helper (PkBackendSpawn *backend_spawn, const gchar *first_element, ...)
 {
 	gboolean ret;
 	va_list args;
-	gchar *arguments;
 
-	g_return_val_if_fail (backend_spawn != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	g_return_val_if_fail (first_element != NULL, FALSE);
 	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
 
 	/* get the argument list */
 	va_start (args, first_element);
-	arguments = pk_strbuild_va (first_element, &args);
+	ret = pk_backend_spawn_helper_va_list (backend_spawn, first_element, &args);
 	va_end (args);
 
-	ret = pk_backend_spawn_helper_internal (backend_spawn, script, arguments);
-	g_free (arguments);
 	return ret;
 }
 
@@ -521,7 +557,6 @@ pk_backend_spawn_finalize (GObject *object)
 {
 	PkBackendSpawn *backend_spawn;
 
-	g_return_if_fail (object != NULL);
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (object));
 
 	backend_spawn = PK_BACKEND_SPAWN (object);
@@ -611,6 +646,12 @@ libst_backend_spawn (LibSelfTest *test)
 	if (libst_start (test, "PkBackendSpawn", CLASS_AUTO) == FALSE) {
 		return;
 	}
+
+	/* don't do these when doing make distcheck */
+#ifndef PK_IS_DEVELOPER
+	libst_end (test);
+	return;
+#endif
 
 	/************************************************************/
 	libst_title (test, "get an backend_spawn");

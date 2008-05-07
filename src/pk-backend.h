@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <gmodule.h>
 #include <pk-enum.h>
-#include <pk-enum-list.h>
 #include <pk-package-id.h>
 #include <pk-debug.h>
 
@@ -36,6 +35,10 @@ typedef struct _PkBackend PkBackend;
 /* set the state */
 gboolean	 pk_backend_set_current_tid		(PkBackend	*backend,
 							 const gchar	*tid);
+gboolean	 pk_backend_accept_eula			(PkBackend	*backend,
+							 const gchar	*eula_id);
+gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
+							 const gchar	*eula_id);
 gboolean	 pk_backend_set_role			(PkBackend	*backend,
 							 PkRoleEnum	 role);
 gboolean	 pk_backend_set_status			(PkBackend	*backend,
@@ -89,7 +92,7 @@ gboolean	 pk_backend_require_restart		(PkBackend	*backend,
 gboolean	 pk_backend_message			(PkBackend	*backend,
 							 PkMessageEnum	 message,
 							 const gchar	*details, ...);
-gboolean	 pk_backend_description			(PkBackend	*backend,
+gboolean	 pk_backend_details			(PkBackend	*backend,
 							 const gchar	*package_id,
 							 const gchar	*license,
 							 PkGroupEnum	 group,
@@ -102,7 +105,8 @@ gboolean 	 pk_backend_files 			(PkBackend 	*backend,
 gboolean	 pk_backend_error_code			(PkBackend	*backend,
 							 PkErrorCodeEnum code,
 							 const gchar	*details, ...);
-gboolean         pk_backend_repo_signature_required     (PkBackend      *backend,
+gboolean         pk_backend_repo_signature_required	(PkBackend      *backend,
+							 const gchar	*package_id,
 							 const gchar    *repository_name,
 							 const gchar    *key_url,
 							 const gchar    *key_userid,
@@ -110,92 +114,178 @@ gboolean         pk_backend_repo_signature_required     (PkBackend      *backend
 							 const gchar    *key_fingerprint,
 							 const gchar    *key_timestamp,
 							 PkSigTypeEnum   type);
+gboolean         pk_backend_eula_required		(PkBackend      *backend,
+							 const gchar	*eula_id,
+							 const gchar    *package_id,
+							 const gchar    *vendor_name,
+							 const gchar    *license_agreement);
 
-/* internal state */
-gboolean	 pk_backend_set_internal		(PkBackend	*backend,
+/* set backend instance data */
+gboolean	 pk_backend_set_string			(PkBackend	*backend,
 							 const gchar	*key,
 							 const gchar	*data);
-gchar		*pk_backend_get_internal		(PkBackend	*backend,
-							 const gchar	*key);
+gboolean	 pk_backend_set_strv			(PkBackend	*backend,
+							 const gchar	*key,
+							 gchar		**data);
+gboolean	 pk_backend_set_uint			(PkBackend	*backend,
+							 const gchar	*key,
+							 guint		 data);
+gboolean	 pk_backend_set_bool			(PkBackend	*backend,
+							 const gchar	*key,
+							 gboolean	 data);
+gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
+							 const gchar	*key,
+							 gpointer	 data);
 
+/* get backend instance data */
+const gchar	*pk_backend_get_string			(PkBackend	*backend,
+							 const gchar	*key);
+gchar		**pk_backend_get_strv			(PkBackend	*backend,
+							 const gchar	*key);
+guint		 pk_backend_get_uint			(PkBackend	*backend,
+							 const gchar	*key);
+gboolean	 pk_backend_get_bool			(PkBackend	*backend,
+							 const gchar	*key);
+gpointer	 pk_backend_get_pointer			(PkBackend	*backend,
+							 const gchar	*key);
 
 /* helper functions */
 gboolean	 pk_backend_not_implemented_yet		(PkBackend	*backend,
 							 const gchar	*method);
+typedef gboolean (*PkBackendThreadFunc)			(PkBackend	*backend);
+gboolean	 pk_backend_thread_create		(PkBackend	*backend,
+							 PkBackendThreadFunc func);
+gboolean	 pk_backend_is_online			(PkBackend	*backend);
+
+/* config changed functions */
+typedef void	(*PkBackendFileChanged)			(PkBackend	*backend,
+							 gpointer	 data);
+gboolean	 pk_backend_watch_file			(PkBackend	*backend,
+							 const gchar	*filename,
+							 PkBackendFileChanged func,
+							 gpointer	 data);
 
 /**
  * PkBackendDesc:
  */
 typedef struct {
-	const char	*description;
-	const char	*author;
-	void		(*initialize)		(PkBackend *backend);
-	void		(*destroy)		(PkBackend *backend);
-	void		(*get_groups)		(PkBackend *backend, PkEnumList *elist);
-	void		(*get_filters)		(PkBackend *backend, PkEnumList *elist);
-	void		(*cancel)		(PkBackend *backend);
-	void		(*get_depends)		(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive);
-	void		(*get_description)	(PkBackend *backend, const gchar *package_id);
-	void		(*get_files)	        (PkBackend *backend, const gchar *package_id);
-	void		(*get_requires)		(PkBackend *backend, const gchar *filter, const gchar *package_id, gboolean recursive);
-	void		(*get_update_detail)	(PkBackend *backend, const gchar *package_id);
-	void		(*get_updates)		(PkBackend *backend, const gchar *filter);
-	void		(*install_package)	(PkBackend *backend, const gchar *package_id);
-	void		(*install_file)		(PkBackend *backend, const gchar *full_path);
-	void		(*refresh_cache)	(PkBackend *backend, gboolean force);
-	void		(*remove_package)	(PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove);
-	void		(*resolve)		(PkBackend *backend, const gchar *filter, const gchar *package);
-	void		(*rollback)		(PkBackend *backend, const gchar *transaction_id);
-	void		(*search_details)	(PkBackend *backend, const gchar *filter, const gchar *search);
-	void		(*search_file)		(PkBackend *backend, const gchar *filter, const gchar *search);
-	void		(*search_group)		(PkBackend *backend, const gchar *filter, const gchar *search);
-	void		(*search_name)		(PkBackend *backend, const gchar *filter, const gchar *search);
-	void		(*update_packages)	(PkBackend *backend, gchar **package_ids);
-	void		(*update_system)	(PkBackend *backend);
-	void		(*get_repo_list)	(PkBackend *backend, const gchar *filter);
-	void		(*repo_enable)		(PkBackend *backend, const gchar *repo_id, gboolean enabled);
-	void		(*repo_set_data)	(PkBackend *backend, const gchar *repo_id, const gchar *parameter, const gchar *value);
-	void		(*service_pack)		(PkBackend *backend, const gchar *location, gboolean enabled);
-	void		(*what_provides)	(PkBackend *backend, const gchar *filter, PkProvidesEnum provide, const gchar *search);
+	const gchar	*description;
+	const gchar	*author;
+	void		(*initialize)			(PkBackend	*backend);
+	void		(*destroy)			(PkBackend	*backend);
+	PkGroupEnum	(*get_groups)			(PkBackend	*backend);
+	PkFilterEnum	(*get_filters)			(PkBackend	*backend);
+	void		(*cancel)			(PkBackend	*backend);
+	void		(*get_depends)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+	void		(*get_details)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_files)			(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_packages)			(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*get_repo_list)		(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*get_requires)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package_id,
+							 gboolean	 recursive);
+	void		(*get_update_detail)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*get_updates)			(PkBackend	*backend,
+							 PkFilterEnum	 filters);
+	void		(*install_file)			(PkBackend	*backend,
+							 gboolean	 trusted,
+							 const gchar	*full_path);
+	void		(*install_package)		(PkBackend	*backend,
+							 const gchar	*package_id);
+	void		(*install_signature)		(PkBackend	*backend,
+							 PkSigTypeEnum	 type,
+							 const gchar	*key_id,
+							 const gchar	*package_id);
+	void		(*refresh_cache)		(PkBackend	*backend,
+							 gboolean	 force);
+	void		(*remove_package)		(PkBackend	*backend,
+							 const gchar	*package_id,
+							 gboolean	 allow_deps,
+							 gboolean	 autoremove);
+	void		(*repo_enable)			(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 gboolean	 enabled);
+	void		(*repo_set_data)		(PkBackend	*backend,
+							 const gchar	*repo_id,
+							 const gchar	*parameter,
+							 const gchar	*value);
+	void		(*resolve)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*package);
+	void		(*rollback)			(PkBackend	*backend,
+							 const gchar	*transaction_id);
+	void		(*search_details)		(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_file)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_group)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*search_name)			(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 const gchar	*search);
+	void		(*service_pack)			(PkBackend	*backend,
+							 const gchar	*location,
+							 gboolean	 enabled);
+	void		(*update_packages)		(PkBackend	*backend,
+							 gchar		**package_ids);
+	void		(*update_system)		(PkBackend	*backend);
+	void		(*what_provides)		(PkBackend	*backend,
+							 PkFilterEnum	 filters,
+							 PkProvidesEnum provide,
+							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;
 
-#define PK_BACKEND_OPTIONS(description, author, initialize, destroy,						\
-			   get_groups, get_filters, cancel, get_depends, get_description, get_files,		\
-			   get_requires, get_update_detail, get_updates, install_package, install_file,		\
-			   refresh_cache, remove_package, resolve, rollback, search_details,			\
-			   search_file, search_group, search_name, update_packages, update_system,		\
-			   get_repo_list, repo_enable, repo_set_data, service_pack, what_provides)		\
-	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 						\
+#define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel,	\
+			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
+			   get_update_detail, get_updates, install_file, install_package,		\
+			   install_signature, refresh_cache, remove_package, repo_enable,		\
+			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
+			   search_name, service_pack, update_packages, update_system, what_provides)	\
+	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 					\
 		description,		\
 		author,			\
 		initialize,		\
 		destroy,		\
-		get_groups,		\
 		get_filters,		\
+		get_groups,		\
 		cancel,			\
 		get_depends,		\
-		get_description,	\
+		get_details,	\
 		get_files,		\
+		get_packages,		\
+		get_repo_list,		\
 		get_requires,		\
 		get_update_detail,	\
 		get_updates,		\
-		install_package,	\
 		install_file,		\
+		install_package,	\
+		install_signature,	\
 		refresh_cache,		\
 		remove_package,		\
+		repo_enable,		\
+		repo_set_data,		\
 		resolve,		\
 		rollback,		\
 		search_details,		\
 		search_file,		\
 		search_group,		\
 		search_name,		\
+		service_pack,		\
 		update_packages,	\
 		update_system,		\
-		get_repo_list,		\
-		repo_enable,		\
-		repo_set_data,		\
-		service_pack,		\
 		what_provides,		\
 		{0} 			\
 	}

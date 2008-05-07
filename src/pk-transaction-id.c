@@ -114,7 +114,8 @@ pk_transaction_id_save_job_count (guint job_count)
 gboolean
 pk_transaction_id_equal (const gchar *tid1, const gchar *tid2)
 {
-	return pk_strcmp_sections (tid1, tid2, 3, 2);
+	/* TODO, ignore the data part */
+	return pk_strequal (tid1, tid2);
 }
 
 /**
@@ -124,23 +125,21 @@ gchar *
 pk_transaction_id_generate (void)
 {
 	gchar *rand_str;
-	gchar *job;
 	gchar *tid;
 	guint job_count;
 
 	/* load from file */
 	job_count = pk_transaction_id_load_job_count ();
 	rand_str = pk_transaction_id_get_random_hex_string (8);
-	job = g_strdup_printf ("%i", job_count++);
+	job_count++;
 
 	/* save the new value */
 	pk_transaction_id_save_job_count (job_count);
 
 	/* make the tid */
-	tid = g_strjoin (";", job, rand_str, "data", NULL);
+	tid = g_strdup_printf ("/%i_%s_data", job_count, rand_str);
 
 	g_free (rand_str);
-	g_free (job);
 	return tid;
 }
 
@@ -174,34 +173,7 @@ libst_transaction_id (LibSelfTest *test)
 
 	/************************************************************/
 	libst_title (test, "tid equal pass (same)");
-	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234def;r23");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "tid equal pass (different)");
-	ret = pk_transaction_id_equal ("34;1234def;unknown", "34;1234def;r23");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "tid equal fail 1");
-	ret = pk_transaction_id_equal ("34;1234def;r23", "35;1234def;r23");
-	if (ret) {
-		libst_success (test, NULL);
-	} else {
-		libst_failed (test, NULL);
-	}
-
-	/************************************************************/
-	libst_title (test, "tid equal fail 2");
-	ret = pk_transaction_id_equal ("34;1234def;r23", "34;1234dff;r23");
+	ret = pk_transaction_id_equal ("/34_1234def_r23", "/34_1234def_r23");
 	if (ret) {
 		libst_success (test, NULL);
 	} else {

@@ -210,12 +210,12 @@ groupMap = {
 }
 
 MetaDataMap = {
-    'repomd'        : "repository",
-    'primary'       : "package",
-    'filelists'     : "filelist",
-    'other'         : "changelog",
-    'comps'         : "group",
-    'updateinfo'    : "update"
+    'repomd'        : STATUS_DOWNLOAD_REPOSITORY,
+    'primary'       : STATUS_DOWNLOAD_PACKAGELIST,
+    'filelists'     : STATUS_DOWNLOAD_FILELIST,
+    'other'         : STATUS_DOWNLOAD_CHANGELOG,
+    'comps'         : STATUS_DOWNLOAD_GROUP,
+    'updateinfo'    : STATUS_DOWNLOAD_UPDATEINFO
 }
 
 GUI_KEYS = re.compile(r'(qt)|(gtk)')
@@ -264,7 +264,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 # Signals ( backend -> engine -> client )
 #
 
-    #FIXME: _show_description and _show_package wrap Description and
+    #FIXME: _show_details and _show_package wrap Details and
     #       Package so that the encoding can be fixed. This is ugly.
     #       we could probably use a decorator to do it instead.
 
@@ -280,9 +280,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         summary = self._to_unicode(pkg.summary)
         self.Package(status,id,summary)
 
-    def _show_description(self,id,license,group,desc,url,bytes):
+    def _show_details(self,id,license,group,desc,url,bytes):
         '''
-        Send 'description' signal
+        Send 'details' signal
         @param id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param license: The license of the package
         @param group: The enumerated group
@@ -292,7 +292,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         convert the description to UTF before sending
         '''
         desc = self._to_unicode(desc)
-        self.Description(id,license,group,desc,url,bytes)
+        self.Details(id,license,group,desc,url,bytes)
 
     def _show_update_detail(self,pkg,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc):
         '''
@@ -374,7 +374,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self._cancelled.clear()
             return True
         return False
-        
+
     @threaded
     @async
     def doSearchName(self, filters, search):
@@ -840,7 +840,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.ErrorCode(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
             self.Finished(EXIT_FAILED)
             return
-        
+
         self._check_init()
         self._lock_yum()
         self.AllowCancel(True)
@@ -973,9 +973,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doGetDescription(self, package):
+    def doGetDetails(self, package):
         '''
-        Print a detailed description for a given package
+        Print a detailed details for a given package
         '''
         self._check_init()
         self._lock_yum()
@@ -990,7 +990,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return
 
         if pkg:
-            self._show_package_description(pkg)
+            self._show_package_details(pkg)
         else:
             self._unlock_yum()
             self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,'Package was not found')
@@ -1104,7 +1104,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showPkg:
                             self._show_package(pkg, INFO_INSTALLED)
                         if showDesc:
-                            self._show_package_description(pkg)
+                            self._show_package_details(pkg)
 
 
         # Now show available packages.
@@ -1118,7 +1118,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         if showPkg:
                             self._show_package(pkg, INFO_AVAILABLE)
                         if showDesc:
-                            self._show_package_description(pkg)
+                            self._show_package_details(pkg)
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
@@ -1175,10 +1175,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_INFO)
 
         for repo in self.yumbase.repos.repos.values():
-            if repo.isEnabled():
-                self.RepoDetail(repo.id,repo.name,True)
-            else:
-                self.RepoDetail(repo.id,repo.name,False)
+            if filters != FILTER_NOT_DEVELOPMENT or not self._is_development_repo(repo.id):
+                if repo.isEnabled():
+                    self.RepoDetail(repo.id,repo.name,True)
+                else:
+                    self.RepoDetail(repo.id,repo.name,False)
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
@@ -1343,7 +1344,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_INFO)
-        
+
         fltlist = filters.split(';')
 
         if not FILTER_NOT_INSTALLED in fltlist:
@@ -1355,7 +1356,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
                 if self._do_extra_filtering(result, fltlist):
                     self._show_package(result,INFO_AVAILABLE)
-                
+
         if not FILTER_INSTALLED in fltlist:
             results = self.yumbase.rpmdb.searchProvides(search)
             for result in results:
@@ -1503,6 +1504,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return False
 
+    def _is_development_repo(self, repo):
+        if repo.endswith('-debuginfo'):
+            return True
+        if repo.endswith('-testing'):
+            return True
+        if repo.endswith('-debug'):
+            return True
+        if repo.endswith('-development'):
+            return True
+        if repo.endswith('-source'):
+            return True
+        return False
+
     def _buildGroupDict(self):
         pkgGroups= {}
         cats = self.yumbase.comps.categories
@@ -1521,7 +1535,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                     pkgGroups[pkg] = "%s;%s" % (cat.categoryid,group.groupid)
         return pkgGroups
 
-    def _show_package_description(self,pkg):
+    def _show_package_details(self,pkg):
         pkgver = self._get_package_ver(pkg)
         id = self._get_package_id(pkg.name, pkgver, pkg.arch, pkg.repo)
         desc = pkg.description
@@ -1529,7 +1543,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = desc.replace('\n',' ')
         desc = desc.replace('__PARAGRAPH_SEPARATOR__','\n')
 
-        self._show_description(id, pkg.license, "unknown", desc, pkg.url,
+        self._show_details(id, pkg.license, "unknown", desc, pkg.url,
                              pkg.size)
 
     def _getEVR(self,idver):
@@ -1581,8 +1595,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
-        
-        
+
+
 
     def _installable(self, pkg, ematch=False):
 
@@ -1732,7 +1746,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Error in Transaction Processing\n" + ye.value
+            retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
             self._unlock_yum()
             self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
             self.Finished(EXIT_FAILED)
@@ -1793,7 +1807,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         urls = {'bugzilla': [], 'cve': [], 'vendor': []}
         notice = self.updateMetadata.get_notice((pkg.name, pkg.version, pkg.release))
         if notice:
-            # Update Description
+            # Update Details
             desc = notice['description']
 
             # Update References (Bugzilla,CVE ...)
@@ -1968,12 +1982,12 @@ class DownloadCallback( BaseMeter ):
                 if pkg: # show package to download
                     self.base._show_package(pkg,INFO_DOWNLOADING)
                 else:
-                    typ = 'unknown'
+                    typ = STATUS_DOWNLOAD_REPOSITORY
                     for key in MetaDataMap.keys():
                         if key in name:
                             typ = MetaDataMap[key]
                             break
-                    self.base.MetaData(typ,name)
+                    self.base.StatusChanged(typ)
             self.base.SubPercentageChanged(0)
         else:
             if self.lastPct != pct and pct != 0 and pct != 100:

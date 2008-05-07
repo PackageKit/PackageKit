@@ -2,6 +2,8 @@ Makefile.in
 Makefile.libs
 .libs
 *.bak
+*.gcno
+*.out
 tmpl
 xml
 html

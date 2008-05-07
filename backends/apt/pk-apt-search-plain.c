@@ -30,46 +30,39 @@ extern PkBackendSpawn *spawn;
 /**
  * backend_get_groups:
  */
-void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSORIES,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_GRAPHICS,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_OFFICE,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_MULTIMEDIA,
-				      PK_GROUP_ENUM_SYSTEM,
-				      -1);
+	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_GRAPHICS |
+		PK_GROUP_ENUM_INTERNET |
+		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_SYSTEM);
 }
 
 /**
  * backend_get_filters:
  */
-void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
-				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				      -1);
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT);
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 
 void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-        g_return_if_fail (backend != NULL);
-        pk_backend_spawn_helper (spawn, "get-description.py", package_id, NULL);
+	pk_backend_spawn_helper (spawn, "get-details.py", package_id, NULL);
 }
 
 /**
@@ -77,30 +70,35 @@ backend_get_description (PkBackend *backend, const gchar *package_id)
  */
 
 void
-backend_search_details (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        pk_backend_spawn_helper (spawn, "search-details.py", filter, search, NULL);
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-details.py", filters_texts_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
  * backend_search_name:
  */
 void
-backend_search_name (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-       g_return_if_fail (backend != NULL);
-       pk_backend_spawn_helper (spawn, "search-name.py", filter, search, NULL);
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-name.py", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /**
  * backend_search_group:
  */
 void
-backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-        g_return_if_fail (backend != NULL);
-        pk_backend_spawn_helper (spawn, "search-group.py", filter, search, NULL);
+	gchar *filters_text;
+	pk_backend_spawn_helper (spawn, "search-group.py", filters_text, search, NULL);
+	g_free (filters_text);
 }
 
 /* don't need to do any setup/finalize in the plain search mode */

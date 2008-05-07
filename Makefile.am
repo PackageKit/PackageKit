@@ -43,6 +43,9 @@ gprof:
 	cat gprof.txt
 endif
 
+snapshot:
+	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +"%Y%m%d"`
+
 DISTCLEANFILES =					\
 	PackageKit-*.tar.gz				\
 	packagekit.pc					\
@@ -93,5 +96,10 @@ EXTRA_DIST =						\
         intltool-update.in				\
 	$(NULL)
 
-DISTCHECK_CONFIGURE_FLAGS = --disable-gcov --enable-gtk-doc --with-security-framework=dummy
+DISTCHECK_CONFIGURE_FLAGS = 				\
+	--disable-gcov					\
+	--enable-gtk-doc				\
+	--with-security-framework=dummy			\
+	--disable-developer				\
+	$(NULL)
 

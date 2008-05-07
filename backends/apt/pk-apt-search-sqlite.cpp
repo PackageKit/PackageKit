@@ -34,45 +34,39 @@ static PkBackendSpawn *spawn;
 /**
  * backend_get_groups:
  */
-extern "C" void
-backend_get_groups (PkBackend *backend, PkEnumList *elist)
+extern "C" PkGroupEnum
+backend_get_groups (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_GROUP_ENUM_ACCESSORIES,
-				      PK_GROUP_ENUM_GAMES,
-				      PK_GROUP_ENUM_GRAPHICS,
-				      PK_GROUP_ENUM_INTERNET,
-				      PK_GROUP_ENUM_OFFICE,
-				      PK_GROUP_ENUM_OTHER,
-				      PK_GROUP_ENUM_PROGRAMMING,
-				      PK_GROUP_ENUM_MULTIMEDIA,
-				      PK_GROUP_ENUM_SYSTEM,
-				      -1);
+	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_GRAPHICS |
+		PK_GROUP_ENUM_INTERNET |
+		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_SYSTEM);
 }
 
 /**
  * backend_get_filters:
  */
-extern "C" void
-backend_get_filters (PkBackend *backend, PkEnumList *elist)
+extern "C" PkFilterEnum
+backend_get_filters (PkBackend *backend)
 {
-	g_return_if_fail (backend != NULL);
-	pk_enum_list_append_multiple (elist,
-				      PK_FILTER_ENUM_GUI,
-				      PK_FILTER_ENUM_INSTALLED,
-				      PK_FILTER_ENUM_DEVELOPMENT,
-				      -1);
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT);
 }
 
 /**
- * backend_get_description:
+ * backend_get_details:
  */
 
 extern "C" void
-backend_get_description (PkBackend *backend, const gchar *package_id)
+backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	sqlite_get_description(backend,package_id);
+	sqlite_get_details(backend,package_id);
 }
 
 /**
@@ -100,7 +94,6 @@ backend_search_name (PkBackend *backend, const gchar *filter, const gchar *searc
 extern "C" void
 backend_search_group (PkBackend *backend, const gchar *filter, const gchar *search)
 {
-	g_return_if_fail (backend != NULL);
 	pk_backend_set_allow_cancel (backend, TRUE);
 	pk_backend_spawn_helper (spawn, "search-group.py", filter, search, NULL);
 }

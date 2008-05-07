@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <node name="/">
-  <!-- This is not used yet, but this will be the new transaction interface in
-       PackageKit 0.2.0 -->
   <interface name="org.freedesktop.PackageKit.Transaction">
 
+    <method name="AcceptEula">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="eula_id" direction="in"/>
+    </method>
     <method name="Cancel">
     </method>
     <method name="GetAllowCancel">
@@ -15,7 +17,7 @@
       <arg type="s" name="package_id" direction="in"/>
       <arg type="b" name="recursive" direction="in"/>
     </method>
-    <method name="GetDescription">
+    <method name="GetDetails">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
@@ -26,8 +28,12 @@
     <method name="GetOldTransactions">
       <arg type="u" name="number" direction="in"/>
     </method>
-    <method name="GetPackage">
+    <method name="GetPackageLast">
       <arg type="s" name="package" direction="out"/>
+    </method>
+    <method name="GetPackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="filter" direction="in"/>
     </method>
     <method name="GetProgress">
       <arg type="u" name="percentage" direction="out"/>
@@ -62,10 +68,17 @@
     </method>
     <method name="InstallFile">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="b" name="trusted" direction="in"/>
       <arg type="s" name="full_path" direction="in"/>
     </method>
     <method name="InstallPackage">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="package_id" direction="in"/>
+    </method>
+    <method name="InstallSignature">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg type="s" name="sig_type" direction="in"/>
+      <arg type="s" name="key_id" direction="in"/>
       <arg type="s" name="package_id" direction="in"/>
     </method>
     <method name="IsCallerActive">
@@ -141,7 +154,7 @@
     <signal name="CallerActiveChanged">
       <arg type="b" name="is_active" direction="out"/>
     </signal>
-    <signal name="Description">
+    <signal name="Details">
       <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="license" direction="out"/>
       <arg type="s" name="group" direction="out"/>
@@ -182,6 +195,7 @@
       <arg type="b" name="enabled" direction="out"/>
     </signal>
     <signal name="RepoSignatureRequired">
+      <arg type="s" name="package_id" direction="out"/>
       <arg type="s" name="repository_name" direction="out"/>
       <arg type="s" name="key_url" direction="out"/>
       <arg type="s" name="key_userid" direction="out"/>
@@ -189,6 +203,12 @@
       <arg type="s" name="key_fingerprint" direction="out"/>
       <arg type="s" name="key_timestamp" direction="out"/>
       <arg type="s" name="type" direction="out"/>
+    </signal>
+    <signal name="EulaRequired">
+      <arg type="s" name="eula_id" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="vendor_name" direction="out"/>
+      <arg type="s" name="license_agreement" direction="out"/>
     </signal>
     <signal name="RequireRestart">
       <arg type="s" name="type" direction="out"/>

@@ -34,6 +34,7 @@
 #include <pk-debug.h>
 #include "pk-conf.h"
 #include "pk-engine.h"
+#include "pk-transaction.h"
 #include "pk-backend-internal.h"
 #include "pk-interface.h"
 
@@ -57,6 +58,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 	DBusGProxy *bus_proxy = NULL;
 	guint request_name_result;
 	gboolean ret;
+	gchar *message;
 
 	bus_proxy = dbus_g_proxy_new_for_name (connection,
 					       DBUS_SERVICE_DBUS,
@@ -77,12 +79,14 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 	if (!ret) {
 		pk_warning ("RequestName failed!");
 		g_clear_error (error);
-		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED,
-			    _("Acquiring D-Bus name %s failed due to security policies on this machine\n"
-			      "This can happen for two reasons:\n"
-			      "* The correct user is not launching the executable (usually root)\n"
-			      "* The org.freedesktop.PackageKit.conf file is "
-			      "not installed in the system /etc/dbus-1/system.d directory\n"), PK_DBUS_SERVICE);
+		message = g_strdup_printf ("%s\n%s\n* %s\n* %s\n",
+					   _("Startup failed due to security policies on this machine."),
+					   _("This can happen for two reasons:"),
+					   _("The correct user is not launching the executable (usually root)"),
+					   _("The org.freedesktop.PackageKit.conf file is not "
+					     "installed in the system /etc/dbus-1/system.d directory"));
+		g_set_error (error, PK_ENGINE_ERROR, PK_ENGINE_ERROR_DENIED, message);
+		g_free (message);
 		return FALSE;
 	}
 
@@ -95,6 +99,7 @@ pk_object_register (DBusGConnection *connection, GObject *object, GError **error
 
 	dbus_g_object_type_install_info (PK_TYPE_ENGINE, &dbus_glib_pk_engine_object_info);
 	dbus_g_error_domain_register (PK_ENGINE_ERROR, NULL, PK_ENGINE_TYPE_ERROR);
+	dbus_g_error_domain_register (PK_TRANSACTION_ERROR, NULL, PK_TRANSACTION_TYPE_ERROR);
 	dbus_g_connection_register_g_object (connection, PK_DBUS_PATH, object);
 
 	return TRUE;
@@ -177,19 +182,19 @@ main (int argc, char *argv[])
 
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
-		  _("Backend to use"), NULL },
+		  _("Packaging backend to use, e.g. dummy"), NULL },
 		{ "daemonize", '\0', 0, G_OPTION_ARG_NONE, &use_daemon,
-		  _("Daemonize and detach"), NULL },
+		  _("Daemonize and detach from the terminal"), NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, &verbose,
 		  _("Show extra debugging information"), NULL },
 		{ "disable-timer", '\0', 0, G_OPTION_ARG_NONE, &disable_timer,
 		  _("Disable the idle timer"), NULL },
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &version,
-		  _("Show version of installed program and exit"), NULL },
+		  _("Show version and exit"), NULL },
 		{ "timed-exit", '\0', 0, G_OPTION_ARG_NONE, &timed_exit,
 		  _("Exit after a small delay"), NULL },
 		{ "immediate-exit", '\0', 0, G_OPTION_ARG_NONE, &immediate_exit,
-		  _("Exit after a the engine has loaded"), NULL },
+		  _("Exit after the engine has loaded"), NULL },
 		{ NULL}
 	};
 
@@ -199,7 +204,7 @@ main (int argc, char *argv[])
 	dbus_g_thread_init ();
 	g_type_init ();
 
-	context = g_option_context_new (_("PackageKit daemon"));
+	context = g_option_context_new (_("PackageKit service"));
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_parse (context, &argc, &argv, NULL);
 	g_option_context_free (context);
@@ -219,10 +224,13 @@ main (int argc, char *argv[])
 		goto exit_program;
 	}
 
+	/* don't let GIO start it's own session bus: http://bugzilla.gnome.org/show_bug.cgi?id=526454 */
+	setenv ("GIO_USE_VFS", "local", 1);
+
 	/* check dbus connections, exit if not valid */
 	system_connection = dbus_g_bus_get (DBUS_BUS_SYSTEM, &error);
 	if (error) {
-		g_print ("Cannot connect to the system bus: %s\n", error->message);
+		g_print ("%s: %s\n", _("Cannot connect to the system bus"), error->message);
 		g_error_free (error);
 		goto exit_program;
 	}

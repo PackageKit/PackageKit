@@ -17,6 +17,7 @@ INCLUDES =						\
 	$(DBUS_CFLAGS)					\
 	$(SQLITE_CFLAGS)				\
 	$(POLKIT_CFLAGS)				\
+	$(LIBNM_CFLAGS)					\
 	-DBINDIR=\"$(bindir)\"			 	\
 	-DSBINDIR=\"$(sbindir)\"		 	\
 	-DDATADIR=\"$(datadir)\"			\
@@ -37,18 +38,22 @@ pkbackendincludedir=$(includedir)/packagekit-backend
 pkbackendinclude_HEADERS =				\
 	pk-backend.h					\
 	pk-backend-spawn.h				\
-	pk-backend-thread.h				\
 	$(NULL)
 
 shared_SOURCES =					\
 	pk-marshal.c					\
 	pk-marshal.h					\
-	pk-runner.c					\
-	pk-runner.h					\
+	pk-transaction.c				\
+	pk-transaction.h				\
 	pk-backend.c					\
 	pk-backend.h					\
 	pk-backend-internal.h				\
 	pk-security.h					\
+	pk-network.c					\
+	pk-network.h					\
+	pk-network-nm.h					\
+	pk-network-unix.c				\
+	pk-network-unix.h				\
 	pk-time.h					\
 	pk-time.c					\
 	pk-conf.c					\
@@ -59,18 +64,13 @@ shared_SOURCES =					\
 	pk-notify.h					\
 	pk-spawn.c					\
 	pk-spawn.h					\
-	pk-restart.c					\
-	pk-restart.h					\
+	pk-file-monitor.h				\
 	pk-engine.h					\
 	pk-engine.c					\
 	pk-inhibit.h					\
 	pk-inhibit.c					\
-	pk-thread-list.h				\
-	pk-thread-list.c				\
 	pk-backend-spawn.h				\
 	pk-backend-spawn.c				\
-	pk-backend-thread.h				\
-	pk-backend-thread.c				\
 	pk-backend-dbus.h				\
 	pk-backend-dbus.c				\
 	pk-transaction-db.h				\
@@ -80,6 +80,24 @@ shared_SOURCES =					\
 	pk-transaction-list.c				\
 	pk-transaction-list.h				\
 	$(NULL)
+
+if PK_BUILD_NETWORKMANAGER
+shared_SOURCES +=					\
+	pk-network-nm.c
+else
+shared_SOURCES +=					\
+	pk-network-nm-dummy.c
+endif
+
+if PK_BUILD_GIO
+shared_SOURCES +=					\
+	pk-file-monitor-gio.c				\
+	$(NULL)
+else
+shared_SOURCES +=					\
+	pk-file-monitor-dummy.c				\
+	$(NULL)
+endif
 
 if SECURITY_TYPE_POLKIT
 shared_SOURCES += pk-security-polkit.c
@@ -101,6 +119,7 @@ packagekitd_SOURCES =					\
 packagekitd_LDADD =					\
 	$(GLIB_LIBS)					\
 	$(GMODULE_LIBS)					\
+	$(LIBNM_LIBS)					\
 	$(DBUS_LIBS)					\
 	$(SQLITE_LIBS)					\
 	$(PK_LIBS)					\
@@ -120,7 +139,6 @@ BUILT_SOURCES = 					\
 	pk-marshal.c					\
 	pk-marshal.h					\
 	pk-interface.h					\
-	pk-interface-notify.h				\
 	pk-interface-transaction.h			\
 	$(NULL)
 
@@ -137,13 +155,6 @@ pk-interface.h: pk-interface.xml
 		--mode=glib-server			\
 		--output=pk-interface.h			\
 		$(srcdir)/pk-interface.xml
-
-pk-interface-notify.h: pk-interface-notify.xml
-	$(LIBTOOL) --mode=execute dbus-binding-tool	\
-		--prefix=pk_notify			\
-		--mode=glib-server			\
-		--output=pk-interface-notify.h		\
-		$(srcdir)/pk-interface-notify.xml
 
 pk-interface-transaction.h: pk-interface-transaction.xml
 	$(LIBTOOL) --mode=execute dbus-binding-tool	\
@@ -196,7 +207,6 @@ EXTRA_DIST =						\
 	pk-security-polkit.c				\
 	pk-security-dummy.c				\
 	pk-interface.xml				\
-	pk-interface-notify.xml				\
 	pk-interface-transaction.xml			\
 	$(NULL)
 

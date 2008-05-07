@@ -1,13 +1,13 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.1.11)
+AC_INIT(PackageKit, 0.2.1)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Should we enable extra stuff automatically?
 # set no for release builds, yes for development builds
-DEVELOPMENT_RELEASE=yes
+DEVELOPMENT_RELEASE=no
 
 # libtool versioning - this applies to libpackagekit
 #
@@ -26,6 +26,7 @@ AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
 
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_ISC_POSIX
 AC_HEADER_STDC
@@ -54,7 +55,8 @@ dnl - Extra verbose warning switches
 dnl ---------------------------------------------------------------------------
 if test "$GCC" = "yes"; then
 	CPPFLAGS="$CPPFLAGS -Werror -Wcast-align -Wno-uninitialized"
-	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security"
+#	CPPFLAGS="$CPPFLAGS -Wall -Wformat-security"
+	CPPFLAGS="$CPPFLAGS -Wall"
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -74,8 +76,8 @@ GIO_REQUIRED=2.16.1
 DBUS_REQUIRED=1.1.1
 DBUS_GLIB_REQUIRED=0.73
 LIBNM_GLIB_REQUIRED=0.6.4
-POLKIT_DBUS_REQUIRED=0.7
-POLKIT_GRANT_REQUIRED=0.7
+POLKIT_DBUS_REQUIRED=0.8
+POLKIT_GRANT_REQUIRED=0.8
 
 dnl ---------------------------------------------------------------------------
 dnl - Make above strings available for packaging files (e.g. rpm spec files)
@@ -533,14 +535,13 @@ if test x$enable_box = xyes; then
 fi
 
 if test x$enable_opkg = xyes; then
-	PKG_CHECK_MODULES(OPKG, libopkg)
+	PKG_CHECK_MODULES(OPKG, libopkg = 0.1)
 	AC_SUBST(OPKG_CFLAGS)
 	AC_SUBST(OPKG_LIBS)
 fi
 
 if test x$enable_alpm = xyes; then
 	with_default_backend=dummy
-	AC_MSG_WARN([The alpm backend doesn't work at all!])
 	AC_CHECK_HEADER([alpm.h],
 			[with_default_backend=alpm],
 			[AC_MSG_WARN([No alpm headers found - falling back to dummy backend])])
@@ -554,12 +555,13 @@ if test x$enable_poldek = xyes; then
 fi
 
 if test x$enable_zypp = xyes; then
-	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.7.0)
+	PKG_CHECK_MODULES(ZYPP, libzypp >= 4.14.0)
 	AC_SUBST(ZYPP_CFLAGS)
 	AC_SUBST(ZYPP_LIBS)
 fi
 
 AC_SUBST(PK_CONF_DIR, "\$(sysconfdir)/PackageKit")
+AC_SUBST(PK_YUM_PLUGIN_DIR, "\$(prefix)/lib/yum-plugins")
 AC_SUBST(PK_DB_DIR, "\$(localstatedir)/lib/PackageKit")
 AC_SUBST(PK_LOG_DIR, "\$(localstatedir)/log")
 AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
@@ -585,6 +587,7 @@ docs/spec/Makefile
 docs/api/Makefile
 docs/api/version.xml
 contrib/Makefile
+contrib/udev/Makefile
 contrib/yum-packagekit/Makefile
 backends/Makefile
 backends/alpm/Makefile
