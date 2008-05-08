@@ -636,11 +636,7 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 0);
 
 	// refresh the repos before checking for updates
-	pk_backend_set_bool (backend, "force", FALSE);
-	if (!backend_refresh_cache_thread (backend)) {
-		pk_backend_finished (backend);
-		return FALSE;
-	}
+	backend_refresh_cache (backend, FALSE);
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
