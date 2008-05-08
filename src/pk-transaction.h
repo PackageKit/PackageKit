@@ -150,12 +150,12 @@ void		 pk_transaction_get_update_detail	(PkTransaction	*transaction,
 void		 pk_transaction_get_updates		(PkTransaction	*transaction,
 							 const gchar	*filter,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_install_file		(PkTransaction	*transaction,
+void		 pk_transaction_install_files		(PkTransaction	*transaction,
 							 gboolean	 trusted,
-							 const gchar	*full_path,
+							 gchar		**full_paths,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_install_package		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+void		 pk_transaction_install_packages	(PkTransaction	*transaction,
+							 gchar		**package_ids,
 							 DBusGMethodInvocation *context);
 void		 pk_transaction_install_signature	(PkTransaction	*transaction,
 							 const gchar	*sig_type,
@@ -168,8 +168,8 @@ gboolean	 pk_transaction_is_caller_active	(PkTransaction	*transaction,
 void		 pk_transaction_refresh_cache		(PkTransaction	*transaction,
 							 gboolean	 force,
 							 DBusGMethodInvocation *context);
-void		 pk_transaction_remove_package		(PkTransaction	*transaction,
-							 const gchar	*package_id,
+void		 pk_transaction_remove_packages		(PkTransaction	*transaction,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove,
 							 DBusGMethodInvocation *context);

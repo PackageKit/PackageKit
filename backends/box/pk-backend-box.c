@@ -200,7 +200,7 @@ backend_update_system_thread (PkBackend *backend)
 }
 
 static gboolean
-backend_install_package_thread (PkBackend *backend)
+backend_install_packages_thread (PkBackend *backend)
 {
 	gboolean result;
 	PkPackageId *pi;
@@ -251,15 +251,15 @@ backend_update_packages_thread (PkBackend *backend)
 }
 
 static gboolean
-backend_install_file_thread (PkBackend *backend)
+backend_install_files_thread (PkBackend *backend)
 {
 	gboolean result;
-	const gchar *full_path;
+	gchar **full_paths;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
-	full_path = pk_backend_get_string (backend, "full_path");
-	result = box_package_install(full_path, ROOT_DIRECTORY, common_progress, backend, FALSE);
+	full_paths = pk_backend_get_strv (backend, "full_paths");
+	result = box_package_install(full_paths[0], ROOT_DIRECTORY, common_progress, backend, FALSE);
 
 	pk_backend_finished (backend);
 
@@ -382,13 +382,13 @@ backend_get_depends_requires_thread (PkBackend *backend)
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend)
+backend_remove_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	const gchar *package_id;
+	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 
@@ -494,10 +494,10 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
@@ -506,16 +506,16 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 		return;
 	}
 
-	pk_backend_thread_create (backend, backend_install_package_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 /**
- * backend_install_file:
+ * backend_install_files:
  */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *file)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **files)
 {
-	pk_backend_thread_create (backend, backend_install_file_thread);
+	pk_backend_thread_create (backend, backend_install_files_thread);
 }
 
 /**
@@ -534,13 +534,13 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_id, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_set_uint (backend, "type", DEPS_ALLOW);
-	pk_backend_thread_create (backend, backend_remove_package_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
 /**
@@ -667,18 +667,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_details,		/* get_details */
+	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	backend_get_requires,			/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

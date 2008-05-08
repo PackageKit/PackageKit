@@ -697,17 +697,17 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 }
 
 static gboolean
-backend_install_file_thread (PkBackend *backend)
+backend_install_files_thread (PkBackend *backend)
 {
-	const gchar *full_path;
+	gchar **full_paths;
 
 	// check if file is really a rpm
-	full_path = pk_backend_get_string (backend, "full_path");
-	zypp::Pathname rpmPath (full_path);
+	full_paths = pk_backend_get_strv (backend, "full_paths");
+	zypp::Pathname rpmPath (full_paths[0]);
 	zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
 
 	if (rpmHeader == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is not valid rpm-File", full_path);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is not valid rpm-File", full_paths[0]);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
@@ -723,7 +723,7 @@ backend_install_file_thread (PkBackend *backend)
 	// copy the rpm into tmpdir
 
 	std::string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
-	if (zypp::filesystem::copy (full_path, tempDest) != 0) {
+	if (zypp::filesystem::copy (full_paths[0], tempDest) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not copy the rpm-file into the temp-dir");
 		pk_backend_finished (backend);
 		return FALSE;
@@ -801,12 +801,12 @@ backend_install_file_thread (PkBackend *backend)
 }
 
 /**
-  * backend_install_file
+  * backend_install_files
   */
 static void
-backend_install_file (PkBackend *backend, gboolean trusted, const gchar *full_path)
+backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	pk_backend_thread_create (backend, backend_install_file_thread);
+	pk_backend_thread_create (backend, backend_install_files_thread);
 }
 
 static gboolean
@@ -952,15 +952,15 @@ backend_update_system (PkBackend *backend)
 }
 
 static gboolean
-backend_install_package_thread (PkBackend *backend)
+backend_install_packages_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	PkPackageId *pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_strv (backend, "package_id");
+	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
@@ -1030,14 +1030,14 @@ backend_install_package_thread (PkBackend *backend)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	// For now, don't let the user cancel the install once it's started
 	pk_backend_set_allow_cancel (backend, FALSE);
-	pk_backend_thread_create (backend, backend_install_package_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 static gboolean
@@ -1060,16 +1060,16 @@ backend_install_signature (PkBackend *backend, PkSigTypeEnum type, const gchar *
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend)
+backend_remove_packages_thread (PkBackend *backend)
 {
-	const gchar *package_id;
+	gchar **package_ids;
 	PkPackageId *pi;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_set_percentage (backend, 0);
 
-	package_id = pk_backend_get_string (backend, "package_id");
-	pi = pk_package_id_new_from_string (package_id);
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	pi = pk_package_id_new_from_string (package_ids[0]);
 	if (pi == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
 		pk_backend_finished (backend);
@@ -1130,13 +1130,13 @@ backend_remove_package_thread (PkBackend *backend)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	pk_backend_set_uint (backend, "allow_deps", allow_deps == TRUE ? DEPS_ALLOW : DEPS_NO_ALLOW);
-	pk_backend_thread_create (backend, backend_remove_package_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
 static gboolean
@@ -1666,11 +1666,11 @@ extern "C" PK_BACKEND_OPTIONS (
 	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	backend_install_file,			/* install_file */
-	backend_install_package,		/* install_package */
+	backend_install_files,			/* install_files */
+	backend_install_packages,		/* install_packages */
 	backend_install_signature,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	backend_repo_enable,			/* repo_enable */
 	backend_repo_set_data,			/* repo_set_data */
 	backend_resolve,			/* resolve */

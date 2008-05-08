@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 James Bowes <jbowes@dangerouslyinc.com>
+# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -12,10 +12,10 @@
 
 import sys
 
-from smartBackend import PackageKitSmartBackend
+from aptBackend import PackageKitAptBackend
 
 trusted = sys.argv[1]
-file_to_inst = sys.argv[2]
-backend = PackageKitSmartBackend(sys.argv[1:])
-backend.install_file(trusted, file_to_inst)
+files_to_inst = sys.argv[2:]
+backend = PackageKitAptBackend(sys.argv[1:])
+backend.install_files(trusted, files_to_inst)
 sys.exit(0)

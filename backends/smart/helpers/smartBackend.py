@@ -63,7 +63,7 @@ class PackageKitSmartBackend(PackageKitBaseBackend):
         self.ctrl.commitTransaction(trans, confirm=False)
 
     @needs_cache
-    def install_file(self, trusted, path):
+    def install_files(self, trusted, paths):
         self.ctrl.addFileChannel(path)
         self.ctrl.reloadChannels()
         trans = smart.transaction.Transaction(self.ctrl.getCache(),

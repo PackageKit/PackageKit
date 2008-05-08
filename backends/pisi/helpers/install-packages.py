@@ -14,6 +14,6 @@ import sys
 import pisiBackend
 
 backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.install(sys.argv[1])
+backend.install_packages(sys.argv[1])
 
 sys.exit()

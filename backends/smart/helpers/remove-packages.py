@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
+# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 James Bowes <jbowes@redhat.com>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -10,9 +11,10 @@
 # (at your option) any later version.
 
 import sys
-from conaryBackend import PackageKitConaryBackend
+import smartBackend
 
-packages = sys.argv[1]
-backend = PackageKitConaryBackend(sys.argv[1:])
-backend.update(packages)
-sys.exit(0)
+
+backend = smartBackend.PackageKitSmartBackend(sys.argv[2:])
+backend.remove_packages(sys.argv[1], sys.argv[2])
+
+sys.exit()

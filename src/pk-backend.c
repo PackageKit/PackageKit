@@ -208,17 +208,17 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->get_update_detail != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	}
-	if (desc->install_package != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGE);
+	if (desc->install_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	}
-	if (desc->install_file != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILE);
+	if (desc->install_files != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
 	}
 	if (desc->refresh_cache != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
 	}
-	if (desc->remove_package != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	if (desc->remove_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	}
 	if (desc->resolve != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
@@ -1459,8 +1459,8 @@ pk_backend_finished (PkBackend *backend)
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
 	    !backend->priv->has_sent_package &&
-	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
+	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Backends need to send a Package() for this role!");

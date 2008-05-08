@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -9,16 +9,10 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-
 import sys
+from conaryBackend import PackageKitConaryBackend
 
-from yumBackend import PackageKitYumBackend
-
-allowdeps = sys.argv[1]
-package = sys.argv[2]
-
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.remove(allowdeps, package)
-backend.unLock()
-
+packages = sys.argv[1]
+backend = PackageKitConaryBackend(sys.argv[1:])
+backend.update_packages(packages)
 sys.exit(0)

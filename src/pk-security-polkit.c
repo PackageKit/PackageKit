@@ -109,13 +109,13 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.update-package";
 	} else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		policy = "org.freedesktop.packagekit.update-system";
-	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		policy = "org.freedesktop.packagekit.remove";
-	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		policy = "org.freedesktop.packagekit.install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && trusted) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
 		policy = "org.freedesktop.packagekit.localinstall-trusted";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && !trusted) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
 		policy = "org.freedesktop.packagekit.localinstall-untrusted";
 	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		policy = "org.freedesktop.packagekit.install-signature";

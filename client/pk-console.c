@@ -54,7 +54,7 @@ static gchar *filename = NULL;
 static PkControl *control = NULL;
 static PkClient *client = NULL;
 static PkClient *client_task = NULL;
-static PkClient *client_install_file = NULL;
+static PkClient *client_install_files = NULL;
 static PkClient *client_signature = NULL;
 
 typedef struct {
@@ -379,10 +379,10 @@ pk_console_signature_finished_cb (PkClient *client_signature, PkExitEnum exit, g
 }
 
 /**
- * pk_console_install_file_finished_cb:
+ * pk_console_install_files_finished_cb:
  **/
 static void
-pk_console_install_file_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
+pk_console_install_files_finished_cb (PkClient *client_signature, PkExitEnum exit, guint runtime, gpointer data)
 {
 	g_main_loop_quit (loop);
 }
@@ -429,7 +429,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 		g_print ("%s\n", _("An application restart is required"));
 	}
 
-	if (role == PK_ROLE_ENUM_INSTALL_FILE &&
+	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    exit == PK_EXIT_ENUM_FAILED && need_requeue) {
 		pk_warning ("waiting for second install file to finish");
 		return;
@@ -836,11 +836,11 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	}
 
 	/* do we need to do the untrusted action */
-	if (role == PK_ROLE_ENUM_INSTALL_FILE &&
+	if (role == PK_ROLE_ENUM_INSTALL_FILES &&
 	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
 		pk_debug ("need to try again with trusted FALSE");
 		trusted = FALSE;
-		ret = pk_client_install_file (client_install_file, trusted, filename, &error);
+		ret = pk_client_install_file (client_install_files, trusted, filename, &error);
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {
 			pk_warning ("failed to install file second time: %s", error->message);
@@ -1073,14 +1073,14 @@ pk_console_get_summary (PkRoleEnum roles)
 	    pk_enums_contain (roles, PK_ROLE_ENUM_SEARCH_FILE)) {
 		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGE) ||
-	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILE)) {
-		g_string_append_printf (string, "  %s\n", "install [package|file]");
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_PACKAGES) ||
+	    pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_FILES)) {
+		g_string_append_printf (string, "  %s\n", "install [packages|files]");
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE)) {
 		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
 	}
-	if (pk_enums_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGE)) {
+	if (pk_enums_contain (roles, PK_ROLE_ENUM_REMOVE_PACKAGES)) {
 		g_string_append_printf (string, "  %s\n", "remove [package]");
 	}
 	if (pk_enums_contain (roles, PK_ROLE_ENUM_UPDATE_SYSTEM) ||
@@ -1256,10 +1256,10 @@ main (int argc, char *argv[])
 	g_signal_connect (client_task, "finished",
 			  G_CALLBACK (pk_console_finished_cb), NULL);
 
-	client_install_file = pk_client_new ();
-	g_signal_connect (client_install_file, "finished",
-			  G_CALLBACK (pk_console_install_file_finished_cb), NULL);
-	g_signal_connect (client_install_file, "error-code",
+	client_install_files = pk_client_new ();
+	g_signal_connect (client_install_files, "finished",
+			  G_CALLBACK (pk_console_install_files_finished_cb), NULL);
+	g_signal_connect (client_install_files, "error-code",
 			  G_CALLBACK (pk_console_error_code_cb), NULL);
 
 	client_signature = pk_client_new ();
@@ -1529,7 +1529,7 @@ out:
 	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
-	g_object_unref (client_install_file);
+	g_object_unref (client_install_files);
 	g_object_unref (client_signature);
 
 	return 0;

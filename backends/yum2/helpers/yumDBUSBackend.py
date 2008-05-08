@@ -789,7 +789,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doInstallPackage(self, package):
+    def doInstallPackages(self, packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher
@@ -830,9 +830,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doInstallFile (self, inst_file):
+    def doInstallFiles (self, inst_files):
         '''
-        Implement the {backend}-install_file functionality
+        Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
@@ -934,7 +934,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     @threaded
     @async
-    def doRemovePackage(self, package, allowdep, autoremove):
+    def doRemovePackages(self, packages, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''

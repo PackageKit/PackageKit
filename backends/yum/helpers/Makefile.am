@@ -18,11 +18,11 @@ dist_helper_DATA = 			\
 	repo-enable.py			\
 	repo-set-data.py		\
 	get-update-detail.py		\
-	install.py			\
-	remove.py			\
+	install-packages.py		\
+	remove-packages.py		\
 	resolve.py			\
-	update.py			\
-	install-file.py			\
+	update-packages.py		\
+	install-files.py		\
 	refresh-cache.py		\
 	what-provides.py		\
 	update-system.py		\

@@ -446,9 +446,9 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.update_detail(package,update,obsolete,vendor_url,bz_url,cve_url,reboot,desc)
 
 
-    def install_file (self, inst_file):
+    def install_files (self, inst_files):
         '''
-        Implement the {backend}-install_file functionality
+        Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
         '''
         if not exists(inst_file):

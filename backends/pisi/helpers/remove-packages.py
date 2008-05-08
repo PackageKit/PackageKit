@@ -1,7 +1,7 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 James Bowes <jbowes@redhat.com>
+# Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -11,10 +11,9 @@
 # (at your option) any later version.
 
 import sys
-import smartBackend
+import pisiBackend
 
-
-backend = smartBackend.PackageKitSmartBackend(sys.argv[2:])
-backend.remove(sys.argv[1], sys.argv[2])
+backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
+backend.remove_packages(sys.argv[1], sys.argv[2])
 
 sys.exit()
