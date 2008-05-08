@@ -701,16 +701,7 @@ backend_install_files_thread (PkBackend *backend)
 {
 	gchar **full_paths;
 
-	// check if file is really a rpm
 	full_paths = pk_backend_get_strv (backend, "full_paths");
-	zypp::Pathname rpmPath (full_paths[0]);
-	zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
-
-	if (rpmHeader == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is not valid rpm-File", full_paths[0]);
-		pk_backend_finished (backend);
-		return FALSE;
-	}
 
 	// create a temporary directory
 	zypp::filesystem::TmpDir tmpDir;
@@ -720,16 +711,28 @@ backend_install_files_thread (PkBackend *backend)
 		return FALSE;
 	}
 
-	// copy the rpm into tmpdir
+	for (guint i = 0; i < g_strv_length (full_paths); i++) {
 
-	std::string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
-	if (zypp::filesystem::copy (full_paths[0], tempDest) != 0) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not copy the rpm-file into the temp-dir");
-		pk_backend_finished (backend);
-		return FALSE;
+		// check if file is really a rpm
+		zypp::Pathname rpmPath (full_paths[i]);
+		zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
+
+		if (rpmHeader == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "%s is not valid rpm-File", full_paths[i]);
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
+		// copy the rpm into tmpdir
+		std::string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
+		if (zypp::filesystem::copy (full_paths[i], tempDest) != 0) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not copy the rpm-file into the temp-dir");
+			pk_backend_finished (backend);
+			return FALSE;
+		}
 	}
-
-	// create a plaindir-repo
+	
+	// create a plaindir-repo and cache it
 	zypp::RepoInfo tmpRepo;
 
 	try {
@@ -761,29 +764,37 @@ backend_install_files_thread (PkBackend *backend)
 		return FALSE;
 	}
 
-	// look for the package and try to install it
-	std::vector<zypp::sat::Solvable> *solvables = new std::vector<zypp::sat::Solvable>;
-	solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
-	zypp::PoolItem *item = NULL;
-	gboolean found = FALSE;
+	for (guint i = 0; i < g_strv_length (full_paths); i++) {
+		
+		zypp::Pathname rpmPath (full_paths[i]);
+		zypp::target::rpm::RpmHeader::constPtr rpmHeader = zypp::target::rpm::RpmHeader::readPackage (rpmPath, zypp::target::rpm::RpmHeader::NOSIGNATURE);
+		
+		// look for the packages and set them to toBeInstalled
+		std::vector<zypp::sat::Solvable> *solvables = new std::vector<zypp::sat::Solvable>;
+		solvables = zypp_get_packages_by_name (rpmHeader->tag_name ().c_str (), zypp::ResKind::package, FALSE);
+		zypp::PoolItem *item = NULL;
+		gboolean found = FALSE;
 
-	for (std::vector<zypp::sat::Solvable>::iterator it = solvables->begin (); it != solvables->end (); it ++) {
-	       if (it->repository ().name () == "PK_TMP_DIR") {
-		       item = new zypp::PoolItem(*it);
-		       found = TRUE;
-		       break;
-	       }
-	}
+		for (std::vector<zypp::sat::Solvable>::iterator it = solvables->begin (); it != solvables->end (); it ++) {
+		       if (it->repository ().name () == "PK_TMP_DIR") {
+			       item = new zypp::PoolItem(*it);
+			       found = TRUE;
+			       break;
+		       }
+		}
 
-	if (!found) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
-	} else {
-		zypp::ResStatus status = item->status ().setToBeInstalled (zypp::ResStatus::USER);
+		if (!found) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Could not find the rpm-Package in Pool");
+		} else {
+			zypp::ResStatus status = item->status ().setToBeInstalled (zypp::ResStatus::USER);
+		}
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
 			pk_backend_error_code (backend, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 		}
 
 		item->statusReset ();
+		delete (solvables);
+		delete (item);
 	}
 
 	//remove tmp-dir and the tmp-repo
@@ -794,8 +805,6 @@ backend_install_files_thread (PkBackend *backend)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
 	}
 
-	delete (solvables);
-	delete (item);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -958,73 +967,82 @@ backend_install_packages_thread (PkBackend *backend)
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	pk_backend_set_percentage (backend, 0);
-
-	package_ids = pk_backend_get_strv (backend, "package_id");
-	PkPackageId *pi = pk_package_id_new_from_string (package_ids[0]);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
+	
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
 
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	
 	try
 	{
 		zypp::ResPool pool = zypp_build_pool (TRUE);
 		pk_backend_set_percentage (backend, 10);
 		gboolean hit = false;
+		std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
-		// Iterate over the selectables and mark the one with the right name
-		zypp::ui::Selectable::Ptr selectable;
-		for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
-				it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
-			if (strcmp ((*it)->name ().c_str (), pi->name) == 0) {
-				selectable = *it;
-				break;
+
+		for (guint i = 0; i < g_strv_length (package_ids); i++) {
+
+			PkPackageId *pi = pk_package_id_new_from_string (package_ids[i]);
+			if (pi == NULL) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+				pk_backend_finished (backend);
+				return FALSE;
 			}
-		}
 
-		// Choose the PoolItem with the right architecture and version
-		zypp::PoolItem item;
-		for (zypp::ui::Selectable::available_iterator it = selectable->availableBegin ();
-				it != selectable->availableEnd (); it++) {
-			if (strcmp ((*it)->edition ().asString ().c_str (), pi->version) == 0
-					&& strcmp ((*it)->arch ().c_str (), pi->arch) == 0 ) {
-				hit = true;
-				// set status to ToBeInstalled
-				it->status ().setToBeInstalled (zypp::ResStatus::USER);
-				item = *it;
-				break;
+			// Iterate over the selectables and mark the one with the right name
+			zypp::ui::Selectable::Ptr selectable;
+			for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy().byKindBegin <zypp::Package>();
+					it != zypp->poolProxy().byKindEnd <zypp::Package>(); it++) {
+				if (strcmp ((*it)->name ().c_str (), pi->name) == 0) {
+					selectable = *it;
+					break;
+				}
 			}
-		}
 
-		if (!hit) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find the package.");
+			// Choose the PoolItem with the right architecture and version
+			for (zypp::ui::Selectable::available_iterator it = selectable->availableBegin ();
+					it != selectable->availableEnd (); it++) {
+				if (strcmp ((*it)->edition ().asString ().c_str (), pi->version) == 0
+						&& strcmp ((*it)->arch ().c_str (), pi->arch) == 0 ) {
+					hit = true;
+					// set status to ToBeInstalled
+					it->status ().setToBeInstalled (zypp::ResStatus::USER);
+					items->push_back (*it);
+					break;
+				}
+			}
+
+			if (!hit) {
+				pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Couldn't find the package.");
+				pk_package_id_free (pi);
+				pk_backend_finished (backend);
+				return FALSE;
+			}
+
+			pk_backend_set_percentage (backend, 40);
 			pk_package_id_free (pi);
-			pk_backend_finished (backend);
-			return FALSE;
 		}
-
-		pk_backend_set_percentage (backend, 40);
 
 		if (!zypp_perform_execution (backend, INSTALL, FALSE)) {
+			//reset the status of the marked packages
+			for (std::vector<zypp::PoolItem>::iterator it = items->begin (); it != items->end (); it++) {
+				it->statusReset ();
+			}
+			delete (items);
 			pk_backend_finished (backend);
 			return FALSE;
 		}
+		delete (items);
 
-		item.statusReset ();
 		pk_backend_set_percentage (backend, 100);
 
 	} catch (const zypp::Exception &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
 
-	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -1064,18 +1082,11 @@ backend_remove_packages_thread (PkBackend *backend)
 {
 	gchar **package_ids;
 	PkPackageId *pi;
+	std::vector<zypp::PoolItem> *items = new std::vector<zypp::PoolItem> ();
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
 	pk_backend_set_percentage (backend, 0);
-
-	package_ids = pk_backend_get_strv (backend, "package_ids");
-	pi = pk_package_id_new_from_string (package_ids[0]);
-	if (pi == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
+	
 	zypp::Target_Ptr target;
 	zypp::ZYpp::Ptr zypp;
 	zypp = get_zypp ();
@@ -1086,45 +1097,58 @@ backend_remove_packages_thread (PkBackend *backend)
 	target->load ();
 	pk_backend_set_percentage (backend, 10);
 
-	try
-	{
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+	for (guint i = 0; i < g_strv_length (package_ids); i++) {
+		pi = pk_package_id_new_from_string (package_ids[i]);
+		if (pi == NULL) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+			pk_backend_finished (backend);
+			return FALSE;
+		}
+
 		// Iterate over the resolvables and mark the ones we want to remove
 		zypp::ResPool pool = zypp::ResPool::instance ();
 		for (zypp::ResPool::byIdent_iterator it = pool.byIdentBegin (zypp::ResKind::package, pi->name);
 				it != pool.byIdentEnd (zypp::ResKind::package, pi->name); it++) {
 			if ((*it)->isSystem ()) {
 				it->status ().setToBeUninstalled (zypp::ResStatus::USER);
+				items->push_back (*it);
 				break;
 			}
 		}
+		pk_package_id_free (pi);
+	}
 
-		pk_backend_set_percentage (backend, 40);
+	pk_backend_set_percentage (backend, 40);
 
+	try
+	{
 		if (!zypp_perform_execution (backend, REMOVE, TRUE)){
+			//reset the status of the marked packages
+			for (std::vector<zypp::PoolItem>::iterator it = items->begin (); it != items->end (); it++) {
+				it->statusReset();
+			}
+			delete (items);
 			pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, "Couldn't remove the package");
-
-			pk_package_id_free (pi);
 			pk_backend_finished (backend);
 			return FALSE;
 		}
 
+		delete (items);
 		pk_backend_set_percentage (backend, 100);
 
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		// TODO: make sure this dumps out the right sring.
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
-		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return FALSE;
 	} catch (const zypp::Exception &ex) {
 		//pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Error enumerating repositories");
 		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str() );
-		pk_package_id_free (pi);
 		pk_backend_finished (backend);
 		return FALSE;
 	}
 
-	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return TRUE;
 }
