@@ -338,11 +338,11 @@ backend_install_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err;
-	gchar *package_ids;
+	const gchar *package_ids;
 
 	package_ids = pk_backend_get_string (backend, "package_ids");
 
-	pi = pk_package_id_new_from_string (package_id);
+	pi = pk_package_id_new_from_string (package_ids);
 
 	err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
 	if (err != 0)
@@ -359,7 +359,7 @@ backend_install_packages (PkBackend *backend, gchar **package_id)
 	pk_backend_no_percentage_updates (backend);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
-	pk_backend_set_string (backend, "pkid", package_id);
+	pk_backend_set_string (backend, "pkid", package_id[0]);
 
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
@@ -376,7 +376,7 @@ backend_remove_packages_thread (PkBackend *backend)
 
 	data = pk_backend_get_pointer (backend, "remove-params");
 
-	package_ids = (gchar*) data[0];
+	package_ids = (gchar**) data[0];
 	allow_deps = GPOINTER_TO_INT (data[1]);
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
@@ -398,7 +398,7 @@ backend_remove_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_remove_packages (PkBackend *backend, gchar *package_ids, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gpointer *params;
 
