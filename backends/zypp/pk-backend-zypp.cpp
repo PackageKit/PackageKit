@@ -549,73 +549,8 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
-	//Fixme - we should check the network status and bail if not online
 	gboolean force = pk_backend_get_bool(backend, "force");
-	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_set_percentage (backend, 0);
-
-	zypp::RepoManager manager;
-	std::list <zypp::RepoInfo> repos;
-	try
-	{
-		repos = manager.knownRepositories();
-	}
-	catch ( const zypp::Exception &e)
-	{
-		// FIXME: make sure this dumps out the right sring.
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, e.asUserString().c_str() );
-		pk_backend_finished (backend);
-		return FALSE;
-	}
-
-	int i = 1;
-	int num_of_repos = repos.size ();
-	int percentage_increment = 100 / num_of_repos;
-
-	for (std::list <zypp::RepoInfo>::iterator it = repos.begin(); it != repos.end(); it++, i++) {
-		zypp::RepoInfo repo (*it);
-
-		// skip disabled repos
-		if (repo.enabled () == false)
-			continue;
-
-		// skip changeable meda (DVDs and CDs).  Without doing this,
-		// the disc would be required to be physically present.
-		if (zypp_is_changeable_media (*repo.baseUrlsBegin ()) == true)
-			continue;
-
-		try {
-			// Refreshing metadata
-			manager.refreshMetadata (repo, force == TRUE ?
-				zypp::RepoManager::RefreshForced :
-				zypp::RepoManager::RefreshIfNeeded);
-		} catch (const zypp::Exception &ex) {
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s", repo.alias ().c_str (), ex.asUserString ().c_str ());
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
-		try {
-			// Building cache
-			manager.buildCache (repo, force == TRUE ?
-				zypp::RepoManager::BuildForced :
-				zypp::RepoManager::BuildIfNeeded);
-		//} catch (const zypp::repo::RepoNoUrlException &ex) {
-		//} catch (const zypp::repo::RepoNoAliasException &ex) {
-		//} catch (const zypp::repo::RepoUnknownTypeException &ex) {
-		//} catch (const zypp::repo::RepoException &ex) {
-		} catch (const zypp::Exception &ex) {
-			// TODO: Handle the exceptions in manager.refreshMetadata
-			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "%s: %s",
-					       repo.alias ().c_str (), ex.asUserString().c_str() );
-			pk_backend_finished (backend);
-			return FALSE;
-		}
-
-		// Update the percentage completed
-		pk_backend_set_percentage (backend, i == num_of_repos ? 100 : i * percentage_increment);
-	}
-
+	zypp_refresh_cache (backend, force);
 	pk_backend_finished (backend);
 	return TRUE;
 }
@@ -636,7 +571,10 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 0);
 
 	// refresh the repos before checking for updates
-	backend_refresh_cache (backend, FALSE);
+	if (!zypp_refresh_cache (backend, FALSE)) {
+		pk_backend_finished (backend);
+		return FALSE;
+	}
 
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);

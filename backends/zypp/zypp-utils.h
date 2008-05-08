@@ -140,5 +140,11 @@ gchar ** zypp_convert_set_char (std::set<zypp::sat::Solvable> *set);
   * build string of package_id's seperated by blanks out of the capabilities of a solvable
   */
 gchar * zypp_build_package_id_capabilities (zypp::Capabilities caps);
+
+/**
+  * refresh the enabled repositories
+  */
+gboolean zypp_refresh_cache (PkBackend *backend, gboolean force);
+
 #endif // _ZYPP_UTILS_H_
 
