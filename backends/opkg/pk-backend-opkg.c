@@ -148,13 +148,13 @@ backend_destroy (PkBackend *backend)
 
 
 static void
-pk_opkg_progress_cb (opkg_t *opkg, int percent, void *data)
+pk_opkg_progress_cb (opkg_t *opkg, const opkg_progress_data_t *pdata, void *data)
 {
 	PkBackend *backend = PK_BACKEND (data);
 	if (!backend)
 		return;
 
-	pk_backend_set_percentage (backend, percent);
+	pk_backend_set_percentage (backend, pdata->percentage);
 }
 
 static gboolean
