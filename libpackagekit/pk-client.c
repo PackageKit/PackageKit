@@ -544,13 +544,13 @@ pk_client_update_detail_cb (DBusGProxy  *proxy,
  */
 static void
 pk_client_details_cb (DBusGProxy  *proxy,
-			  const gchar *package_id,
-			  const gchar *license,
-			  const gchar *group_text,
-			  const gchar *description,
-			  const gchar *url,
-			  guint64      size,
-			  PkClient    *client)
+		      const gchar *package_id,
+		      const gchar *license,
+		      const gchar *group_text,
+		      const gchar *description,
+		      const gchar *url,
+		      guint64      size,
+		      PkClient    *client)
 {
 	PkGroupEnum group;
 	g_return_if_fail (PK_IS_CLIENT (client));
@@ -3261,6 +3261,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * PkClient::details:
 	 * @client: the #PkClient instance that emitted the signal
 	 * @package_id: the package_id of the package
+	 * @license: the licence of the package, e.g. "GPLv2+"
 	 * @group: the #PkGroupEnum of the package, e.g. PK_GROUP_ENUM_EDUCATION
 	 * @description: the description of the package
 	 * @url: the upstream URL of the package
