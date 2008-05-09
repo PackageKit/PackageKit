@@ -468,10 +468,13 @@ backend_get_details_thread (PkBackend *backend)
 
 	std::vector<zypp::sat::Solvable> *v;
 	std::vector<zypp::sat::Solvable> *v2;
+	std::vector<zypp::sat::Solvable> *v3;
 	v = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::package, TRUE);
 	v2 = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::patch, TRUE);
+	v3 = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::srcpackage, TRUE);
 
 	v->insert (v->end (), v2->begin (), v2->end ());
+	v->insert (v->end (), v3->begin (), v3->end ());
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -488,6 +491,7 @@ backend_get_details_thread (PkBackend *backend)
 	}
 	delete (v);
 	delete (v2);
+	delete (v3);
 
 	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
@@ -1105,7 +1109,11 @@ backend_resolve_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
+	std::vector<zypp::sat::Solvable> *v2;
 	v = zypp_get_packages_by_name (package_id, zypp::ResKind::package, TRUE);
+	v2 = zypp_get_packages_by_name (package_id, zypp::ResKind::srcpackage, TRUE);
+
+	v->insert (v->end (), v2->begin (), v2->end ());
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -1119,6 +1127,7 @@ backend_resolve_thread (PkBackend *backend)
 	}
 
 	delete (v);
+	delete (v2);
 
 	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
@@ -1162,10 +1171,12 @@ backend_find_packages_thread (PkBackend *backend)
 	pk_backend_no_percentage_updates (backend);
 
 	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
+	std::vector<zypp::sat::Solvable> *v2 = new std::vector<zypp::sat::Solvable>;
 
 	switch (mode) {
 		case SEARCH_TYPE_NAME:
 			v = zypp_get_packages_by_name (search, zypp::ResKind::package, TRUE);
+			v2 = zypp_get_packages_by_name (search, zypp::ResKind::srcpackage, TRUE);
 			break;
 		case SEARCH_TYPE_DETAILS:
 			v = zypp_get_packages_by_details (search, TRUE);
@@ -1175,8 +1186,11 @@ backend_find_packages_thread (PkBackend *backend)
 			break;
 	};
 
+	v->insert (v->end (), v2->begin (), v2->end ());
+
 	zypp_emit_packages_in_list (backend, v, filters);
 	delete (v);
+	delete (v2);
 
 	pk_backend_finished (backend);
 	return TRUE;
@@ -1345,7 +1359,11 @@ backend_get_files_thread (PkBackend *backend)
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 
 	std::vector<zypp::sat::Solvable> *v;
+	std::vector<zypp::sat::Solvable> *v2;
 	v = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::package, TRUE);
+	v2 = zypp_get_packages_by_name ((const gchar *)pi->name, zypp::ResKind::srcpackage, TRUE);
+
+	v->insert (v->end (), v2->begin (), v2->end ());
 
 	zypp::sat::Solvable package;
 	for (std::vector<zypp::sat::Solvable>::iterator it = v->begin ();
@@ -1360,6 +1378,7 @@ backend_get_files_thread (PkBackend *backend)
 	}
 
 	delete (v);
+	delete (v2);
 
 	if (package == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "couldn't find package");
