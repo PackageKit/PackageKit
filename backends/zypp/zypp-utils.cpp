@@ -724,7 +724,11 @@ zypp_build_package_id_capabilities (zypp::Capabilities caps)
 gboolean
 zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
-	//Fixme - we should check the network status and bail if not online
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		return FALSE;
+	}
+
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_set_percentage (backend, 0);
 
