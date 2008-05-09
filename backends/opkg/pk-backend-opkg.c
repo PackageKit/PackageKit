@@ -383,6 +383,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	g_free (data);
 
 	pi = pk_package_id_new_from_string (package_ids[0]);
+	pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[0], NULL);
 
 	opkg_set_option (opkg, "autoremove", &autoremove);
 	opkg_set_option (opkg, "force_removal_of_dependent_packages", &allow_deps);
