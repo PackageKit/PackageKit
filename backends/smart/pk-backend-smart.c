@@ -115,17 +115,29 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 }
 
 /**
+ * pk_backend_bool_to_text:
+ */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE) {
+		return "yes";
+	}
+	return "no";
+}
+
+/**
  * backend_install_files:
  */
 static void
 backend_install_files (PkBackend *backend, gboolean trusted, gchar **full_paths)
 {
-	gchar *package_ids_temp;
+	gchar *full_paths_temp;
 
 	/* send the complete list as stdin */
-	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
-	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), full_paths, NULL);
-	g_free (package_ids_temp);
+	full_paths_temp = pk_package_ids_to_text (full_paths, "|");
+	pk_backend_spawn_helper (spawn, "install-files.py", pk_backend_bool_to_text (trusted), full_paths_temp, NULL);
+	g_free (full_paths_temp);
 }
 
 /**

@@ -128,7 +128,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static void
 backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_dbus_remove_package (dbus, package_ids, allow_deps, autoremove);
+	pk_backend_dbus_remove_packages (dbus, package_ids, allow_deps, autoremove);
 }
 
 /**
