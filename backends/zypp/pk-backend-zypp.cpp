@@ -80,6 +80,7 @@ enum DepsBehavior {
  * each zypp backend that is created.
  */
 static std::map<PkBackend *, EventDirector *> _eventDirectors;
+
 std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
 /**
@@ -112,6 +113,7 @@ backend_destroy (PkBackend *backend)
 	}
 
 	delete (_signatures[backend]);
+	g_free (_repoName);
 }
 
 /**

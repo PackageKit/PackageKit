@@ -38,6 +38,12 @@ typedef enum {
   */
 extern std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
+/** A string to store the last refreshed repo
+  * this is needed for gpg-key handling stuff (UGLY HACK)
+  * FIXME
+  */
+extern gchar *_repoName;
+
 zypp::ZYpp::Ptr get_zypp ();
 
 gboolean zypp_is_changeable_media (const zypp::Url &url);

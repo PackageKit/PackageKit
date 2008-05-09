@@ -28,6 +28,7 @@
 
 #include "zypp-utils.h"
 
+gchar * _repoName;
 /**
  * Collect items, select best edition.  This is used to find the best
  * available or installed.  The name of the class is a bit misleading though ...
@@ -359,7 +360,7 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), key.id ()) == _signatures[backend]->end ()) {
         	pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        "TODO: Repo-Name",
+	                        _repoName,
         	                key.path ().c_str (),
                 	        key.id ().c_str (),
                         	key.id ().c_str (),
@@ -382,7 +383,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), id) == _signatures[backend]->end ()) {
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        "TODO: Repo-Name",
+	                        _repoName,
         	                file.c_str (),
                 	        id.c_str (),
                         	id.c_str (),
@@ -405,7 +406,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), file) == _signatures[backend]->end ()) {
         	pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
-	                        "TODO: Repo-Name",
+	                        _repoName,
         	                file.c_str (),
 	                        "UNKNOWN",
         	                file.c_str (),
@@ -764,6 +765,7 @@ zypp_refresh_cache (PkBackend *backend, gboolean force)
 
 		try {
 			// Refreshing metadata
+			_repoName = g_strdup (repo.alias ().c_str ());
 			manager.refreshMetadata (repo, force == TRUE ?
 				zypp::RepoManager::RefreshForced :
 				zypp::RepoManager::RefreshIfNeeded);
