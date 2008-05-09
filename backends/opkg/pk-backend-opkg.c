@@ -554,6 +554,45 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_MAPS);
 }
 
+/**
+ * backend_get_details:
+ */
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	PkPackageId *pi;
+	const gchar *package_id;
+	opkg_package_t *pkg;
+	gchar *newid;
+
+	package_id = pk_backend_get_string (backend, "package_id");
+	pi = pk_package_id_new_from_string (package_id);
+	if (pi == NULL)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_package_id_free (pi);
+		return FALSE;
+	}
+
+
+	pkg = opkg_find_package (opkg, pi->name, pi->version, pi->arch, pi->data);
+
+	newid = g_strdup_printf ("%s;%s;%s;%s", pkg->name, pkg->version, pkg->architecture, pkg->repository);
+
+	pk_backend_details (backend, newid, NULL, 0, pkg->description, pkg->url, pkg->size);
+
+	g_free (newid);
+	pk_package_id_free (pi);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static void
+backend_get_details (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_no_percentage_updates (backend);
+	pk_backend_thread_create (backend, backend_get_details_thread);
+}
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
@@ -564,7 +603,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_details */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
