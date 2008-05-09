@@ -25,6 +25,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
+#include <pk-package-ids.h>
 #include "pk-apt-search.h"
 #include "config.h"
 
@@ -137,7 +138,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	gchar *package_ids_temp;
 
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
@@ -156,7 +157,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -181,12 +182,12 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * pk_backend_update_packages:
  */
 static void
-backend_update_packages (PkBackend *backend, gchar **package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
 	gchar *package_ids_temp;
 
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
