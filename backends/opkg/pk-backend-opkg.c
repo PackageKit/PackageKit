@@ -338,11 +338,12 @@ backend_install_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	gint err;
-	const gchar *package_ids;
+	const gchar *package_id;
 
-	package_ids = pk_backend_get_string (backend, "package_ids");
+	package_id = pk_backend_get_string (backend, "pkid");
+	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, NULL);
 
-	pi = pk_package_id_new_from_string (package_ids);
+	pi = pk_package_id_new_from_string (package_id);
 
 	err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
 	if (err != 0)
