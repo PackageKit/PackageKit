@@ -1724,7 +1724,7 @@ backend_install_packages_thread (PkBackend *backend)
 	struct poclidek_rcmd	*rcmd;
 	gchar			*command, *nvra;
 	struct vf_progress	vf_progress;
-	gchar **package_id;
+	gchar **package_ids;
 
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -1739,7 +1739,7 @@ backend_install_packages_thread (PkBackend *backend)
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
-	nvra = poldek_get_nvra_from_package_id (package_id);
+	nvra = poldek_get_nvra_from_package_id (package_ids[0]);
 	command = g_strdup_printf ("install %s", nvra);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -1762,7 +1762,7 @@ backend_install_packages_thread (PkBackend *backend)
 }
 
 static void
-backend_install_packages (PkBackend *backend, gchar *package_ids)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
@@ -1863,7 +1863,7 @@ backend_remove_packages_thread (PkBackend *backend)
 	gchar			*nvra, *command;
 	gchar **package_ids;
 
-	package_ids = pk_backend_get_string (backend, "package_ids");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pb_load_packages (backend);
 
 	/* setup callbacks */
