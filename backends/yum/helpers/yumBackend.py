@@ -905,7 +905,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if txmbrs:
             self._runYumTransaction()
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This package could not be installed as it is already installed")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package is already installed")
 
     def _checkForNewer(self,po):
         pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
@@ -1003,7 +1003,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
 
         if self._is_inst(po):
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed" % str(po))
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % str(po))
             return False
 
         if len(self.yumbase.conf.exclude) > 0:
