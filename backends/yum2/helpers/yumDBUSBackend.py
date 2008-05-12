@@ -434,7 +434,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         try:
             pkgGroupDict = self._buildGroupDict()
             fltlist = filters.split(';')
-            found = {}
+            installed_nevra = [] # yum returns packages as available even when installed
 
             if not FILTER_NOT_INSTALLED in fltlist:
                 # Check installed for group
@@ -450,21 +450,31 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             group = groupMap[cg]           # use the pk group name, instead of yum 'category/group'
                     if group == key:
                         if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_INSTALLED)
+                            package_list.append((pkg,INFO_INSTALLED))
+                    installed_nevra.append(self._get_nevra(pkg))                        
+
             if not FILTER_INSTALLED in fltlist:
                 # Check available for group
                 for pkg in self.yumbase.pkgSack:
                     if self._cancel_check("Search cancelled."):
                         # _cancel_check() sets the error message, unlocks yum, and calls Finished()
                         return
-                    group = GROUP_OTHER
-                    if pkgGroupDict.has_key(pkg.name):
-                        cg = pkgGroupDict[pkg.name]
-                        if groupMap.has_key(cg):
-                            group = groupMap[cg]
-                    if group == key:
-                        if self._do_extra_filtering(pkg, fltlist):
-                            self._show_package(pkg, INFO_AVAILABLE)
+
+                    nevra = self._get_nevra(pkg)
+                    if nevra not in installed_nevra:
+                        group = GROUP_OTHER
+                        if pkgGroupDict.has_key(pkg.name):
+                            cg = pkgGroupDict[pkg.name]
+                            if groupMap.has_key(cg):
+                                group = groupMap[cg]
+                        if group == key:
+                            if self._do_extra_filtering(pkg, fltlist):
+                                package_list.append((pkg,INFO_AVAILABLE))
+
+        except yum.Errors.GroupError,e:
+            self._unlock_yum()
+            self.ErrorCode(ERROR_GROUP_NOT_FOUND, str(e))
+            self.Finished(EXIT_FAILED)
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
@@ -472,6 +482,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
 
             return
+
+        # basename filter if specified
+        if FILTER_BASENAME in fltlist:
+            for (pkg,status) in self._basename_filter(package_list):
+                self._show_package(pkg,status)
+        else:
+            for (pkg,status) in package_list:
+                self._show_package(pkg,status)
 
         self._unlock_yum()
         self.Finished(EXIT_SUCCESS)
@@ -724,6 +742,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             #we might have a rounding error
             self.PercentageChanged(100)
 
+        except yum.Errors.RepoError,e:
+            self._unlock_yum()
+            self.ErrorCode(ERROR_REPO_CONFIGURATION_ERROR,str(e))
+            self.Finished(EXIT_FAILED)
+            self.Exit()
         except yum.Errors.YumBaseError, e:
             self._unlock_yum()
             # This should be a better-defined error, but I'm not sure
@@ -837,6 +860,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         Needed to be implemented in a sub class
         '''
         if inst_file.endswith('.src.rpm'):
+            self._unlock_yum()
             self.ErrorCode(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
             self.Finished(EXIT_FAILED)
             return
@@ -1385,30 +1409,30 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             res = self.yumbase.searchGenerator(searchlist, [key])
             fltlist = filters.split(';')
 
-            available = []
-            count = 1
+            seen_nevra = [] # yum returns packages as available even when installed
+            pkg_list = [] # only do the second iteration on not installed pkgs
+            package_list = [] #we can't do emitting as found if we are post-processing
+
             for (pkg,values) in res:
                 if self._cancel_check("Search cancelled."):
                     return False
                 # are we installed?
                 if pkg.repo.id == 'installed':
-                    if FILTER_NOT_INSTALLED not in fltlist:
-                        if self._do_extra_filtering(pkg,fltlist):
-                            count+=1
-                            if count > 100:
-                                break
-                            self._show_package(pkg, INFO_INSTALLED)
-                else:
-                    available.append(pkg)
-
-            # Now show available packages.
-            if FILTER_INSTALLED not in fltlist:
-                for pkg in available:
-                    if self._cancel_check("Search cancelled."):
-                        return False
                     if self._do_extra_filtering(pkg,fltlist):
-                        self._show_package(pkg, INFO_AVAILABLE)
+                        package_list.append((pkg,INFO_INSTALLED))
+                        seen_nevra.append(self._get_nevra(pkg))
+                else:
+                    pkg_list.append(pkg)
 
+            for pkg in pkg_list:
+                if self._cancel_check("Search cancelled."):
+                    return False
+
+                nevra = self._get_nevra(pkg)
+                if nevra not in seen_nevra:
+                    if self._do_extra_filtering(pkg,fltlist):
+                        package_list.append((pkg,INFO_AVAILABLE))
+                        seen_nevra.append(self._get_nevra(pkg))
         except yum.Errors.RepoError,e:
             self.Message(MESSAGE_NOTICE, "The package cache is invalid and is being rebuilt.")
             self._refresh_yum_cache()
@@ -1417,13 +1441,22 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
             return False
 
+        # basename filter if specified
+        if FILTER_BASENAME in fltlist:
+            for (pkg,status) in self._basename_filter(package_list):
+                self._show_package(pkg,status)
+        else:
+            for (pkg,status) in package_list:
+                self._show_package(pkg,status)
+
         return True
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
         for filter in filterList:
             if filter in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
-                continue
+                if not self._do_installed_filtering(filter,pkg):
+                    return False
             elif filter in (FILTER_GUI, FILTER_NOT_GUI):
                 if not self._do_gui_filtering(filter, pkg):
                     return False
@@ -1433,10 +1466,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             elif filter in (FILTER_FREE, FILTER_NOT_FREE):
                 if not self._do_free_filtering(filter, pkg):
                     return False
-            elif filter in (FILTER_BASENAME, FILTER_NOT_BASENAME):
-                if not self._do_basename_filtering(filter, pkg):
-                    return False
         return True
+
+    def _do_installed_filtering(self,flt,pkg):
+        isInstalled = False
+        if flt == FILTER_INSTALLED:
+            wantInstalled = True
+        else:
+            wantInstalled = False
+        isInstalled = pkg.repo.id == 'installed'
+        return isInstalled == wantInstalled
 
     def _do_gui_filtering(self,flt,pkg):
         isGUI = False
@@ -1477,32 +1516,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return isFree == wantFree
 
-    def _do_basename_filtering(self,flt,pkg):
-        if flt == FILTER_BASENAME:
-            wantBase = True
-        else:
-            wantBase = False
 
-        isBase = self._check_basename(pkg)
-
-        return isBase == wantBase
-
-    def _check_basename(self, pkg):
-        '''
-        If a package does not have a source rpm (If that ever
-        happens), or it does have a source RPM, and the package's name
-        is the same as the source RPM's name, then we assume it is the
-        'base' package.
-        '''
-        basename = pkg.name
-
-        if pkg.sourcerpm:
-            basename = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
-
-        if basename == pkg.name:
-            return True
-
-        return False
 
     def _is_development_repo(self, repo):
         if repo.endswith('-debuginfo'):
@@ -1576,27 +1590,40 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         '''
         find a package based on a package id (name;version;arch;repoid)
         '''
-        # Split up the id
-        (n,idver,a,d) = self.get_package_from_id(id)
-        # get e,v,r from package id version
-        e,v,r = self._getEVR(idver)
+        # is this an real id or just an name
+        if len(id.split(';')) > 1:
+            # Split up the id
+            (n,idver,a,d) = self.get_package_from_id(id)
+            # get e,v,r from package id version
+            e,v,r = self._getEVR(idver)
+        else:
+            n = id
+            e = v = r = a = None
         # search the rpmdb for the nevra
         pkgs = self.yumbase.rpmdb.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
-        # if the package is found, then return it
+        # if the package is found, then return it (do not have to match the repo_id)
         if len(pkgs) != 0:
             return pkgs[0],True
         # search the pkgSack for the nevra
-        pkgs = self.yumbase.pkgSack.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
-        # if the package is found, then return it
-        if len(pkgs) != 0:
-            return pkgs[0],False
-        else:
+        try:
+            pkgs = self.yumbase.pkgSack.searchNevra(name=n,epoch=e,ver=v,rel=r,arch=a)
+        except yum.Errors.RepoError,e:
+            self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
+        # nothing found
+        if len(pkgs) == 0:
             return None,False
+        # one NEVRA in a single repo
+        if len(pkgs) == 1:
+            return pkgs[0],False
+        # we might have the same NEVRA in multiple repos, match by repo name
+        for pkg in pkgs:
+            if d == pkg.repoid:
+                return pkg,False
+        # repo id did not match
+        return None,False
 
     def _is_inst(self,pkg):
         return self.yumbase.rpmdb.installed(po=pkg)
-
-
 
     def _installable(self, pkg, ematch=False):
 
@@ -1764,6 +1791,57 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return INFO_ENHANCEMENT
         else:
             return INFO_UNKNOWN
+    def _is_main_package(self,repo):
+        if repo.endswith('-debuginfo'):
+            return False
+        if repo.endswith('-devel'):
+            return False
+        if repo.endswith('-libs'):
+            return False
+        return True
+
+    def _basename_filter(self,package_list):
+        '''
+        Filter the list so that the number of packages are reduced.
+        This is done by only displaying gtk2 rather than gtk2-devel, gtk2-debuginfo, etc.
+        This imlementation is done by comparing the SRPM name, and if not falling back
+        to the first entry.
+        We have to fall back else we don't emit packages where the SRPM does not produce a
+        RPM with the same name, for instance, mono produces mono-core, mono-data and mono-winforms.
+        @package_list: a (pkg,status) list of packages
+        A new list is returned that has been filtered
+        '''
+        base_list = []
+        output_list = []
+        base_list_already_got = []
+
+        #find out the srpm name and add to a new array of compound data
+        for (pkg,status) in package_list:
+            if pkg.sourcerpm:
+                base = rpmUtils.miscutils.splitFilename(pkg.sourcerpm)[0]
+                base_list.append ((pkg,status,base,pkg.version));
+            else:
+                base_list.append ((pkg,status,'nosrpm',pkg.version));
+
+        #find all the packages that match thier basename name (done seporately so we get the "best" match)
+        for (pkg,status,base,version) in base_list:
+            if base == pkg.name and (base,version) not in base_list_already_got:
+                output_list.append((pkg,status))
+                base_list_already_got.append ((base,version))
+
+        #for all the ones not yet got, can we match against a non devel match?
+        for (pkg,status,base,version) in base_list:
+            if (base,version) not in base_list_already_got:
+                if self._is_main_package(pkg.name):
+                    output_list.append((pkg,status))
+                    base_list_already_got.append ((base,version))
+
+        #add the remainder of the packages, which should just be the single debuginfo's
+        for (pkg,status,base,version) in base_list:
+            if (base,version) not in base_list_already_got:
+                output_list.append((pkg,status))
+                base_list_already_got.append ((base,version))
+        return output_list
 
     def _get_obsoleted(self,name):
         obsoletes = self.yumbase.up.getObsoletesTuples( newest=1 )
