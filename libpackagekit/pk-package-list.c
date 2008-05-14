@@ -45,6 +45,7 @@
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-package-id.h"
+#include "pk-package-item.h"
 #include "pk-package-list.h"
 
 static void     pk_package_list_class_init	(PkPackageListClass *klass);
@@ -77,10 +78,7 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
 	pk_debug ("adding to cache array package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
-	item = g_new0 (PkPackageItem, 1);
-	item->info = info;
-	item->package_id = g_strdup (package_id);
-	item->summary = g_strdup (summary);
+	item = pk_package_item_new (info, package_id, summary);
 	g_ptr_array_add (plist->priv->array, item);
 
 	return TRUE;
@@ -152,9 +150,7 @@ pk_package_list_clear (PkPackageList *plist)
 
 	while (plist->priv->array->len > 0) {
 		item = g_ptr_array_index (plist->priv->array, 0);
-		g_free (item->package_id);
-		g_free (item->summary);
-		g_free (item);
+		pk_package_item_free (item);
 		g_ptr_array_remove_index_fast (plist->priv->array, 0);
 	}
 	return TRUE;
