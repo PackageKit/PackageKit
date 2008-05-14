@@ -155,6 +155,38 @@ pk_opkg_progress_cb (opkg_t *opkg, const opkg_progress_data_t *pdata, void *data
 		return;
 
 	pk_backend_set_percentage (backend, pdata->percentage);
+	if (pdata->package)
+	{
+		gchar *uid;
+		opkg_package_t *pkg = pdata->package;
+		gint status = PK_INFO_ENUM_UNKNOWN;
+
+		uid = g_strdup_printf ("%s;%s;%s;",
+			pkg->name, pkg->version, pkg->architecture);
+
+		if (pdata->action == OPKG_DOWNLOAD)
+			status = PK_INFO_ENUM_DOWNLOADING;
+		else if (pdata->action == OPKG_INSTALL)
+			status = PK_INFO_ENUM_INSTALLING;
+		else if (pdata->action == OPKG_REMOVE)
+			status = PK_INFO_ENUM_REMOVING;
+
+		pk_backend_package (backend, status, uid, pkg->description);
+		g_free (uid);
+	}
+
+	switch (pdata->action)
+	{
+	case OPKG_DOWNLOAD:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		break;
+	case OPKG_INSTALL:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+		break;
+	case OPKG_REMOVE:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+		break;
+	}
 }
 
 static gboolean
