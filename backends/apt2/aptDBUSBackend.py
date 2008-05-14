@@ -509,6 +509,26 @@ class PackageKitAptBackend(PackageKitBaseBackend):
                 self._emit_package(pkg)
         self.Finished(EXIT_SUCCESS)
 
+    @threaded
+    def doResolve(self, filters, name):
+        '''
+        Implement the apt2-resolve functionality
+        '''
+        pklog.info("Resolve")
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(False)
+
+        #FIXME: Support candidates
+        if self._cache.has_key(name) and self.is_package_visible(pkg, filters):
+            self._emit_package(name)
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                           "Package name %s could not be resolved" % name)
+            self.Finished(EXIT_FAILED)
+
     # Helpers
 
     def _open_cache(self, prange=(0,100), progress=True):

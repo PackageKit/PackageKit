@@ -167,6 +167,25 @@ backend_cancel (PkBackend *backend)
 	pk_backend_dbus_cancel (dbus);
 }
 
+/**
+ *  * pk_backend_resolve:
+ *   */
+static void
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+{
+	        pk_backend_dbus_resolve (dbus, filters, package_id);
+}
+
+/**
+ *  * pk_backend_get_packages:
+ *   */
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	        pk_backend_dbus_get_packages (dbus, filters);
+}
+
+
 
 PK_BACKEND_OPTIONS (
 	"Apt",					/* description */
@@ -179,7 +198,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_depends */
 	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
-	NULL,					/* get_packages */
+	backend_get_packages,			/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
@@ -191,7 +210,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_package,			/* remove_package */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
-	NULL,					/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	NULL,					/* search_file */
