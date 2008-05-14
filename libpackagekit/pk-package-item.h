@@ -40,6 +40,7 @@ PkPackageItem	*pk_package_item_new			(PkInfoEnum		 info,
 							 const gchar		*package_id,
 							 const gchar		*summary);
 gboolean	 pk_package_item_free			(PkPackageItem		*item);
+PkPackageItem	*pk_package_item_copy			(PkPackageItem		*item);
 gboolean	 pk_package_item_equal			(PkPackageItem		*item1,
 							 PkPackageItem		*item2);
 

@@ -70,8 +70,9 @@ pk_package_item_new (PkInfoEnum info, const gchar *package_id, const gchar *summ
 gboolean
 pk_package_item_free (PkPackageItem *item)
 {
-	g_return_val_if_fail (item != NULL, FALSE);
-
+	if (item == NULL) {
+		return FALSE;
+	}
 	g_free (item->package_id);
 	g_free (item->summary);
 	g_free (item);
@@ -86,8 +87,23 @@ pk_package_item_free (PkPackageItem *item)
 gboolean
 pk_package_item_equal (PkPackageItem *item1, PkPackageItem *item2)
 {
+	if (item1 == NULL || item2 == NULL) {
+		return FALSE;
+	}
 	return (item1->info == item2->info &&
 		pk_strequal (item1->package_id, item2->package_id));
+}
+
+/**
+ * pk_package_item_copy:
+ *
+ * Copy a PkPackageItem
+ **/
+PkPackageItem *
+pk_package_item_copy (PkPackageItem *item)
+{
+	g_return_val_if_fail (item != NULL, NULL);
+	return pk_package_item_new (item->info, item->package_id, item->summary);
 }
 
 /***************************************************************************
@@ -101,6 +117,7 @@ libst_package_item (LibSelfTest *test)
 {
 	PkPackageItem *item1;
 	PkPackageItem *item2;
+	PkPackageItem *item3;
 	gboolean ret;
 
 	if (libst_start (test, "PkPackageItem", CLASS_AUTO) == FALSE) {
@@ -126,8 +143,17 @@ libst_package_item (LibSelfTest *test)
 	}
 
 	/************************************************************/
+	libst_title (test, "copy entry");
+	item3 = pk_package_item_copy (item2);
+	if (item3 != NULL) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
+	/************************************************************/
 	libst_title (test, "check equal");
-	ret = pk_package_item_equal (item1, item2);
+	ret = pk_package_item_equal (item1, item3);
 	if (ret) {
 		libst_success (test, NULL);
 	} else {
@@ -135,6 +161,8 @@ libst_package_item (LibSelfTest *test)
 	}
 
 	pk_package_item_free (item2);
+	pk_package_item_free (item3);
+
 	/************************************************************/
 	libst_title (test, "add entry");
 	item2 = pk_package_item_new (PK_INFO_ENUM_INSTALLED, "gnome-do;1.23;i386;data", "GNOME doo!");
