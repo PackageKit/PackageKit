@@ -471,7 +471,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             if self._do_extra_filtering(pkg, fltlist):
                                 package_list.append((pkg,INFO_AVAILABLE))
 
-        except yum.Errors.GroupError,e:
+        except yum.Errors.GroupsError,e:
             self._unlock_yum()
             self.ErrorCode(ERROR_GROUP_NOT_FOUND, str(e))
             self.Finished(EXIT_FAILED)
