@@ -45,13 +45,6 @@
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
 
 /**
- * PK_BACKEND_PERCENTAGE_INVALID:
- *
- * The unknown percentage value
- */
-#define PK_BACKEND_PERCENTAGE_INVALID		101
-
-/**
  * PK_BACKEND_PERCENTAGE_DEFAULT:
  *
  * The default percentage value, should never be emitted, but should be

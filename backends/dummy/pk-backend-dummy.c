@@ -285,11 +285,16 @@ backend_install_timeout (gpointer data)
 		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
 				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
 				    "Devel files for gtkhtml");
+		/* this duplicate package should be ignored */
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING,
+				    "gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
 		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 	}
 	if (_progress_percentage > 30 && _progress_percentage < 50) {
 		sub_percent = ((gfloat) (_progress_percentage - 30.0f) / 20.0f) * 100.0f;
 		pk_backend_set_sub_percentage (backend, sub_percent);
+	} else {
+		pk_backend_set_sub_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	}
 	_progress_percentage += 1;
 	pk_backend_set_percentage (backend, _progress_percentage);

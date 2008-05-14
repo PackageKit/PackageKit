@@ -30,6 +30,13 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PK_BACKEND_PERCENTAGE_INVALID:
+ *
+ * The unknown percentage value
+ */
+#define PK_BACKEND_PERCENTAGE_INVALID		101
+
 typedef struct _PkBackend PkBackend;
 
 /* set the state */
