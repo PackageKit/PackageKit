@@ -33,6 +33,7 @@
 #include <glib/gprintf.h>
 #include <pk-network.h>
 
+#include "pk-package-item.h"
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-marshal.h"
@@ -90,6 +91,7 @@ struct _PkBackendPrivate
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
 	PkNetwork		*network;
+	PkPackageItem		*last_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -901,10 +903,25 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
+	PkPackageItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* check against the old one */
+	item = pk_package_item_new (info, package_id, summary);
+	ret = pk_package_item_equal (item, backend->priv->last_package);
+	if (ret) {
+		pk_package_item_free (item);
+		pk_debug ("skipping duplicate %s", package_id);
+		return FALSE;
+	}
+	/* update the 'last' package */
+	pk_package_item_free (backend->priv->last_package);
+	backend->priv->last_package = pk_package_item_copy (item);
+	pk_package_item_free (item);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -1818,6 +1835,7 @@ pk_backend_reset (PkBackend *backend)
 
 	/* TODO: need to wait for Finished() if running */
 
+	pk_package_item_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
@@ -1825,6 +1843,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->finished = FALSE;
 	backend->priv->has_sent_package = FALSE;
 	backend->priv->thread = NULL;
+	backend->priv->last_package = NULL;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -1857,6 +1876,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->c_tid = NULL;
 	backend->priv->file_changed_func = NULL;
 	backend->priv->file_changed_data = NULL;
+	backend->priv->last_package = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
