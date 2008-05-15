@@ -562,7 +562,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 {
 	gboolean ret = TRUE;
 	gboolean is_local;
-	gchar *package_id;
+	gchar *package_id = NULL;
 	gchar **package_ids = NULL;
 	gchar **files = NULL;
 	guint i;
@@ -718,7 +718,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	guint length;
 	gboolean remove;
 	GPtrArray *array;
-	gchar **package_ids;
+	gchar **package_ids = NULL;
 	PkPackageList *list;
 
 	array = g_ptr_array_new ();
