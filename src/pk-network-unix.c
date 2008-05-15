@@ -138,6 +138,11 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 			continue;
 		}
 
+		/* is loopback? */
+		if (pk_strequal (sections[0], "lo")) {
+			continue;
+		}
+
 		/* is correct parameters? */
 		number_sections = g_strv_length (sections);
 		if (number_sections != 11) {
@@ -145,9 +150,8 @@ pk_network_unix_get_network_state (PkNetworkUnix *network_unix)
 			continue;
 		}
 
-		/* is MTU and gateway nonzero? */
-		if (!pk_strequal (sections[8], "0") &&
-		    !pk_strequal (sections[2], "00000000")) {
+		/* is gateway nonzero? */
+		if (!pk_strequal (sections[2], "00000000")) {
 			pk_debug ("interface %s is valid", sections[0]);
 			online = TRUE;
 		}
