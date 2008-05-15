@@ -85,6 +85,35 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 }
 
 /**
+ * pk_package_list_add_item:
+ *
+ * Makes a deep copy, and adds to the array
+ **/
+gboolean
+pk_package_list_add_item (PkPackageList *plist, PkPackageItem *item)
+{
+	gboolean ret;
+	PkPackageItem *item_new;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
+
+	ret = pk_package_list_contains_item (plist, item);
+	if (ret) {
+		pk_debug ("already added item");
+		return FALSE;
+	}
+
+	pk_debug ("adding to cache array package %s, %s, %s",
+		  pk_info_enum_to_text (item->info), item->package_id, item->summary);
+
+	item_new = pk_package_item_copy (item);
+	g_ptr_array_add (plist->priv->array, item_new);
+
+	return TRUE;
+}
+
+/**
  * pk_package_list_get_string:
  **/
 gchar *
@@ -174,6 +203,31 @@ pk_package_list_contains (PkPackageList *plist, const gchar *package_id)
 	for (i=0; i<length; i++) {
 		item = g_ptr_array_index (plist->priv->array, i);
 		ret = pk_package_id_equal (item->package_id, package_id);
+		if (ret) {
+			break;
+		}
+	}
+	return ret;
+}
+
+/**
+ * pk_package_list_contains_item:
+ **/
+gboolean
+pk_package_list_contains_item (PkPackageList *plist, PkPackageItem *item)
+{
+	PkPackageItem *item_temp;
+	guint i;
+	guint length;
+	gboolean ret = FALSE;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (item != NULL, FALSE);
+
+	length = plist->priv->array->len;
+	for (i=0; i<length; i++) {
+		item_temp = g_ptr_array_index (plist->priv->array, i);
+		ret = pk_package_item_equal (item_temp, item);
 		if (ret) {
 			break;
 		}

@@ -57,8 +57,12 @@ gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 PkInfoEnum		 info,
 							 const gchar		*package_id,
 							 const gchar		*summary);
+gboolean	 pk_package_list_add_item		(PkPackageList		*plist,
+							 PkPackageItem		*item);
 gboolean	 pk_package_list_contains		(PkPackageList		*plist,
 							 const gchar		*package_id);
+gboolean	 pk_package_list_contains_item		(PkPackageList		*plist,
+							 PkPackageItem		*item);
 gchar		*pk_package_list_get_string		(PkPackageList		*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_package_list_get_size		(PkPackageList		*plist);
