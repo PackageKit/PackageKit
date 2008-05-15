@@ -123,16 +123,6 @@ pk_backend_dbus_sub_percentage_changed_cb (DBusGProxy *proxy, guint sub_percenta
 }
 
 /**
- * pk_backend_dbus_no_percentage_updates_cb:
- **/
-static void
-pk_backend_dbus_no_percentage_updates_cb (DBusGProxy *proxy, PkBackendDbus *backend_dbus)
-{
-	pk_debug ("got signal");
-	pk_backend_no_percentage_updates (backend_dbus->priv->backend);
-}
-
-/**
  * pk_backend_dbus_package_cb:
  **/
 static void
@@ -325,8 +315,6 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 					G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "SubPercentageChanged",
 					G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus);
-	dbus_g_proxy_disconnect_signal (proxy, "NoPercentageChanged",
-					G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Package",
 					G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus);
 	dbus_g_proxy_disconnect_signal (proxy, "Details",
@@ -385,7 +373,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				 G_TYPE_UINT, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "SubPercentageChanged",
 				 G_TYPE_UINT, G_TYPE_INVALID);
-	dbus_g_proxy_add_signal (proxy, "NoPercentageChanged", G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Package",
 				 G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INVALID);
 	dbus_g_proxy_add_signal (proxy, "Details",
@@ -424,8 +411,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 				     G_CALLBACK (pk_backend_dbus_percentage_changed_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "SubPercentageChanged",
 				     G_CALLBACK (pk_backend_dbus_sub_percentage_changed_cb), backend_dbus, NULL);
-	dbus_g_proxy_connect_signal (proxy, "NoPercentageChanged",
-				     G_CALLBACK (pk_backend_dbus_no_percentage_updates_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Package",
 				     G_CALLBACK (pk_backend_dbus_package_cb), backend_dbus, NULL);
 	dbus_g_proxy_connect_signal (proxy, "Details",

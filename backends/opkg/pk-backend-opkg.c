@@ -214,7 +214,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
@@ -315,7 +315,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -337,7 +337,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -356,7 +356,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -407,7 +407,7 @@ backend_install_packages_thread (PkBackend *backend)
 static void
 backend_install_packages (PkBackend *backend, gchar **package_id)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
 	pk_backend_set_string (backend, "pkid", package_id[0]);
@@ -462,7 +462,7 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	gpointer *params;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* params is a small array we can pack our thread parameters into */
 	params = g_new0 (gpointer, 2);
@@ -507,7 +507,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
@@ -557,7 +557,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	gint i;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	for (i = 0; package_ids[i]; i++) {
 		pk_backend_set_string (backend, "pkgid", package_ids[i]);
@@ -599,7 +599,7 @@ static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -662,7 +662,7 @@ backend_get_details_thread (PkBackend *backend)
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_thread_create (backend, backend_get_details_thread);
 }
 

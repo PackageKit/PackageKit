@@ -798,35 +798,6 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 }
 
 /**
- * pk_backend_no_percentage_updates:
- **/
-gboolean
-pk_backend_no_percentage_updates (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_debug ("duplicate set of %i", PK_BACKEND_PERCENTAGE_INVALID);
-		return FALSE;
-	}
-
-	/* invalidate previous percentage */
-	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
-
-	/* emit the progress changed signal */
-	pk_backend_emit_progress_changed (backend);
-	return TRUE;
-}
-
-/**
  * pk_backend_set_status:
  **/
 gboolean

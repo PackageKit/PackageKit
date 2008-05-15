@@ -313,7 +313,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 			ret = FALSE;
 			goto out;
 		}
-		pk_backend_no_percentage_updates (backend_spawn->priv->backend);
+		pk_backend_set_percentage (backend_spawn->priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
 	} else if (pk_strequal (command, "repo-signature-required")) {
 
 		if (size != 9+99) {

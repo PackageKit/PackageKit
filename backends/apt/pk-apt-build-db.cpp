@@ -40,7 +40,7 @@ void apt_build_db(PkBackend * backend, sqlite3 *db)
 	sqlite3_stmt *package = NULL;
 
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	sdir = g_build_filename(_config->Find("Dir").c_str(),_config->Find("Dir::State").c_str(),_config->Find("Dir::State::lists").c_str(), NULL);
 	dir = g_dir_open(sdir,0,&error);

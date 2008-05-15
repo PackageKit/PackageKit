@@ -236,7 +236,7 @@ backend_search_name_timeout (gpointer data)
 static void
 backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *search)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	g_timeout_add (200000, backend_search_name_timeout, backend);
 }
 
