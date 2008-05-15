@@ -1471,9 +1471,9 @@ main (int argc, char *argv[])
 		ret = pk_client_get_packages (client, filters, &error);
 
 	} else if (strcmp (mode, "get-actions") == 0) {
-		roles = pk_control_get_actions (control);
 		text = pk_role_enums_to_text (roles);
-		g_print ("roles=%s\n", text);
+		g_strdelimit (text, ";", '\n');
+		g_print ("%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
 		/* these can never fail */
@@ -1482,7 +1482,8 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "get-filters") == 0) {
 		filters = pk_control_get_filters (control);
 		text = pk_filter_enums_to_text (filters);
-		g_print ("filters=%s\n", text);
+		g_strdelimit (text, ";", '\n');
+		g_print ("%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
 		/* these can never fail */
@@ -1491,7 +1492,8 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "get-groups") == 0) {
 		groups = pk_control_get_groups (control);
 		text = pk_group_enums_to_text (groups);
-		g_print ("groups=%s\n", text);
+		g_strdelimit (text, ";", '\n');
+		g_print ("%s\n", text);
 		g_free (text);
 		maybe_sync = FALSE;
 		/* these can never fail */
