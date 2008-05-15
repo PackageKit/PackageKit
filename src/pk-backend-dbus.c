@@ -341,6 +341,33 @@ pk_backend_dbus_remove_callbacks (PkBackendDbus *backend_dbus)
 }
 
 /**
+ * pk_backend_dbus_set_proxy:
+ **/
+static gboolean
+pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	gboolean ret;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
+	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
+	g_return_val_if_fail (proxy_http != NULL, FALSE);
+	g_return_val_if_fail (proxy_ftp != NULL, FALSE);
+
+	/* new sync method call */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "SetProxy", &error,
+				 G_TYPE_STRING, proxy_http,
+				 G_TYPE_STRING, proxy_ftp,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (error != NULL) {
+		pk_warning ("%s", error->message);
+		g_error_free (error);
+	}
+	return ret;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
@@ -450,6 +477,18 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 		pk_backend_finished (backend_dbus->priv->backend);
 		g_error_free (error);
 	}
+
+	/* set the proxy */
+	if (ret) {
+		gchar *proxy_http;
+		gchar *proxy_ftp;
+		proxy_http = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+		proxy_ftp = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+		pk_backend_dbus_set_proxy (backend_dbus, proxy_http, proxy_ftp);
+		g_free (proxy_http);
+		g_free (proxy_ftp);
+	}
+
 	if (ret) {
 		pk_backend_dbus_time_check (backend_dbus);
 	}

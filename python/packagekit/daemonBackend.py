@@ -789,6 +789,21 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SetProxy(self, proxy_http, proxy_ftp):
+        '''
+        Set the proxy
+        '''
+        pklog.info("SetProxy(%s, %s)" % (proxy_http, proxy_ftp))
+        self.doSetProxy(proxy_http, proxy_ftp)
+
+    def doSetProxy(self, proxy_http, proxy_ftp):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        # do not use Finished() in this method
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')
     def InstallPublicKey(self, keyurl):
         '''

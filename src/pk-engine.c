@@ -101,6 +101,7 @@ struct PkEnginePrivate
 	PkNetwork		*network;
 	PkSecurity		*security;
 	PkNotify		*notify;
+	PkConf			*conf;
 	PkFileMonitor		*file_monitor;
 	PkRoleEnum		 actions;
 	PkGroupEnum		 groups;
@@ -579,9 +580,14 @@ pk_engine_init (PkEngine *engine)
 	DBusGConnection *connection;
 	gboolean ret;
 	gchar *filename;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
 
 	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
 	engine->priv->restart_schedule = FALSE;
+
+	/* use the config file */
+	engine->priv->conf = pk_conf_new ();
 
 	/* setup the backend backend */
 	engine->priv->backend = pk_backend_new ();
@@ -638,6 +644,13 @@ pk_engine_init (PkEngine *engine)
 	g_signal_connect (engine->priv->file_monitor, "file-changed",
 			  G_CALLBACK (pk_engine_file_monitor_changed_cb), engine);
 	g_free (filename);
+
+	/* set the proxy */
+	proxy_http = pk_conf_get_string (engine->priv->conf, "ProxyHTTP");
+	proxy_ftp = pk_conf_get_string (engine->priv->conf, "ProxyFTP");
+	pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	g_free (proxy_http);
+	g_free (proxy_ftp);
 
 	engine->priv->transaction_list = pk_transaction_list_new ();
 	g_signal_connect (engine->priv->transaction_list, "changed",
@@ -696,6 +709,7 @@ pk_engine_finalize (GObject *object)
 	g_object_unref (engine->priv->notify);
 	g_object_unref (engine->priv->backend);
 	g_object_unref (engine->priv->cache);
+	g_object_unref (engine->priv->conf);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }
