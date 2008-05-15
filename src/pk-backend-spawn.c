@@ -476,7 +476,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn, const gchar *exe
 	argv[0] = g_strdup (filename);
 
 	pk_backend_spawn_helper_new (backend_spawn);
-	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv);
+	ret = pk_spawn_argv (backend_spawn->priv->spawn, argv, NULL);
 	if (!ret) {
 		pk_backend_spawn_helper_delete (backend_spawn);
 		pk_backend_error_code (backend_spawn->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR,
