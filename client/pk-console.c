@@ -50,7 +50,7 @@ static gboolean awaiting_space = FALSE;
 static gboolean trusted = TRUE;
 static guint timer_id = 0;
 static guint percentage_last = 0;
-static gchar *filename = NULL;
+static gchar **files_cache = NULL;
 static PkControl *control = NULL;
 static PkClient *client = NULL;
 static PkClient *client_task = NULL;
@@ -555,20 +555,93 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 }
 
 /**
- * pk_console_install_package:
+ * pk_console_install_stuff:
  **/
 static gboolean
-pk_console_install_package (PkClient *client, const gchar *package, GError **error)
+pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 {
-	gboolean ret;
+	gboolean ret = TRUE;
+	gboolean is_local;
 	gchar *package_id;
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, package, error);
-	if (package_id == NULL) {
-		g_print ("%s\n", _("Could not find a package with that name to install, or package already installed"));
-		return FALSE;
+	gchar **package_ids = NULL;
+	gchar **files = NULL;
+	guint i;
+	guint length;
+	GPtrArray *array_packages;
+	GPtrArray *array_files;
+
+	array_packages = g_ptr_array_new ();
+	array_files = g_ptr_array_new ();
+	length = g_strv_length (packages);
+	for (i=2; i<length; i++) {
+		is_local = g_file_test (packages[i], G_FILE_TEST_EXISTS);
+		if (is_local) {
+			g_ptr_array_add (array_files, g_strdup (packages[i]));
+		} else {
+			package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_NOT_INSTALLED, packages[i], error);
+			if (package_id == NULL) {
+				g_print ("%s\n", _("Could not find a package with that name to install, or package already installed"));
+				ret = FALSE;
+				break;
+			}
+			g_ptr_array_add (array_packages, package_id);
+		}
 	}
-	ret = pk_client_install_package (client, package_id, error);
-	g_free (package_id);
+
+	/* one of the resolves failed */
+	if (!ret) {
+		pk_warning ("resolve failed");
+		goto out;
+	}
+
+
+	/* any to process? */
+	if (array_packages->len > 0) {
+		/* convert to strv */
+		package_ids = pk_ptr_array_to_argv (array_packages);
+
+		/* reset */
+		ret = pk_client_reset (client, error);
+		if (!ret) {
+			pk_warning ("failed to reset");
+			goto out;
+		}
+
+		ret = pk_client_install_package (client, package_id, error);
+		if (!ret) {
+			pk_warning ("failed to install packages");
+			goto out;
+		}
+	}
+
+	/* any to process? */
+	if (array_files->len > 0) {
+		/* convert to strv */
+		files = pk_ptr_array_to_argv (array_files);
+
+		/* save for untrusted callback */
+		g_strfreev (files_cache);
+		files_cache = g_strdupv (files);
+
+		/* reset */
+		ret = pk_client_reset (client, error);
+		if (!ret) {
+			pk_warning ("failed to reset");
+			goto out;
+		}
+
+		ret = pk_client_install_files (client, trusted, files, error);
+		if (!ret) {
+			pk_warning ("failed to install files");
+			goto out;
+		}
+	}
+
+out:
+	g_strfreev (package_ids);
+	g_strfreev (files);
+	g_ptr_array_free (array_files, TRUE);
+	g_ptr_array_free (array_packages, TRUE);
 	return ret;
 }
 
@@ -576,16 +649,16 @@ pk_console_install_package (PkClient *client, const gchar *package, GError **err
  * pk_console_remove_only:
  **/
 static gboolean
-pk_console_remove_only (PkClient *client, const gchar *package_id, gboolean force, gboolean autoremove, GError **error)
+pk_console_remove_only (PkClient *client, gchar **package_ids, gboolean force, GError **error)
 {
 	gboolean ret;
 
-	pk_debug ("remove %s", package_id);
+	pk_debug ("remove+ %s", package_ids[0]);
 	ret = pk_client_reset (client, error);
 	if (!ret) {
 		return ret;
 	}
-	return pk_client_remove_package (client, package_id, force, autoremove, error);
+	return pk_client_remove_packages (client, package_ids, force, FALSE, error);
 }
 
 /**
@@ -631,56 +704,91 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 }
 
 /**
- * pk_console_remove_package:
+ * pk_console_remove_packages:
  **/
 static gboolean
-pk_console_remove_package (PkClient *client, const gchar *package, GError **error)
+pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 {
 	gchar *package_id;
-	gboolean ret;
-	guint length;
+	gboolean ret = TRUE;
 	PkPackageItem *item;
 	PkPackageId *ident;
-	guint i;
+	guint i, j;
+	guint size;
+	guint length;
 	gboolean remove;
+	GPtrArray *array;
+	gchar **package_ids;
+	PkPackageList *list;
 
-	package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, package, error);
-	if (package_id == NULL) {
-		g_print ("%s\n", _("Could not find a package with that name to remove"));
-		return FALSE;
+	array = g_ptr_array_new ();
+	list = pk_package_list_new ();
+	length = g_strv_length (packages);
+	for (i=2; i<length; i++) {
+		package_id = pk_console_perhaps_resolve (client, PK_FILTER_ENUM_INSTALLED, packages[i], error);
+		if (package_id == NULL) {
+			g_print ("%s:%s\n", _("Could not find a package to remove"), packages[i]);
+			ret = FALSE;
+			break;
+		}
+		g_ptr_array_add (array, g_strdup (package_id));
+		pk_debug ("resolved to %s", package_id);
+		g_free (package_id);
 	}
+
+	/* one of the resolves failed */
+	if (!ret) {
+		goto out;
+	}
+
+	/* convert to strv */
+	package_ids = pk_ptr_array_to_argv (array);
 
 	/* are we dumb and can't check for requires? */
 	if (!pk_enums_contain (roles, PK_ROLE_ENUM_GET_REQUIRES)) {
 		/* no, just try to remove it without deps */
-		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
-		g_free (package_id);
-		return ret;
+		ret = pk_console_remove_only (client, package_ids, FALSE, error);
+		goto out;
 	}
 
-	/* see if any packages require this one */
-	ret = pk_client_reset (client_task, error);
+	/* get the requires packages for each package_id */
+	length = g_strv_length (package_ids);
+	for (i=0; i<length; i++) {
+		ret = pk_client_reset (client_task, error);
+		if (!ret) {
+			pk_warning ("failed to reset");
+			break;
+		}
+
+		pk_debug ("Getting installed requires for %s", package_ids[i]);
+		/* see if any packages require this one */
+		ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_ids[i], TRUE, error);
+		if (!ret) {
+			pk_warning ("failed to get requires");
+			break;
+		}
+
+		/* see how many packages there are */
+		size = pk_client_package_buffer_get_size (client_task);
+		for (j=0; j<size; j++) {
+			item = pk_client_package_buffer_get_item (client_task, j);
+			pk_package_list_add_item (list, item);
+		}
+	}
+
+	/* one of the get-requires failed */
 	if (!ret) {
-		pk_warning ("failed to reset");
-		return FALSE;
+		goto out;
 	}
-
-	pk_debug ("Getting installed requires for %s", package_id);
-	ret = pk_client_get_requires (client_task, PK_FILTER_ENUM_INSTALLED, package_id, TRUE, error);
-	if (!ret) {
-		return FALSE;
-	}
-
-	/* see how many packages there are */
-	length = pk_client_package_buffer_get_size (client_task);
 
 	/* if there are no required packages, just do the remove */
+	length = pk_package_list_get_size (list);
 	if (length == 0) {
 		pk_debug ("no requires");
-		ret = pk_console_remove_only (client, package_id, FALSE, FALSE, error);
-		g_free (package_id);
-		return ret;
+		ret = pk_console_remove_only (client, package_ids, FALSE, error);
+		goto out;
 	}
+
 
 	/* present this to the user */
 	if (awaiting_space) {
@@ -688,7 +796,7 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	}
 	g_print ("%s:\n", _("The following packages have to be removed"));
 	for (i=0; i<length; i++) {
-		item = pk_client_package_buffer_get_item (client_task, i);
+		item = pk_package_list_get_item (list, i);
 		ident = pk_package_id_new_from_string (item->package_id);
 		g_print ("%i\t%s-%s\n", i, ident->name, ident->version);
 		pk_package_id_free (ident);
@@ -700,14 +808,17 @@ pk_console_remove_package (PkClient *client, const gchar *package, GError **erro
 	/* we chickened out */
 	if (remove == FALSE) {
 		g_print ("%s\n", _("Cancelled!"));
-		g_free (package_id);
-		return FALSE;
+		ret = FALSE;
+		goto out;
 	}
 
 	/* remove all the stuff */
-	ret = pk_console_remove_only (client, package_id, TRUE, FALSE, error);
-	g_free (package_id);
+	ret = pk_console_remove_only (client, package_ids, TRUE, error);
 
+out:
+	g_object_unref (list);
+	g_strfreev (package_ids);
+	g_ptr_array_free (array, TRUE);
 	return ret;
 }
 
@@ -846,7 +957,7 @@ pk_console_error_code_cb (PkClient *client, PkErrorCodeEnum error_code, const gc
 	    error_code == PK_ERROR_ENUM_MISSING_GPG_SIGNATURE && trusted) {
 		pk_debug ("need to try again with trusted FALSE");
 		trusted = FALSE;
-		ret = pk_client_install_file (client_install_files, trusted, filename, &error);
+		ret = pk_client_install_files (client_install_files, trusted, files_cache, &error);
 		/* we succeeded, so wait for the requeue */
 		if (!ret) {
 			pk_warning ("failed to install file second time: %s", error->message);
@@ -1159,7 +1270,6 @@ main (int argc, char *argv[])
 	const gchar *value = NULL;
 	const gchar *details = NULL;
 	const gchar *parameter = NULL;
-	PkRoleEnum roles;
 	PkGroupEnum groups;
 	gchar *text;
 	ret = FALSE;
@@ -1330,15 +1440,7 @@ main (int argc, char *argv[])
 			g_print (_("You need to specify a package or file to install"));
 			goto out;
 		}
-		/* is it a local file? */
-		ret = g_file_test (value, G_FILE_TEST_EXISTS);
-		if (ret) {
-			ret = pk_client_install_file (client, trusted, value, &error);
-			/* we need this for the untrusted try */
-			filename = g_strdup (value);
-		} else {
-			ret = pk_console_install_package (client, value, &error);
-		}
+		ret = pk_console_install_stuff (client, argv, &error);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1352,7 +1454,7 @@ main (int argc, char *argv[])
 			g_print (_("You need to specify a package to remove"));
 			goto out;
 		}
-		ret = pk_console_remove_package (client, value, &error);
+		ret = pk_console_remove_packages (client, argv, &error);
 
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
@@ -1533,7 +1635,7 @@ out:
 	g_free (options_help);
 	g_free (filter);
 	g_free (summary);
-	g_free (filename);
+	g_strfreev (files_cache);
 	g_object_unref (control);
 	g_object_unref (client);
 	g_object_unref (client_task);
