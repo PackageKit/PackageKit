@@ -494,6 +494,12 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 		return g_strdup (package);
 	}
 
+	ret = pk_client_reset (client_task, error);
+	if (ret == FALSE) {
+		pk_warning ("failed to reset client task");
+		return NULL;
+	}
+
 	/* we need to resolve it */
 	ret = pk_client_resolve (client_task, filter, package, error);
 	if (ret == FALSE) {
