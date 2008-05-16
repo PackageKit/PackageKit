@@ -54,9 +54,6 @@ static void     pk_polkit_client_finalize		(GObject           *object);
 #define POLKIT_DBUS_PATH		"/org/gnome/PolicyKit/Manager"
 #define POLKIT_DBUS_INTERFACE		"org.gnome.PolicyKit.Manager"
 
-/* we only support auth on the the transaction interface */
-#define	PK_ERROR_REFUSED_BY_POLICY	"org.freedesktop.PackageKit.Transaction.RefusedByPolicy"
-
 /**
  * PkPolkitClientPrivate:
  *
@@ -175,7 +172,10 @@ pk_polkit_client_error_denied_by_policy (GError *error)
 	/* check for specific error */
 	error_name = dbus_g_error_get_name (error);
 	pk_debug ("ERROR: %s: %s", error_name, error->message);
-	if (pk_strequal (error_name, PK_ERROR_REFUSED_BY_POLICY)) {
+	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
+		return TRUE;
+	}
+	if (pk_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy")) {
 		return TRUE;
 	}
 	return FALSE;
