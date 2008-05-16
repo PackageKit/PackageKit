@@ -373,44 +373,52 @@ static gboolean
 backend_install_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	gint err;
-	const gchar *package_id;
+	gint err, i;
+	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "pkid");
-	pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_id, NULL);
+	package_ids = pk_backend_get_strv (backend, "pkids");
 
-	pi = pk_package_id_new_from_string (package_id);
+	err = 0;
 
-	err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
-	switch (err)
+	for (i = 0; package_ids[i]; i++)
 	{
-	case OPKG_NO_ERROR:
-		break;
-	case OPKG_DEPENDANCIES_FAILED:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
-		break;
-	case OPKG_PACKAGE_ALREADY_INSTALLED:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, NULL);
-		break;
-	case OPKG_PACKAGE_NOT_AVAILABLE:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
-		break;
-	default:
-		opkg_unknown_error (backend, err, "Install");
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[0], NULL);
+
+		pi = pk_package_id_new_from_string (package_ids[0]);
+
+		err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+		switch (err)
+		{
+		case OPKG_NO_ERROR:
+			break;
+		case OPKG_DEPENDANCIES_FAILED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
+			break;
+		case OPKG_PACKAGE_ALREADY_INSTALLED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, NULL);
+			break;
+		case OPKG_PACKAGE_NOT_AVAILABLE:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
+			break;
+		default:
+			opkg_unknown_error (backend, err, "Install");
+		}
+		pk_package_id_free (pi);
+		if (err != 0)
+			break;
 	}
 
-	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return (err == 0);
 }
 
 static void
-backend_install_packages (PkBackend *backend, gchar **package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
-	pk_backend_set_string (backend, "pkid", package_id[0]);
+	pk_backend_set_strv (backend, "pkids", package_ids);
 
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
@@ -419,7 +427,7 @@ static gboolean
 backend_remove_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	gint err;
+	gint err, i;
 	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
@@ -432,26 +440,34 @@ backend_remove_packages_thread (PkBackend *backend)
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
 
-	pi = pk_package_id_new_from_string (package_ids[0]);
-	pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[0], NULL);
-
 	opkg_set_option (opkg, "autoremove", &autoremove);
 	opkg_set_option (opkg, "force_removal_of_dependent_packages", &allow_deps);
 
-	err = opkg_remove_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+	err = 0;
 
-	switch (err)
+	for (i = 0; package_ids[i]; i++)
 	{
-	case OPKG_NO_ERROR:
-		break;
-	case OPKG_PACKAGE_NOT_INSTALLED:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
-		break;
-	default:
-		opkg_unknown_error (backend, err, "Remove");
+		pi = pk_package_id_new_from_string (package_ids[0]);
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[0], NULL);
+
+		err = opkg_remove_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+
+		switch (err)
+		{
+		case OPKG_NO_ERROR:
+			break;
+		case OPKG_PACKAGE_NOT_INSTALLED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+			break;
+		default:
+			opkg_unknown_error (backend, err, "Remove");
+		}
+		pk_package_id_free (pi);
+
+		if (err != 0)
+			break;
 	}
 
-	pk_package_id_free (pi);
 	pk_backend_finished (backend);
 	return (err == 0);
 }
