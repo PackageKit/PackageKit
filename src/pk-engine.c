@@ -154,6 +154,8 @@ pk_engine_error_get_type (void)
 		static const GEnumValue values[] =
 		{
 			ENUM_ENTRY (PK_ENGINE_ERROR_INVALID_STATE, "InvalidState"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_REFUSED_BY_POLICY, "RefusedByPolicy"),
+			ENUM_ENTRY (PK_ENGINE_ERROR_CANNOT_SET_PROXY, "CannotSetProxy"),
 			{ 0, NULL, NULL }
 		};
 		etype = g_enum_register_static ("PkEngineError", values);
@@ -499,6 +501,47 @@ pk_engine_suggest_daemon_quit (PkEngine *engine, GError **error)
 	 * after the last transaction */
 	engine->priv->restart_schedule = TRUE;
 	return TRUE;
+}
+
+/**
+ * pk_engine_set_proxy:
+ **/
+void
+pk_engine_set_proxy (PkEngine *engine, const gchar *proxy_http, const gchar *proxy_ftp, DBusGMethodInvocation *context)
+{
+	gboolean ret;
+	GError *error;
+	gchar *sender = NULL;
+	gchar *error_detail = NULL;
+
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	pk_debug ("SetProxy method called: %s, %s", proxy_http, proxy_ftp);
+
+	/* check if the action is allowed from this client - if not, set an error */
+	sender = dbus_g_method_get_sender (context);
+
+	/* use security model to get auth */
+	ret = pk_security_action_is_allowed (engine->priv->security, sender, FALSE, PK__ROLE_ENUM_SET_PROXY, &error_detail);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_REFUSED_BY_POLICY, "%s", error_detail);
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* try to set the new proxy */
+	ret = pk_backend_set_proxy (engine->priv->backend, proxy_http, proxy_ftp);
+	if (!ret) {
+		error = g_error_new (PK_ENGINE_ERROR, PK_ENGINE_ERROR_CANNOT_SET_PROXY, "%s", "setting the proxy failed");
+		dbus_g_method_return_error (context, error);
+		goto out;
+	}
+
+	/* all okay */
+	dbus_g_method_return (context);
+out:
+	g_free (sender);
+	g_free (error_detail);
 }
 
 /**

@@ -34,6 +34,9 @@ G_BEGIN_DECLS
 #define PK_IS_SECURITY_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SECURITY))
 #define PK_SECURITY_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SECURITY, PkSecurityClass))
 
+/* FIXME: not actually a role */
+#define PK__ROLE_ENUM_SET_PROXY		1 << 31
+
 typedef struct PkSecurityPrivate PkSecurityPrivate;
 
 typedef struct
