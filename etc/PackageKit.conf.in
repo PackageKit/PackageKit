@@ -39,5 +39,5 @@ DefaultBackend=@defaultbackend@
 # They are in the format username:password@server:port
 #
 # ProxyHTTP=username:password@server.lan:8080
-# ProxyFTP=username:password@server.lan:21
+# ProxyFTP=server.lan:21
 
