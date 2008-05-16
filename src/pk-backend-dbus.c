@@ -351,8 +351,6 @@ pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http,
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->proxy != NULL, FALSE);
-	g_return_val_if_fail (proxy_http != NULL, FALSE);
-	g_return_val_if_fail (proxy_ftp != NULL, FALSE);
 
 	/* new sync method call */
 	pk_backend_dbus_time_reset (backend_dbus);
