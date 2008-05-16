@@ -801,6 +801,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
+        old_skip_broken = self.yumbase.conf.skip_broken
+        self.yumbase.conf.skip_broken = 1
 
         try:
             txmbr = self.yumbase.update() # Add all updates to Transaction
@@ -812,6 +814,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"Nothing to do")
 
         self.yumbase.conf.throttle = old_throttle
+        self.yumbase.conf.skip_broken = old_skip_broken
 
     def refresh_cache(self):
         '''
