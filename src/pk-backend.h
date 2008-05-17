@@ -256,7 +256,7 @@ typedef struct {
 	void		(*update_system)		(PkBackend	*backend);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 PkProvidesEnum provide,
+							 PkProvidesEnum	 provides,
 							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;
