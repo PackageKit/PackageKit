@@ -53,7 +53,8 @@ enum {
 	SEARCH_ENUM_NAME,
 	SEARCH_ENUM_GROUP,
 	SEARCH_ENUM_DETAILS,
-	SEARCH_ENUM_FILE
+	SEARCH_ENUM_FILE,
+	SEARCH_ENUM_PROVIDES
 };
 
 typedef struct {
@@ -916,7 +917,8 @@ poldek_pkg_is_gui (struct pkg *pkg)
 static gboolean
 search_package_thread (PkBackend *backend)
 {
-	PkFilterEnum filters;
+	PkFilterEnum		filters;
+	PkProvidesEnum		provides;
 	gchar			*search_cmd = NULL;
 	struct poclidek_rcmd	*cmd = NULL;
 	const gchar *search;
@@ -951,8 +953,17 @@ search_package_thread (PkBackend *backend)
 		case SEARCH_ENUM_FILE:
 			search_cmd = g_strdup_printf ("search -qlf *%s*", search);
 			break;
-		default:
-			/* Error */
+		/* WhatProvides */
+		case SEARCH_ENUM_PROVIDES:
+			provides = pk_backend_get_uint (backend, "provides");
+
+			if (provides == PK_PROVIDES_ENUM_ANY) {
+				search_cmd = g_strdup_printf ("search -qp %s", search);
+			} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
+			} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+			} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+				search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
+			}
 			break;
 	}
 
@@ -2213,6 +2224,20 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_what_provides:
+ **/
+static void
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+
+	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_PROVIDES);
+	pk_backend_thread_create (backend, search_package_thread);
+}
+
 PK_BACKEND_OPTIONS (
 	"poldek",					/* description */
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
@@ -2245,6 +2270,6 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* service pack */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
 
