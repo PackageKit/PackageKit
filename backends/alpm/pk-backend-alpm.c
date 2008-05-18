@@ -895,7 +895,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 static gboolean
 backend_install_files_thread (PkBackend *backend)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	gchar **full_paths = pk_backend_get_strv (backend, "full_paths");
 
@@ -1050,7 +1050,7 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 static gboolean
 backend_refresh_cache_thread (PkBackend *backend)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	if (alpm_trans_init (PM_TRANS_TYPE_SYNC, PM_TRANS_FLAG_NOSCRIPTLET, cb_trans_evt, cb_trans_conv, cb_trans_progress) != 0) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_ERROR, alpm_strerror (pm_errno));

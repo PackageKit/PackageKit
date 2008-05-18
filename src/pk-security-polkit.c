@@ -128,6 +128,9 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.repo-change";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		policy = "org.freedesktop.packagekit.refresh-cache";
+	/* PRIVATE: not actually roles */
+	} else if (role == PK__ROLE_ENUM_SET_PROXY) {
+		policy = "org.freedesktop.packagekit.refresh-cache";
 	}
 	return policy;
 }

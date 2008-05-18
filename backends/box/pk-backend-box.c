@@ -138,7 +138,7 @@ backend_find_packages_thread (PkBackend *backend)
 		filter_box = filter_box | PKG_SEARCH_DETAILS;
 	}
 
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	db = db_open();
 

@@ -31,3 +31,13 @@ ShutdownTimeout=300
 # default=@defaultbackend@
 DefaultBackend=@defaultbackend@
 
+# Proxy settings, uncomment as required
+#
+# NOTE: PackageKit does not use these settings, they are passed to backends.
+# Backends may ignore these values, or they may be updated from the session.
+#
+# They are in the format username:password@server:port
+#
+# ProxyHTTP=username:password@server.lan:8080
+# ProxyFTP=server.lan:21
+

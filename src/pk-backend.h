@@ -58,7 +58,6 @@ gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
-gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
 
@@ -73,6 +72,8 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*elapsed,
 							 guint		*remaining);
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);
@@ -255,7 +256,7 @@ typedef struct {
 	void		(*update_system)		(PkBackend	*backend);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 PkProvidesEnum provide,
+							 PkProvidesEnum	 provides,
 							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;

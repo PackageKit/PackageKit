@@ -2871,7 +2871,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		return;
 	}
 
-	provides = pk_role_enum_from_text (type);
+	provides = pk_provides_enum_from_text (type);
 	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "provide type '%s' not found", type);

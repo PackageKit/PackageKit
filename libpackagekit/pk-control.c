@@ -198,6 +198,43 @@ out:
 }
 
 /**
+ * pk_control_set_proxy:
+ * @control: a valid #PkControl instance
+ * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080"
+ * @proxy_ftp: a FTP proxy string such as "server.lan:8080"
+ *
+ * Set a proxy on the PK daemon
+ *
+ * Return value: if we set the proxy successfully
+ **/
+gboolean
+pk_control_set_proxy (PkControl *control, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	gboolean ret = FALSE;
+	GError *error = NULL;
+
+	g_return_val_if_fail (PK_IS_CONTROL (control), PK_GROUP_ENUM_UNKNOWN);
+
+	/* check to see if we have a valid proxy */
+	if (control->priv->proxy == NULL) {
+		pk_warning ("No proxy for manager");
+		goto out;
+	}
+	ret = dbus_g_proxy_call (control->priv->proxy, "SetProxy", &error,
+				 G_TYPE_STRING, proxy_http,
+				 G_TYPE_STRING, proxy_ftp,
+				 G_TYPE_INVALID,
+				 G_TYPE_INVALID);
+	if (!ret) {
+		/* abort as the DBUS method failed */
+		pk_warning ("SetProxy failed :%s", error->message);
+		g_error_free (error);
+	}
+out:
+	return ret;
+}
+
+/**
  * pk_control_get_groups:
  * @control: a valid #PkControl instance
  *

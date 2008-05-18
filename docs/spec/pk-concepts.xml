@@ -127,6 +127,13 @@
               This allows the used to choose non-native packages if a multi-lib policy is allowed.
             </entry>
           </row>
+          <row>
+            <entry><literal>source</literal> or <literal>~source</literal></entry>
+            <entry>
+              The source filter will only return source packages.
+              These are typically useful when rebuilding other packages.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </informaltable>

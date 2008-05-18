@@ -81,7 +81,7 @@ sqlite_search_packages_thread (PkBackend *backend)
 	const gchar *search;
 
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	type = pk_backend_get_uint (backend, "type");
 	search = pk_backend_get_string (backend, "search");
 
@@ -176,7 +176,7 @@ sqlite_get_details_thread (PkBackend *backend)
 	}
 
 	pk_backend_set_status(backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates(backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_debug("finding %s", pi->name);
 

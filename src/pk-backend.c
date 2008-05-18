@@ -78,6 +78,8 @@ struct _PkBackendPrivate
 	GHashTable		*eulas;
 	gchar			*name;
 	gchar			*c_tid;
+	gchar			*proxy_http;
+	gchar			*proxy_ftp;
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
@@ -587,6 +589,44 @@ out:
 }
 
 /**
+ * pk_backend_set_proxy:
+ **/
+gboolean
+pk_backend_set_proxy (PkBackend	*backend, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_ftp);
+	backend->priv->proxy_http = g_strdup (proxy_http);
+	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_proxy_http:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_http (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_http);
+}
+
+/**
+ * pk_backend_get_proxy_ftp:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_ftp (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_ftp);
+}
+
+/**
  * pk_backend_lock:
  *
  * Responsible for initialising the external backend object.
@@ -791,35 +831,6 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 
 	/* save in case we need this from coldplug */
 	backend->priv->last_subpercentage = percentage;
-
-	/* emit the progress changed signal */
-	pk_backend_emit_progress_changed (backend);
-	return TRUE;
-}
-
-/**
- * pk_backend_no_percentage_updates:
- **/
-gboolean
-pk_backend_no_percentage_updates (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_debug ("duplicate set of %i", PK_BACKEND_PERCENTAGE_INVALID);
-		return FALSE;
-	}
-
-	/* invalidate previous percentage */
-	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
 
 	/* emit the progress changed signal */
 	pk_backend_emit_progress_changed (backend);
@@ -1699,6 +1710,8 @@ pk_backend_finalize (GObject *object)
 	pk_debug ("backend finalise");
 
 	pk_backend_reset (backend);
+	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
@@ -1867,6 +1880,8 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->c_tid = NULL;
+	backend->priv->proxy_http = NULL;
+	backend->priv->proxy_ftp = NULL;
 	backend->priv->file_changed_func = NULL;
 	backend->priv->file_changed_data = NULL;
 	backend->priv->last_package = NULL;

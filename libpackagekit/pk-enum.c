@@ -193,6 +193,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
 	{PK_FILTER_ENUM_ARCH,			"arch"},
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
+	{PK_FILTER_ENUM_SOURCE,			"source"},
+	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
 	{0, NULL}
 };
 
