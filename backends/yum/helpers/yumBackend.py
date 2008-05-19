@@ -927,6 +927,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if inst_file.endswith('.src.rpm'):
                 self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
                 return
+        for inst_file in inst_files:
+            if not inst_file.endswith('.rpm'):
+                self.error(ERROR_INVALID_PACKAGE_FILE,'Only rpm packages are supported')
+                return
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
