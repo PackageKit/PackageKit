@@ -77,7 +77,6 @@ pk_package_list_add (PkPackageList *plist, PkInfoEnum info, const gchar *package
 	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	pk_debug ("adding to cache array package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
 	item = pk_package_item_new (info, package_id, summary);
 	g_ptr_array_add (plist->priv->array, item);
 
@@ -103,9 +102,6 @@ pk_package_list_add_item (PkPackageList *plist, PkPackageItem *item)
 		pk_debug ("already added item");
 		return FALSE;
 	}
-
-	pk_debug ("adding to cache array package %s, %s, %s",
-		  pk_info_enum_to_text (item->info), item->package_id, item->summary);
 
 	item_new = pk_package_item_copy (item);
 	g_ptr_array_add (plist->priv->array, item_new);

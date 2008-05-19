@@ -56,7 +56,6 @@ pk_package_item_new (PkInfoEnum info, const gchar *package_id, const gchar *summ
 
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
-	pk_debug ("adding to cache item package %s, %s, %s", pk_info_enum_to_text (info), package_id, summary);
 	item = g_new0 (PkPackageItem, 1);
 	item->info = info;
 	item->package_id = g_strdup (package_id);
