@@ -4,7 +4,7 @@ helperdir = $(datadir)/PackageKit/helpers/apt
 NULL =
 
 dist_helper_DATA = 			\
-	install-file.py			\
+	install-files.py		\
 	search-name.py			\
 	search-details.py		\
 	search-group.py			\

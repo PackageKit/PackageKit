@@ -35,7 +35,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 {
 	gchar *filters_text;
 	pk_backend_set_allow_cancel (backend, TRUE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	filters_text = pk_filter_enums_to_text (filters);
 	pk_backend_spawn_helper (spawn, "search-name.sh", filters_text, search, NULL);
 	g_free (filters_text);
@@ -80,11 +80,11 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	NULL,					/* get_updates */
-	NULL,					/* install_file */
-	NULL,					/* install_package */
+	NULL,					/* install_files */
+	NULL,					/* install_packages */
 	NULL,					/* install_signature */
 	NULL,					/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

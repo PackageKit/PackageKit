@@ -1,6 +1,6 @@
 AC_PREREQ(2.52)
 
-AC_INIT(PackageKit, 0.2.1)
+AC_INIT(PackageKit, 0.2.2)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -535,7 +535,7 @@ if test x$enable_box = xyes; then
 fi
 
 if test x$enable_opkg = xyes; then
-	PKG_CHECK_MODULES(OPKG, libopkg = 0.1)
+	PKG_CHECK_MODULES(OPKG, libopkg = 0.1.4)
 	AC_SUBST(OPKG_CFLAGS)
 	AC_SUBST(OPKG_LIBS)
 fi

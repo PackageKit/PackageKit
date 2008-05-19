@@ -272,39 +272,39 @@ class PackageKit(PackageKitDbusInterface):
 
 	@dbusException
 	@job_id
-	def RemovePackage(self,package_id,allow_deps=False ):
+	def RemovePackages(self,package_ids,allow_deps=False ):
 		"""
 		Removes a package.
 		Asynchronous
 		"""
-		return self.pk_iface.RemovePackage(self.tid(),package_id,allow_deps)
+		return self.pk_iface.RemovePackages(self.tid(),package_ids,allow_deps)
 
 	@dbusException
 	@job_id
-	def InstallPackage(self,package_id):
+	def InstallPackages(self,package_ids):
 		"""
 		Installs a package.
 		Asynchronous
 		"""
-		return self.pk_iface.InstallPackage(self.tid(),package_id)
+		return self.pk_iface.InstallPackages(self.tid(),package_ids)
 
 	@dbusException
 	@job_id
-	def UpdatePackage(self,package_id):
+	def UpdatePackages(self,package_ids):
 		"""
 		Updates a package.
 		Asynchronous
 		"""
-		return self.pk_iface.UpdatePackage(self.tid(),package_id)
+		return self.pk_iface.UpdatePackages(self.tid(),package_ids)
 
 	@dbusException
 	@job_id
-	def InstallFile(self,full_path):
+	def InstallFiles(self,full_paths):
 		"""
 		Installs a package which provides given file?
 		Asynchronous
 		"""
-		return self.pk_iface.InstallFile(self.tid(),full_path)
+		return self.pk_iface.InstallFiles(self.tid(),full_paths)
 
 	@dbusException
 	@job_id

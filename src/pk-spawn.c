@@ -273,7 +273,7 @@ pk_spawn_kill (PkSpawn *spawn)
  *
  **/
 gboolean
-pk_spawn_argv (PkSpawn *spawn, gchar **argv)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp)
 {
 	gboolean ret;
 
@@ -284,7 +284,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv)
 	spawn->priv->finished = FALSE;
 
 	/* create spawned object for tracking */
-	ret = g_spawn_async_with_pipes (NULL, argv, NULL,
+	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
 				 NULL, NULL, &spawn->priv->child_pid,
 				 NULL, /* stdin */
@@ -484,6 +484,7 @@ libst_spawn (LibSelfTest *test)
 	gboolean ret;
 	gchar *path;
 	gchar **argv;
+	gchar **envp;
 
 	if (libst_start (test, "PkSpawn", CLASS_AUTO) == FALSE) {
 		return;
@@ -496,7 +497,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "make sure return error for missing file");
 	mexit = BAD_EXIT;
 	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_strfreev (argv);
 	if (ret == FALSE) {
 		libst_success (test, "failed to run invalid file");
@@ -517,7 +518,7 @@ libst_spawn (LibSelfTest *test)
 	mexit = -1;
 	path = pk_test_get_data ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -558,11 +559,34 @@ libst_spawn (LibSelfTest *test)
 	new_spawn_object (test, &spawn);
 
 	/************************************************************/
+	libst_title (test, "make sure we set the proxy");
+	mexit = -1;
+	path = pk_test_get_data ("pk-spawn-proxy.sh");
+	argv = g_strsplit (path, " ", 0);
+	envp = g_strsplit ("http_proxy=username:password@server:port "
+			   "ftp_proxy=username:password@server:port", " ", 0);
+	ret = pk_spawn_argv (spawn, argv, envp);
+	g_free (path);
+	g_strfreev (argv);
+	if (ret) {
+		libst_success (test, "ran correct file");
+	} else {
+		libst_failed (test, "did not run helper");
+	}
+
+	/* wait for finished */
+	libst_loopwait (test, 10000);
+	libst_loopcheck (test);
+
+	/* get new object */
+	new_spawn_object (test, &spawn);
+
+	/************************************************************/
 	libst_title (test, "make sure run correct helper, and kill it");
 	mexit = BAD_EXIT;
 	path = pk_test_get_data ("pk-spawn-test.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -592,7 +616,7 @@ libst_spawn (LibSelfTest *test)
 	mexit = BAD_EXIT;
 	path = pk_test_get_data ("pk-spawn-test-sigquit.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {
@@ -618,7 +642,7 @@ libst_spawn (LibSelfTest *test)
 	libst_title (test, "run lots of data for profiling");
 	path = pk_test_get_data ("pk-spawn-test-profiling.sh");
 	argv = g_strsplit (path, " ", 0);
-	ret = pk_spawn_argv (spawn, argv);
+	ret = pk_spawn_argv (spawn, argv, NULL);
 	g_free (path);
 	g_strfreev (argv);
 	if (ret) {

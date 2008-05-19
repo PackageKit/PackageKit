@@ -39,6 +39,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
+#include <libgbus.h>
 
 #include <glib/gi18n.h>
 
@@ -67,6 +68,7 @@ struct _PkNetworkPrivate
 	PkNetworkNm		*net_nm;
 	PkNetworkUnix		*net_unix;
 	PkConf			*conf;
+	LibGBus			*nm_bus;
 };
 
 enum {
@@ -154,6 +156,7 @@ pk_network_class_init (PkNetworkClass *klass)
 static void
 pk_network_init (PkNetwork *network)
 {
+	gboolean nm_alive;
 	network->priv = PK_NETWORK_GET_PRIVATE (network);
 	network->priv->conf = pk_conf_new ();
 	network->priv->net_nm = pk_network_nm_new ();
@@ -166,6 +169,17 @@ pk_network_init (PkNetwork *network)
 	/* get the defaults from the config file */
 	network->priv->use_nm = pk_conf_get_bool (network->priv->conf, "UseNetworkManager");
 	network->priv->use_unix = pk_conf_get_bool (network->priv->conf, "UseNetworkHeuristic");
+
+	/* check if NM is on the bus */
+	network->priv->nm_bus = libgbus_new ();
+	libgbus_assign (network->priv->nm_bus, LIBGBUS_SYSTEM, "org.freedesktop.NetworkManager");
+	nm_alive = libgbus_is_connected (network->priv->nm_bus);
+
+	/* NetworkManager isn't up, so we can't use it */
+	if (network->priv->use_nm && !nm_alive) {
+		pk_warning ("UseNetworkManager true, but org.freedesktop.NetworkManager not up");
+		network->priv->use_nm = FALSE;
+	}
 
 #if !PK_BUILD_NETWORKMANAGER
 	/* check we can actually use the default */
@@ -190,6 +204,7 @@ pk_network_finalize (GObject *object)
 
 	g_return_if_fail (network->priv != NULL);
 	g_object_unref (network->priv->conf);
+	g_object_unref (network->priv->nm_bus);
 	g_object_unref (network->priv->net_nm);
 	g_object_unref (network->priv->net_unix);
 	G_OBJECT_CLASS (pk_network_parent_class)->finalize (object);

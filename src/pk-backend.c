@@ -33,6 +33,7 @@
 #include <glib/gprintf.h>
 #include <pk-network.h>
 
+#include "pk-package-item.h"
 #include "pk-debug.h"
 #include "pk-common.h"
 #include "pk-marshal.h"
@@ -42,13 +43,6 @@
 #include "pk-file-monitor.h"
 
 #define PK_BACKEND_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND, PkBackendPrivate))
-
-/**
- * PK_BACKEND_PERCENTAGE_INVALID:
- *
- * The unknown percentage value
- */
-#define PK_BACKEND_PERCENTAGE_INVALID		101
 
 /**
  * PK_BACKEND_PERCENTAGE_DEFAULT:
@@ -84,12 +78,15 @@ struct _PkBackendPrivate
 	GHashTable		*eulas;
 	gchar			*name;
 	gchar			*c_tid;
+	gchar			*proxy_http;
+	gchar			*proxy_ftp;
 	gboolean		 locked;
 	gboolean		 set_error;
 	gboolean		 set_signature;
 	gboolean		 set_eula;
 	gboolean		 has_sent_package;
 	PkNetwork		*network;
+	PkPackageItem		*last_package;
 	PkRoleEnum		 role; /* this never changes for the lifetime of a transaction */
 	PkStatusEnum		 status; /* this changes */
 	PkExitEnum		 exit;
@@ -108,6 +105,7 @@ struct _PkBackendPrivate
 	GHashTable		*hash_string;
 	GHashTable		*hash_strv;
 	GHashTable		*hash_pointer;
+	GHashTable		*hash_array;
 };
 
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
@@ -207,17 +205,17 @@ pk_backend_get_actions (PkBackend *backend)
 	if (desc->get_update_detail != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	}
-	if (desc->install_package != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGE);
+	if (desc->install_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
 	}
-	if (desc->install_file != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILE);
+	if (desc->install_files != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
 	}
 	if (desc->refresh_cache != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
 	}
-	if (desc->remove_package != NULL) {
-		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	if (desc->remove_packages != NULL) {
+		pk_enums_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
 	}
 	if (desc->resolve != NULL) {
 		pk_enums_add (roles, PK_ROLE_ENUM_RESOLVE);
@@ -308,6 +306,32 @@ pk_backend_set_strv (PkBackend *backend, const gchar *key, gchar **data)
 }
 
 /**
+ * pk_backend_set_array:
+ **/
+gboolean
+pk_backend_set_array (PkBackend *backend, const gchar *key, GPtrArray *data)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_return_val_if_fail (key != NULL, FALSE);
+
+	/* valid, but do nothing */
+	if (data == NULL) {
+		return FALSE;
+	}
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
+	if (value != NULL) {
+		pk_warning ("already set data for %s", key);
+		return FALSE;
+	}
+	pk_debug ("saving %p for %s", data, key);
+	g_hash_table_insert (backend->priv->hash_array, g_strdup (key), (gpointer) data);
+	return TRUE;
+}
+
+/**
  * pk_backend_set_uint:
  **/
 gboolean
@@ -385,7 +409,7 @@ pk_backend_get_string (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_string, (gpointer) key);
 	if (value == NULL) {
 		pk_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return (const gchar *) value;
 }
@@ -404,9 +428,28 @@ pk_backend_get_strv (PkBackend *backend, const gchar *key)
 	value = g_hash_table_lookup (backend->priv->hash_strv, (gpointer) key);
 	if (value == NULL) {
 		pk_warning ("not set data for %s", key);
-		return FALSE;
+		return NULL;
 	}
 	return (gchar **) value;
+}
+
+/**
+ * pk_backend_get_array:
+ **/
+GPtrArray *
+pk_backend_get_array (PkBackend *backend, const gchar *key)
+{
+	gpointer value;
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	g_return_val_if_fail (key != NULL, NULL);
+
+	/* does already exist? */
+	value = g_hash_table_lookup (backend->priv->hash_array, (gpointer) key);
+	if (value == NULL) {
+		pk_warning ("not set data for %s", key);
+		return NULL;
+	}
+	return (GPtrArray *) value;
 }
 
 /**
@@ -543,6 +586,44 @@ pk_backend_set_name (PkBackend *backend, const gchar *backend_name)
 out:
 	g_free (path);
 	return ret;
+}
+
+/**
+ * pk_backend_set_proxy:
+ **/
+gboolean
+pk_backend_set_proxy (PkBackend	*backend, const gchar *proxy_http, const gchar *proxy_ftp)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
+	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_ftp);
+	backend->priv->proxy_http = g_strdup (proxy_http);
+	backend->priv->proxy_ftp = g_strdup (proxy_ftp);
+	return TRUE;
+}
+
+/**
+ * pk_backend_get_proxy_http:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_http (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_http);
+}
+
+/**
+ * pk_backend_get_proxy_ftp:
+ *
+ * Return value: proxy string in the form username:password@server:port
+ **/
+gchar *
+pk_backend_get_proxy_ftp (PkBackend *backend)
+{
+	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
+	return g_strdup (backend->priv->proxy_ftp);
 }
 
 /**
@@ -757,35 +838,6 @@ pk_backend_set_sub_percentage (PkBackend *backend, guint percentage)
 }
 
 /**
- * pk_backend_no_percentage_updates:
- **/
-gboolean
-pk_backend_no_percentage_updates (PkBackend *backend)
-{
-	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
-
-	/* have we already set an error? */
-	if (backend->priv->set_error) {
-		pk_warning ("already set error, cannot process");
-		return FALSE;
-	}
-
-	/* set the same twice? */
-	if (backend->priv->last_percentage == PK_BACKEND_PERCENTAGE_INVALID) {
-		pk_debug ("duplicate set of %i", PK_BACKEND_PERCENTAGE_INVALID);
-		return FALSE;
-	}
-
-	/* invalidate previous percentage */
-	backend->priv->last_percentage = PK_BACKEND_PERCENTAGE_INVALID;
-
-	/* emit the progress changed signal */
-	pk_backend_emit_progress_changed (backend);
-	return TRUE;
-}
-
-/**
  * pk_backend_set_status:
  **/
 gboolean
@@ -855,10 +907,25 @@ gboolean
 pk_backend_package (PkBackend *backend, PkInfoEnum info, const gchar *package_id, const gchar *summary)
 {
 	gchar *summary_safe;
+	PkPackageItem *item;
+	gboolean ret;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
+
+	/* check against the old one */
+	item = pk_package_item_new (info, package_id, summary);
+	ret = pk_package_item_equal (item, backend->priv->last_package);
+	if (ret) {
+		pk_package_item_free (item);
+		pk_debug ("skipping duplicate %s", package_id);
+		return FALSE;
+	}
+	/* update the 'last' package */
+	pk_package_item_free (backend->priv->last_package);
+	backend->priv->last_package = pk_package_item_copy (item);
+	pk_package_item_free (item);
 
 	/* have we already set an error? */
 	if (backend->priv->set_error) {
@@ -1365,6 +1432,7 @@ pk_backend_finished_delay (gpointer data)
 	g_hash_table_remove_all (backend->priv->hash_pointer);
 	g_hash_table_remove_all (backend->priv->hash_string);
 	g_hash_table_remove_all (backend->priv->hash_strv);
+	g_hash_table_remove_all (backend->priv->hash_array);
 
 	pk_debug ("emit finished %i", backend->priv->exit);
 	g_signal_emit (backend, signals [PK_BACKEND_FINISHED], 0, backend->priv->exit);
@@ -1412,8 +1480,8 @@ pk_backend_finished (PkBackend *backend)
 	/* check we got a Package() else the UI will suck */
 	if (!backend->priv->set_error &&
 	    !backend->priv->has_sent_package &&
-	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
+	    (backend->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
 				    "Backends need to send a Package() for this role!");
@@ -1642,6 +1710,8 @@ pk_backend_finalize (GObject *object)
 	pk_debug ("backend finalise");
 
 	pk_backend_reset (backend);
+	g_free (backend->priv->proxy_http);
+	g_free (backend->priv->proxy_ftp);
 	g_free (backend->priv->name);
 	g_free (backend->priv->c_tid);
 	g_object_unref (backend->priv->time);
@@ -1650,6 +1720,7 @@ pk_backend_finalize (GObject *object)
 	g_hash_table_unref (backend->priv->hash_string);
 	g_hash_table_unref (backend->priv->hash_strv);
 	g_hash_table_unref (backend->priv->hash_pointer);
+	g_hash_table_unref (backend->priv->hash_array);
 
 	if (backend->priv->handle != NULL) {
 		g_module_close (backend->priv->handle);
@@ -1770,6 +1841,7 @@ pk_backend_reset (PkBackend *backend)
 
 	/* TODO: need to wait for Finished() if running */
 
+	pk_package_item_free (backend->priv->last_package);
 	backend->priv->set_error = FALSE;
 	backend->priv->set_signature = FALSE;
 	backend->priv->set_eula = FALSE;
@@ -1777,6 +1849,7 @@ pk_backend_reset (PkBackend *backend)
 	backend->priv->finished = FALSE;
 	backend->priv->has_sent_package = FALSE;
 	backend->priv->thread = NULL;
+	backend->priv->last_package = NULL;
 	backend->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	backend->priv->exit = PK_EXIT_ENUM_UNKNOWN;
 	backend->priv->role = PK_ROLE_ENUM_UNKNOWN;
@@ -1789,6 +1862,15 @@ pk_backend_reset (PkBackend *backend)
 }
 
 /**
+ * pk_free_ptr_array:
+ **/
+static void
+pk_free_ptr_array (gpointer data)
+{
+	g_ptr_array_free ((GPtrArray *) data, TRUE);
+}
+
+/**
  * pk_backend_init:
  **/
 static void
@@ -1798,8 +1880,11 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->handle = NULL;
 	backend->priv->name = NULL;
 	backend->priv->c_tid = NULL;
+	backend->priv->proxy_http = NULL;
+	backend->priv->proxy_ftp = NULL;
 	backend->priv->file_changed_func = NULL;
 	backend->priv->file_changed_data = NULL;
+	backend->priv->last_package = NULL;
 	backend->priv->locked = FALSE;
 	backend->priv->signal_finished = 0;
 	backend->priv->signal_error_timeout = 0;
@@ -1810,6 +1895,7 @@ pk_backend_init (PkBackend *backend)
 	backend->priv->hash_string = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	backend->priv->hash_strv = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_strfreev);
 	backend->priv->hash_pointer = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	backend->priv->hash_array = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, pk_free_ptr_array);
 
 	/* monitor config files for changes */
 	backend->priv->file_monitor = pk_file_monitor_new ();

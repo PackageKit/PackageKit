@@ -109,13 +109,13 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		policy = "org.freedesktop.packagekit.update-package";
 	} else if (role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
 		policy = "org.freedesktop.packagekit.update-system";
-	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		policy = "org.freedesktop.packagekit.remove";
-	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		policy = "org.freedesktop.packagekit.install";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && trusted) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && trusted) {
 		policy = "org.freedesktop.packagekit.localinstall-trusted";
-	} else if (role == PK_ROLE_ENUM_INSTALL_FILE && !trusted) {
+	} else if (role == PK_ROLE_ENUM_INSTALL_FILES && !trusted) {
 		policy = "org.freedesktop.packagekit.localinstall-untrusted";
 	} else if (role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		policy = "org.freedesktop.packagekit.install-signature";
@@ -127,6 +127,9 @@ pk_security_role_to_action (PkSecurity *security, gboolean trusted, PkRoleEnum r
 		   role == PK_ROLE_ENUM_REPO_SET_DATA) {
 		policy = "org.freedesktop.packagekit.repo-change";
 	} else if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
+		policy = "org.freedesktop.packagekit.refresh-cache";
+	/* PRIVATE: not actually roles */
+	} else if (role == PK__ROLE_ENUM_SET_PROXY) {
 		policy = "org.freedesktop.packagekit.refresh-cache";
 	}
 	return policy;

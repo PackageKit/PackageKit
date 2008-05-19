@@ -30,6 +30,13 @@
 
 G_BEGIN_DECLS
 
+/**
+ * PK_BACKEND_PERCENTAGE_INVALID:
+ *
+ * The unknown percentage value
+ */
+#define PK_BACKEND_PERCENTAGE_INVALID		101
+
 typedef struct _PkBackend PkBackend;
 
 /* set the state */
@@ -51,7 +58,6 @@ gboolean	 pk_backend_set_sub_percentage		(PkBackend	*backend,
 							 guint		 percentage);
 gboolean	 pk_backend_set_exit_code		(PkBackend	*backend,
 							 PkExitEnum	 exit);
-gboolean	 pk_backend_no_percentage_updates	(PkBackend	*backend);
 gboolean	 pk_backend_set_transaction_data	(PkBackend	*backend,
 							 const gchar	*data);
 
@@ -66,6 +72,8 @@ gboolean	 pk_backend_get_progress		(PkBackend	*backend,
 							 guint		*elapsed,
 							 guint		*remaining);
 guint		 pk_backend_get_runtime			(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_ftp		(PkBackend	*backend);
+gchar		*pk_backend_get_proxy_http		(PkBackend	*backend);
 
 /* signal helpers */
 gboolean	 pk_backend_finished			(PkBackend	*backend);
@@ -121,6 +129,9 @@ gboolean         pk_backend_eula_required		(PkBackend      *backend,
 							 const gchar    *license_agreement);
 
 /* set backend instance data */
+gboolean	 pk_backend_set_array			(PkBackend	*backend,
+							 const gchar	*key,
+							 GPtrArray	*data);
 gboolean	 pk_backend_set_string			(PkBackend	*backend,
 							 const gchar	*key,
 							 const gchar	*data);
@@ -139,6 +150,8 @@ gboolean	 pk_backend_set_pointer			(PkBackend	*backend,
 
 /* get backend instance data */
 const gchar	*pk_backend_get_string			(PkBackend	*backend,
+							 const gchar	*key);
+GPtrArray	*pk_backend_get_array			(PkBackend	*backend,
 							 const gchar	*key);
 gchar		**pk_backend_get_strv			(PkBackend	*backend,
 							 const gchar	*key);
@@ -196,19 +209,19 @@ typedef struct {
 							 const gchar	*package_id);
 	void		(*get_updates)			(PkBackend	*backend,
 							 PkFilterEnum	 filters);
-	void		(*install_file)			(PkBackend	*backend,
+	void		(*install_files)		(PkBackend	*backend,
 							 gboolean	 trusted,
-							 const gchar	*full_path);
-	void		(*install_package)		(PkBackend	*backend,
-							 const gchar	*package_id);
+							 gchar		**full_paths);
+	void		(*install_packages)		(PkBackend	*backend,
+							 gchar		**package_ids);
 	void		(*install_signature)		(PkBackend	*backend,
 							 PkSigTypeEnum	 type,
 							 const gchar	*key_id,
 							 const gchar	*package_id);
 	void		(*refresh_cache)		(PkBackend	*backend,
 							 gboolean	 force);
-	void		(*remove_package)		(PkBackend	*backend,
-							 const gchar	*package_id,
+	void		(*remove_packages)		(PkBackend	*backend,
+							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
 	void		(*repo_enable)			(PkBackend	*backend,
@@ -243,15 +256,15 @@ typedef struct {
 	void		(*update_system)		(PkBackend	*backend);
 	void		(*what_provides)		(PkBackend	*backend,
 							 PkFilterEnum	 filters,
-							 PkProvidesEnum provide,
+							 PkProvidesEnum	 provides,
 							 const gchar	*search);
 	gpointer	padding[10];
 } PkBackendDesc;
 
 #define PK_BACKEND_OPTIONS(description, author, initialize, destroy, get_filters, get_groups, cancel,	\
 			   get_depends, get_details, get_files, get_packages, get_repo_list, get_requires,	\
-			   get_update_detail, get_updates, install_file, install_package,		\
-			   install_signature, refresh_cache, remove_package, repo_enable,		\
+			   get_update_detail, get_updates, install_files, install_packages,		\
+			   install_signature, refresh_cache, remove_packages, repo_enable,		\
 			   repo_set_data, resolve, rollback, search_details, search_file, search_group,	\
 			   search_name, service_pack, update_packages, update_system, what_provides)	\
 	G_MODULE_EXPORT const PkBackendDesc pk_backend_desc = { 					\
@@ -263,18 +276,18 @@ typedef struct {
 		get_groups,		\
 		cancel,			\
 		get_depends,		\
-		get_details,	\
+		get_details,		\
 		get_files,		\
 		get_packages,		\
 		get_repo_list,		\
 		get_requires,		\
 		get_update_detail,	\
 		get_updates,		\
-		install_file,		\
-		install_package,	\
+		install_files,		\
+		install_packages,	\
 		install_signature,	\
 		refresh_cache,		\
-		remove_package,		\
+		remove_packages,	\
 		repo_enable,		\
 		repo_set_data,		\
 		resolve,		\

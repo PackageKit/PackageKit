@@ -1,3 +1,37 @@
+Version 0.2.1
+~~~~~~~~~~~~~
+Released: 2008-05-09
+
+* Backends:
+ - alpm: added backend_search_group (Valeriy Lyasotskiy)
+ - alpm: added more group mapping (Valeriy Lyasotskiy)
+ - alpm: fixes backend_install_files stuff moved to another thread (Valeriy Lyasotskiy)
+ - box: build fix (Grzegorz Dabrowski)
+ - opkg: add a package callback in remove_packages (Thomas Wood)
+ - opkg: implement GetDetails using new opkg api (Thomas Wood)
+ - opkg: update to latest opkg api (Thomas Wood)
+ - zypp: added repo-name for gpg-handling (Stefan Haas)
+ - zypp: check for network before refreshing (Stefan Haas)
+ - zypp: changed backend to handle package arrays (Scott Reeves)
+ - zypp: refresh the repos before checking for updates (Stefan Haas)
+ - xypp: fix build breakage after 'change some methods to accept more than one param' (Stefan Haas)
+ - poldek: build fix (Marcin Banasiak)
+ - pisi: fix build breakage (S.Çağlar Onur)
+
+* Translations
+ - Fixed a typo in the Russian translation (Valeriy Lyasotskiy)
+
+* New features:
+ - Add pk_backend_set_array so we can save trivial data arrays (Richard Hughes)
+ - Change some methods to accept more than one parameter (Richard Hughes)
+   InstallPackage(s)  ->   InstallPackages(as)
+   RemovePackage(s)   ->   RemovePackages(as)
+   InstallFile(s)     ->   InstallFiles(as)
+
+* Bugfixes:
+ - Correct the gtk-doc markup so the ::details signal is descibed properly (Richard Hughes)
+ - Fix manpage build, make it cross-distro (Valeriy Lyasotskiy)
+
 Version 0.2.0
 ~~~~~~~~~~~~~~
 Released: 2008-05-06

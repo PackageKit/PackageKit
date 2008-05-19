@@ -25,6 +25,7 @@
 #include <string.h>
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
+#include <pk-package-ids.h>
 #include "pk-apt-search.h"
 #include "config.h"
 
@@ -129,19 +130,24 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
+	gchar *package_ids_temp;
+
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "install.py", package_id, NULL);
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "install-packages.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -151,7 +157,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_finished (backend);
 		return;
@@ -161,28 +167,36 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * pk_backend_remove_package:
+ * pk_backend_remove_packages:
  * 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
-	pk_backend_spawn_helper (spawn, "remove.py", pk_backend_bool_to_text (allow_deps), package_id, NULL);
+	gchar *package_ids_temp;
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "remove-packages.py", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
 } */
 
 /**
- * pk_backend_update_package:
+ * pk_backend_update_packages:
  */
 static void
-backend_update_package (PkBackend *backend, const gchar *package_id)
+backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
+	gchar *package_ids_temp;
+
 	/* check network state */
-	if (!pk_backend_is_online (backend) {
+	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
 		pk_backend_finished (backend);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, "update.py", package_id, NULL);
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "update-packages.py", package_ids_temp, NULL);
+	g_free (package_ids_temp);
 }
 
 /**
@@ -227,18 +241,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	backend_get_depends,			/* get_depends */
-	backend_get_details,		/* get_details */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	backend_get_repo_list,			/* get_repo_list */
 	NULL,					/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,					/* remove_package */
+	NULL,					/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	backend_resolve,			/* resolve */

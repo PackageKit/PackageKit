@@ -66,14 +66,14 @@
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="s" name="filter" direction="in"/>
     </method>
-    <method name="InstallFile">
+    <method name="InstallFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="b" name="trusted" direction="in"/>
-      <arg type="s" name="full_path" direction="in"/>
+      <arg type="as" name="full_paths" direction="in"/>
     </method>
-    <method name="InstallPackage">
+    <method name="InstallPackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package_id" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
     <method name="InstallSignature">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
@@ -88,9 +88,9 @@
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <arg type="b" name="force" direction="in"/>
     </method>
-    <method name="RemovePackage">
+    <method name="RemovePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <arg type="s" name="package_id" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
       <arg type="b" name="allow_deps" direction="in"/>
       <arg type="b" name="autoremove" direction="in"/>
     </method>

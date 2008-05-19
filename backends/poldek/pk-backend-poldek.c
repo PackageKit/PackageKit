@@ -53,7 +53,8 @@ enum {
 	SEARCH_ENUM_NAME,
 	SEARCH_ENUM_GROUP,
 	SEARCH_ENUM_DETAILS,
-	SEARCH_ENUM_FILE
+	SEARCH_ENUM_FILE,
+	SEARCH_ENUM_PROVIDES
 };
 
 typedef struct {
@@ -916,7 +917,8 @@ poldek_pkg_is_gui (struct pkg *pkg)
 static gboolean
 search_package_thread (PkBackend *backend)
 {
-	PkFilterEnum filters;
+	PkFilterEnum		filters;
+	PkProvidesEnum		provides;
 	gchar			*search_cmd = NULL;
 	struct poclidek_rcmd	*cmd = NULL;
 	const gchar *search;
@@ -951,8 +953,17 @@ search_package_thread (PkBackend *backend)
 		case SEARCH_ENUM_FILE:
 			search_cmd = g_strdup_printf ("search -qlf *%s*", search);
 			break;
-		default:
-			/* Error */
+		/* WhatProvides */
+		case SEARCH_ENUM_PROVIDES:
+			provides = pk_backend_get_uint (backend, "provides");
+
+			if (provides == PK_PROVIDES_ENUM_ANY) {
+				search_cmd = g_strdup_printf ("search -qp %s", search);
+			} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
+			} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+			} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+				search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
+			}
 			break;
 	}
 
@@ -1715,19 +1726,19 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 }
 
 /**
- * backend_install_package:
+ * backend_install_packages:
  */
 static gboolean
-backend_install_package_thread (PkBackend *backend)
+backend_install_packages_thread (PkBackend *backend)
 {
 	struct poldek_ts	*ts;
 	struct poclidek_rcmd	*rcmd;
 	gchar			*command, *nvra;
 	struct vf_progress	vf_progress;
-	const gchar *package_id;
+	gchar **package_ids;
 
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 
 	setup_vf_progress (&vf_progress, backend);
 
@@ -1739,7 +1750,7 @@ backend_install_package_thread (PkBackend *backend)
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
-	nvra = poldek_get_nvra_from_package_id (package_id);
+	nvra = poldek_get_nvra_from_package_id (package_ids[0]);
 	command = g_strdup_printf ("install %s", nvra);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -1762,7 +1773,7 @@ backend_install_package_thread (PkBackend *backend)
 }
 
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install package when offline!");
@@ -1774,7 +1785,7 @@ backend_install_package (PkBackend *backend, const gchar *package_id)
 	pb_error_clean ();
 
 	poldek_backend_percentage_data_create (backend);
-	pk_backend_thread_create (backend, backend_install_package_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 /**
@@ -1853,17 +1864,17 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 }
 
 /**
- * backend_remove_package:
+ * backend_remove_packages:
  */
 static gboolean
-backend_remove_package_thread (PkBackend *backend)
+backend_remove_packages_thread (PkBackend *backend)
 {
 	struct poclidek_rcmd	*rcmd;
 	struct poldek_ts	*ts;
 	gchar			*nvra, *command;
-	const gchar *package_id;
+	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "package_id");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pb_load_packages (backend);
 
 	/* setup callbacks */
@@ -1872,7 +1883,7 @@ backend_remove_package_thread (PkBackend *backend)
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
-	nvra = poldek_get_nvra_from_package_id (package_id);
+	nvra = poldek_get_nvra_from_package_id (package_ids[0]);
 	command = g_strdup_printf ("uninstall %s", nvra);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -1893,11 +1904,11 @@ backend_remove_package_thread (PkBackend *backend)
 }
 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	poldek_backend_set_allow_cancel (backend, FALSE, TRUE);
 	pb_error_clean ();
-	pk_backend_thread_create (backend, backend_remove_package_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
 }
 
 /**
@@ -2213,6 +2224,20 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 	pk_backend_finished (backend);
 }
 
+/**
+ * backend_what_provides:
+ **/
+static void
+backend_what_provides (PkBackend *backend, PkFilterEnum filters, PkProvidesEnum provides, const gchar *search)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
+	pb_error_clean ();
+
+	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_PROVIDES);
+	pk_backend_thread_create (backend, search_package_thread);
+}
+
 PK_BACKEND_OPTIONS (
 	"poldek",					/* description */
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
@@ -2222,18 +2247,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,				/* get_filters */
 	backend_get_cancel,				/* cancel */
 	backend_get_depends,				/* get_depends */
-	backend_get_details,			/* get_details */
+	backend_get_details,				/* get_details */
 	backend_get_files,				/* get_files */
 	backend_get_packages,				/* get_packages */
 	backend_get_repo_list,				/* get_repo_list */
 	backend_get_requires,				/* get_requires */
 	backend_get_update_detail,			/* get_update_detail */
 	backend_get_updates,				/* get_updates */
-	NULL,						/* install_file */
-	backend_install_package,			/* install_package */
+	NULL,						/* install_files */
+	backend_install_packages,			/* install_packages */
 	NULL,						/* install_signature */
 	backend_refresh_cache,				/* refresh_cache */
-	backend_remove_package,				/* remove_package */
+	backend_remove_packages,			/* remove_packages */
 	NULL,						/* repo_enable */
 	NULL,						/* repo_set_data */
 	backend_resolve,				/* resolve */
@@ -2245,6 +2270,6 @@ PK_BACKEND_OPTIONS (
 	NULL,						/* service pack */
 	backend_update_packages,			/* update_packages */
 	backend_update_system,				/* update_system */
-	NULL						/* what_provides */
+	backend_what_provides				/* what_provides */
 );
 

@@ -9,9 +9,9 @@
 
 <table align="center" class="title">
 <tr>
- <td><center><img src="img/packagekit.png" alt="[img]"/></center></td>
+ <td><center><img src="img/packagekit.png" alt=""/></center></td>
  <td width="95%" valign="middle"><p class="title">Frequently Asked Questions</p></td>
- <td><center><img src="img/packagekit.png" alt="[img]"/></center></td>
+ <td><center><img src="img/packagekit.png" alt=""/></center></td>
 </tr>
 </table>
 
@@ -22,6 +22,7 @@
 <h2>Table Of Contents</h2>
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
 <li><a href="#session-methods">How do I use PackageKit in my application?</a></li>
 <li><a href="#rawhide-updates">Why don't I get update details with Fedora Rawhide?</a></li>
@@ -184,7 +185,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>InstallPackage</b></td>
+<td><b>InstallPackages</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
@@ -199,7 +200,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>InstallFile</b></td>
+<td><b>InstallFiles</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt2 -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
@@ -214,7 +215,7 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 <tr>
-<td><b>RemovePackage</b></td>
+<td><b>RemovePackages</b></td>
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt2 -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
@@ -402,7 +403,7 @@
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
+<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
 <td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
@@ -563,6 +564,19 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 </table>
+
+<hr>
+<h3><a name="run-as-root">When run as root, <code>gpk-application</code> and <code>pkcon</code> do not work!</a></h3>
+<p>
+GTK+ tools should not be run as the root user, <b>PERIOD</b>.
+Any GTK+ program run as the root user is a massive security hole -- GTK+ just isn't designed with
+this in mind.
+There are <b>numerous</b> attack vectors when running as root, and programs shouldn't do such
+insane and insecure things.
+</p>
+<p>
+Please see <a href="http://www.gtk.org/setuid.html">the GTK+ explanation</a> for more rationale.
+</p>
 
 <hr>
 <h3><a name="session-system">Why is there a session service <b>and</b> and a system service?</a></h3>

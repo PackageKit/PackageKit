@@ -378,7 +378,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @locked
-    def doRemovePackage(self, id, deps=True, auto=False):
+    def doRemovePackages(self, ids, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
         '''
@@ -418,7 +418,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
 
     @threaded
     @locked
-    def doInstallPackage(self, id):
+    def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
         '''

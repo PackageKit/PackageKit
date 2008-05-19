@@ -353,16 +353,16 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install(self, package):
+    def install_packages(self, packages):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def install_file (self, trusted, inst_file):
+    def install_files (self, trusted, inst_files):
         '''
-        Implement the {backend}-install_file functionality
+        Implement the {backend}-install_files functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
@@ -383,14 +383,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def remove(self, allowdep, package):
+    def remove_packages(self, allowdep, packages):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
         self.error(ERROR_NOT_SUPPORTED,"This function is not implemented in this backend")
 
-    def update(self, package):
+    def update_packages(self, package):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class

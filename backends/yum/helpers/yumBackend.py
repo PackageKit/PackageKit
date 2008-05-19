@@ -801,6 +801,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         old_throttle = self.yumbase.conf.throttle
         self.yumbase.conf.throttle = "60%" # Set bandwidth throttle to 60%
                                            # to avoid taking all the system's bandwidth.
+        old_skip_broken = self.yumbase.conf.skip_broken
+        self.yumbase.conf.skip_broken = 1
 
         try:
             txmbr = self.yumbase.update() # Add all updates to Transaction
@@ -812,6 +814,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_NO_PACKAGES_TO_UPDATE,"Nothing to do")
 
         self.yumbase.conf.throttle = old_throttle
+        self.yumbase.conf.skip_broken = old_skip_broken
 
     def refresh_cache(self):
         '''
@@ -882,9 +885,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         break
 
     @handle_repo_error
-    def install(self,packages):
+    def install_packages(self,packages):
         '''
-        Implement the {backend}-install functionality
+        Implement the {backend}-install-packages functionality
         This will only work with yum 3.2.4 or higher
         '''
         self._check_init()
@@ -905,7 +908,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if txmbrs:
             self._runYumTransaction()
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"This package could not be installed as it is already installed")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package is already installed")
 
     def _checkForNewer(self,po):
         pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
@@ -914,15 +917,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if newest.EVR > po.EVR:
                 self.message(MESSAGE_WARNING,"A newer version of %s is available online." % po.name)
 
-    def install_file (self,trusted,inst_file):
+    def install_files (self,trusted,inst_files):
         '''
-        Implement the {backend}-install_file functionality
+        Implement the {backend}-install-files functionality
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        if inst_file.endswith('.src.rpm'):
-            self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
-            return
+        for inst_file in inst_files:
+            if inst_file.endswith('.src.rpm'):
+                self.error(ERROR_CANNOT_INSTALL_SOURCE_PACKAGE,'Backend will not install a src rpm file')
+                return
         self._check_init()
         self.allow_cancel(False);
         self.percentage(0)
@@ -938,26 +942,33 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             # self.yumbase.installLocal fails for unsigned packages when self.yumbase.conf.gpgcheck=1
             # This means we don't run runYumTransaction, and don't get the GPG failure in
             # PackageKitYumBase(_checkSignatures) -- so we check here
-            po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
-            try:
-                self.yumbase._checkSignatures([po], None)
-            except yum.Errors.YumGPGCheckError,e:
-                self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
+            for inst_file in inst_files:
+                po = YumLocalPackage(ts=self.yumbase.rpmdb.readOnlyTS(), filename=inst_file)
+                try:
+                    self.yumbase._checkSignatures([po], None)
+                except yum.Errors.YumGPGCheckError,e:
+                    self.error(ERROR_MISSING_GPG_SIGNATURE,str(e))
         else:
             self.yumbase.conf.gpgcheck=0
 
-        if not self._check_local_file(inst_file):
-            return
-            
+        # common checks copied from yum
+        for inst_file in inst_files:
+            if not self._check_local_file(inst_file):
+                return
+
+        txmbrs = []
         try:
-            txmbr = self.yumbase.installLocal(inst_file)
-            if txmbr:
-                self._checkForNewer(txmbr[0].po)
-            # Added the package to the transaction set
-                if len(self.yumbase.tsInfo) > 0:
-                    self._runYumTransaction()
-            else:
-                self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
+            for inst_file in inst_files:
+                txmbr = self.yumbase.installLocal(inst_file)
+                if txmbr:
+                    txmbrs.extend(txmbr)
+                    self._checkForNewer(txmbr[0].po)
+                    # Added the package to the transaction set
+                else:
+                    self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
+            if len(self.yumbase.tsInfo) == 0:
+                self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % " or ".join(inst_files))
+            self._runYumTransaction()
 
         except yum.Errors.InstallError,e:
             self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
@@ -969,14 +980,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 for repo in self.yumbase.repos.listEnabled():
                     repo.disable()
 
-                txmbr = self.yumbase.installLocal(inst_file)
-                if txmbr:
-                    if len(self.yumbase.tsInfo) > 0:
-                        if not self.yumbase.tsInfo.pkgSack:
-                            self.yumbase.tsInfo.pkgSack = MetaSack()
-                        self._runYumTransaction()
-                else:
-                    self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
+                for inst_file in inst_files:
+                    txmbr = self.yumbase.installLocal(inst_file)
+                    if txmbr:
+                        txmbrs.extend(txmbr)
+                        if len(self.yumbase.tsInfo) > 0:
+                            if not self.yumbase.tsInfo.pkgSack:
+                                self.yumbase.tsInfo.pkgSack = MetaSack()
+                            self._runYumTransaction()
+                    else:
+                        self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
                 
@@ -993,7 +1006,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
 
         if self._is_inst(po):
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed" % str(po))
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % str(po))
             return False
 
         if len(self.yumbase.conf.exclude) > 0:
@@ -1005,7 +1018,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         return True
 
-    def update(self,packages):
+    def update_packages(self,packages):
         '''
         Implement the {backend}-install functionality
         This will only work with yum 3.2.4 or higher

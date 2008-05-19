@@ -1,7 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
+# Copyright (C) 2007 Ken VanDine <ken@vandine.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -11,11 +10,9 @@
 # (at your option) any later version.
 
 import sys
+from conaryBackend import PackageKitConaryBackend
 
-from yumBackend import PackageKitYumBackend
-
-trusted = sys.argv[1]
-file_to_inst = sys.argv[2]
-backend = PackageKitYumBackend(sys.argv[1:])
-backend.install_file(trusted, file_to_inst)
+package = sys.argv[1]
+backend = PackageKitConaryBackend(sys.argv[1:])
+backend.install_packages(package)
 sys.exit(0)

@@ -80,7 +80,7 @@ try:
         #iface.GetPackages(FILTER_INSTALLED,'no')
     if cmd == 'get-repolist' or cmd == 'all':
         print "Testing GetRepoList()"
-        iface.GetRepoList()
+        iface.GetRepoList("")
     if cmd == 'get-updatedetail' or cmd == 'all':
         print "Testing GetUpdateDetail(PKG_ID)"
         iface.GetUpdateDetail(PKG_ID)

@@ -1,6 +1,6 @@
 # A plugin for yum which notifies PackageKit to refresh its data
 #
-# Written by James Bowes <jbowes@redhat.com>
+# Copyright (c) 2007 James Bowes <jbowes@redhat.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ def posttrans_hook(conduit):
                                           '/org/freedesktop/PackageKit')
         packagekit_iface = dbus.Interface(packagekit_proxy, 'org.freedesktop.PackageKit')
         packagekit_iface.StateHasChanged('posttrans')
-    except dbus.DBusException, e:
+    except Exception, e:
         conduit.info(2, "Unable to send message to PackageKit")
         conduit.info(6, "%s" %(e,))
 

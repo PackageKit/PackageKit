@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
+# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
+# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -11,9 +11,11 @@
 # (at your option) any later version.
 
 import sys
-import pisiBackend
 
-backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
-backend.update(sys.argv[1])
+from yumBackend import PackageKitYumBackend
 
-sys.exit()
+packages = sys.argv[1:]
+backend = PackageKitYumBackend(sys.argv[1:])
+backend.update_packages(packages)
+backend.unLock()
+sys.exit(0)

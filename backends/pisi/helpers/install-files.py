@@ -1,7 +1,7 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 Red Hat Inc, Seth Vidal <skvidal@fedoraproject.org>
+# Copyright (C) 2007 S.Çağlar Onur <caglar@pardus.org.tr>
 #
 # Licensed under the GNU General Public License Version 2
 #
@@ -12,9 +12,11 @@
 
 import sys
 
-from aptBackend import PackageKitAptBackend
+import pisiBackend
 
-file_to_inst = sys.argv[1]
-backend = PackageKitAptBackend(sys.argv[1:])
-backend.install_file(file_to_inst)
-sys.exit(0)
+trusted = sys.argv[1]
+files_to_inst = sys.argv[2:]
+backend = pisiBackend.PackageKitPisiBackend(sys.argv[1:])
+backend.install_files(trusted, files_to_inst)
+
+sys.exit()

@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include <pk-enum.h>
 
+#include "pk-package-item.h"
+
 G_BEGIN_DECLS
 
 #define PK_TYPE_PACKAGE_LIST		(pk_package_list_get_type ())
@@ -49,26 +51,18 @@ struct _PkPackageListClass
 	GObjectClass	parent_class;
 };
 
-/**
- * PkPackageItem:
- *
- * A cached store for the complete Package object
- */
-typedef struct
-{
-	PkInfoEnum		 info;
-	gchar			*package_id;
-	gchar			*summary;
-} PkPackageItem;
-
 GType		 pk_package_list_get_type		(void) G_GNUC_CONST;
 PkPackageList	*pk_package_list_new			(void);
 gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 PkInfoEnum		 info,
 							 const gchar		*package_id,
 							 const gchar		*summary);
+gboolean	 pk_package_list_add_item		(PkPackageList		*plist,
+							 PkPackageItem		*item);
 gboolean	 pk_package_list_contains		(PkPackageList		*plist,
 							 const gchar		*package_id);
+gboolean	 pk_package_list_contains_item		(PkPackageList		*plist,
+							 PkPackageItem		*item);
 gchar		*pk_package_list_get_string		(PkPackageList		*plist)
 							 G_GNUC_WARN_UNUSED_RESULT;
 guint		 pk_package_list_get_size		(PkPackageList		*plist);

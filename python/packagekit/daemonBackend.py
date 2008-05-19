@@ -584,15 +584,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='s', out_signature='')
-    def InstallPackage(self, package):
+                         in_signature='as', out_signature='')
+    def InstallPackages(self, packages):
         '''
         Implement the {backend}-install functionality
         '''
-        pklog.info("InstallPackage(%s)" % package)
-        self.doInstallPackage(package)
+        pklog.info("InstallPackages(%s)" % ", ".join(packages))
+        self.doInstallPackages(packages)
 
-    def doInstallPackage(self, package):
+    def doInstallPackages(self, packages):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -601,16 +601,16 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='bs', out_signature='')
-    def InstallFile (self, trusted, inst_file):
+                         in_signature='bas', out_signature='')
+    def InstallFiles (self, trusted, full_paths):
         '''
-        Implement the {backend}-install_file functionality
-        Install the package containing the inst_file file
+        Implement the {backend}-install_files functionality
+        Install the package containing the full_paths file
         '''
-        pklog.info("InstallFile(%i,%s)" % (trusted,inst_file))
-        self.doInstallFile(trusted,inst_file)
+        pklog.info("InstallFiles(%i,%s)" % (trusted,full_paths))
+        self.doInstallFiles(trusted,full_paths)
 
-    def doInstallFile(self, inst_file):
+    def doInstallFiles(self, full_paths):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -653,15 +653,15 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.Finished(EXIT_FAILED)
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
-                         in_signature='sbb', out_signature='')
-    def RemovePackage(self, package, allowdep, autoremove):
+                         in_signature='asbb', out_signature='')
+    def RemovePackages(self, packages, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackage(%s, %s, %s)" % (package, allowdep, autoremove))
-        self.doRemovePackage(package, allowdep, autoremove)
+        pklog.info("RemovePackages(%s, %s, %s)" % (package[0], allowdep, autoremove))
+        self.doRemovePackages(package, allowdep, autoremove)
 
-    def doRemovePackage(self, package, allowdep, autoremove):
+    def doRemovePackages(self, packages, allowdep, autoremove):
         '''
         Should be replaced in the corresponding backend sub class
         '''
@@ -787,6 +787,21 @@ class PackageKitBaseBackend(dbus.service.Object):
         self.ErrorCode(ERROR_NOT_SUPPORTED,
                        "This function is not implemented in this backend")
         self.Finished(EXIT_FAILED)
+
+    @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
+                         in_signature='ss', out_signature='')
+    def SetProxy(self, proxy_http, proxy_ftp):
+        '''
+        Set the proxy
+        '''
+        pklog.info("SetProxy(%s, %s)" % (proxy_http, proxy_ftp))
+        self.doSetProxy(proxy_http, proxy_ftp)
+
+    def doSetProxy(self, proxy_http, proxy_ftp):
+        '''
+        Should be replaced in the corresponding backend sub class
+        '''
+        # do not use Finished() in this method
 
     @dbus.service.method(PACKAGEKIT_DBUS_INTERFACE,
                          in_signature='s', out_signature='')

@@ -91,11 +91,11 @@ static PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_GET_REQUIRES,		"get-requires"},
 	{PK_ROLE_ENUM_GET_UPDATE_DETAIL,	"get-update-detail"},
 	{PK_ROLE_ENUM_GET_UPDATES,		"get-updates"},
-	{PK_ROLE_ENUM_INSTALL_FILE,		"install-file"},
-	{PK_ROLE_ENUM_INSTALL_PACKAGE,		"install-package"},
+	{PK_ROLE_ENUM_INSTALL_FILES,		"install-files"},
+	{PK_ROLE_ENUM_INSTALL_PACKAGES,		"install-packages"},
 	{PK_ROLE_ENUM_INSTALL_SIGNATURE,	"install-signature"},
 	{PK_ROLE_ENUM_REFRESH_CACHE,		"refresh-cache"},
-	{PK_ROLE_ENUM_REMOVE_PACKAGE,		"remove-package"},
+	{PK_ROLE_ENUM_REMOVE_PACKAGES,		"remove-packages"},
 	{PK_ROLE_ENUM_REPO_ENABLE,		"repo-enable"},
 	{PK_ROLE_ENUM_REPO_SET_DATA,		"repo-set-data"},
 	{PK_ROLE_ENUM_RESOLVE,			"resolve"},
@@ -193,6 +193,8 @@ static PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_NEWEST,		"~newest"},
 	{PK_FILTER_ENUM_ARCH,			"arch"},
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
+	{PK_FILTER_ENUM_SOURCE,			"source"},
+	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
 	{0, NULL}
 };
 

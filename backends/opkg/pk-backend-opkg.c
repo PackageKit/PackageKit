@@ -148,13 +148,45 @@ backend_destroy (PkBackend *backend)
 
 
 static void
-pk_opkg_progress_cb (opkg_t *opkg, int percent, void *data)
+pk_opkg_progress_cb (opkg_t *opkg, const opkg_progress_data_t *pdata, void *data)
 {
 	PkBackend *backend = PK_BACKEND (data);
 	if (!backend)
 		return;
 
-	pk_backend_set_percentage (backend, percent);
+	pk_backend_set_percentage (backend, pdata->percentage);
+	if (pdata->package)
+	{
+		gchar *uid;
+		opkg_package_t *pkg = pdata->package;
+		gint status = PK_INFO_ENUM_UNKNOWN;
+
+		uid = g_strdup_printf ("%s;%s;%s;",
+			pkg->name, pkg->version, pkg->architecture);
+
+		if (pdata->action == OPKG_DOWNLOAD)
+			status = PK_INFO_ENUM_DOWNLOADING;
+		else if (pdata->action == OPKG_INSTALL)
+			status = PK_INFO_ENUM_INSTALLING;
+		else if (pdata->action == OPKG_REMOVE)
+			status = PK_INFO_ENUM_REMOVING;
+
+		pk_backend_package (backend, status, uid, pkg->description);
+		g_free (uid);
+	}
+
+	switch (pdata->action)
+	{
+	case OPKG_DOWNLOAD:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_DOWNLOAD);
+		break;
+	case OPKG_INSTALL:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
+		break;
+	case OPKG_REMOVE:
+		pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
+		break;
+	}
 }
 
 static gboolean
@@ -163,8 +195,12 @@ backend_refresh_cache_thread (PkBackend *backend)
 	int ret;
 
 	ret = opkg_update_package_lists (opkg, pk_opkg_progress_cb, backend);
+
 	if (ret) {
-		opkg_unknown_error (backend, ret, "Refreshing cache");
+		if (ret == OPKG_DOWNLOAD_FAILED)
+			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_AVAILABLE, NULL);
+		else
+			opkg_unknown_error (backend, ret, "Refreshing cache");
 	}
 	pk_backend_finished (backend);
 
@@ -178,7 +214,7 @@ static void
 backend_refresh_cache (PkBackend *backend, gboolean force)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REFRESH_CACHE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
@@ -279,7 +315,7 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -301,7 +337,7 @@ backend_search_description (PkBackend *backend, PkFilterEnum filters, const gcha
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -320,7 +356,7 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	params = g_new0 (SearchParams, 1);
 	params->filters = filters;
@@ -334,87 +370,126 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 
 
 static gboolean
-backend_install_package_thread (PkBackend *backend)
+backend_install_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	gint err;
-	const gchar *package_id;
+	gint err, i;
+	gchar **package_ids;
 
-	package_id = pk_backend_get_string (backend, "pkid");
+	package_ids = pk_backend_get_strv (backend, "pkids");
 
-	pi = pk_package_id_new_from_string (package_id);
+	err = 0;
 
-	err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
-	if (err != 0)
-		opkg_unknown_error (backend, err, "Install");
+	for (i = 0; package_ids[i]; i++)
+	{
+		pk_backend_package (backend, PK_INFO_ENUM_INSTALLING, package_ids[0], NULL);
 
-	pk_package_id_free (pi);
+		pi = pk_package_id_new_from_string (package_ids[0]);
+
+		err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+		switch (err)
+		{
+		case OPKG_NO_ERROR:
+			break;
+		case OPKG_DEPENDANCIES_FAILED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
+			break;
+		case OPKG_PACKAGE_ALREADY_INSTALLED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, NULL);
+			break;
+		case OPKG_PACKAGE_NOT_AVAILABLE:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
+			break;
+		default:
+			opkg_unknown_error (backend, err, "Install");
+		}
+		pk_package_id_free (pi);
+		if (err != 0)
+			break;
+	}
+
 	pk_backend_finished (backend);
 	return (err == 0);
 }
 
 static void
-backend_install_package (PkBackend *backend, const gchar *package_id)
+backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
 
-	pk_backend_set_string (backend, "pkid", package_id);
+	pk_backend_set_strv (backend, "pkids", package_ids);
 
-	pk_backend_thread_create (backend, backend_install_package_thread);
+	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
 static gboolean
-backend_remove_package_thread (PkBackend *backend)
+backend_remove_packages_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
-	gint err;
-	const gchar *package_id;
+	gint err, i;
+	gchar **package_ids;
 	gboolean allow_deps;
 	gboolean autoremove;
 	gpointer *data;
 
 	data = pk_backend_get_pointer (backend, "remove-params");
 
-	package_id = (gchar*) data[0];
+	package_ids = (gchar**) data[0];
 	allow_deps = GPOINTER_TO_INT (data[1]);
 	autoremove = GPOINTER_TO_INT (data[2]);
 	g_free (data);
 
-	pi = pk_package_id_new_from_string (package_id);
-
 	opkg_set_option (opkg, "autoremove", &autoremove);
 	opkg_set_option (opkg, "force_removal_of_dependent_packages", &allow_deps);
 
-	err = opkg_remove_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+	err = 0;
 
-	/* TODO: improve error reporting */
-	if (err != 0)
-		opkg_unknown_error (backend, err, "Remove");
+	for (i = 0; package_ids[i]; i++)
+	{
+		pi = pk_package_id_new_from_string (package_ids[0]);
+		pk_backend_package (backend, PK_INFO_ENUM_REMOVING, package_ids[0], NULL);
 
-	pk_package_id_free (pi);
+		err = opkg_remove_package (opkg, pi->name, pk_opkg_progress_cb, backend);
+
+		switch (err)
+		{
+		case OPKG_NO_ERROR:
+			break;
+		case OPKG_PACKAGE_NOT_INSTALLED:
+			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+			break;
+		default:
+			opkg_unknown_error (backend, err, "Remove");
+		}
+		pk_package_id_free (pi);
+
+		if (err != 0)
+			break;
+	}
+
 	pk_backend_finished (backend);
 	return (err == 0);
 }
 
 static void
-backend_remove_package (PkBackend *backend, const gchar *package_id, gboolean allow_deps, gboolean autoremove)
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
 	gpointer *params;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_REMOVE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	/* params is a small array we can pack our thread parameters into */
 	params = g_new0 (gpointer, 2);
 
-	params[0] = g_strdup (package_id);
+	params[0] = g_strdupv (package_ids);
 	params[1] = GINT_TO_POINTER (allow_deps);
 	params[2] = GINT_TO_POINTER (autoremove);
 
 	pk_backend_set_pointer (backend, "remove-params", params);
 
-	pk_backend_thread_create (backend, backend_remove_package_thread);
+	pk_backend_thread_create (backend, backend_remove_packages_thread);
 
 }
 
@@ -448,7 +523,7 @@ static void
 backend_update_system (PkBackend *backend)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_update_system_thread);
 }
@@ -476,8 +551,14 @@ backend_update_package_thread (PkBackend *backend)
 	}
 
 	err = opkg_upgrade_package (opkg, pi->name, pk_opkg_progress_cb, backend);
-
-	if (err != 0) {
+	switch (err)
+	{
+	case OPKG_NO_ERROR:
+		break;
+	case OPKG_PACKAGE_NOT_INSTALLED:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+		break;
+	default:
 		opkg_unknown_error (backend, err, "Update package");
 	}
 
@@ -492,7 +573,7 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	gint i;
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	for (i = 0; package_ids[i]; i++) {
 		pk_backend_set_string (backend, "pkgid", package_ids[i]);
@@ -534,7 +615,7 @@ static void
 backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_UPDATE);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	pk_backend_thread_create (backend, backend_get_updates_thread);
 }
@@ -554,6 +635,52 @@ backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_MAPS);
 }
 
+/**
+ * backend_get_details:
+ */
+static gboolean
+backend_get_details_thread (PkBackend *backend)
+{
+	PkPackageId *pi;
+	const gchar *package_id;
+	opkg_package_t *pkg;
+	gchar *newid;
+
+	package_id = pk_backend_get_string (backend, "package_id");
+	pi = pk_package_id_new_from_string (package_id);
+	if (pi == NULL)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "invalid package id");
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+
+	pkg = opkg_find_package (opkg, pi->name, pi->version, pi->arch, pi->data);
+	pk_package_id_free (pi);
+
+	if (!pkg)
+	{
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
+		pk_backend_finished (backend);
+		return FALSE;
+	}
+
+	newid = g_strdup_printf ("%s;%s;%s;%s", pkg->name, pkg->version, pkg->architecture, pkg->repository);
+
+	pk_backend_details (backend, newid, NULL, 0, pkg->description, pkg->url, pkg->size);
+
+	g_free (newid);
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
+static void
+backend_get_details (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
+	pk_backend_thread_create (backend, backend_get_details_thread);
+}
 
 PK_BACKEND_OPTIONS (
 	"opkg",					/* description */
@@ -564,18 +691,18 @@ PK_BACKEND_OPTIONS (
 	backend_get_filters,			/* get_filters */
 	NULL,					/* cancel */
 	NULL,					/* get_depends */
-	NULL,					/* get_details */
+	backend_get_details,			/* get_details */
 	NULL,					/* get_files */
 	NULL,					/* get_packages */
 	NULL,					/* get_repo_list */
 	NULL,					/* get_requires */
 	NULL,					/* get_update_detail */
 	backend_get_updates,			/* get_updates */
-	NULL,					/* install_file */
-	backend_install_package,		/* install_package */
+	NULL,					/* install_files */
+	backend_install_packages,		/* install_packages */
 	NULL,					/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	backend_remove_package,			/* remove_package */
+	backend_remove_packages,		/* remove_packages */
 	NULL,					/* repo_enable */
 	NULL,					/* repo_set_data */
 	NULL,					/* resolve */

@@ -1,20 +1,20 @@
-#!/usr/bin/python
-#
-# Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
-# Copyright (C) 2007 James Bowes <jbowes@redhat.com>
-#
+#!/bin/bash
+# Copyright (C) 2008 Richard Hughes <richard@hughsie.com>
 # Licensed under the GNU General Public License Version 2
-#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-import sys
-import smartBackend
+if [ -z "${http_proxy}" ]; then
+	echo "no http proxy"
+	exit 1
+fi
 
+if [ -z "${ftp_proxy}" ]; then
+	echo "no ftp proxy"
+	exit 1
+fi
 
-backend = smartBackend.PackageKitSmartBackend(sys.argv[2:])
-backend.remove(sys.argv[1], sys.argv[2])
+echo -e "percentage\t100"
 
-sys.exit()

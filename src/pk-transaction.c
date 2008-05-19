@@ -99,6 +99,7 @@ struct PkTransactionPrivate
 	gchar			**cached_package_ids;
 	gchar			*cached_transaction_id;
 	gchar			*cached_full_path;
+	gchar			**cached_full_paths;
 	PkFilterEnum		 cached_filters;
 	gchar			*cached_search;
 	gchar			*cached_repo_id;
@@ -453,8 +454,8 @@ pk_transaction_finished_cb (PkBackend *backend, PkExitEnum exit, PkTransaction *
 	/* add to the database if we are going to log it */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
-	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		packages = pk_package_list_get_string (transaction->priv->package_list);
 		if (pk_strzero (packages) == FALSE) {
 			pk_transaction_db_set_data (transaction->priv->transaction_db, transaction->priv->tid, packages);
@@ -549,7 +550,7 @@ pk_transaction_package_cb (PkBackend *backend, PkInfoEnum info, const gchar *pac
 
 	/* check the backend is doing the right thing */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (info == PK_INFO_ENUM_INSTALLED) {
 			pk_backend_message (transaction->priv->backend, PK_MESSAGE_ENUM_DAEMON,
@@ -807,6 +808,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 	pk_backend_set_uint (priv->backend, "filters", priv->cached_filters);
 	pk_backend_set_uint (priv->backend, "provides", priv->cached_provides);
 	pk_backend_set_strv (priv->backend, "package_ids", priv->cached_package_ids);
+	pk_backend_set_strv (priv->backend, "full_paths", priv->cached_full_paths);
 	pk_backend_set_string (priv->backend, "package_id", priv->cached_package_id);
 	pk_backend_set_string (priv->backend, "transaction_id", priv->cached_transaction_id);
 	pk_backend_set_string (priv->backend, "full_path", priv->cached_full_path);
@@ -848,18 +850,18 @@ pk_transaction_set_running (PkTransaction *transaction)
 		desc->search_group (priv->backend, priv->cached_filters, priv->cached_search);
 	} else if (priv->role == PK_ROLE_ENUM_SEARCH_NAME) {
 		desc->search_name (priv->backend,priv->cached_filters,priv->cached_search);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE) {
-		desc->install_package (priv->backend, priv->cached_package_id);
-	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILE) {
-		desc->install_file (priv->backend, priv->cached_trusted, priv->cached_full_path);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
+		desc->install_packages (priv->backend, priv->cached_package_ids);
+	} else if (priv->role == PK_ROLE_ENUM_INSTALL_FILES) {
+		desc->install_files (priv->backend, priv->cached_trusted, priv->cached_full_paths);
 	} else if (priv->role == PK_ROLE_ENUM_INSTALL_SIGNATURE) {
 		desc->install_signature (priv->backend, PK_SIGTYPE_ENUM_GPG, priv->cached_key_id, priv->cached_package_id);
 	} else if (priv->role == PK_ROLE_ENUM_SERVICE_PACK) {
 		desc->service_pack (priv->backend, priv->cached_full_path, priv->cached_enabled);
 	} else if (priv->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		desc->refresh_cache (priv->backend,  priv->cached_force);
-	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
-		desc->remove_package (priv->backend, priv->cached_package_id, priv->cached_allow_deps, priv->cached_autoremove);
+	} else if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+		desc->remove_packages (priv->backend, priv->cached_package_ids, priv->cached_allow_deps, priv->cached_autoremove);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		desc->update_packages (priv->backend, priv->cached_package_ids);
 	} else if (priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
@@ -941,8 +943,8 @@ pk_transaction_commit (PkTransaction *transaction)
 
 	/* only save into the database for useful stuff */
 	if (transaction->priv->role == PK_ROLE_ENUM_UPDATE_SYSTEM ||
-	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGE ||
-	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGE ||
+	    transaction->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* add to database */
 		pk_transaction_db_add (transaction->priv->transaction_db, transaction->priv->tid);
@@ -1831,23 +1833,28 @@ pk_transaction_get_updates (PkTransaction *transaction, const gchar *filter, DBu
 }
 
 /**
- * pk_transaction_install_file:
+ * pk_transaction_install_files:
  **/
 void
-pk_transaction_install_file (PkTransaction *transaction, gboolean trusted,
-			     const gchar *full_path, DBusGMethodInvocation *context)
+pk_transaction_install_files (PkTransaction *transaction, gboolean trusted,
+			      gchar **full_paths, DBusGMethodInvocation *context)
 {
+	gchar *full_paths_temp;
 	gboolean ret;
 	GError *error;
 	gchar *sender;
+	guint length;
+	guint i;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("InstallFile method called: %s (trusted %i)", full_path, trusted);
+	full_paths_temp = pk_package_ids_to_text (full_paths, ", ");
+	pk_debug ("InstallFiles method called: %s (trusted %i)", full_paths_temp, trusted);
+	g_free (full_paths_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->install_file == NULL) {
+	if (transaction->priv->backend->desc->install_files == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
@@ -1855,18 +1862,21 @@ pk_transaction_install_file (PkTransaction *transaction, gboolean trusted,
 		return;
 	}
 
-	/* check file exists */
-	ret = g_file_test (full_path, G_FILE_TEST_EXISTS);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "No such file '%s'", full_path);
-		dbus_g_method_return_error (context, error);
-		return;
+	/* check all files exists */
+	length = g_strv_length (full_paths);
+	for (i=0; i<length; i++) {
+		ret = g_file_test (full_paths[i], G_FILE_TEST_EXISTS);
+		if (!ret) {
+			error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+					     "No such file '%s'", full_paths[i]);
+			dbus_g_method_return_error (context, error);
+			return;
+		}
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, trusted, PK_ROLE_ENUM_INSTALL_FILE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, trusted, PK_ROLE_ENUM_INSTALL_FILES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -1878,9 +1888,9 @@ pk_transaction_install_file (PkTransaction *transaction, gboolean trusted,
 
 	/* save so we can run later */
 	transaction->priv->cached_trusted = trusted;
-	transaction->priv->cached_full_path = g_strdup (full_path);
+	transaction->priv->cached_full_paths = g_strdupv (full_paths);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILE);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_FILES);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -1896,23 +1906,26 @@ pk_transaction_install_file (PkTransaction *transaction, gboolean trusted,
 }
 
 /**
- * pk_transaction_install_package:
+ * pk_transaction_install_packages:
  **/
 void
-pk_transaction_install_package (PkTransaction *transaction, const gchar *package_id,
-				DBusGMethodInvocation *context)
+pk_transaction_install_packages (PkTransaction *transaction, gchar **package_ids,
+				 DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("method called: %s", package_id);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("InstallPackages method called: %s", package_ids_temp);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->install_package == NULL) {
+	if (transaction->priv->backend->desc->install_packages == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
@@ -1920,27 +1933,20 @@ pk_transaction_install_package (PkTransaction *transaction, const gchar *package
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_INSTALL_PACKAGES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -1951,9 +1957,9 @@ pk_transaction_install_package (PkTransaction *transaction, const gchar *package
 	pk_transaction_set_dbus_name (transaction, dbus_g_method_get_sender (context));
 
 	/* save so we can run later */
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGE);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_INSTALL_PACKAGES);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -2116,24 +2122,27 @@ pk_transaction_refresh_cache (PkTransaction *transaction, gboolean force, DBusGM
 }
 
 /**
- * pk_transaction_remove_package:
+ * pk_transaction_remove_packages:
  **/
 void
-pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_id,
-			       gboolean allow_deps, gboolean autoremove,
-			       DBusGMethodInvocation *context)
+pk_transaction_remove_packages (PkTransaction *transaction, gchar **package_ids,
+			        gboolean allow_deps, gboolean autoremove,
+			        DBusGMethodInvocation *context)
 {
 	gboolean ret;
 	GError *error;
 	gchar *sender;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
 
-	pk_debug ("RemovePackage method called: %s, %i, %i", package_id, allow_deps, autoremove);
+	package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
+	pk_debug ("RemovePackages method called: %s, %i, %i", package_ids_temp, allow_deps, autoremove);
+	g_free (package_ids_temp);
 
 	/* not implemented yet */
-	if (transaction->priv->backend->desc->remove_package == NULL) {
+	if (transaction->priv->backend->desc->remove_packages == NULL) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 				     "Operation not yet supported by backend");
 		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
@@ -2141,27 +2150,20 @@ pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_
 		return;
 	}
 
-	/* check for sanity */
-	ret = pk_strvalidate (package_id);
-	if (!ret) {
-		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon");
-		dbus_g_method_return_error (context, error);
-		return;
-	}
-
-	/* check package_id */
-	ret = pk_package_id_check (package_id);
-	if (!ret) {
+	/* check package_ids */
+	ret = pk_package_ids_check (package_ids);
+	if (ret == FALSE) {
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id '%s' is not valid", package_id);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
 
 	/* check if the action is allowed from this client - if not, set an error */
 	sender = dbus_g_method_get_sender (context);
-	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGE, &error);
+	ret = pk_transaction_action_is_allowed (transaction, sender, FALSE, PK_ROLE_ENUM_REMOVE_PACKAGES, &error);
 	g_free (sender);
 	if (!ret) {
 		dbus_g_method_return_error (context, error);
@@ -2173,9 +2175,9 @@ pk_transaction_remove_package (PkTransaction *transaction, const gchar *package_
 
 	/* save so we can run later */
 	transaction->priv->cached_allow_deps = allow_deps;
-	transaction->priv->cached_package_id = g_strdup (package_id);
+	transaction->priv->cached_package_ids = g_strdupv (package_ids);
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGE);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_REMOVE_PACKAGES);
 
 	/* try to commit this */
 	ret = pk_transaction_commit (transaction);
@@ -2720,7 +2722,7 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 	gboolean ret;
 	GError *error;
 	gchar *sender;
-	gchar *package_id_temp;
+	gchar *package_ids_temp;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -2736,13 +2738,13 @@ pk_transaction_update_packages (PkTransaction *transaction, gchar **package_ids,
 		return;
 	}
 
-	/* check package_id */
+	/* check package_ids */
 	ret = pk_package_ids_check (package_ids);
 	if (ret == FALSE) {
-		package_id_temp = pk_package_ids_to_text (package_ids, ", ");
+		package_ids_temp = pk_package_ids_to_text (package_ids, ", ");
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-				     "The package id's '%s' are not valid", package_id_temp);
-		g_free (package_id_temp);
+				     "The package id's '%s' are not valid", package_ids_temp);
+		g_free (package_ids_temp);
 		dbus_g_method_return_error (context, error);
 		return;
 	}
@@ -2869,7 +2871,7 @@ pk_transaction_what_provides (PkTransaction *transaction, const gchar *filter, c
 		return;
 	}
 
-	provides = pk_role_enum_from_text (type);
+	provides = pk_provides_enum_from_text (type);
 	if (provides == PK_PROVIDES_ENUM_UNKNOWN) {
 		error = g_error_new (PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INVALID_PROVIDE,
 				     "provide type '%s' not found", type);
@@ -3019,6 +3021,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->cached_package_ids = NULL;
 	transaction->priv->cached_transaction_id = NULL;
 	transaction->priv->cached_full_path = NULL;
+	transaction->priv->cached_full_paths = NULL;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
 	transaction->priv->cached_search = NULL;
 	transaction->priv->cached_repo_id = NULL;

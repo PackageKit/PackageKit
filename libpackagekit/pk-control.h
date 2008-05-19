@@ -88,6 +88,9 @@ PkControl	*pk_control_new				(void);
 gboolean	 pk_control_allocate_transaction_id	(PkControl	*control,
 							 gchar		**tid,
 							 GError		**error);
+gboolean	 pk_control_set_proxy			(PkControl	*control,
+							 const gchar	*proxy_http,
+							 const gchar	*proxy_ftp);
 PkRoleEnum	 pk_control_get_actions			(PkControl	*control);
 PkFilterEnum	 pk_control_get_filters			(PkControl	*control);
 PkGroupEnum	 pk_control_get_groups			(PkControl	*control);
