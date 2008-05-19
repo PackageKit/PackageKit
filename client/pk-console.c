@@ -574,7 +574,8 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 	array_files = g_ptr_array_new ();
 	length = g_strv_length (packages);
 	for (i=2; i<length; i++) {
-		is_local = g_file_test (packages[i], G_FILE_TEST_EXISTS);
+		/* are we a local file */
+		is_local = g_file_test (packages[i], G_FILE_TEST_EXISTS & G_FILE_TEST_IS_REGULAR);
 		if (is_local) {
 			g_ptr_array_add (array_files, g_strdup (packages[i]));
 		} else {
