@@ -33,7 +33,6 @@ import dbus.glib
 import dbus.service
 import dbus.mainloop.glib
 import gobject
-import xapian
 
 from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded
 from packagekit.enums import *
@@ -45,10 +44,6 @@ PACKAGEKIT_DBUS_SERVICE = 'org.freedesktop.PackageKitAptBackend'
 XAPIANDBPATH = os.environ.get("AXI_DB_PATH", "/var/lib/apt-xapian-index")
 XAPIANDB = XAPIANDBPATH + "/index"
 XAPIANDBVALUES = XAPIANDBPATH + "/values"
-DEFAULT_SEARCH_FLAGS = (xapian.QueryParser.FLAG_BOOLEAN |
-                        xapian.QueryParser.FLAG_PHRASE |
-                        xapian.QueryParser.FLAG_LOVEHATE |
-                        xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
 
 # Required for daemon mode
 os.putenv("PATH",
@@ -184,10 +179,18 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
-        self._xapian = None
         self._canceled = threading.Event()
         self._canceled.clear()
         self._locked = threading.Lock()
+        # Check for xapian support
+        self._use_xapian = False
+        try:
+            import xapian
+        except ImportError:
+            pass
+        else:
+            if os.access(XAPIANDB, os.R_OK):
+                self._use_xapian = True
         PackageKitBaseBackend.__init__(self, bus_name, dbus_path)
 
     # Methods ( client -> engine -> backend )
@@ -243,12 +246,16 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         results = []
 
-        if os.access(XAPIANDB, os.R_OK):
+        if self._use_xapian == True:
+            search_flags = (xapian.QueryParser.FLAG_BOOLEAN |
+                            xapian.QueryParser.FLAG_PHRASE |
+                            xapian.QueryParser.FLAG_LOVEHATE |
+                            xapian.QueryParser.FLAG_BOOLEAN_ANY_CASE)
             pklog.debug("Performing xapian db based search")
             db = xapian.Database(XAPIANDB)
             parser = xapian.QueryParser()
             query = parser.parse_query(unicode(search),
-                                       DEFAULT_SEARCH_FLAGS)
+                                       search_flags)
             enquire = xapian.Enquire(db)
             enquire.set_query(query)
             matches = enquire.get_mset(0, 1000)
@@ -341,16 +348,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-update-system functionality
         '''
-        #FIXME: Better exception and error handling
-        #FIXME: Distupgrade or Upgrade?
-        #FIXME: Handle progress in a more sane way
         pklog.info("Upgrading system")
         self.StatusChanged(STATUS_UPDATE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,5))
         try:
-            self._cache.upgrade(distUpgrade=True)
+            self._cache.upgrade(distUpgrade=False)
             self._cache.commit(PackageKitFetchProgress(self, prange=(5,50)),
                                PackageKitInstallProgress(self, prange=(50,95)))
         except apt.cache.FetchFailedException:
@@ -378,7 +382,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        #FIXME: Handle progress in a more sane way
         pklog.info("Removing package with id %s" % id)
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
@@ -419,7 +422,6 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        #FIXME: Handle progress in a more sane way
         pklog.info("Installing package with id %s" % id)
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
@@ -484,6 +486,48 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    def doGetPackages(self, filters):
+        '''
+        Implement the apt2-get-packages functionality
+        '''
+        pklog.info("Get all packages")
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(True)
+
+        for pkg in self._cache:
+            if self._canceled.isSet():
+                self.ErrorCode(ERROR_TRANSACTION_CANCELLED,
+                               "The search was canceled")
+                self.Finished(EXIT_KILL)
+                self._canceled.clear()
+                return
+            elif self._is_package_visible(pkg, filters):
+                self._emit_package(pkg)
+        self.Finished(EXIT_SUCCESS)
+
+    @threaded
+    def doResolve(self, filters, name):
+        '''
+        Implement the apt2-resolve functionality
+        '''
+        pklog.info("Resolve")
+        self.StatusChanged(STATUS_QUERY)
+        self.NoPercentageUpdates()
+        self._check_init(progress=False)
+        self.AllowCancel(False)
+
+        #FIXME: Support candidates
+        if self._cache.has_key(name) and self.is_package_visible(pkg, filters):
+            self._emit_package(name)
+            self.Finished(EXIT_SUCCESS)
+        else:
+            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                           "Package name %s could not be resolved" % name)
+            self.Finished(EXIT_FAILED)
 
     # Helpers
 
