@@ -316,8 +316,8 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn, const gchar *line)
 		pk_backend_set_percentage (backend_spawn->priv->backend, PK_BACKEND_PERCENTAGE_INVALID);
 	} else if (pk_strequal (command, "repo-signature-required")) {
 
-		if (size != 9+99) {
-			pk_error ("invalid command '%s'", command);
+		if (size != 9) {
+			pk_warning ("invalid command '%s'", command);
 			ret = FALSE;
 			goto out;
 		}

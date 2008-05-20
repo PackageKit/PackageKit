@@ -1096,16 +1096,15 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not keyData:
                     self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
-
                 id = self._pkg_to_id(keyData['po'])
                 self.repo_signature_required(id,
                                              keyData['po'].repoid,
-                                             keyData['keyurl'],
+                                             keyData['keyurl'].replace("file://",""),
                                              keyData['userid'],
                                              keyData['hexkeyid'],
                                              keyData['fingerprint'],
-                                             keyData['timestamp'],
-                                             'GPG')
+                                             time.ctime(keyData['timestamp']),
+                                             'gpg')
                 self.error(ERROR_GPG_FAILURE,"GPG key %s required" % keyData['hexkeyid'])
             except yum.Errors.YumBaseError,ye:
                 message = self._format_msgs(ye.value)

@@ -1762,12 +1762,12 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.Finished(EXIT_FAILED)
                 return False
             self.RepoSignatureRequired(keyData['po'].repoid,
-                                       keyData['keyurl'],
+                                       keyData['keyurl'].replace("file://",""),
                                        keyData['userid'],
                                        keyData['hexkeyid'],
                                        keyData['fingerprint'],
-                                       keyData['timestamp'],
-                                       SIGTYE_GPG)
+                                       time.ctime(keyData['timestamp']),
+                                       SIGTYPE_GPG)
             self._unlock_yum()
             self.ErrorCode(ERROR_GPG_FAILURE,"GPG key not imported.")
             self.Finished(EXIT_FAILED)
