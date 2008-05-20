@@ -1099,7 +1099,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                              keyData['keyurl'],
                                              keyData['userid'],
                                              keyData['hexkeyid'],
-                                             keyData['fingerprint'],
+                                             keyData['fingerprint'](),
                                              keyData['timestamp'],
                                              'GPG')
                 self.error(ERROR_GPG_FAILURE,"GPG key %s required" % keyData['hexkeyid'])
