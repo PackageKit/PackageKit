@@ -1114,7 +1114,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     self.error(ERROR_TRANSACTION_ERROR,message)
 
-    def remove(self,allowdep,package):
+    def remove_packages(self,allowdep,package):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
