@@ -901,14 +901,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
                 if not already_warned and not repo.gpgcheck:
-                    self.message(MESSAGE_WARNING,"The package %s was installed untrusted from %s." % (pkg.name, repo))
+                    self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
                 txmbr = self.yumbase.install(name=pkg.name)
                 txmbrs.extend(txmbr)
+            if inst:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
         if txmbrs:
             self._runYumTransaction()
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package is already installed")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The packages failed to be installed")
 
     def _checkForNewer(self,po):
         pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)

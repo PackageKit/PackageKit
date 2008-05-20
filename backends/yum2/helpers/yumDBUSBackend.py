@@ -823,15 +823,24 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_RUNNING)
 
-        pkg,inst = self._findPackage(package)
-        if pkg:
+        txmbrs = []
+        already_warned = False
+        for package in packages:
+            pkg,inst = self._findPackage(package)
+            if pkg and not inst:
+                repo = self.yumbase.repos.getRepo(pkg.repoid)
+                if not already_warned and not repo.gpgcheck:
+                    self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
+                    already_warned = True
+                txmbr = self.yumbase.install(name=pkg.name)
+                txmbrs.extend(txmbr)
             if inst:
                 self._unlock_yum()
-                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,'Package already installed')
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
+        if txmbrs:
             try:
-                txmbr = self.yumbase.install(name=pkg.name)
                 successful = self._runYumTransaction()
                 if not successful:
                     # _runYumTransaction unlocked yum, set the error code, and called Finished.
@@ -844,7 +853,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 return
         else:
             self._unlock_yum()
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,"Package was not found")
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"The packages failed to be installed")
             self.Finished(EXIT_FAILED)
             return
 
@@ -1761,7 +1770,9 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                                "GPG key not imported, but no GPG information received from Yum.")
                 self.Finished(EXIT_FAILED)
                 return False
-            self.RepoSignatureRequired(keyData['po'].repoid,
+            id = self._pkg_to_id(keyData['po'])
+            self.RepoSignatureRequired(id,
+                                       keyData['po'].repoid,
                                        keyData['keyurl'].replace("file://",""),
                                        keyData['userid'],
                                        keyData['hexkeyid'],
