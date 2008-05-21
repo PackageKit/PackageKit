@@ -382,25 +382,33 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("Removing package with id %s" % id)
+        pklog.info("Removing package(s): id %s" % ids)
         self.StatusChanged(STATUS_REMOVE)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        pkg = self._find_package_by_id(id)
-        if pkg == None:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % pkg.name)
-            self.Finished(EXIT_FAILED)
-            return
-        if not pkg.isInstalled:
-            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,
-                           "Package %s isn't installed" % pkg.name)
-            self.Finished(EXIT_FAILED)
-            return
-        name = pkg.name[:]
+        pkgs=[]
+        for id in ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % id)
+                self.Finished(EXIT_FAILED)
+                return
+            if not pkg.isInstalled:
+                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,
+                               "Package %s isn't installed" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            pkgs.append(pkg.name[:])
+            try:
+                pkg.markDelete()
+            except:
+                self._open_cache(prange=(90,100))
+                self.ErrorCode(ERROR_UNKNOWN, "Removal of %s failed" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
         try:
-            pkg.markDelete()
             self._cache.commit(PackageKitFetchProgress(self, prange=(10,10)),
                                PackageKitInstallProgress(self, prange=(10,90)))
         except:
@@ -410,11 +418,12 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
-        if not self._cache.has_key(name) or not self._cache[name].isInstalled:
-            self.Finished(EXIT_SUCCESS)
-        else:
-            self.ErrorCode(ERROR_UNKNOWN, "Package is still installed")
-            self.Finished(EXIT_FAILED)
+        for p in pkgs:
+            if self._cache.has_key(p) and self._cache[p].isInstalled:
+                self.ErrorCode(ERROR_UNKNOWN, "%s is still installed" % p)
+                self.Finished(EXIT_FAILED)
+                return
+        self.Finished(EXIT_SUCCESS)
 
     @threaded
     @locked
@@ -422,25 +431,34 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         '''
         Implement the {backend}-install functionality
         '''
-        pklog.info("Installing package with id %s" % id)
+        pklog.info("Installing package with id %s" % ids)
         self.StatusChanged(STATUS_INSTALL)
         self.AllowCancel(False)
         self.PercentageChanged(0)
         self._check_init(prange=(0,10))
-        pkg = self._find_package_by_id(id)
-        if pkg == None:
-            self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
-                           "Package %s isn't available" % pkg.name)
-            self.Finished(EXIT_FAILED)
-            return
-        if pkg.isInstalled:
-            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
-                           "Package %s is already installed" % pkg.name)
-            self.Finished(EXIT_FAILED)
-            return
-        name = pkg.name[:]
+        pkgs=[]
+        for id in ids:
+            pkg = self._find_package_by_id(id)
+            if pkg == None:
+                self.ErrorCode(ERROR_PACKAGE_NOT_FOUND,
+                               "Package %s isn't available" % id)
+                self.Finished(EXIT_FAILED)
+                return
+            if pkg.isInstalled:
+                self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,
+                               "Package %s is already installed" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
+            pkgs.append(pkg.name[:])
+            try:
+                pkg.markInstall()
+            except:
+                self._open_cache(prange=(90,100))
+                self.ErrorCode(ERROR_UNKNOWN, "%s could not be queued for "
+                                              "installation" % pkg.name)
+                self.Finished(EXIT_FAILED)
+                return
         try:
-            pkg.markInstall()
             self._cache.commit(PackageKitFetchProgress(self, prange=(10,50)),
                                PackageKitInstallProgress(self, prange=(50,90)))
         except:
@@ -450,11 +468,14 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             return
         self._open_cache(prange=(90,100))
         self.PercentageChanged(100)
-        if self._cache.has_key(name) and self._cache[name].isInstalled:
-            self.Finished(EXIT_SUCCESS)
-        else:
-            self.ErrorCode(ERROR_UNKNOWN, "Installation failed")
-            self.Finished(EXIT_FAILED)
+        pklog.debug("Checking success of operation")
+        for p in pkgs:
+            if not self._cache.has_key(p) or not self._cache[p].isInstalled:
+                self.ErrorCode(ERROR_UNKNOWN, "%s was not installed" % p)
+                self.Finished(EXIT_FAILED)
+                return
+        pklog.debug("Sending success signal")
+        self.Finished(EXIT_SUCCESS)
 
     @threaded
     @locked
