@@ -406,17 +406,39 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 	return package_id;
 }
 
+zypp::RepoInfo
+zypp_get_Repository (PkBackend *backend, const gchar *alias)
+{
+	zypp::RepoInfo info;
+
+	try {
+		zypp::RepoManager manager;
+		info = manager.getRepositoryInfo (alias);
+	} catch (const zypp::repo::RepoNotFoundException &ex) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
+		return zypp::RepoInfo ();
+	}
+
+	return info;
+}
+
 gboolean
 zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 {
 	gboolean ok = FALSE;
 
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), key.id ()) == _signatures[backend]->end ()) {
+		zypp::RepoInfo info = zypp_get_Repository (backend, _repoName);
+		if (info.type () == zypp::repo::RepoType::NONE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
+			return FALSE;
+		}
+
         	pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-        	                key.path ().c_str (),
-                	        key.id ().c_str (),
+				info.baseUrlsBegin ()->asString ().c_str (),
+				key.name ().c_str (),
                         	key.id ().c_str (),
 	                        key.fingerprint ().c_str (),
         	                key.created ().asString ().c_str (),
@@ -435,10 +457,16 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
         gboolean ok = FALSE;
 	
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), id) == _signatures[backend]->end ()) {
+		zypp::RepoInfo info = zypp_get_Repository (backend, _repoName);
+		if (info.type () == zypp::repo::RepoType::NONE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
+			return FALSE;
+		}
+
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-        	                file.c_str (),
+				info.baseUrlsBegin ()->asString ().c_str (),
                 	        id.c_str (),
                         	id.c_str (),
 	                        "UNKNOWN",
@@ -458,10 +486,16 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 	gboolean ok = FALSE;
 
 	if (std::find (_signatures[backend]->begin (), _signatures[backend]->end (), file) == _signatures[backend]->end ()) {
-        	pk_backend_repo_signature_required (backend,
+        	zypp::RepoInfo info = zypp_get_Repository (backend, _repoName);
+		if (info.type () == zypp::repo::RepoType::NONE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
+			return FALSE;
+		}
+
+		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-        	                file.c_str (),
+				info.baseUrlsBegin ()->asString ().c_str (),
 	                        "UNKNOWN",
         	                file.c_str (),
                 	        "UNKNOWN",

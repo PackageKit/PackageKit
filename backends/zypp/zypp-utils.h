@@ -130,6 +130,12 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
 /**
+ * Get the RepoInfo 
+ */
+zypp::RepoInfo
+zypp_get_Repository (PkBackend *backend, const gchar *alias);
+
+/**
   * Ask the User if it is OK to import an GPG-Key for a repo
   */
 gboolean zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key);
