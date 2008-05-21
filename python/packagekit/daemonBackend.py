@@ -658,8 +658,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackages(%s, %s, %s)" % (package[0], allowdep, autoremove))
-        self.doRemovePackages(package, allowdep, autoremove)
+        pklog.info("RemovePackages(%s, %s, %s)" % (packages, allowdep,
+                                                   autoremove))
+        self.doRemovePackages(packages, allowdep, autoremove)
 
     def doRemovePackages(self, packages, allowdep, autoremove):
         '''
