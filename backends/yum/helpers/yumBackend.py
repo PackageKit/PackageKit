@@ -901,14 +901,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             if pkg and not inst:
                 repo = self.yumbase.repos.getRepo(pkg.repoid)
                 if not already_warned and not repo.gpgcheck:
-                    self.message(MESSAGE_WARNING,"The package %s was installed untrusted from %s." % (pkg.name, repo))
+                    self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
                 txmbr = self.yumbase.install(name=pkg.name)
                 txmbrs.extend(txmbr)
+            if inst:
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
         if txmbrs:
             self._runYumTransaction()
         else:
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package is already installed")
+            self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The packages failed to be installed")
 
     def _checkForNewer(self,po):
         pkgs = self.yumbase.pkgSack.returnNewestByName(name=po.name)
@@ -1096,16 +1098,19 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not keyData:
                     self.error(ERROR_BAD_GPG_SIGNATURE,
                                "GPG key not imported, and no GPG information was found.")
-
                 id = self._pkg_to_id(keyData['po'])
+                fingerprint = keyData['fingerprint']
+                hex_fingerprint = "%02x" * len(fingerprint) % tuple(map(ord, fingerprint))
+                # Borrowed from http://mail.python.org/pipermail/python-list/2000-September/053490.html
+
                 self.repo_signature_required(id,
                                              keyData['po'].repoid,
-                                             keyData['keyurl'],
+                                             keyData['keyurl'].replace("file://",""),
                                              keyData['userid'],
                                              keyData['hexkeyid'],
-                                             keyData['fingerprint'],
-                                             keyData['timestamp'],
-                                             'GPG')
+                                             hex_fingerprint,
+                                             time.ctime(keyData['timestamp']),
+                                             'gpg')
                 self.error(ERROR_GPG_FAILURE,"GPG key %s required" % keyData['hexkeyid'])
             except yum.Errors.YumBaseError,ye:
                 message = self._format_msgs(ye.value)
@@ -1114,7 +1119,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 else:
                     self.error(ERROR_TRANSACTION_ERROR,message)
 
-    def remove(self,allowdep,package):
+    def remove_packages(self,allowdep,package):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class

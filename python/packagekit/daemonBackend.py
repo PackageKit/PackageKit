@@ -325,13 +325,13 @@ class PackageKitBaseBackend(dbus.service.Object):
 
     @PKSignalHouseKeeper
     @dbus.service.signal(dbus_interface=PACKAGEKIT_DBUS_INTERFACE,
-                         signature='sssssss')
-    def RepoSignatureRequired(self,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type):
+                         signature='ssssssss')
+    def RepoSignatureRequired(self,id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type):
         '''
         send 'repo-signature-required' signal:
         '''
         pklog.info("RepoSignatureRequired (%s, %s, %s, %s, %s, %s, %s, %s)" %
-                   (repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type))
+                   (id,repo_name,key_url,key_userid,key_id,key_fingerprint,key_timestamp,key_type))
 
 
 #
@@ -658,8 +658,9 @@ class PackageKitBaseBackend(dbus.service.Object):
         '''
         Implement the {backend}-remove functionality
         '''
-        pklog.info("RemovePackages(%s, %s, %s)" % (package[0], allowdep, autoremove))
-        self.doRemovePackages(package, allowdep, autoremove)
+        pklog.info("RemovePackages(%s, %s, %s)" % (packages, allowdep,
+                                                   autoremove))
+        self.doRemovePackages(packages, allowdep, autoremove)
 
     def doRemovePackages(self, packages, allowdep, autoremove):
         '''
