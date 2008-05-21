@@ -70,6 +70,11 @@ extern gchar *_repoName;
 
 zypp::ZYpp::Ptr get_zypp ();
 
+/**
+ * Enable and rotate logging
+ */
+gboolean zypp_logging ();
+
 gboolean zypp_is_changeable_media (const zypp::Url &url);
 
 /**

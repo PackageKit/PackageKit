@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <zypp/ZYpp.h>
 #include <zypp/ZYppFactory.h>
 #include <zypp/RepoManager.h>
@@ -45,6 +46,7 @@
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/librpmDb.h>
+#include <zypp/base/LogControl.h>
 
 #include <zypp/base/Logger.h>
 
@@ -96,6 +98,34 @@ get_zypp ()
         }
 
 	return zypp;
+}
+
+/**
+ * Enable and rotate zypp logging
+ */
+gboolean
+zypp_logging ()
+{
+	gchar *file = g_strdup ("/var/log/pk_backend_zypp");
+	gchar *file_old = g_strdup ("/var/log/pk_backend_zypp-1");
+
+	if (g_file_test (file, G_FILE_TEST_EXISTS)) {
+		struct stat buffer;
+		g_stat (file, &buffer);
+		// if the file is bigger than 5 MB rotate
+		if ((guint)buffer.st_size > 5242880) {
+			if (g_file_test (file_old, G_FILE_TEST_EXISTS))
+				g_remove (file_old);
+			g_rename (file, file_old);
+		}
+	}
+ 
+	zypp::base::LogControl::instance ().logfile(file);
+		
+	g_free (file);
+	g_free (file_old);
+
+	return TRUE;
 }
 
 gboolean
