@@ -34,7 +34,7 @@ import dbus.service
 import dbus.mainloop.glib
 import gobject
 
-from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded
+from packagekit.daemonBackend import PACKAGEKIT_DBUS_INTERFACE, PACKAGEKIT_DBUS_PATH, PackageKitBaseBackend, PackagekitProgress, pklog, threaded, async
 from packagekit.enums import *
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -161,27 +161,13 @@ class PackageKitAptBackend(PackageKitBaseBackend):
     '''
     PackageKit backend for apt
     '''
-
-    def locked(func):
-        '''
-        Decorator to run a method with a lock
-        '''
-        def wrapper(*args, **kwargs):
-            backend = args[0]
-            backend._lock_cache()
-            ret = func(*args, **kwargs)
-            backend._unlock_cache()
-            return ret
-        wrapper.__name__ = func.__name__
-        return wrapper
-
     def __init__(self, bus_name, dbus_path):
         pklog.info("Initializing APT backend")
         signal.signal(signal.SIGQUIT, sigquit)
         self._cache = None
         self._canceled = threading.Event()
         self._canceled.clear()
-        self._locked = threading.Lock()
+        self._lock = threading.Lock()
         # Check for xapian support
         self._use_xapian = False
         try:
@@ -280,7 +266,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @locked
+    @async
     def doGetUpdates(self, filters):
         '''
         Implement the {backend}-get-update functionality
@@ -343,7 +329,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @locked
+    @async
     def doUpdateSystem(self):
         '''
         Implement the {backend}-update-system functionality
@@ -377,7 +363,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @locked
+    @async
     def doRemovePackages(self, ids, deps=True, auto=False):
         '''
         Implement the {backend}-remove functionality
@@ -404,7 +390,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             try:
                 pkg.markDelete()
             except:
-                self._open_cache(prange=(90,100))
+                self._open_cache(prange=(90,99))
                 self.ErrorCode(ERROR_UNKNOWN, "Removal of %s failed" % pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
@@ -412,21 +398,21 @@ class PackageKitAptBackend(PackageKitBaseBackend):
             self._cache.commit(PackageKitFetchProgress(self, prange=(10,10)),
                                PackageKitInstallProgress(self, prange=(10,90)))
         except:
-            self._open_cache(prange=(90,100))
+            self._open_cache(prange=(90,99))
             self.ErrorCode(ERROR_UNKNOWN, "Removal failed")
             self.Finished(EXIT_FAILED)
             return
-        self._open_cache(prange=(90,100))
-        self.PercentageChanged(100)
+        self._open_cache(prange=(90,99))
         for p in pkgs:
             if self._cache.has_key(p) and self._cache[p].isInstalled:
                 self.ErrorCode(ERROR_UNKNOWN, "%s is still installed" % p)
                 self.Finished(EXIT_FAILED)
                 return
+        self.PercentageChanged(100)
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @locked
+    @async
     def doInstallPackages(self, ids):
         '''
         Implement the {backend}-install functionality
@@ -478,7 +464,7 @@ class PackageKitAptBackend(PackageKitBaseBackend):
         self.Finished(EXIT_SUCCESS)
 
     @threaded
-    @locked
+    @async
     def doRefreshCache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
