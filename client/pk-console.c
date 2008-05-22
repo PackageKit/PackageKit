@@ -76,7 +76,6 @@ pk_console_bar (guint subpercentage)
 		return;
 	}
 	if (!has_output_bar) {
-		pk_warning ("no bar");
 		return;
 	}
 	/* restore cursor */
