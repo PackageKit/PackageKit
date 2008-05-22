@@ -491,7 +491,6 @@ pk_client_package_cb (DBusGProxy   *proxy,
 
 	/* cache */
 	if (client->priv->use_buffer || client->priv->synchronous) {
-		pk_debug ("adding to cache array package %i, %s, %s", info, package_id, summary);
 		pk_package_list_add (client->priv->package_list, info, package_id, summary);
 	}
 }
