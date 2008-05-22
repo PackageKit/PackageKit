@@ -1904,6 +1904,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 type_ = ref['type']
                 href = ref['href']
                 title = ref['title'] or ""
+
+                # Description can sometimes have ';' in them, and we use that as the delimiter
+                title = title.replace(";",",")
+
                 if href:
                     if type_ in ('bugzilla', 'cve'):
                         urls[type_].append("%s;%s" % (href, title))
