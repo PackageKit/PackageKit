@@ -130,7 +130,6 @@ pk_extra_populate_package_cache_callback (void *data, gint argc, gchar **argv, g
 	obj->icon_name = icon_name;
 	obj->exec = exec;
 	g_hash_table_insert (extra->priv->hash_package, (gpointer) package, (gpointer) obj);
-	pk_debug ("adding %s, %s", package, icon_name);
 out:
 	return 0;
 }
@@ -180,7 +179,6 @@ pk_extra_populate_locale_cache_callback (void *data, gint argc, gchar **argv, gc
 	obj = g_new (PkExtraLocaleObj, 1);
 	obj->summary = summary;
 	g_hash_table_insert (extra->priv->hash_locale, (gpointer) package, (gpointer) obj);
-	pk_debug ("adding %s, %s", package, summary);
 out:
 	return 0;
 }

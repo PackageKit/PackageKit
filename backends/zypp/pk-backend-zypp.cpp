@@ -47,7 +47,6 @@
 #include <zypp/target/rpm/RpmDb.h>
 #include <zypp/target/rpm/RpmHeader.h>
 #include <zypp/target/rpm/RpmException.h>
-#include <zypp/base/LogControl.h>
 #include <zypp/TmpPath.h>
 
 #include <zypp/sat/Solvable.h>
@@ -90,7 +89,7 @@ std::map<PkBackend *, std::vector<std::string> *> _signatures;
 static void
 backend_initialize (PkBackend *backend)
 {
-	zypp::base::LogControl::instance ().logfile("/var/log/pk_backend_zypp");
+	zypp_logging ();
 	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
