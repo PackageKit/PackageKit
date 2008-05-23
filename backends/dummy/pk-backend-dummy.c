@@ -199,7 +199,11 @@ backend_get_update_detail_timeout (gpointer data)
 					  "http://www.distro-update.org/page?moo;Bugfix release for gtkhtml",
 					  "http://bgzilla.gnome.org/result.php?#9876;GNOME Bugzilla #9876",
 					  NULL,
-					  PK_RESTART_ENUM_SESSION, "Update to latest whizz bang version");
+					  PK_RESTART_ENUM_SESSION,
+					  "Update to latest whizz bang version\n"
+					  "* support this new thing\n"
+					  "* something else\n"
+					  "- and that new thing");
 	} else {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON, "Got unexpected package_id '%s'", _package_id);
 	}
