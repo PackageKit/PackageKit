@@ -22,6 +22,7 @@
 <h2>Table Of Contents</h2>
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#1-click-install">Does PackageKit support 1-Click Install?</a></li>
 <li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
 <li><a href="#session-methods">How do I use PackageKit in my application?</a></li>
@@ -564,6 +565,43 @@
 <td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
 </tr>
 </table>
+
+<hr>
+<h3><a name="1-click-install">Does PackageKit support 1-Click Install?</a></h3>
+<p>
+No, as they are a potential security problem. The issues are as follows:
+</p>
+<ul>
+<li>
+That some developer creates a repository with a package with a higher package epoch, and then the
+distro releases a critical security package (with an updated version, but smaller epoch) and the
+package does not get upgraded, leaving the user vulnerable.
+</li>
+<li>
+The user installs some random repository, where the developer pushes a few svn packages.
+The developer gets bored, and stop produces updates, and then one of the old packages blocks
+on the distribution update, causing no further automatic system updates.
+</li>
+<li>
+There's no signing of 1-click-install files, so we can't actually be sure that they come from a
+reputable source.
+</li>
+<li>
+There's no localisation in the 1-click-files.
+For instance, if we only show a French language speaker a description of "remote exploit trojan"
+they are not going to understand the description.
+</li>
+</ul>
+<p>
+So what's the solution? Using a standard <code>$vendor-release.rpm</code> or <code>.deb</code>
+you can ship the standard repo or source with a signed GPG key.
+</p>
+<p>
+Quoting Sebastian Heinlein,
+<i>Allowing to easily add third party repositories and install third party software without a
+certification infrastructure is like opening the gates to hell.
+Most user just don't have got the technical understanding to handle this well.</i>
+</p>
 
 <hr>
 <h3><a name="run-as-root">When run as root, <code>gpk-application</code> and <code>pkcon</code> do not work!</a></h3>
