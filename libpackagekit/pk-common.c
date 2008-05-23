@@ -613,6 +613,35 @@ pk_strpad_extra (const gchar *data, guint length, guint *extra)
 }
 
 /**
+ * pk_strreplace:
+ * @text: The input text to make safe
+ * @find: What to search for
+ * @replace: What to replace with
+ *
+ * Replaces chars in the text with a replacement.
+ * The %find and %replace variables to not have to be of the same length
+ *
+ * Return value: the new string (copied)
+ **/
+gchar *
+pk_strreplace (const gchar *text, const gchar *find, const gchar *replace)
+{
+	gchar **array;
+	gchar *retval;
+
+	/* common case, not found */
+	if (strstr (text, find) == NULL) {
+		return g_strdup (text);
+	}
+
+	/* split apart and rejoin with new delimiter */
+	array = g_strsplit (text, find, 0);
+	retval = g_strjoinv (replace, array);
+	g_strfreev (array);
+	return retval;
+}
+
+/**
  * pk_delay_yield:
  * @delay: the desired delay in seconds
  *
@@ -1279,6 +1308,48 @@ libst_common (LibSelfTest *test)
 		libst_success (test, NULL);
 	} else {
 		libst_failed (test, "failed the padd '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************
+	 ****************         Replace          ******************
+	 ************************************************************/
+	libst_title (test, "replace start");
+	text_safe = pk_strreplace ("richard\nhughes", "r", "e");
+	if (pk_strequal (text_safe, "eichaed\nhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace none");
+	text_safe = pk_strreplace ("richard\nhughes", "dave", "e");
+	if (pk_strequal (text_safe, "richard\nhughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace end");
+	text_safe = pk_strreplace ("richard\nhughes", "s", "e");
+	if (pk_strequal (text_safe, "richard\nhughee")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
+	}
+	g_free (text_safe);
+
+	/************************************************************/
+	libst_title (test, "replace unicode");
+	text_safe = pk_strreplace ("richard\n- hughes", "\n- ", "\n• ");
+	if (pk_strequal (text_safe, "richard\n• hughes")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "failed the replace '%s'", text_safe);
 	}
 	g_free (text_safe);
 
