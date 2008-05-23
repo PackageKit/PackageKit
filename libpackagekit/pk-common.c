@@ -246,7 +246,7 @@ pk_strsafe (const gchar *text)
 	}
 
 	/* rip out any insane characters */
-	delimiters = "\\\f\n\r\t\"'";
+	delimiters = "\\\f\r\t\"'";
 	text_safe = g_strdup (text);
 	g_strdelimit (text_safe, delimiters, ' ');
 	return text_safe;
