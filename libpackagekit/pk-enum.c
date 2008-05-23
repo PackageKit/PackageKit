@@ -418,6 +418,7 @@ static PkEnumMatch enum_free_licenses[] = {
 	{PK_LICENSE_ENUM_VOSTROM,		"VOSTROM"},
 	{PK_LICENSE_ENUM_XEROX,                 "Xerox License"},
 	{PK_LICENSE_ENUM_RICEBSD,               "RiceBSD"},
+	{PK_LICENSE_ENUM_QHULL,                 "Qhull"},
 	{0, NULL}
 };
 
