@@ -10,6 +10,7 @@ Summary:   System daemon that is a DBUS abstraction layer for packages
 Name:      PackageKit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
+Epoch:     1
 License:   GPLv2+
 Group:     System Environment/Libraries
 URL:       http://packagekit.freedesktop.org
@@ -17,8 +18,8 @@ Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Requires: dbus >= %{dbus_version}
-Requires: PackageKit-libs = %{version}-%{release}
-Requires: yum-packagekit = %{version}-%{release}
+Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
+Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
 
 BuildRequires: glib2-devel >= %{glib2_version}
@@ -69,7 +70,7 @@ will almost instantly update itself to reflect this.
 Summary: Libraries for accessing PackageKit
 Group: Development/Libraries
 Requires: dbus >= %{dbus_version}
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 
 %description libs
 Libraries for accessing PackageKit.
@@ -78,7 +79,7 @@ Libraries for accessing PackageKit.
 Summary: Cron job and related utilities for PackageKit
 Group: System Environment/Base
 Requires: cronie
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
@@ -86,7 +87,7 @@ Crontab and utilities for running PackageKit as a cron job.
 %package devel
 Summary: Libraries and headers for PackageKit
 Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
+Requires: %{name} = %{epoch}:%{version}-%{release}
 Requires: dbus-devel >= %{dbus_version}
 Requires: pkgconfig
 Requires: sqlite-devel

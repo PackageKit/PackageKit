@@ -6,6 +6,7 @@ Summary:   GNOME PackageKit Client
 Name:      gnome-packagekit
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
+Epoch:     1
 License:   GPLv2+
 Group:     Applications/System
 URL:       http://www.packagekit.org
