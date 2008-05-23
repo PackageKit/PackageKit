@@ -8,10 +8,6 @@ if BACKEND_TYPE_APT
 SUBDIRS += apt
 endif
 
-if BACKEND_TYPE_APT_DBUS
-SUBDIRS += apt2
-endif
-
 if BACKEND_TYPE_BOX
 SUBDIRS += box
 endif

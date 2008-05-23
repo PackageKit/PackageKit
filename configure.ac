@@ -223,7 +223,6 @@ AC_ARG_ENABLE(gprof, AS_HELP_STRING([--enable-gprof],[compile with gprof support
 # backends
 AC_ARG_ENABLE(alpm, AS_HELP_STRING([--enable-alpm],[use the ALPM backend]),enable_alpm=$enableval,enable_alpm=no)
 AC_ARG_ENABLE(apt, AS_HELP_STRING([--enable-apt],[use the APT backend]),enable_apt=$enableval,enable_apt=no)
-AC_ARG_ENABLE(apt2, AS_HELP_STRING([--enable-apt2],[use the DBus based APT backend]),enable_apt2=$enableval,enable_apt2=no)
 AC_ARG_ENABLE(box, AS_HELP_STRING([--enable-box],[use the BOX backend]),enable_box=$enableval,enable_box=no)
 AC_ARG_ENABLE(conary, AS_HELP_STRING([--enable-conary],[use the CONARY backend]),enable_conary=$enableval,enable_conary=no)
 AC_ARG_ENABLE(dummy, AS_HELP_STRING([--enable-dummy],[use the dummy backend]),enable_dummy=$enableval,enable_dummy=yes)
@@ -238,7 +237,6 @@ AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enabl
 # export to Makefile.am's
 AM_CONDITIONAL(BACKEND_TYPE_ALPM, [test x$enable_alpm = xyes], [using ALPM backend])
 AM_CONDITIONAL(BACKEND_TYPE_APT, [test x$enable_apt = xyes], [using APT backend])
-AM_CONDITIONAL(BACKEND_TYPE_APT_DBUS, [test x$enable_apt2 = xyes], [using DBus based APT backend])
 AM_CONDITIONAL(BACKEND_TYPE_BOX, [test x$enable_box = xyes], [using BOX backend])
 AM_CONDITIONAL(BACKEND_TYPE_CONARY, [test x$enable_conary = xyes], [using CONARY backend])
 AM_CONDITIONAL(BACKEND_TYPE_DUMMY, [test x$enable_dummy = xyes], [using dummy backend])
@@ -369,7 +367,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,apt2,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -398,133 +396,7 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_BACKEND, "$with_default_backend", [default backend prefix])
 AC_SUBST(DEFAULT_BACKEND, "$with_default_backend")
 
-AC_DEFUN([APT_BACKEND],
-[
-  if test "$APT_PKG_TYPE" == "" ; then
-	   AC_LANG_PUSH(C++)
-		_libaptpkg_save_cppflags=$CPPFLAGS
-	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
-	   _APT_save_libs=$LIBS
-	   LIBS="$APT_LIBS $LIBS"
-
-	   AC_MSG_CHECKING([for apt support for $1 packages])
-		AC_RUN_IFELSE(AC_LANG_PROGRAM([
-		#include <apt-pkg/configuration.h>
-		#include <apt-pkg/pkgsystem.h>
-		#include <apt-pkg/init.h>
-		#include <stdio.h>
-	   ],[
-		if (pkgInitConfig(*_config) == false)
-		{
-			fprintf(stderr,"pkginitconfig was false");
-			return -1;
-		}
-		if (pkgInitSystem(*_config, _system) == false)
-		{
-			fprintf(stderr,"pkginitsystem was false");
-			return -1;
-		}
-		if (_system->ArchiveSupported("$1"))
-			return 0;
-		else
-			return 1;
-		]),[
-			APT_PKG_TYPE=$1
-			AC_MSG_RESULT([yes])
-			AC_DEFINE(APT_PKG_$2,1,[apt-pkg support files of type $1])
-		],)
-		AC_LANG_POP(C++)
-	   CPPFLAGS=$_libaptpkg_save_cppflags
-	   LIBS=$_libaptpkg_save_libs
-	   unset _libaptpkg_save_cppflags
-	   unset _libaptpkg_save_libs
- 	fi
-])
-
 if test x$enable_apt = xyes; then
-	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
-
-	AC_ARG_WITH([apt_search],
-	    AS_HELP_STRING([--with-apt-search=<option>],
-			   [Apt search type to use - plain,sqlite (plain)]))
-
-	if test x$with_apt_search = x; then
-		with_apt_search=plain
-	fi
-    AC_MSG_NOTICE([using $with_apt_search for apt searching])
-	AC_DEFINE_UNQUOTED(APT_SEARCH, "$with_apt_search", [apt search type])
-	AC_SUBST(APT_SEARCH, $with_apt_search)
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [test x$with_apt_search = xplain], [using plain apt search])
-	AM_CONDITIONAL(APT_SEARCH_SQLITE, [test x$with_apt_search = xsqlite], [using sqlite apt search])
-
-   AC_ARG_WITH(libapt-pkg-lib,
-	 AC_HELP_STRING([--with-libapt-pkg-lib=DIR],[look for the libapt-pkg library in DIR]),
-	 [_libaptpkg_with_lib=$withval],[_libaptpkg_with_lib=no])
-  	if test "$_libaptpkg_with_lib" == "no" ; then
-		APT_LIBS="-lapt-pkg"
-	else
-		APT_LIBS="-L$withval -lapt-pkg"
-	fi
-
-   AC_ARG_WITH(libapt-pkg-includes,
-	 AC_HELP_STRING([--with-libapt-pkg-includes=DIR],[look for the libapt-pkg includes in DIR]),
-	 [_libaptpkg_with_inc=$withval],[_libaptpkg_with_inc=no])
-  	if test "$_libaptpkg_with_inc" == "no" ; then
-		APT_CFLAGS="-I/usr/include/apt-pkg"
-	else
-		APT_CFLAGS="-I$withval"
-	fi
-
-	AC_CACHE_CHECK([whether libapt-pkg is usable],
-	   [libaptpkg_usable],
-	   [
-	   _libaptpkg_save_cppflags=$CPPFLAGS
-	   CPPFLAGS="$APT_CFLAGS $CPPFLAGS"
-	   _APT_save_libs=$LIBS
-	   LIBS="$APT_LIBS $LIBS"
-
-	   AC_LANG_PUSH(C++)
-	   AC_LINK_IFELSE(AC_LANG_PROGRAM([
-		#include <apt-pkg/configuration.h>
-	   	#include <apt-pkg/pkgsystem.h>
-	   	#include <apt-pkg/init.h>
-		#include <stdio.h>
-	   ],[
-		if (pkgInitConfig(*_config) == false)
-		{
-			fprintf(stderr,"pkginitconfig was false");
-			return -1;
-		}
-		if (pkgInitSystem(*_config, _system) == false)
-		{
-			fprintf(stderr,"pkginitsystem was false");
-			return -1;
-		}
-		return 0;
-]),libaptpkg_usable=yes,AC_MSG_ERROR([libapt-pkg not found]))
-
-	   CPPFLAGS=$_libaptpkg_save_cppflags
-	   LIBS=$_libaptpkg_save_libs
-	   unset _libaptpkg_save_cppflags
-	   unset _libaptpkg_save_libs
-	   ])
-	AC_LANG_POP(C++)
-
-	APT_BACKEND(deb,DEB)
-	APT_BACKEND(rpm,RPM)
-  	if test "$APT_PKG_TYPE" == "" ; then
-		AC_MSG_ERROR([Couldn't find support for any type of packages that we know about for Apt!])
-	fi
-
-	AC_SUBST(APT_CFLAGS)
-	AC_SUBST(APT_LIBS)
-	AC_SUBST(APT_PKG_TYPE)
-else
-	AM_CONDITIONAL(APT_SEARCH_PLAIN, [false])
-	AM_CONDITIONAL(APT_SEARCH_SQLITE, [false])
-fi
-
-if test x$enable_apt2 = xyes; then
 	PY_CHECK_MOD([apt_pkg],,,AC_MSG_ERROR([Apt backend needs python-apt]))
 fi
 
@@ -568,11 +440,6 @@ AC_SUBST(PK_PLUGIN_DIR, "\$(libdir)/packagekit-backend")
 AC_SUBST(PK_PLUGIN_CFLAGS, "-I\$(top_srcdir)/src -I\$(top_srcdir)/libpackagekit $GLIB_CFLAGS $DBUS_CFLAGS $GMODULE_CFLAGS")
 AC_SUBST(PK_PLUGIN_LIBS, "$GLIB_LIBS $DBUS_LIBS $GMODULE_LIBS")
 
-if test x$with_default_backend = xapt; then
-	# now we've done the conditionals, rename for searching backend
-	with_default_backend="apt (with $with_apt_search searching)"
-fi
-
 dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
@@ -592,8 +459,6 @@ contrib/yum-packagekit/Makefile
 backends/Makefile
 backends/alpm/Makefile
 backends/apt/Makefile
-backends/apt/helpers/Makefile
-backends/apt2/Makefile
 backends/box/Makefile
 backends/conary/Makefile
 backends/conary/helpers/Makefile
@@ -650,7 +515,6 @@ echo "
         Backends:
         ALPM backend:              ${enable_alpm}
         APT backend:               ${enable_apt}
-        APT DBus backend:          ${enable_apt2}
         BOX backend:               ${enable_box}
         CONARY backend:            ${enable_conary}
         dummy backend:             ${enable_dummy}
