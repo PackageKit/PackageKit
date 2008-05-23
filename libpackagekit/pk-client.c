@@ -412,6 +412,10 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
+	/* ref in case we unref the PkClient in ::finished --
+	 * see https://bugzilla.novell.com/show_bug.cgi?id=390929 for rationale */
+	g_object_ref (client);
+
 	exit = pk_exit_enum_from_text (exit_text);
 	pk_debug ("emit finished %s, %i", exit_text, runtime);
 
@@ -420,16 +424,13 @@ pk_client_finished_cb (DBusGProxy *proxy, const gchar *exit_text, guint runtime,
 
 	g_signal_emit (client, signals [PK_CLIENT_FINISHED], 0, exit, runtime);
 
-	/* check we are still valid */
-	if (!PK_IS_CLIENT (client)) {
-		pk_debug ("client was g_object_unref'd in finalise, object no longer valid");
-		return;
-	}
-
 	/* exit our private loop */
 	if (client->priv->synchronous) {
 		g_main_loop_quit (client->priv->loop);
 	}
+
+	/* unref what we previously ref'd */
+	g_object_unref (client);
 }
 
 /**
