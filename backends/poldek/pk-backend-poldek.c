@@ -58,6 +58,31 @@ enum {
 };
 
 typedef struct {
+	PkGroupEnum	group;
+	const gchar	*regex;
+} PLDGroupRegex;
+
+static PLDGroupRegex group_perlre[] = {
+	{PK_GROUP_ENUM_ACCESSORIES, "/.*Archiving\\|.*Dictionaries/"},
+	{PK_GROUP_ENUM_ADMIN_TOOLS, "/.*Databases.*\\|.*Admin/"},
+	{PK_GROUP_ENUM_COMMUNICATION, "/.*Communications/"},
+	{PK_GROUP_ENUM_EDUCATION, "/.*Engineering\\|.*Math\\|.*Science/"},
+	{PK_GROUP_ENUM_FONTS, "/Fonts/"},
+	{PK_GROUP_ENUM_GAMES, "/.*Games.*/"},
+	{PK_GROUP_ENUM_GRAPHICS, "/.*Graphics/"},
+	{PK_GROUP_ENUM_LOCALIZATION, "/I18n/"},
+	{PK_GROUP_ENUM_MULTIMEDIA, "/.*Multimedia\\|.*Sound/"},
+	{PK_GROUP_ENUM_NETWORK, "/.*Networking.*\\|/.*Mail\\|.*News\\|.*WWW/"},
+	{PK_GROUP_ENUM_OFFICE, "/.*Editors.*\\|.*Spreadsheets/"},
+	{PK_GROUP_ENUM_OTHER, "/^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|Documentation\\|^Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/Libraries$\\|.*Window\\ Managers.*/"},
+	{PK_GROUP_ENUM_PROGRAMMING, "/.*Development.*/"},
+	{PK_GROUP_ENUM_PUBLISHING, "/.*Publishing.*/"},
+	{PK_GROUP_ENUM_SERVERS, "/Daemons\\|.*Servers/"},
+	{PK_GROUP_ENUM_SYSTEM, "/.*Shells\\|.*System\\|Base.*/"},
+	{0, NULL}
+};
+
+typedef struct {
 	gint		step; // current step
 
 	/* Numer of sources to update. It's used only by refresh cache,
@@ -502,6 +527,79 @@ poldek_pkg_set_installed (struct pkg *pkg, gboolean installed) {
 }
 
 /**
+ * pld_group_to_enum:
+ *
+ * Converts PLD RPM group to PkGroupEnum.
+ **/
+static PkGroupEnum
+pld_group_to_enum (const gchar *group)
+{
+	g_return_val_if_fail (group != NULL, PK_GROUP_ENUM_OTHER);
+
+	if (strstr (group, "Archiving") != NULL ||
+	    strstr (group, "Dictionaries") != NULL)
+		return PK_GROUP_ENUM_ACCESSORIES;
+	else if (strstr (group, "Databases") != NULL ||
+		 strstr (group, "Admin") != NULL)
+		return PK_GROUP_ENUM_ADMIN_TOOLS;
+	else if (strstr (group, "Communications") != NULL)
+		return PK_GROUP_ENUM_COMMUNICATION;
+	else if (strstr (group, "Engineering") != NULL ||
+		 strstr (group, "Math") != NULL	||
+		 strstr (group, "Science") != NULL)
+		return PK_GROUP_ENUM_EDUCATION;
+	else if (strcmp (group, "Fonts") == 0)
+		return PK_GROUP_ENUM_FONTS;
+	else if (strstr (group, "Games") != NULL)
+		return PK_GROUP_ENUM_GAMES;
+	else if (strstr (group, "Graphics") != NULL)
+		return PK_GROUP_ENUM_GRAPHICS;
+	else if (strcmp (group, "I18n") == 0)
+		return PK_GROUP_ENUM_LOCALIZATION;
+	else if (strstr (group, "Multimedia") != NULL ||
+		 strstr (group, "Sound") != NULL)
+		return PK_GROUP_ENUM_MULTIMEDIA;
+	else if (strstr (group, "Networking") != NULL ||
+		 strstr (group, "Mail") != NULL ||
+		 strstr (group, "News") != NULL ||
+		 strstr (group, "WWW") != NULL)
+		return PK_GROUP_ENUM_NETWORK;
+	else if (strstr (group, "Editors") != NULL ||
+		 strstr (group, "Spreadsheets") != NULL)
+		return PK_GROUP_ENUM_OFFICE;
+	else if (strstr (group, "Development") != NULL)
+		return PK_GROUP_ENUM_PROGRAMMING;
+	else if (strstr (group, "Publishing") != NULL)
+		return PK_GROUP_ENUM_PUBLISHING;
+	else if (strstr (group, "Daemons") != NULL ||
+		 strstr (group, "Servers") != NULL)
+		return PK_GROUP_ENUM_SERVERS;
+	else if (strstr (group, "Shells") != NULL ||
+		 strstr (group, "System") != NULL ||
+		 strstr (group, "Base") != NULL)
+		return PK_GROUP_ENUM_SYSTEM;
+	else
+		return PK_GROUP_ENUM_OTHER;
+}
+
+/**
+ * pld_group_get_regex_from_enum:
+ **/
+static const gchar*
+pld_group_get_regex_from_enum (PkGroupEnum value)
+{
+	gint i;
+
+	for (i = 0;; i++) {
+		if (group_perlre[i].regex == NULL)
+			return NULL;
+
+		if (group_perlre[i].group == value)
+			return group_perlre[i].regex;
+	}
+}
+
+/**
  * poldek_pkg_evr:
  */
 static gchar*
@@ -932,39 +1030,38 @@ search_package_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 	filters = pk_backend_get_uint (backend, "filters");
 
-	switch (mode) {
-		/* GetPackages */
-		case SEARCH_ENUM_NONE:
-			search_cmd = g_strdup ("ls -q");
-			break;
-		/* SearchName */
-		case SEARCH_ENUM_NAME:
-			search_cmd = g_strdup_printf ("ls -q *%s*", search);
-			break;
-		/* SearchGroup */
-		case SEARCH_ENUM_GROUP:
-			search_cmd = g_strdup_printf ("search -qg *%s*", search);
-			break;
-		/* SearchDetails */
-		case SEARCH_ENUM_DETAILS:
-			search_cmd = g_strdup_printf ("search -dsq *%s*", search);
-			break;
-		/* SearchFile */
-		case SEARCH_ENUM_FILE:
-			search_cmd = g_strdup_printf ("search -qlf *%s*", search);
-			break;
-		/* WhatProvides */
-		case SEARCH_ENUM_PROVIDES:
-			provides = pk_backend_get_uint (backend, "provides");
+	/* GetPackages*/
+	if (mode == SEARCH_ENUM_NONE) {
+		search_cmd = g_strdup ("ls -q");
+	/* SearchName */
+	} else if (mode == SEARCH_ENUM_NAME) {
+		search_cmd = g_strdup_printf ("ls -q *%s*", search);
+	/* SearchGroup */
+	} else if (mode == SEARCH_ENUM_GROUP) {
+		PkGroupEnum	group;
+		const gchar	*regex;
 
-			if (provides == PK_PROVIDES_ENUM_ANY) {
-				search_cmd = g_strdup_printf ("search -qp %s", search);
-			} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
-			} else if (provides == PK_PROVIDES_ENUM_CODEC) {
-			} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
-				search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
-			}
-			break;
+		group = pk_group_enum_from_text (search);
+		regex = pld_group_get_regex_from_enum (group);
+
+		search_cmd = g_strdup_printf ("search -qg --perlre %s", regex);
+	/* SearchDetails */
+	} else if (mode == SEARCH_ENUM_DETAILS) {
+		search_cmd = g_strdup_printf ("search -dsq *%s*", search);
+	/* SearchFile */
+	} else if (mode == SEARCH_ENUM_FILE) {
+		search_cmd = g_strdup_printf ("search -qlf *%s*", search);
+	/* WhatProvides */
+	} else if (mode == SEARCH_ENUM_PROVIDES) {
+		provides = pk_backend_get_uint (backend, "provides");
+
+		if (provides == PK_PROVIDES_ENUM_ANY) {
+			search_cmd = g_strdup_printf ("search -qp %s", search);
+		} else if (provides == PK_PROVIDES_ENUM_MODALIAS) {
+		} else if (provides == PK_PROVIDES_ENUM_CODEC) {
+		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
+			search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
+		}
 	}
 
 	if (cmd != NULL && search_cmd)
@@ -1318,6 +1415,30 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
+ * backend_get_groups:
+ **/
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
+{
+	return (PK_GROUP_ENUM_ACCESSORIES |
+		PK_GROUP_ENUM_ADMIN_TOOLS |
+		PK_GROUP_ENUM_COMMUNICATION |
+		PK_GROUP_ENUM_EDUCATION |
+		PK_GROUP_ENUM_FONTS |
+		PK_GROUP_ENUM_GAMES |
+		PK_GROUP_ENUM_GRAPHICS |
+		PK_GROUP_ENUM_LOCALIZATION |
+		PK_GROUP_ENUM_MULTIMEDIA |
+		PK_GROUP_ENUM_NETWORK |
+		PK_GROUP_ENUM_OFFICE |
+		PK_GROUP_ENUM_OTHER |
+		PK_GROUP_ENUM_PROGRAMMING |
+		PK_GROUP_ENUM_PUBLISHING |
+		PK_GROUP_ENUM_SERVERS |
+		PK_GROUP_ENUM_SYSTEM);
+}
+
+/**
  * backend_get_filters:
  */
 static PkFilterEnum
@@ -1409,14 +1530,17 @@ backend_get_details_thread (PkBackend *backend)
 	if (pkg)
 	{
 		struct pkguinf	*pkgu = NULL;
+		PkGroupEnum	group;
 
 		pkgu = pkg_uinf (pkg);
+
+		group = pld_group_to_enum (pkg_group (pkg));
 
 		if (pkgu) {
 			pk_backend_details (backend,
 						package_id,
 						pkguinf_get (pkgu, PKGUINF_LICENSE),
-						PK_GROUP_ENUM_OTHER,
+						group,
 						pkguinf_get (pkgu, PKGUINF_DESCRIPTION),
 						pkguinf_get (pkgu, PKGUINF_URL),
 						pkg->size);
@@ -1425,7 +1549,7 @@ backend_get_details_thread (PkBackend *backend)
 			pk_backend_details (backend,
 						package_id,
 						"",
-						PK_GROUP_ENUM_OTHER,
+						group,
 						"",
 						"",
 						pkg->size);
@@ -2243,7 +2367,7 @@ PK_BACKEND_OPTIONS (
 	"Marcin Banasiak <megabajt@pld-linux.org>",	/* author */
 	backend_initalize,				/* initalize */
 	backend_destroy,				/* destroy */
-	NULL,						/* get_groups */
+	backend_get_groups,				/* get_groups */
 	backend_get_filters,				/* get_filters */
 	backend_get_cancel,				/* cancel */
 	backend_get_depends,				/* get_depends */
