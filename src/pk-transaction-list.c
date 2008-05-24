@@ -89,7 +89,6 @@ pk_transaction_list_get_from_transaction (PkTransactionList *tlist, PkTransactio
 
 	/* find the runner with the transaction ID */
 	length = tlist->priv->array->len;
-	pk_debug ("length = %i", length);
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
 		if (item->transaction == transaction) {
@@ -352,28 +351,29 @@ gchar **
 pk_transaction_list_get_array (PkTransactionList *tlist)
 {
 	guint i;
-	guint count = 0;
 	guint length;
+	GPtrArray *parray;
 	gchar **array;
 	PkTransactionItem *item;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
+	/* use a temp array, as not all are in progress */
+	parray = g_ptr_array_new ();
+
 	/* find all the transactions in progress */
 	length = tlist->priv->array->len;
-
-	/* create new strv list */
-	array = g_new0 (gchar *, length + 1);
-
-	pk_debug ("%i active transactions", length);
 	for (i=0; i<length; i++) {
 		item = (PkTransactionItem *) g_ptr_array_index (tlist->priv->array, i);
-		/* only return in the list if it worked */
-		if (item->committed && item->finished == FALSE) {
-			array[count] = g_strdup (item->tid);
-			count++;
+		/* only return in the list if its committed and not finished */
+		if (item->committed && !item->finished) {
+			g_ptr_array_add (parray, g_strdup (item->tid));
 		}
 	}
+	pk_debug ("%i transactions in list, %i active", length, parray->len);
+	array = pk_ptr_array_to_argv (parray);
+	g_ptr_array_free (parray, TRUE);
+
 	return array;
 }
 
