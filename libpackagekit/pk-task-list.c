@@ -161,7 +161,7 @@ pk_task_list_status_changed_cb (PkClient *client, PkStatusEnum status, PkTaskLis
 	g_return_if_fail (PK_IS_TASK_LIST (tlist));
 
 	tid = pk_client_get_tid (client);
-	pk_debug ("tid %s is now %i", tid, status);
+	pk_debug ("tid %s is now %s", tid, pk_status_enum_to_text (status));
 
 	/* get correct item */
 	item = pk_task_list_find_existing_tid (tlist, tid);
