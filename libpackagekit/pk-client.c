@@ -1022,7 +1022,7 @@ pk_client_get_updates (PkClient *client, PkFilterEnum filters, GError **error)
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1112,7 +1112,7 @@ pk_client_update_system (PkClient *client, GError **error)
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1167,7 +1167,7 @@ pk_client_search_name (PkClient *client, PkFilterEnum filters, const gchar *sear
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1223,7 +1223,7 @@ pk_client_search_details (PkClient *client, PkFilterEnum filters, const gchar *s
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1277,7 +1277,7 @@ pk_client_search_group (PkClient *client, PkFilterEnum filters, const gchar *sea
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1331,7 +1331,7 @@ pk_client_search_file (PkClient *client, PkFilterEnum filters, const gchar *sear
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1397,7 +1397,7 @@ pk_client_get_depends (PkClient *client, PkFilterEnum filters, const gchar *pack
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1448,7 +1448,7 @@ pk_client_get_packages (PkClient *client, PkFilterEnum filters, GError **error)
 				 G_TYPE_STRING, filter_text,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1514,7 +1514,7 @@ pk_client_get_requires (PkClient *client, PkFilterEnum filters, const gchar *pac
 				 G_TYPE_BOOLEAN, recursive,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1579,7 +1579,7 @@ pk_client_what_provides (PkClient *client, PkFilterEnum filters, PkProvidesEnum 
 				 G_TYPE_STRING, search,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1637,7 +1637,7 @@ pk_client_get_update_detail (PkClient *client, const gchar *package_id, GError *
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetUpdateDetail", error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1686,7 +1686,7 @@ pk_client_rollback (PkClient *client, const gchar *transaction_id, GError **erro
 	ret = dbus_g_proxy_call (client->priv->proxy, "Rollback", error,
 				 G_TYPE_STRING, transaction_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1743,7 +1743,7 @@ pk_client_resolve (PkClient *client, PkFilterEnum filters, const gchar *package,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1801,7 +1801,7 @@ pk_client_get_details (PkClient *client, const gchar *package_id, GError **error
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetDetails", error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1858,7 +1858,7 @@ pk_client_get_files (PkClient *client, const gchar *package_id, GError **error)
 	ret = dbus_g_proxy_call (client->priv->proxy, "GetFiles", error,
 				 G_TYPE_STRING, package_id,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -1963,7 +1963,7 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2048,7 +2048,7 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2142,7 +2142,7 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2242,7 +2242,7 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2340,7 +2340,7 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2570,7 +2570,7 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2622,7 +2622,7 @@ pk_client_get_repo_list (PkClient *client, PkFilterEnum filters, GError **error)
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	g_free (filter_text);
 	pk_client_error_fixup (error);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2703,7 +2703,7 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2787,7 +2787,7 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2880,7 +2880,7 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 		g_propagate_error (error, error_pk);
 	}
 
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 
@@ -2957,7 +2957,7 @@ pk_client_get_old_transactions (PkClient *client, guint number, GError **error)
 				 G_TYPE_UINT, number,
 				 G_TYPE_INVALID, G_TYPE_INVALID);
 	pk_client_error_fixup (error);
-	if (ret) {
+	if (ret && !client->priv->is_finished) {
 		/* allow clients to respond in the status changed callback */
 		pk_client_change_status (client, PK_STATUS_ENUM_WAIT);
 	}
