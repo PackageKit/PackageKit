@@ -230,6 +230,7 @@ AC_ARG_ENABLE(opkg, AS_HELP_STRING([--enable-opkg],[use the OPKG backend]),enabl
 AC_ARG_ENABLE(pisi, AS_HELP_STRING([--enable-pisi],[use the PiSi backend]),enable_pisi=$enableval,enable_pisi=no)
 AC_ARG_ENABLE(poldek, AS_HELP_STRING([--enable-poldek],[use the poldek backend]),enable_poldek=$enableval,enable_poldek=no)
 AC_ARG_ENABLE(smart, AS_HELP_STRING([--enable-smart],[use the SMART backend]),enable_smart=$enableval,enable_smart=no)
+AC_ARG_ENABLE(urpmi, AS_HELP_STRING([--enable-urpmi],[use the URPMI backend]),enable_urpmi=$enableval,enable_urpmi=no)
 AC_ARG_ENABLE(yum, AS_HELP_STRING([--enable-yum],[use the YUM backend]),enable_yum=$enableval,enable_yum=no)
 AC_ARG_ENABLE(yum2, AS_HELP_STRING([--enable-yum2],[use the YUM DBUS backend]),enable_yum2=$enableval,enable_yum2=no)
 AC_ARG_ENABLE(zypp, AS_HELP_STRING([--enable-zypp],[use the Zypp backend]),enable_zypp=$enableval,enable_zypp=no)
@@ -244,6 +245,7 @@ AM_CONDITIONAL(BACKEND_TYPE_OPKG, [test x$enable_opkg = xyes], [using OPKG backe
 AM_CONDITIONAL(BACKEND_TYPE_PISI, [test x$enable_pisi = xyes], [using PiSi backend])
 AM_CONDITIONAL(BACKEND_TYPE_POLDEK, [test x$enable_poldek = xyes], [using poldek backend])
 AM_CONDITIONAL(BACKEND_TYPE_SMART, [test x$enable_smart = xyes], [using SMART backend])
+AM_CONDITIONAL(BACKEND_TYPE_URPMI, [test x$enable_urpmi = xyes], [using URPMI backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM, [test x$enable_yum = xyes], [using YUM backend])
 AM_CONDITIONAL(BACKEND_TYPE_YUM2, [test x$enable_yum2 = xyes], [using YUM DBUS backend])
 AM_CONDITIONAL(BACKEND_TYPE_ZYPP, [test x$enable_zypp = xyes], [using Zypp backend])
@@ -367,7 +369,7 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_WITH([default_backend],
 	    AS_HELP_STRING([--with-default-backend=<option>],
 			   [Default backend to use
-                           alpm,apt,box,conary,dummy,smart,yum,pisi,zypp,opkg (dummy)]))
+                           alpm,apt,box,conary,dummy,smart,urpmi,yum,pisi,zypp,opkg (dummy)]))
 # default to a sane option for the installed tool
 if test x$with_default_backend = x; then
 	if test -f /usr/bin/yum ; then
@@ -386,6 +388,8 @@ if test x$with_default_backend = x; then
 		with_default_backend=pisi
 	elif test -f /usr/bin/poldek ; then
 		with_default_backend=poldek
+	elif test -f /usr/bin/urpmq ; then
+		with_default_backend=urpmi
 	elif test -f /usr/bin/zypper ; then
 		with_default_backend=zypp
 	else
@@ -468,6 +472,8 @@ backends/smart/Makefile
 backends/smart/helpers/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
+backends/urpmi/Makefile
+backends/urpmi/helpers/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/yum2/Makefile
@@ -522,6 +528,7 @@ echo "
         PiSi backend:              ${enable_pisi}
         poldek backend:            ${enable_poldek}
         SMART backend:             ${enable_smart}
+        URPMI backend:             ${enable_urpmi}
         YUM backend:               ${enable_yum}
         YUM2 backend:              ${enable_yum2}
         Zypp backend:              ${enable_zypp}
