@@ -18,8 +18,10 @@ use urpmi_backend::tools;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# No arguments authorized
-exit if($#ARGV != -1);
+# On argument (filter)
+exit if($#ARGV != 0);
+# Fix me
+# Filter are to be implemented.
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
