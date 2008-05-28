@@ -27,11 +27,9 @@ sub perform_installation {
   my $restart;
   my $no_remove = 0;
 
-  pk_print_status(PK_STATUS_ENUM_WAIT);
-
   # Here we lock urpmi & rpm databases
-  # In third argument we can specified if the script must wait if urpmi or rpm
-  # databases are already locked
+  # In third argument we can specified if the script must wait until urpmi or rpm
+  # databases are locked
   my $lock = urpm::lock::urpmi_db($urpm, undef, wait => 0);
   my $rpm_lock = urpm::lock::rpm_db($urpm, 'exclusive');
 
@@ -116,14 +114,9 @@ sub perform_installation {
       } 
       elsif (defined $pkg) {
         printf("Installing package %s ...\n", $pkg->name);
-        # Need improvements, we can display package number, total number of packages to be installed, 
-        # and some others informations. See rpmdrake/pkg.pm source code for more information.
       }
     } 
     elsif ($subtype eq 'progress') {
-      # Progress bar ? 
-      # See Rpmdrake/pkg.pm for more information.
-      # $total, $amount/$total
       print "($type) Progress : total = ", $total, " ; amount/total = ", $amount/$total, " ; amount = ", $amount, "\n";
       if($type eq "inst") {
         pk_print_percentage($percentage + ($amount/$total)*(100/$nb_to_install));
@@ -159,26 +152,14 @@ sub perform_installation {
         my ($need_restart_formatted) = @_;
         print "$_\n" foreach values %$need_restart_formatted;
       },
-      message => sub {
-        my ($_title, $msg) = @_; # graphical title
-        print "message = ", $msg;
-        # What's this callback ? message ?
-        # Fix me : take a look on it.
-      },
       completed => sub {
         undef $lock;
         undef $rpm_lock;
       },
       post_download => sub {
+        # Fix me !
         # At this point, we need to refuse cancel action
-        # to the user (use of AllowCancel instruction of Packagekit)
       },
-      # I need to work more on main_loop callbacks in order to display
-      # personnal messages, and not using default urpmi display which is
-      # too ugly :s
-      # For help, look at the source code of Rpmdrake, and particulary see
-      # the file /usr/lib/perl5/vendor_perl/5.10.0/Rpmdrake/pkg.pm when 
-      # it calls the main_loop::run
     }
   );
 }

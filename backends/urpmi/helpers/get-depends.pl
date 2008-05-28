@@ -21,7 +21,7 @@ use urpmi_backend::tools;
 use perl_packagekit::enums;
 use perl_packagekit::prints;
 
-# Two arguments (filter and package name)
+# Two arguments (filter, package id)
 exit if($#ARGV != 2);
 
 my @filters = split(/;/, $ARGV[0]);
@@ -32,11 +32,10 @@ $recursive_option = 1 if($ARGV[2] eq "yes");
 # Only recursive option is supported
 # So, if user set no tu recursive option, 
 # backend will return error
-# Fix me : We force recursive option
-#if(!$recursive_option) {
-#  printf("Error\tnot-supported\tOnly recursive option to yes is supported\n");
-#  exit;
-#}
+if(!$recursive_option) {
+  printf("error\tnot-supported\tOnly recursive option to yes is supported\n");
+  exit;
+}
 
 pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 

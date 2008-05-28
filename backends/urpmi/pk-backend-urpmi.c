@@ -48,6 +48,18 @@ backend_destroy (PkBackend *backend)
 	g_object_unref (spawn);
 }
 
+/**
+ * pk_backend_bool_to_text:
+ */
+static const gchar *
+pk_backend_bool_to_text (gboolean value)
+{
+	if (value == TRUE) {
+		return "yes";
+	}
+	return "no";
+}
+
 
 /**
  * pk_backend_search_name:
@@ -61,6 +73,37 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	g_free (filters_text);
 }
 
+/**
+ * backend_get_details:
+ */
+static void
+backend_get_details (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_spawn_helper (spawn, "get-details.pl", package_id, NULL);
+}
+
+/**
+ * backend_get_files:
+ */
+static void
+backend_get_files (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_spawn_helper (spawn, "get-files.pl", package_id, NULL);
+}
+
+/**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-depends.pl", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+}
+
+
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
 	"Aurelien Lefebvre <alefebvre@mandriva.com>",	/* author */
@@ -69,9 +112,9 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* get_groups */
 	NULL,			/* get_filters */
 	NULL,				/* cancel */
-	NULL,			/* get_depends */
-	NULL,			/* get_details */
-	NULL,			/* get_files */
+	backend_get_depends,			/* get_depends */
+	backend_get_details,			/* get_details */
+	backend_get_files,			/* get_files */
 	NULL,			/* get_packages */
 	NULL,			/* get_repo_list */
 	NULL,			/* get_requires */

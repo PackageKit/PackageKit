@@ -474,6 +474,8 @@ backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile
 backends/urpmi/helpers/Makefile
+backends/urpmi/helpers/perl_packagekit/Makefile
+backends/urpmi/helpers/urpmi_backend/Makefile
 backends/yum/Makefile
 backends/yum/helpers/Makefile
 backends/yum2/Makefile

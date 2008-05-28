@@ -21,8 +21,6 @@ our @EXPORT = qw(
   get_package_upgrade
 );
 
-# Note that all of these methods are extracted from the rpmdrake source code.
-
 sub get_update_medias {
   my ($urpm) = @_;
   grep { !$_->{ignore} && $_->{update} } @{$urpm->{media}};
@@ -50,7 +48,6 @@ sub urpm_name {
     "$name-$version-$release.$arch";
 }
 
-# from rpmtools, #37482:
 sub ensure_utf8 {
     my ($s) = @_;
     require Encode;

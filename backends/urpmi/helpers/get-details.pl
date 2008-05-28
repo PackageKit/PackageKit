@@ -17,8 +17,7 @@ use MDK::Common;
 
 use perl_packagekit::prints;
 
-# Only one argument authorized
-# (The Package ID)
+# One argument (package id)
 exit if($#ARGV != 0);
 
 my $urpm = urpm->new_parse_cmdline;

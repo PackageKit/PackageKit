@@ -1,10 +1,14 @@
+SUBDIRS = perl_packagekit urpmi_backend
 
 helperdir = $(datadir)/PackageKit/helpers/urpmi
 
 NULL =
 
-dist_helper_DATA = 			\
-	search-name.pl			\
+dist_helper_DATA = 						\
+	search-name.pl							\
+	get-details.pl							\
+	get-depends.pl							\
+	get-files.pl								\
 	$(NULL)
 
 install-data-hook:
