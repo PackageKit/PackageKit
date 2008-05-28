@@ -1222,7 +1222,7 @@ backend_find_packages_thread (PkBackend *backend)
 	mode = pk_backend_get_uint (backend, "mode");
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pk_backend_no_percentage_updates (backend);
+	pk_backend_set_percentage (backend, PK_BACKEND_PERCENTAGE_INVALID);
 
 	std::vector<zypp::sat::Solvable> *v = new std::vector<zypp::sat::Solvable>;
 	std::vector<zypp::sat::Solvable> *v2 = new std::vector<zypp::sat::Solvable>;
