@@ -486,6 +486,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	guint i;
 	guint length;
 	PkPackageItem *item;
+	PkPackageList *list;
 
 	/* have we passed a complete package_id? */
 	valid = pk_package_id_check (package);
@@ -507,7 +508,9 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 
 	/* get length of items found */
-	length = pk_client_package_buffer_get_size (client_task);
+	list = pk_client_get_package_list (client_task);
+	length = pk_package_list_get_size (list);
+	g_object_unref (list);
 
 	/* didn't resolve to anything, try to get a provide */
 	if (length == 0) {
@@ -523,8 +526,9 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 		}
 	}
 
-	/* get length of items found again (we might have has success) */
-	length = pk_client_package_buffer_get_size (client_task);
+	/* get length of items found again (we might have had success) */
+	list = pk_client_get_package_list (client_task);
+	length = pk_package_list_get_size (list);
 	if (length == 0) {
 		pk_warning (_("Could not find a package match"));
 		return NULL;
@@ -532,7 +536,7 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 
 	/* only found one, great! */
 	if (length == 1) {
-		item = pk_client_package_buffer_get_item (client_task, 0);
+		item = pk_package_list_get_item (list, 0);
 		return g_strdup (item->package_id);
 	}
 
@@ -542,14 +546,16 @@ pk_console_perhaps_resolve (PkClient *client, PkFilterEnum filter, const gchar *
 	}
 	g_print ("%s\n", _("There are multiple package matches"));
 	for (i=0; i<length; i++) {
-		item = pk_client_package_buffer_get_item (client_task, i);
+		item = pk_package_list_get_item (list, i);
 		g_print ("%i. %s\n", i+1, item->package_id);
 	}
 
 	/* find out what package the user wants to use */
 	i = pk_console_get_number (_("Please enter the package number: "), length);
-	item = pk_client_package_buffer_get_item (client_task, i-1);
+	item = pk_package_list_get_item (list, i-1);
 	pk_debug ("package_id = %s", item->package_id);
+	g_object_unref (list);
+
 	return g_strdup (item->package_id);
 }
 
@@ -720,6 +726,7 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 	GPtrArray *array;
 	gchar **package_ids = NULL;
 	PkPackageList *list;
+	PkPackageList *list_single;
 
 	array = g_ptr_array_new ();
 	list = pk_package_list_new ();
@@ -769,11 +776,13 @@ pk_console_remove_packages (PkClient *client, gchar **packages, GError **error)
 		}
 
 		/* see how many packages there are */
-		size = pk_client_package_buffer_get_size (client_task);
+		list_single = pk_client_get_package_list (client_task);
+		size = pk_package_list_get_size (list_single);
 		for (j=0; j<size; j++) {
-			item = pk_client_package_buffer_get_item (client_task, j);
+			item = pk_package_list_get_item (list_single, j);
 			pk_package_list_add_item (list, item);
 		}
+		g_object_unref (list_single);
 	}
 
 	/* one of the get-requires failed */

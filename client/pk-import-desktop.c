@@ -44,53 +44,58 @@ static gchar *
 pk_desktop_get_name_for_file (const gchar *filename)
 {
 	guint size;
-	gchar *name;
+	gchar *name = NULL;
 	PkPackageItem *item;
 	PkPackageId *pid;
 	gboolean ret;
 	GError *error = NULL;
+	PkPackageList *list = NULL;
 
 	/* use PK to find the correct package */
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
 		pk_warning ("failed to reset client: %s", error->message);
 		g_error_free (error);
-		return NULL;
+		goto out;
 	}
 
 	ret = pk_client_search_file (client, PK_FILTER_ENUM_INSTALLED, filename, &error);
 	if (!ret) {
 		pk_warning ("failed to search file: %s", error->message);
 		g_error_free (error);
-		return NULL;
+		goto out;
 	}
 
 	/* check that we only matched one package */
-	size = pk_client_package_buffer_get_size (client);
+	list = pk_client_get_package_list (client);
+	size = pk_package_list_get_size (list);
 	if (size != 1) {
 		pk_warning ("not correct size, %i", size);
-		return NULL;
+		goto out;
 	}
 
 	/* get the item */
-	item = pk_client_package_buffer_get_item (client, 0);
+	item = pk_package_list_get_item (list, 0);
 	if (item == NULL) {
 		pk_error ("cannot get item");
-		return NULL;
+		goto out;
 	}
 
 	/* get the package name */
 	pid = pk_package_id_new_from_string (item->package_id);
 	if (pid == NULL) {
 		pk_error ("cannot allocate package id");
-		return NULL;
+		goto out;
 	}
 
 	/* strip the name */
 	name = g_strdup (pid->name);
 	pk_package_id_free (pid);
 
-	/* return a copy */
+out:
+	if (list != NULL) {
+		g_object_unref (list);
+	}
 	return name;
 }
 

@@ -346,9 +346,7 @@ gboolean	 pk_client_repo_set_data		(PkClient	*client,
 							 G_GNUC_WARN_UNUSED_RESULT;
 
 /* cached stuff */
-guint		 pk_client_package_buffer_get_size	(PkClient	*client);
-PkPackageItem	*pk_client_package_buffer_get_item	(PkClient	*client,
-							 guint		 item);
+PkPackageList	*pk_client_get_package_list		(PkClient	*client);
 PkRestartEnum	 pk_client_get_require_restart		(PkClient	*client);
 
 /* not job specific */

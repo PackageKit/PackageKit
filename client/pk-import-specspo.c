@@ -56,6 +56,7 @@ pk_import_specspo_get_summary (const gchar *name)
 	gboolean ret;
 	PkPackageItem *item;
 	GError *error = NULL;
+	PkPackageList *list;
 
 	ret = pk_client_reset (client, &error);
 	if (!ret) {
@@ -74,18 +75,21 @@ pk_import_specspo_get_summary (const gchar *name)
 	}
 
 	/* check that we only matched one package */
-	size = pk_client_package_buffer_get_size (client);
+	list = pk_client_get_package_list (client);
+	size = pk_package_list_get_size (list);
 	if (size != 1) {
 		pk_warning ("not correct size, %i", size);
 		return NULL;
 	}
 
 	/* get the item */
-	item = pk_client_package_buffer_get_item (client, 0);
+	item = pk_package_list_get_item (list, 0);
 	if (item == NULL) {
 		pk_error ("cannot get item");
+		g_object_unref (list);
 		return NULL;
 	}
+	g_object_unref (list);
 
 	return item->summary;
 }
