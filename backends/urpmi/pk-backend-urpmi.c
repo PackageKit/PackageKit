@@ -103,6 +103,19 @@ backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *pack
 	g_free (filters_text);
 }
 
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-updates.pl", filters_text, NULL);
+	g_free (filters_text);
+}
+
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -119,7 +132,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* get_repo_list */
 	NULL,			/* get_requires */
 	NULL,		/* get_update_detail */
-	NULL,			/* get_updates */
+	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	NULL,		/* install_packages */
 	NULL,		/* install_signature */
