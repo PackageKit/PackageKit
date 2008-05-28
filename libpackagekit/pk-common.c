@@ -879,6 +879,23 @@ libst_common (LibSelfTest *test)
 	}
 	g_free (text_safe);
 
+	/************************************************************/
+	libst_title (test, "pk_strequal same argument");
+	temp = "dave";
+	if (pk_strequal (temp, temp)) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret when both same");
+	}
+
+	/************************************************************/
+	libst_title (test, "pk_strequal both const");
+	if (pk_strequal ("dave", "dave")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "incorrect ret when both same");
+	}
+
 	/************************************************************
 	 ****************        build var args        **************
 	 ************************************************************/
