@@ -288,7 +288,9 @@ backend_get_filters (PkBackend *backend)
 	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
 			PK_FILTER_ENUM_NOT_INSTALLED |
 			PK_FILTER_ENUM_ARCH |
-			PK_FILTER_ENUM_NOT_ARCH);
+			PK_FILTER_ENUM_NOT_ARCH |
+			PK_FILTER_ENUM_SOURCE |
+			PK_FILTER_ENUM_NOT_SOURCE);
 }
 
 static gboolean

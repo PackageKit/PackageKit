@@ -547,6 +547,12 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 							system_and_package_are_x86 (*it))
 						print = FALSE;
 				}
+				if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(*it))) {
+					print = FALSE;
+				}
+				if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(*it)) {
+					print = FALSE;
+				}
 				//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
 				//pk_debug ("my default arch is %s", myarch);
 			}
