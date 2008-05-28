@@ -160,7 +160,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* install_files */
 	NULL,		/* install_packages */
 	NULL,		/* install_signature */
-	NULL,			/* refresh_cache */
+	backend_refresh_cache,			/* refresh_cache */
 	NULL,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
