@@ -140,6 +140,27 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_spawn_helper (spawn, "refresh-cache.pl", NULL);
 }
 
+/**
+ * backend_install_packages:
+ */
+static void
+backend_install_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "install-packages.pl", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -158,7 +179,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
-	NULL,		/* install_packages */
+	backend_install_packages,		/* install_packages */
 	NULL,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
 	NULL,		/* remove_packages */
