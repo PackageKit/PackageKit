@@ -62,6 +62,11 @@ typedef enum {
   */
 extern std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
+/** Used to show/install only an update to ourself. This way if we find a critical bug
+  * in the way we update packages we will install the fix before any other updates.
+  */
+extern gboolean _updating_self;
+
 /** A string to store the last refreshed repo
   * this is needed for gpg-key handling stuff (UGLY HACK)
   * FIXME
@@ -71,8 +76,8 @@ extern gchar *_repoName;
 zypp::ZYpp::Ptr get_zypp ();
 
 /**
- * Enable and rotate logging
- */
+  * Enable and rotate logging
+  */
 gboolean zypp_logging ();
 
 gboolean zypp_is_changeable_media (const zypp::Url &url);
@@ -130,8 +135,8 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
 /**
- * Get the RepoInfo 
- */
+  * Get the RepoInfo 
+  */
 zypp::RepoInfo
 zypp_get_Repository (PkBackend *backend, const gchar *alias);
 
@@ -156,9 +161,9 @@ gboolean zypp_signature_required (PkBackend *backend, const std::string &file, c
 zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item);
 
 /**
-  * Returns a set of all packages the could be updated
+  * Returns a set of all packages the could be updated (you're able to exclude a repo)
   */
-std::set<zypp::PoolItem> * zypp_get_updates ();
+std::set<zypp::PoolItem> * zypp_get_updates (std::string repo);
 
 /**
   * Returns a set of all patches the could be installed

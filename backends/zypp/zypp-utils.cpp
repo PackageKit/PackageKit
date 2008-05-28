@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <glib/gi18n.h>
 #include <zypp/ZYpp.h>
 #include <zypp/ZYppFactory.h>
 #include <zypp/RepoManager.h>
@@ -55,6 +56,7 @@
 #include "zypp-utils.h"
 
 gchar * _repoName;
+gboolean _updating_self = FALSE;
 /**
  * Collect items, select best edition.  This is used to find the best
  * available or installed.  The name of the class is a bit misleading though ...
@@ -101,8 +103,8 @@ get_zypp ()
 }
 
 /**
- * Enable and rotate zypp logging
- */
+  * Enable and rotate zypp logging
+  */
 gboolean
 zypp_logging ()
 {
@@ -112,16 +114,16 @@ zypp_logging ()
 	if (g_file_test (file, G_FILE_TEST_EXISTS)) {
 		struct stat buffer;
 		g_stat (file, &buffer);
-		// if the file is bigger than 5 MB rotate
-		if ((guint)buffer.st_size > 5242880) {
+		// if the file is bigger than 10 MB rotate
+		if ((guint)buffer.st_size > 10485760) {
 			if (g_file_test (file_old, G_FILE_TEST_EXISTS))
 				g_remove (file_old);
 			g_rename (file, file_old);
 		}
 	}
- 
+
 	zypp::base::LogControl::instance ().logfile(file);
-		
+
 	g_free (file);
 	g_free (file_old);
 
@@ -150,13 +152,13 @@ zypp_build_pool (gboolean include_local)
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 
 	if (include_local == TRUE) {
-                //FIXME have to wait for fix in zypp (repeated loading of target)
-                if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ).solvablesEmpty ())
-                {
-		        // Add local resolvables
-		        zypp::Target_Ptr target = zypp->target ();
-		        target->load ();
-                }
+		//FIXME have to wait for fix in zypp (repeated loading of target)
+		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
+		{
+			// Add local resolvables
+			zypp::Target_Ptr target = zypp->target ();
+			target->load ();
+		}
 	}
 
 	// Add resolvables from enabled repos
@@ -193,16 +195,16 @@ zypp_build_pool (gboolean include_local)
 zypp::ResPool
 zypp_build_local_pool ()
 {
-        zypp::sat::Pool pool = zypp::sat::Pool::instance ();
+	zypp::sat::Pool pool = zypp::sat::Pool::instance ();
 	zypp::ZYpp::Ptr zypp = get_zypp ();
 
 	try {
 		for (zypp::detail::RepositoryIterator it = pool.reposBegin (); it != pool.reposEnd (); it++){
 			if (! it->isSystemRepo ())
-				pool.reposErase(it->name ());
+				pool.reposErase(it->alias ());
 		}
 		
-		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoName() ).solvablesEmpty ())
+		if (zypp::sat::Pool::instance().reposFind( zypp::sat::Pool::systemRepoAlias() ).solvablesEmpty ())
                 {
 		        // Add local resolvables
 		        zypp::Target_Ptr target = zypp->target ();
@@ -401,7 +403,7 @@ zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable)
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
 					  resolvable.arch ().asString ().c_str (),
-					  resolvable.repository (). name().c_str ());
+					  resolvable.repository (). alias().c_str ());
 
 	return package_id;
 }
@@ -437,13 +439,13 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
         	pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-				info.baseUrlsBegin ()->asString ().c_str (),
-				key.name ().c_str (),
+        	                info.baseUrlsBegin ()->asString ().c_str (),
+                	        key.name ().c_str (),
                         	key.id ().c_str (),
 	                        key.fingerprint ().c_str (),
         	                key.created ().asString ().c_str (),
                 	        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
 	}else{
 		ok = TRUE;
 	}
@@ -462,17 +464,17 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
 			return FALSE;
 		}
-
+		
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-				info.baseUrlsBegin ()->asString ().c_str (),
+        	                info.baseUrlsBegin ()->asString ().c_str (),
                 	        id.c_str (),
                         	id.c_str (),
 	                        "UNKNOWN",
         	                "UNKNOWN",
                 	        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
 	}else{
 		ok = TRUE;
 	}
@@ -491,17 +493,17 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
 			pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, "Repository unknown");
 			return FALSE;
 		}
-
+		
 		pk_backend_repo_signature_required (backend,
 				"dummy;0.0.1;i386;data",
 	                        _repoName,
-				info.baseUrlsBegin ()->asString ().c_str (),
+        	                info.baseUrlsBegin ()->asString ().c_str (),
 	                        "UNKNOWN",
         	                file.c_str (),
                 	        "UNKNOWN",
                         	"UNKNOWN",
 	                        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Repo signature verification failed");
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
 	}else{
 		ok = TRUE;
 	}
@@ -544,6 +546,12 @@ zypp_emit_packages_in_list (PkBackend *backend, std::vector<zypp::sat::Solvable>
 					if (it->arch () == zypp::ZConfig::defaultSystemArchitecture () ||
 							system_and_package_are_x86 (*it))
 						print = FALSE;
+				}
+				if (i == PK_FILTER_ENUM_SOURCE && !(zypp::isKind<zypp::SrcPackage>(*it))) {
+					print = FALSE;
+				}
+				if (i == PK_FILTER_ENUM_NOT_SOURCE && zypp::isKind<zypp::SrcPackage>(*it)) {
+					print = FALSE;
 				}
 				//const gchar * myarch = zypp::ZConfig::defaultSystemArchitecture().asString().c_str();
 				//pk_debug ("my default arch is %s", myarch);
@@ -591,7 +599,7 @@ zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item)
 }
 
 std::set<zypp::PoolItem> *
-zypp_get_updates ()
+zypp_get_updates (std::string repo)
 {
         std::set<zypp::PoolItem> *pks = new std::set<zypp::PoolItem> ();
         zypp::ResPool pool = zypp::ResPool::instance ();
@@ -606,7 +614,12 @@ zypp_get_updates ()
                 zypp::PoolItem candidate =  zypp_find_arch_update_item (pool, *it);
                 if (!candidate.resolvable ())
                         continue;
-                pks->insert (candidate);
+		if (repo.empty ()) {
+	                pks->insert (candidate);
+		}else{
+			if (candidate->repoInfo ().alias ().compare (repo) != 0)
+				pks->insert (candidate);
+		}
         }
 
         return pks;
@@ -616,6 +629,7 @@ std::set<zypp::PoolItem> *
 zypp_get_patches ()
 {
         std::set<zypp::PoolItem> *patches = new std::set<zypp::PoolItem> ();
+	_updating_self = FALSE;
 
         zypp::ZYpp::Ptr zypp;
         zypp = get_zypp ();
@@ -625,8 +639,18 @@ zypp_get_patches ()
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
-                if((*it)->candidateObj ().isBroken())
+                if((*it)->candidateObj ().isBroken()) {
                         patches->insert ((*it)->candidateObj ());
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
+
+			// check if the patch updates libzypp or packageKit and show only this one
+			if (patch->restartSuggested ()) {
+				_updating_self = TRUE;
+				patches->clear ();
+				patches->insert ((*it)->candidateObj ());
+				break;
+			}
+		}
 
         }
 
