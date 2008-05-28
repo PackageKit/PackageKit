@@ -11,6 +11,7 @@ dist_helper_DATA = 						\
 	get-files.pl								\
 	get-updates.pl							\
 	get-update-detail.pl				\
+	refresh-cache.pl						\
 	$(NULL)
 
 install-data-hook:

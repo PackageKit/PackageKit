@@ -124,6 +124,22 @@ backend_get_update_detail (PkBackend *backend, const gchar *package_id)
 	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_id, NULL);
 }
 
+/**
+ * backend_refresh_cache:
+ */
+static void
+backend_refresh_cache (PkBackend *backend, gboolean force)
+{
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	pk_backend_spawn_helper (spawn, "refresh-cache.pl", NULL);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
