@@ -67,8 +67,8 @@ else {
 
   if($restart) {
     pk_print_update_detail(get_package_id($pkg),
-      join(" ", map(get_package_id($_), @to_install)),
-      join(" ", map(fullname_to_package_id($_), @to_remove)),
+      join("^", map(get_package_id($_), @to_install)),
+      join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
@@ -77,8 +77,8 @@ else {
   }
   else {
     pk_print_update_detail(get_package_id($pkg),
-      join(" ", map(get_package_id($_), @to_install)),
-      join(" ", map(fullname_to_package_id($_), @to_remove)),
+      join("^", map(get_package_id($_), @to_install)),
+      join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
