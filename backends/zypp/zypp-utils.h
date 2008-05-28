@@ -1,27 +1,3 @@
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
- *
- * Copyright (c) 2007 Novell, Inc.
- * Copyright (c) 2007 Boyd Timothy <btimothy@gmail.com>
- * Copyright (c) 2007-2008 Stefan Haas <shaas@suse.de>
- * Copyright (c) 2007-2008 Scott Reeves <sreeves@novell.com>
- *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
-
 #ifndef _ZYPP_UTILS_H_
 #define _ZYPP_UTILS_H_
 
@@ -62,6 +38,11 @@ typedef enum {
   */
 extern std::map<PkBackend *, std::vector<std::string> *> _signatures;
 
+/** Used to show/install only an update to ourself. This way if we find a critical bug
+  * in the way we update packages we will install the fix before any other updates.
+  */
+extern gboolean _updating_self;
+
 /** A string to store the last refreshed repo
   * this is needed for gpg-key handling stuff (UGLY HACK)
   * FIXME
@@ -71,8 +52,8 @@ extern gchar *_repoName;
 zypp::ZYpp::Ptr get_zypp ();
 
 /**
- * Enable and rotate logging
- */
+  * Enable and rotate logging
+  */
 gboolean zypp_logging ();
 
 gboolean zypp_is_changeable_media (const zypp::Url &url);
@@ -130,8 +111,8 @@ zypp::sat::Solvable zypp_get_package_by_id (const gchar *package_id);
 gchar * zypp_build_package_id_from_resolvable (zypp::sat::Solvable resolvable);
 
 /**
- * Get the RepoInfo 
- */
+  * Get the RepoInfo 
+  */
 zypp::RepoInfo
 zypp_get_Repository (PkBackend *backend, const gchar *alias);
 
@@ -156,9 +137,9 @@ gboolean zypp_signature_required (PkBackend *backend, const std::string &file, c
 zypp::PoolItem zypp_find_arch_update_item (const zypp::ResPool & pool, zypp::PoolItem item);
 
 /**
-  * Returns a set of all packages the could be updated
+  * Returns a set of all packages the could be updated (you're able to exclude a repo)
   */
-std::set<zypp::PoolItem> * zypp_get_updates ();
+std::set<zypp::PoolItem> * zypp_get_updates (std::string repo);
 
 /**
   * Returns a set of all patches the could be installed
