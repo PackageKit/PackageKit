@@ -566,16 +566,12 @@ pk_client_details_cb (DBusGProxy  *proxy,
  * pk_client_files_cb:
  */
 static void
-pk_client_files_cb (DBusGProxy  *proxy,
-		    const gchar *package_id,
-		    const gchar *filelist,
-		    PkClient    *client)
+pk_client_files_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit files %s, %s", package_id, filelist);
-	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id,
-		       filelist);
+	pk_debug ("emit files %s, <lots of files>", package_id);
+	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
 }
 
 /**
