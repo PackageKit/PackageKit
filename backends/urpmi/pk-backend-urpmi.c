@@ -115,6 +115,14 @@ backend_get_updates (PkBackend *backend, PkFilterEnum filters)
 	g_free (filters_text);
 }
 
+/**
+ * backend_get_update_detail:
+ */
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_spawn_helper (spawn, "get-update-detail.pl", package_id, NULL);
+}
 
 
 PK_BACKEND_OPTIONS (
@@ -131,7 +139,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* get_packages */
 	NULL,			/* get_repo_list */
 	NULL,			/* get_requires */
-	NULL,		/* get_update_detail */
+	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
 	NULL,		/* install_packages */

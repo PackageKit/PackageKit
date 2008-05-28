@@ -10,6 +10,7 @@ dist_helper_DATA = 						\
 	get-depends.pl							\
 	get-files.pl								\
 	get-updates.pl							\
+	get-update-details.pl				\
 	$(NULL)
 
 install-data-hook:
