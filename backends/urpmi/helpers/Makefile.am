@@ -14,6 +14,7 @@ dist_helper_DATA = 						\
 	refresh-cache.pl						\
 	install-packages.pl					\
 	remove-packages.pl					\
+	search-group.pl							\
 	$(NULL)
 
 install-data-hook:

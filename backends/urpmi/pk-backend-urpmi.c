@@ -212,6 +212,18 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
 	g_free (package_ids_temp);
 }
 
+/**
+ * pk_backend_search_group:
+ */
+static void
+backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-group.pl", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -240,7 +252,7 @@ PK_BACKEND_OPTIONS (
 	NULL,					/* rollback */
 	NULL,			/* search_details */
 	NULL,			/* search_file */
-	NULL,			/* search_group */
+	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
 	NULL,		/* update_packages */
