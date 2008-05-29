@@ -283,6 +283,18 @@ backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 	g_free (filters_text);
 }
 
+/**
+ * pk_backend_resolve:
+ */
+static void
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "resolve.pl", filters_text, package_id, NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -307,7 +319,7 @@ PK_BACKEND_OPTIONS (
 	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
-	NULL,			/* resolve */
+	backend_resolve,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
 	backend_search_file,			/* search_file */

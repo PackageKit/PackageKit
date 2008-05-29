@@ -19,6 +19,7 @@ dist_helper_DATA = 						\
 	get-requires.pl							\
 	search-details.pl						\
 	search-file.pl							\
+	resolve.pl									\
 	$(NULL)
 
 install-data-hook:
