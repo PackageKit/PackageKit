@@ -235,6 +235,18 @@ backend_search_group (PkBackend *backend, PkFilterEnum filters, const gchar *sea
 	g_free (filters_text);
 }
 
+/**
+ * backend_get_packages:
+ */
+static void
+backend_get_packages (PkBackend *backend, PkFilterEnum filters)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-packages.pl", filters_text, NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -247,7 +259,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
 	backend_get_files,			/* get_files */
-	NULL,			/* get_packages */
+	backend_get_packages,			/* get_packages */
 	NULL,			/* get_repo_list */
 	NULL,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
