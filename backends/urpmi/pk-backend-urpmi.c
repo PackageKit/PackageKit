@@ -259,6 +259,18 @@ backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *pac
 	g_free (filters_text);
 }
 
+/**
+ * pk_backend_search_details:
+ */
+static void
+backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-details.pl", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -285,7 +297,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* repo_set_data */
 	NULL,			/* resolve */
 	NULL,					/* rollback */
-	NULL,			/* search_details */
+	backend_search_details,			/* search_details */
 	NULL,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
