@@ -247,6 +247,18 @@ backend_get_packages (PkBackend *backend, PkFilterEnum filters)
 	g_free (filters_text);
 }
 
+/**
+ * backend_get_requires:
+ */
+static void
+backend_get_requires (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "get-requires.pl", filters_text, package_id, pk_backend_bool_to_text (recursive), NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -261,7 +273,7 @@ PK_BACKEND_OPTIONS (
 	backend_get_files,			/* get_files */
 	backend_get_packages,			/* get_packages */
 	NULL,			/* get_repo_list */
-	NULL,			/* get_requires */
+	backend_get_requires,			/* get_requires */
 	backend_get_update_detail,		/* get_update_detail */
 	backend_get_updates,			/* get_updates */
 	NULL,			/* install_files */
