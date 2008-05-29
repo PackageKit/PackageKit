@@ -32,21 +32,10 @@ if(!$pkg) {
   exit;
 }
 
-my %requested;
-$requested{$pkg->id} = 1;
-
-# my $result = urpm::select::search_packages($urpm, \%requested, [ $pkg_name ], 
-#   fuzzy => 0, 
-#   caseinsensitive => 0,
-#   all => 0);
-
-# if(!$result) {
-#   exit;
-# }
-
-my @requested_keys = keys %requested;
-my $pkg = @{$urpm->{depslist}}[pop @requested_keys];
 my $pkg_upgrade = get_package_upgrade($urpm, $pkg);
+
+my %requested;
+$requested{$pkg_upgrade->id} = 1;
 
 if(!find_installed_version($pkg)) {
   pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "The selected package isn't installed on your system");
@@ -71,17 +60,9 @@ else {
     $desc =~ s/\n/;/g;
   }
 
-  my @to_upgrade;
-  foreach(@to_install) {
-    my $installed = get_installed_version($urpm, $_);
-    if($installed) {
-      push @to_upgrade, $installed;
-    }
-  }
-
   if($restart) {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_upgrade)),
+      join("^", map(get_package_id($_), @to_install)),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
@@ -91,7 +72,7 @@ else {
   }
   else {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_upgrade)),
+      join("^", map(get_package_id($_), @to_install)),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
