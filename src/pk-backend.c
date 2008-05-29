@@ -1484,8 +1484,7 @@ pk_backend_finished (PkBackend *backend)
 	     backend->priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	     backend->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		pk_backend_message (backend, PK_MESSAGE_ENUM_DAEMON,
-				    "Backends need to send a Package() for this role!");
-		return FALSE;
+				    "Backends should send a Package() for this role!");
 	}
 
 	/* if we set an error code notifier, clear */
