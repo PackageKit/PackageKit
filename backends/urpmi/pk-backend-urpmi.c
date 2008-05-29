@@ -86,6 +86,17 @@ backend_get_groups (PkBackend *backend)
 }
 
 /**
+ * backend_get_filters:
+ */
+static PkFilterEnum
+backend_get_filters (PkBackend *backend)
+{
+	return (PK_FILTER_ENUM_GUI |
+		PK_FILTER_ENUM_INSTALLED |
+		PK_FILTER_ENUM_DEVELOPMENT);
+}
+
+/**
  * pk_backend_bool_to_text:
  */
 static const gchar *
@@ -231,7 +242,7 @@ PK_BACKEND_OPTIONS (
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
 	backend_get_groups,			/* get_groups */
-	NULL,			/* get_filters */
+	backend_get_filters,			/* get_filters */
 	NULL,				/* cancel */
 	backend_get_depends,			/* get_depends */
 	backend_get_details,			/* get_details */
