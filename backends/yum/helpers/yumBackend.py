@@ -1062,8 +1062,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _format_msgs(self,msgs):
         if isinstance(msgs,basestring):
-            msgs = msgs.split('\n')
-        return ";".join(msgs)
+             msgs = msgs.split('\n')
+        text = ";".join(msgs)
+        text = text.replace("Missing Dependency: ","")
+        text = text.replace(" (installed)","")
+        return text
 
     def _runYumTransaction(self,removedeps=None):
         '''
