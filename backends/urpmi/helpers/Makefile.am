@@ -18,6 +18,7 @@ dist_helper_DATA = 						\
 	get-packages.pl							\
 	get-requires.pl							\
 	search-details.pl						\
+	search-file.pl							\
 	$(NULL)
 
 install-data-hook:

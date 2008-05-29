@@ -271,6 +271,18 @@ backend_search_details (PkBackend *backend, PkFilterEnum filters, const gchar *s
 	g_free (filters_text);
 }
 
+/**
+ * pk_backend_search_file:
+ */
+static void
+backend_search_file (PkBackend *backend, PkFilterEnum filters, const gchar *search)
+{
+	gchar *filters_text;
+	filters_text = pk_filter_enums_to_text (filters);
+	pk_backend_spawn_helper (spawn, "search-file.pl", filters_text, search, NULL);
+	g_free (filters_text);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -298,7 +310,7 @@ PK_BACKEND_OPTIONS (
 	NULL,			/* resolve */
 	NULL,					/* rollback */
 	backend_search_details,			/* search_details */
-	NULL,			/* search_file */
+	backend_search_file,			/* search_file */
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
