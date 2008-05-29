@@ -49,6 +49,43 @@ backend_destroy (PkBackend *backend)
 }
 
 /**
+ * backend_get_groups:
+ */
+static PkGroupEnum
+backend_get_groups (PkBackend *backend)
+{
+  return(PK_GROUP_ENUM_UNKNOWN |
+  PK_GROUP_ENUM_ACCESSIBILITY |
+  PK_GROUP_ENUM_ACCESSORIES |
+  PK_GROUP_ENUM_EDUCATION |
+  PK_GROUP_ENUM_GAMES |
+  PK_GROUP_ENUM_GRAPHICS |
+  PK_GROUP_ENUM_INTERNET |
+  PK_GROUP_ENUM_OFFICE |
+  PK_GROUP_ENUM_OTHER |
+  PK_GROUP_ENUM_PROGRAMMING |
+  PK_GROUP_ENUM_MULTIMEDIA |
+  PK_GROUP_ENUM_SYSTEM |
+  PK_GROUP_ENUM_DESKTOP_GNOME |
+  PK_GROUP_ENUM_DESKTOP_KDE |
+  PK_GROUP_ENUM_DESKTOP_XFCE |
+  PK_GROUP_ENUM_DESKTOP_OTHER |
+  PK_GROUP_ENUM_PUBLISHING |
+  PK_GROUP_ENUM_SERVERS |
+  PK_GROUP_ENUM_FONTS |
+  PK_GROUP_ENUM_ADMIN_TOOLS |
+  PK_GROUP_ENUM_LEGACY |
+  PK_GROUP_ENUM_LOCALIZATION |
+  PK_GROUP_ENUM_VIRTUALIZATION |
+  PK_GROUP_ENUM_POWER_MANAGEMENT |
+  PK_GROUP_ENUM_SECURITY |
+  PK_GROUP_ENUM_COMMUNICATION |
+  PK_GROUP_ENUM_NETWORK |
+  PK_GROUP_ENUM_MAPS |
+  PK_GROUP_ENUM_REPOS);
+}
+
+/**
  * pk_backend_bool_to_text:
  */
 static const gchar *
@@ -181,7 +218,7 @@ PK_BACKEND_OPTIONS (
 	"Aurelien Lefebvre <alefebvre@mandriva.com>",	/* author */
 	backend_initialize,			/* initalize */
 	backend_destroy,			/* destroy */
-	NULL,			/* get_groups */
+	backend_get_groups,			/* get_groups */
 	NULL,			/* get_filters */
 	NULL,				/* cancel */
 	backend_get_depends,			/* get_depends */
