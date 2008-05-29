@@ -161,6 +161,20 @@ backend_install_packages (PkBackend *backend, gchar **package_ids)
 	g_free (package_ids_temp);
 }
 
+/**
+ * pk_backend_remove_packages:
+ */
+static void
+backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
+{
+	gchar *package_ids_temp;
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "remove-packages.pl", pk_backend_bool_to_text (allow_deps), package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -182,7 +196,7 @@ PK_BACKEND_OPTIONS (
 	backend_install_packages,		/* install_packages */
 	NULL,		/* install_signature */
 	backend_refresh_cache,			/* refresh_cache */
-	NULL,		/* remove_packages */
+	backend_remove_packages,		/* remove_packages */
 	NULL,			/* repo_enable */
 	NULL,			/* repo_set_data */
 	NULL,			/* resolve */

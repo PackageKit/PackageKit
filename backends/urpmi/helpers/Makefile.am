@@ -13,6 +13,7 @@ dist_helper_DATA = 						\
 	get-update-detail.pl				\
 	refresh-cache.pl						\
 	install-packages.pl					\
+	remove-packages.pl					\
 	$(NULL)
 
 install-data-hook:
