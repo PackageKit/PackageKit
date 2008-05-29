@@ -25,18 +25,24 @@ exit if($#ARGV != 0);
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
 
-my ($pkg_name) = split(/;/, @ARGV[0]);
+my $pkg = get_package_by_package_id($urpm, @ARGV[0]);
 
-my %requested;
-
-my $result = urpm::select::search_packages($urpm, \%requested, [ $pkg_name ], 
-  fuzzy => 0, 
-  caseinsensitive => 0,
-  all => 0);
-
-if(!$result) {
+if(!$pkg) {
+  pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Requested package was not found");
   exit;
 }
+
+my %requested;
+$requested{$pkg->id} = 1;
+
+# my $result = urpm::select::search_packages($urpm, \%requested, [ $pkg_name ], 
+#   fuzzy => 0, 
+#   caseinsensitive => 0,
+#   all => 0);
+
+# if(!$result) {
+#   exit;
+# }
 
 my @requested_keys = keys %requested;
 my $pkg = @{$urpm->{depslist}}[pop @requested_keys];
@@ -65,9 +71,17 @@ else {
     $desc =~ s/\n/;/g;
   }
 
+  my @to_upgrade;
+  foreach(@to_install) {
+    my $installed = get_installed_version($urpm, $_);
+    if($installed) {
+      push @to_upgrade, $installed;
+    }
+  }
+
   if($restart) {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_install)),
+      join("^", map(get_package_id($_), @to_upgrade)),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
@@ -77,7 +91,7 @@ else {
   }
   else {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_install)),
+      join("^", map(get_package_id($_), @to_upgrade)),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",

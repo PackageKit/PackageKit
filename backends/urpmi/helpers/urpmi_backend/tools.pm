@@ -19,6 +19,7 @@ our @EXPORT = qw(
   get_package_by_package_id
   package_version_is_installed
   get_package_upgrade
+  get_installed_version
 );
 
 sub get_update_medias {
@@ -101,6 +102,7 @@ sub get_package_by_package_id {
       return $_;
     }
   }
+  return;
 }
 
 sub package_version_is_installed {
@@ -119,4 +121,16 @@ sub get_package_upgrade {
       return $_;
     }
   }
+}
+
+sub get_installed_version {
+  my ($urpm, $pkg) = @_;
+  my @depslist = @{$urpm->{depslist}};
+  my $pkgname = $pkg->name;
+  foreach $_ (@depslist) {
+    if($_->name =~ /^$pkgname$/ && package_version_is_installed($_)) {
+      return $_;
+    }
+  }
+  return;
 }
