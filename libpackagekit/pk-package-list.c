@@ -110,6 +110,30 @@ pk_package_list_add_item (PkPackageList *plist, PkPackageItem *item)
 }
 
 /**
+ * pk_package_list_add_list:
+ *
+ * Makes a deep copy of the list
+ **/
+gboolean
+pk_package_list_add_list (PkPackageList *plist, PkPackageList *list)
+{
+	guint i;
+	guint len;
+	PkPackageItem *item;
+
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (list), FALSE);
+
+	/* add list to plist */
+	len = pk_package_list_get_size (list);
+	for (i=0; i<len; i++) {
+		item = pk_package_list_get_item (list, i);
+		pk_package_list_add_item (plist, item);
+	}
+	return TRUE;
+}
+
+/**
  * pk_package_list_get_string:
  **/
 gchar *

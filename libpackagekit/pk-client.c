@@ -275,7 +275,7 @@ pk_client_get_tid (PkClient *client)
  * If the package buffer is enabled then after the transaction has completed
  * then the package list can be retrieved in one go, rather than processing
  * each package request async.
- * If this is not set true explicitly, then pk_client_package_buffer_get_size
+ * If this is not set true explicitly, then pk_client_get_package_list
  * will always return zero items.
  *
  * This is not forced on as there may be significant overhead if the list
@@ -364,26 +364,7 @@ pk_client_get_require_restart (PkClient *client)
 }
 
 /**
- * pk_client_package_buffer_get_size:
- * @client: a valid #PkClient instance
- *
- * We do not provide access to the internal package list (as it could be being
- * updated) so provide a way to get access to the current size here.
- *
- * Return value: The size of the package buffer.
- **/
-guint
-pk_client_package_buffer_get_size (PkClient *client)
-{
-	g_return_val_if_fail (PK_IS_CLIENT (client), 0);
-	if (!client->priv->use_buffer) {
-		return 0;
-	}
-	return pk_package_list_get_size (client->priv->package_list);
-}
-
-/**
- * pk_client_package_buffer_get_item:
+ * pk_client_get_package_list:
  * @client: a valid #PkClient instance
  * @item: the item in the package buffer
  *
@@ -392,14 +373,17 @@ pk_client_package_buffer_get_size (PkClient *client)
  *
  * Return value: The #PkPackageItem or %NULL if not found or invalid
  **/
-PkPackageItem *
-pk_client_package_buffer_get_item (PkClient *client, guint item)
+PkPackageList *
+pk_client_get_package_list (PkClient *client)
 {
+	PkPackageList *list;
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 	if (!client->priv->use_buffer) {
 		return NULL;
 	}
-	return pk_package_list_get_item (client->priv->package_list, item);
+	list = client->priv->package_list;
+	g_object_ref (list);
+	return list;
 }
 
 /**
@@ -566,16 +550,12 @@ pk_client_details_cb (DBusGProxy  *proxy,
  * pk_client_files_cb:
  */
 static void
-pk_client_files_cb (DBusGProxy  *proxy,
-		    const gchar *package_id,
-		    const gchar *filelist,
-		    PkClient    *client)
+pk_client_files_cb (DBusGProxy  *proxy, const gchar *package_id, const gchar *filelist, PkClient *client)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
 
-	pk_debug ("emit files %s, %s", package_id, filelist);
-	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id,
-		       filelist);
+	pk_debug ("emit files %s, <lots of files>", package_id);
+	g_signal_emit (client , signals [PK_CLIENT_FILES], 0, package_id, filelist);
 }
 
 /**
@@ -3790,6 +3770,7 @@ libst_client (LibSelfTest *test)
 	guint size_new;
 	guint i;
 	gchar *file;
+	PkPackageList *list;
 
 	if (libst_start (test, "PkClient", CLASS_AUTO) == FALSE) {
 		return;
@@ -3871,7 +3852,9 @@ libst_client (LibSelfTest *test)
 	}
 
 	/* get size */
-	size = pk_client_package_buffer_get_size (client);
+	list = pk_client_get_package_list (client);
+	size = pk_package_list_get_size (list);
+	g_object_unref (list);
 	if (size == 0) {
 		libst_failed (test, "failed: to get any results");
 	}
@@ -3891,7 +3874,9 @@ libst_client (LibSelfTest *test)
 			g_error_free (error);
 		}
 		/* check we got the same results */
-		size_new = pk_client_package_buffer_get_size (client);
+		list = pk_client_get_package_list (client);
+		size_new = pk_package_list_get_size (list);
+		g_object_unref (list);
 		if (size != size_new) {
 			libst_failed (test, "old size %i, new size %", size, size_new);
 		}

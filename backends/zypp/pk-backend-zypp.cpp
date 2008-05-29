@@ -26,6 +26,7 @@
 #include <pk-debug.h>
 #include <string>
 #include <set>
+#include <glib/gi18n.h>
 
 #include <zypp/ZYppFactory.h>
 #include <zypp/ResObject.h>
@@ -95,6 +96,7 @@ backend_initialize (PkBackend *backend)
 	_eventDirectors [backend] = eventDirector;
 	std::vector<std::string> *signature = new std::vector<std::string> ();
 	_signatures [backend] = signature;
+	_updating_self = FALSE;
 }
 
 /**
@@ -286,7 +288,9 @@ backend_get_filters (PkBackend *backend)
 	return (PkFilterEnum) (PK_FILTER_ENUM_INSTALLED |
 			PK_FILTER_ENUM_NOT_INSTALLED |
 			PK_FILTER_ENUM_ARCH |
-			PK_FILTER_ENUM_NOT_ARCH);
+			PK_FILTER_ENUM_NOT_ARCH |
+			PK_FILTER_ENUM_SOURCE |
+			PK_FILTER_ENUM_NOT_SOURCE);
 }
 
 static gboolean
@@ -402,7 +406,7 @@ backend_get_depends_thread (PkBackend *backend)
 			package_id_temp = pk_package_id_build (it->second.name ().c_str(),
 					it->second.edition ().asString ().c_str(),
 					it->second.arch ().c_str(),
-					it->second.repository ().name ().c_str());
+					it->second.repository ().alias ().c_str());
 
 			zypp::PoolItem item = zypp::ResPool::instance ().find (it->second);
 
@@ -569,6 +573,32 @@ backend_refresh_cache (PkBackend *backend, gboolean force)
 	pk_backend_thread_create (backend, backend_refresh_cache_thread);
 }
 
+/* If a critical self update (see qualifying steps below) is available then only show/install that update first.
+ 1. there is a patch available with the <restart_suggested> tag set
+ 2. The patch contains the package "PackageKit" or "gnome-packagekit
+*/   
+/*static gboolean
+check_for_self_update (PkBackend *backend, std::set<zypp::PoolItem> *candidates)
+{
+	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
+	for (ci = cb; ci != ce; ++ci) {
+		zypp::ResObject::constPtr res = ci->resolvable();
+		if (zypp::isKind<zypp::Patch>(res)) {
+			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>(res);
+			//pk_debug ("restart_suggested is %d",(int)patch->restartSuggested());
+			if (patch->restartSuggested ()) {
+				if (!strcmp (PACKAGEKIT_RPM_NAME, res->satSolvable ().name ().c_str ()) ||
+						!strcmp (GNOME_PACKAGKEKIT_RPM_NAME, res->satSolvable ().name ().c_str ())) {
+					g_free (update_self_patch_name);
+					update_self_patch_name = zypp_build_package_id_from_resolvable (res->satSolvable ());
+					return TRUE;
+				}
+			}
+		}
+	}
+	return FALSE;
+}*/
+
 static gboolean
 backend_get_updates_thread (PkBackend *backend)
 {
@@ -585,12 +615,23 @@ backend_get_updates_thread (PkBackend *backend)
 	pk_backend_set_percentage (backend, 40);
 
 	// get all Packages and Patches for Update
-	std::set<zypp::PoolItem> *candidates = zypp_get_updates ();
-	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 
-	candidates->insert (candidates2->begin (), candidates2->end ());
+	if (!_updating_self) {
+		// exclude the patch-repository
+		std::string patchRepo;
+		if (!candidates->empty ()) {
+			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
+		}
+		
+		candidates2 = zypp_get_updates (patchRepo);
+
+		candidates->insert (candidates2->begin (), candidates2->end ());
+	}
 
 	pk_backend_set_percentage (backend, 80);
+	
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		zypp::ResObject::constPtr res = ci->resolvable();
@@ -715,7 +756,7 @@ backend_install_files_thread (PkBackend *backend)
 		gboolean found = FALSE;
 
 		for (std::vector<zypp::sat::Solvable>::iterator it = solvables->begin (); it != solvables->end (); it ++) {
-		       if (it->repository ().name () == "PK_TMP_DIR") {
+		       if (it->repository ().alias () == "PK_TMP_DIR") {
 			       item = new zypp::PoolItem(*it);
 			       found = TRUE;
 			       break;
@@ -860,14 +901,28 @@ backend_update_system_thread (PkBackend *backend)
 	zypp::ResPool pool = zypp_build_pool (TRUE);
 	pk_backend_set_percentage (backend, 40);
 
-	// get all Packages for Update
-	std::set<zypp::PoolItem> *candidates =  zypp_get_updates ();
 	//get all Patches for Update
-	std::set<zypp::PoolItem> *candidates2 = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
+	std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
+	
+	if (_updating_self) {
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, _("Package Management System updated - restart needed"));
+		_updating_self = FALSE;
+	}
+	else {
+		//disabling patchrepo
+		std::string patchRepo;
+		if (!candidates->empty ()) {
+			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
+		}
+	
+		//get all Updates
+		candidates2 = zypp_get_updates (patchRepo);
 
-	//concatenate these sets
+		//concatenate these sets
 
-	candidates->insert (candidates->begin (), candidates->end ());
+		candidates->insert (candidates2->begin (), candidates2->end ());
+	}
 
 	pk_backend_set_percentage (backend, 80);
 	std::set<zypp::PoolItem>::iterator cb = candidates->begin (), ce = candidates->end (), ci;
@@ -1331,6 +1386,10 @@ backend_repo_enable (PkBackend *backend, const gchar *rid, gboolean enabled)
 		repo = manager.getRepositoryInfo (rid);
 		repo.setEnabled (enabled);
 		manager.modifyRepository (rid, repo);
+		if (!enabled) {
+			zypp::Repository repository = zypp::sat::Pool::instance ().reposFind (repo.alias ());
+			repository.eraseFromPool ();
+		}
 	} catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, "Couldn't find the specified repository");
 		pk_backend_finished (backend);
@@ -1462,6 +1521,13 @@ backend_update_packages_thread (PkBackend *backend)
 	gchar **package_ids;
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 
+	zypp_get_patches (); // make shure _updating_self is set
+
+	if (_updating_self) {
+		pk_debug ("updating self and setting restart");
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, _("Package Management System updated - restart needed"));
+		_updating_self = FALSE;
+	}
 	for (guint i = 0; i < g_strv_length (package_ids); i++) {
 		zypp::sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		zypp::PoolItem item = zypp::ResPool::instance ().find (solvable);

@@ -360,11 +360,21 @@
           </row>
           <row>
             <entry><literal>updates</literal></entry>
-            <entry>A list of package_id's that are to be updated</entry>
+            <entry>
+              A list of package_id's that are to be updated, seporated by <literal>^</literal>.
+              This odd delimited was chosen as <literal>\t</literal> is already being used in the
+              spawned backends, and <literal>^</literal> is a banned character in a package_id.
+              This will change in 0.3.x where <literal>updates</literal> will be a proper string
+              array field.
+            </entry>
           </row>
           <row>
             <entry><literal>obsoletes</literal></entry>
-            <entry>A list of package_id's that are to be obsoletes</entry>
+            <entry>
+              A list of package_id's that are to be obsoleted, seporated by <literal>^</literal>
+              This will change in 0.3.x where <literal>obsoletes</literal> will be a proper string
+              array field.
+            </entry>
           </row>
           <row>
             <entry><literal>vendor_url</literal></entry>

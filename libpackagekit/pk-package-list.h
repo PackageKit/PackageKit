@@ -59,6 +59,8 @@ gboolean	 pk_package_list_add			(PkPackageList		*plist,
 							 const gchar		*summary);
 gboolean	 pk_package_list_add_item		(PkPackageList		*plist,
 							 PkPackageItem		*item);
+gboolean	 pk_package_list_add_list		(PkPackageList		*plist,
+							 PkPackageList		*list);
 gboolean	 pk_package_list_contains		(PkPackageList		*plist,
 							 const gchar		*package_id);
 gboolean	 pk_package_list_contains_item		(PkPackageList		*plist,
