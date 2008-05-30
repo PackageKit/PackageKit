@@ -138,7 +138,7 @@ handle_install_error (PkBackend *backend, int err)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
 		break;
 	case OPKG_MD5_ERROR:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_CORRUPT, NULL);
 		break;
 	case OPKG_PACKAGE_NOT_AVAILABLE:
 		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
