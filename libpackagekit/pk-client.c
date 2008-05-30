@@ -3851,6 +3851,42 @@ libst_client (LibSelfTest *test)
 	pk_client_set_use_buffer (client, TRUE, NULL);
 
 	/************************************************************/
+	libst_title (test, "reset client #1");
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		libst_failed (test, "failed to reset: %s", error->message);
+		g_error_free (error);
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "reset client #2");
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		libst_failed (test, "failed to reset: %s", error->message);
+		g_error_free (error);
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "get updates");
+	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, &error);
+	if (!ret) {
+		libst_failed (test, "failed to reset: %s", error->message);
+		g_error_free (error);
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "reset client #2");
+	ret = pk_client_reset (client, &error);
+	if (!ret) {
+		libst_failed (test, "failed to reset: %s", error->message);
+		g_error_free (error);
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
 	libst_title (test, "search for power");
 	ret = pk_client_search_name (client, PK_FILTER_ENUM_NONE, "power", &error);
 	if (!ret) {
