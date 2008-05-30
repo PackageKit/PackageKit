@@ -115,6 +115,39 @@ opkg_check_tag (opkg_package_t *pkg, gchar *tag)
 		return FALSE;
 }
 
+static void
+handle_install_error (PkBackend *backend, int err)
+{
+	switch (err)
+	{
+	case OPKG_NO_ERROR:
+		break;
+	case OPKG_PACKAGE_NOT_INSTALLED:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+		break;
+	case OPKG_PACKAGE_ALREADY_INSTALLED:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, NULL);
+		break;
+	case OPKG_GPG_ERROR:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, NULL);
+		break;
+	case OPKG_DOWNLOAD_FAILED:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, NULL);
+		break;
+	case OPKG_DEPENDENCIES_FAILED:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
+		break;
+	case OPKG_MD5_ERROR:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
+		break;
+	case OPKG_PACKAGE_NOT_AVAILABLE:
+		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
+		break;
+	default:
+		opkg_unknown_error (backend, err, "Update package");
+	}
+}
+
 /**
  * backend_initialize:
  */
@@ -387,22 +420,9 @@ backend_install_packages_thread (PkBackend *backend)
 		pi = pk_package_id_new_from_string (package_ids[0]);
 
 		err = opkg_install_package (opkg, pi->name, pk_opkg_progress_cb, backend);
-		switch (err)
-		{
-		case OPKG_NO_ERROR:
-			break;
-		case OPKG_DEPENDANCIES_FAILED:
-			pk_backend_error_code (backend, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, NULL);
-			break;
-		case OPKG_PACKAGE_ALREADY_INSTALLED:
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, NULL);
-			break;
-		case OPKG_PACKAGE_NOT_AVAILABLE:
-			pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, NULL);
-			break;
-		default:
-			opkg_unknown_error (backend, err, "Install");
-		}
+		if (err)
+			handle_install_error (backend, err);
+
 		pk_package_id_free (pi);
 		if (err != 0)
 			break;
@@ -551,16 +571,9 @@ backend_update_package_thread (PkBackend *backend)
 	}
 
 	err = opkg_upgrade_package (opkg, pi->name, pk_opkg_progress_cb, backend);
-	switch (err)
-	{
-	case OPKG_NO_ERROR:
-		break;
-	case OPKG_PACKAGE_NOT_INSTALLED:
-		pk_backend_error_code (backend, PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, NULL);
-		break;
-	default:
-		opkg_unknown_error (backend, err, "Update package");
-	}
+	if (err)
+		handle_install_error (backend, err);
+
 
 	pk_package_id_free (pi);
 	pk_backend_finished (backend);
