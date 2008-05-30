@@ -71,6 +71,7 @@ struct PkTransactionPrivate
 	PkStatusEnum		 status;
 	gboolean		 finished;
 	gboolean		 running;
+	gboolean		 has_been_run;
 	gboolean		 allow_cancel;
 	gboolean		 emit_eula_required;
 	gboolean		 emit_signature_required;
@@ -798,6 +799,7 @@ pk_transaction_set_running (PkTransaction *transaction)
 
 	/* mark running */
 	transaction->priv->running = TRUE;
+	transaction->priv->has_been_run = TRUE;
 
 	/* set all possible arguments for backend */
 	pk_backend_set_bool (priv->backend, "force", priv->cached_force);
@@ -1152,11 +1154,11 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 	g_return_val_if_fail (transaction->priv->tid != NULL, FALSE);
 
 	pk_debug ("Cancel method called");
-	/* check to see if we are trying to cancel a non-running task */
-	if (!transaction->priv->running) {
-		g_set_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_NOT_RUNNING,
-			     "cancelling a non-running transaction");
-		return FALSE;
+
+	/* if it's never been run, just remove this transaction from the list */
+	if (!transaction->priv->has_been_run) {
+		pk_transaction_list_remove (transaction->priv->transaction_list, transaction);
+		return TRUE;
 	}
 
 	/* not implemented yet */
@@ -3011,6 +3013,7 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv = PK_TRANSACTION_GET_PRIVATE (transaction);
 	transaction->priv->finished = FALSE;
 	transaction->priv->running = FALSE;
+	transaction->priv->has_been_run = FALSE;
 	transaction->priv->allow_cancel = FALSE;
 	transaction->priv->emit_eula_required = FALSE;
 	transaction->priv->emit_signature_required = FALSE;
