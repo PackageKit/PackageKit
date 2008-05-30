@@ -46,7 +46,12 @@ static void     pk_transaction_db_init		(PkTransactionDb      *tdb);
 static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
+
+#if PK_BUILD_LOCAL
+#define PK_TRANSACTION_DB_FILE		"./transactions.db"
+#else
 #define PK_TRANSACTION_DB_FILE		PK_DB_DIR "/transactions.db"
+#endif
 
 struct PkTransactionDbPrivate
 {
