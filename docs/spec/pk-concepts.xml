@@ -402,6 +402,13 @@
 	      signature is not valid in some way.
             </entry>
           </row>
+          <row>
+            <entry><literal>package-corrupt</literal></entry>
+            <entry>
+	      The downloaded package is corrupt.
+            </entry>
+          </row>
+
         </tbody>
       </tgroup>
     </informaltable>

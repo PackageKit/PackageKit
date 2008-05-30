@@ -152,6 +152,7 @@ static PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_REPO_NOT_AVAILABLE,	"repo-not-available"},
 	{PK_ERROR_ENUM_INVALID_PACKAGE_FILE,    "invalid-package-file"},
 	{PK_ERROR_ENUM_PACKAGE_INSTALL_BLOCKED, "package-install-blocked"},
+	{PK_ERROR_ENUM_PACKAGE_CORRUPT,         "package-corrupt"},
 	{0, NULL}
 };
 
