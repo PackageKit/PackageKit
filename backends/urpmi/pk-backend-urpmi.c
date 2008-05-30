@@ -295,6 +295,28 @@ backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_
 	g_free (filters_text);
 }
 
+/**
+ * pk_backend_update_packages:
+ */
+static void
+backend_update_packages (PkBackend *backend, gchar **package_ids)
+{
+	gchar *package_ids_temp;
+
+
+	/* check network state */
+	if (!pk_backend_is_online (backend)) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_finished (backend);
+		return;
+	}
+
+	/* send the complete list as stdin */
+	package_ids_temp = pk_package_ids_to_text (package_ids, "|");
+	pk_backend_spawn_helper (spawn, "update-packages.pl", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -326,7 +348,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_group,			/* search_group */
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
-	NULL,		/* update_packages */
+	backend_update_packages,		/* update_packages */
 	NULL,			/* update_system */
 	NULL			/* what_provides */
 );
