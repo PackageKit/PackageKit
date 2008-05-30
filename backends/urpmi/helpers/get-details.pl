@@ -36,6 +36,7 @@ my %xml_info_pkgs;
 put_in_hash($xml_info_pkgs{$name} ||= {}, $nodes{$name});
 my $description = $xml_info_pkgs{$name}{description};
 $description =~ s/\n/;/g;
+$description =~ s/\t/ /g;
 
 pk_print_details(get_package_id($pkg), "N/A", $pkg->group, $description, "N/A", $pkg->size);
 
