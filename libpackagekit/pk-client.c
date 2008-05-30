@@ -3812,6 +3812,15 @@ libst_client (LibSelfTest *test)
 		libst_failed (test, NULL);
 	}
 
+	/************************************************************/
+	libst_title (test, "reset client, unused");
+	ret = pk_client_reset (client, NULL);
+	if (ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, NULL);
+	}
+
 	/* check use after finalise */
 	g_signal_connect (client, "finished",
 			  G_CALLBACK (libst_client_finished_cb), test);
