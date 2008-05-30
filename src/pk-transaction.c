@@ -1161,6 +1161,12 @@ pk_transaction_cancel (PkTransaction *transaction, GError **error)
 		return TRUE;
 	}
 
+	/* if it's finished, cancelling will have no action */
+	if (transaction->priv->finished) {
+		pk_warning ("No point trying to cancel a finished transaction, ignoring");
+		return TRUE;
+	}
+
 	/* not implemented yet */
 	if (transaction->priv->backend->desc->cancel == NULL) {
 		pk_debug ("Not implemented yet: Cancel");
