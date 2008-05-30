@@ -3063,6 +3063,7 @@ pk_client_set_tid (PkClient *client, const gchar *tid, GError **error)
 		return FALSE;
 	}
 	client->priv->tid = g_strdup (tid);
+	pk_debug ("set tid %s on %p", client->priv->tid, client);
 
 	dbus_g_proxy_add_signal (proxy, "Finished",
 				 G_TYPE_STRING, G_TYPE_UINT, G_TYPE_INVALID);
@@ -3501,9 +3502,8 @@ pk_client_reset (PkClient *client, GError **error)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	if (client->priv->tid != NULL &&
-	    client->priv->is_finished != TRUE) {
-		pk_debug ("not exit status, will try to cancel");
+	if (client->priv->tid != NULL && !client->priv->is_finished) {
+		pk_debug ("not exit status, will try to cancel tid %s", client->priv->tid);
 		/* we try to cancel the running tranaction */
 		ret = pk_client_cancel (client, error);
 		if (!ret) {
