@@ -38,15 +38,7 @@ my @to_install = @{$urpm->{depslist}}[sort { $a <=> $b } keys %{$state->{selecte
 my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
 @to_install = @$binary;
   
-my @to_upgrade;
 foreach(@to_install) {
-  my $installed = get_installed_version($urpm, $_);
-  if($installed) {
-    push @to_upgrade, $installed;
-  }
-}
-
-foreach(@to_upgrade) {
   # Fix me
   # Be default, we set to bugfix info type
   # Need to be implemented, see urpmq source.

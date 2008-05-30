@@ -20,6 +20,7 @@ our @EXPORT = qw(
   package_version_is_installed
   get_package_upgrade
   get_installed_version
+  get_installed_version_pkid
 );
 
 sub get_update_medias {
@@ -133,4 +134,18 @@ sub get_installed_version {
     }
   }
   return;
+}
+
+sub get_installed_version_pkid {
+  my ($pkg) = @_;
+  my $pkgname = $pkg->name;
+  my $db = open_rpm_db();
+  my $installed_pkid;
+  $db->traverse(sub {
+      my ($pkg) = @_;
+      if($pkg->name =~ /^$pkgname$/) {
+        $installed_pkid = get_package_id($pkg);
+      }
+    });
+  return $installed_pkid;
 }

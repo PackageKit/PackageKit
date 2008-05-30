@@ -32,15 +32,13 @@ if(!$pkg) {
   exit;
 }
 
-my $pkg_upgrade = get_package_upgrade($urpm, $pkg);
-
 my %requested;
-$requested{$pkg_upgrade->id} = 1;
+$requested{$pkg->id} = 1;
 
 if(!find_installed_version($pkg)) {
   pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "The selected package isn't installed on your system");
 }
-elsif(!$pkg_upgrade) {
+elsif(package_version_is_installed($pkg)) {
   pk_print_error(PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED, "The selected package is already at the latest version");
 }
 else {
@@ -53,16 +51,22 @@ else {
   my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
   @to_install = @$binary;
   my $updates_descr = urpm::get_updates_description($urpm);
-  my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $pkg_upgrade)->{name}}{$pkg_upgrade->name};
+  my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $pkg)->{name}}{$pkg->name};
   my $desc;
   if($updesc) {
     $desc = $updesc->{pre};
     $desc =~ s/\n/;/g;
   }
 
+  my @to_upgrade_pkids;
+  foreach(@to_install) {
+    my $pkid = get_installed_version_pkid($_);
+    push @to_upgrade_pkids, $pkid if $pkid;
+  }
+
   if($restart) {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_install)),
+      join("^", @to_upgrade_pkids),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
@@ -72,7 +76,7 @@ else {
   }
   else {
     pk_print_update_detail(get_package_id($pkg),
-      join("^", map(get_package_id($_), @to_install)),
+      join("^", @to_upgrade_pkids),
       join("^", map(fullname_to_package_id($_), @to_remove)),
       "http://qa.mandriva.com",
       "http://qa.mandriva.com",
