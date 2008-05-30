@@ -445,7 +445,7 @@ zypp_signature_required (PkBackend *backend, const zypp::PublicKey &key)
 	                        key.fingerprint ().c_str (),
         	                key.created ().asString ().c_str (),
                 	        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
 	}else{
 		ok = TRUE;
 	}
@@ -474,7 +474,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file, const std:
 	                        "UNKNOWN",
         	                "UNKNOWN",
                 	        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
 	}else{
 		ok = TRUE;
 	}
@@ -503,7 +503,7 @@ zypp_signature_required (PkBackend *backend, const std::string &file)
                 	        "UNKNOWN",
                         	"UNKNOWN",
 	                        PK_SIGTYPE_ENUM_GPG);
-		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, _("Signature verification for Repository %s failed"), _repoName);
+		pk_backend_error_code (backend, PK_ERROR_ENUM_GPG_FAILURE, "Signature verification for Repository %s failed", _repoName);
 	}else{
 		ok = TRUE;
 	}

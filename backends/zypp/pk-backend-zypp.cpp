@@ -906,7 +906,7 @@ backend_update_system_thread (PkBackend *backend)
 	std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 	
 	if (_updating_self) {
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, _("Package Management System updated - restart needed"));
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
 	else {
@@ -1525,7 +1525,7 @@ backend_update_packages_thread (PkBackend *backend)
 
 	if (_updating_self) {
 		pk_debug ("updating self and setting restart");
-		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, _("Package Management System updated - restart needed"));
+		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
 		_updating_self = FALSE;
 	}
 	for (guint i = 0; i < g_strv_length (package_ids); i++) {
