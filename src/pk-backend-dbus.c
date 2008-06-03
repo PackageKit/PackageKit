@@ -75,6 +75,7 @@ struct PkBackendDbusPrivate
 	GTimer			*timer;
 	gchar			*service;
 	gulong			 signal_finished;
+	LibGBus			*gbus;
 };
 
 G_DEFINE_TYPE (PkBackendDbus, pk_backend_dbus, G_TYPE_OBJECT)
@@ -366,6 +367,43 @@ pk_backend_dbus_set_proxy (PkBackendDbus *backend_dbus, const gchar *proxy_http,
 }
 
 /**
+ * pk_backend_dbus_startup:
+ **/
+gboolean
+pk_backend_dbus_startup (PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	GError *error = NULL;
+	gchar *proxy_http;
+	gchar *proxy_ftp;
+
+	/* manually init the backend, which should get things spawned for us */
+	pk_backend_dbus_time_reset (backend_dbus);
+	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
+				 G_TYPE_INVALID, G_TYPE_INVALID);
+	if (!ret) {
+		pk_warning ("%s", error->message);
+		/* FIXME: might be insane... */
+		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
+		pk_backend_finished (backend_dbus->priv->backend);
+		g_error_free (error);
+		goto out;
+	}
+
+	/* set the proxy */
+	proxy_http = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+	proxy_ftp = pk_backend_get_proxy_http (backend_dbus->priv->backend);
+	pk_backend_dbus_set_proxy (backend_dbus, proxy_http, proxy_ftp);
+	g_free (proxy_http);
+	g_free (proxy_ftp);
+
+	/* reset the time */
+	pk_backend_dbus_time_check (backend_dbus);
+out:
+	return ret;
+}
+
+/**
  * pk_backend_dbus_set_name:
  **/
 gboolean
@@ -373,7 +411,6 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 {
 	DBusGProxy *proxy;
 	gboolean ret;
-	GError *error = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_DBUS (backend_dbus), FALSE);
 	g_return_val_if_fail (backend_dbus->priv->connection != NULL, FALSE);
@@ -384,6 +421,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 		pk_backend_dbus_remove_callbacks (backend_dbus);
 		g_object_unref (backend_dbus->priv->proxy);
 	}
+
+	/* watch */
+	libgbus_assign (backend_dbus->priv->gbus, LIBGBUS_SYSTEM, service);
 
 	/* grab this */
 	pk_debug ("trying to activate %s", service);
@@ -465,31 +505,9 @@ pk_backend_dbus_set_name (PkBackendDbus *backend_dbus, const gchar *service)
 	g_free (backend_dbus->priv->service);
 	backend_dbus->priv->service = g_strdup (service);
 
-	/* manually init the backend, which should get things spawned for us */
-	pk_backend_dbus_time_reset (backend_dbus);
-	ret = dbus_g_proxy_call (backend_dbus->priv->proxy, "Init", &error,
-				 G_TYPE_INVALID, G_TYPE_INVALID);
-	if (error != NULL) {
-		pk_warning ("%s", error->message);
-		pk_backend_error_code (backend_dbus->priv->backend, PK_ERROR_ENUM_INTERNAL_ERROR, error->message);
-		pk_backend_finished (backend_dbus->priv->backend);
-		g_error_free (error);
-	}
+	/* Init() */
+	ret = pk_backend_dbus_startup (backend_dbus);
 
-	/* set the proxy */
-	if (ret) {
-		gchar *proxy_http;
-		gchar *proxy_ftp;
-		proxy_http = pk_backend_get_proxy_http (backend_dbus->priv->backend);
-		proxy_ftp = pk_backend_get_proxy_http (backend_dbus->priv->backend);
-		pk_backend_dbus_set_proxy (backend_dbus, proxy_http, proxy_ftp);
-		g_free (proxy_http);
-		g_free (proxy_ftp);
-	}
-
-	if (ret) {
-		pk_backend_dbus_time_check (backend_dbus);
-	}
 	return ret;
 }
 
@@ -1321,6 +1339,26 @@ pk_backend_dbus_what_provides (PkBackendDbus *backend_dbus, PkFilterEnum filters
 }
 
 /**
+ * pk_backend_dbus_gbus_changed_cb:
+ **/
+static void
+pk_backend_dbus_gbus_changed_cb (LibGBus *libgbus, gboolean is_active, PkBackendDbus *backend_dbus)
+{
+	gboolean ret;
+	g_return_if_fail (PK_IS_BACKEND_DBUS (backend_dbus));
+
+	if (!is_active) {
+		pk_warning ("DBUS backend disconnected");
+		pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend has exited");
+		/* Init() */
+		ret = pk_backend_dbus_startup (backend_dbus);
+		if (!ret) {
+			pk_backend_message (backend_dbus->priv->backend, PK_MESSAGE_ENUM_DAEMON, "DBUS backend will not start");
+		}
+	}
+}
+
+/**
  * pk_backend_dbus_finalize:
  **/
 static void
@@ -1341,6 +1379,7 @@ pk_backend_dbus_finalize (GObject *object)
 	}
 	g_timer_destroy (backend_dbus->priv->timer);
 	g_object_unref (backend_dbus->priv->backend);
+	g_object_unref (backend_dbus->priv->gbus);
 
 	G_OBJECT_CLASS (pk_backend_dbus_parent_class)->finalize (object);
 }
@@ -1375,6 +1414,11 @@ pk_backend_dbus_init (PkBackendDbus *backend_dbus)
 	if (error != NULL) {
 		pk_error ("unable to get system connection %s", error->message);
 	}
+
+	/* babysit the backend and do Init() again it when it crashes */
+	backend_dbus->priv->gbus = libgbus_new ();
+	g_signal_connect (backend_dbus->priv->gbus, "connection-changed",
+			  G_CALLBACK (pk_backend_dbus_gbus_changed_cb), backend_dbus);
 
 	/* ProgressChanged */
 	dbus_g_object_register_marshaller (pk_marshal_VOID__UINT_UINT_UINT_UINT,
