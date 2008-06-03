@@ -700,7 +700,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             return False
 
         # everything installed that matches the name
-        installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+        installedByKey = self.yumbase.rpmdb.searchNevra(name=pkg.name,arch=pkg.arch)
         comparable = []
         for instpo in installedByKey:
             if rpmUtils.arch.isMultiLibArch(instpo.arch) == rpmUtils.arch.isMultiLibArch(pkg.arch):
@@ -1354,7 +1354,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
     def _get_updated(self,pkg):
         updated = None
-        pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name)
+        pkgs = self.yumbase.rpmdb.searchNevra(name=pkg.name,arch=pkg.arch)
         if pkgs:
             return self._pkg_to_id(pkgs[0])
         else:
