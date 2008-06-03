@@ -833,7 +833,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not already_warned and not repo.gpgcheck:
                     self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
-                txmbr = self.yumbase.install(name=pkg.name)
+                txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
             if inst:
                 self._unlock_yum()
@@ -934,21 +934,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.StatusChanged(STATUS_RUNNING)
 
         for package_id in packages:
-            package, installed = self._findPackage(package_id)
+            pkg,inst = self._findPackage(package_id)
 
-            if not package:
+            if not pkg:
                 self._unlock_yum()
                 self.ErrorCode(ERROR_PACKAGE_NOT_FOUND, "%s could not be found." % package_id)
                 self.Finished(EXIT_FAILED)
                 return
 
-            if installed:
+            if inst:
                 self._unlock_yum()
                 self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED, "%s is already installed." % package_id)
                 self.Finished(EXIT_FAILED)
                 return
 
-            txmbr = self.yumbase.update(po=package)
+            txmbr = self.yumbase.update(po=pkg)
 
             if not txmbr:
                 self._unlock_yum()
@@ -983,7 +983,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         for package in packages:
             pkg,inst = self._findPackage(package)
             if pkg and inst:
-                txmbr = self.yumbase.remove(name=pkg.name)
+                txmbr = self.yumbase.remove(po=pkg)
                 txmbrs.extend(txmbr)
             if not inst:
                 self._unlock_yum()

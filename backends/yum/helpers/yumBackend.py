@@ -675,7 +675,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # FIXME: This is a hack, it simulates a removal of the
         # package and return the transaction
         if inst and pkg:
-            txmbrs = self.yumbase.remove(name=pkg.name)
+            txmbrs = self.yumbase.remove(po=pkg)
             if txmbrs:
                 rc,msgs =  self.yumbase.buildTransaction()
                 if rc !=2:
@@ -903,7 +903,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 if not already_warned and not repo.gpgcheck:
                     self.message(MESSAGE_WARNING,"The untrusted package %s will be installed from %s." % (pkg.name, repo))
                     already_warned = True
-                txmbr = self.yumbase.install(name=pkg.name)
+                txmbr = self.yumbase.install(po=pkg)
                 txmbrs.extend(txmbr)
             if inst:
                 self.error(ERROR_PACKAGE_ALREADY_INSTALLED,"The package %s is already installed", pkg.name)
@@ -1038,7 +1038,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             for package in packages:
                 pkg,inst = self._findPackage(package)
                 if pkg:
-                    txmbr = self.yumbase.update(name=pkg.name)
+                    txmbr = self.yumbase.update(po=pkg)
                     txmbrs.extend(txmbr)
         except yum.Errors.RepoError,e:
             self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
@@ -1135,7 +1135,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         pkg,inst = self._findPackage(package)
         if pkg and inst:
             try:
-                txmbr = self.yumbase.remove(name=pkg.name)
+                txmbr = self.yumbase.remove(po=pkg)
             except yum.Errors.RepoError,e:
                 self.error(ERROR_REPO_NOT_AVAILABLE,str(e))
             if txmbr:
