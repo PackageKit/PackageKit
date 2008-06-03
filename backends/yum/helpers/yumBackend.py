@@ -686,7 +686,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(txmbr.po,INFO_INSTALLED)
 
     def _is_inst(self,pkg):
+        # search only for requested arch
         return self.yumbase.rpmdb.installed(po=pkg)
+
+    def _is_inst_arch(self,pkg):
+        # search for a requested arch first
+        ret = self._is_inst(pkg)
+        if ret:
+            return True;
+
+        # then fallback to i686 if i386
+        if pkg.arch == 'i386':
+            pkg.arch = 'i686'
+            ret = self._is_inst(pkg)
+            pkg.arch = 'i386'
+        return ret
 
     def _installable(self,pkg,ematch=False):
 
@@ -696,7 +710,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
 
-        if self._is_inst(pkg):
+        if self._is_inst_arch(pkg):
             return False
 
         # everything installed that matches the name
@@ -783,7 +797,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repoid)
 
-                if self._is_inst(pkg) and FILTER_NOT_INSTALLED not in fltlist:
+                if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                     self.package(id,INFO_INSTALLED,pkg.summary)
                 else:
                     if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
@@ -1011,7 +1025,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg)
             return False
 
-        if self._is_inst(po):
+        if self._is_inst_arch(po):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % str(po))
             return False
 
