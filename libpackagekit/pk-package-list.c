@@ -174,6 +174,84 @@ pk_package_list_get_size (PkPackageList *plist)
 }
 
 /**
+ * pk_package_list_sort_compare_package_id_func:
+ **/
+static gint
+pk_package_list_sort_compare_package_id_func (PkPackageItem **a, PkPackageItem **b)
+{
+	return strcmp ((*a)->package_id, (*b)->package_id);
+}
+
+/**
+ * pk_package_list_sort_compare_summary_func:
+ **/
+static gint
+pk_package_list_sort_compare_summary_func (PkPackageItem **a, PkPackageItem **b)
+{
+	if ((*a)->summary == NULL && (*b)->summary == NULL) {
+		return 0;
+	} else if ((*a)->summary == NULL) {
+		return -1;
+	} else if ((*b)->summary == NULL) {
+		return 1;
+	}
+	return strcmp ((*a)->summary, (*b)->summary);
+}
+
+/**
+ * pk_package_list_sort_compare_info_func:
+ **/
+static gint
+pk_package_list_sort_compare_info_func (PkPackageItem **a, PkPackageItem **b)
+{
+	if ((*a)->info == (*b)->info) {
+		return 0;
+	} else if ((*a)->info > (*b)->info) {
+		return -1;
+	}
+	return 1;
+}
+
+/**
+ * pk_package_list_sort:
+ *
+ * Sorts by package_id
+ **/
+gboolean
+pk_package_list_sort (PkPackageList *plist)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_package_id_func);
+	return TRUE;
+}
+
+/**
+ * pk_package_list_sort_summary:
+ *
+ * Sorts by summary
+ **/
+gboolean
+pk_package_list_sort_summary (PkPackageList *plist)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_summary_func);
+	return TRUE;
+}
+
+/**
+ * pk_package_list_sort_info:
+ *
+ * Sorts by PkInfoEnum
+ **/
+gboolean
+pk_package_list_sort_info (PkPackageList *plist)
+{
+	g_return_val_if_fail (PK_IS_PACKAGE_LIST (plist), FALSE);
+	g_ptr_array_sort (plist->priv->array, (GCompareFunc) pk_package_list_sort_compare_info_func);
+	return TRUE;
+}
+
+/**
  * pk_package_list_get_item:
  **/
 PkPackageItem *
@@ -325,6 +403,9 @@ libst_package_list (LibSelfTest *test)
 	PkPackageList *plist;
 	gchar *text;
 	gboolean ret;
+	PkPackageItem *r0;
+	PkPackageItem *r1;
+	PkPackageItem *r2;
 
 	if (libst_start (test, "PkPackageList", CLASS_AUTO) == FALSE) {
 		return;
@@ -393,6 +474,69 @@ libst_package_list (LibSelfTest *test)
 	} else {
 		libst_failed (test, "could not add NULL summary");
 	}
+	g_object_unref (plist);
+
+	plist = pk_package_list_new ();
+
+	/************************************************************/
+	libst_title (test, "add entries");
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "def;1.23;i386;data", "zed");
+	if (!ret) {
+		libst_failed (test, NULL);
+	}
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "abc;1.23;i386;data", "fed");
+	if (!ret) {
+		libst_failed (test, NULL);
+	}
+	ret = pk_package_list_add (plist, PK_INFO_ENUM_ENHANCEMENT, "ghi;1.23;i386;data", "aed");
+	if (!ret) {
+		libst_failed (test, NULL);
+	}
+	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "sort by package_id");
+	ret = pk_package_list_sort (plist);
+	r0 = pk_package_list_get_item (plist, 0);
+	r1 = pk_package_list_get_item (plist, 1);
+	r2 = pk_package_list_get_item (plist, 2);
+	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
+	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
+	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not sort: %s,%s,%s", r0->package_id, r1->package_id, r2->package_id);
+	}
+
+	/************************************************************/
+	libst_title (test, "sort by summary");
+	ret = pk_package_list_sort_summary (plist);
+	r0 = pk_package_list_get_item (plist, 0);
+	r1 = pk_package_list_get_item (plist, 1);
+	r2 = pk_package_list_get_item (plist, 2);
+	if (pk_strequal (r0->summary, "aed") &&
+	    pk_strequal (r1->summary, "fed") &&
+	    pk_strequal (r2->summary, "zed")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
+	}
+
+	/************************************************************/
+	libst_title (test, "sort by severity");
+	ret = pk_package_list_sort_info (plist);
+	r0 = pk_package_list_get_item (plist, 0);
+	r1 = pk_package_list_get_item (plist, 1);
+	r2 = pk_package_list_get_item (plist, 2);
+	if (r0->info == PK_INFO_ENUM_SECURITY &&
+	    r1->info == PK_INFO_ENUM_BUGFIX &&
+	    r2->info == PK_INFO_ENUM_ENHANCEMENT) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not sort: %s,%s,%s", r0->summary, r1->summary, r2->summary);
+	}
+
+	g_object_unref (plist);
 
 	libst_end (test);
 }
