@@ -1,21 +1,13 @@
-*** Timeframe: 0.1.11 ***
+*** Timeframe: 0.2.x ***
 
 * Make PkMessages into proper enumerated types with localised descriptions
 
-*** Timeframe: 0.2.0 ***
+*** Timeframe: 0.3.x ***
 
 * Enable GetUpdateDetail to handle arrays for 'updates' and 'obsoletes'
-  Until then, use a space to delimit package_id's
+  Until then, use ^ to delimit package_id's
 
-* Make one-click installs work
-
-* We need more unit tests.
-  Where we can actually simulate _using_ packagekit, probably using an
-  enhanced dummy backend and libpackagekit.
-  This is a tricky one as we can't assume we have the
-  org.freedesktop.PackageKit.conf file installed in the system prefix -
-  maybe we can #ifdef the daemon to run in the session bus for some
-  testing.
+* Perhaps add RepoAdd(s=repo_id,as=urls,as=auth) and RepoRemove(s=repo_id)
 
 *** Timeframe: Sometime in the future ***
 
