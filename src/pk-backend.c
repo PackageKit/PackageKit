@@ -1049,7 +1049,7 @@ pk_backend_message (PkBackend *backend, PkMessageEnum message, const gchar *form
 	g_return_val_if_fail (backend->priv->locked != FALSE, FALSE);
 
 	/* have we already set an error? */
-	if (backend->priv->set_error) {
+	if (backend->priv->set_error && message != PK_MESSAGE_ENUM_DAEMON) {
 		pk_warning ("already set error, cannot process");
 		return FALSE;
 	}
