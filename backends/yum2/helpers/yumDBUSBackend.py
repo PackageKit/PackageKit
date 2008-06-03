@@ -979,30 +979,40 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.PercentageChanged(0)
         self.StatusChanged(STATUS_RUNNING)
 
-        pkg,inst = self._findPackage( package)
-        if pkg and inst:
-            txmbr = self.yumbase.remove(name=pkg.name)
-            if txmbr:
-                if allowdep:
-                    successful = self._runYumTransaction(removedeps=True)
-                    if not successful:
-                        return
-                else:
-                    successful = self._runYumTransaction(removedeps=False)
-                    if not successful:
-                        return
-            else:
+        txmbrs = []
+        for package in packages:
+            pkg,inst = self._findPackage(package)
+            if pkg and inst:
+                txmbr = self.yumbase.remove(name=pkg.name)
+                txmbrs.extend(txmbr)
+            if not inst:
                 self._unlock_yum()
-                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"The package %s is not installed", pkg.name)
                 self.Finished(EXIT_FAILED)
                 return
-
-            self._unlock_yum()
-            self.Finished(EXIT_SUCCESS)
+        if txmbrs:
+            try:
+                if allowdep:
+                    successful = self._runYumTransaction(removedeps=True)
+                else:
+                    successful = self._runYumTransaction(removedeps=False)
+                if not successful:
+                    # _runYumTransaction unlocked yum, set the error code, and called Finished.
+                    return
+            except yum.Errors.RemoveError,e:
+                msgs = '\n'.join(e)
+                self._unlock_yum()
+                self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,msgs)
+                self.Finished(EXIT_FAILED)
+                return
         else:
             self._unlock_yum()
-            self.ErrorCode(ERROR_PACKAGE_NOT_INSTALLED,"Package is not installed")
+            self.ErrorCode(ERROR_PACKAGE_ALREADY_INSTALLED,"The packages failed to be removed")
             self.Finished(EXIT_FAILED)
+            return
+
+        self._unlock_yum()
+        self.Finished(EXIT_SUCCESS)
         return
 
     @threaded
