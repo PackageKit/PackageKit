@@ -430,6 +430,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         self.AllowCancel(True)
         self.NoPercentageUpdates()
         self.StatusChanged(STATUS_QUERY)
+        package_list = [] #we can't do emitting as found if we are post-processing
 
         try:
             pkgGroupDict = self._buildGroupDict()
@@ -1954,6 +1955,10 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         else:
             ver = "%s-%s" % (po.version,po.release)
         return ver
+
+    def _get_nevra(self,pkg):
+        ''' gets the NEVRA for a pkg '''
+        return "%s-%s:%s-%s.%s" % (pkg.name,pkg.epoch,pkg.version,pkg.release,pkg.arch);
 
     def _refresh_yum_cache(self):
         self.StatusChanged(STATUS_REFRESH_CACHE)
