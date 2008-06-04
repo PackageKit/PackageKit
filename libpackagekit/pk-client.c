@@ -944,19 +944,24 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 {
 	gboolean ret;
 	gchar *tid;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	/* get and set a new ID */
-	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, error);
+	/* get a new ID */
+	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
 	if (!ret) {
-		pk_warning ("failed to get a TID: %s", (*error)->message);
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s", error_local->message);
+		g_error_free (error_local);
 		return FALSE;
 	}
-	ret = pk_client_set_tid (client, tid, error);
+
+	/* set that new ID to this GObject */
+	ret = pk_client_set_tid (client, tid, &error_local);
 	g_free (tid);
 	if (!ret) {
-		pk_warning ("failed to set TID: %s", (*error)->message);
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to set TID: %s", error_local->message);
+		g_error_free (error_local);
 		return FALSE;
 	}
 	return TRUE;
@@ -3872,10 +3877,19 @@ libst_client (LibSelfTest *test)
 	libst_title (test, "get updates");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		libst_failed (test, "failed to get updates: %s", error->message);
 		g_error_free (error);
 	}
 	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "get updates (without reset) with null error");
+	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, NULL);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got updates with no reset (no description possible)");
+	}
 
 	/************************************************************/
 	libst_title (test, "reset client #2");
