@@ -656,6 +656,8 @@ backend_get_details_thread (PkBackend *backend)
 {
 	PkPackageId *pi;
 	const gchar *package_id;
+	int group_index;
+	PkGroupEnum group = 0;
 	opkg_package_t *pkg;
 	gchar *newid;
 
@@ -681,8 +683,16 @@ backend_get_details_thread (PkBackend *backend)
 
 	newid = g_strdup_printf ("%s;%s;%s;%s", pkg->name, pkg->version, pkg->architecture, pkg->repository);
 
-	pk_backend_details (backend, newid, NULL, 0, pkg->description, pkg->url, pkg->size);
+	if (pkg->tags) {
+		for (group_index = 0; group < PK_GROUP_ENUM_UNKNOWN; group_index++) {
+			group = 1 << group_index;
+			if (!(group & backend_get_groups(backend))) continue;
+			if (opkg_check_tag(pkg, (gchar *)pk_group_enum_to_text(group))) 
+				break;
+		}
+	}
 
+	pk_backend_details (backend, newid, NULL, group, pkg->description, pkg->url, pkg->size);
 	g_free (newid);
 	pk_backend_finished (backend);
 	return TRUE;
