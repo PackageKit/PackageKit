@@ -2164,8 +2164,10 @@ backend_remove_packages_thread (PkBackend *backend)
 {
 	struct poclidek_rcmd	*rcmd;
 	struct poldek_ts	*ts;
-	gchar			*nvra, *command;
+	GString *cmd;
+	gchar *command;
 	gchar **package_ids;
+	gint i;
 
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pb_load_packages (backend);
@@ -2176,8 +2178,18 @@ backend_remove_packages_thread (PkBackend *backend)
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
-	nvra = poldek_get_nvra_from_package_id (package_ids[0]);
-	command = g_strdup_printf ("uninstall %s", nvra);
+	cmd = g_string_new ("uninstall ");
+
+	/* prepare command */
+	for (i = 0; i < g_strv_length (package_ids); i++) {
+		gchar	*nvra = poldek_get_nvra_from_package_id (package_ids[i]);
+
+		g_string_append_printf (cmd, "%s ", nvra);
+
+		g_free (nvra);
+	}
+
+	command = g_string_free (cmd, FALSE);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -2186,7 +2198,6 @@ backend_remove_packages_thread (PkBackend *backend)
 		pk_backend_error_code (backend, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, pberror->tslog->str);
 	}
 
-	g_free (nvra);
 	g_free (command);
 
 	poldek_ts_free (ts);
