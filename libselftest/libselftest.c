@@ -221,3 +221,30 @@ failed:
 	exit (1);
 }
 
+/**
+ * libst_get_data_file:
+ **/
+gchar *
+libst_get_data_file (const gchar *filename)
+{
+	gboolean ret;
+	gchar *full;
+
+	/* check to see if we are being run in the build root */
+	full = g_build_filename ("..", "data", "tests", filename, NULL);
+	ret = g_file_test (full, G_FILE_TEST_EXISTS);
+	if (ret) {
+		return full;
+	}
+	g_free (full);
+
+	/* check to see if we are being run in make check */
+	full = g_build_filename ("..", "..", "data", "tests", filename, NULL);
+	ret = g_file_test (full, G_FILE_TEST_EXISTS);
+	if (ret) {
+		return full;
+	}
+	g_free (full);
+	return NULL;
+}
+
