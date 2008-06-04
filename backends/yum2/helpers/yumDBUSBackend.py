@@ -911,9 +911,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Could not install package:\n" + ye.value
             self._unlock_yum()
-            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return
 
@@ -1732,6 +1731,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _format_msgs(self,msgs):
+        if isinstance(msgs,basestring):
+             msgs = msgs.split('\n')
+        text = ";".join(msgs)
+        text = text.replace("Missing Dependency: ","")
+        text = text.replace(" (installed)","")
+        return text
+
     def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
@@ -1741,18 +1748,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
             self._unlock_yum()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
             self.Finished(EXIT_FAILED)
             return False
 
         self._check_for_reboot()
 
         if removedeps == False and len(self.yumbase.tsInfo) > 1:
-            retmsg = 'package could not be removed, as other packages depend on it'
             self._unlock_yum()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
             self.Finished(EXIT_FAILED)
             return False
 
@@ -1762,15 +1767,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.processTransaction(callback=callback,
                                             rpmDisplay=rpmDisplay)
         except yum.Errors.YumDownloadError, ye:
-            retmsg = "Error in Download\n" + "\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumGPGCheckError, ye:
-            retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,retmsg)
+            self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
         except GPGKeyNotImported, e:
@@ -1795,9 +1798,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
 
