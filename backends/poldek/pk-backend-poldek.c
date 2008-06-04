@@ -54,7 +54,8 @@ enum {
 	SEARCH_ENUM_GROUP,
 	SEARCH_ENUM_DETAILS,
 	SEARCH_ENUM_FILE,
-	SEARCH_ENUM_PROVIDES
+	SEARCH_ENUM_PROVIDES,
+	SEARCH_ENUM_RESOLVE
 };
 
 typedef struct {
@@ -1161,7 +1162,7 @@ search_package_thread (PkBackend *backend)
 	search = pk_backend_get_string (backend, "search");
 	filters = pk_backend_get_uint (backend, "filters");
 
-	/* GetPackages*/
+	/* GetPackages */
 	if (mode == SEARCH_ENUM_NONE) {
 		search_cmd = g_strdup ("ls -q");
 	/* SearchName */
@@ -1193,6 +1194,10 @@ search_package_thread (PkBackend *backend)
 		} else if (provides == PK_PROVIDES_ENUM_MIMETYPE) {
 			search_cmd = g_strdup_printf ("search -qp mimetype(%s)", search);
 		}
+	} else if (mode == SEARCH_ENUM_RESOLVE) {
+		search = pk_backend_get_string (backend, "package_id");
+
+		search_cmd = g_strdup_printf ("ls -q %s", search);
 	}
 
 	if (cmd != NULL && search_cmd)
@@ -1317,6 +1322,7 @@ search_package_thread (PkBackend *backend)
 			case SEARCH_ENUM_GROUP:
 			case SEARCH_ENUM_DETAILS:
 			case SEARCH_ENUM_FILE:
+			case SEARCH_ENUM_RESOLVE:
 				pk_backend_error_code (backend, PK_ERROR_ENUM_TRANSACTION_CANCELLED, "Search cancelled.");
 				break;
 			default:
@@ -2202,11 +2208,11 @@ backend_remove_packages (PkBackend *backend, gchar **package_ids, gboolean allow
  * backend_resolve:
  */
 static void
-backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package)
+backend_resolve (PkBackend *backend, PkFilterEnum filters, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (backend, TRUE, TRUE);
-	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_NAME);
+	pk_backend_set_uint (backend, "mode", SEARCH_ENUM_RESOLVE);
 	pk_backend_thread_create (backend, search_package_thread);
 }
 
