@@ -58,4 +58,7 @@ _build_
 waf-lightc
 wafadmin
 packagekit.types
+.anjuta
+*.cache
+*.anjuta
 
