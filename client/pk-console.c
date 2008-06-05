@@ -613,7 +613,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_package (client, package_id, error);
+		ret = pk_client_install_packages (client, package_ids, error);
 		if (!ret) {
 			pk_warning ("failed to install packages");
 			goto out;
