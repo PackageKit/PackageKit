@@ -243,7 +243,7 @@
   </sect1>
 
   <sect1 id="methods-install-package">
-    <title>Install Package</title>
+    <title>Install Packages</title>
     <para>
       The installer should always install extra packages automatically
       as the use could call GetDepends prior to the install if a confirmation
@@ -262,17 +262,12 @@
         </thead>
         <tbody>
           <row>
-            <entry><literal>package_id</literal></entry>
-            <entry>A single, valid, package ID.</entry>
+            <entry><literal>package_ids</literal></entry>
+            <entry>An array of package IDs.</entry>
           </row>
         </tbody>
       </tgroup>
     </informaltable>
-    <para>
-      This should search for files.
-      This should allow an application to find out what package owns
-      a file on the system.
-    </para>
     <para>
       This method typically emits
       <literal>Progress</literal>,
@@ -290,7 +285,7 @@
   </sect1>
 
   <sect1 id="methods-install-file">
-    <title>Install File</title>
+    <title>Install Files</title>
     <para>
       The installer should always install extra packages automatically
       as the use could call GetDepends prior to the install if a confirmation
@@ -309,8 +304,8 @@
         </thead>
         <tbody>
           <row>
-            <entry><literal>full_path</literal></entry>
-            <entry>A full path and filename to a single package.</entry>
+            <entry><literal>full_paths</literal></entry>
+            <entry>An array of full path and filenames to packages.</entry>
           </row>
         </tbody>
       </tgroup>
@@ -370,7 +365,7 @@
   </sect1>
 
   <sect1 id="methods-remove">
-    <title>Remove Package</title>
+    <title>Remove Packages</title>
     <para>
       The arguments are:
     </para>
@@ -384,16 +379,30 @@
         </thead>
         <tbody>
           <row>
+            <entry><literal>package_ids</literal></entry>
+            <entry>An array of package IDs.</entry>
+          </row>
+          <row>
             <entry><literal>allow_deps</literal></entry>
             <entry>
-              Either "yes" or "no". If yes allow other packages to be
-              removed with the package, but "no" should cause the script
-              to abort if other packages are dependant on the package.
+              Either <literal>true</literal> or <literal>false</literal>.
+              If <literal>true</literal> allow other packages to be removed with the package,
+              but <literal>false</literal> should cause the script to abort if other packages
+              are dependant on the package.
             </entry>
           </row>
           <row>
-            <entry><literal>package_id</literal></entry>
-            <entry>A single, valid, package ID.</entry>
+            <entry><literal>auto_remove</literal></entry>
+            <entry>
+              Either <literal>true</literal> or <literal>false</literal>.
+              This option is only really interesting on embedded devices with a limited amount of
+              flash storage.
+              It suggests to the packagekit backend that dependencies installed at the same time as
+              the package should also be removed if they are not required by anything else.
+              For instance, if you install OpenOffice, it might download libneon as a dependency.
+              When <literal>auto_remove</literal> is set to true, and you remove OpenOffice then
+              libneon will also get removed automatically.
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -445,7 +454,7 @@
           <row>
             <entry><literal>recursive</literal></entry>
             <entry>
-              Either "yes" or "no". If yes then the requirements should be
+              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
               returned for all packages returned.
               This means if gnome-power-manager depends on NetworkManager
               and NetworkManager depends on HAL, then GetDepends on
@@ -630,7 +639,7 @@
           <row>
             <entry><literal>recursive</literal></entry>
             <entry>
-              Either "yes" or "no". If yes then the requirements should be
+              Either <literal>true</literal> or <literal>false</literal>. If yes then the requirements should be
               returned for all packages returned.
               This means if gnome-power-manager depends on NetworkManager
               and NetworkManager depends on HAL, then GetRequires on
@@ -722,7 +731,7 @@
   </sect1>
 
   <sect1 id="methods-update">
-    <title>Update Package</title>
+    <title>Update Packages</title>
     <para>
       The installer should always update extra packages automatically.
     </para>
@@ -739,8 +748,8 @@
         </thead>
         <tbody>
           <row>
-            <entry><literal>package_id</literal></entry>
-            <entry>A single, valid, package ID.</entry>
+            <entry><literal>package_ids</literal></entry>
+            <entry>An array of package IDs.</entry>
           </row>
         </tbody>
       </tgroup>
