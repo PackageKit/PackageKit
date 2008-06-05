@@ -2026,9 +2026,11 @@ backend_install_packages_thread (PkBackend *backend)
 {
 	struct poldek_ts	*ts;
 	struct poclidek_rcmd	*rcmd;
-	gchar			*command, *nvra;
+	gchar			*command;
 	struct vf_progress	vf_progress;
 	gchar **package_ids;
+	GString *cmd;
+	gint i;
 
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_INSTALL);
 	package_ids = pk_backend_get_strv (backend, "package_ids");
@@ -2043,8 +2045,18 @@ backend_install_packages_thread (PkBackend *backend)
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
-	nvra = poldek_get_nvra_from_package_id (package_ids[0]);
-	command = g_strdup_printf ("install %s", nvra);
+	cmd = g_string_new ("install ");
+
+	/* prepare command */
+	for (i = 0; i < g_strv_length (package_ids); i++) {
+		gchar	*nvra = poldek_get_nvra_from_package_id (package_ids[i]);
+
+		g_string_append_printf (cmd, "%s ", nvra);
+
+		g_free (nvra);
+	}
+
+	command = g_string_free (cmd, FALSE);
 
 	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
 
@@ -2053,7 +2065,6 @@ backend_install_packages_thread (PkBackend *backend)
 	else
 		pb_error_check (backend);
 
-	g_free (nvra);
 	g_free (command);
 
 	poldek_ts_free (ts);
