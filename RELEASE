@@ -15,6 +15,8 @@ $ git commit -a -m "Release version 0.2.3"
 $ git tag -a -f -m "Release 0.2.3" PACKAGEKIT_0_2_3
 $ git push --tags
 $ git push
+$ git push git+ssh://username@git.freedesktop.org/git/packagekit
+$ git push --tags git+ssh://username@git.freedesktop.org/git/packagekit
 
 5. Commit changes in gnome-packagekit git:
 
