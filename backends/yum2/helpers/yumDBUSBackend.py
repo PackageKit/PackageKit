@@ -2113,6 +2113,10 @@ class PackageKitCallback(RPMBaseCallback):
         self.curpkg = None
         self.startPct = 50
         self.numPct = 50
+
+        # this isn't defined in yum as it's only used in the rollback plugin
+        TS_REPACKAGING = 'repackaging'
+
         # Map yum transactions with pk info enums
         self.info_actions = { TS_UPDATE : INFO_UPDATING,
                         TS_ERASE: INFO_REMOVING,
@@ -2129,7 +2133,8 @@ class PackageKitCallback(RPMBaseCallback):
                         TS_TRUEINSTALL : STATUS_INSTALL,
                         TS_OBSOLETED: STATUS_OBSOLETE,
                         TS_OBSOLETING: STATUS_INSTALL,
-                        TS_UPDATED: STATUS_CLEANUP}
+                        TS_UPDATED: STATUS_CLEANUP,
+                        TS_REPACKAGING: STATUS_REPACKAGING}
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -2150,8 +2155,11 @@ class PackageKitCallback(RPMBaseCallback):
 
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            self.base.StatusChanged(self.state_actions[action])
-            self._showName(self.info_actions[action])
+            try:
+                self.base.StatusChanged(self.state_actions[action])
+                self._showName(self.info_actions[action])
+            except exceptions.KeyError,e:
+                self.base.Message(MESSAGE_WARNING,"The constant '%s' was unknown, please report" % action)
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.PercentageChanged(pct)
         val = (ts_current*100L)/ts_total
