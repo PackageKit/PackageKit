@@ -1,0 +1,17 @@
+[PackageKit Catalog]
+
+# Common packages
+InstallPackages=autoconf;automake;intltool;libtool;pkgconfig
+
+# Fedora 9 does not have Unique
+InstallPackages(fedora-9)=PackageKit-devel;glib2-devel;gtk2-devel;libsexy-devel;libglade2-devel;libnotify-devel;PolicyKit-gnome-devel
+
+# Rawhide is fedora 9.90
+InstallPackages(fedora-9.90)=PackageKit-devel;glib2-devel;gtk2-devel;libsexy-devel;libglade2-devel;libnotify-devel;PolicyKit-gnome-devel;unique-devel
+
+# Pardus
+InstallPackages(pardus)=GConf2-devel;PackageKit-devel;PolicyKit-gnome-devel;dbus-devel;dbus-glib-devel;gettext-devel;gnome-doc-utils;gtk+2-devel;libglade2-devel;libnotify-devel;libsexy-devel
+
+# Forsight
+InstallPackages(forsight)=gnome-development;dbus-development
+
