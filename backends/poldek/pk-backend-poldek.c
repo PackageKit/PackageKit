@@ -487,6 +487,16 @@ ts_confirm (void *data, struct poldek_ts *ts)
 }
 
 /**
+ * suggests_callback:
+ **/
+static gint
+suggests_callback (void *data, const struct poldek_ts *ts, const struct pkg *pkg,
+				   tn_array *caps, tn_array *choices, int hint)
+{
+	/* install all suggested packages */
+	return 1;
+}
+/**
  * setup_vf_progress:
  */
 static void
@@ -1494,6 +1504,9 @@ do_poldek_init (PkBackend *backend)
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_CONFIRM_UNINST, 1);
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
+
+	/* Install all suggested packages by default */
+	poldek_configure (ctx, POLDEK_CONF_CHOOSESUGGESTS_CB, suggests_callback, NULL);
 
 	sigint_init ();
 }
