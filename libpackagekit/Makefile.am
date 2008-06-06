@@ -45,7 +45,6 @@ libpackagekit_include_HEADERS =					\
 	pk-client.h						\
 	pk-control.h						\
 	pk-task-list.h						\
-	pk-polkit-client.h					\
 	$(NULL)
 
 libpackagekit_la_SOURCES =					\
@@ -75,8 +74,6 @@ libpackagekit_la_SOURCES =					\
 	pk-control.h						\
 	pk-task-list.c						\
 	pk-task-list.h						\
-	pk-polkit-client.c					\
-	pk-polkit-client.h					\
 	$(NULL)
 
 libpackagekit_la_LIBADD =					\
