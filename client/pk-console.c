@@ -416,7 +416,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("%s runtime was %.1f seconds\n", role_text, time);
+	pk_debug ("%s runtime was %.1f seconds", role_text, time);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
