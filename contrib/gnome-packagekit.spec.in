@@ -20,6 +20,7 @@ Requires:  libnotify >= 0.4.3
 Requires:  dbus-glib >= %{dbus_version}
 Requires:  dbus-x11 >= %{dbus_version}
 Requires:  PackageKit >= %{packagekit_version}
+Requires:  shared-mime-info
 Requires(post):   scrollkeeper
 Requires(pre):    GConf2
 Requires(post):   GConf2
@@ -92,7 +93,8 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
     gtk-update-icon-cache -q %{_datadir}/icons/hicolor
 fi
-/usr/bin/update-desktop-database %{_datadir}/applications
+update-desktop-database %{_datadir}/applications
+update-mime-database %{_datadir}/mime
 
 %pre
 if [ "$1" -gt 1 ]; then
@@ -114,7 +116,8 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x /usr/bin/gtk-update-icon-cache ]; then
     gtk-update-icon-cache -q %{_datadir}/icons/hicolor
 fi
-/usr/bin/update-desktop-database %{_datadir}/applications
+update-desktop-database %{_datadir}/applications
+update-mime-database %{_datadir}/mime
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
