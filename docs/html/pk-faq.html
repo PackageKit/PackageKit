@@ -22,6 +22,7 @@
 <h2>Table Of Contents</h2>
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#catalogs">What's a package catalog?</a></li>
 <li><a href="#1-click-install">Does PackageKit support 1-Click Install?</a></li>
 <li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
@@ -56,6 +57,74 @@ You can see the latest feature matrix <a href="pk-matrix.html">here</a>.
 </p>
 
 <hr>
+<h3><a name="catalogs">What's a package catalog?</a></h3>
+<p>
+There's one use case that I'm very interested in, and that is getting new users with the correct
+environment to build and start hacking on software or using other software tools.
+For instance, on <a href="http://www.packagekit.org">www.packagekit.org</a> in the FAQ section,
+we can have a link to install build files to <a href="packagekit.catalog">start hacking on PackageKit</a>.
+</p>
+<p>
+Now, this <code>.catalog</code> file is handled by <code>gpk-install-catalog</code> that parses
+this file and causes the appropriate packages to be installed if they are not already installed.
+This rocks as we can get GTK+, Xorg hackers up to speed with the minimum of fuss and confusion.
+It also lets people put links on webpages to <i>install all the stuff you need</i> when writing a
+<i>How to use a scanner in GIMP</i> howto.
+</p>
+<p>
+So, what does a .catalog file look like?
+</p>
+<pre>
+[PackageKit Catalog]
+
+# Just a package on all versions of fedora that can provide the dependency.
+# If there are multiple packages then the user will be asked to choose
+InstallProvides(fedora)=audio/QCELP
+
+# Just for Fedora 9, install two development files
+InstallPackages(fedora-9)=glib2-devel;PolicyKit-gnome-devel
+
+# On any distro, install the package with this file
+InstallFiles=/usr/bin/fontinst
+
+# For each architecture on Fedora 8, install one of the two different compat files
+InstallFiles(fedora-8-i686)=/usr/lib/pango/1.6.0/modules/pango-arabic-fc.so
+InstallFiles(fedora-8-x64)=/usr/lib64/pango/1.6.0/modules/pango-arabic-fc.so
+</pre>
+<p>
+You'll notice the <code>distro-id</code> in between the <code>()</code>'s - this lets a packager
+fine tune the package name, where for instance in Debian the package is called <code>policykit</code>
+and Fedora <code>PolicyKit</code>.
+You can specify a granularity of distribution, distribution-version or
+distribution-version-architecture - PackageKit will process all the entries that apply.
+It's of course better to not specify a <code>()</code> if possible, as this lets the file work on
+as many distributions as possible out of the box.
+</p>
+<p>
+There's also no version checking - intentionally - the distro should be specified and have the
+correct data.
+If there's an optional package not in earlier versions then you can do something like this:
+</p>
+<pre>
+[PackageKit Catalog]
+
+# Fedora 9 does not have Unique
+InstallPackages(fedora-9)=glib2-devel;PolicyKit-gnome-devel
+
+# Rawhide is fedora 9.90
+InstallPackages(fedora-9.90)=glib2-devel;PolicyKit-gnome-devel;unique-devel
+</pre>
+<p>
+There's also no description of the catalog that needs translating and verifying - they are just
+lists of packages, files and provides that might be useful.
+All the translations come from the distributions metadata, and it's up to the user to verify the
+package lists that are asked to be installed, so there are no signing or trust issues.
+</p>
+<p>
+Note: this isn't designed to replace one click install, it just does something that is similar in
+a different way.
+</p>
+<hr>
 <h3><a name="1-click-install">Does PackageKit support 1-Click Install?</a></h3>
 <p>
 No, as they are a potential security problem. The issues are as follows:
@@ -84,6 +153,8 @@ they are not going to understand the description.
 <p>
 So what's the solution? Using a standard <code>$vendor-release.rpm</code> or <code>.deb</code>
 you can ship the standard repo or source with a signed GPG key.
+PackageKit also supports <a href="#catalogs">catalogs</a> which can install sets of files provided by
+your distro.
 </p>
 <p>
 Quoting Sebastian Heinlein,
