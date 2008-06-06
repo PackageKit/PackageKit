@@ -43,6 +43,7 @@ libpackagekit_include_HEADERS =					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
+	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
 	$(NULL)
@@ -70,6 +71,8 @@ libpackagekit_la_SOURCES =					\
 	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-catalog.c						\
+	pk-catalog.h						\
 	pk-control.c						\
 	pk-control.h						\
 	pk-task-list.c						\
