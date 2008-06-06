@@ -1477,8 +1477,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* do the system update */
 			ret = pk_client_update_system (client, &error);
+		} else {
+			ret = pk_console_update_package (client, value, &error);
 		}
-		ret = pk_console_update_package (client, value, &error);
 
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {
