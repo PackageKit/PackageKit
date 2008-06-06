@@ -26,6 +26,8 @@
 #define ALPM_CACHEDIR "/var/cache/pacman/pkg"
 #define ALPM_LOGFILE "/var/log/pacman.log"
 
+#define ALPM_PKG_EXT ".pkg.tar.gz"
+
 #define ALPM_PROGRESS_UPDATE_INTERVAL 400
 
 #include <gmodule.h>
@@ -46,6 +48,7 @@
 int progress_percentage;
 int subprogress_percentage;
 PkBackend *backend_instance = NULL;
+char *dl_file_name;
 
 GHashTable *group_mapping;
 
@@ -72,6 +75,36 @@ pkg_to_package_id_str (pmpkg_t *pkg, gchar *repo)
 	return pk_package_id_build (alpm_pkg_get_name (pkg), alpm_pkg_get_version (pkg), arch, repo);
 }
 
+pmpkg_t *
+pkg_from_package_id_str (const gchar *package_id_str)
+{
+	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id_str);
+
+	/* do all this fancy stuff */
+	pmdb_t *repo = NULL;
+	if (strcmp ("local", pkg_id->data) == 0)
+		repo = alpm_option_get_localdb ();
+	else {
+		alpm_list_t *iterator;
+		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
+			repo = alpm_list_getdata (iterator);
+			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
+				break;
+		}
+	}
+
+	pmpkg_t *pkg;
+	if (repo != NULL)
+		pkg = alpm_db_get_pkg (repo, pkg_id->name);
+	else
+		pkg = NULL;
+
+	/* free package id as we no longer need it */
+	pk_package_id_free (pkg_id);
+
+	return pkg;
+}
+
 void
 cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
@@ -87,6 +120,7 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 		case PM_TRANS_EVT_ADD_START:
 			package_id_str = pkg_to_package_id_str (data1, "local");
 			pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_id_str, alpm_pkg_get_desc (data1));
+			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
 			g_free (package_id_str);
 			break;
 		case PM_TRANS_EVT_UPGRADE_START:
@@ -115,8 +149,31 @@ cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int ho
 void
 cb_dl_progress (const char *filename, int file_xfered, int file_total, int list_xfered, int list_total)
 {
+	/* check if we already processed this file name */
+	if (dl_file_name == NULL || strcmp (filename, dl_file_name) != 0) {
+		pk_debug ("alpm: downloading file %s", filename);
+		g_free (dl_file_name);
+		dl_file_name = strdup(filename);
+
+		/* check if downloaded file is a package */
+		if (strstr (filename, ALPM_PKG_EXT) != NULL) {
+			/* all this stuff is a bit dirty */
+			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+
+			int iterator;
+			for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
+				pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
+				const char *pkg_filename = alpm_pkg_get_filename (pkg);
+				if (strcmp (pkg_filename, filename) == 0) {
+					pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_ids[iterator], alpm_pkg_get_desc (pkg));
+					break;
+				}
+			}
+		}
+	}
+
 	int percent = (int) ((float) file_xfered / (float) file_total) * 100;
-	pk_debug ("alpm: percentage is %i", percent);
+	pk_debug ("alpm: download percentage of %s is %i", filename, percent);
 	// pk_backend_set_percentage ((PkBackend *) install_backend, percent);
 }
 
@@ -172,36 +229,6 @@ pkg_equals_to (pmpkg_t *pkg, const gchar *name, const gchar *version)
 		if (strcmp (alpm_pkg_get_version (pkg), version) != 0)
 			return FALSE;
 	return TRUE;
-}
-
-pmpkg_t *
-get_pkg_from_package_id (const gchar *package_id)
-{
-	PkPackageId *pkg_id = pk_package_id_new_from_string (package_id);
-
-	/* do all this fancy stuff */
-	pmdb_t *repo = NULL;
-	if (strcmp ("local", pkg_id->data) == 0)
-		repo = alpm_option_get_localdb ();
-	else {
-		alpm_list_t *iterator;
-		for (iterator = alpm_option_get_syncdbs (); iterator; iterator = alpm_list_next (iterator)) {
-			repo = alpm_list_getdata (iterator);
-			if (strcmp (alpm_db_get_name (repo), pkg_id->data) == 0)
-				break;
-		}
-	}
-
-	pmpkg_t *pkg;
-	if (repo != NULL)
-		pkg = alpm_db_get_pkg (repo, pkg_id->name);
-	else
-		pkg = NULL;
-
-	/* free package id as we no longer need it */
-	pk_package_id_free (pkg_id);
-
-	return pkg;
 }
 
 static void
@@ -810,9 +837,9 @@ static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
+	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerror (pm_errno));
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return;
 	}
@@ -843,9 +870,9 @@ static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-	pmpkg_t *pkg = get_pkg_from_package_id (package_id);
+	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
-		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerror (pm_errno));
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
 		pk_backend_finished (backend);
 		return;
 	}
@@ -910,7 +937,7 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 
 	alpm_list_t *repos = alpm_option_get_syncdbs ();
 	if (repos == NULL)
-		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, alpm_strerror (pm_errno));
+		pk_backend_error_code (backend, PK_ERROR_ENUM_INTERNAL_ERROR, alpm_strerrorlast ());
 
 	// Iterate on repository list
 	alpm_list_t *iterator;
@@ -1038,6 +1065,9 @@ backend_install_packages_thread (PkBackend *backend)
 	}
 	pk_debug ("alpm: %s", "transaction prepared");
 
+	/* clear dl_file_name before downloading */
+	dl_file_name = NULL;
+
 	/* commit transaction */
 	if (alpm_trans_commit (&data) == -1) {
 		pk_warning ("alpm: %s", alpm_strerrorlast ());
@@ -1046,6 +1076,9 @@ backend_install_packages_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
+
+	/* free dl_file_name as we no longer need it */
+	g_free (dl_file_name);
 
 	alpm_trans_release ();
 	pk_debug ("alpm: %s", "transaction released");
@@ -1060,8 +1093,6 @@ backend_install_packages_thread (PkBackend *backend)
 static void
 backend_install_packages (PkBackend *backend, gchar **package_ids)
 {
-	pk_backend_set_status (backend, PK_STATUS_ENUM_INSTALL);
-
 	pk_backend_thread_create (backend, backend_install_packages_thread);
 }
 
