@@ -4,6 +4,7 @@ NULL =
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
+	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
@@ -82,6 +83,7 @@ libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
+	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 
