@@ -41,7 +41,10 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
+
+#ifdef USE_SECURITY_POLKIT
 #include <polkit-dbus/polkit-dbus.h>
+#endif
 
 #include "pk-enum.h"
 #include "pk-client.h"
@@ -294,7 +297,8 @@ pk_client_error_refused_by_policy (GError *error)
 gboolean
 pk_client_error_auth_obtain (GError *error)
 {
-	polkit_bool_t ret;
+	gboolean ret = FALSE;
+#ifdef USE_SECURITY_POLKIT
 	PolKitAction *action = NULL;
 	PolKitResult result;
 	gchar *action_id = NULL; /* we don't free this */
@@ -327,7 +331,7 @@ pk_client_error_auth_obtain (GError *error)
 	pk_debug ("gained %s privilege = %d", action_id, ret);
 
 	polkit_action_unref (action);
-
+#endif
 	return ret;
 }
 
