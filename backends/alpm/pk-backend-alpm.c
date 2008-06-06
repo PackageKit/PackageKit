@@ -27,6 +27,7 @@
 #define ALPM_LOGFILE "/var/log/pacman.log"
 
 #define ALPM_PKG_EXT ".pkg.tar.gz"
+#define ALPM_LOCAL_DB_ALIAS "installed"
 
 #define ALPM_PROGRESS_UPDATE_INTERVAL 400
 
@@ -48,7 +49,7 @@
 int progress_percentage;
 int subprogress_percentage;
 PkBackend *backend_instance = NULL;
-char *dl_file_name;
+gchar *dl_file_name;
 
 GHashTable *group_mapping;
 
@@ -82,7 +83,7 @@ pkg_from_package_id_str (const gchar *package_id_str)
 
 	/* do all this fancy stuff */
 	pmdb_t *repo = NULL;
-	if (strcmp ("local", pkg_id->data) == 0)
+	if (strcmp ("installed", pkg_id->data) == 0)
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
@@ -109,19 +110,41 @@ void
 cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 {
 	// TODO: Add more code here
+	gchar **package_ids;
+	gchar *package_id_needle;
 	gchar *package_id_str;
+	GString *package_id_builder;
 
 	switch (event) {
 		case PM_TRANS_EVT_REMOVE_START:
-			package_id_str = pkg_to_package_id_str (data1, "local");
+			package_id_str = pkg_to_package_id_str (data1, ALPM_LOCAL_DB_ALIAS);
 			pk_backend_package (backend_instance, PK_INFO_ENUM_REMOVING, package_id_str, alpm_pkg_get_desc (data1));
 			g_free (package_id_str);
 			break;
 		case PM_TRANS_EVT_ADD_START:
-			package_id_str = pkg_to_package_id_str (data1, "local");
-			pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_id_str, alpm_pkg_get_desc (data1));
 			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
-			g_free (package_id_str);
+			package_id_needle = pkg_to_package_id_str (data1, "");
+			pk_debug ("needle is %s", package_id_needle);
+			package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+
+			if (package_ids != NULL) {
+				/* search for this package in package_ids */
+				int iterator;
+				for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator)
+					if (strstr (package_ids[iterator], package_id_needle) != NULL) {
+						pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_ids[iterator], alpm_pkg_get_desc (data1));
+						break;
+					}
+			} else {
+				/* we are installing a local file */
+				package_id_builder = g_string_new (package_id_needle);
+				g_string_append (package_id_builder, "local");
+				gchar *package_id_str = g_string_free (package_id_builder, FALSE);
+				pk_backend_package (backend_instance, PK_INFO_ENUM_INSTALLING, package_id_str, alpm_pkg_get_desc (data1));
+				g_free (package_id_str);
+			}
+
+			g_free (package_id_needle);
 			break;
 		case PM_TRANS_EVT_UPGRADE_START:
 			package_id_str = pkg_to_package_id_str (data1, "local");
@@ -149,24 +172,29 @@ cb_trans_progress (pmtransprog_t event, const char *pkgname, int percent, int ho
 void
 cb_dl_progress (const char *filename, int file_xfered, int file_total, int list_xfered, int list_total)
 {
-	/* check if we already processed this file name */
-	if (dl_file_name == NULL || strcmp (filename, dl_file_name) != 0) {
-		pk_debug ("alpm: downloading file %s", filename);
+	if (file_xfered == file_total) {
+		/* free filename copy when file is downloaded */
 		g_free (dl_file_name);
-		dl_file_name = strdup(filename);
+		dl_file_name = NULL;
+	} else {
+		if (dl_file_name == NULL) {
+			/* we download new file, let's process it */
+			pk_debug ("alpm: downloading file %s", filename);
+			dl_file_name = g_strdup(filename);
 
-		/* check if downloaded file is a package */
-		if (strstr (filename, ALPM_PKG_EXT) != NULL) {
-			/* all this stuff is a bit dirty */
-			gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
+			/* check if downloaded file is a package */
+			if (strstr (filename, ALPM_PKG_EXT) != NULL) {
+				/* search for this package in package_ids */
+				gchar **package_ids = pk_backend_get_strv (backend_instance, "package_ids");
 
-			int iterator;
-			for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
-				pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
-				const char *pkg_filename = alpm_pkg_get_filename (pkg);
-				if (strcmp (pkg_filename, filename) == 0) {
-					pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_ids[iterator], alpm_pkg_get_desc (pkg));
-					break;
+				int iterator;
+				for (iterator = 0; iterator < g_strv_length (package_ids); ++iterator) {
+					pmpkg_t *pkg = pkg_from_package_id_str (package_ids[iterator]);
+					const char *pkg_filename = alpm_pkg_get_filename (pkg);
+					if (strcmp (pkg_filename, filename) == 0) {
+						pk_backend_package (backend_instance, PK_INFO_ENUM_DOWNLOADING, package_ids[iterator], alpm_pkg_get_desc (pkg));
+						break;
+					}
 				}
 			}
 		}
@@ -279,7 +307,11 @@ find_packages_by_details (const gchar *name, pmdb_t *db)
 	// determine if repository is local
 	gboolean repo_is_local = (db == alpm_option_get_localdb ());
 	// determine repository name
-	const gchar *repo = alpm_db_get_name (db);
+	const gchar *repo;
+	if (repo_is_local)
+		repo = ALPM_LOCAL_DB_ALIAS;
+	else
+		repo = alpm_db_get_name (db);
 	// set search term
 	alpm_list_t *needle = NULL;
 	needle = alpm_list_add (needle, (gchar *) name);
@@ -313,7 +345,11 @@ find_packages_by_name (const gchar *name, pmdb_t *db, gboolean exact)
 	// determine if repository is local
 	gboolean repo_is_local = (db == alpm_option_get_localdb ());
 	// determine repository name
-	const gchar *repo = alpm_db_get_name (db);
+	const gchar *repo;
+	if (repo_is_local)
+		repo = ALPM_LOCAL_DB_ALIAS;
+	else
+		repo = alpm_db_get_name (db);
 	// get list of packages in repository
 	alpm_list_t *pkgcache = alpm_db_getpkgcache (db);
 
@@ -354,7 +390,11 @@ find_packages_by_group (const gchar *name, pmdb_t *db)
 	// determine if we are searching for packages which belong to an unmapped group
 	gboolean search_other = (strcmp("other", name) == 0);
 	// determine repository name
-	const gchar *repo = alpm_db_get_name (db);
+	const gchar *repo;
+	if (repo_is_local)
+		repo = ALPM_LOCAL_DB_ALIAS;
+	else
+		repo = alpm_db_get_name (db);
 	// get list of packages in repository
 	alpm_list_t *pkgcache = alpm_db_getpkgcache (db);
 
@@ -402,7 +442,11 @@ get_packages (pmdb_t *db)
 	// determine if repository is local
 	gboolean repo_is_local = (db == alpm_option_get_localdb ());
 	// determine repository name
-	const gchar *repo = alpm_db_get_name (db);
+	const gchar *repo;
+	if (repo_is_local)
+		repo = ALPM_LOCAL_DB_ALIAS;
+	else
+		repo = alpm_db_get_name (db);
 	// get list of packages in repository
 	alpm_list_t *cache = alpm_db_getpkgcache (db);
 
@@ -751,6 +795,7 @@ backend_initialize (PkBackend *backend)
 		return;
 	}
 
+	dl_file_name = NULL;
 	alpm_option_set_dlcb (cb_dl_progress);
 
 	/* fill in group mapping */
@@ -1065,9 +1110,6 @@ backend_install_packages_thread (PkBackend *backend)
 	}
 	pk_debug ("alpm: %s", "transaction prepared");
 
-	/* clear dl_file_name before downloading */
-	dl_file_name = NULL;
-
 	/* commit transaction */
 	if (alpm_trans_commit (&data) == -1) {
 		pk_warning ("alpm: %s", alpm_strerrorlast ());
@@ -1076,9 +1118,6 @@ backend_install_packages_thread (PkBackend *backend)
 		pk_backend_finished (backend);
 		return FALSE;
 	}
-
-	/* free dl_file_name as we no longer need it */
-	g_free (dl_file_name);
 
 	alpm_trans_release ();
 	pk_debug ("alpm: %s", "transaction released");
