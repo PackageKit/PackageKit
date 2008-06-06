@@ -1477,7 +1477,6 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* do the system update */
 			ret = pk_client_update_system (client, &error);
-			goto out;
 		}
 		ret = pk_console_update_package (client, value, &error);
 
