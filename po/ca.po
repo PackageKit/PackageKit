@@ -1,0 +1,320 @@
+# Catalan translations for packagekit package.
+# Copyright (C) 2008 Red Hat, Inc.
+# This file is distributed under the same license as the
+#  packagekit package.
+#
+# Pere Argelich <bakidok@gmail.com>, 2008
+#
+# This file is translated according to the glossary and style guide of
+#   Softcatalà. If you plan to modify this file, please read first the page
+#   of the Catalan translation team for the Fedora project at:
+#   http://www.softcatala.org/projectes/fedora/
+#   and contact the previous translator
+#
+# Aquest fitxer s'ha de traduir d'acord amb el recull de termes i la guia
+#   d'estil de Softcatalà. Si voleu modificar aquest fitxer, llegiu si
+#   us plau la pàgina de catalanització del projecte Fedora a:
+#   http://www.softcatala.org/projectes/fedora/
+#   i contacteu l'anterior traductor/a.
+msgid ""
+msgstr ""
+"Project-Id-Version: packagekit\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2008-06-06 16:45+0100\n"
+"Last-Translator: Pere Argelich <bakidok@gmail.com>\n"
+"Language-Team: Catalan <fedora@softcatala.net>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: ../client/pk-console.c:224
+msgid "Update detail"
+msgstr "Detalls de l'actualització"
+
+#: ../client/pk-console.c:425
+msgid "A system restart is required"
+msgstr "Es requereix reiniciar el sistema"
+
+#: ../client/pk-console.c:427
+msgid "A logout and login is required"
+msgstr "Es requereix sortir de la sessió"
+
+#: ../client/pk-console.c:429
+msgid "An application restart is required"
+msgstr "Es requereix reiniciar l'aplicació"
+
+#: ../client/pk-console.c:474
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Si us plau, introduïu un valor d'1 a %i:"
+
+#: ../client/pk-console.c:524
+msgid "Could not find a package match"
+msgstr "No s'han trobat coincidències en cap paquet"
+
+#: ../client/pk-console.c:538
+msgid "There are multiple package matches"
+msgstr "Existeixen coincidències amb múltiples paquets"
+
+#. find out what package the user wants to use
+#: ../client/pk-console.c:545
+msgid "Please enter the package number: "
+msgstr "Si us plau, introduïu el número de paquet:"
+
+#: ../client/pk-console.c:561
+msgid "Could not find a package with that name to install, or package already installed"
+msgstr "No s'ha pogut trobar un paquet amb aquest nom per instal·lar, o el paquet ja es troba instal·lat"
+
+#: ../client/pk-console.c:643
+msgid "Could not find a package with that name to remove"
+msgstr "No s'ha pogut trobar un paquet amb aquest nom per eliminar"
+
+#: ../client/pk-console.c:683
+msgid "The following packages have to be removed"
+msgstr "Els següents paquets seran eliminats"
+
+#. get user input
+#: ../client/pk-console.c:692
+msgid "Okay to remove additional packages?"
+msgstr "Esteu d'acord en eliminar els paquets adicionals?"
+
+#: ../client/pk-console.c:696
+msgid "Cancelled!"
+msgstr "Cancel·lat"
+
+#: ../client/pk-console.c:718
+msgid "Could not find a package with that name to update"
+msgstr "No s'ha pogut trobar un paquet amb aquest nom per actualitzar"
+
+#: ../client/pk-console.c:736
+msgid "Could not find what packages require this package"
+msgstr "No s'han pogut trobar els paquets requerits per a aquest paquet"
+
+#: ../client/pk-console.c:754
+msgid "Could not get dependencies for this package"
+msgstr "No s'han pogut obtenir les dependències per a aquest paquet"
+
+#: ../client/pk-console.c:772
+msgid "Could not find details for this package"
+msgstr "No s'han pogut trobar els detalls per a aquest paquet"
+
+#: ../client/pk-console.c:790
+msgid "Could not find the files for this package"
+msgstr "No s'han pogut trobar els fitxers per a aquest paquet"
+
+#: ../client/pk-console.c:870
+msgid "Package description"
+msgstr "Descripció del paquet"
+
+#: ../client/pk-console.c:893
+msgid "Package files"
+msgstr "Fitxers del paquet"
+
+#: ../client/pk-console.c:901
+msgid "No files"
+msgstr "No hi ha fitxers"
+
+#. get user input
+#: ../client/pk-console.c:933
+msgid "Okay to import key?"
+msgstr "Esteu d'acord en importar la clau?"
+
+#: ../client/pk-console.c:936
+msgid "Did not import key"
+msgstr "No importis la clau"
+
+#. get user input
+#: ../client/pk-console.c:976
+msgid "Do you agree?"
+msgstr "Esteu d'acord?"
+
+#: ../client/pk-console.c:979
+msgid "Did not agree to licence, task will fail"
+msgstr "La llicència no ha estat acceptada, la tasca fallarà"
+
+#: ../client/pk-console.c:1008
+msgid "The daemon crashed mid-transaction!"
+msgstr "El servei ha fallat a meitat de la transacció!"
+
+#. header
+#: ../client/pk-console.c:1061
+msgid "PackageKit Console Interface"
+msgstr "Interfície de consola de PackageKit"
+
+#: ../client/pk-console.c:1061
+msgid "Subcommands:"
+msgstr "Subordres:"
+
+#: ../client/pk-console.c:1165
+#: ../client/pk-monitor.c:104
+#: ../src/pk-main.c:189
+msgid "Show extra debugging information"
+msgstr "Mostra la informació extra de la depuració"
+
+#: ../client/pk-console.c:1167
+#: ../client/pk-monitor.c:106
+msgid "Show the program version and exit"
+msgstr "Mostra la versió del programa i surt"
+
+#: ../client/pk-console.c:1169
+msgid "Set the filter, e.g. installed"
+msgstr "Defineix el filtre, p.ex. instal·lat"
+
+#: ../client/pk-console.c:1171
+msgid "Exit without waiting for actions to complete"
+msgstr "Surt sense esperar que es completin les accions"
+
+#: ../client/pk-console.c:1194
+msgid "Could not connect to system DBUS."
+msgstr "No s'ha pogut connectar al sistema DBUS."
+
+#: ../client/pk-console.c:1288
+msgid "You need to specify a search type"
+msgstr "Cal que especifiqueu un tipus de cerca"
+
+#: ../client/pk-console.c:1293
+#: ../client/pk-console.c:1300
+#: ../client/pk-console.c:1307
+#: ../client/pk-console.c:1314
+#: ../client/pk-console.c:1421
+#: ../client/pk-console.c:1428
+#: ../client/pk-console.c:1435
+#: ../client/pk-console.c:1442
+msgid "You need to specify a search term"
+msgstr "Cal que especifiqueu un terme per a la cerca"
+
+#: ../client/pk-console.c:1319
+msgid "Invalid search type"
+msgstr "El tipus de cerca no és vàlid"
+
+#: ../client/pk-console.c:1324
+msgid "You need to specify a package or file to install"
+msgstr "Cal que especifiqueu un paquet o un fitxer a instal·lar"
+
+#: ../client/pk-console.c:1339
+msgid "You need to specify a type, key_id and package_id"
+msgstr "Cal que especifiqueu un tipus, un identificador de clau i un identificador de paquet"
+
+#: ../client/pk-console.c:1346
+msgid "You need to specify a package to remove"
+msgstr "Cal que especifiqueu un paquet a eliminar"
+
+#: ../client/pk-console.c:1353
+msgid "You need to specify a eula-id"
+msgstr "Cal que especifiqueu un identificador de EULA"
+
+#: ../client/pk-console.c:1369
+msgid "You need to specify a package name to resolve"
+msgstr "Cal que especifiqueu un nom de paquet a resoldre"
+
+#: ../client/pk-console.c:1376
+#: ../client/pk-console.c:1383
+msgid "You need to specify a repo name"
+msgstr "Cal que especifiqueu un nom de repositori"
+
+#: ../client/pk-console.c:1390
+msgid "You need to specify a repo name/parameter and value"
+msgstr "Cal que especifiqueu un nom / paràmetre de repositori i un valor"
+
+#: ../client/pk-console.c:1403
+msgid "You need to specify a time term"
+msgstr "Cal que especifiqueu un valor per a l'hora"
+
+#: ../client/pk-console.c:1408
+msgid "You need to specify a correct role"
+msgstr "Cal que especifiqueu un rol correcte"
+
+#: ../client/pk-console.c:1413
+msgid "Failed to get last time"
+msgstr "S'ha produït un error en obtenir l'última hora"
+
+#: ../client/pk-console.c:1449
+msgid "You need to specify a package to find the details for"
+msgstr "Cal que especifiqueu un paquet per cercar-ne els detalls"
+
+#: ../client/pk-console.c:1456
+msgid "You need to specify a package to find the files for"
+msgstr "Cal que especifiqueu un paquet per cercar-ne fitxers"
+
+#: ../client/pk-console.c:1503
+#, c-format
+msgid "Option '%s' not supported"
+msgstr "L'opció '%s' no està disponible"
+
+#: ../client/pk-console.c:1514
+msgid "Command failed"
+msgstr "L'ordre ha fallat"
+
+#: ../client/pk-console.c:1518
+msgid "You don't have the necessary privileges for this operation"
+msgstr "No teniu suficients privilegis per a aquesta operació"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "Monitorització de Packagekit"
+
+#: ../client/pk-import-desktop.c:293
+#: ../client/pk-import-specspo.c:169
+#, c-format
+msgid "Could not open database: %s"
+msgstr "No s'ha pogut obrir la base de dades: %s"
+
+#: ../client/pk-import-desktop.c:294
+#: ../client/pk-import-specspo.c:170
+msgid "You probably need to run this program as the root user"
+msgstr "És probable que necessiteu executar aquesta aplicació com a administrador"
+
+#: ../src/pk-main.c:83
+msgid "Startup failed due to security policies on this machine."
+msgstr "L'inici ha fallat a causa de les polítiques de seguretat d'aquesta màquina."
+
+#: ../src/pk-main.c:84
+msgid "This can happen for two reasons:"
+msgstr "Això pot succeir per dos raons:"
+
+#: ../src/pk-main.c:85
+msgid "The correct user is not launching the executable (usually root)"
+msgstr "Un usuari incorrecte està executant l'aplicació (normalment és el superusuari root)"
+
+#: ../src/pk-main.c:86
+msgid "The org.freedesktop.PackageKit.conf file is not installed in the system /etc/dbus-1/system.d directory"
+msgstr "El fitxer org.freedesktop.PackageKit.conf no està instal·lat al directori del sistema /etc/dbus-1/system.d"
+
+#: ../src/pk-main.c:185
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Administrador de paquets a usar, p.ex. dummy"
+
+#: ../src/pk-main.c:187
+msgid "Daemonize and detach from the terminal"
+msgstr "Inicia el servei i separa del terminal"
+
+#: ../src/pk-main.c:191
+msgid "Disable the idle timer"
+msgstr "Desactiva el temporitzador d'inactivitat"
+
+#: ../src/pk-main.c:193
+msgid "Show version and exit"
+msgstr "Mostra la versió i surt"
+
+#: ../src/pk-main.c:195
+msgid "Exit after a small delay"
+msgstr "Surt després d'una petita pausa"
+
+#: ../src/pk-main.c:197
+msgid "Exit after the engine has loaded"
+msgstr "Surt després de que el motor s'hagi cargat"
+
+#: ../src/pk-main.c:207
+msgid "PackageKit service"
+msgstr "Servei del PackageKit"
+
+#: ../src/pk-main.c:233
+msgid "Cannot connect to the system bus"
+msgstr "No s'ha pogut connectar al bus del sistema"
+
+#: ../src/pk-main.c:273
+#, c-format
+msgid "Error trying to start: %s\n"
+msgstr "S'ha produït un error en intentar iniciar: %s\n"
+
