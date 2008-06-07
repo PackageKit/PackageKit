@@ -911,9 +911,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Could not install package:\n" + ye.value
             self._unlock_yum()
-            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return
 
@@ -1732,6 +1731,14 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _format_msgs(self,msgs):
+        if isinstance(msgs,basestring):
+             msgs = msgs.split('\n')
+        text = ";".join(msgs)
+        text = text.replace("Missing Dependency: ","")
+        text = text.replace(" (installed)","")
+        return text
+
     def _runYumTransaction(self,removedeps=None):
         '''
         Run the yum Transaction
@@ -1741,18 +1748,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         rc,msgs =  self.yumbase.buildTransaction()
         if rc !=2:
-            retmsg = "Error in Dependency Resolution\n" +"\n".join(msgs)
             self._unlock_yum()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
             self.Finished(EXIT_FAILED)
             return False
 
         self._check_for_reboot()
 
         if removedeps == False and len(self.yumbase.tsInfo) > 1:
-            retmsg = 'package could not be removed, as other packages depend on it'
             self._unlock_yum()
-            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,retmsg)
+            self.ErrorCode(ERROR_DEP_RESOLUTION_FAILED,self._format_msgs(msgs))
             self.Finished(EXIT_FAILED)
             return False
 
@@ -1762,15 +1767,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.yumbase.processTransaction(callback=callback,
                                             rpmDisplay=rpmDisplay)
         except yum.Errors.YumDownloadError, ye:
-            retmsg = "Error in Download\n" + "\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,retmsg)
+            self.ErrorCode(ERROR_PACKAGE_DOWNLOAD_FAILED,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumGPGCheckError, ye:
-            retmsg = "Error in Package Signatures\n" +"\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,retmsg)
+            self.ErrorCode(ERROR_BAD_GPG_SIGNATURE,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
         except GPGKeyNotImported, e:
@@ -1795,9 +1798,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.Finished(EXIT_FAILED)
             return False
         except yum.Errors.YumBaseError, ye:
-            retmsg = "Error in Transaction Processing\n" + "\n".join(ye.value)
             self._unlock_yum()
-            self.ErrorCode(ERROR_TRANSACTION_ERROR,retmsg)
+            self.ErrorCode(ERROR_TRANSACTION_ERROR,self._format_msgs(ye.value))
             self.Finished(EXIT_FAILED)
             return False
 
@@ -2111,6 +2113,10 @@ class PackageKitCallback(RPMBaseCallback):
         self.curpkg = None
         self.startPct = 50
         self.numPct = 50
+
+        # this isn't defined in yum as it's only used in the rollback plugin
+        TS_REPACKAGING = 'repackaging'
+
         # Map yum transactions with pk info enums
         self.info_actions = { TS_UPDATE : INFO_UPDATING,
                         TS_ERASE: INFO_REMOVING,
@@ -2127,7 +2133,8 @@ class PackageKitCallback(RPMBaseCallback):
                         TS_TRUEINSTALL : STATUS_INSTALL,
                         TS_OBSOLETED: STATUS_OBSOLETE,
                         TS_OBSOLETING: STATUS_INSTALL,
-                        TS_UPDATED: STATUS_CLEANUP}
+                        TS_UPDATED: STATUS_CLEANUP,
+                        TS_REPACKAGING: STATUS_REPACKAGING}
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -2148,8 +2155,11 @@ class PackageKitCallback(RPMBaseCallback):
 
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            self.base.StatusChanged(self.state_actions[action])
-            self._showName(self.info_actions[action])
+            try:
+                self.base.StatusChanged(self.state_actions[action])
+                self._showName(self.info_actions[action])
+            except exceptions.KeyError,e:
+                self.base.Message(MESSAGE_WARNING,"The constant '%s' was unknown, please report" % action)
             pct = self._calcTotalPct(ts_current, ts_total)
             self.base.PercentageChanged(pct)
         val = (ts_current*100L)/ts_total

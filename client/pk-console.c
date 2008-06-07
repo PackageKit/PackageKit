@@ -416,7 +416,7 @@ pk_console_finished_cb (PkClient *client, PkExitEnum exit, guint runtime, gpoint
 	if (awaiting_space) {
 		g_print ("\n");
 	}
-	g_print ("%s runtime was %.1f seconds\n", role_text, time);
+	pk_debug ("%s runtime was %.1f seconds", role_text, time);
 
 	/* is there any restart to notify the user? */
 	restart = pk_client_get_require_restart (client);
@@ -613,7 +613,7 @@ pk_console_install_stuff (PkClient *client, gchar **packages, GError **error)
 			goto out;
 		}
 
-		ret = pk_client_install_package (client, package_id, error);
+		ret = pk_client_install_packages (client, package_ids, error);
 		if (!ret) {
 			pk_warning ("failed to install packages");
 			goto out;
@@ -1477,9 +1477,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			/* do the system update */
 			ret = pk_client_update_system (client, &error);
-			goto out;
+		} else {
+			ret = pk_console_update_package (client, value, &error);
 		}
-		ret = pk_console_update_package (client, value, &error);
 
 	} else if (strcmp (mode, "resolve") == 0) {
 		if (value == NULL) {

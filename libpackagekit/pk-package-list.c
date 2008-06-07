@@ -538,6 +538,29 @@ libst_package_list (LibSelfTest *test)
 
 	g_object_unref (plist);
 
+	plist = pk_package_list_new ();
+	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "def;1.23;i386;data", "zed");
+	pk_package_list_add (plist, PK_INFO_ENUM_SECURITY, "abc;1.23;i386;data", "fed");
+	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "ghi;1.23;i386;data", "aed");
+	pk_package_list_add (plist, PK_INFO_ENUM_BUGFIX, "jkl;1.23;i386;data", "med");
+
+	/************************************************************/
+	libst_title (test, "sort by package_id then priority (should not mess up previous sort)");
+	pk_package_list_sort (plist);
+	pk_package_list_sort_info (plist);
+	r0 = pk_package_list_get_item (plist, 0);
+	r1 = pk_package_list_get_item (plist, 1);
+	r2 = pk_package_list_get_item (plist, 2);
+	if (pk_strequal (r0->package_id, "abc;1.23;i386;data") &&
+	    pk_strequal (r1->package_id, "def;1.23;i386;data") &&
+	    pk_strequal (r2->package_id, "ghi;1.23;i386;data")) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "could not sort: %s,%s,%s", r0->package_id, r1->package_id, r2->package_id);
+	}
+
+	g_object_unref (plist);
+
 	libst_end (test);
 }
 #endif

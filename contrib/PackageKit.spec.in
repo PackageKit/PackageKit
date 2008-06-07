@@ -21,6 +21,7 @@ Requires: dbus >= %{dbus_version}
 Requires: PackageKit-libs = %{epoch}:%{version}-%{release}
 Requires: yum-packagekit = %{epoch}:%{version}-%{release}
 Requires: yum >= 3.2.6
+Requires: shared-mime-info
 
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: dbus-devel  >= %{dbus_version}
@@ -122,6 +123,12 @@ chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/PackageKitDbusTest.py
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%post
+update-mime-database %{_datadir}/mime
+
+%postun
+update-mime-database %{_datadir}/mime
+
 %post libs -p /sbin/ldconfig
 
 %postun libs -p /sbin/ldconfig
@@ -147,6 +154,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/man/man1/*.1.gz
 %{_datadir}/gtk-doc/html/PackageKit
 %{_datadir}/PolicyKit/policy/*.policy
+%{_datadir}/mime/packages/packagekit-catalog.xml
 %{_sbindir}/packagekitd
 %{_bindir}/pkmon
 %{_bindir}/pkcon

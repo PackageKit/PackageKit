@@ -42,6 +42,10 @@
 #include <glib/gprintf.h>
 #include <dbus/dbus-glib.h>
 
+#ifdef USE_SECURITY_POLKIT
+#include <polkit-dbus/polkit-dbus.h>
+#endif
+
 #include "pk-enum.h"
 #include "pk-client.h"
 #include "pk-connection.h"
@@ -50,7 +54,6 @@
 #include "pk-package-list.h"
 #include "pk-debug.h"
 #include "pk-marshal.h"
-#include "pk-polkit-client.h"
 #include "pk-common.h"
 #include "pk-control.h"
 
@@ -77,7 +80,6 @@ struct _PkClientPrivate
 	PkControl		*control;
 	PkPackageList		*package_list;
 	PkConnection		*pconnection;
-	PkPolkitClient		*polkit;
 	PkRestartEnum		 require_restart;
 	PkStatusEnum		 last_status;
 	PkRoleEnum		 role;
@@ -247,6 +249,90 @@ pk_client_error_fixup (GError **error)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+/**
+ * pk_client_error_refused_by_policy:
+ * @error: a valid #GError
+ *
+ * Return value: %TRUE if the error is the PolicyKit "RefusedByPolicy"
+ **/
+gboolean
+pk_client_error_refused_by_policy (GError *error)
+{
+	const gchar *error_name;
+
+	/* if not set */
+	if (error == NULL) {
+		return FALSE;
+	}
+
+	/* not a dbus error */
+	if (error->code != DBUS_GERROR_REMOTE_EXCEPTION) {
+		pk_warning ("not a remote exception: %s", error->message);
+		return FALSE;
+	}
+
+	/* check for specific error */
+	error_name = dbus_g_error_get_name (error);
+	pk_debug ("ERROR: %s: %s", error_name, error->message);
+	if (pk_strequal (error_name, "org.freedesktop.PackageKit.RefusedByPolicy")) {
+		return TRUE;
+	}
+	if (pk_strequal (error_name, "org.freedesktop.PackageKit.Transaction.RefusedByPolicy")) {
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * pk_client_error_auth_obtain:
+ * @error: the GError with the failure
+ *
+ * This function is indented to be passed failure messages from dbus methods
+ * so that extra auth can be requested.
+ *
+ * Return value: if we gained the privilege we asked for
+ **/
+gboolean
+pk_client_error_auth_obtain (GError *error)
+{
+	gboolean ret = FALSE;
+#ifdef USE_SECURITY_POLKIT
+	PolKitAction *action = NULL;
+	PolKitResult result;
+	gchar *action_id = NULL; /* we don't free this */
+	DBusError error2;
+	dbus_error_init (&error2);
+
+	g_return_val_if_fail (error != NULL, FALSE);
+
+	/* get PolKitAction */
+	ret = polkit_dbus_error_parse_from_strings ("org.freedesktop.PolicyKit.Error.NotAuthorized", error->message, &action, &result);
+	if (!ret) {
+		pk_debug ("Not a polkit auth failure: %s", error->message);
+		return FALSE;
+	}
+
+	/* get action_id from PolKitAction */
+	ret = polkit_action_get_action_id (action, &action_id);
+	if (!ret) {
+		pk_debug ("Unable to get an action ID");
+		return FALSE;
+	}
+
+	/* this blocks - use polkit_gnome_auth_obtain for non blocking version */
+	ret = polkit_auth_obtain (action_id, 0, getpid (), &error2);
+	if (dbus_error_is_set (&error2)) {
+		pk_warning ("Failed to obtain auth: %s", error2.message);
+	}
+	dbus_error_free (&error2);
+
+	pk_debug ("gained %s privilege = %d", action_id, ret);
+
+	polkit_action_unref (action);
+#endif
+	return ret;
 }
 
 /**
@@ -944,19 +1030,24 @@ pk_client_allocate_transaction_id (PkClient *client, GError **error)
 {
 	gboolean ret;
 	gchar *tid;
+	GError *error_local = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	/* get and set a new ID */
-	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, error);
+	/* get a new ID */
+	ret = pk_control_allocate_transaction_id (client->priv->control, &tid, &error_local);
 	if (!ret) {
-		pk_warning ("failed to get a TID: %s", (*error)->message);
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to get a TID: %s", error_local->message);
+		g_error_free (error_local);
 		return FALSE;
 	}
-	ret = pk_client_set_tid (client, tid, error);
+
+	/* set that new ID to this GObject */
+	ret = pk_client_set_tid (client, tid, &error_local);
 	g_free (tid);
 	if (!ret) {
-		pk_warning ("failed to set TID: %s", (*error)->message);
+		pk_client_error_set (error, PK_CLIENT_ERROR_FAILED, "failed to set TID: %s", error_local->message);
+		g_error_free (error_local);
 		return FALSE;
 	}
 	return TRUE;
@@ -1069,15 +1160,15 @@ pk_client_update_system (PkClient *client, GError **error)
 	ret = pk_client_update_system_action (client, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
 			ret = pk_client_update_system_action (client, &error_pk);
 		}
-		if (pk_polkit_client_error_denied_by_policy (error_pk)) {
+		if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 			/* we failed to get an auth */
 			pk_client_error_set (error, PK_CLIENT_ERROR_FAILED_AUTH, error_pk->message);
 			/* clear old error */
@@ -1926,9 +2017,9 @@ pk_client_remove_packages (PkClient *client, gchar **package_ids, gboolean allow
 	ret = pk_client_remove_packages_action (client, package_ids, allow_deps, autoremove, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2011,9 +2102,9 @@ pk_client_refresh_cache (PkClient *client, gboolean force, GError **error)
 	ret = pk_client_refresh_cache_action (client, force, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2105,9 +2196,9 @@ pk_client_install_packages (PkClient *client, gchar **package_ids, GError **erro
 	ret = pk_client_install_package_action (client, package_ids, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2205,9 +2296,9 @@ pk_client_install_signature (PkClient *client, PkSigTypeEnum type, const gchar *
 	ret = pk_client_install_signature_action (client, type, key_id, package_id, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2303,9 +2394,9 @@ pk_client_update_packages (PkClient *client, gchar **package_ids, GError **error
 	ret = pk_client_update_packages_action (client, package_ids, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2533,9 +2624,9 @@ pk_client_install_files (PkClient *client, gboolean trusted, gchar **files_rel, 
 	ret = pk_client_install_files_action (client, trusted, files, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2666,9 +2757,9 @@ pk_client_accept_eula (PkClient *client, const gchar *eula_id, GError **error)
 	ret = pk_client_accept_eula_action (client, eula_id, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2750,9 +2841,9 @@ pk_client_repo_enable (PkClient *client, const gchar *repo_id, gboolean enabled,
 	ret = pk_client_repo_enable_action (client, repo_id, enabled, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -2843,9 +2934,9 @@ pk_client_repo_set_data (PkClient *client, const gchar *repo_id, const gchar *pa
 	ret = pk_client_repo_set_data_action (client, repo_id, parameter, value, &error_pk);
 
 	/* we were refused by policy */
-	if (!ret && pk_polkit_client_error_denied_by_policy (error_pk)) {
+	if (!ret && pk_client_error_refused_by_policy (error_pk)) {
 		/* try to get auth */
-		if (pk_polkit_client_gain_privilege_str (client->priv->polkit, error_pk->message)) {
+		if (pk_client_error_auth_obtain (error_pk)) {
 			/* clear old error */
 			g_clear_error (&error_pk);
 			/* retry the action now we have got auth */
@@ -3585,9 +3676,6 @@ pk_client_init (PkClient *client)
 		pk_client_connect (client);
 	}
 
-	/* use PolicyKit */
-	client->priv->polkit = pk_polkit_client_new ();
-
 	/* Use a main control object */
 	client->priv->control = pk_control_new ();
 
@@ -3689,7 +3777,6 @@ pk_client_finalize (GObject *object)
 	/* disconnect signal handlers */
 	pk_client_disconnect_proxy (client);
 	g_object_unref (client->priv->pconnection);
-	g_object_unref (client->priv->polkit);
 	g_object_unref (client->priv->package_list);
 	g_object_unref (client->priv->control);
 
@@ -3872,10 +3959,19 @@ libst_client (LibSelfTest *test)
 	libst_title (test, "get updates");
 	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, &error);
 	if (!ret) {
-		libst_failed (test, "failed to reset: %s", error->message);
+		libst_failed (test, "failed to get updates: %s", error->message);
 		g_error_free (error);
 	}
 	libst_success (test, NULL);
+
+	/************************************************************/
+	libst_title (test, "get updates (without reset) with null error");
+	ret = pk_client_get_updates (client, PK_FILTER_ENUM_NONE, NULL);
+	if (!ret) {
+		libst_success (test, NULL);
+	} else {
+		libst_failed (test, "got updates with no reset (no description possible)");
+	}
 
 	/************************************************************/
 	libst_title (test, "reset client #2");

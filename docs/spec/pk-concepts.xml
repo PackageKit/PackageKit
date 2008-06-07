@@ -31,6 +31,32 @@
       are installable or installed in the client tools.
     </para>
     <para>
+      The data field for an non-installed local package must be
+      <literal>local</literal> as this signifies a repository name is not available
+      and that package resides locally on the client system.
+    </para>
+    <para>
+      For example:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;local</literal>: for locally available package file.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;fedora-devel</literal>: for package that is not installed
+          and can be downladed from the Fedora development repostory.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;installed</literal>: for locally installed package
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
       The backend must ensure that the package_id only matches on one
       single package.
       A single package_id must be enough to uniquely identify a single object

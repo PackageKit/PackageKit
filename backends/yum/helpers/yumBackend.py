@@ -686,7 +686,21 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                             self._show_package(txmbr.po,INFO_INSTALLED)
 
     def _is_inst(self,pkg):
+        # search only for requested arch
         return self.yumbase.rpmdb.installed(po=pkg)
+
+    def _is_inst_arch(self,pkg):
+        # search for a requested arch first
+        ret = self._is_inst(pkg)
+        if ret:
+            return True;
+
+        # then fallback to i686 if i386
+        if pkg.arch == 'i386':
+            pkg.arch = 'i686'
+            ret = self._is_inst(pkg)
+            pkg.arch = 'i386'
+        return ret
 
     def _installable(self,pkg,ematch=False):
 
@@ -696,7 +710,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # we look through each returned possibility and rule out the
         # ones that we obviously can't use
 
-        if self._is_inst(pkg):
+        if self._is_inst_arch(pkg):
             return False
 
         # everything installed that matches the name
@@ -783,7 +797,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 pkgver = self._get_package_ver(pkg)
                 id = self.get_package_id(pkg.name,pkgver,pkg.arch,pkg.repoid)
 
-                if self._is_inst(pkg) and FILTER_NOT_INSTALLED not in fltlist:
+                if self._is_inst_arch(pkg) and FILTER_NOT_INSTALLED not in fltlist:
                     self.package(id,INFO_INSTALLED,pkg.summary)
                 else:
                     if self._installable(pkg) and FILTER_INSTALLED not in fltlist:
@@ -1011,7 +1025,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
             self.error(ERROR_INVALID_PACKAGE_FILE, "%s does not appear to be a valid package." % pkg)
             return False
 
-        if self._is_inst(po):
+        if self._is_inst_arch(po):
             self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "The package %s is already installed" % str(po))
             return False
 
@@ -1615,6 +1629,10 @@ class PackageKitCallback(RPMBaseCallback):
         self.curpkg = None
         self.startPct = 50
         self.numPct = 50
+
+        # this isn't defined in yum as it's only used in the rollback plugin
+        TS_REPACKAGING = 'repackaging'
+
         # Map yum transactions with pk info enums
         self.info_actions = { TS_UPDATE : INFO_UPDATING,
                         TS_ERASE: INFO_REMOVING,
@@ -1631,7 +1649,8 @@ class PackageKitCallback(RPMBaseCallback):
                         TS_TRUEINSTALL : STATUS_INSTALL,
                         TS_OBSOLETED: STATUS_OBSOLETE,
                         TS_OBSOLETING: STATUS_INSTALL,
-                        TS_UPDATED: STATUS_CLEANUP}
+                        TS_UPDATED: STATUS_CLEANUP,
+                        TS_REPACKAGING: STATUS_REPACKAGING}
 
     def _calcTotalPct(self,ts_current,ts_total):
         bump = float(self.numPct)/ts_total
@@ -1649,8 +1668,11 @@ class PackageKitCallback(RPMBaseCallback):
     def event(self,package,action,te_current,te_total,ts_current,ts_total):
         if str(package) != str(self.curpkg):
             self.curpkg = package
-            self.base.status(self.state_actions[action])
-            self._showName(self.info_actions[action])
+            try:
+                self.base.status(self.state_actions[action])
+                self._showName(self.info_actions[action])
+            except exceptions.KeyError,e:
+                self.base.message(MESSAGE_WARNING,"The constant '%s' was unknown, please report" % action)
             pct = self._calcTotalPct(ts_current,ts_total)
             self.base.percentage(pct)
         val = (ts_current*100L)/ts_total

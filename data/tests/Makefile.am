@@ -4,6 +4,7 @@ AUTOMAKE_OPTIONS = 1.7
 NULL =
 
 TEST_FILES =						\
+	test.catalog					\
 	pk-spawn-test.sh				\
 	pk-spawn-proxy.sh				\
 	pk-spawn-test-sigquit.sh			\

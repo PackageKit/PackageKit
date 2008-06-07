@@ -839,6 +839,7 @@ pk_control_finalize (GObject *object)
 
 	/* free the proxy */
 	g_object_unref (G_OBJECT (control->priv->proxy));
+	g_strfreev (control->priv->array);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
 }

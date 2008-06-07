@@ -22,6 +22,7 @@
 <h2>Table Of Contents</h2>
 <ul>
 <li><a href="#how-complete">How complete are the backends?</a></li>
+<li><a href="#catalogs">What's a package catalog?</a></li>
 <li><a href="#1-click-install">Does PackageKit support 1-Click Install?</a></li>
 <li><a href="#run-as-root">When run as root, gpk-application and pkcon do not work!</a></li>
 <li><a href="#session-system">Why is there a session service and and a system service?</a></li>
@@ -48,524 +49,81 @@
 
 <hr>
 <h3><a name="how-complete">How complete are the backends?</a></h3>
-<h4>Methods</h4>
-<table>
-<tr>
-<td width="150px">&nbsp;</td>
-<td><center>apt</center></td>
-<td><center>alpm</center></td>
-<td><center>box</center></td>
-<td><center>conary</center></td>
-<td><center>opkg</center></td>
-<td><center>pisi</center></td>
-<td><center>poldek</center></td>
-<td><center>smart</center></td>
-<td><center>urpmi</center></td>
-<td><center>yum</center></td>
-<td><center>yum2</center></td>
-<td><center>zypp</center></td>
-</tr>
-<tr>
-<td><b>Resolve</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>RefreshCache</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetUpdates</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>UpdateSystem</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>SearchName</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>SearchDetails</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>SearchFile</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>SearchGroup</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>InstallPackages</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>InstallFiles</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>RemovePackages</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>UpdatePackage</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetDepends</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetRequires</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetDetails</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetFiles</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetUpdateDetail</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetRepoList</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>RepoEnable</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>RepoSetData</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Cancel</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>ServicePack</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>WhatProvides</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GetPackages</b></td>
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[good]"/></td><!-- zypp -->
-</tr>
-</table>
+<p>
+Backends do not have to be complete when they are added to PackageKit.
+If a feature is not present then it is hidden in the UI, which will explain why on some
+distributions the client tools look a little different to other distributions.
+You can see the latest feature matrix <a href="pk-matrix.html">here</a>.
+</p>
 
-<h4>Filters</h4>
-<table>
-<tr>
-<td width="150px">&nbsp;</td>
-<td><center>apt</center></td>
-<td><center>alpm</center></td>
-<td><center>box</center></td>
-<td><center>conary</center></td>
-<td><center>opkg</center></td>
-<td><center>pisi</center></td>
-<td><center>poldek</center></td>
-<td><center>smart</center></td>
-<td><center>urpmi</center></td>
-<td><center>yum</center></td>
-<td><center>yum2</center></td>
-<td><center>zypp</center></td>
-</tr>
-<tr>
-<td><b>Installed</b></td>
-<td><img src="img/status-good.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-good.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Development</b></td>
-<td><img src="img/status-good.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>GUI</b></td>
-<td><img src="img/status-good.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- opkg -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Free</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Visible</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Supported</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Newest</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- zypp -->
-</tr>
-<tr>
-<td><b>Arch</b></td>
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- apt -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- alpm -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- box -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- conary -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- opkg -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- pisi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- poldek -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- urpmi -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- smart -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum -->
-<td><img src="img/status-bad.png" alt="[no]"/></td><!-- yum2 -->
-<td><img src="img/status-good.png" alt="[yes]"/></td><!-- zypp -->
-</tr>
-</table>
+<hr>
+<h3><a name="catalogs">What's a package catalog?</a></h3>
+<p>
+There's one use case that I'm very interested in, and that is getting new users with the correct
+environment to build and start hacking on software or using other software tools.
+For instance, on <a href="http://www.packagekit.org">www.packagekit.org</a> in the FAQ section,
+we can have a link to install build files to <a href="packagekit.catalog">start hacking on PackageKit</a>.
+</p>
+<p>
+Now, this <code>.catalog</code> file is handled by <code>gpk-install-catalog</code> that parses
+this file and causes the appropriate packages to be installed if they are not already installed.
+This rocks as we can get GTK+, Xorg hackers up to speed with the minimum of fuss and confusion.
+It also lets people put links on webpages to <i>install all the stuff you need</i> when writing a
+<i>How to use a scanner in GIMP</i> howto.
+</p>
+<p>
+So, what does a .catalog file look like?
+</p>
+<pre>
+[PackageKit Catalog]
 
+# Just a package on all versions of fedora that can provide the dependency.
+# If there are multiple packages then the user will be asked to choose
+InstallProvides(fedora)=audio/QCELP
+
+# Just for Fedora 9, install two development files
+InstallPackages(fedora-9)=glib2-devel;PolicyKit-gnome-devel
+
+# On any distro, install the package with this file
+InstallFiles=/usr/bin/fontinst
+
+# For each architecture on Fedora 8, install one of the two different compat files
+InstallFiles(fedora-8-i686)=/usr/lib/pango/1.6.0/modules/pango-arabic-fc.so
+InstallFiles(fedora-8-x64)=/usr/lib64/pango/1.6.0/modules/pango-arabic-fc.so
+</pre>
+<p>
+You'll notice the <code>distro-id</code> in between the <code>()</code>'s - this lets a packager
+fine tune the package name, where for instance in Debian the package is called <code>policykit</code>
+and Fedora <code>PolicyKit</code>.
+You can specify a granularity of distribution, distribution-version or
+distribution-version-architecture - PackageKit will process all the entries that apply.
+It's of course better to not specify a <code>()</code> if possible, as this lets the file work on
+as many distributions as possible out of the box.
+</p>
+<p>
+There's also no version checking - intentionally - the distro should be specified and have the
+correct data.
+If there's an optional package not in earlier versions then you can do something like this:
+</p>
+<pre>
+[PackageKit Catalog]
+
+# Fedora 9 does not have Unique
+InstallPackages(fedora-9)=glib2-devel;PolicyKit-gnome-devel
+
+# Rawhide is fedora 9.90
+InstallPackages(fedora-9.90)=glib2-devel;PolicyKit-gnome-devel;unique-devel
+</pre>
+<p>
+There's also no description of the catalog that needs translating and verifying - they are just
+lists of packages, files and provides that might be useful.
+All the translations come from the distributions metadata, and it's up to the user to verify the
+package lists that are asked to be installed, so there are no signing or trust issues.
+</p>
+<p>
+Note: this isn't designed to replace one click install, it just does something that is similar in
+a different way.
+</p>
 <hr>
 <h3><a name="1-click-install">Does PackageKit support 1-Click Install?</a></h3>
 <p>
@@ -595,6 +153,8 @@ they are not going to understand the description.
 <p>
 So what's the solution? Using a standard <code>$vendor-release.rpm</code> or <code>.deb</code>
 you can ship the standard repo or source with a signed GPG key.
+PackageKit also supports <a href="#catalogs">catalogs</a> which can install sets of files provided by
+your distro.
 </p>
 <p>
 Quoting Sebastian Heinlein,

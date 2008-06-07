@@ -4,6 +4,7 @@ NULL =
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	$(DBUS_CFLAGS)						\
+	$(POLKIT_CFLAGS)					\
 	$(SQLITE_CFLAGS)					\
 	-I$(top_srcdir)/libpackagekit				\
 	-I$(top_srcdir)/libgbus					\
@@ -42,9 +43,9 @@ libpackagekit_include_HEADERS =					\
 	pk-enum.h						\
 	pk-common.h						\
 	pk-client.h						\
+	pk-catalog.h						\
 	pk-control.h						\
 	pk-task-list.h						\
-	pk-polkit-client.h					\
 	$(NULL)
 
 libpackagekit_la_SOURCES =					\
@@ -70,18 +71,19 @@ libpackagekit_la_SOURCES =					\
 	pk-common.h						\
 	pk-client.c						\
 	pk-client.h						\
+	pk-catalog.c						\
+	pk-catalog.h						\
 	pk-control.c						\
 	pk-control.h						\
 	pk-task-list.c						\
 	pk-task-list.h						\
-	pk-polkit-client.c					\
-	pk-polkit-client.h					\
 	$(NULL)
 
 libpackagekit_la_LIBADD =					\
 	$(GLIB_LIBS)						\
 	$(DBUS_LIBS)						\
 	$(GBUS_LIBS)						\
+	$(POLKIT_LIBS)						\
 	$(SQLITE_LIBS)						\
 	$(NULL)
 
