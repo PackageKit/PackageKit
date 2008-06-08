@@ -42,6 +42,10 @@ static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *m
 static void pb_load_packages (PkBackend *backend);
 static void poldek_backend_set_allow_cancel (PkBackend *backend, gboolean allow_cancel, gboolean reset);
 
+static void pb_error_show (PkBackend *backend, PkErrorCodeEnum errorcode);
+static void pb_error_clean (void);
+static void poldek_backend_percentage_data_destroy (PkBackend *backend);
+
 typedef enum {
 	TS_TYPE_ENUM_INSTALL,
 	TS_TYPE_ENUM_UPDATE,
@@ -101,7 +105,6 @@ typedef struct {
 	gint		filesdownload;
 
 	gint		percentage;
-	float		stepvalue;
 
 	gint		subpercentage;
 } PercentageData;
@@ -247,10 +250,9 @@ poldek_vf_progress (void *bar, long total, long amount)
 {
 	PkBackend	*backend = (PkBackend*) bar;
 	PercentageData	*pd = pk_backend_get_pointer (backend, "percentage_ptr");
-	guint		percentage = 0;
 	guint ts_type = pk_backend_get_uint (backend, "ts_type");
 
-	if (ts_type == TS_TYPE_ENUM_INSTALL) {
+	if (ts_type == TS_TYPE_ENUM_INSTALL || ts_type == TS_TYPE_ENUM_UPDATE) {
 		float	frac = (float)amount / (float)total;
 
 		/* file already downloaded */
@@ -264,20 +266,6 @@ poldek_vf_progress (void *bar, long total, long amount)
 			pd->percentage = (gint)(((float)(pd->bytesget + amount) / (float)pd->bytesdownload) * 100);
 			pd->subpercentage = (gint)(frac * 100);
 		}
-	} else if (ts_type == TS_TYPE_ENUM_UPDATE) {
-		float	stepfrac = pd->stepvalue / (float)pd->filesdownload;
-
-		/* file already downloaded */
-		if ((float)amount / (float)total < 0) {
-			pd->bytesget += total;
-			pd->filesget++;
-
-			pd->subpercentage = (gint)((float)pd->bytesget / (float)pd->bytesdownload * 100);
-			percentage = (guint)(stepfrac * (float)pd->filesget);
-		} else {
-			pd->subpercentage = (gint)((float)(pd->bytesget + amount) / (float)pd->bytesdownload * 100);
-			percentage = (guint)(stepfrac * ((float)pd->filesget + ((float)pd->subpercentage / (float)100)));
-		}
 	} else if (ts_type == TS_TYPE_ENUM_REFRESH_CACHE) {
 		if (pd->step == 0)
 			pd->percentage = 1;
@@ -285,12 +273,7 @@ poldek_vf_progress (void *bar, long total, long amount)
 			pd->percentage = (gint)(((float)pd->step / (float)pd->nsources) * 100);
 	}
 
-	if (ts_type == TS_TYPE_ENUM_INSTALL ||
-	    ts_type == TS_TYPE_ENUM_REFRESH_CACHE)
-		pk_backend_set_percentage (backend, pd->percentage);
-	else if (ts_type == TS_TYPE_ENUM_UPDATE)
-		if ((pd->percentage + percentage) > 1)
-			pk_backend_set_percentage (backend, pd->percentage + percentage);
+	pk_backend_set_percentage (backend, pd->percentage);
 
 	/* RefreshCache doesn't use subpercentage */
 	if (ts_type == TS_TYPE_ENUM_INSTALL ||
@@ -373,7 +356,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
 
 	switch (poldek_ts_get_type (ts)) {
 		case POLDEK_TS_TYPE_INSTALL:
-			upkgs = n_array_new (2, NULL, NULL);
+			upkgs = n_array_new (4, (tn_fn_free)pkg_free, NULL);
 
 			pd->step = 0;
 
@@ -474,14 +457,9 @@ ts_confirm (void *data, struct poldek_ts *ts)
 			break;
 	}
 
-	if (ipkgs)
-		n_array_free (ipkgs);
-
-	if (dpkgs)
-		n_array_free (dpkgs);
-
-	if (rpkgs)
-		n_array_free (rpkgs);
+	n_array_cfree (&ipkgs);
+	n_array_cfree (&dpkgs);
+	n_array_cfree (&rpkgs);
 
 	return result;
 }
@@ -491,7 +469,7 @@ ts_confirm (void *data, struct poldek_ts *ts)
  **/
 static gint
 suggests_callback (void *data, const struct poldek_ts *ts, const struct pkg *pkg,
-				   tn_array *caps, tn_array *choices, int hint)
+		   tn_array *caps, tn_array *choices, int hint)
 {
 	/* install all suggested packages */
 	return 1;
@@ -835,7 +813,8 @@ do_newest (tn_array *pkgs)
  * do_requires:
  */
 static void
-do_requires (tn_array *installed, tn_array *available, tn_array *requires, struct pkg *pkg, PkBackend *backend)
+do_requires (tn_array *installed, tn_array *available, tn_array *requires,
+	     struct pkg *pkg, PkBackend *backend)
 {
 	tn_array	*tmp = NULL;
 	gint		i;
@@ -1346,6 +1325,106 @@ search_package_thread (PkBackend *backend)
 	return TRUE;
 }
 
+static gboolean
+update_packages_thread (PkBackend *backend)
+{
+	struct vf_progress	vf_progress;
+	gboolean		update_system;
+	guint			i, toupdate = 0;
+	gchar **package_ids, *command;
+	GString *cmd;
+
+	update_system = pk_backend_get_bool (backend, "update_system");
+	package_ids = pk_backend_get_strv (backend, "package_ids");
+
+	/* sth goes wrong. package_ids has to be set in UpdatePackages */
+	if (update_system == FALSE && package_ids == NULL) {
+		pk_warning ("package_ids cannot be NULL in UpdatePackages method.");
+		pk_backend_finished (backend);
+		return TRUE;
+	}
+
+	setup_vf_progress (&vf_progress, backend);
+
+	pb_load_packages (backend);
+
+	pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
+	pb_error_clean ();
+
+	cmd = g_string_new ("upgrade ");
+
+	if (update_system) {
+		struct poclidek_rcmd *rcmd;
+
+		rcmd = poclidek_rcmd_new (cctx, NULL);
+
+		if (poclidek_rcmd_execline (rcmd, "cd /all-avail; ls -q -u")) {
+			tn_array *pkgs;
+
+			pkgs = poclidek_rcmd_get_packages (rcmd);
+
+			/* UpdateSystem updates to the newest available packages */
+			do_newest (pkgs);
+
+			for (i = 0; i < n_array_size (pkgs); i++) {
+				struct pkg *pkg;
+
+				pkg = n_array_nth (pkgs, i);
+
+				/* don't try to update blocked packages */
+				if (!(pkg->flags & PKG_HELD)) {
+					g_string_append_printf (cmd, "%s-%s-%s.%s ", pkg->name,
+								pkg->ver, pkg->rel, pkg_arch (pkg));
+
+					toupdate++;
+				}
+			}
+
+			n_array_free (pkgs);
+		}
+
+		poclidek_rcmd_free (rcmd);
+	} else {
+		for (i = 0; i < g_strv_length (package_ids); i++) {
+			struct pkg *pkg;
+
+			pkg = poldek_get_pkg_from_package_id (package_ids[i]);
+
+			g_string_append_printf (cmd, "%s-%s-%s.%s ", pkg->name,
+						pkg->ver, pkg->rel, pkg_arch (pkg));
+
+			toupdate++;
+
+			pkg_free (pkg);
+		}
+	}
+
+	command = g_string_free (cmd, FALSE);
+
+	if (toupdate > 0) {
+		struct poclidek_rcmd *rcmd;
+		struct poldek_ts *ts;
+
+		ts = poldek_ts_new (ctx, 0);
+		rcmd = poclidek_rcmd_new (cctx, ts);
+
+		ts->setop(ts, POLDEK_OP_PARTICLE, 0);
+
+		if (!poclidek_rcmd_execline (rcmd, command))
+			pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
+
+		poclidek_rcmd_free (rcmd);
+		poldek_ts_free (ts);
+	}
+
+	poldek_backend_percentage_data_destroy (backend);
+
+	g_free (command);
+
+	pk_backend_finished (backend);
+	return TRUE;
+}
+
 static void
 pb_load_packages (PkBackend *backend)
 {
@@ -1505,6 +1584,7 @@ do_poldek_init (PkBackend *backend)
 	/* (...), but we don't need choose_equiv callback */
 	poldek_configure (ctx, POLDEK_CONF_OPT, POLDEK_OP_EQPKG_ASKUSER, 0);
 
+	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, backend);
 	/* Install all suggested packages by default */
 	poldek_configure (ctx, POLDEK_CONF_CHOOSESUGGESTS_CB, suggests_callback, NULL);
 
@@ -2052,9 +2132,6 @@ backend_install_packages_thread (PkBackend *backend)
 
 	pb_load_packages (backend);
 
-	/* setup callbacks */
-	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, backend);
-
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
@@ -2196,9 +2273,6 @@ backend_remove_packages_thread (PkBackend *backend)
 	package_ids = pk_backend_get_strv (backend, "package_ids");
 	pb_load_packages (backend);
 
-	/* setup callbacks */
-	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, backend);
-
 	ts = poldek_ts_new (ctx, 0);
 	rcmd = poclidek_rcmd_new (cctx, ts);
 
@@ -2306,85 +2380,6 @@ backend_search_name (PkBackend *backend, PkFilterEnum filters, const gchar *sear
 /**
  * backend_update_packages:
  */
-static gboolean
-backend_update_packages_thread (PkBackend *backend)
-{
-	struct poldek_ts	*ts;
-	struct poclidek_rcmd	*rcmd;
-	struct vf_progress	vf_progress;
-	guint			i;
-	gboolean		update_cancelled = FALSE;
-	PercentageData *pd = pk_backend_get_pointer (backend, "percentage_ptr");
-	gchar **package_ids;
-
-	package_ids = pk_backend_get_strv (backend, "package_ids");
-
-	setup_vf_progress (&vf_progress, backend);
-
-	pb_load_packages (backend);
-
-	/* setup callbacks */
-	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, backend);
-
-	pk_backend_set_percentage (backend, 1);
-	pd->stepvalue = (float)100 / (float)g_strv_length (package_ids);
-
-	for (i = 0; i < g_strv_length (package_ids); i++) {
-		struct pkg	*pkg = NULL;
-
-		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-		pb_error_clean ();
-
-		pk_backend_set_sub_percentage (backend, 0);
-
-		pkg = poldek_get_pkg_from_package_id (package_ids[i]);
-
-		/* don't try to update blocked packages */
-		if (!(pkg->flags & PKG_HELD)) {
-			gchar	*command, *nvra;
-
-			ts = poldek_ts_new (ctx, 0);
-			rcmd = poclidek_rcmd_new (cctx, ts);
-
-			nvra = poldek_get_nvra_from_package_id (package_ids[i]);
-			command = g_strdup_printf ("upgrade %s", nvra);
-
-			if (!poclidek_rcmd_execline (rcmd, command)) {
-				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
-
-				update_cancelled = TRUE;
-			} else {
-				/* allow_cancel is disabled in ts_confirm () */
-				poldek_backend_set_allow_cancel (backend, TRUE, FALSE);
-			}
-
-			g_free (nvra);
-			g_free (command);
-
-			poclidek_rcmd_free (rcmd);
-			poldek_ts_free (ts);
-
-			if (update_cancelled)
-				break;
-		}
-
-		pd->percentage = (gint)((float)(i + 1) * pd->stepvalue);
-
-		if (pd->percentage > 1)
-			pk_backend_set_percentage (backend, pd->percentage);
-
-		pkg_free (pkg);
-	}
-
-	if (!update_cancelled)
-		pk_backend_set_percentage (backend, 100);
-
-	poldek_backend_percentage_data_destroy (backend);
-
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
 static void
 backend_update_packages (PkBackend *backend, gchar **package_ids)
 {
@@ -2399,109 +2394,12 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 
 	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
-	pk_backend_thread_create (backend, backend_update_packages_thread);
+	pk_backend_thread_create (backend, update_packages_thread);
 }
 
 /**
  * backend_update_system:
  **/
-static gboolean
-backend_update_system_thread (PkBackend *backend)
-{
-	struct vf_progress	vf_progress;
-	struct poldek_ts	*ts;
-	struct poclidek_rcmd	*rcmd;
-	tn_array		*upkgs;
-	gint			i;
-	gboolean		update_cancelled = FALSE;
-	PercentageData *pd = pk_backend_get_pointer (backend, "percentage_ptr");
-
-	setup_vf_progress (&vf_progress, backend);
-
-	pb_load_packages (backend);
-
-	/* setup callbacks */
-	poldek_configure (ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, backend);
-
-	/* get packages to update */
-	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
-
-	rcmd = poclidek_rcmd_new (cctx, NULL);
-
-	if (poclidek_rcmd_execline (rcmd, "cd /all-avail; ls -q -u")) {
-		upkgs = poclidek_rcmd_get_packages (rcmd);
-
-		/* return only the newest packages */
-		do_newest (upkgs);
-
-		/* remove from array packages marked as blocked */
-		i = 0;
-
-		while (i < n_array_size (upkgs)) {
-			struct pkg	*pkg = n_array_nth (upkgs, i);
-
-			if (pkg->flags & PKG_HELD) {
-				n_array_remove_nth (upkgs, i);
-				continue;
-			}
-
-			i++;
-		}
-
-		poclidek_rcmd_free (rcmd);
-
-		/* start */
-		pk_backend_set_percentage (backend, 1);
-		pd->stepvalue = (float)100 / (float)n_array_size (upkgs);
-
-		for (i = 0; i < n_array_size (upkgs); i++) {
-			struct pkg	*pkg = n_array_nth (upkgs, i);
-			gchar		*command;
-
-			pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
-
-			pb_error_clean ();
-
-			pk_backend_set_sub_percentage (backend, 0);
-
-			ts = poldek_ts_new (ctx, 0);
-			rcmd = poclidek_rcmd_new (cctx, ts);
-
-			command = g_strdup_printf ("upgrade %s-%s-%s.%s", pkg->name, pkg->ver, pkg->rel, pkg_arch (pkg));
-
-			if (!poclidek_rcmd_execline (rcmd, command)) {
-				pb_error_show (backend, PK_ERROR_ENUM_TRANSACTION_ERROR);
-
-				update_cancelled = TRUE;
-			} else {
-				/* allow_cancel is disabled in ts_confirm () */
-				poldek_backend_set_allow_cancel (backend, TRUE, FALSE);
-			}
-
-			g_free (command);
-
-			poclidek_rcmd_free (rcmd);
-			poldek_ts_free (ts);
-
-			if (update_cancelled)
-				break;
-		}
-
-		pd->percentage = (gint)((float)(i + 1) * pd->stepvalue);
-
-		if (pd->percentage > 1)
-			pk_backend_set_percentage (backend, pd->percentage);
-	}
-
-	if (!update_cancelled)
-		pk_backend_set_percentage (backend, 100);
-
-	poldek_backend_percentage_data_destroy (backend);
-
-	pk_backend_finished (backend);
-	return TRUE;
-}
-
 static void
 backend_update_system (PkBackend *backend)
 {
@@ -2516,7 +2414,8 @@ backend_update_system (PkBackend *backend)
 
 	poldek_backend_percentage_data_create (backend);
 	pk_backend_set_uint (backend, "ts_type", TS_TYPE_ENUM_UPDATE);
-	pk_backend_thread_create (backend, backend_update_system_thread);
+	pk_backend_set_bool (backend, "update_system", TRUE);
+	pk_backend_thread_create (backend, update_packages_thread);
 }
 
 /**
