@@ -866,7 +866,7 @@ pk_client_get_package (PkClient *client, gchar **package, GError **error)
 		pk_client_error_set (error, PK_CLIENT_ERROR_NO_TID, "No proxy for transaction");
 		return FALSE;
 	}
-	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackage", error,
+	ret = dbus_g_proxy_call (client->priv->proxy, "GetPackageLast", error,
 				 G_TYPE_INVALID,
 				 G_TYPE_STRING, package,
 				 G_TYPE_INVALID);
