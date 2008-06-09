@@ -17,6 +17,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:  gtk2 >= 2.12.0
 Requires:  gnome-icon-theme
 Requires:  libnotify >= 0.4.3
+Requires:  unique >= 0.9.4
 Requires:  dbus-glib >= %{dbus_version}
 Requires:  dbus-x11 >= %{dbus_version}
 Requires:  PackageKit >= %{packagekit_version}
@@ -47,6 +48,7 @@ BuildRequires: gnome-doc-utils
 BuildRequires: libsexy-devel
 BuildRequires: PackageKit-devel >= %{packagekit_version}
 BuildRequires: PolicyKit-gnome-devel
+BuildRequires: unique-devel
 
 %description
 packagekit-gnome provides session applications for the PackageKit API.
