@@ -317,6 +317,15 @@ backend_update_packages (PkBackend *backend, gchar **package_ids)
 	g_free (package_ids_temp);
 }
 
+/**
+ * pk_backend_update_system:
+ */
+static void
+backend_update_system (PkBackend *backend)
+{
+	pk_backend_spawn_helper (spawn, "update-system.pl", NULL);
+}
+
 
 PK_BACKEND_OPTIONS (
 	"URPMI",					/* description */
@@ -349,7 +358,7 @@ PK_BACKEND_OPTIONS (
 	backend_search_name,			/* search_name */
 	NULL,					/* service_pack */
 	backend_update_packages,		/* update_packages */
-	NULL,			/* update_system */
+	backend_update_system,			/* update_system */
 	NULL			/* what_provides */
 );
 
