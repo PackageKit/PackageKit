@@ -1,10 +1,11 @@
 [encoding: UTF-8]
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-policy/org.freedesktop.packagekit.policy.in
 client/pk-console.c
-client/pk-monitor.c
 client/pk-import-desktop.c
 client/pk-import-specspo.c
+client/pk-monitor.c
+data/packagekit-catalog.xml.in
+policy/org.freedesktop.packagekit.policy.in
 src/pk-main.c
 
