@@ -27,18 +27,17 @@ my $notfound_callback = sub {
   $notfound = 1;
 };
 
-# This script call only be called with two arguments (allow_deps (yes/no) and a package id)
-exit if($#ARGV != 1);
+# At least two arguments (allow deps & a package id list)
+exit if($#ARGV < 1);
 
 my $urpm = urpm->new_parse_cmdline;
 my $urpmi_lock = urpm::lock::urpmi_db($urpm, 'exclusive', wait => 1);
 urpm::media::configure($urpm);
 
-$allowdeps_option = 1 if($ARGV[0] eq "yes");
+$allowdeps_option = shift @ARGV;
 
-my @pkg_ids = split(/\|/, pop @ARGV);
 my @names;
-foreach(@pkg_ids) {
+foreach(@ARGV) {
   my @pkg_id = (split(/;/, $_));
   push @names, $pkg_id[0];
 }

@@ -16,16 +16,14 @@ use urpm::select;
 use urpmi_backend::actions;
 use urpmi_backend::tools;
 
-# One argument (package id)
-exit if($#ARGV != 0);
+# One or more arguments (Package ids)
+exit if($#ARGV < 0);
 
-my @pkg_ids = split(/\|/, pop @ARGV);
 my @names;
-foreach(@pkg_ids) {
+foreach(@ARGV) {
   my @pkg_id = (split(/;/, $_));
   push @names, $pkg_id[0];
 }
-
 
 my $urpm = urpm->new_parse_cmdline;
 urpm::media::configure($urpm);
