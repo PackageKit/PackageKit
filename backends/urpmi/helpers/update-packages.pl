@@ -17,11 +17,12 @@ use urpmi_backend::tools;
 use urpmi_backend::open_db;
 use urpmi_backend::actions;
 
-# This script call only be called with one argument (the package id)
-exit if($#ARGV != 0);
+# This with one or more package ids
+exit if($#ARGV < 0);
 
 my @names;
-foreach(split(/\|/, $ARGV[0])) {
+foreach(@ARGV) {
+  print "-->", $_, "<--", "\n";
   my @pkgid = split(/;/, $_);
   push @names, $pkgid[0];
 }
