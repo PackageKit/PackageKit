@@ -117,11 +117,15 @@ cb_trans_evt (pmtransevt_t event, void *data1, void *data2)
 
 	switch (event) {
 		case PM_TRANS_EVT_REMOVE_START:
+			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
 			package_id_str = pkg_to_package_id_str (data1, ALPM_LOCAL_DB_ALIAS);
 			pk_backend_package (backend_instance, PK_INFO_ENUM_REMOVING, package_id_str, alpm_pkg_get_desc (data1));
 			g_free (package_id_str);
 			break;
 		case PM_TRANS_EVT_ADD_START:
+			pk_backend_set_allow_cancel (backend_instance, FALSE);
+
 			pk_backend_set_status (backend_instance, PK_STATUS_ENUM_INSTALL);
 			package_id_needle = pkg_to_package_id_str (data1, "");
 			pk_debug ("needle is %s", package_id_needle);
@@ -876,6 +880,15 @@ backend_get_filters (PkBackend *backend)
 }
 
 /**
+ * backend_get_cancel:
+ **/
+static void
+backend_get_cancel (PkBackend *backend)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_CANCEL);
+}
+
+/**
  * backend_get_details:
  */
 static void
@@ -1412,7 +1425,7 @@ PK_BACKEND_OPTIONS (
 		backend_destroy,				/* destroy */
 		backend_get_groups,				/* get_groups */
 		backend_get_filters,				/* get_filters */
-		NULL,						/* cancel */
+		backend_get_cancel,				/* cancel */
 		NULL,						/* get_depends */
 		backend_get_details,				/* get_details */
 		backend_get_files,				/* get_files */
