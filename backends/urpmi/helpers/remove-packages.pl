@@ -56,28 +56,21 @@ my @to_remove = urpm::select::find_packages_to_remove($urpm,
 );
 
 if($notfound) {
-  # printf("Error: package %s not found\n", $pkgid[0]);
   pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED, "Selected package isn't installed on your system");
 }
 elsif(@breaking_pkgs) {
-  # printf("Error: These packages will break your system = \n\t%s\n", join("\n\t", @breaking_pkgs));
   pk_print_error(PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE, "Removing selected packages will break your system");
 }
 else {
-  # printf("It's ok, I will remove %s NOW !\n", $pkgid[0]);
-  # printf("To remove list = \n\t%s\n", join("\n\t", @to_remove));
   if(!$allowdeps_option && $#to_remove > 1) {
     pk_print_error(PK_ERROR_ENUM_TRANSACTION_ERROR, "Packages can't be removed because dependencies remove is forbidden");
-    # printf("I can't remove, because you don't allow deps remove :'(\n");
   }
   else {
-    # printf("Let's go for removing ...\n");
     pk_print_status(PK_STATUS_ENUM_REMOVE);
     urpm::install::install($urpm,
       \@to_remove, {}, {},
       callback_report_uninst => sub {
         my @return = split(/ /, $_[0]);
-        # printf("Package\tRemoving\t%s\n", fullname_to_package_id($return[$#return]));
         pk_print_package(INFO_REMOVING, fullname_to_package_id($return[$#return]), "");
       }
     );

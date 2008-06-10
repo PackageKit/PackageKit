@@ -36,7 +36,7 @@ if(!$pkg) {
   pk_print_error(PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Requested package wasn't found");
   exit;
 }
-# print "Checking requires of the package : ", urpm_name($pkg), "\n";
+
 pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 my @requires = perform_requires_search($urpm, $pkg, $recursive_option);
 

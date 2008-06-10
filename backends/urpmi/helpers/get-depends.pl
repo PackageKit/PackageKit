@@ -27,15 +27,9 @@ exit if($#ARGV != 2);
 my @filters = split(/;/, $ARGV[0]);
 my @pkgid = split(/;/, $ARGV[1]);
 my $recursive_option = 0;
-$recursive_option = 1 if($ARGV[2] eq "yes");
 
-# Only recursive option is supported
-# So, if user set no tu recursive option, 
-# backend will return error
-if(!$recursive_option) {
-  printf("error\tnot-supported\tOnly recursive option to yes is supported\n");
-  exit;
-}
+# We force the recursive option
+$recursive_option = 1;
 
 pk_print_status(PK_STATUS_ENUM_DEP_RESOLVE);
 
