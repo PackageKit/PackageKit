@@ -39,19 +39,15 @@ my ($src, $binary) = partition { $_->arch eq 'src' } @to_install;
 @to_install = @$binary;
 my $updates_descr = urpm::get_updates_description($urpm);
 
-  
 foreach(@to_install) {
-	# Fix me
-	# Be default, we set to bugfix info type
-	# Need to be implemented, see urpmq source.
-	my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $_)->{name}}{$_->name};
-	if($updesc->{importance} eq "bugfix") {
-		pk_print_package(INFO_BUGFIX, get_package_id($_), $_->summary);
-	}
-	elsif($updesc->{importance} eq "security") {
-		pk_print_package(INFO_SECURITY, get_package_id($_), $_->summary);
-	}
-	else {
-		pk_print_package(INFO_NORMAL, get_package_id($_), $_->summary);
-	}
+  my $updesc = $updates_descr->{URPM::pkg2media($urpm->{media}, $_)->{name}}{$_->name};
+  if($updesc->{importance} eq "bugfix") {
+    pk_print_package(INFO_BUGFIX, get_package_id($_), $_->summary);
+  }
+  elsif($updesc->{importance} eq "security") {
+    pk_print_package(INFO_SECURITY, get_package_id($_), $_->summary);
+  }
+  else {
+    pk_print_package(INFO_NORMAL, get_package_id($_), $_->summary);
+  }
 }
