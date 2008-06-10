@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-03 09:39+0000\n"
-"PO-Revision-Date: 2008-06-03 20:30+0200\n"
+"POT-Creation-Date: 2008-06-10 17:24+0000\n"
+"PO-Revision-Date: 2008-06-10 22:15+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -98,7 +98,7 @@ msgstr "Opis pakietu"
 
 #: ../client/pk-console.c:1019
 msgid "Package files"
-msgstr "Pliki pakiety"
+msgstr "Pliki pakietu"
 
 #: ../client/pk-console.c:1027
 msgid "No files"
@@ -231,10 +231,6 @@ msgstr "Polecenie nie powiodło się"
 msgid "You don't have the necessary privileges for this operation"
 msgstr "Nie posiadasz niezbędnych uprawnień dla tej operacji"
 
-#: ../client/pk-monitor.c:117
-msgid "PackageKit Monitor"
-msgstr "Monitor PackageKit"
-
 #: ../client/pk-import-desktop.c:298 ../client/pk-import-specspo.c:173
 #, c-format
 msgid "Could not open database: %s"
@@ -243,6 +239,14 @@ msgstr "Nie można otworzyć bazy danych: %s"
 #: ../client/pk-import-desktop.c:299 ../client/pk-import-specspo.c:174
 msgid "You probably need to run this program as the root user"
 msgstr "Prawdopodobnie należy uruchomić ten program jako użytkownik root"
+
+#: ../client/pk-monitor.c:117
+msgid "PackageKit Monitor"
+msgstr "Monitor PackageKit"
+
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "Katalog PackageKit"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
