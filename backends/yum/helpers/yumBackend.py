@@ -1012,7 +1012,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                         self.error(ERROR_LOCAL_INSTALL_FAILED,"Can't install %s" % inst_file)
             except yum.Errors.InstallError,e:
                 self.error(ERROR_LOCAL_INSTALL_FAILED,str(e))
-                
+
     def _check_local_file(self, pkg):
         """
         Duplicates some of the checks that yumbase.installLocal would
@@ -1184,8 +1184,16 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         desc = desc.replace('\n\n',';')
         desc = desc.replace('\n',' ')
 
-        self.details(id,pkg.license,"unknown",desc,pkg.url,
-                         pkg.size)
+        # this takes oodles of time
+        pkgGroupDict = self._buildGroupDict()
+        group = GROUP_OTHER
+        if pkgGroupDict.has_key(pkg.name):
+            cg = pkgGroupDict[pkg.name]
+            if groupMap.has_key(cg):
+                # use PK group name
+                group = groupMap[cg]
+
+        self.details(id,pkg.license,group,desc,pkg.url,pkg.size)
 
     def get_files(self,package):
         self._check_init()
