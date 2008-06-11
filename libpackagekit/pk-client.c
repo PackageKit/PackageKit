@@ -626,8 +626,8 @@ pk_client_details_cb (DBusGProxy  *proxy,
 	g_return_if_fail (PK_IS_CLIENT (client));
 
 	group = pk_group_enum_from_text (group_text);
-	pk_debug ("emit details %s, %s, %i, %s, %s, %ld",
-		  package_id, license, group, description, url, (long int) size);
+	pk_debug ("emit details %s, %s, %s, %s, %s, %ld",
+		  package_id, license, pk_group_enum_to_text (group), description, url, (long int) size);
 	g_signal_emit (client , signals [PK_CLIENT_DETAILS], 0,
 		       package_id, license, group, description, url, size);
 }
