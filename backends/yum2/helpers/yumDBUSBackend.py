@@ -1739,10 +1739,17 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
+    def _truncate(text,length,etc='...'):
+        if len(text) < length:
+            return text
+        else:
+            return text[:length] + etc
+
     def _format_msgs(self,msgs):
         if isinstance(msgs,basestring):
              msgs = msgs.split('\n')
         text = ";".join(msgs)
+        text = self._truncate(text, 1024);
         text = text.replace("Missing Dependency: ","")
         text = text.replace(" (installed)","")
         return text
