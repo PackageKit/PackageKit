@@ -91,6 +91,7 @@ static void
 backend_initialize (PkBackend *backend)
 {
 	zypp_logging ();
+	get_zypp ();
 	pk_debug ("zypp_backend_initialize");
 	EventDirector *eventDirector = new EventDirector (backend);
 	_eventDirectors [backend] = eventDirector;
@@ -616,7 +617,7 @@ backend_get_updates_thread (PkBackend *backend)
 
 	// get all Packages and Patches for Update
 	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
-	std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
+	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 
 	if (!_updating_self) {
 		// exclude the patch-repository
@@ -625,9 +626,9 @@ backend_get_updates_thread (PkBackend *backend)
 			patchRepo = candidates->begin ()->resolvable ()->repoInfo ().alias ();
 		}
 		
-		candidates2 = zypp_get_updates (patchRepo);
+		//candidates2 = zypp_get_updates (patchRepo);
 
-		candidates->insert (candidates2->begin (), candidates2->end ());
+		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
 
 	pk_backend_set_percentage (backend, 80);
@@ -660,7 +661,7 @@ backend_get_updates_thread (PkBackend *backend)
 	}
 
 	delete (candidates);
-	delete (candidates2);
+	//delete (candidates2);
 
  	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
@@ -903,7 +904,7 @@ backend_update_system_thread (PkBackend *backend)
 
 	//get all Patches for Update
 	std::set<zypp::PoolItem> *candidates = zypp_get_patches ();
-	std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
+	//std::set<zypp::PoolItem> *candidates2 = new std::set<zypp::PoolItem> ();
 	
 	if (_updating_self) {
 		pk_backend_require_restart (backend, PK_RESTART_ENUM_SESSION, "Package Management System updated - restart needed");
@@ -917,11 +918,11 @@ backend_update_system_thread (PkBackend *backend)
 		}
 	
 		//get all Updates
-		candidates2 = zypp_get_updates (patchRepo);
+		//candidates2 = zypp_get_updates (patchRepo);
 
 		//concatenate these sets
 
-		candidates->insert (candidates2->begin (), candidates2->end ());
+		//candidates->insert (candidates2->begin (), candidates2->end ());
 	}
 
 	pk_backend_set_percentage (backend, 80);
@@ -938,7 +939,7 @@ backend_update_system_thread (PkBackend *backend)
 		return FALSE;
 	}
 
-	delete (candidates2);
+	//delete (candidates2);
 	delete (candidates);
 	pk_backend_set_percentage (backend, 100);
 	pk_backend_finished (backend);
