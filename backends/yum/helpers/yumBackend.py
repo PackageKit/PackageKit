@@ -337,13 +337,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
             package_list = self._basename_filter(package_list)
-        
-        # newest filter        
+
+        # newest filter
         if FILTER_NEWEST in fltlist:
             package_list = self._do_newest_filtering(package_list)
-                
+
         self._show_package_list(package_list)
-                
+
     def _show_package_list(self,lst):
         for (pkg,status) in lst:
             self._show_package(pkg,status)
@@ -359,8 +359,8 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 continue
             newest[key] = (pkg,state)
         return newest.values()
-        
-                        
+
+
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
@@ -523,11 +523,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def get_packages(self,filters):
@@ -559,11 +561,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+
+        # newest filter
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+
+        self._show_package_list(package_list)
 
     @handle_repo_error
     def search_file(self,filters,key):
