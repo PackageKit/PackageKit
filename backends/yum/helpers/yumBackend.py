@@ -336,11 +336,31 @@ class PackageKitYumBackend(PackageKitBaseBackend):
 
         # basename filter if specified
         if FILTER_BASENAME in fltlist:
-            for (pkg,status) in self._basename_filter(package_list):
-                self._show_package(pkg,status)
-        else:
-            for (pkg,status) in package_list:
-                self._show_package(pkg,status)
+            package_list = self._basename_filter(package_list)
+        
+        # newest filter        
+        if FILTER_NEWEST in fltlist:
+            package_list = self._do_newest_filtering(package_list)
+                
+        self._show_package_list(package_list)
+                
+    def _show_package_list(self,lst):
+        for (pkg,status) in lst:
+            self._show_package(pkg,status)
+
+    def _do_newest_filtering(self,pkglist):
+        '''
+        Only return the newest package for each name.arch
+        '''
+        newest = {}
+        for pkg,state in pkglist:
+            key = (pkg.name, pkg.arch)
+            if key in newest and pkg <= newest[key][0]:
+                continue
+            newest[key] = (pkg,state)
+        return newest.values()
+        
+                        
 
     def _do_extra_filtering(self,pkg,filterList):
         ''' do extra filtering (gui,devel etc) '''
