@@ -1879,8 +1879,7 @@ backend_get_details_thread (PkBackend *backend)
 
 	pkg = poldek_get_pkg_from_package_id (package_id);
 
-	if (pkg)
-	{
+	if (pkg) {
 		struct pkguinf	*pkgu = NULL;
 		PkGroupEnum	group;
 
@@ -1895,7 +1894,7 @@ backend_get_details_thread (PkBackend *backend)
 						group,
 						pkguinf_get (pkgu, PKGUINF_DESCRIPTION),
 						pkguinf_get (pkgu, PKGUINF_URL),
-						pkg->size);
+						pkg->fsize);
 			pkguinf_free (pkgu);
 		} else {
 			pk_backend_details (backend,
@@ -1904,7 +1903,7 @@ backend_get_details_thread (PkBackend *backend)
 						group,
 						"",
 						"",
-						pkg->size);
+						pkg->fsize);
 		}
 
 		pkg_free (pkg);
