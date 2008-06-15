@@ -639,7 +639,7 @@ zypp_get_patches ()
         for (zypp::ResPoolProxy::const_iterator it = zypp->poolProxy ().byKindBegin<zypp::Patch>();
                         it != zypp->poolProxy ().byKindEnd<zypp::Patch>(); it ++) {
                 // check if patch is needed 
-                if((*it)->candidateObj ().isBroken()) {
+                if((*it)->candidateObj ().isRelevant() && !((*it)->candidateObj ().isSatisfied())) {
                         patches->insert ((*it)->candidateObj ());
 			zypp::Patch::constPtr patch = zypp::asKind<zypp::Patch>((*it)->candidateObj ().resolvable ());
 
@@ -666,6 +666,10 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
 
                 if (force)
                         zypp->resolver ()->setForceResolve (force);
+		if (type == UPDATE) {
+			//zypp->resolver ()->setOnlyRequires (TRUE);		
+			zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);		
+		}
 
                 // Gather up any dependencies
 		pk_backend_set_status (backend, PK_STATUS_ENUM_DEP_RESOLVE);
@@ -786,7 +790,10 @@ zypp_perform_execution (PkBackend *backend, PerformType type, gboolean force)
                         return FALSE;
                 }
 
-                zypp->resolver ()->setForceResolve (FALSE);
+		zypp->resolver ()->setForceResolve (FALSE);
+		if (type == UPDATE) {
+			zypp->resolver ()->setIgnoreAlreadyRecommended (FALSE);		
+		}
 
         } catch (const zypp::repo::RepoNotFoundException &ex) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str() );
@@ -837,6 +844,7 @@ zypp_build_package_id_capabilities (zypp::Capabilities caps)
 gboolean
 zypp_refresh_cache (PkBackend *backend, gboolean force)
 {
+	get_zypp ();  //This call is needed as it calls initializeTarget which appears to properly setup the keyring
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		return FALSE;
