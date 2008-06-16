@@ -1098,7 +1098,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
                 self.require_restart(RESTART_SYSTEM,"")
                 break
 
-    def _truncate(text,length,etc='...'):
+    def _truncate(self, text,length,etc='...'):
         if len(text) < length:
             return text
         else:
