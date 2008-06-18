@@ -67,7 +67,7 @@ package_source_free (PackageSource *source)
 }
 
 gchar *
-pkg_to_package_id_str (pmpkg_t *pkg, gchar *repo)
+pkg_to_package_id_str (pmpkg_t *pkg, const gchar *repo)
 {
 	gchar *arch = (gchar *) alpm_pkg_get_arch (pkg);
 	if (arch == NULL)
@@ -83,7 +83,7 @@ pkg_from_package_id_str (const gchar *package_id_str)
 
 	/* do all this fancy stuff */
 	pmdb_t *repo = NULL;
-	if (strcmp ("installed", pkg_id->data) == 0)
+	if (strcmp (ALPM_LOCAL_DB_ALIAS, pkg_id->data) == 0)
 		repo = alpm_option_get_localdb ();
 	else {
 		alpm_list_t *iterator;
@@ -889,12 +889,79 @@ backend_get_cancel (PkBackend *backend)
 }
 
 /**
+ * backend_get_depends:
+ */
+static void
+backend_get_depends (PkBackend *backend, PkFilterEnum filters, const gchar *package_id, gboolean recursive)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
+	if (pkg == NULL) {
+		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
+		pk_backend_finished (backend);
+		return;
+	}
+
+	pk_debug ("alpm: filters is: %i", filters);
+
+	alpm_list_t *iterator;
+	for (iterator = alpm_pkg_get_depends (pkg); iterator; iterator = alpm_list_next (iterator)) {
+		pmdepend_t *dep = alpm_list_getdata (iterator);
+		pmpkg_t *dep_pkg;
+		gboolean found = FALSE;
+
+		if (!pk_enums_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+			/* search in sync dbs */
+			alpm_list_t *db_iterator;
+			for (db_iterator = alpm_option_get_syncdbs (); found == FALSE && db_iterator; db_iterator = alpm_list_next (db_iterator)) {
+				pmdb_t *syncdb = alpm_list_getdata (db_iterator);
+
+				pk_debug ("alpm: searching for %s in %s", alpm_dep_get_name (dep), alpm_db_get_name (syncdb));
+
+				dep_pkg = alpm_db_get_pkg (syncdb, alpm_dep_get_name (dep));
+				if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
+					found = TRUE;
+					gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, alpm_db_get_name (syncdb));
+					pk_backend_package (backend, PK_INFO_ENUM_AVAILABLE, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
+					g_free (dep_package_id_str);
+				}
+			}
+		}
+
+		if (!pk_enums_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+			pk_debug ("alpm: searching for %s in local db", alpm_dep_get_name (dep));
+
+			/* search in local db */
+			dep_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), alpm_dep_get_name (dep));
+			if (dep_pkg && alpm_depcmp (dep_pkg, dep)) {
+				found = TRUE;
+				gchar *dep_package_id_str = pkg_to_package_id_str (dep_pkg, ALPM_LOCAL_DB_ALIAS);
+				pk_backend_package (backend, PK_INFO_ENUM_INSTALLED, dep_package_id_str, alpm_pkg_get_desc (dep_pkg));
+				g_free (dep_package_id_str);
+			}
+		}
+
+		if (found == FALSE) {
+			pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
+			pk_backend_finished (backend);
+			return;
+		}
+	}
+
+	pk_backend_finished (backend);
+}
+
+/**
  * backend_get_details:
  */
 static void
 backend_get_details (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
@@ -918,6 +985,7 @@ backend_get_details (PkBackend *backend, const gchar *package_id)
 	gchar *licenses = g_string_free (licenses_str, FALSE);
 
 	pk_backend_details (backend, package_id, licenses, PK_GROUP_ENUM_OTHER, alpm_pkg_get_desc (pkg), alpm_pkg_get_url(pkg), alpm_pkg_get_size (pkg));
+	g_free (licenses);
 	pk_backend_finished (backend);
 }
 
@@ -928,6 +996,8 @@ static void
 backend_get_files (PkBackend *backend, const gchar *package_id)
 {
 	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
 	pmpkg_t *pkg = pkg_from_package_id_str (package_id);
 	if (pkg == NULL) {
 		pk_backend_error_code (backend, PK_ERROR_ENUM_REPO_NOT_FOUND, alpm_strerrorlast ());
@@ -1426,7 +1496,7 @@ PK_BACKEND_OPTIONS (
 		backend_get_groups,				/* get_groups */
 		backend_get_filters,				/* get_filters */
 		backend_get_cancel,				/* cancel */
-		NULL,						/* get_depends */
+		backend_get_depends,				/* get_depends */
 		backend_get_details,				/* get_details */
 		backend_get_files,				/* get_files */
 		backend_get_packages,				/* get_packages */
