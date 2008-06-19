@@ -19,8 +19,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: packagekit\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2008-06-06 16:45+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-06-11 09:38+0000\n"
+"PO-Revision-Date: 2008-06-14 12:27+0100\n"
 "Last-Translator: Pere Argelich <bakidok@gmail.com>\n"
 "Language-Team: Catalan <fedora@softcatala.net>\n"
 "MIME-Version: 1.0\n"
@@ -28,242 +29,246 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: ../client/pk-console.c:224
+#: ../client/pk-console.c:223
 msgid "Update detail"
 msgstr "Detalls de l'actualització"
 
-#: ../client/pk-console.c:425
+#: ../client/pk-console.c:424
 msgid "A system restart is required"
 msgstr "Es requereix reiniciar el sistema"
 
-#: ../client/pk-console.c:427
+#: ../client/pk-console.c:426
 msgid "A logout and login is required"
 msgstr "Es requereix sortir de la sessió"
 
-#: ../client/pk-console.c:429
+#: ../client/pk-console.c:428
 msgid "An application restart is required"
 msgstr "Es requereix reiniciar l'aplicació"
 
-#: ../client/pk-console.c:474
+#: ../client/pk-console.c:473
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Si us plau, introduïu un valor d'1 a %i:"
 
-#: ../client/pk-console.c:524
+#: ../client/pk-console.c:533
 msgid "Could not find a package match"
 msgstr "No s'han trobat coincidències en cap paquet"
 
-#: ../client/pk-console.c:538
+#: ../client/pk-console.c:547
 msgid "There are multiple package matches"
 msgstr "Existeixen coincidències amb múltiples paquets"
 
 #. find out what package the user wants to use
-#: ../client/pk-console.c:545
+#: ../client/pk-console.c:554
 msgid "Please enter the package number: "
 msgstr "Si us plau, introduïu el número de paquet:"
 
-#: ../client/pk-console.c:561
+#: ../client/pk-console.c:589
 msgid "Could not find a package with that name to install, or package already installed"
 msgstr "No s'ha pogut trobar un paquet amb aquest nom per instal·lar, o el paquet ja es troba instal·lat"
 
-#: ../client/pk-console.c:643
-msgid "Could not find a package with that name to remove"
-msgstr "No s'ha pogut trobar un paquet amb aquest nom per eliminar"
+#: ../client/pk-console.c:737
+msgid "Could not find a package to remove"
+msgstr "No s'ha trobat cap paquet per a eliminar"
 
-#: ../client/pk-console.c:683
+#: ../client/pk-console.c:806
 msgid "The following packages have to be removed"
 msgstr "Els següents paquets seran eliminats"
 
 #. get user input
-#: ../client/pk-console.c:692
+#: ../client/pk-console.c:815
 msgid "Okay to remove additional packages?"
 msgstr "Esteu d'acord en eliminar els paquets adicionals?"
 
-#: ../client/pk-console.c:696
+#: ../client/pk-console.c:819
 msgid "Cancelled!"
 msgstr "Cancel·lat"
 
-#: ../client/pk-console.c:718
+#: ../client/pk-console.c:844
 msgid "Could not find a package with that name to update"
 msgstr "No s'ha pogut trobar un paquet amb aquest nom per actualitzar"
 
-#: ../client/pk-console.c:736
+#: ../client/pk-console.c:862
 msgid "Could not find what packages require this package"
 msgstr "No s'han pogut trobar els paquets requerits per a aquest paquet"
 
-#: ../client/pk-console.c:754
+#: ../client/pk-console.c:880
 msgid "Could not get dependencies for this package"
 msgstr "No s'han pogut obtenir les dependències per a aquest paquet"
 
-#: ../client/pk-console.c:772
+#: ../client/pk-console.c:898
 msgid "Could not find details for this package"
 msgstr "No s'han pogut trobar els detalls per a aquest paquet"
 
-#: ../client/pk-console.c:790
+#: ../client/pk-console.c:916
 msgid "Could not find the files for this package"
 msgstr "No s'han pogut trobar els fitxers per a aquest paquet"
 
-#: ../client/pk-console.c:870
+#: ../client/pk-console.c:996
 msgid "Package description"
 msgstr "Descripció del paquet"
 
-#: ../client/pk-console.c:893
+#: ../client/pk-console.c:1019
 msgid "Package files"
 msgstr "Fitxers del paquet"
 
-#: ../client/pk-console.c:901
+#: ../client/pk-console.c:1027
 msgid "No files"
 msgstr "No hi ha fitxers"
 
 #. get user input
-#: ../client/pk-console.c:933
+#: ../client/pk-console.c:1059
 msgid "Okay to import key?"
 msgstr "Esteu d'acord en importar la clau?"
 
-#: ../client/pk-console.c:936
+#: ../client/pk-console.c:1062
 msgid "Did not import key"
 msgstr "No importis la clau"
 
 #. get user input
-#: ../client/pk-console.c:976
+#: ../client/pk-console.c:1102
 msgid "Do you agree?"
 msgstr "Esteu d'acord?"
 
-#: ../client/pk-console.c:979
+#: ../client/pk-console.c:1105
 msgid "Did not agree to licence, task will fail"
 msgstr "La llicència no ha estat acceptada, la tasca fallarà"
 
-#: ../client/pk-console.c:1008
+#: ../client/pk-console.c:1134
 msgid "The daemon crashed mid-transaction!"
 msgstr "El servei ha fallat a meitat de la transacció!"
 
 #. header
-#: ../client/pk-console.c:1061
+#: ../client/pk-console.c:1187
 msgid "PackageKit Console Interface"
 msgstr "Interfície de consola de PackageKit"
 
-#: ../client/pk-console.c:1061
+#: ../client/pk-console.c:1187
 msgid "Subcommands:"
 msgstr "Subordres:"
 
-#: ../client/pk-console.c:1165
+#: ../client/pk-console.c:1290
 #: ../client/pk-monitor.c:104
 #: ../src/pk-main.c:189
 msgid "Show extra debugging information"
 msgstr "Mostra la informació extra de la depuració"
 
-#: ../client/pk-console.c:1167
+#: ../client/pk-console.c:1292
 #: ../client/pk-monitor.c:106
 msgid "Show the program version and exit"
 msgstr "Mostra la versió del programa i surt"
 
-#: ../client/pk-console.c:1169
+#: ../client/pk-console.c:1294
 msgid "Set the filter, e.g. installed"
 msgstr "Defineix el filtre, p.ex. instal·lat"
 
-#: ../client/pk-console.c:1171
+#: ../client/pk-console.c:1296
 msgid "Exit without waiting for actions to complete"
 msgstr "Surt sense esperar que es completin les accions"
 
-#: ../client/pk-console.c:1194
+#: ../client/pk-console.c:1319
 msgid "Could not connect to system DBUS."
 msgstr "No s'ha pogut connectar al sistema DBUS."
 
-#: ../client/pk-console.c:1288
+#: ../client/pk-console.c:1413
 msgid "You need to specify a search type"
 msgstr "Cal que especifiqueu un tipus de cerca"
 
-#: ../client/pk-console.c:1293
-#: ../client/pk-console.c:1300
-#: ../client/pk-console.c:1307
-#: ../client/pk-console.c:1314
-#: ../client/pk-console.c:1421
-#: ../client/pk-console.c:1428
-#: ../client/pk-console.c:1435
-#: ../client/pk-console.c:1442
+#: ../client/pk-console.c:1418
+#: ../client/pk-console.c:1425
+#: ../client/pk-console.c:1432
+#: ../client/pk-console.c:1439
+#: ../client/pk-console.c:1538
+#: ../client/pk-console.c:1545
+#: ../client/pk-console.c:1552
+#: ../client/pk-console.c:1559
 msgid "You need to specify a search term"
 msgstr "Cal que especifiqueu un terme per a la cerca"
 
-#: ../client/pk-console.c:1319
+#: ../client/pk-console.c:1444
 msgid "Invalid search type"
 msgstr "El tipus de cerca no és vàlid"
 
-#: ../client/pk-console.c:1324
+#: ../client/pk-console.c:1449
 msgid "You need to specify a package or file to install"
 msgstr "Cal que especifiqueu un paquet o un fitxer a instal·lar"
 
-#: ../client/pk-console.c:1339
+#: ../client/pk-console.c:1456
 msgid "You need to specify a type, key_id and package_id"
 msgstr "Cal que especifiqueu un tipus, un identificador de clau i un identificador de paquet"
 
-#: ../client/pk-console.c:1346
+#: ../client/pk-console.c:1463
 msgid "You need to specify a package to remove"
 msgstr "Cal que especifiqueu un paquet a eliminar"
 
-#: ../client/pk-console.c:1353
+#: ../client/pk-console.c:1470
 msgid "You need to specify a eula-id"
 msgstr "Cal que especifiqueu un identificador de EULA"
 
-#: ../client/pk-console.c:1369
+#: ../client/pk-console.c:1486
 msgid "You need to specify a package name to resolve"
 msgstr "Cal que especifiqueu un nom de paquet a resoldre"
 
-#: ../client/pk-console.c:1376
-#: ../client/pk-console.c:1383
+#: ../client/pk-console.c:1493
+#: ../client/pk-console.c:1500
 msgid "You need to specify a repo name"
 msgstr "Cal que especifiqueu un nom de repositori"
 
-#: ../client/pk-console.c:1390
+#: ../client/pk-console.c:1507
 msgid "You need to specify a repo name/parameter and value"
 msgstr "Cal que especifiqueu un nom / paràmetre de repositori i un valor"
 
-#: ../client/pk-console.c:1403
+#: ../client/pk-console.c:1520
 msgid "You need to specify a time term"
 msgstr "Cal que especifiqueu un valor per a l'hora"
 
-#: ../client/pk-console.c:1408
+#: ../client/pk-console.c:1525
 msgid "You need to specify a correct role"
 msgstr "Cal que especifiqueu un rol correcte"
 
-#: ../client/pk-console.c:1413
+#: ../client/pk-console.c:1530
 msgid "Failed to get last time"
 msgstr "S'ha produït un error en obtenir l'última hora"
 
-#: ../client/pk-console.c:1449
+#: ../client/pk-console.c:1566
 msgid "You need to specify a package to find the details for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne els detalls"
 
-#: ../client/pk-console.c:1456
+#: ../client/pk-console.c:1573
 msgid "You need to specify a package to find the files for"
 msgstr "Cal que especifiqueu un paquet per cercar-ne fitxers"
 
-#: ../client/pk-console.c:1503
+#: ../client/pk-console.c:1622
 #, c-format
 msgid "Option '%s' not supported"
 msgstr "L'opció '%s' no està disponible"
 
-#: ../client/pk-console.c:1514
+#: ../client/pk-console.c:1633
 msgid "Command failed"
 msgstr "L'ordre ha fallat"
 
-#: ../client/pk-console.c:1518
+#: ../client/pk-console.c:1637
 msgid "You don't have the necessary privileges for this operation"
 msgstr "No teniu suficients privilegis per a aquesta operació"
+
+#: ../client/pk-import-desktop.c:298
+#: ../client/pk-import-specspo.c:173
+#, c-format
+msgid "Could not open database: %s"
+msgstr "No s'ha pogut obrir la base de dades: %s"
+
+#: ../client/pk-import-desktop.c:299
+#: ../client/pk-import-specspo.c:174
+msgid "You probably need to run this program as the root user"
+msgstr "És probable que necessiteu executar aquesta aplicació com a administrador"
 
 #: ../client/pk-monitor.c:117
 msgid "PackageKit Monitor"
 msgstr "Monitorització de Packagekit"
 
-#: ../client/pk-import-desktop.c:293
-#: ../client/pk-import-specspo.c:169
-#, c-format
-msgid "Could not open database: %s"
-msgstr "No s'ha pogut obrir la base de dades: %s"
-
-#: ../client/pk-import-desktop.c:294
-#: ../client/pk-import-specspo.c:170
-msgid "You probably need to run this program as the root user"
-msgstr "És probable que necessiteu executar aquesta aplicació com a administrador"
+#: ../data/packagekit-catalog.xml.in.h:1
+msgid "PackageKit Catalog"
+msgstr "Catàleg del Packagekit"
 
 #: ../src/pk-main.c:83
 msgid "Startup failed due to security policies on this machine."
