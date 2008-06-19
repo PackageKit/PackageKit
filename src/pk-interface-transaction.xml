@@ -19,16 +19,16 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            This allows the user to accept a end user licence agreement.
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.accept-eula</doc:permission>
       </doc:doc>
       <arg type="s" name="eula_id" direction="in">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              A valid EULA ID
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -40,7 +40,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            xxx
+            Cancel a transaction that is already running
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -48,22 +48,22 @@
 
     <!--*****************************************************************************************-->
     <method name="GetAllowCancel">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Get if cancel is allowed for the transaction
+          </doc:para>
+        </doc:description>
+      </doc:doc>
       <arg type="b" name="allow_cancel" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              xxx
+              If cancel is allowed
             </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            xxx
-          </doc:para>
-        </doc:description>
-      </doc:doc>
     </method>
 
     <!--*****************************************************************************************-->
@@ -196,7 +196,6 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
@@ -374,7 +373,6 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
       </doc:doc>
       <arg type="s" name="package_id" direction="in">
         <doc:doc>
@@ -396,7 +394,6 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
       </doc:doc>
       <arg type="s" name="filter" direction="in">
         <doc:doc>
@@ -418,7 +415,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
       </doc:doc>
       <arg type="b" name="trusted" direction="in">
         <doc:doc>
@@ -449,7 +446,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.install</doc:permission>
       </doc:doc>
       <arg type="as" name="package_ids" direction="in">
         <doc:doc>
@@ -471,7 +468,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.install-signature</doc:permission>
       </doc:doc>
       <arg type="s" name="sig_type" direction="in">
         <doc:doc>
@@ -531,7 +528,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.refresh-cache</doc:permission>
       </doc:doc>
       <arg type="b" name="force" direction="in">
         <doc:doc>
@@ -553,7 +550,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
       </doc:doc>
       <arg type="as" name="package_ids" direction="in">
         <doc:doc>
@@ -593,7 +590,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
       </doc:doc>
       <arg type="s" name="repo_id" direction="in">
         <doc:doc>
@@ -624,7 +621,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
       </doc:doc>
       <arg type="s" name="repo_id" direction="in">
         <doc:doc>
@@ -694,7 +691,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.rollback</doc:permission>
       </doc:doc>
       <arg type="s" name="transaction_id" direction="in">
         <doc:doc>
@@ -836,7 +833,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
       </doc:doc>
       <arg type="as" name="package_ids" direction="in">
         <doc:doc>
@@ -858,7 +855,7 @@
             xxx
           </doc:para>
         </doc:description>
-        <doc:permission>Callers need the org.freedesktop.PackageKit.xxxxxxxxx</doc:permission>
+        <doc:permission>Callers need the org.freedesktop.packagekit.update-system</doc:permission>
       </doc:doc>
     </method>
 
