@@ -1069,10 +1069,61 @@ backend_get_repo_list (PkBackend *backend, PkFilterEnum filters)
 
 	// Iterate on repository list
 	alpm_list_t *iterator;
-	for (iterator = repos; iterator; iterator = alpm_list_next(iterator)) {
+	for (iterator = repos; iterator; iterator = alpm_list_next (iterator)) {
 		pmdb_t *db = alpm_list_getdata (repos);
 		pk_backend_repo_detail (backend, alpm_db_get_name (db), alpm_db_get_name (db), TRUE);
 		repos = alpm_list_next (repos);
+	}
+
+	pk_backend_finished (backend);
+}
+
+static void
+backend_get_update_detail (PkBackend *backend, const gchar *package_id)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	// TODO: add changelog code here
+	PkPackageId *pk_package_id = pk_package_id_new_from_string (package_id);
+
+	pmpkg_t *obsolete_pkg = alpm_db_get_pkg (alpm_option_get_localdb (), pk_package_id->name);
+
+	gchar *obsolete_package_id = obsolete_pkg ? pkg_to_package_id_str (obsolete_pkg, ALPM_LOCAL_DB_ALIAS) : NULL;
+	pk_backend_update_detail (backend, package_id, obsolete_package_id, "", "", "", "", PK_RESTART_ENUM_NONE,
+		obsolete_pkg ? "Update to latest available version" : "Install as a dependency for another update");
+	g_free (obsolete_package_id);
+
+	pk_backend_finished (backend);
+}
+
+/**
+ * backend_get_updates:
+ */
+static void
+backend_get_updates (PkBackend *backend, PkFilterEnum filters)
+{
+	pk_backend_set_status (backend, PK_STATUS_ENUM_QUERY);
+	pk_backend_set_allow_cancel (backend, FALSE);
+
+	// iterate through list installed packages to find update for each
+	alpm_list_t *iterator;
+	for (iterator = alpm_db_getpkgcache (alpm_option_get_localdb ()); iterator; iterator = alpm_list_next (iterator)) {
+		pmpkg_t *pkg = alpm_list_getdata (iterator);
+
+		alpm_list_t *db_iterator;
+		for (db_iterator = alpm_option_get_syncdbs (); db_iterator; db_iterator = alpm_list_next (db_iterator)) {
+			pmdb_t *db = alpm_list_getdata (db_iterator);
+			pmpkg_t *repo_pkg = alpm_db_get_pkg (db, alpm_pkg_get_name (pkg));
+
+			if (repo_pkg != NULL && alpm_pkg_vercmp (alpm_pkg_get_version (pkg), alpm_pkg_get_version (repo_pkg)) < 0) {
+				gchar *package_id_str = pkg_to_package_id_str (repo_pkg, alpm_db_get_name (db));
+				pk_backend_package (backend, PK_INFO_ENUM_NORMAL, package_id_str, alpm_pkg_get_desc (repo_pkg));
+				g_free (package_id_str);
+
+				break;
+			}
+		}
 	}
 
 	pk_backend_finished (backend);
@@ -1502,8 +1553,8 @@ PK_BACKEND_OPTIONS (
 		backend_get_packages,				/* get_packages */
 		backend_get_repo_list,				/* get_repo_list */
 		NULL,						/* get_requires */
-		NULL,						/* get_update_detail */
-		NULL,						/* get_updates */
+		backend_get_update_detail,			/* get_update_detail */
+		backend_get_updates,				/* get_updates */
 		backend_install_files,				/* install_files */
 		backend_install_packages,			/* install_packages */
 		NULL,						/* install_signature */
